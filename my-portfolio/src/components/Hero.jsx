@@ -20,11 +20,12 @@ const Hero = () => {
           </div>
         </div>
         {/* 이미지 추가하고 싶을 때 주석 해제 */}
-        {/* <div className="order-1 md:order-2 flex justify-center">
-          <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+        <div className="order-1 md:order-2 flex justify-center">
+          <img src="src/assets/logo_light.png" alt="" />
+          {/* <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
             <img src="/placeholder.svg?height=300&width=300" alt="프로필 이미지" className="w-60 h-60 md:w-72 md:h-72 rounded-full object-cover border-4 border-white dark:border-gray-800" />
-          </div>
-        </div> */}
+          </div> */}
+        </div>
       </div>
     </section>
   );
