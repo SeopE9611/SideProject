@@ -21,7 +21,10 @@ const Hero = () => {
         </div>
         {/* 이미지 추가하고 싶을 때 주석 해제 */}
         <div className="order-1 md:order-2 flex justify-center">
-          <img src="/logo_light.png" alt="" />
+          {/* 라이트 모드용 이미지 */}
+          <img src="/logo_light.png" alt="" className="dark:hidden" />
+          {/* 다크 모드용 이미지 */}
+          <img src="/logo_dark.png" alt="" className="hidden dark:block" />
           {/* <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
             <img src="/placeholder.svg?height=300&width=300" alt="프로필 이미지" className="w-60 h-60 md:w-72 md:h-72 rounded-full object-cover border-4 border-white dark:border-gray-800" />
           </div> */}
