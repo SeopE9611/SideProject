@@ -1,3 +1,6 @@
+// 스크롤 스냅 커스텀 훅 (현재 미사용)
+// 적용 시 App.jsx에서 각 섹션에 .section 클래스 추가하기
+
 import { useEffect } from 'react';
 
 const useFullPageScroll = () => {
