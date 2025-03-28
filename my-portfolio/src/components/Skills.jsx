@@ -1,4 +1,8 @@
+import useScrollReveal from '../hooks/useScrollReveal';
+
 const Skills = () => {
+  const revealRef = useScrollReveal(0.2);
+
   const skillCategories = [
     {
       title: '프론트엔드',
@@ -31,7 +35,7 @@ const Skills = () => {
   ];
 
   return (
-    <section id="skills" className="py-20">
+    <section ref={revealRef} id="skills" className="py-20 opacity-0 transform translate-y-10 transition-opacity duration-1000 ease-out">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">기술 스택</h2>

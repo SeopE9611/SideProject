@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import useScrollReveal from '../hooks/useScrollReveal';
 
 // 실제 이메일 제출기능이 구현되어야 사용가능 (api)
 const Contact = () => {
+  const revealRef = useScrollReveal(0.2);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,7 +18,7 @@ const Contact = () => {
   // };
 
   return (
-    <section id="contact" className="py-20">
+    <section ref={revealRef} id="contact" className="py-20 opacity-0 transform translate-y-10 transition-opacity duration-1000 ease-out">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">연락처</h2>
