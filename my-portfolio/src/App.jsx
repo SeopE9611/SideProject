@@ -27,6 +27,8 @@ function App() {
           <Contact />
         </main>
         <Footer />
+        {/* modal-root를 dark 컨텍스트 내부에 배치 */}
+        <div id="modal-root" />
       </div>
     </div>
   );
