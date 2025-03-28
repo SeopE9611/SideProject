@@ -89,9 +89,8 @@ const Projects = () => {
       </div>,
       modalContainer // 모달을 렌더링할 컨테이너
     );
-
   return (
-    <section ref={revealRef} id="projects" className="py-20 bg-gray-50 dark:bg-gray-800">
+    <section ref={revealRef} id="projects" className="py-20 bg-gray-50 dark:bg-gray-800 opacity-0 transform translate-y-10 transition-opacity duration-1000 ease-out">
       <div className="container mx-auto px-4">
         {/* 섹션 제목 */}
         <div className="max-w-3xl mx-auto text-center mb-12">
