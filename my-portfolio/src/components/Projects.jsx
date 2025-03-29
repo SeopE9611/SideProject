@@ -3,7 +3,7 @@ import useScrollReveal from '../hooks/useScrollReveal';
 import { useState } from 'react';
 import ReactDOM from 'react-dom';
 
-const Projects = () => {
+const Projects = ({ darkMode }) => {
   // 스크롤 애니메이션 커스텀 훅
   const revealRef = useScrollReveal(0.2);
 
@@ -17,7 +17,10 @@ const Projects = () => {
       title: '다시,봄',
       description_sub: '프로젝트 기간 : 2024.12.22 ~ 1.23',
       description: '친환경 제품을 판매하기 위한 목적으로 제작한 전자상거래 사이트입니다.',
-      image: '/2trillionmarket.png',
+      image: {
+        light: '/2trillionmarket_light.png',
+        dark: '/2trillionmarket_dark.png',
+      },
       tags: ['Node.js', 'Vite React', 'Tailwind CSS', 'Tanstack', 'zustand'],
       liveLink: 'https://2trillionmarket.netlify.app/',
       githubLink: 'https://github.com/FRONTENDBOOTCAMP-11th/againSpring_shop/tree/main',
@@ -26,7 +29,10 @@ const Projects = () => {
       title: '도깨비 테니스 아카데미 (진행중)',
       description_sub: '프로젝트 기간 : ~ing',
       description: '테니스 라켓 / 스트링 교체,판매 및 아카데미 관리 목적으로 제작한 사이트입니다.',
-      image: '/ddokaebi-tennis.jpg',
+      image: {
+        light: '/ddokaebi-tennis_light.png',
+        dark: '/ddokaebi-tennis_dark.png',
+      },
       tags: ['React'],
       liveLink: '#',
       githubLink: '#',
@@ -105,7 +111,7 @@ const Projects = () => {
             <div key={index} className="group relative">
               {/* 카드 영역 */}
               <div className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-md transition-transform hover:scale-[1.02]">
-                <img src={project.image || '/placeholder.svg'} alt={project.title} className="container mx-auto h-64 object-cover" />
+                <img src={typeof project.image === 'object' ? (darkMode ? project.image.dark : project.image.light) : project.image} alt={project.title} className="container mx-auto h-80 object-cover" />
               </div>
               {/* 모달 오버레이(호버 시 "자세히 보기" 버튼이나타남) */}
               <div

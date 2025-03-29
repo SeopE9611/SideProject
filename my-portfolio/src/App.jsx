@@ -23,7 +23,7 @@ function App() {
           <Hero />
           <About />
           <Skills />
-          <Projects />
+          <Projects darkMode={darkMode} />
           <Contact />
         </main>
         <Footer />
