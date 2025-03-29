@@ -57,7 +57,7 @@ const Projects = ({ darkMode }) => {
     selectedProject &&
     ReactDOM.createPortal(
       // 전체화면 오버레이: 클릭 시 closeModal이 호출되어 모달이 닫힘
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60" onClick={closeModal}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={closeModal}>
         {/* 모달 내부 컨텐츠 영역 - onClick에서 e.stopPropagation()을 호출해 오버레이 클릭 이벤트 전파를 막음 */}
         {/* Q : 다른 섹션은 다크모드를 props로 전달 받지 않고 tailwind의 dark 접두사가 잘 작동하는데 project 섹션에는 왜 작동하지 않는가? */}
         {/* A : 다른 섹션은 부모 컨테이너가 dark 모드 클래스를 그대로 상속 받기 때문에 dark 접두사가 잘 작동하지만
