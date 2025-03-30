@@ -6,7 +6,7 @@ import Skills from './components/Skills';
 import Projects from './components/Projects';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
-import SpaceScene from './components/SpaceScene';
+import Project_SpaceScene from './components/Project_SpaceScene';
 
 function App() {
   // useFullPageScroll(); ( 스크롤 스냅 미사용에 따른 주석처리)
@@ -21,7 +21,7 @@ function App() {
       <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
         <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <main>
-          <SpaceScene />
+          <Project_SpaceScene />
           <Projects darkMode={darkMode} />
           <Hero />
           <About />
