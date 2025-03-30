@@ -258,8 +258,26 @@ const SpaceScene = () => {
             pointerEvents: 'auto',
           }}
         >
-          <h4 style={{ margin: 0 }}>{hoverModalData.projectData.name}</h4>
-          <p style={{ margin: 0 }}>{hoverModalData.projectData.period}</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h4 style={{ margin: 0 }}>{hoverModalData.projectData.name}</h4>
+            <button
+              onClick={() => {
+                // 닫기 버튼을 누르면 hover 모달과 잠금된 위성이 해제되어 위성이 다시 공전함
+                setHoverModalData(null);
+                pausedSatelliteRef.current = null;
+              }}
+              style={{
+                background: 'transparent',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              X
+            </button>
+          </div>
+          <p style={{ margin: '5px 0 0 0' }}>{hoverModalData.projectData.period}</p>
           {/* "자세히 보기" 버튼을 클릭하면 full 모달이 열림 */}
           <button onClick={() => setFullModalProject(hoverModalData.projectData)} style={{ marginTop: '5px', padding: '5px 10px' }}>
             자세히 보기
