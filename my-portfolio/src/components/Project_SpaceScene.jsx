@@ -22,8 +22,6 @@ const SpaceScene = () => {
   const [isHoveringModal, setIsHoveringModal] = useState(false);
   // 현재 잠금된 위성을 저장 (paused 상태, 해당 위성은 공전 업데이트를 중단)
   const pausedSatelliteRef = useRef(null);
-  // raycaster로 위성 hover 여부를 판단할 때 사용 (모달 업데이트 조건)
-  const isSatelliteHoveredRef = useRef(false);
   // full 모달 상태를 추적하는 ref (full 모달이 열려 있으면 새로운 hover 업데이트를 무시)
   const fullModalProjectRef = useRef(null);
   // 모달 제거 타이머를 저장하는 ref
@@ -71,7 +69,7 @@ const SpaceScene = () => {
     controls.enableZoom = false;
     controls.enablePan = false;
 
-    // ====== 포스트 프로세싱 설정 ======
+    // ====== 포스트 프로세싱 (Bloom 효과) ======
     // 효과 컴포저를 사용해 렌더링 후에 RenderPass와 BloomPass(언리얼 블룸)를 적용
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
@@ -123,12 +121,12 @@ const SpaceScene = () => {
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
-    // ====== 위성 및 궤도 생성 ======
+    // ====== 위성 및 궤도 생성 (프로젝트 데이터 포함) ======
     // 위성 데이터는 프로젝트 정보를 포함 (이름, 기간, 상세 정보)
     const satelliteDataList = [
-      { name: '프로젝트 1', period: '2024.12.22 ~ 2025.01.23', info: '프로젝트 1 상세 정보' },
-      { name: '프로젝트 2', period: '2023.05.01 ~ 2023.06.30', info: '프로젝트 2 상세 정보' },
-      { name: '프로젝트 3', period: '2022.11.15 ~ 2022.12.10', info: '프로젝트 3 상세 정보' },
+      { name: '프로젝트 1', period: '2024.01.01 ~ 2024.01.01', info: '프로젝트 1 상세 정보' },
+      { name: '프로젝트 2', period: '2024.01.01 ~ 2024.01.01', info: '프로젝트 2 상세 정보' },
+      { name: '프로젝트 3', period: '2024.01.01 ~ 2024.01.01', info: '프로젝트 3 상세 정보' },
     ];
     const satelliteGroups = []; // 각 위성의 그룹(궤도와 위성이 포함됨)
     const satelliteMeshes = []; // 위성 Mesh 목록
@@ -190,7 +188,7 @@ const SpaceScene = () => {
     const animate = () => {
       requestAnimationFrame(animate);
 
-      // 잠금되지 않은 위성(hover로 잠금되지 않은 위성)은 계속 공전
+      // 잠금되지 않은 위성(hover로 잠금되지 않은 위성)은 계속 공전 (locked된 위성은 paused)
       satelliteGroups.forEach((group) => {
         if (group.userData.satelliteMesh !== pausedSatelliteRef.current) {
           group.userData.angle += group.userData.angleSpeed;
@@ -243,7 +241,7 @@ const SpaceScene = () => {
       {/* Three.js 캔버스가 들어갈 영역 */}
       <div ref={mountRef} style={{ width: '100%', height: '100vh', background: '#000' }} />
 
-      {/* 위성 hover 시 표시되는 모달 (위성의 정보와 "자세히 보기" 버튼 포함) */}
+      {/* 위성 hover 시 표시되는 모달 (프로젝트 정보, "자세히 보기" 버튼 및 "닫기" 버튼 포함) */}
       {hoverModalData && (
         <div
           style={{
@@ -256,8 +254,10 @@ const SpaceScene = () => {
             borderRadius: '8px',
             zIndex: 200,
             pointerEvents: 'auto',
+            minWidth: '200px',
           }}
         >
+          {/* 제목 영역: 제목은 왼쪽, 닫기 버튼은 오른쪽 상단에 배치 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h4 style={{ margin: 0 }}>{hoverModalData.projectData.name}</h4>
             <button
