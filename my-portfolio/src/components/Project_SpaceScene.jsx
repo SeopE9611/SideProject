@@ -275,47 +275,29 @@ const SpaceScene = () => {
 
       {/* 위성 hover 시 표시되는 모달 (프로젝트 정보, "자세히 보기" 버튼 및 "닫기" 버튼 포함) */}
       {hoverModalData && (
-        <div
-          style={{
-            position: 'absolute',
-            top: hoverModalData.y - 60,
-            left: hoverModalData.x - 50,
-            background: 'rgba(0,0,0,0.8)',
-            color: 'white',
-            padding: '10px',
-            borderRadius: '8px',
-            zIndex: 200,
-            pointerEvents: 'auto',
-            minWidth: '200px',
-          }}
-        >
+        <div className="absolute bg-[rgba(0,0,0,0.8)] text-white p-2.5 rounded z-[200] pointer-events-auto min-w-[200px] group" style={{ top: hoverModalData.y - 60, left: hoverModalData.x - 50 }}>
           {/* 제목 영역: 제목은 왼쪽, 닫기 버튼은 오른쪽 상단에 배치 */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h4 style={{ margin: 10 }}>{`제목: ${hoverModalData.projectData.title}`}</h4>
-            <p style={{ margin: '10px 0 0 0' }}>{hoverModalData.projectData.period}</p>
+          <div className="flex justify-between items-center">
+            <h4 className="mt-[5px] py-[5px] px-[10px]">{`프로젝트 제목: ${hoverModalData.projectData.title}`}</h4>
             <button
               onClick={() => {
                 // 닫기 버튼을 누르면 hover 모달과 잠금된 위성이 해제되어 위성이 다시 공전함
                 setHoverModalData(null);
                 pausedSatelliteRef.current = null;
               }}
-              style={{
-                background: 'transparent',
-                color: 'white',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px',
-              }}
+              className="transparent text-white border border-white  cursor-pointer text-sm px-2"
             >
               X
             </button>
           </div>
 
-          <p style={{ margin: '5px 0 0 0' }}>{hoverModalData.projectData.description_sub}</p>
+          <p style={{ padding: '5px 10px' }}>{hoverModalData.projectData.description_sub}</p>
           {/* "자세히 보기" 버튼을 클릭하면 full 모달이 열림 */}
-          <button onClick={() => setFullModalProject(hoverModalData.projectData)} style={{ marginTop: '5px', padding: '5px 10px' }}>
-            자세히 보기
-          </button>
+          <div className="py-2 w-full text-center">
+            <button onClick={() => setFullModalProject(hoverModalData.projectData)} className=" text-white border border-white px-4 py-2 rounded transition duration-300 text-end">
+              자세히 보기
+            </button>
+          </div>
         </div>
       )}
 
