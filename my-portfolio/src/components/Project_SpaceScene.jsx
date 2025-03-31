@@ -1,3 +1,4 @@
+import { ExternalLink, Github } from 'lucide-react';
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import * as THREE from 'three';
@@ -123,14 +124,45 @@ const SpaceScene = () => {
 
     // ====== 위성 및 궤도 생성 (프로젝트 데이터 포함) ======
     // 위성 데이터는 프로젝트 정보를 포함 (이름, 기간, 상세 정보)
-    const satelliteDataList = [
-      { name: '프로젝트 1', period: '2024.01.01 ~ 2024.01.01', info: '프로젝트 1 상세 정보' },
-      { name: '프로젝트 2', period: '2024.01.01 ~ 2024.01.01', info: '프로젝트 2 상세 정보' },
-      { name: '프로젝트 3', period: '2024.01.01 ~ 2024.01.01', info: '프로젝트 3 상세 정보' },
+    // const satelliteDataList = [
+    //   { name: '프로젝트 1', period: '2024.01.01 ~ 2024.01.01', info: '프로젝트 1 상세 정보' },
+    //   { name: '프로젝트 2', period: '2024.01.01 ~ 2024.01.01', info: '프로젝트 2 상세 정보' },
+    //   { name: '프로젝트 3', period: '2024.01.01 ~ 2024.01.01', info: '프로젝트 3 상세 정보' },
+    // ];
+
+    const projects = [
+      {
+        title: '다시,봄',
+        description_sub: '프로젝트 기간 : 2024.12.22 ~ 1.23',
+        description: '친환경 제품을 판매하기 위한 목적으로 제작한 전자상거래 사이트입니다.',
+        image: '/2trillionmarket_light.png',
+        tags: ['Node.js', 'Vite React', 'Tailwind CSS', 'Tanstack', 'zustand'],
+        liveLink: 'https://2trillionmarket.netlify.app/',
+        githubLink: 'https://github.com/FRONTENDBOOTCAMP-11th/againSpring_shop/tree/main',
+      },
+      {
+        title: '도깨비 테니스 아카데미',
+        description_sub: '프로젝트 기간 : 진행중~ing',
+        description: '테니스 라켓 / 스트링 교체,판매 및 아카데미 관리 목적으로 제작한 사이트입니다.',
+        image: '/ddokaebi-tennis_light.png',
+        tags: ['React'],
+        liveLink: '#',
+        githubLink: '#',
+      },
+      {
+        title: '샬롬의집 (예정)',
+        description_sub: '프로젝트 기간 : null',
+        description: '서울시 강서구 방화동에 위치한 장애인 공동체 복지관 사이트 입니다.',
+        image: '/shalom.png',
+        tags: ['React'],
+        liveLink: '#',
+        githubLink: '#',
+      },
     ];
+
     const satelliteGroups = []; // 각 위성의 그룹(궤도와 위성이 포함됨)
     const satelliteMeshes = []; // 위성 Mesh 목록
-    satelliteDataList.forEach((data) => {
+    projects.forEach((data) => {
       const group = new THREE.Group();
       scene.add(group);
 
@@ -259,7 +291,8 @@ const SpaceScene = () => {
         >
           {/* 제목 영역: 제목은 왼쪽, 닫기 버튼은 오른쪽 상단에 배치 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h4 style={{ margin: 0 }}>{hoverModalData.projectData.name}</h4>
+            <h4 style={{ margin: 10 }}>{`제목: ${hoverModalData.projectData.title}`}</h4>
+            <p style={{ margin: '10px 0 0 0' }}>{hoverModalData.projectData.period}</p>
             <button
               onClick={() => {
                 // 닫기 버튼을 누르면 hover 모달과 잠금된 위성이 해제되어 위성이 다시 공전함
@@ -277,7 +310,8 @@ const SpaceScene = () => {
               X
             </button>
           </div>
-          <p style={{ margin: '5px 0 0 0' }}>{hoverModalData.projectData.period}</p>
+
+          <p style={{ margin: '5px 0 0 0' }}>{hoverModalData.projectData.description_sub}</p>
           {/* "자세히 보기" 버튼을 클릭하면 full 모달이 열림 */}
           <button onClick={() => setFullModalProject(hoverModalData.projectData)} style={{ marginTop: '5px', padding: '5px 10px' }}>
             자세히 보기
@@ -289,55 +323,51 @@ const SpaceScene = () => {
       {fullModalProject &&
         ReactDOM.createPortal(
           <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0,0,0,0.7)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 999,
-            }}
-            // 전체 모달 외부 클릭 시 full 모달을 닫고, 위성 잠금 및 모달 데이터 해제
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300"
             onClick={() => {
               setFullModalProject(null);
               pausedSatelliteRef.current = null;
               setHoverModalData(null);
             }}
           >
-            <div
-              style={{
-                background: '#fff',
-                padding: '20px',
-                borderRadius: '8px',
-                maxWidth: '600px',
-                width: '90%',
-                position: 'relative',
-              }}
-              // 내부 클릭 시 이벤트 전파 중단 (모달 닫힘 방지)
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="bg-white dark:bg-black/80 p-6 rounded shadow-lg relative max-w-4xl w-full mx-4 flex flex-col md:flex-row gap-4 text-black dark:text-white" onClick={(e) => e.stopPropagation()}>
+              {/* 왼쪽: 프로젝트 이미지 */}
+              <div className="md:w-1/2">
+                <img src={fullModalProject.image} alt={fullModalProject.title} className="w-full h-auto object-cover rounded" />
+              </div>
+              {/* 오른쪽: 프로젝트 상세 정보 */}
+              <div className="md:w-1/2 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold mb-2">{fullModalProject.title}</h3>
+                  <p className="mb-2">{fullModalProject.description_sub}</p>
+                  <p className="mb-4">{fullModalProject.description}</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {fullModalProject.tags.map((tag) => (
+                      <span key={tag} className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <a href={fullModalProject.liveLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline">
+                    <ExternalLink size={16} /> 배포 사이트
+                  </a>
+                  <a href={fullModalProject.githubLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline">
+                    <Github size={16} /> GitHub
+                  </a>
+                </div>
+              </div>
               <button
-                // 닫기 버튼 클릭 시 full 모달과 위성 잠금, 모달 데이터 모두 해제
                 onClick={() => {
                   setFullModalProject(null);
                   pausedSatelliteRef.current = null;
                   setHoverModalData(null);
                 }}
-                style={{
-                  position: 'absolute',
-                  top: '10px',
-                  right: '10px',
-                }}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
               >
                 닫기
               </button>
-              <h3>{fullModalProject.name}</h3>
-              <p>{fullModalProject.period}</p>
-              <p>{fullModalProject.info}</p>
             </div>
           </div>,
           document.body
