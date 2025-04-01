@@ -21,12 +21,13 @@ function App() {
       <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
         <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <main>
+          {/* <Hero /> */}
           <Project_SpaceScene />
-          <Projects darkMode={darkMode} />
-          <Hero />
-          <About />
-          <Skills />
-          <Contact />
+          {/* <Projects darkMode={darkMode} /> */}
+
+          {/* <About /> */}
+          {/* <Skills /> */}
+          {/* <Contact /> */}
         </main>
         <Footer />
         {/* modal-root를 dark 컨텍스트 내부에 배치 */}
