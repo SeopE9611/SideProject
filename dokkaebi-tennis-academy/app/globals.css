@@ -50,8 +50,12 @@
 }
 
 @layer base {
+  * {
+    @apply border;
+  }
   body {
-    background-color: hsl(var (--background));
+    background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-family: Arial, Helvetica, sans-serif;
   }
 }
