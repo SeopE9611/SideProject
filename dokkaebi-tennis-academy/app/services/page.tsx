@@ -477,6 +477,11 @@ export default function ServicesPage() {
             </CardContent>
           </Card>
         </div>
+          <div className="mt-10 flex justify-center">
+              <Button size="lg" asChild>
+                <Link href="/reviews/write?type=academy">리뷰 작성하기</Link>
+              </Button>
+          </div>
       </section>
     </div>
   )

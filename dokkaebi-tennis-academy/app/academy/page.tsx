@@ -287,6 +287,100 @@ export default function AcademyPage() {
           </div>
         </div>
       </section>
+
+      {/* 고객 후기 섹션 */}
+      <section className="container pb-16">
+        <div className="mb-12 text-center">
+          <h2 className="mb-3 text-3xl font-bold">고객 후기</h2>
+          <p className="mx-auto max-w-2xl text-[#64748b] dark:text-[#94a3b8]">
+            도깨비 테니스 아카데미를 수강한 수강생들의 생생한 후기입니다.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-4 flex">
+                {[...Array(5)].map((_, i) => (
+                  <svg
+                    key={i}
+                    className="h-5 w-5 fill-[#fbbf24] text-[#fbbf24]"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="mb-4">
+                "처음 테니스를 배우는 초보자였는데, 김도깨비 코치님의 체계적인 지도 덕분에 빠르게 실력이 향상되었습니다.
+                기초부터 차근차근 알려주셔서 테니스의 재미를 느낄 수 있었어요!"
+              </p>
+              <div className="text-right text-sm font-medium">김민준 - 성인반</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-4 flex">
+                {[...Array(5)].map((_, i) => (
+                  <svg
+                    key={i}
+                    className="h-5 w-5 fill-[#fbbf24] text-[#fbbf24]"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="mb-4">
+                "주니어반에서 아이가 테니스를 배우고 있는데, 아이의 성향과 체력에 맞춰 지도해주셔서 정말 감사합니다.
+                무엇보다 테니스를 즐기면서 배울 수 있도록 해주신 점이 가장 좋았습니다."
+              </p>
+              <div className="text-right text-sm font-medium">이서연 - 주니어반</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-4 flex">
+                {[...Array(4)].map((_, i) => (
+                  <svg
+                    key={i}
+                    className="h-5 w-5 fill-[#fbbf24] text-[#fbbf24]"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                ))}
+                {[...Array(1)].map((_, i) => (
+                  <svg
+                    key={i}
+                    className="h-5 w-5 fill-muted text-muted-foreground"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="mb-4">
+                "주말 집중반을 통해 테니스를 배우고 있습니다. 평일에는 시간이 없어 주말에만 배울 수 있는데, 3시간 동안
+                집중적으로 배울 수 있어 효율적입니다. 다만 조금 더 개인 피드백이 있으면 좋겠어요."
+              </p>
+              <div className="text-right text-sm font-medium">박지훈 - 주말 집중반</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <Button size="lg" asChild>
+            <Link href="/reviews/write?type=academy">리뷰 작성하기</Link>
+          </Button>
+        </div>
+      </section>
     </div>
   )
 }
