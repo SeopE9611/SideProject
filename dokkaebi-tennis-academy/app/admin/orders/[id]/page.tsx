@@ -1,0 +1,359 @@
+import Link from "next/link"
+import {
+  ArrowLeft,
+  Calendar,
+  CreditCard,
+  Download,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
+  ShoppingCart,
+  Truck,
+  User,
+} from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+
+// 주문 상태에 따른 배지 색상 정의
+const orderStatusColors = {
+  대기중: "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20",
+  처리중: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
+  완료: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
+  취소: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
+  환불: "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20",
+}
+
+// 결제 상태에 따른 배지 색상 정의
+const paymentStatusColors = {
+  결제완료: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
+  결제대기: "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20",
+  결제실패: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
+}
+
+// 주문 유형에 따른 배지 색상 정의
+const orderTypeColors = {
+  상품: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
+  서비스: "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20",
+  클래스: "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20",
+}
+
+// 임시 주문 상세 데이터
+const orderDetail = {
+  id: "ORD-2023-1002",
+  customer: {
+    name: "이서연",
+    email: "seoyeon.lee@example.com",
+    phone: "010-2345-6789",
+    address: "서울특별시 강남구 테헤란로 123 아파트 456호",
+  },
+  date: "2023-05-16T14:45:00",
+  status: "처리중",
+  paymentStatus: "결제완료",
+  paymentMethod: "신용카드",
+  total: 50000,
+  type: "서비스",
+  items: [
+    { name: "라켓 스트링 교체 서비스", quantity: 1, price: 50000, description: "윌슨 NXT 17 스트링, 장력 52파운드" },
+  ],
+  shipping: {
+    method: "방문 수령",
+    trackingNumber: null,
+    estimatedDelivery: "2023-05-18T17:00:00",
+  },
+  notes: "스트링 교체 후 연락 부탁드립니다.",
+  history: [
+    { date: "2023-05-16T14:45:00", status: "주문 접수", description: "주문이 접수되었습니다." },
+    { date: "2023-05-16T14:46:00", status: "결제 완료", description: "신용카드 결제가 완료되었습니다." },
+    { date: "2023-05-17T09:30:00", status: "처리중", description: "주문이 처리 중입니다." },
+  ],
+}
+
+export default function OrderDetailPage({ params }: { params: { id: string } }) {
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date)
+  }
+
+  // 금액 포맷팅 함수
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("ko-KR", {
+      style: "currency",
+      currency: "KRW",
+    }).format(amount)
+  }
+
+  return (
+    <div className="container py-10">
+      <div className="mx-auto max-w-4xl">
+        {/* 페이지 헤더 */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <Button variant="outline" size="sm" className="mb-3" asChild>
+              <Link href="/admin/orders">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                주문 목록으로 돌아가기
+              </Link>
+            </Button>
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">주문 상세 정보</h1>
+            <p className="mt-1 text-muted-foreground">주문 ID: {params.id}</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              주문서 다운로드
+            </Button>
+            <Button>
+              <Truck className="mr-2 h-4 w-4" />
+              배송 정보 업데이트
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* 주문 상태 및 요약 */}
+          <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle>주문 상태</CardTitle>
+                <Badge className={orderStatusColors[orderDetail.status]}>{orderDetail.status}</Badge>
+              </div>
+              <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center">
+                  <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
+                  <span className="ml-2 text-sm text-muted-foreground">{orderDetail.paymentMethod}</span>
+                </div>
+                <div className="flex items-center">
+                  <Badge className={orderTypeColors[orderDetail.type]}>{orderDetail.type}</Badge>
+                </div>
+                <div className="ml-auto text-xl font-bold">{formatCurrency(orderDetail.total)}</div>
+              </div>
+            </CardContent>
+            <CardFooter className="border-t pt-4">
+              <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
+                <Select defaultValue={orderDetail.status}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="주문 상태 변경" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="대기중">대기중</SelectItem>
+                    <SelectItem value="처리중">처리중</SelectItem>
+                    <SelectItem value="완료">완료</SelectItem>
+                    <SelectItem value="취소">취소</SelectItem>
+                    <SelectItem value="환불">환불</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="destructive" className="sm:ml-auto">
+                  주문 취소
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+
+          {/* 고객 정보 */}
+          <Card className="border-border/40 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center">
+                <User className="mr-2 h-5 w-5" />
+                고객 정보
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-sm font-medium">이름</div>
+                  <div>{orderDetail.customer.name}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium flex items-center">
+                    <Mail className="mr-1 h-3.5 w-3.5" />
+                    이메일
+                  </div>
+                  <div>{orderDetail.customer.email}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium flex items-center">
+                    <Phone className="mr-1 h-3.5 w-3.5" />
+                    전화번호
+                  </div>
+                  <div>{orderDetail.customer.phone}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium flex items-center">
+                    <MapPin className="mr-1 h-3.5 w-3.5" />
+                    주소
+                  </div>
+                  <div className="text-sm">{orderDetail.customer.address}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 배송 정보 */}
+          <Card className="border-border/40 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center">
+                <Truck className="mr-2 h-5 w-5" />
+                배송 정보
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-sm font-medium">배송 방법</div>
+                  <div>{orderDetail.shipping.method}</div>
+                </div>
+                {orderDetail.shipping.trackingNumber && (
+                  <div>
+                    <div className="text-sm font-medium">운송장 번호</div>
+                    <div>{orderDetail.shipping.trackingNumber}</div>
+                  </div>
+                )}
+                <div>
+                  <div className="text-sm font-medium flex items-center">
+                    <Calendar className="mr-1 h-3.5 w-3.5" />
+                    예상 수령일
+                  </div>
+                  <div>{formatDate(orderDetail.shipping.estimatedDelivery)}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 결제 정보 */}
+          <Card className="border-border/40 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center">
+                <CreditCard className="mr-2 h-5 w-5" />
+                결제 정보
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-sm font-medium">결제 상태</div>
+                  <div>
+                    <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>
+                      {orderDetail.paymentStatus}
+                    </Badge>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium">결제 방법</div>
+                  <div>{orderDetail.paymentMethod}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium">결제 금액</div>
+                  <div className="text-lg font-bold">{formatCurrency(orderDetail.total)}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 주문 항목 */}
+          <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center">
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                주문 항목
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="px-4 py-3 text-left text-sm font-medium">상품/서비스</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium">수량</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium">가격</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium">합계</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orderDetail.items.map((item, index) => (
+                      <tr key={index} className="border-b">
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{item.name}</div>
+                          {item.description && <div className="text-sm text-muted-foreground">{item.description}</div>}
+                        </td>
+                        <td className="px-4 py-3 text-center">{item.quantity}</td>
+                        <td className="px-4 py-3 text-right">{formatCurrency(item.price)}</td>
+                        <td className="px-4 py-3 text-right font-medium">
+                          {formatCurrency(item.price * item.quantity)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-b">
+                      <td colSpan={3} className="px-4 py-3 text-right font-medium">
+                        총 합계
+                      </td>
+                      <td className="px-4 py-3 text-right text-lg font-bold">{formatCurrency(orderDetail.total)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 주문 메모 */}
+          <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle>주문 메모</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                defaultValue={orderDetail.notes}
+                placeholder="주문에 대한 메모가 없습니다."
+                className="min-h-[100px]"
+              />
+              <Button className="mt-3">메모 저장</Button>
+            </CardContent>
+          </Card>
+
+          {/* 주문 이력 */}
+          <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle>주문 이력</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {orderDetail.history.map((event, index) => (
+                  <div key={index} className="flex">
+                    <div className="mr-4 flex flex-col items-center">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full border-4 border-background bg-primary">
+                        <Package className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                      {index < orderDetail.history.length - 1 && <div className="h-full w-px bg-border" />}
+                    </div>
+                    <div className="flex-1 pb-8">
+                      <div className="flex items-baseline justify-between">
+                        <div className="text-lg font-semibold">{event.status}</div>
+                        <div className="text-sm text-muted-foreground">{formatDate(event.date)}</div>
+                      </div>
+                      <p className="mt-1 text-sm">{event.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}

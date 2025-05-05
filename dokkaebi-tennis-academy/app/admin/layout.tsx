@@ -1,6 +1,6 @@
 import type React from "react"
 import Link from "next/link"
-import { Home, Users, Calendar, Star, ShoppingBag, Settings, BarChart3, FileText } from "lucide-react"
+import { Home, Users, Calendar, Star, ShoppingBag, Settings, BarChart3, FileText, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -10,6 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "회원 관리", href: "/admin/users", icon: <Users className="mr-2 h-4 w-4" /> },
     { name: "클래스 관리", href: "/admin/classes", icon: <Calendar className="mr-2 h-4 w-4" /> },
     { name: "리뷰 관리", href: "/admin/reviews", icon: <Star className="mr-2 h-4 w-4" /> },
+    { name: "상품 관리", href: "/admin/products", icon: <Package className="mr-2 h-4 w-4" /> },
     { name: "주문 관리", href: "/admin/orders", icon: <ShoppingBag className="mr-2 h-4 w-4" /> },
     { name: "게시판 관리", href: "/admin/boards", icon: <FileText className="mr-2 h-4 w-4" /> },
     { name: "설정", href: "/admin/settings", icon: <Settings className="mr-2 h-4 w-4" /> },
