@@ -1,3 +1,4 @@
+'use client'
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -5,8 +6,62 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
+  const router = useRouter()
+
+  const handleLogin = async () => {
+    const email = (document.getElementById("email") as HTMLInputElement)?.value
+    const password = (document.getElementById("password") as HTMLInputElement)?.value
+  
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    })
+    
+    if (result?.ok) {
+      router.push("/")
+    } else {
+      alert("이메일과 비밀번호를 확인해주세요.")
+    }
+  }
+  
+  const handleRegister = async () => {
+    const email = (document.getElementById("register-email") as HTMLInputElement)?.value
+    const password = (document.getElementById("register-password") as HTMLInputElement)?.value
+    const confirmPassword = (document.getElementById("confirm-password") as HTMLInputElement)?.value
+    const name = (document.getElementById("name") as HTMLInputElement)?.value
+  
+    if (!email || !password || !confirmPassword || !name) {
+      alert("모든 필드를 입력해주세요.")
+      return
+    }
+  
+    if (password !== confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.")
+      return
+    }
+  
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password, name }),
+    })
+  
+    const data = await res.json()
+  
+    if (res.ok) {
+      alert("회원가입이 완료되었습니다.")
+      router.push("/")
+    } else {
+      alert(data.message || "회원가입 중 오류가 발생했습니다.")
+    }
+  }
   return (
     <div className="container flex items-center justify-center py-10 md:py-20">
       <Card className="mx-auto max-w-md w-full">
@@ -36,7 +91,7 @@ export default function LoginPage() {
                 </div>
                 <Input id="password" type="password" placeholder="비밀번호를 입력하세요" />
               </div>
-              <Button className="w-full">로그인</Button>
+              <Button className="w-full" onClick={handleLogin}>로그인</Button>
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
@@ -130,7 +185,7 @@ export default function LoginPage() {
                   </label>
                 </div>
               </div>
-              <Button className="w-full">회원가입</Button>
+              <Button className="w-full" onClick={handleRegister}>회원가입</Button>
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
