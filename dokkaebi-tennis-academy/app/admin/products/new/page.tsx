@@ -19,7 +19,6 @@ import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
-import { Value } from '@radix-ui/react-select';
 
 // 브랜드 목록
 const brands = [
@@ -135,41 +134,34 @@ export default function NewStringPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const product = {
-      ...basicInfo,
-
-      features: {
-        반발력: powerRating[0],
-        컨트롤: controlRating[0],
-        스핀: spinRating[0],
-        내구성: durabilityRating[0],
-        편안함: comfortRating[0],
-      },
-
-      tags: {
-        beginner: (document.getElementById('player-beginner') as HTMLInputElement)?.checked || false,
-        intermediate: (document.getElementById('player-intermediate') as HTMLInputElement)?.checked || false,
-        advanced: (document.getElementById('player-advanced') as HTMLInputElement)?.checked || false,
-        baseline: (document.getElementById('style-baseline') as HTMLInputElement)?.checked || false,
-        serveVolley: (document.getElementById('style-serve-volley') as HTMLInputElement)?.checked || false,
-        allCourt: (document.getElementById('style-all-court') as HTMLInputElement)?.checked || false,
-        power: (document.getElementById('style-power') as HTMLInputElement)?.checked || false,
-      },
-
-      specifications: {
-        재질: (document.getElementById('string-material') as HTMLInputElement)?.value || '',
-        게이지: (document.getElementById('string-gauge') as HTMLInputElement)?.value || '',
-        색상: (document.getElementById('string-color') as HTMLInputElement)?.value || '',
-        길이: (document.getElementById('string-length') as HTMLInputElement)?.value || '',
-      },
-      additionalFeatures: additionalFeatures, // 추가 특성
-
-      images: images, // 상태에서 가져옴
+    // specifications 영문 키로 미리 구성
+    const specifications = {
+      material: basicInfo.material,
+      gauge: basicInfo.gauge,
+      color: basicInfo.color,
+      length: basicInfo.length,
     };
 
-    console.log('등록된 상품 데이터:', product);
+    //  product 전체 구성
+    const product = {
+      ...basicInfo, // name, brand, price 등 기본 항목
 
-    // 실제 API 요청은 추후 구현
+      features: {
+        ...features, // power, control, spin 등 성능 항목
+      },
+
+      tags: { ...tags }, // 추천 플레이어 & 스타일
+
+      specifications, // 영문 키로 통일된 사양 정보
+
+      additionalFeatures, // 추가 설명
+
+      images, // 이미지 배열
+    };
+
+    console.log('✅ 등록된 상품 데이터:', product);
+
+    // 추후 API 전송 로직 위치
   };
 
   return (
@@ -348,16 +340,8 @@ export default function NewStringPage() {
                   <Label htmlFor="power-rating">반발력</Label>
                   <span className="font-medium">{features.power}/5</span>
                 </div>
-                <Slider
-                  id="power-rating"
-                  min={1}
-                  max={5}
-                  step={1}
-                  value={[features.power]}
-                  onValueChange={(value) => setFeatures({ ...features, power: value[0] })}
-                  className="w-full h-4"
-                  thumbClassName="w-4 h-4 bg-primary border border-white rounded-full shadow"
-                />
+                <Slider id="power-rating" min={1} max={5} step={1} value={[features.power]} onValueChange={(value) => setFeatures({ ...features, power: value[0] })} className="w-full h-4" />
+
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>낮음</span>
                   <span>높음</span>
