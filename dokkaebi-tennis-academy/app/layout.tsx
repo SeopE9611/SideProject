@@ -7,6 +7,7 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { SessionProvider } from 'next-auth/react';
 import CustomSessionProvider from '@/components/session-provider';
+import { Toaster } from '@/components/ui/sonner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
+            <Toaster />
           </ThemeProvider>
         </CustomSessionProvider>
       </body>

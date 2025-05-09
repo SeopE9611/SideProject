@@ -19,6 +19,9 @@ import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
+import { supabase } from '@/lib/supabase';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // 브랜드 목록
 const brands = [
@@ -70,7 +73,7 @@ const colors = [
 ];
 
 export default function NewStringPage() {
-  // 기본 정보를 useState로 상태 통제
+  // 기본 정보
   const [basicInfo, setBasicInfo] = useState({
     name: '',
     sku: '',
@@ -84,7 +87,7 @@ export default function NewStringPage() {
     price: 0,
   });
 
-  // 성능 및 특성 정보를 useState로 상태 통제
+  // 성능 및 특성 정보
   const [features, setFeatures] = useState({
     power: 3,
     control: 3,
@@ -93,7 +96,7 @@ export default function NewStringPage() {
     comfort: 3,
   });
 
-  // 태그 정보를 useState로 상태 통제
+  // 태그 정보
   const [tags, setTags] = useState({
     beginner: false,
     intermediate: false,
@@ -104,23 +107,87 @@ export default function NewStringPage() {
     power: false,
   });
 
+  // 재고 관리 정보
+  const [inventory, setInventory] = useState({
+    stock: 0,
+    lowStock: 5,
+    status: 'instock', // 'instock' | 'outofstock' | 'backorder'
+    manageStock: false,
+    allowBackorder: false,
+    isFeatured: false,
+    isNew: false,
+    isSale: false,
+    salePrice: 0,
+  });
+
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState('');
 
-  const router = useRouter();
+  // 탭 상태관리
   const [activeTab, setActiveTab] = useState('basic');
-  const [images, setImages] = useState<string[]>([]);
-  const [powerRating, setPowerRating] = useState([3]);
-  const [controlRating, setControlRating] = useState([3]);
-  const [spinRating, setSpinRating] = useState([3]);
-  const [durabilityRating, setDurabilityRating] = useState([3]);
-  const [comfortRating, setComfortRating] = useState([3]);
 
-  // 이미지 추가 핸들러 (실제로는 파일 업로드 로직이 필요합니다)
-  const handleAddImage = () => {
-    // 실제 구현에서는 파일 업로드 후 URL을 받아와야 합니다
-    const newImageUrl = `/placeholder.svg?height=200&width=200&text=스트링이미지${images.length + 1}`;
-    setImages([...images, newImageUrl]);
+  const [images, setImages] = useState<string[]>([]);
+
+  // 이미지 업로드 상태
+  const [uploading, setUploading] = useState(false);
+
+  // 이미지 추가 핸들러
+  const sanitizeFileName = (file: File) => {
+    const timestamp = Date.now();
+    const extension = file.name.split('.').pop();
+    const base = file.name
+      .replace(/\.[^/.]+$/, '') // 확장자 제거
+      .replace(/[^a-zA-Z0-9_-]/g, ''); // 특수문자 제거
+
+    return `${timestamp}-${base}.${extension}`;
+  };
+
+  const MAX_IMAGE_COUNT = 4; // 최대 업로드 가능한 이미지 수 제한
+  const isMaxReached = images.length >= MAX_IMAGE_COUNT; // 최대 이미지 수 도달 여부
+
+  // 이미지 업로드 핸들러
+  const handleAddImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const totalSelected = files.length;
+    const availableSlots = MAX_IMAGE_COUNT - images.length;
+
+    if (totalSelected > availableSlots) {
+      e.target.value = '';
+      alert(`최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
+    }
+
+    const filesToUpload = Array.from(files).slice(0, availableSlots);
+    setUploading(true);
+
+    for (const file of filesToUpload) {
+      const fileName = sanitizeFileName(file);
+      const { error } = await supabase.storage.from('tennis-images').upload(fileName, file);
+      if (!error) {
+        const { data: publicData } = supabase.storage.from('tennis-images').getPublicUrl(fileName);
+        const imageUrl = publicData?.publicUrl;
+        if (imageUrl) {
+          setImages((prev) => [...prev, imageUrl]);
+        }
+      }
+    }
+
+    setUploading(false);
+    e.target.value = ''; // <- 동일 파일 다시 선택 가능하도록
+  };
+
+  // 대표 이미지 설정
+  const [mainImageIndex, setMainImageIndex] = useState(0);
+
+  // 대표이미지 설정 핸들러
+  const handleSetMainImage = (index: number) => {
+    if (index === 0) return; // 이미 대표면 무시
+
+    const selected = images[index];
+    const remaining = images.filter((_, i) => i !== index);
+
+    setImages([selected, ...remaining]);
   };
 
   // 이미지 삭제 핸들러
@@ -134,6 +201,79 @@ export default function NewStringPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 색션명 상수
+    const SECTIONS = {
+      BASIC: '기본정보',
+      PERFORMANCE: '성능 및 특성',
+      INVENTORY: '재고관리',
+      IMAGE: '이미지',
+    };
+
+    // 기본 유효성 검사
+    if (!basicInfo.name.trim()) {
+      toast(`${SECTIONS.BASIC} 오류`, {
+        description: '상품명을 입력해주세요.',
+        icon: '⛔',
+      });
+      return;
+    }
+
+    if (basicInfo.price <= 0) {
+      toast(`${SECTIONS.BASIC} 오류`, {
+        description: '금액을 입력해주세요',
+        icon: '⛔',
+      });
+      return;
+    }
+
+    if (!basicInfo.description.trim()) {
+      toast(`${SECTIONS.BASIC} 오류`, {
+        description: '상세 설명을 입력해주세요.',
+        icon: '⛔',
+      });
+      return;
+    }
+
+    // 이미 기본값으로 3이 설정되어있어서 오류가 생기지는 않겠지만 예방차원에 로직 추가
+    const featureValues = Object.values(features);
+    if (featureValues.some((value) => value < 1 || value > 5)) {
+      toast(`${SECTIONS.PERFORMANCE} 오류`, {
+        description: '모든 성능 항목은 1~5 사이 값으로 설정되어야 합니다.',
+      });
+      return;
+    }
+
+    if (images.length === 0) {
+      toast(`${SECTIONS.IMAGE} 오류`, {
+        description: '최소 1장의 이미지를 업로드해야 합니다.',
+        icon: '⛔',
+      });
+      return;
+    }
+
+    if (inventory.isSale && inventory.salePrice >= basicInfo.price) {
+      toast(`${SECTIONS.INVENTORY} 오류`, {
+        description: '할인가는 정가보다 낮아야 합니다.',
+        icon: '⛔',
+      });
+      return;
+    }
+
+    if (inventory.stock < 0) {
+      toast(`${SECTIONS.INVENTORY} 오류`, {
+        description: '재고 수량은 0 이상이어야 합니다.',
+        icon: '⛔',
+      });
+      return;
+    }
+
+    if (inventory.lowStock < 0 || inventory.lowStock > inventory.stock) {
+      toast(`${SECTIONS.BASIC} 오류`, {
+        description: '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.',
+        icon: '⛔',
+      });
+      return;
+    }
     // specifications 영문 키로 미리 구성
     const specifications = {
       material: basicInfo.material,
@@ -156,12 +296,22 @@ export default function NewStringPage() {
 
       additionalFeatures, // 추가 설명
 
-      images, // 이미지 배열
+      images: [
+        // 이미지 배열
+        ...images.slice(mainImageIndex, mainImageIndex + 1), // 대표 이미지 먼저
+        ...images.filter((_, i) => i !== mainImageIndex), // 나머지
+      ],
+      inventory, // 재고 관리 정보
     };
 
     console.log('✅ 등록된 상품 데이터:', product);
 
     // 추후 API 전송 로직 위치
+
+    toast('✅ 등록 완료', {
+      description: '상품이 성공적으로 등록되었습니다.',
+      className: 'bg-emerald-600 text-white font-bold shadow-lg',
+    });
   };
 
   return (
@@ -208,7 +358,7 @@ export default function NewStringPage() {
                   <Label htmlFor="string-name">
                     스트링명 <span className="text-destructive">*</span>
                   </Label>
-                  <Input id="string-name" placeholder="스트링명을 입력하세요" required value={basicInfo.name} onChange={(e) => setBasicInfo({ ...basicInfo, name: e.target.value })} />
+                  <Input id="string-name" placeholder="스트링명을 입력하세요" value={basicInfo.name} onChange={(e) => setBasicInfo({ ...basicInfo, name: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="string-sku">SKU (재고 관리 코드)</Label>
@@ -318,7 +468,19 @@ export default function NewStringPage() {
                     가격 <span className="text-destructive">*</span>
                   </Label>
                   <div className="flex">
-                    <Input id="string-regular-price" type="number" min="0" step="1000" placeholder="0" required value={basicInfo.price} onChange={(e) => setBasicInfo({ ...basicInfo, price: Number(e.target.value) })} />
+                    <Input
+                      id="string-regular-price"
+                      type="text"
+                      placeholder="0"
+                      value={basicInfo.price.toLocaleString()} // 숫자 → 천 단위 문자열
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/,/g, ''); // 콤마 제거
+                        const numeric = Number(raw);
+                        if (!isNaN(numeric)) {
+                          setBasicInfo({ ...basicInfo, price: numeric });
+                        }
+                      }}
+                    />
                     <span className="ml-2 flex items-center text-sm">원</span>
                   </div>
                 </div>
@@ -457,17 +619,41 @@ export default function NewStringPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="string-stock">재고 수량</Label>
-                  <Input id="string-stock" type="number" min="0" placeholder="0" />
+                  <Input
+                    id="string-stock"
+                    type="text"
+                    placeholder="0"
+                    value={inventory.stock.toLocaleString()}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/,/g, '');
+                      const numeric = Number(raw);
+                      if (!isNaN(numeric)) {
+                        setInventory({ ...inventory, stock: numeric });
+                      }
+                    }}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="string-low-stock">재고 부족 알림 기준</Label>
-                  <Input id="string-low-stock" type="number" min="0" placeholder="5" />
+                  <Input
+                    id="string-low-stock"
+                    type="text"
+                    placeholder="0"
+                    value={inventory.lowStock.toLocaleString()}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/,/g, '');
+                      const numeric = Number(raw);
+                      if (!isNaN(numeric)) {
+                        setInventory({ ...inventory, lowStock: numeric });
+                      }
+                    }}
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>재고 상태</Label>
-                <RadioGroup defaultValue="instock">
+                <RadioGroup value={inventory.status} onValueChange={(value) => setInventory({ ...inventory, status: value })}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="instock" id="instock" />
                     <Label htmlFor="instock">재고 있음</Label>
@@ -485,7 +671,7 @@ export default function NewStringPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Switch id="string-manage-stock" />
+                  <Switch id="string-manage-stock" checked={inventory.manageStock} onCheckedChange={(checked) => setInventory({ ...inventory, manageStock: checked })} />
                   <Label htmlFor="string-manage-stock">재고 관리 사용</Label>
                 </div>
                 <p className="text-sm text-muted-foreground">재고 관리를 사용하면 판매될 때마다 재고가 자동으로 감소합니다.</p>
@@ -493,7 +679,7 @@ export default function NewStringPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Switch id="string-backorders" />
+                  <Switch id="string-backorders" checked={inventory.allowBackorder} onCheckedChange={(checked) => setInventory({ ...inventory, allowBackorder: checked })} />
                   <Label htmlFor="string-backorders">품절 시 주문 허용</Label>
                 </div>
                 <p className="text-sm text-muted-foreground">재고가 없을 때도 고객이 주문할 수 있도록 허용합니다.</p>
@@ -506,21 +692,21 @@ export default function NewStringPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                    <Switch id="string-featured" />
+                    <Switch id="string-featured" checked={inventory.isFeatured} onCheckedChange={(checked) => setInventory({ ...inventory, isFeatured: checked })} />
                     <Label htmlFor="string-featured">추천 상품으로 표시</Label>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                    <Switch id="string-new" />
+                    <Switch id="string-new" checked={inventory.isNew} onCheckedChange={(checked) => setInventory({ ...inventory, isNew: checked })} />
                     <Label htmlFor="string-new">신상품으로 표시</Label>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                    <Switch id="string-sale" />
+                    <Switch id="string-sale" checked={inventory.isSale} onCheckedChange={(checked) => setInventory({ ...inventory, isSale: checked })} />
                     <Label htmlFor="string-sale">할인 상품으로 표시</Label>
                   </div>
                 </div>
@@ -528,7 +714,20 @@ export default function NewStringPage() {
                 <div className="space-y-2">
                   <Label htmlFor="string-sale-price">할인가</Label>
                   <div className="flex">
-                    <Input id="string-sale-price" type="number" min="0" step="1000" placeholder="0" />
+                    <Input
+                      id="string-sale-price"
+                      type="text"
+                      value={inventory.salePrice.toLocaleString()} // 보기에는 콤마 포함
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/,/g, ''); // 콤마 제거
+                        const numeric = Number(rawValue);
+
+                        if (!isNaN(numeric)) {
+                          setInventory({ ...inventory, salePrice: numeric });
+                        }
+                      }}
+                      placeholder="0"
+                    />
                     <span className="ml-2 flex items-center text-sm">원</span>
                   </div>
                 </div>
@@ -547,8 +746,10 @@ export default function NewStringPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {images.map((image, index) => (
-                  <div key={index} className="relative rounded-md border bg-muted/40">
+                  <div key={index} className={`relative rounded-md border ${index === 0 ? 'ring-2 ring-primary' : 'bg-muted/40'}`}>
                     <img src={image || '/placeholder.svg'} alt={`스트링 이미지 ${index + 1}`} className="aspect-square h-full w-full rounded-md object-cover" />
+
+                    {/* 삭제 버튼 */}
                     <Button type="button" variant="destructive" size="icon" className="absolute right-1 top-1 h-6 w-6" onClick={() => handleRemoveImage(index)}>
                       <span className="sr-only">이미지 삭제</span>
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -556,20 +757,30 @@ export default function NewStringPage() {
                         <path d="m6 6 12 12" />
                       </svg>
                     </Button>
+
+                    {/* 대표 이미지 표시 */}
                     {index === 0 && <span className="absolute left-1 top-1 rounded-md bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">대표</span>}
+
+                    {/* 대표로 지정 버튼 (대표 아닐 때만) */}
+                    {index !== 0 && (
+                      <Button type="button" variant="outline" size="sm" className="absolute bottom-1 left-1 h-6 text-xs px-1.5 py-0.5" onClick={() => handleSetMainImage(index)}>
+                        대표로 지정
+                      </Button>
+                    )}
                   </div>
                 ))}
-                <Button type="button" variant="outline" className="flex aspect-square h-full w-full flex-col items-center justify-center rounded-md border border-dashed" onClick={handleAddImage}>
-                  <Upload className="mb-2 h-6 w-6" />
+                <label className={`flex aspect-square h-full w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed ${isMaxReached ? 'pointer-events-none opacity-50' : ''}`}>
+                  {uploading ? <Loader2 className="mb-2 h-6 w-6 animate-spin text-muted-foreground" /> : <Upload className="mb-2 h-6 w-6" />}
                   <span className="text-sm">이미지 추가</span>
-                </Button>
+                  <input type="file" accept="image/*" multiple onChange={handleAddImage} className="hidden" disabled={isMaxReached} />
+                </label>
               </div>
               <div className="text-sm text-muted-foreground">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger className="flex items-center">
                       <Info className="mr-1 h-4 w-4" />
-                      이미지 권장 사항
+                      최대 4장까지 업로드 가능합니다.
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>최적의 표시를 위해 1000x1000 픽셀 이상의 정사각형 이미지를 사용하세요.</p>
