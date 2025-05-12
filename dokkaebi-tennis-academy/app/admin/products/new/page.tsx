@@ -197,8 +197,10 @@ export default function NewStringPage() {
     setImages(newImages);
   };
 
+  const router = useRouter(); // 페이지 이동을 위한 라우터
+
   // 폼 제출 핸들러
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // 색션명 상수
@@ -306,12 +308,45 @@ export default function NewStringPage() {
 
     console.log('✅ 등록된 상품 데이터:', product);
 
-    // 추후 API 전송 로직 위치
+    // API 전송 로직 위치
 
-    toast('✅ 등록 완료', {
-      description: '상품이 성공적으로 등록되었습니다.',
-      className: 'bg-emerald-600 text-white font-bold shadow-lg',
-    });
+    try {
+      const res = await fetch('/api/products', {
+        // API 겨로
+        method: 'POST', // POST 요청
+        headers: {
+          // 헤더 설정
+          'Content-Type': 'application/json', // JSON 형식
+        },
+        body: JSON.stringify(product), // JSON 문자열로 변환
+      });
+
+      if (!res.ok) {
+        // 에러 발생시
+        const errorData = await res.json(); // 에러 메시지
+        toast('❌ 등록 실패', {
+          description: errorData.message || '알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요',
+          className: 'bg-red-600 text-white font-bold shadow-lg',
+        });
+        return;
+      }
+
+      const data = await res.json(); // 성공적으로 등록된 데이터
+
+      toast('✅ 등록 완료', {
+        description: '상품이 성공적으로 등록되었습니다.',
+        className: 'bg-emerald-600 text-white font-bold shadow-lg',
+      });
+      // router.push('/admin/products'); // 상품 목록 페이지로 즉시 이동
+      router.push(`/products/${data.id}`); // 등록된 상품 상세 페이지로 즉시 이동
+    } catch (error) {
+      // 상품 등록 중 에러 발생시
+      console.log('상품 등록 에러', error);
+      toast('❌ 등록 실패', {
+        description: '서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요',
+        className: 'bg-red-600 text-white font-bold shadow-lg',
+      });
+    }
   };
 
   return (
