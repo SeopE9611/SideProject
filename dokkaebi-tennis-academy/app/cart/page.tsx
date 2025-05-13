@@ -1,33 +1,20 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Minus, Plus, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+'use client';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Minus, Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { useCartStore } from '@/lib/stores/cart';
 
 export default function CartPage() {
   // 임시 장바구니 데이터
-  const cartItems = [
-    {
-      id: 1,
-      name: "루키론 프로 스트링",
-      price: 25000,
-      quantity: 2,
-      image: "/placeholder.svg?height=100&width=100",
-    },
-    {
-      id: 4,
-      name: "바볼랏 RPM 블라스트",
-      price: 30000,
-      quantity: 1,
-      image: "/placeholder.svg?height=100&width=100",
-    },
-  ]
+  const { items: cartItems, removeItem, updateQuantity, clearCart } = useCartStore();
 
   // 장바구니 합계 계산
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shippingFee = subtotal >= 30000 ? 0 : 3000
-  const total = subtotal + shippingFee
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shippingFee = subtotal >= 30000 ? 0 : 3000;
+  const total = subtotal + shippingFee;
 
   return (
     <div className="container py-8">
@@ -48,13 +35,7 @@ export default function CartPage() {
               {cartItems.map((item) => (
                 <div key={item.id} className="p-4 grid grid-cols-12 items-center border-b last:border-b-0">
                   <div className="col-span-6 flex items-center gap-4">
-                    <Image
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.name}
-                      width={80}
-                      height={80}
-                      className="rounded-md"
-                    />
+                    <Image src={item.image || '/placeholder.svg'} alt={item.name} width={80} height={80} className="rounded-md" />
                     <div>
                       <Link href={`/products/${item.id}`} className="font-medium hover:underline">
                         {item.name}
@@ -66,12 +47,12 @@ export default function CartPage() {
 
                   <div className="col-span-2 flex items-center justify-center">
                     <div className="flex items-center border rounded-md">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, Math.max(item.quantity - 1, 1))}>
                         <Minus className="h-3 w-3" />
                         <span className="sr-only">수량 감소</span>
                       </Button>
                       <span className="w-8 text-center">{item.quantity}</span>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
                         <Plus className="h-3 w-3" />
                         <span className="sr-only">수량 증가</span>
                       </Button>
@@ -80,7 +61,7 @@ export default function CartPage() {
 
                   <div className="col-span-2 flex items-center justify-end gap-2">
                     <span className="font-medium">{(item.price * item.quantity).toLocaleString()}원</span>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeItem(item.id)}>
                       <Trash2 className="h-4 w-4" />
                       <span className="sr-only">삭제</span>
                     </Button>
@@ -93,7 +74,9 @@ export default function CartPage() {
               <Button variant="outline" asChild>
                 <Link href="/products">쇼핑 계속하기</Link>
               </Button>
-              <Button variant="destructive">장바구니 비우기</Button>
+              <Button variant="destructive" onClick={clearCart}>
+                장바구니 비우기
+              </Button>
             </div>
           </div>
 
@@ -110,7 +93,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>배송비</span>
-                  <span>{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : "무료"}</span>
+                  <span>{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold">
@@ -140,5 +123,5 @@ export default function CartPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
