@@ -1,45 +1,83 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
+'use client';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useCartStore } from '@/lib/stores/cart';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+
+declare global {
+  interface Window {
+    daum: any;
+  }
+}
 
 export default function CheckoutPage() {
-  // 임시 주문 상품 데이터 (장바구니에서 가져온 것으로 가정)
-  const orderItems = [
-    {
-      id: 1,
-      name: "루키론 프로 스트링",
-      price: 25000,
-      quantity: 2,
-      image: "/placeholder.svg?height=80&width=80",
-    },
-    {
-      id: 4,
-      name: "바볼랏 RPM 블라스트",
-      price: 30000,
-      quantity: 1,
-      image: "/placeholder.svg?height=80&width=80",
-    },
-  ]
+  const { items: orderItems } = useCartStore();
 
   // 주문 금액 계산
-  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shippingFee = subtotal >= 30000 ? 0 : 3000
-  const total = subtotal + shippingFee
+  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shippingFee = subtotal >= 30000 ? 0 : 3000;
+  const total = subtotal + shippingFee;
 
   // 은행 계좌 정보
   const bankAccounts = [
-    { bank: "신한은행", account: "123-456-789012", owner: "도깨비테니스" },
-    { bank: "국민은행", account: "123-45-6789-012", owner: "도깨비테니스" },
-    { bank: "우리은행", account: "1234-567-890123", owner: "도깨비테니스" },
-  ]
+    { bank: '신한은행', account: '123-456-789012', owner: '도깨비테니스' },
+    { bank: '국민은행', account: '123-45-6789-012', owner: '도깨비테니스' },
+    { bank: '우리은행', account: '1234-567-890123', owner: '도깨비테니스' },
+  ];
+
+  // 배송/결제 폼 항목들에 상태 연결
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [address, setAddress] = useState('');
+  const [addressDetail, setAddressDetail] = useState('');
+  const [deliveryRequest, setDeliveryRequest] = useState('');
+  const [depositor, setDepositor] = useState('');
+
+  const handleOrderSubmit = () => {
+    console.log('배송 정보', { name, phone, postalCode, address, addressDetail });
+    console.log('입금자명', depositor);
+    console.log('주문 상품', orderItems);
+  };
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  //  우편번호 찾기 함수
+  const handleFindPostcode = () => {
+    new window.daum.Postcode({
+      oncomplete: function (data: any) {
+        const fullAddress = data.address;
+        const zonecode = data.zonecode;
+        setPostalCode(zonecode);
+        setAddress(fullAddress);
+      },
+    }).open();
+  };
+
+  // 배송지 저장 상태관리
+  const [saveAddress, setSaveAddress] = useState(false);
+  const { data: session } = useSession();
+
+  // 주문자 동의 상태관리
+  const [agreeAll, setAgreeAll] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreeRefund, setAgreeRefund] = useState(false);
 
   return (
     <div className="container py-8">
@@ -58,13 +96,7 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 {orderItems.map((item) => (
                   <div key={item.id} className="flex items-center gap-4 py-2">
-                    <Image
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.name}
-                      width={80}
-                      height={80}
-                      className="rounded-md border"
-                    />
+                    <Image src={item.image || '/placeholder.svg'} alt={item.name} width={80} height={80} className="rounded-md border" />
                     <div className="flex-1">
                       <h3 className="font-medium">{item.name}</h3>
                       <p className="text-sm text-muted-foreground">수량: {item.quantity}개</p>
@@ -87,47 +119,47 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="recipient-name">수령인 이름</Label>
-                    <Input id="recipient-name" placeholder="수령인 이름을 입력하세요" />
+                    <Input id="recipient-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="수령인 이름을 입력하세요" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="recipient-phone">연락처</Label>
-                    <Input id="recipient-phone" placeholder="연락처를 입력하세요" />
+                    <Input id="recipient-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요" />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="address-postal">우편번호</Label>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleFindPostcode}>
                       우편번호 찾기
                     </Button>
                   </div>
-                  <Input id="address-postal" placeholder="우편번호" className="max-w-[200px]" />
+                  <Input id="address-postal" readOnly value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="우편번호" className=" bg-gray-100 cursor-not-allowed max-w-[200px]" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="address-main">기본 주소</Label>
-                  <Input id="address-main" placeholder="기본 주소" />
+                  <Input id="address-main" readOnly value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소" className="bg-gray-100 cursor-not-allowed" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="address-detail">상세 주소</Label>
-                  <Input id="address-detail" placeholder="상세 주소" />
+                  <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="delivery-request">배송 요청사항</Label>
-                  <Textarea id="delivery-request" placeholder="배송 시 요청사항을 입력하세요" />
+                  <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" />
                 </div>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!session?.user} />
+                    <label htmlFor="save-address" className={`text-sm ${!session?.user ? 'text-gray-400' : ''}`}>
+                      이 배송지 정보를 저장
+                    </label>
+                  </div>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="save-address" />
-                  <label
-                    htmlFor="save-address"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    이 배송지 정보를 저장
-                  </label>
+                  {!session?.user && <p className="text-xs text-muted-foreground ml-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
                 </div>
               </div>
             </CardContent>
@@ -175,7 +207,7 @@ export default function CheckoutPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="depositor-name">입금자명</Label>
-                  <Input id="depositor-name" placeholder="입금자명을 입력하세요" />
+                  <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" />
                 </div>
 
                 <div className="rounded-md bg-muted p-4 text-sm">
@@ -198,11 +230,18 @@ export default function CheckoutPage() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="agree-all" />
-                  <label
-                    htmlFor="agree-all"
-                    className="font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
+                  <Checkbox
+                    id="agree-all"
+                    checked={agreeAll}
+                    onCheckedChange={(checked) => {
+                      const newValue = !!checked;
+                      setAgreeAll(newValue);
+                      setAgreeTerms(newValue);
+                      setAgreePrivacy(newValue);
+                      setAgreeRefund(newValue);
+                    }}
+                  />
+                  <label htmlFor="agree-all" className="font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     전체 동의
                   </label>
                 </div>
@@ -210,11 +249,17 @@ export default function CheckoutPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="agree-terms" />
-                      <label
-                        htmlFor="agree-terms"
-                        className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
+                      <Checkbox
+                        id="agree-terms"
+                        checked={agreeTerms}
+                        onCheckedChange={(checked) => {
+                          const value = !!checked;
+                          setAgreeTerms(value);
+                          if (!value) setAgreeAll(false);
+                          else if (agreePrivacy && agreeRefund) setAgreeAll(true);
+                        }}
+                      />
+                      <label htmlFor="agree-terms" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                         이용약관 동의 (필수)
                       </label>
                     </div>
@@ -224,11 +269,17 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="agree-privacy" />
-                      <label
-                        htmlFor="agree-privacy"
-                        className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
+                      <Checkbox
+                        id="agree-privacy"
+                        checked={agreePrivacy}
+                        onCheckedChange={(checked) => {
+                          const value = !!checked;
+                          setAgreePrivacy(value);
+                          if (!value) setAgreeAll(false);
+                          else if (agreeTerms && agreeRefund) setAgreeAll(true);
+                        }}
+                      />
+                      <label htmlFor="agree-privacy" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                         개인정보 수집 및 이용 동의 (필수)
                       </label>
                     </div>
@@ -238,11 +289,17 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="agree-refund" />
-                      <label
-                        htmlFor="agree-refund"
-                        className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
+                      <Checkbox
+                        id="agree-refund"
+                        checked={agreeRefund}
+                        onCheckedChange={(checked) => {
+                          const value = !!checked;
+                          setAgreeRefund(value);
+                          if (!value) setAgreeAll(false);
+                          else if (agreeTerms && agreePrivacy) setAgreeAll(true);
+                        }}
+                      />
+                      <label htmlFor="agree-refund" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                         환불 규정 동의 (필수)
                       </label>
                     </div>
@@ -250,17 +307,14 @@ export default function CheckoutPage() {
                       보기
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Checkbox id="agree-marketing" />
-                      <label
-                        htmlFor="agree-marketing"
-                        className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
+                      <label htmlFor="agree-marketing" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                         마케팅 정보 수신 동의 (선택)
                       </label>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </CardContent>
@@ -281,7 +335,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>배송비</span>
-                  <span>{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : "무료"}</span>
+                  <span>{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
@@ -295,7 +349,7 @@ export default function CheckoutPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col gap-4">
-                <Button className="w-full" size="lg">
+                <Button onClick={handleOrderSubmit} className="w-full" size="lg" disabled={!(agreeTerms && agreePrivacy && agreeRefund)}>
                   주문 완료하기
                 </Button>
                 <Button variant="outline" className="w-full" asChild>
@@ -307,5 +361,5 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

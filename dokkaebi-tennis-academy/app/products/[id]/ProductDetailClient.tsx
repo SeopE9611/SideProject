@@ -7,9 +7,44 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCartStore } from '@/lib/stores/cart';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCartStore();
+
+  // 사용자 세션 및 라우팅
+  const session = useSession();
+  const router = useRouter();
+
+  const handleAddToCart = () => {
+    const result = addItem({
+      id: product._id.toString(),
+      name: product.name,
+      price: product.price,
+      quantity,
+      image: product.images?.[0] || '/placeholder.svg',
+    });
+
+    if (!result.success) {
+      toast.error(result.message);
+      return;
+    }
+
+    if (!session.data?.user) {
+      toast('장바구니에 담았습니다', {
+        description: '비회원이신 경우 로그인 또는 비회원 주문하기로 진행하세요.',
+        action: {
+          label: '로그인하기',
+          onClick: () => router.push('/login?from=cart'),
+        },
+      });
+    } else {
+      toast.success('장바구니에 담았습니다.');
+    }
+  };
 
   return (
     <div className="container py-8">
@@ -94,18 +129,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                className="flex-1"
-                onClick={() =>
-                  addItem({
-                    id: product._id.toString(),
-                    name: product.name,
-                    price: product.price,
-                    quantity,
-                    image: product.images?.[0] || '/placeholder.svg',
-                  })
-                }
-              >
+              <Button className="flex-1" onClick={handleAddToCart}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 장바구니에 담기
               </Button>
