@@ -1,27 +1,23 @@
-import Link from "next/link"
-import { CheckCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+// app/checkout/success/page.tsx
+import Link from 'next/link';
+import { CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { ObjectId } from 'mongodb';
+import clientPromise from '@/lib/mongodb';
+import { notFound } from 'next/navigation';
 
-export default function CheckoutSuccessPage() {
-  // 임시 주문 정보
-  const orderInfo = {
-    orderNumber: "ORD-2023-0004",
-    orderDate: "2023-05-20",
-    paymentMethod: "무통장입금",
-    bankAccount: "신한은행 123-456-789012 (예금주: 도깨비테니스)",
-    totalAmount: 80000,
-    items: [
-      { name: "루키론 프로 스트링", quantity: 2, price: 25000 },
-      { name: "바볼랏 RPM 블라스트", quantity: 1, price: 30000 },
-    ],
-    shippingInfo: {
-      name: "홍길동",
-      phone: "010-1234-5678",
-      address: "서울시 강남구 테니스로 123, 456호",
-    },
-  }
+export default async function CheckoutSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
+  const orderId = searchParams.orderId;
+
+  if (!orderId) return notFound();
+
+  const client = await clientPromise;
+  const db = client.db();
+  const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId) });
+
+  if (!order) return notFound();
 
   return (
     <div className="container py-8">
@@ -37,24 +33,24 @@ export default function CheckoutSuccessPage() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>주문 정보</CardTitle>
-            <CardDescription>주문 번호: {orderInfo.orderNumber}</CardDescription>
+            <CardDescription>주문 번호: {order._id.toString()}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          <CardContent className="space-y-4 text-sm">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-muted-foreground">주문일자</p>
-                <p className="font-medium">{orderInfo.orderDate}</p>
+                <p className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">결제 방법</p>
-                <p className="font-medium">{orderInfo.paymentMethod}</p>
+                <p className="font-medium">무통장입금</p>
               </div>
             </div>
 
-            <div className="rounded-md bg-muted p-4 text-sm">
+            <div className="rounded-md bg-muted p-4">
               <p className="font-medium mb-2">입금 계좌 정보</p>
-              <p>{orderInfo.bankAccount}</p>
-              <p className="mt-2 text-primary font-medium">입금 기한: {orderInfo.orderDate} 23:59까지</p>
+              <p>신한은행 123-456-789012 (예금주: 도깨비테니스)</p>
+              <p className="mt-2 text-primary font-medium">입금 기한: {new Date(order.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
             </div>
 
             <Separator />
@@ -62,7 +58,7 @@ export default function CheckoutSuccessPage() {
             <div>
               <h3 className="font-medium mb-3">주문 상품</h3>
               <div className="space-y-3">
-                {orderInfo.items.map((item, index) => (
+                {order.items.map((item: any, index: number) => (
                   <div key={index} className="flex justify-between">
                     <div>
                       <p className="font-medium">{item.name}</p>
@@ -78,15 +74,15 @@ export default function CheckoutSuccessPage() {
 
             <div>
               <h3 className="font-medium mb-3">배송 정보</h3>
-              <div className="space-y-1 text-sm">
+              <div className="space-y-1">
                 <p>
-                  <span className="text-muted-foreground">수령인:</span> {orderInfo.shippingInfo.name}
+                  <span className="text-muted-foreground">수령인:</span> {order.shippingInfo.name}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">연락처:</span> {orderInfo.shippingInfo.phone}
+                  <span className="text-muted-foreground">연락처:</span> {order.shippingInfo.phone}
                 </p>
                 <p>
-                  <span className="text-muted-foreground">주소:</span> {orderInfo.shippingInfo.address}
+                  <span className="text-muted-foreground">주소:</span> {order.shippingInfo.address}
                 </p>
               </div>
             </div>
@@ -95,15 +91,17 @@ export default function CheckoutSuccessPage() {
 
             <div className="flex justify-between items-center font-bold text-lg">
               <span>총 결제 금액</span>
-              <span>{orderInfo.totalAmount.toLocaleString()}원</span>
+              <span>{order.totalPrice.toLocaleString()}원</span>
             </div>
+            <p className="text-sm text-muted-foreground">(배송비 {order.shippingFee.toLocaleString()}원 포함)</p>
           </CardContent>
+
           <CardFooter className="flex flex-col gap-4 sm:flex-row">
             <Button className="w-full" asChild>
               <Link href="/mypage">주문 내역 확인</Link>
             </Button>
             <Button variant="outline" className="w-full" asChild>
-              <Link href="/">쇼핑 계속하기</Link>
+              <Link href="/products">쇼핑 계속하기</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -119,5 +117,5 @@ export default function CheckoutSuccessPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

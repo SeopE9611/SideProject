@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useCartStore } from '@/lib/stores/cart';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import CheckoutButton from '@/app/checkout/CheckoutButton';
 
 declare global {
   interface Window {
@@ -38,6 +39,7 @@ export default function CheckoutPage() {
   // 배송/결제 폼 항목들에 상태 연결
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [address, setAddress] = useState('');
   const [addressDetail, setAddressDetail] = useState('');
@@ -120,6 +122,10 @@ export default function CheckoutPage() {
                   <div className="space-y-2">
                     <Label htmlFor="recipient-name">수령인 이름</Label>
                     <Input id="recipient-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="수령인 이름을 입력하세요" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="recipient-email">이메일</Label>
+                    <Input id="recipient-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@naver.com" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="recipient-phone">연락처</Label>
@@ -349,9 +355,18 @@ export default function CheckoutPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col gap-4">
-                <Button onClick={handleOrderSubmit} className="w-full" size="lg" disabled={!(agreeTerms && agreePrivacy && agreeRefund)}>
-                  주문 완료하기
-                </Button>
+                <CheckoutButton
+                  disabled={!(agreeTerms && agreePrivacy && agreeRefund)}
+                  name={name}
+                  phone={phone}
+                  email={email}
+                  postalCode={postalCode}
+                  address={address}
+                  addressDetail={addressDetail}
+                  depositor={depositor}
+                  totalPrice={total}
+                  shippingFee={shippingFee}
+                />
                 <Button variant="outline" className="w-full" asChild>
                   <Link href="/cart">장바구니로 돌아가기</Link>
                 </Button>
