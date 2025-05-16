@@ -29,6 +29,9 @@ export default function CheckoutPage() {
   const shippingFee = subtotal >= 30000 ? 0 : 3000;
   const total = subtotal + shippingFee;
 
+  // 은행 계좌 정보 상태 추가
+  const [selectedBank, setSelectedBank] = useState('shinhan'); // 기본값 신한은행
+
   // 은행 계좌 정보
   const bankAccounts = [
     { bank: '신한은행', account: '123-456-789012', owner: '도깨비테니스' },
@@ -193,20 +196,14 @@ export default function CheckoutPage() {
 
                 <div className="space-y-3">
                   <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                  <Select defaultValue="shinhan">
+                  <Select value={selectedBank} onValueChange={setSelectedBank}>
                     <SelectTrigger>
                       <SelectValue placeholder="입금 계좌를 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="shinhan">
-                        {bankAccounts[0].bank} {bankAccounts[0].account} (예금주: {bankAccounts[0].owner})
-                      </SelectItem>
-                      <SelectItem value="kookmin">
-                        {bankAccounts[1].bank} {bankAccounts[1].account} (예금주: {bankAccounts[1].owner})
-                      </SelectItem>
-                      <SelectItem value="woori">
-                        {bankAccounts[2].bank} {bankAccounts[2].account} (예금주: {bankAccounts[2].owner})
-                      </SelectItem>
+                      <SelectItem value="shinhan">신한은행 123-456-789012 (예금주: 도깨비테니스)</SelectItem>
+                      <SelectItem value="kookmin">국민은행 123-45-6789-012 (예금주: 도깨비테니스)</SelectItem>
+                      <SelectItem value="woori">우리은행 1234-567-890123 (예금주: 도깨비테니스)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -366,6 +363,7 @@ export default function CheckoutPage() {
                   depositor={depositor}
                   totalPrice={total}
                   shippingFee={shippingFee}
+                  selectedBank={selectedBank}
                 />
                 <Button variant="outline" className="w-full" asChild>
                   <Link href="/cart">장바구니로 돌아가기</Link>

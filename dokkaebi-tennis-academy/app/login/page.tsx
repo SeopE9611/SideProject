@@ -7,10 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const params = useSearchParams();
+  const [activeTab, setActiveTab] = useState<string>('login');
+
+  useEffect(() => {
+    const tabParam = params.get('tab');
+    if (tabParam === 'login' || tabParam === 'register') {
+      setActiveTab(tabParam);
+    }
+  }, [params]);
 
   const handleLogin = async () => {
     const email = (document.getElementById('email') as HTMLInputElement)?.value;
@@ -23,6 +33,7 @@ export default function LoginPage() {
     });
 
     if (result?.ok) {
+      localStorage.removeItem('cart-storage'); // 로그인 성공 시 비회원 장바구니 초기화
       router.push('/');
     } else {
       alert('이메일과 비밀번호를 확인해주세요.');
@@ -34,6 +45,9 @@ export default function LoginPage() {
     const password = (document.getElementById('register-password') as HTMLInputElement)?.value;
     const confirmPassword = (document.getElementById('confirm-password') as HTMLInputElement)?.value;
     const name = (document.getElementById('name') as HTMLInputElement)?.value;
+    const phone = (document.getElementById('phone') as HTMLInputElement)?.value;
+    const postalCode = (document.getElementById('register-postalCode') as HTMLInputElement)?.value;
+    const address = (document.getElementById('register-address') as HTMLInputElement)?.value;
 
     if (!email || !password || !confirmPassword || !name) {
       alert('모든 필드를 입력해주세요.');
@@ -50,22 +64,41 @@ export default function LoginPage() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password, name, phone, postalCode, address }),
     });
 
     const data = await res.json();
 
     if (res.ok) {
       alert('회원가입이 완료되었습니다.');
-      router.push('/');
+      router.push('/login?tab=login');
     } else {
       alert(data.message || '회원가입 중 오류가 발생했습니다.');
     }
   };
+
+  // 주소 api 연동
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  const handleFindPostcode = () => {
+    new window.daum.Postcode({
+      oncomplete: function (data: any) {
+        const fullAddress = data.address;
+        const zonecode = data.zonecode;
+        (document.getElementById('register-postalCode') as HTMLInputElement).value = zonecode;
+        (document.getElementById('register-address') as HTMLInputElement).value = fullAddress;
+      },
+    }).open();
+  };
   return (
     <div className="container flex items-center justify-center py-10 md:py-20">
       <Card className="mx-auto max-w-md w-full">
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">로그인</TabsTrigger>
             <TabsTrigger value="register">회원가입</TabsTrigger>
@@ -153,6 +186,19 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label htmlFor="phone">연락처</Label>
                 <Input id="phone" placeholder="연락처를 입력하세요" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="register-postalCode">우편번호</Label>
+                  <Button variant="outline" size="sm" onClick={handleFindPostcode}>
+                    우편번호 찾기
+                  </Button>
+                </div>
+                <Input id="register-postalCode" placeholder="우편번호를 입력하세요" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="register-address">기본 배송지 주소</Label>
+                <Input id="register-address" placeholder="기본 주소를 입력하세요" />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">

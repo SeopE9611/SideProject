@@ -16,7 +16,12 @@ type Order = {
     name: string;
     phone: string;
     email: string;
+  } | null;
+  paymentInfo?: {
+    method: string;
+    bank?: 'shinhan' | 'kookmin' | 'woori';
   };
+  status: string;
 };
 
 // POST 메서드 처리 함수 – 주문 생성
@@ -31,13 +36,21 @@ export async function POST(req: Request) {
     // 요청에서 필요한 필드 구조분해
     const { items, shippingInfo, totalPrice, shippingFee, guestInfo } = body;
 
+    const paymentInfo = {
+      method: '무통장입금',
+      bank: body.paymentInfo?.bank || 'shinhan',
+    };
+
     // 주문 객체 생성 – 기본 필드들만 먼저 채워넣음
     const order: Order = {
       items,
       shippingInfo,
       totalPrice,
       shippingFee,
-      createdAt: new Date(), // 현재 시간 기준으로 생성
+      guestInfo: guestInfo || null,
+      paymentInfo,
+      createdAt: new Date(),
+      status: '입금대기',
     };
 
     // 로그인된 사용자면 userId 추가

@@ -2,8 +2,9 @@ import Credentials from 'next-auth/providers/credentials';
 // import { NextAuthConfig } from "next-auth"
 // import clientPromise from '@/lib/db';
 import { compare } from 'bcryptjs';
+import { NextAuthOptions } from 'next-auth';
 
-export const authConfig = {
+export const authConfig: NextAuthOptions = {
   providers: [
     Credentials({
       name: 'credentials',
@@ -37,16 +38,28 @@ export const authConfig = {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
+          role: user.role,
         };
       },
     }),
   ],
+  callbacks: {
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.role = token.role as string; // 세션에 role 추가
+        session.user.id = token.sub as string; // 세션에 user id도 넣어줄 수 있음
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = (user as any).role; // JWT에 role 저장
+      }
+      return token;
+    },
+  },
+
   pages: {
-    signIn: '/login',
+    signIn: '/login', // 로그인 페이지 경로 설정
   },
-  session: {
-    strategy: 'jwt' as const,
-  },
-  secret: process.env.NEXTAUTH_SECRET,
 };
-// satisfies NextAuthConfig

@@ -7,6 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { notFound } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { auth } from '@/lib/auth';
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
   const orderId = searchParams.orderId;
@@ -18,6 +20,15 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId) });
 
   if (!order) return notFound();
+
+  const bankLabelMap: Record<string, string> = {
+    shinhan: '신한은행 123-456-789012 (예금주: 도깨비테니스)',
+    kookmin: '국민은행 123-45-6789-012 (예금주: 도깨비테니스)',
+    woori: '우리은행 1234-567-890123 (예금주: 도깨비테니스)',
+  };
+
+  const session = await auth();
+  const isLoggedIn = !!session?.user;
 
   return (
     <div className="container py-8">
@@ -49,7 +60,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
             <div className="rounded-md bg-muted p-4">
               <p className="font-medium mb-2">입금 계좌 정보</p>
-              <p>신한은행 123-456-789012 (예금주: 도깨비테니스)</p>
+              <p>{order.paymentInfo?.bank ? bankLabelMap[order.paymentInfo.bank] : '선택된 은행 없음'}</p>
               <p className="mt-2 text-primary font-medium">입금 기한: {new Date(order.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
             </div>
 
@@ -98,7 +109,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
           <CardFooter className="flex flex-col gap-4 sm:flex-row">
             <Button className="w-full" asChild>
-              <Link href="/mypage">주문 내역 확인</Link>
+              <Link href={isLoggedIn ? '/mypage' : `/order-lookup/details/${order._id}`}>주문 내역 확인</Link>
             </Button>
             <Button variant="outline" className="w-full" asChild>
               <Link href="/products">쇼핑 계속하기</Link>

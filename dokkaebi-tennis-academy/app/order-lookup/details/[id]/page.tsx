@@ -16,6 +16,10 @@ interface OrderDetail {
     phone: string;
     address: string;
   };
+  paymentInfo?: {
+    method: string;
+    bank?: 'shinhan' | 'kookmin' | 'woori';
+  };
   totalPrice: number;
   shippingFee: number;
   status: string;
@@ -32,6 +36,12 @@ interface OrderDetail {
 }
 
 export default function OrderDetailPage() {
+  const bankLabelMap = {
+    shinhan: '신한은행 123-456-789012 (예금주: 도깨비테니스)',
+    kookmin: '국민은행 123-45-6789-012 (예금주: 도깨비테니스)',
+    woori: '우리은행 1234-567-890123 (예금주: 도깨비테니스)',
+  };
+
   const params = useParams();
   const orderId = params?.id as string;
 
@@ -160,14 +170,14 @@ export default function OrderDetailPage() {
                   주문 정보
                 </h3>
                 <div className="bg-muted/50 rounded-lg p-4">
-                  <dl className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <dl className="space-y-3">
                     <div>
                       <dt className="text-sm text-muted-foreground">주문일자</dt>
                       <dd>{new Date(order.createdAt).toLocaleDateString()}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-muted-foreground">결제 방법</dt>
-                      <dd>{order.paymentMethod}</dd>
+                      <dt className="text-sm text-muted-foreground">입금 계좌</dt>
+                      <dd>{order.paymentInfo?.bank ? bankLabelMap[order.paymentInfo.bank] : '선택된 은행 없음'}</dd>
                     </div>
                   </dl>
                 </div>

@@ -12,7 +12,7 @@ export const connectToDatabase = async () => {
   }
 
   if (!db) {
-    db = client.db();
+    db = client.db('tennis_academy');
   }
 
   return db;

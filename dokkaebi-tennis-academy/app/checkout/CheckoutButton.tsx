@@ -16,6 +16,7 @@ export default function CheckoutButton({
   depositor,
   totalPrice,
   shippingFee,
+  selectedBank,
 }: {
   disabled: boolean;
   name: string;
@@ -27,6 +28,7 @@ export default function CheckoutButton({
   depositor: string;
   totalPrice: number;
   shippingFee: number;
+  selectedBank: string;
 }) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -42,6 +44,10 @@ export default function CheckoutButton({
         address: `${address} ${addressDetail}`,
         postalCode,
         depositor,
+      },
+      paymentInfo: {
+        method: '무통장입금',
+        bank: selectedBank,
       },
       totalPrice,
       shippingFee,
