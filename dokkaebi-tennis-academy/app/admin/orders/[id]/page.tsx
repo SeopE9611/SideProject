@@ -1,97 +1,98 @@
-import Link from "next/link"
-import {
-  ArrowLeft,
-  Calendar,
-  CreditCard,
-  Download,
-  Mail,
-  MapPin,
-  Package,
-  Phone,
-  ShoppingCart,
-  Truck,
-  User,
-} from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+import Link from 'next/link';
+import { ArrowLeft, Calendar, CreditCard, Download, Mail, MapPin, Package, Phone, ShoppingCart, Truck, User } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { headers } from 'next/headers';
+import { OrderStatusSelect } from '../_components/OrderStatusSelect';
+import { OrderCancelButton } from '@/app/admin/orders/_components/OrderCancelButton';
 
 // 주문 상태에 따른 배지 색상 정의
 const orderStatusColors = {
-  대기중: "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20",
-  처리중: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
-  완료: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
-  취소: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
-  환불: "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20",
-}
+  대기중: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
+  처리중: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20',
+  완료: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
+  취소: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
+  환불: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
+};
 
 // 결제 상태에 따른 배지 색상 정의
 const paymentStatusColors = {
-  결제완료: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
-  결제대기: "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20",
-  결제실패: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
-}
+  결제완료: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
+  결제대기: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
+  결제실패: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
+};
 
 // 주문 유형에 따른 배지 색상 정의
 const orderTypeColors = {
-  상품: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
-  서비스: "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20",
-  클래스: "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20",
-}
+  상품: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20',
+  서비스: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
+  클래스: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
+};
 
-// 임시 주문 상세 데이터
-const orderDetail = {
-  id: "ORD-2023-1002",
-  customer: {
-    name: "이서연",
-    email: "seoyeon.lee@example.com",
-    phone: "010-2345-6789",
-    address: "서울특별시 강남구 테헤란로 123 아파트 456호",
-  },
-  date: "2023-05-16T14:45:00",
-  status: "처리중",
-  paymentStatus: "결제완료",
-  paymentMethod: "신용카드",
-  total: 50000,
-  type: "서비스",
-  items: [
-    { name: "라켓 스트링 교체 서비스", quantity: 1, price: 50000, description: "윌슨 NXT 17 스트링, 장력 52파운드" },
-  ],
-  shipping: {
-    method: "방문 수령",
-    trackingNumber: null,
-    estimatedDelivery: "2023-05-18T17:00:00",
-  },
-  notes: "스트링 교체 후 연락 부탁드립니다.",
-  history: [
-    { date: "2023-05-16T14:45:00", status: "주문 접수", description: "주문이 접수되었습니다." },
-    { date: "2023-05-16T14:46:00", status: "결제 완료", description: "신용카드 결제가 완료되었습니다." },
-    { date: "2023-05-17T09:30:00", status: "처리중", description: "주문이 처리 중입니다." },
-  ],
-}
+export default async function OrderDetailPage(context: { params: { id: string } }) {
+  const { params } = context;
+  const host = (await headers()).get('host');
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
+  const res = await fetch(`${baseUrl}/api/orders/${params.id}`, { cache: 'no-store' });
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
-  // 날짜 포맷팅 함수
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return new Intl.DateTimeFormat("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date)
+  if (!res.ok) {
+    throw new Error('주문 데이터를 불러오지 못했습니다.');
   }
+
+  const orderDetail = await res.json();
+
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return '날짜 없음';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '유효하지 않은 날짜';
+    return new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  };
 
   // 금액 포맷팅 함수
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("ko-KR", {
-      style: "currency",
-      currency: "KRW",
-    }).format(amount)
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ko-KR', {
+      style: 'currency',
+      currency: 'KRW',
+    }).format(amount);
+  };
+
+  // 데이터가 누락된 경우에 페이지 자체를 중단
+  if (!orderDetail.customer) {
+    return <div className="text-center text-destructive">고객 정보가 없습니다.</div>;
   }
+
+  // 주문 취소 핸들러
+  const handleCancelOrder = async () => {
+    const confirmCancel = window.confirm('정말로 이 주문을 취소하시겠습니까?');
+    if (!confirmCancel) return;
+
+    try {
+      const res = await fetch(`/api/orders/${orderDetail._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: '취소' }),
+      });
+
+      if (!res.ok) {
+        throw new Error('주문 취소 실패');
+      }
+
+      location.reload();
+    } catch (error) {
+      console.error('주문 취소 중 오류:', error);
+      alert('주문 취소 중 오류가 발생했습니다.');
+    }
+  };
 
   return (
     <div className="container py-10">
@@ -126,39 +127,27 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle>주문 상태</CardTitle>
-                <Badge className={orderStatusColors[orderDetail.status]}>{orderDetail.status}</Badge>
+                <Badge className={orderStatusColors[orderDetail.status as keyof typeof orderStatusColors]}>{orderDetail.status}</Badge>
               </div>
               <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center">
-                  <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
+                  <Badge className={paymentStatusColors[orderDetail.paymentStatus as keyof typeof paymentStatusColors]}>{orderDetail.paymentStatus}</Badge>
                   <span className="ml-2 text-sm text-muted-foreground">{orderDetail.paymentMethod}</span>
                 </div>
                 <div className="flex items-center">
-                  <Badge className={orderTypeColors[orderDetail.type]}>{orderDetail.type}</Badge>
+                  <Badge className={orderTypeColors[orderDetail.type as keyof typeof orderTypeColors]}>{orderDetail.type}</Badge>
                 </div>
                 <div className="ml-auto text-xl font-bold">{formatCurrency(orderDetail.total)}</div>
               </div>
             </CardContent>
             <CardFooter className="border-t pt-4">
               <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
-                <Select defaultValue={orderDetail.status}>
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="주문 상태 변경" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="대기중">대기중</SelectItem>
-                    <SelectItem value="처리중">처리중</SelectItem>
-                    <SelectItem value="완료">완료</SelectItem>
-                    <SelectItem value="취소">취소</SelectItem>
-                    <SelectItem value="환불">환불</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="destructive" className="sm:ml-auto">
-                  주문 취소
-                </Button>
+                {/* 주문 상태 변경 핸들러 */}
+                <OrderStatusSelect orderId={String(orderDetail._id)} currentStatus={orderDetail.status} />
+                <OrderCancelButton orderId={String(orderDetail._id)} />
               </div>
             </CardFooter>
           </Card>
@@ -175,28 +164,28 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               <div className="space-y-3">
                 <div>
                   <div className="text-sm font-medium">이름</div>
-                  <div>{orderDetail.customer.name}</div>
+                  <div>{orderDetail.customer?.name ?? '이름 없음'}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium flex items-center">
                     <Mail className="mr-1 h-3.5 w-3.5" />
                     이메일
                   </div>
-                  <div>{orderDetail.customer.email}</div>
+                  <div>{orderDetail.customer?.email ?? '이메일 없음'}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium flex items-center">
                     <Phone className="mr-1 h-3.5 w-3.5" />
                     전화번호
                   </div>
-                  <div>{orderDetail.customer.phone}</div>
+                  <div>{orderDetail.customer?.phone ?? '전화번호 없음'}</div>
                 </div>
                 <div>
                   <div className="text-sm font-medium flex items-center">
                     <MapPin className="mr-1 h-3.5 w-3.5" />
                     주소
                   </div>
-                  <div className="text-sm">{orderDetail.customer.address}</div>
+                  <div>{orderDetail.customer?.address ?? '주소 없음'}</div>
                 </div>
               </div>
             </CardContent>
@@ -246,9 +235,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 <div>
                   <div className="text-sm font-medium">결제 상태</div>
                   <div>
-                    <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>
-                      {orderDetail.paymentStatus}
-                    </Badge>
+                    <Badge className={paymentStatusColors[orderDetail.paymentStatus as keyof typeof paymentStatusColors]}>{orderDetail.paymentStatus}</Badge>
                   </div>
                 </div>
                 <div>
@@ -283,7 +270,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                     </tr>
                   </thead>
                   <tbody>
-                    {orderDetail.items.map((item, index) => (
+                    {orderDetail.items.map((item: any, index: number) => (
                       <tr key={index} className="border-b">
                         <td className="px-4 py-3">
                           <div className="font-medium">{item.name}</div>
@@ -291,9 +278,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                         </td>
                         <td className="px-4 py-3 text-center">{item.quantity}</td>
                         <td className="px-4 py-3 text-right">{formatCurrency(item.price)}</td>
-                        <td className="px-4 py-3 text-right font-medium">
-                          {formatCurrency(item.price * item.quantity)}
-                        </td>
+                        <td className="px-4 py-3 text-right font-medium">{formatCurrency(item.price * item.quantity)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -316,11 +301,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               <CardTitle>주문 메모</CardTitle>
             </CardHeader>
             <CardContent>
-              <Textarea
-                defaultValue={orderDetail.notes}
-                placeholder="주문에 대한 메모가 없습니다."
-                className="min-h-[100px]"
-              />
+              <Textarea defaultValue={orderDetail.notes} placeholder="주문에 대한 메모가 없습니다." className="min-h-[100px]" />
               <Button className="mt-3">메모 저장</Button>
             </CardContent>
           </Card>
@@ -332,28 +313,29 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {orderDetail.history.map((event, index) => (
-                  <div key={index} className="flex">
-                    <div className="mr-4 flex flex-col items-center">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full border-4 border-background bg-primary">
-                        <Package className="h-5 w-5 text-primary-foreground" />
+                {Array.isArray(orderDetail.history) &&
+                  orderDetail.history.map((event: any, index: number) => (
+                    <div key={index} className="flex">
+                      <div className="mr-4 flex flex-col items-center">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full border-4 border-background bg-primary">
+                          <Package className="h-5 w-5 text-primary-foreground" />
+                        </div>
+                        {index < orderDetail.history.length - 1 && <div className="h-full w-px bg-border" />}
                       </div>
-                      {index < orderDetail.history.length - 1 && <div className="h-full w-px bg-border" />}
-                    </div>
-                    <div className="flex-1 pb-8">
-                      <div className="flex items-baseline justify-between">
-                        <div className="text-lg font-semibold">{event.status}</div>
-                        <div className="text-sm text-muted-foreground">{formatDate(event.date)}</div>
+                      <div className="flex-1 pb-8">
+                        <div className="flex items-baseline justify-between">
+                          <div className="text-lg font-semibold">{event.status}</div>
+                          <div className="text-sm text-muted-foreground">{formatDate(event.date)}</div>
+                        </div>
+                        <p className="mt-1 text-sm">{event.description}</p>
                       </div>
-                      <p className="mt-1 text-sm">{event.description}</p>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
-  )
+  );
 }
