@@ -32,9 +32,16 @@ export default function LoginPage() {
       redirect: false,
     });
 
+    const from = params.get('from'); // URL에 ?from=cart 라는 쿼리가 있을 경우 "cart"를 반환
+
     if (result?.ok) {
-      localStorage.removeItem('cart-storage'); // 로그인 성공 시 비회원 장바구니 초기화
-      router.push('/');
+      localStorage.removeItem('cart-storage');
+
+      if (from === 'cart') {
+        router.push('/cart');
+      } else {
+        router.push('/');
+      }
     } else {
       alert('이메일과 비밀번호를 확인해주세요.');
     }
@@ -69,9 +76,11 @@ export default function LoginPage() {
 
     const data = await res.json();
 
+    const from = params.get('from');
+
     if (res.ok) {
       alert('회원가입이 완료되었습니다.');
-      router.push('/login?tab=login');
+      router.push(`/login?tab=login${from === 'cart' ? '&from=cart' : ''}`);
     } else {
       alert(data.message || '회원가입 중 오류가 발생했습니다.');
     }

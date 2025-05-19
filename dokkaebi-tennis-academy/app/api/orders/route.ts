@@ -78,3 +78,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: '주문 생성 중 오류 발생' }, { status: 500 });
   }
 }
+//  GET 요청 처리: 관리자 주문 목록 요청 처리
+export async function GET() {
+  //  MongoDB 클라이언트 생성 (연결 기다림)
+  const client = await clientPromise;
+
+  //  기본 DB 선택 (tennis_academy 같은)
+  const db = client.db();
+
+  //  orders 컬렉션에서 모든 주문 조회
+  const rawOrders = await db.collection('orders').find().toArray();
+
+  // 프론트엔드가 기대하는 형태로 가공 (타입 맞춤)
+  const orders = rawOrders.map((order) => ({
+    id: order._id.toString(), // MongoDB의 ObjectId를 문자열로 변환
+    customer: {
+      name: order.guestInfo?.name || '비회원', // guestInfo 객체 안에 name
+      email: order.guestInfo?.email || '-', // 없으면 대체 텍스트 사용
+      phone: order.guestInfo?.phone || '-',
+    },
+    date: order.createdAt, // createdAt 필드 → 주문 날짜
+    status: order.status || '대기중', // 기본값 대기중
+    paymentStatus: order.paymentInfo?.status || '결제대기', // 결제 상태
+    type: '상품', // 현재는 고정 (필요 시 추후 구분)
+    total: order.totalPrice, // 총 가격
+    items: order.items || [], // 주문 품목
+  }));
+
+  //  응답을 JSON 형태로 리턴
+  return NextResponse.json(orders);
+}
