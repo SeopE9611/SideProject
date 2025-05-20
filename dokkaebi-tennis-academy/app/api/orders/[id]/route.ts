@@ -2,11 +2,9 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
-export async function GET(_req: Request, contextPromise: Promise<{ params: { id: string } }>) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { params } = await contextPromise;
-    const { id } = params;
-
+    const { id } = await params;
     if (!ObjectId.isValid(id)) {
       return new NextResponse('유효하지 않은 주문 ID입니다.', { status: 400 });
     }
@@ -52,9 +50,9 @@ export async function GET(_req: Request, contextPromise: Promise<{ params: { id:
   }
 }
 
-export async function PATCH(request: Request, context: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = context.params;
+    const { id } = await params;
     const client = await clientPromise;
     const db = client.db();
 

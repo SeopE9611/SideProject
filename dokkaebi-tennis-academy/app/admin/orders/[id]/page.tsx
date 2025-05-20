@@ -32,12 +32,11 @@ const orderTypeColors = {
   클래스: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
 };
 
-export default async function OrderDetailPage(context: { params: { id: string } }) {
-  const { params } = context;
+export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const host = (await headers()).get('host');
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
-  const res = await fetch(`${baseUrl}/api/orders/${params.id}`, { cache: 'no-store' });
-
+  const res = await fetch(`${baseUrl}/api/orders/${id}`, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error('주문 데이터를 불러오지 못했습니다.');
   }
@@ -107,7 +106,7 @@ export default async function OrderDetailPage(context: { params: { id: string } 
               </Link>
             </Button>
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">주문 상세 정보</h1>
-            <p className="mt-1 text-muted-foreground">주문 ID: {params.id}</p>
+            <p className="mt-1 text-muted-foreground">주문 ID: {id}</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button variant="outline">
