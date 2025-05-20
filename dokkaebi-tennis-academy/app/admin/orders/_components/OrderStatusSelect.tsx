@@ -1,43 +1,56 @@
 'use client';
 
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { useTransition } from 'react';
+import useSWR from 'swr';
 import { toast } from 'sonner';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+
+const ORDER_STATUSES = ['대기중', '결제완료', '배송중', '배송완료', '환불'];
 
 export function OrderStatusSelect({ orderId, currentStatus }: { orderId: string; currentStatus: string }) {
-  const [isPending, startTransition] = useTransition();
+  // SWR 훅으로 현재 상태를 읽고 관리
+  const { data, mutate } = useSWR<{ status: string }>(`/api/orders/${orderId}/status`, (url) => fetch(url).then((res) => res.json()), { fallbackData: { status: currentStatus } });
+  // data가 undefined여도 currentStatus를 사용하도록
+  const status = data?.status ?? currentStatus;
+  const isCancelled = status === '취소';
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleChange = async (newStatus: string) => {
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
+      if (!res.ok) throw new Error('상태 변경 실패');
 
-      if (!res.ok) throw new Error('업데이트 실패');
+      // SWR 캐시 강제 갱신
+      // SWR 캐시만 무효화 → 이 컴포넌트가 자동 리렌더됨
+      await mutate();
+      // 처리 이력도 같은 방식으로 갱신하려면,
+      // import { mutate as mutateLegacy } from 'swr';
+      // await mutateLegacy(`/api/orders/${orderId}/history`);
 
-      toast?.success('주문 상태가 변경되었습니다.');
-      startTransition(() => location.reload());
+      toast.success(`주문 상태가 '${newStatus}'(으)로 변경되었습니다`);
     } catch (err) {
       console.error(err);
-      toast?.error('상태 변경 중 오류 발생');
+      toast.error('주문 상태 변경 중 오류 발생');
     }
   };
 
   return (
-    <Select defaultValue={currentStatus} onValueChange={handleStatusChange}>
-      <SelectTrigger className="w-full sm:w-[200px]" disabled={isPending}>
-        <SelectValue placeholder="주문 상태 변경" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="입금대기">입금대기</SelectItem>
-        <SelectItem value="결제완료">결제완료</SelectItem>
-        <SelectItem value="배송중">배송중</SelectItem>
-        <SelectItem value="배송완료">배송완료</SelectItem>
-        {/* <SelectItem value="취소">취소</SelectItem> */}
-        <SelectItem value="환불">환불</SelectItem>
-      </SelectContent>
-    </Select>
+    <div className="w-[200px]">
+      <Select value={status} onValueChange={handleChange} disabled={isCancelled}>
+        <SelectTrigger>
+          <SelectValue placeholder={isCancelled ? '취소됨 (변경 불가)' : '주문 상태 선택'} />
+        </SelectTrigger>
+        <SelectContent>
+          {ORDER_STATUSES.map((s) => (
+            <SelectItem key={s} value={s}>
+              {s}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {isCancelled && <p className="mt-1 text-sm text-muted-foreground italic">이미 취소된 주문은 상태 변경이 불가능합니다.</p>}
+    </div>
   );
 }

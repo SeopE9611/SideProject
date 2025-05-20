@@ -306,7 +306,7 @@ export default function NewStringPage() {
       inventory, // 재고 관리 정보
     };
 
-    console.log('✅ 등록된 상품 데이터:', product);
+    console.log(' 등록된 상품 데이터:', product);
 
     // API 전송 로직 위치
 
@@ -333,7 +333,7 @@ export default function NewStringPage() {
 
       const data = await res.json(); // 성공적으로 등록된 데이터
 
-      toast('✅ 등록 완료', {
+      toast(' 등록 완료', {
         description: '상품이 성공적으로 등록되었습니다.',
         className: 'bg-emerald-600 text-white font-bold shadow-lg',
       });

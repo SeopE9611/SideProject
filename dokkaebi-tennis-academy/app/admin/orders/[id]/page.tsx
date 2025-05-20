@@ -8,15 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { headers } from 'next/headers';
 import { OrderStatusSelect } from '../_components/OrderStatusSelect';
 import { OrderCancelButton } from '@/app/admin/orders/_components/OrderCancelButton';
-
-// 주문 상태에 따른 배지 색상 정의
-const orderStatusColors = {
-  대기중: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
-  처리중: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20',
-  완료: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
-  취소: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
-  환불: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
-};
+import { OrderStatusBadge } from '@/app/admin/orders/_components/OrderStatusBadge';
+import { OrderHistory } from '@/app/admin/orders/_components/OrderHistory';
 
 // 결제 상태에 따른 배지 색상 정의
 const paymentStatusColors = {
@@ -126,7 +119,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle>주문 상태</CardTitle>
-                <Badge className={orderStatusColors[orderDetail.status as keyof typeof orderStatusColors]}>{orderDetail.status}</Badge>
+                <OrderStatusBadge orderId={id} initialStatus={orderDetail.status} />
               </div>
               <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
             </CardHeader>
@@ -145,8 +138,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <CardFooter className="border-t pt-4">
               <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
                 {/* 주문 상태 변경 핸들러 */}
-                <OrderStatusSelect orderId={String(orderDetail._id)} currentStatus={orderDetail.status} />
-                <OrderCancelButton orderId={String(orderDetail._id)} />
+                <OrderStatusSelect orderId={String(orderDetail._id)} currentStatus={orderDetail.status} key={orderDetail.status + '-' + orderDetail.history?.length} />
+                <OrderCancelButton orderId={String(orderDetail._id)} currentStatus={orderDetail.status} alreadyCancelledReason={orderDetail.cancelReason} key={'cancel-' + orderDetail.history?.length} />
               </div>
             </CardFooter>
           </Card>
@@ -305,31 +298,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </CardContent>
           </Card>
 
-          {/* 주문 이력 */}
+          {/* 처리 이력 */}
           <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
-              <CardTitle>주문 이력</CardTitle>
+              <CardTitle>처리 이력</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Array.isArray(orderDetail.history) &&
-                  orderDetail.history.map((event: any, index: number) => (
-                    <div key={index} className="flex">
-                      <div className="mr-4 flex flex-col items-center">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full border-4 border-background bg-primary">
-                          <Package className="h-5 w-5 text-primary-foreground" />
-                        </div>
-                        {index < orderDetail.history.length - 1 && <div className="h-full w-px bg-border" />}
-                      </div>
-                      <div className="flex-1 pb-8">
-                        <div className="flex items-baseline justify-between">
-                          <div className="text-lg font-semibold">{event.status}</div>
-                          <div className="text-sm text-muted-foreground">{formatDate(event.date)}</div>
-                        </div>
-                        <p className="mt-1 text-sm">{event.description}</p>
-                      </div>
-                    </div>
-                  ))}
+                <OrderHistory orderId={id} initialHistory={orderDetail.history ?? []} />
               </div>
             </CardContent>
           </Card>
