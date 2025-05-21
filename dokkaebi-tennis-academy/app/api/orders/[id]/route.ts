@@ -43,6 +43,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       total: order.totalPrice,
       date: order.createdAt,
       history: order.history ?? [],
+      status: order.status,
+      reason: order.cancelReason ?? null,
     });
   } catch (error) {
     console.error(' 주문 상세 조회 실패:', error);

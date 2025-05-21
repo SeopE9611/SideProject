@@ -3,7 +3,7 @@
 import useSWR from 'swr';
 import { toast } from 'sonner';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-
+import { mutate as mutateLegacy } from 'swr';
 const ORDER_STATUSES = ['대기중', '결제완료', '배송중', '배송완료', '환불'];
 
 export function OrderStatusSelect({ orderId, currentStatus }: { orderId: string; currentStatus: string }) {
@@ -26,8 +26,7 @@ export function OrderStatusSelect({ orderId, currentStatus }: { orderId: string;
       // SWR 캐시만 무효화 → 이 컴포넌트가 자동 리렌더됨
       await mutate();
       // 처리 이력도 같은 방식으로 갱신하려면,
-      // import { mutate as mutateLegacy } from 'swr';
-      // await mutateLegacy(`/api/orders/${orderId}/history`);
+      await mutateLegacy(`/api/orders/${orderId}/history`);
 
       toast.success(`주문 상태가 '${newStatus}'(으)로 변경되었습니다`);
     } catch (err) {
@@ -38,18 +37,23 @@ export function OrderStatusSelect({ orderId, currentStatus }: { orderId: string;
 
   return (
     <div className="w-[200px]">
-      <Select value={status} onValueChange={handleChange} disabled={isCancelled}>
-        <SelectTrigger>
-          <SelectValue placeholder={isCancelled ? '취소됨 (변경 불가)' : '주문 상태 선택'} />
-        </SelectTrigger>
-        <SelectContent>
-          {ORDER_STATUSES.map((s) => (
-            <SelectItem key={s} value={s}>
-              {s}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {isCancelled ? (
+        <div className="w-[200px] px-3 py-2 border rounded-md bg-muted text-muted-foreground text-sm italic">취소됨 (변경 불가)</div>
+      ) : (
+        <Select value={status} onValueChange={handleChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="주문 상태 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            {ORDER_STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
       {isCancelled && <p className="mt-1 text-sm text-muted-foreground italic">이미 취소된 주문은 상태 변경이 불가능합니다.</p>}
     </div>
   );

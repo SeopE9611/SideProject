@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       guestInfo: guestInfo || null,
       paymentInfo,
       createdAt: new Date(),
-      status: '입금대기',
+      status: '대기중',
     };
 
     // 로그인된 사용자면 userId 추가

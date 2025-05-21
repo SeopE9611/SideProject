@@ -10,6 +10,8 @@ import { OrderStatusSelect } from '../_components/OrderStatusSelect';
 import { OrderCancelButton } from '@/app/admin/orders/_components/OrderCancelButton';
 import { OrderStatusBadge } from '@/app/admin/orders/_components/OrderStatusBadge';
 import { OrderHistory } from '@/app/admin/orders/_components/OrderHistory';
+import OrderCancelButtonClient from '@/app/admin/orders/_components/OrderCancelButtonClient';
+import { OrderPaymentStatus } from '@/app/admin/orders/_components/OrderPaymentStatus';
 
 // 결제 상태에 따른 배지 색상 정의
 const paymentStatusColors = {
@@ -123,23 +125,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
               <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-4">
-                <div className="flex items-center">
-                  <Badge className={paymentStatusColors[orderDetail.paymentStatus as keyof typeof paymentStatusColors]}>{orderDetail.paymentStatus}</Badge>
-                  <span className="ml-2 text-sm text-muted-foreground">{orderDetail.paymentMethod}</span>
-                </div>
-                <div className="flex items-center">
-                  <Badge className={orderTypeColors[orderDetail.type as keyof typeof orderTypeColors]}>{orderDetail.type}</Badge>
-                </div>
-                <div className="ml-auto text-xl font-bold">{formatCurrency(orderDetail.total)}</div>
-              </div>
-            </CardContent>
-            <CardFooter className="border-t pt-4">
+            <CardFooter className=" pt-4">
               <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
                 {/* 주문 상태 변경 핸들러 */}
                 <OrderStatusSelect orderId={String(orderDetail._id)} currentStatus={orderDetail.status} key={orderDetail.status + '-' + orderDetail.history?.length} />
-                <OrderCancelButton orderId={String(orderDetail._id)} currentStatus={orderDetail.status} alreadyCancelledReason={orderDetail.cancelReason} key={'cancel-' + orderDetail.history?.length} />
+                <OrderCancelButtonClient orderId={String(orderDetail._id)} alreadyCancelledReason={orderDetail.cancelReason} key={'cancel-' + orderDetail.history?.length} />
               </div>
             </CardFooter>
           </Card>
@@ -227,7 +217,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <div>
                   <div className="text-sm font-medium">결제 상태</div>
                   <div>
-                    <Badge className={paymentStatusColors[orderDetail.paymentStatus as keyof typeof paymentStatusColors]}>{orderDetail.paymentStatus}</Badge>
+                    <OrderPaymentStatus orderId={String(orderDetail._id)} initialPaymentStatus={orderDetail.paymentStatus} />
                   </div>
                 </div>
                 <div>
@@ -299,16 +289,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </Card>
 
           {/* 처리 이력 */}
-          <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
-            <CardHeader className="pb-3">
-              <CardTitle>처리 이력</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <OrderHistory orderId={id} initialHistory={orderDetail.history ?? []} />
-              </div>
-            </CardContent>
-          </Card>
+          <OrderHistory orderId={id} initialHistory={orderDetail.history ?? []} />
         </div>
       </div>
     </div>
