@@ -27,6 +27,15 @@ const orderTypeColors = {
   클래스: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
 };
 
+// 배송 카드
+const shippingMethodMap: Record<string, string> = {
+  standard: '일반 배송 (우체국)',
+  express: '빠른 배송 (CJ 대한통운)',
+  premium: '퀵 배송 (당일)',
+  pickup: '매장 수령',
+  visit: '방문 수령',
+};
+
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const host = (await headers()).get('host');
@@ -47,8 +56,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     }).format(date);
   };
 
@@ -108,9 +115,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <Download className="mr-2 h-4 w-4" />
               주문서 다운로드
             </Button>
-            <Button>
-              <Truck className="mr-2 h-4 w-4" />
-              배송 정보 업데이트
+            <Button asChild>
+              <Link href={`/admin/orders/${id}/shipping-update`}>
+                <Truck className="mr-2 h-4 w-4" />
+                배송 정보 업데이트
+              </Link>
             </Button>
           </div>
         </div>
@@ -185,20 +194,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <div className="space-y-3">
                 <div>
                   <div className="text-sm font-medium">배송 방법</div>
-                  <div>{orderDetail.shipping.method}</div>
+                  <div>{shippingMethodMap[orderDetail.shippingInfo?.shippingMethod] ?? '정보 없음'}</div>
                 </div>
-                {orderDetail.shipping.trackingNumber && (
-                  <div>
-                    <div className="text-sm font-medium">운송장 번호</div>
-                    <div>{orderDetail.shipping.trackingNumber}</div>
-                  </div>
-                )}
                 <div>
                   <div className="text-sm font-medium flex items-center">
                     <Calendar className="mr-1 h-3.5 w-3.5" />
                     예상 수령일
                   </div>
-                  <div>{formatDate(orderDetail.shipping.estimatedDelivery)}</div>
+                  <div>{formatDate(orderDetail.shippingInfo?.estimatedDate)}</div>
                 </div>
               </div>
             </CardContent>
