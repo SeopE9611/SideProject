@@ -4,9 +4,25 @@ import { getServerSession } from 'next-auth'; // 현재 로그인된 세션 정�
 import { authConfig } from '@/lib/auth.config'; // 우리가 설정한 인증 옵션 가져오기 (id 포함 확장됨)
 
 // 주문 객체의 타입 정의
+
+type OrderHistoryItem = {
+  status: string;
+  date: string; // ISO 문자열
+  description: string;
+};
+
+type ShippingInfo = {
+  name: string;
+  phone: string;
+  address: string;
+  postalCode: string;
+  depositor: string;
+  deliveryRequest?: string;
+};
+
 type Order = {
   items: any; // 장바구니에 담긴 상품 목록
-  shippingInfo: any; // 배송지 정보 (주소, 우편번호 등)
+  shippingInfo: ShippingInfo; // 배송지 정보 (주소, 우편번호 등)
   totalPrice: number; // 총 결제 금액
   shippingFee: number; // 배송비
   createdAt: Date; // 주문 시각

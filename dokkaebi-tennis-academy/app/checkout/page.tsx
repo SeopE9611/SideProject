@@ -364,6 +364,7 @@ export default function CheckoutPage() {
                   totalPrice={total}
                   shippingFee={shippingFee}
                   selectedBank={selectedBank}
+                  deliveryRequest={deliveryRequest}
                 />
                 <Button variant="outline" className="w-full" asChild>
                   <Link href="/cart">장바구니로 돌아가기</Link>
