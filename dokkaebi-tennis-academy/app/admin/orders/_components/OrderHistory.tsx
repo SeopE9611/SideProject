@@ -5,29 +5,34 @@ import useSWR from 'swr';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, Truck, CreditCard, RotateCcw, XCircle, Pencil, Clock, PackageCheck } from 'lucide-react';
+import { HistorySkeleton } from '@/app/admin/orders/_components/HistorySkeleton';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
-const LIMIT = 5; // 한 페이지당 처리 이력 개수
+
+const LIMIT = 5; // 한 페이지당 아이템 개수
 
 type Props = {
   orderId: string;
-  initialHistory: any[];
+  initialHistory: any[]; // B안: 서버에서 받은 전체 이력 배열
+  initialTotal: number; // B안: 서버에서 받은 전체 이력 개수
 };
 
-export function OrderHistory({ orderId, initialHistory }: Props) {
+export function OrderHistory({ orderId, initialHistory, initialTotal }: Props) {
   const [page, setPage] = useState(1);
 
-  //  SWR로 서버에서 이력 데이터 가져오기
-  const { data } = useSWR(() => `/api/orders/${orderId}/history?page=${page}&limit=${LIMIT}`, fetcher, {
-    fallbackData: {
-      history: initialHistory,
-      total: initialHistory.length,
-    },
+  // ───────────────────────────────────────────
+  // B안: 전체 이력을 한 번에 fetch + 클라이언트 사이드 페이징
+  const key = `/api/orders/${orderId}/history?page=1&limit=${initialTotal}`;
+  const { data, isValidating, mutate } = useSWR(key, (url) => fetch(url).then((res) => res.json()), {
+    fallbackData: { history: initialHistory, total: initialTotal }, // B안: 초기 데이터
+    revalidateOnMount: false, // 페이지 전환 시 자동 fetch 방지
+    revalidateOnFocus: false, // 포커스 시 자동 fetch 방지
   });
 
-  const history = data?.history || [];
-  const total = data?.total || 0;
-  const totalPages = Math.ceil(total / LIMIT);
+  // 페이징용 계산
+  const allHistory = data.history;
+  const totalPages = Math.ceil(data.total / LIMIT);
+  const pageItems = allHistory.slice((page - 1) * LIMIT, page * LIMIT);
 
   //  날짜 포맷 함수
   const formatDate = (date: string) =>
@@ -45,8 +50,8 @@ export function OrderHistory({ orderId, initialHistory }: Props) {
         <CardTitle>처리 이력</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {history.map((event: any, index: number) => {
+        <div className={`space-y-8 ${isValidating ? 'animate-pulse opacity-70' : ''}`}>
+          {pageItems.map((event: any, idx: number) => {
             let icon = <Package className="h-5 w-5 text-primary-foreground" />;
             let iconWrapperClass = 'bg-primary border-background';
             let textClass = 'text-sm';
@@ -86,10 +91,10 @@ export function OrderHistory({ orderId, initialHistory }: Props) {
             }
 
             return (
-              <div key={index} className="flex">
+              <div key={idx} className="flex">
                 <div className="mr-4 flex flex-col items-center">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-full border-4 ${iconWrapperClass}`}>{icon}</div>
-                  {index < history.length - 1 && <div className="h-full w-px bg-border" />}
+                  {idx < pageItems.length - 1 && <div className="h-full w-px bg-border" />}
                 </div>
                 <div className="flex-1 pb-8">
                   <div className="flex items-baseline justify-between">

@@ -40,12 +40,20 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const host = (await headers()).get('host');
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
-  const res = await fetch(`${baseUrl}/api/orders/${id}`, { cache: 'no-store' });
-  if (!res.ok) {
-    throw new Error('주문 데이터를 불러오지 못했습니다.');
-  }
 
-  const orderDetail = await res.json();
+  // ───────────────────────────────────────────
+  // 1) 주문 상세 정보(fetch) — 원래 있던 부분
+  const orderRes = await fetch(`${baseUrl}/api/orders/${id}`, { cache: 'no-store' });
+  if (!orderRes.ok) throw new Error('주문 데이터를 불러오지 못했습니다.');
+  const orderDetail = await orderRes.json();
+
+  // ───────────────────────────────────────────
+  // 2) B안: 전체 이력 개수만큼 한 번에 다 가져오기
+  const totalCount = orderDetail.history?.length ?? 0; // B안: 전체 이력 수
+  const historyRes = await fetch(`${baseUrl}/api/orders/${id}/history?page=1&limit=${totalCount}`, { cache: 'no-store' });
+  if (!historyRes.ok) throw new Error('처리 이력 데이터를 불러오지 못했습니다.');
+  const { history, total } = await historyRes.json();
+  // B안: { history: [...], total: number }
 
   // 날짜 포맷팅 함수
   const formatDate = (dateString: string | null | undefined) => {
@@ -137,12 +145,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <CardFooter className=" pt-4">
               <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
                 {/* 주문 상태 변경 핸들러 */}
-                <OrderStatusSelect orderId={String(orderDetail._id)} currentStatus={orderDetail.status} key={orderDetail.status + '-' + orderDetail.history?.length} />
+                <OrderStatusSelect orderId={String(orderDetail._id)} currentStatus={orderDetail.status} totalHistoryCount={orderDetail.history?.length ?? 0} key={orderDetail.status + '-' + orderDetail.history?.length} />
                 <OrderCancelButtonClient orderId={String(orderDetail._id)} alreadyCancelledReason={orderDetail.cancelReason} key={'cancel-' + orderDetail.history?.length} />
               </div>
             </CardFooter>
           </Card>
-
           {/* 고객 정보 */}
           <Card className="border-border/40 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
@@ -181,7 +188,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </CardContent>
           </Card>
-
           {/* 배송 정보 */}
           <Card className="border-border/40 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
@@ -206,7 +212,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </CardContent>
           </Card>
-
           {/* 결제 정보 */}
           <Card className="border-border/40 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
@@ -234,7 +239,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </CardContent>
           </Card>
-
           {/* 주문 항목 */}
           <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
@@ -279,7 +283,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </CardContent>
           </Card>
-
           {/* 주문 메모 */}
           <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
@@ -290,9 +293,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <Button className="mt-3">메모 저장</Button>
             </CardContent>
           </Card>
-
           {/* 처리 이력 */}
-          <OrderHistory orderId={id} initialHistory={orderDetail.history ?? []} />
+          <OrderHistory
+            orderId={id}
+            initialHistory={history} // B안: 서버에서 받은 전체 이력
+            initialTotal={total} // B안: 서버에서 받은 전체 이력 개수
+          />
         </div>
       </div>
     </div>
