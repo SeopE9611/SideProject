@@ -1,57 +1,87 @@
 'use client';
 
 import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import { toast } from 'sonner';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { mutate as mutateLegacy } from 'swr';
 
-const ORDER_STATUSES = ['대기중', '결제완료', '배송중', '배송완료', '환불'];
-const LIMIT = 5; // 한 페이지에 몇 개씩 보여줄지
+const LIMIT = 5; // 한 페이지에 보여줄 이력 개수
+
+// fetcher 함수: API 호출 후 JSON 파싱
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+// useSWRInfinite용 getKey: pageIndex와 이전 페이지 데이터를 이용해 API 경로 반환
+const getHistoryKey = (orderId: string) => (pageIndex: number, previousPageData: HistoryResponse | null) => {
+  // 이전 페이지에 데이터가 없으면 더 이상 페치하지 않음
+  if (previousPageData && previousPageData.history.length === 0) return null;
+  return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+};
+
+// 서버로부터 받는 상태 정보 타입
+interface StatusResponse {
+  status: string;
+}
+// 서버로부터 받는 이력 타입
+interface HistoryItem {
+  status: string;
+  date: string;
+  description: string;
+}
+interface HistoryResponse {
+  history: HistoryItem[];
+  total: number;
+}
 
 interface Props {
   orderId: string;
   currentStatus: string;
-  totalHistoryCount: number;
 }
 
-// 2) 함수 시그니처에 Props 적용
-export function OrderStatusSelect({ orderId, currentStatus, totalHistoryCount }: Props) {
-  // SWR 훅으로 현재 상태를 읽고 관리
-  const { data, mutate } = useSWR<{ status: string }>(`/api/orders/${orderId}/status`, (url) => fetch(url).then((res) => res.json()), { fallbackData: { status: currentStatus } });
-  const status = data?.status ?? currentStatus;
-  const isCancelled = status === '취소';
+export function OrderStatusSelect({ orderId, currentStatus }: Props) {
+  // 1) 주문 상태용 SWR (뱃지 업데이트)
+  const { data: statusData, mutate: mutateStatus } = useSWR<StatusResponse>(`/api/orders/${orderId}/status`, fetcher, { fallbackData: { status: currentStatus } });
 
+  // 2) 이력용 SWR Infinite (1~N페이지 자동 캐싱)
+  const { mutate: mutateHistory } = useSWRInfinite<HistoryResponse>(getHistoryKey(orderId), fetcher);
+
+  // 상태 변경 핸들러
   const handleChange = async (newStatus: string) => {
     try {
+      // 서버에 PATCH 요청
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
-      if (!res.ok) throw new Error('상태 변경 실패');
+      if (!res.ok) throw new Error('서버 오류');
 
-      await mutate();
+      // 3) 뱃지 갱신
+      await mutateStatus();
+      // 4) 이력 전체 갱신 (useSWRInfinite의 mutate 호출)
+      await mutateHistory();
+      window.dispatchEvent(new CustomEvent('order-history-page-reset'));
 
-      // 2) B안: 전체 이력 키 한 번만 무효화 → OrderHistory의 useSWR이 재검증
-      await mutateLegacy(`/api/orders/${orderId}/history?page=1&limit=${totalHistoryCount}`);
-      toast.success(`주문 상태가 '${newStatus}'(으)로 변경되었습니다`);
-    } catch (err) {
+      toast.success(`주문 상태가 '${newStatus}'로 변경되었습니다`);
+    } catch (err: any) {
       console.error(err);
-      toast.error('주문 상태 변경 중 오류 발생');
+      toast.error(`변경 실패: ${err.message}`);
     }
   };
+
+  const current = statusData?.status ?? currentStatus;
+  const isCancelled = current === '취소';
 
   return (
     <div className="w-[200px]">
       {isCancelled ? (
-        <div className="w-[200px] px-3 py-2 border rounded-md bg-muted text-muted-foreground text-sm italic">취소됨 (변경 불가)</div>
+        <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-sm italic">취소됨 (변경 불가)</div>
       ) : (
-        <Select value={status} onValueChange={handleChange}>
+        <Select value={current} onValueChange={handleChange}>
           <SelectTrigger>
             <SelectValue placeholder="주문 상태 선택" />
           </SelectTrigger>
           <SelectContent>
-            {ORDER_STATUSES.map((s) => (
+            {['대기중', '결제완료', '배송중', '배송완료', '환불', '취소'].map((s) => (
               <SelectItem key={s} value={s}>
                 {s}
               </SelectItem>

@@ -1,32 +1,42 @@
+// app/api/orders/[id]/history/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 
-// GET /api/orders/[id]/history?page=1&limit=5
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+// 히스토리 아이템 타입 정의
+interface HistoryEvent {
+  status: string;
+  date: string;
+  description: string;
+}
 
-  //  URL에서 page, limit 쿼리 파라미터 추출
+export async function GET(req: NextRequest, context: { params: { id: string } }): Promise<NextResponse> {
+  const { id } = context.params;
+
+  // 쿼리 파라미터 추출 (NextRequest의 req.url 사용)
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = parseInt(searchParams.get('limit') || '5', 10);
   const skip = (page - 1) * limit;
 
-  //  MongoDB 연결
+  // MongoDB 연결
   const client = await clientPromise;
   const db = client.db();
 
-  //  주문 전체 이력을 가져와 total 개수 계산
+  // 주문 전체 정보 조회
   const fullOrder = await db.collection('orders').findOne({ _id: new ObjectId(id) });
+  // 히스토리 배열 안전하게 추출 & 타입 단언
+  const historyArray = (fullOrder?.history ?? []) as HistoryEvent[];
 
-  const fullHistory = fullOrder?.history || [];
-  const total = fullHistory.length;
+  // 2) 날짜 기준 내림차순 정렬
+  const sorted = historyArray.sort((a: HistoryEvent, b: HistoryEvent) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  //  페이지 범위 만큼 슬라이스해서 보내기
-  const paginatedHistory = fullHistory.slice(skip, skip + limit);
+  // 3) 페이징 처리
+  const paginated = sorted.slice(skip, skip + limit);
 
   return NextResponse.json({
-    history: paginatedHistory,
-    total,
+    history: paginated,
+    total: sorted.length,
   });
 }
