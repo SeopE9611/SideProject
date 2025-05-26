@@ -283,14 +283,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </CardContent>
           </Card>
-          {/* 주문 메모 */}
+          {/*  요청사항 */}
           <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
-              <CardTitle>주문 메모</CardTitle>
+              <CardTitle>배송 요청사항</CardTitle>
+              <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Textarea defaultValue={orderDetail.notes} placeholder="주문에 대한 메모가 없습니다." className="min-h-[100px]" />
-              <Button className="mt-3">메모 저장</Button>
+              {orderDetail.shippingInfo?.deliveryRequest ? <p className="whitespace-pre-line text-sm text-foreground">{orderDetail.shippingInfo.deliveryRequest}</p> : <p className="text-sm text-muted-foreground">요청사항이 입력되지 않았습니다.</p>}
             </CardContent>
           </Card>
           {/* 처리 이력 */}
