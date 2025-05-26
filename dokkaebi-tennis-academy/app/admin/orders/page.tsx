@@ -12,5 +12,5 @@ export default async function OrdersPage() {
   });
 
   const orders: Order[] = await res.json();
-  return <OrdersClient orders={orders} />;
+  return <OrdersClient orders={orders} />; //
 }

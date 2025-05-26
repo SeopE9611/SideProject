@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Order } from '@/lib/types/order';
-import { ArrowUpDown, ChevronDown, Download, Eye, Filter, MoreHorizontal, Search, X } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, Copy, Download, Eye, Filter, MoreHorizontal, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -12,6 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { shortenId } from '@/lib/shorten';
+import { toast } from 'sonner';
 
 const orderStatusColors = {
   대기중: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
@@ -182,7 +184,43 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
                   ) : (
                     filteredOrders.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell className="font-medium">{order.id}</TableCell>
+                        <TableCell className="relative overflow-visible">
+                          <TooltipProvider delayDuration={10}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                {/* 툴팁을 트리거하는 요소: 축약된 주문 ID */}
+                                {/* 텍스트 폭만큼만 차지하도록 inline-block + truncate */}
+                                <span className="inline-block max-w-[160px] truncate cursor-pointer">{shortenId(order.id)}</span>
+                              </TooltipTrigger>
+                              {/* 마우스를 올렸을 때 나타나는 툴팁 내용 */}
+                              <TooltipContent
+                                side="top"
+                                align="center" // 가로 중앙 기준
+                                sideOffset={6} // 트리거와 툴팁 간 세로 간격
+                                className="z-50 ml-12 bg-white px-5 py-2.5 rounded-lg shadow-lg border text-base min-w-[240px]"
+                              >
+                                {/* 전체 주문 ID 표시 */}
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono">{order.id}</span>
+
+                                  {/* 복사 버튼 (클립보드에 주문 ID 저장) */}
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(order.id);
+                                      toast.success('주문 ID가 클립보드에 복사되었습니다.');
+                                    }}
+                                  >
+                                    <Copy className="w-4 h-4" />
+                                    <span className="sr-only">복사</span>
+                                  </Button>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
                             <span>{order.customer.name}</span>
