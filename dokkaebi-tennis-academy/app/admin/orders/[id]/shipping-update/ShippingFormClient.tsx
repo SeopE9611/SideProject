@@ -1,6 +1,6 @@
 'use client';
 
-import { ShippingForm } from '@/components/shipping-form';
+import { ShippingForm } from '@/app/admin/orders/[id]/shipping-update/shipping-form';
 
 interface Props {
   orderId: string;

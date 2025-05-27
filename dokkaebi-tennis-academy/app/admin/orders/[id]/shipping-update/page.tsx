@@ -1,5 +1,5 @@
 import ShippingFormClient from '@/app/admin/orders/[id]/shipping-update/ShippingFormClient';
-import { ShippingForm } from '@/components/shipping-form';
+import { ShippingForm } from '@/app/admin/orders/[id]/shipping-update/shipping-form';
 import { headers } from 'next/headers';
 
 export default async function ShippingUpdatePage({ params }: { params: Promise<{ id: string }> }) {

@@ -17,16 +17,43 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     // URL 파라미터에서 주문 ID 추출
     const { id } = await context.params;
 
-    // 요청 Body(JSON)를 파싱하여 가져옴
-    const body = await req.json();
+    // MongoDB 클라이언트 연결 (clientPromise는 연결 재사용 지원)
+    // const client = await clientPromise;
+    // const db = client.db();
+    const db = (await clientPromise).db();
 
-    // 배송 방법과 예상 수령일을 Body에서 구조분해 할당
-    const { shippingMethod, estimatedDate } = body;
+    // 요청 Body(JSON)를 파싱하여 가져오고 배송 방법과 예상 수령일, 운송장 정보를 Body에서 구조분해 할당
+    const { shippingMethod, estimatedDate, courier, trackingNumber } = await req.json();
+
+    const order = await db.collection('orders').findOne({
+      _id: new ObjectId(id),
+    });
+    if (!order) {
+      return NextResponse.json({ error: '주문을 찾을 수 없습니다.' }, { status: 404 });
+    }
+    const updateFields: any = {
+      'shippingInfo.shippingMethod': shippingMethod,
+      'shippingInfo.estimatedDate': estimatedDate,
+    };
 
     // 필수 항목 누락 여부 확인 → 유효성 검사
     if (!shippingMethod || !estimatedDate) {
       return NextResponse.json({ success: false, message: '모든 필드를 입력해주세요.' }, { status: 400 });
     }
+
+    const updatedShippingInfo = {
+      ...(order.shippingInfo ?? {}),
+      shippingMethod,
+      estimatedDate,
+      ...(courier && trackingNumber
+        ? {
+            invoice: {
+              courier,
+              trackingNumber,
+            },
+          }
+        : {}),
+    };
 
     // 날짜 포맷을 한글로 변환 (예: 2025년 6월 3일)
     const formattedDate = new Intl.DateTimeFormat('ko-KR', {
@@ -35,17 +62,23 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       day: 'numeric',
     }).format(new Date(estimatedDate));
 
-    // MongoDB 클라이언트 연결 (clientPromise는 연결 재사용 지원)
-    const client = await clientPromise;
-    const db = client.db();
-
-    // 배송 정보 + 처리 이력 동시 업데이트
-    await db.collection('orders').updateOne(
+    //  DB 업데이트 실행
+    const result = await db.collection('orders').updateOne(
       { _id: new ObjectId(id) },
       {
         $set: {
-          'shippingInfo.shippingMethod': shippingMethod, // 배송 방법
-          'shippingInfo.estimatedDate': estimatedDate, // 예상 수령일
+          shippingInfo: updatedShippingInfo,
+        },
+      }
+    );
+
+    // PATCH: 배송 정보 + 운송장 정보 업데이트 + 처리이력 기록
+
+    const shippingUpdateResult = await db.collection('orders').updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          shippingInfo: updatedShippingInfo,
         },
         $push: {
           history: {
@@ -61,14 +94,10 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       }
     );
 
-    // 성공 응답 반환
-    return NextResponse.json({
-      success: true,
-      updated: { shippingMethod, estimatedDate },
-    });
+    //  수정 성공 여부 전달
+    return NextResponse.json({ ok: shippingUpdateResult.modifiedCount > 0 });
   } catch (error) {
-    // 예외 처리: 서버 에러 로그 + 클라이언트 응답
-    console.error('배송 정보 업데이트 실패:', error);
-    return NextResponse.json({ success: false, message: '서버 에러 발생' }, { status: 500 });
+    console.error('[ORDER_SHIPPING_PATCH]', error);
+    return NextResponse.json({ error: '배송 정보 업데이트에 실패했습니다.' }, { status: 500 });
   }
 }

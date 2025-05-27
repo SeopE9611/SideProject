@@ -29,31 +29,35 @@ const orderTypeColors = {
 
 // 배송 카드
 const shippingMethodMap: Record<string, string> = {
-  standard: '일반 배송 (우체국)',
-  express: '빠른 배송 (CJ 대한통운)',
-  premium: '퀵 배송 (당일)',
-  pickup: '매장 수령',
+  delivery: '택배 배송',
+  quick: '퀵 배송 (당일)',
   visit: '방문 수령',
 };
-
+const courierMap: Record<string, string> = {
+  cj: 'CJ 대한통운',
+  hanjin: '한진택배',
+  logen: '로젠택배',
+  post: '우체국택배',
+  etc: '기타',
+};
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const host = (await headers()).get('host');
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
 
   // ───────────────────────────────────────────
-  // 1) 주문 상세 정보(fetch) — 원래 있던 부분
+  // 주문 상세 정보(fetch) — 원래 있던 부분
   const orderRes = await fetch(`${baseUrl}/api/orders/${id}`, { cache: 'no-store' });
   if (!orderRes.ok) throw new Error('주문 데이터를 불러오지 못했습니다.');
   const orderDetail = await orderRes.json();
 
   // ───────────────────────────────────────────
-  // 2) B안: 전체 이력 개수만큼 한 번에 다 가져오기
+  // 2 전체 이력 개수만큼 한 번에 다 가져오기
   const totalCount = orderDetail.history?.length ?? 0; // B안: 전체 이력 수
   const historyRes = await fetch(`${baseUrl}/api/orders/${id}/history?page=1&limit=${totalCount}`, { cache: 'no-store' });
   if (!historyRes.ok) throw new Error('처리 이력 데이터를 불러오지 못했습니다.');
   const { history, total } = await historyRes.json();
-  // B안: { history: [...], total: number }
+  // { history: [...], total: number }
 
   // 날짜 포맷팅 함수
   const formatDate = (dateString: string | null | undefined) => {
@@ -209,6 +213,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   </div>
                   <div>{formatDate(orderDetail.shippingInfo?.estimatedDate)}</div>
                 </div>
+                {orderDetail.shippingInfo?.invoice?.trackingNumber && (
+                  <>
+                    <div>
+                      <div className="text-sm font-medium">택배사</div>
+                      <div>{courierMap[orderDetail.shippingInfo.invoice.courier] ?? '미지정'}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">운송장 번호</div>
+                      <div>{orderDetail.shippingInfo.invoice.trackingNumber}</div>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
