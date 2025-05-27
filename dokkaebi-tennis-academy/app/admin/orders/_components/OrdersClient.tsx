@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { shortenId } from '@/lib/shorten';
 import { toast } from 'sonner';
+import useSWR from 'swr';
 
 const orderStatusColors = {
   대기중: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
@@ -34,8 +35,12 @@ const orderTypeColors = {
   서비스: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
   클래스: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
 };
-
-export default function OrdersClient({ orders }: { orders: Order[] }) {
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  return res.json();
+};
+export default function OrdersClient() {
+  const { data: orders = [] } = useSWR<Order[]>('/api/orders', fetcher);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -61,7 +66,7 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
     }).format(new Date(dateString));
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
-
+  console.log('orders:', orders);
   return (
     <div className="container py-10">
       <div className="mx-auto max-w-7xl">

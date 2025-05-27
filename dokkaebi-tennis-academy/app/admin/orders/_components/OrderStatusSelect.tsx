@@ -1,9 +1,10 @@
 'use client';
 
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { toast } from 'sonner';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { useRouter } from 'next/navigation';
 
 const LIMIT = 5; // 한 페이지에 보여줄 이력 개수
 
@@ -38,11 +39,14 @@ interface Props {
 }
 
 export function OrderStatusSelect({ orderId, currentStatus }: Props) {
-  // 1) 주문 상태용 SWR (뱃지 업데이트)
+  // 주문 상태용 SWR (뱃지 업데이트)
   const { data: statusData, mutate: mutateStatus } = useSWR<StatusResponse>(`/api/orders/${orderId}/status`, fetcher, { fallbackData: { status: currentStatus } });
 
-  // 2) 이력용 SWR Infinite (1~N페이지 자동 캐싱)
+  // 이력용 SWR Infinite (1~N페이지 자동 캐싱)
   const { mutate: mutateHistory } = useSWRInfinite<HistoryResponse>(getHistoryKey(orderId), fetcher);
+
+  // 페이지 이동 라우터
+  const router = useRouter();
 
   // 상태 변경 핸들러
   const handleChange = async (newStatus: string) => {
@@ -55,13 +59,17 @@ export function OrderStatusSelect({ orderId, currentStatus }: Props) {
       });
       if (!res.ok) throw new Error('서버 오류');
 
-      // 3) 뱃지 갱신
+      // 뱃지 갱신
       await mutateStatus();
-      // 4) 이력 전체 갱신 (useSWRInfinite의 mutate 호출)
+      // 이력 전체 갱신 (useSWRInfinite의 mutate 호출)
       await mutateHistory();
+
+      await mutate('/api/orders');
+
       window.dispatchEvent(new CustomEvent('order-history-page-reset'));
 
       toast.success(`주문 상태가 '${newStatus}'로 변경되었습니다`);
+      router.refresh();
     } catch (err: any) {
       console.error(err);
       toast.error(`변경 실패: ${err.message}`);

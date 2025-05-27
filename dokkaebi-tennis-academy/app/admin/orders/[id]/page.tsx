@@ -11,12 +11,12 @@ import { OrderCancelButton } from '@/app/admin/orders/_components/OrderCancelBut
 import { OrderStatusBadge } from '@/app/admin/orders/_components/OrderStatusBadge';
 import OrderHistory from '@/app/admin/orders/_components/OrderHistory';
 import OrderCancelButtonClient from '@/app/admin/orders/_components/OrderCancelButtonClient';
-import { OrderPaymentStatus } from '@/app/admin/orders/_components/OrderPaymentStatus';
 
-// 결제 상태에 따른 배지 색상 정의
-const paymentStatusColors = {
+// 결제 상태별 배지 색상
+const paymentStatusColors: Record<string, string> = {
   결제완료: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
   결제대기: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
+  결제취소: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
   결제실패: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
 };
 
@@ -225,7 +225,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <div>
                   <div className="text-sm font-medium">결제 상태</div>
                   <div>
-                    <OrderPaymentStatus orderId={String(orderDetail._id)} initialPaymentStatus={orderDetail.paymentStatus} />
+                    <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
                   </div>
                 </div>
                 <div>

@@ -38,7 +38,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       ...order,
       customer,
       shipping: order.shippingInfo, // shipping 필드 추가
-      paymentStatus: '대기', // 또는 "결제대기" 등 하드코딩 or 계산 로직 필요
+      paymentStatus: order.paymentStatus || '결제대기',
       paymentMethod: order.paymentInfo?.method ?? '결제방법 없음',
       total: order.totalPrice,
       date: order.createdAt,
@@ -78,6 +78,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const updateFields: Record<string, any> = { status };
     if (status === '취소' && reason) {
       updateFields.cancelReason = reason;
+    }
+
+    if (['배송중', '배송완료', '환불'].includes(status)) {
+      updateFields.paymentStatus = '결제완료';
+    } else if (status === '대기중') {
+      updateFields.paymentStatus = '결제대기';
+    } else if (status === '취소') {
+      updateFields.paymentStatus = '결제취소';
     }
 
     const historyEntry = {

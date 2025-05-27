@@ -115,7 +115,7 @@ export async function GET() {
     },
     date: order.createdAt, // createdAt 필드 → 주문 날짜
     status: order.status || '대기중', // 기본값 대기중
-    paymentStatus: order.paymentInfo?.status || '결제대기', // 결제 상태
+    paymentStatus: order.paymentStatus || '결제대기', // 결제 상태
     type: '상품', // 현재는 고정 (필요 시 추후 구분)
     total: order.totalPrice, // 총 가격
     items: order.items || [], // 주문 품목
