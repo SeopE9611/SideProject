@@ -35,10 +35,12 @@ const orderTypeColors = {
   서비스: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
   클래스: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
 };
+
 const fetcher = async (url: string) => {
   const res = await fetch(url);
   return res.json();
 };
+
 export default function OrdersClient() {
   const { data: orders = [] } = useSWR<Order[]>('/api/orders', fetcher);
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,44 +50,34 @@ export default function OrdersClient() {
 
   const filteredOrders = orders.filter((order) => {
     const searchMatch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) || order.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-
     const statusMatch = statusFilter === 'all' || order.status === statusFilter;
     const typeMatch = typeFilter === 'all' || order.type === typeFilter;
     const paymentMatch = paymentFilter === 'all' || order.paymentStatus === paymentFilter;
-
     return searchMatch && statusMatch && typeMatch && paymentMatch;
   });
 
-  const formatDate = (dateString: string) =>
-    new Intl.DateTimeFormat('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(dateString));
-
+  const formatDate = (dateString: string) => new Intl.DateTimeFormat('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(dateString));
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
-  console.log('orders:', orders);
+
   return (
-    <div className="container py-10">
+    <div className="container py-6">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">주문 관리</h1>
-          <p className="mt-2 text-muted-foreground">도깨비 테니스 아카데미의 모든 주문을 관리하고 처리하세요.</p>
+        <div className="mb-5">
+          <h1 className="text-2xl font-semibold tracking-tight">주문 관리</h1>
+          <p className="mt-1 text-xs text-muted-foreground">도깨비 테니스 아카데미의 모든 주문을 관리하고 처리하세요.</p>
         </div>
 
         {/* 필터 및 검색 */}
-        <Card className="mb-8 border-border/40 bg-card/60 backdrop-blur">
-          <CardHeader className="pb-3">
-            <CardTitle>필터 및 검색</CardTitle>
-            <CardDescription>주문 상태, 유형, 결제 상태로 필터링하거나 주문 ID, 고객명, 이메일로 검색하세요.</CardDescription>
+        <Card className="mb-6 border-border/40 bg-card/60 backdrop-blur">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">필터 및 검색</CardTitle>
+            <CardDescription className="text-xs">주문 상태, 유형, 결제 상태로 필터링하거나 주문 ID, 고객명, 이메일로 검색하세요.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-4 md:flex-row">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end">
               <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input type="search" placeholder="주문 ID, 고객명, 이메일 검색..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input type="search" placeholder="주문 ID, 고객명, 이메일 검색..." className="pl-8 text-xs h-9" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 {searchTerm && (
                   <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => setSearchTerm('')}>
                     <X className="h-4 w-4" />
@@ -93,47 +85,39 @@ export default function OrdersClient() {
                   </Button>
                 )}
               </div>
-              <div className="flex flex-wrap gap-2 md:flex-nowrap">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="주문 상태" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 상태</SelectItem>
-                    <SelectItem value="대기중">대기중</SelectItem>
-                    <SelectItem value="처리중">처리중</SelectItem>
-                    <SelectItem value="완료">완료</SelectItem>
-                    <SelectItem value="취소">취소</SelectItem>
-                    <SelectItem value="환불">환불</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="주문 유형" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 유형</SelectItem>
-                    <SelectItem value="상품">상품</SelectItem>
-                    <SelectItem value="서비스">서비스</SelectItem>
-                    <SelectItem value="클래스">클래스</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="결제 상태" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">모든 결제 상태</SelectItem>
-                    <SelectItem value="결제완료">결제완료</SelectItem>
-                    <SelectItem value="결제대기">결제대기</SelectItem>
-                    <SelectItem value="결제실패">결제실패</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" className="ml-auto">
-                  <Download className="mr-2 h-4 w-4" />
+              <div className="flex w-full flex-wrap gap-2 md:w-auto">
+                {/* 필터 트리거 스타일 */}
+                {[statusFilter, typeFilter, paymentFilter].map((_, i) => (
+                  <Select key={i} value={i === 0 ? statusFilter : i === 1 ? typeFilter : paymentFilter} onValueChange={i === 0 ? setStatusFilter : i === 1 ? setTypeFilter : setPaymentFilter}>
+                    <SelectTrigger className="w-[110px] h-9 text-xs">
+                      <Filter className="mr-1 h-3.5 w-3.5" />
+                      <SelectValue placeholder={i === 0 ? '주문 상태' : i === 1 ? '주문 유형' : '결제 상태'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      {i === 0 &&
+                        ['대기중', '처리중', '완료', '취소', '환불'].map((v) => (
+                          <SelectItem key={v} value={v}>
+                            {v}
+                          </SelectItem>
+                        ))}
+                      {i === 1 &&
+                        ['상품', '서비스', '클래스'].map((v) => (
+                          <SelectItem key={v} value={v}>
+                            {v}
+                          </SelectItem>
+                        ))}
+                      {i === 2 &&
+                        ['결제완료', '결제대기', '결제실패'].map((v) => (
+                          <SelectItem key={v} value={v}>
+                            {v}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                ))}
+                <Button variant="outline" className="h-9 px-2 text-xs">
+                  <Download className="mr-1 h-3.5 w-3.5" />
                   내보내기
                 </Button>
               </div>
@@ -143,53 +127,39 @@ export default function OrdersClient() {
 
         {/* 주문 목록 테이블 */}
         <Card className="border-border/40 bg-card/60 backdrop-blur">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle>주문 목록</CardTitle>
-              <p className="text-sm text-muted-foreground">총 {filteredOrders.length}개의 주문</p>
+              <CardTitle className="text-base font-medium">주문 목록</CardTitle>
+              <p className="text-xs text-muted-foreground">총 {filteredOrders.length}개의 주문</p>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
+          <CardContent className="overflow-x-auto">
+            <div className="w-full">
+              <Table className="text-xs whitespace-nowrap border border-border">
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[120px]">
-                      <div className="flex items-center">
-                        주문 ID
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead>
-                      <div className="flex items-center">
-                        고객
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead>
-                      <div className="flex items-center">
-                        날짜
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead>상태</TableHead>
-                    <TableHead>결제</TableHead>
-                    <TableHead>유형</TableHead>
-                    <TableHead className="text-right">금액</TableHead>
-                    <TableHead className="w-[70px]" />
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="text-center w-[140px]">주문 ID</TableHead>
+                    <TableHead className="text-center w-[80px]">고객</TableHead>
+                    <TableHead className="text-center w-[180px]">날짜</TableHead>
+                    <TableHead className="text-center w-[80px]">상태</TableHead>
+                    <TableHead className="text-center w-[80px]">결제</TableHead>
+                    <TableHead className="text-center w-[90px]">운송장</TableHead>
+                    <TableHead className="text-center w-[70px]">유형</TableHead>
+                    <TableHead className="text-center w-[80px]">금액</TableHead>
+                    <TableHead className="text-center w-[40px]">...</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredOrders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-24 text-center">
+                      <TableCell colSpan={9} className="h-24 text-center">
                         검색 결과가 없습니다.
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredOrders.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell className="relative overflow-visible">
+                        <TableCell className="text-center">
                           <TooltipProvider delayDuration={10}>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -226,58 +196,69 @@ export default function OrdersClient() {
                             </Tooltip>
                           </TooltipProvider>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
+                        <TableCell className="text-center">
+                          <div className="flex flex-col items-center">
                             <span>{order.customer.name}</span>
-                            <span className="text-xs text-muted-foreground">{order.customer.email}</span>
+                            <span className="text-[10px] text-muted-foreground">{order.customer.email}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{formatDate(order.date)}</TableCell>
-                        <TableCell>
-                          <Badge className={orderStatusColors[order.status]}> {order.status} </Badge>
+                        <TableCell className="text-center">{formatDate(order.date)}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${orderStatusColors[order.status]}`}>{order.status}</Badge>
                         </TableCell>
-                        <TableCell>
-                          <Badge className={paymentStatusColors[order.paymentStatus]}> {order.paymentStatus} </Badge>
+                        <TableCell className="text-center">
+                          <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${paymentStatusColors[order.paymentStatus]}`}>{order.paymentStatus}</Badge>
                         </TableCell>
-                        <TableCell>
-                          <Badge className={orderTypeColors[order.type]}> {order.type} </Badge>
+                        <TableCell className="text-center">
+                          {order.shippingInfo?.shippingMethod === 'courier' ? (
+                            order.invoice?.trackingNumber ? (
+                              <Badge variant="default" className="px-2 py-0.5 text-xs whitespace-nowrap">
+                                등록됨
+                              </Badge>
+                            ) : (
+                              <Badge variant="destructive" className="px-2 py-0.5 text-xs whitespace-nowrap">
+                                미등록
+                              </Badge>
+                            )
+                          ) : order.shippingInfo?.shippingMethod === 'visit' ? (
+                            <Badge variant="outline" className="px-2 py-0.5 text-xs whitespace-nowrap">
+                              방문수령
+                            </Badge>
+                          ) : order.shippingInfo?.shippingMethod === 'quick' ? (
+                            <Badge variant="outline" className="px-2 py-0.5 text-xs whitespace-nowrap">
+                              퀵배송
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="px-2 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
+                              미입력
+                            </Badge>
+                          )}
                         </TableCell>
-                        <TableCell className="text-right font-medium">{formatCurrency(order.total)}</TableCell>
-                        <TableCell>
-                          <TooltipProvider>
-                            <DropdownMenu>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                      <span className="sr-only">메뉴 열기</span>
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                </TooltipTrigger>
-                                <TooltipContent side="left">작업</TooltipContent>
-                              </Tooltip>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/admin/orders/${order.id}`}>
-                                    <Eye className="mr-2 h-4 w-4" /> 상세 보기
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem>
-                                  주문 상태 변경
-                                  <ChevronDown className="ml-auto h-4 w-4" />
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  결제 상태 변경
-                                  <ChevronDown className="ml-auto h-4 w-4" />
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-500">주문 취소</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TooltipProvider>
+                        <TableCell className="text-center">
+                          <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${orderTypeColors[order.type]}`}>{order.type}</Badge>
+                        </TableCell>
+                        <TableCell className="text-center font-medium">{formatCurrency(order.total)}</TableCell>
+                        <TableCell className="text-center">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <MoreHorizontal className="h-3.5 w-3.5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>작업</DropdownMenuLabel>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/admin/orders/${order.id}`}>
+                                  <Eye className="mr-1 h-3.5 w-3.5" /> 상세 보기
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem>주문 상태 변경</DropdownMenuItem>
+                              <DropdownMenuItem>결제 상태 변경</DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-500">주문 취소</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))
@@ -289,7 +270,7 @@ export default function OrdersClient() {
               <Button variant="outline" size="sm" disabled>
                 이전
               </Button>
-              <Button variant="outline" size="sm" className="px-4">
+              <Button variant="outline" size="sm" className="px-3">
                 1
               </Button>
               <Button variant="outline" size="sm" disabled>

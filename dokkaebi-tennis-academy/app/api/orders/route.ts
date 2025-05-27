@@ -18,6 +18,8 @@ type ShippingInfo = {
   postalCode: string;
   depositor: string;
   deliveryRequest?: string;
+  shippingMethod?: 'courier' | 'quick' | 'visit';
+  estimatedDate?: string;
 };
 
 type Order = {
@@ -27,6 +29,9 @@ type Order = {
   shippingFee: number; // 배송비
   createdAt: Date; // 주문 시각
   userId?: string; // 회원일 경우 사용자 ID (세션에서 가져옴)
+  invoice?: {
+    trackingNumber?: string;
+  };
   guestInfo?: {
     // 비회원일 경우 입력한 정보
     name: string;
@@ -119,6 +124,13 @@ export async function GET() {
     type: '상품', // 현재는 고정 (필요 시 추후 구분)
     total: order.totalPrice, // 총 가격
     items: order.items || [], // 주문 품목
+    shippingInfo: {
+      shippingMethod: order.shippingInfo?.shippingMethod,
+      estimatedDate: order.shippingInfo?.estimatedDate,
+    },
+    invoice: {
+      trackingNumber: order.invoice?.trackingNumber,
+    },
   }));
 
   //  응답을 JSON 형태로 리턴
