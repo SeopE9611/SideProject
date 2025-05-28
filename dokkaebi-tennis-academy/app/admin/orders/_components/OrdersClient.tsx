@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Order } from '@/lib/types/order';
-import { ArrowUpDown, ChevronDown, Copy, Download, Eye, Filter, MoreHorizontal, Search, X } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, Copy, Download, Eye, Filter, MoreHorizontal, Search, Truck, X } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -249,14 +249,14 @@ export default function OrdersClient() {
                               <DropdownMenuLabel>작업</DropdownMenuLabel>
                               <DropdownMenuItem asChild>
                                 <Link href={`/admin/orders/${order.id}`}>
-                                  <Eye className="mr-1 h-3.5 w-3.5" /> 상세 보기
+                                  <Eye className="mr-2 h-4 w-4" /> 상세 보기
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>주문 상태 변경</DropdownMenuItem>
-                              <DropdownMenuItem>결제 상태 변경</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-500">주문 취소</DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/admin/orders/${order.id}/shipping-update`}>
+                                  <Truck className="mr-2 h-4 w-4" /> 배송 정보 등록
+                                </Link>
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
