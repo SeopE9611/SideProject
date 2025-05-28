@@ -56,6 +56,14 @@ export default function OrdersClient() {
     return searchMatch && statusMatch && typeMatch && paymentMatch;
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 10;
+
+  const totalPages = Math.ceil(orders.length / ordersPerPage);
+  const startIdx = (currentPage - 1) * ordersPerPage;
+  const endIdx = startIdx + ordersPerPage;
+
+  const paginatedOrders = filteredOrders.slice(startIdx, endIdx);
   const formatDate = (dateString: string) => new Intl.DateTimeFormat('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(dateString));
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
 
@@ -157,7 +165,7 @@ export default function OrdersClient() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredOrders.map((order) => (
+                    paginatedOrders.map((order) => (
                       <TableRow key={order.id}>
                         <TableCell className="text-center">
                           <TooltipProvider delayDuration={10}>
@@ -270,13 +278,17 @@ export default function OrdersClient() {
               </Table>
             </div>
             <div className="mt-4 flex items-center justify-end space-x-2">
-              <Button variant="outline" size="sm" disabled>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
                 이전
               </Button>
-              <Button variant="outline" size="sm" className="px-3">
-                1
-              </Button>
-              <Button variant="outline" size="sm" disabled>
+
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <Button key={i} variant={currentPage === i + 1 ? 'default' : 'outline'} size="sm" className="px-3" onClick={() => setCurrentPage(i + 1)}>
+                  {i + 1}
+                </Button>
+              ))}
+
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
                 다음
               </Button>
             </div>
