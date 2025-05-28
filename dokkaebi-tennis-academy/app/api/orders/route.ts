@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'; // Next.js API 응답 처리를 위�
 import clientPromise from '@/lib/mongodb'; // MongoDB 연결을 위한 클라이언트 프라미스
 import { getServerSession } from 'next-auth'; // 현재 로그인된 세션 정보를 불러오는 함수
 import { authConfig } from '@/lib/auth.config'; // 우리가 설정한 인증 옵션 가져오기 (id 포함 확장됨)
+import { ObjectId } from 'mongodb'; // ObjectId 변환을 위해 추가
 
 // 주문 객체의 타입 정의
 
@@ -99,6 +100,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: '주문 생성 중 오류 발생' }, { status: 500 });
   }
 }
+
 //  GET 요청 처리: 관리자 주문 목록 요청 처리
 export async function GET() {
   //  MongoDB 클라이언트 생성 (연결 기다림)
@@ -110,28 +112,59 @@ export async function GET() {
   //  orders 컬렉션에서 모든 주문 조회
   const rawOrders = await db.collection('orders').find().toArray();
 
+  //  users 컬렉션에서 회원 정보 조회 가능하도록 설정
+  const usersCollection = db.collection('users');
+
   // 프론트엔드가 기대하는 형태로 가공 (타입 맞춤)
-  const orders = rawOrders.map((order) => ({
-    id: order._id.toString(), // MongoDB의 ObjectId를 문자열로 변환
-    customer: {
-      name: order.guestInfo?.name || '비회원', // guestInfo 객체 안에 name
-      email: order.guestInfo?.email || '-', // 없으면 대체 텍스트 사용
-      phone: order.guestInfo?.phone || '-',
-    },
-    date: order.createdAt, // createdAt 필드 → 주문 날짜
-    status: order.status || '대기중', // 기본값 대기중
-    paymentStatus: order.paymentStatus || '결제대기', // 결제 상태
-    type: '상품', // 현재는 고정 (필요 시 추후 구분)
-    total: order.totalPrice, // 총 가격
-    items: order.items || [], // 주문 품목
-    shippingInfo: {
-      shippingMethod: order.shippingInfo?.shippingMethod,
-      estimatedDate: order.shippingInfo?.estimatedDate,
-    },
-    invoice: {
-      trackingNumber: order.invoice?.trackingNumber,
-    },
-  }));
+  const orders = await Promise.all(
+    rawOrders.map(async (order) => {
+      // 기본 고객 정보
+      let customer = {
+        name: '비회원',
+        email: '-',
+        phone: '-',
+      };
+
+      // userId가 있으면 회원 정보에서 가져오기
+      if (order.userId) {
+        const user = await usersCollection.findOne({ _id: new ObjectId(order.userId) });
+        if (user) {
+          customer = {
+            name: user.name || '회원',
+            email: user.email || '-',
+            phone: user.phone || '-',
+          };
+        }
+      }
+      // 비회원 정보가 있을 경우
+      else if (order.guestInfo) {
+        customer = {
+          name: order.guestInfo.name || '비회원',
+          email: order.guestInfo.email || '-',
+          phone: order.guestInfo.phone || '-',
+        };
+      }
+
+      return {
+        id: order._id.toString(), // MongoDB의 ObjectId를 문자열로 변환
+        customer,
+        userId: order.userId ?? null,
+        date: order.createdAt, // createdAt 필드 → 주문 날짜
+        status: order.status || '대기중', // 기본값 대기중
+        paymentStatus: order.paymentStatus || '결제대기', // 결제 상태
+        type: '상품', // 현재는 고정 (필요 시 추후 구분)
+        total: order.totalPrice, // 총 가격
+        items: order.items || [], // 주문 품목
+        shippingInfo: {
+          shippingMethod: order.shippingInfo?.shippingMethod,
+          estimatedDate: order.shippingInfo?.estimatedDate,
+        },
+        invoice: {
+          trackingNumber: order.invoice?.trackingNumber,
+        },
+      };
+    })
+  );
 
   //  응답을 JSON 형태로 리턴
   return NextResponse.json(orders);

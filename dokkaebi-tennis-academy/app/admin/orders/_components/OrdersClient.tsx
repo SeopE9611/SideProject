@@ -198,8 +198,11 @@ export default function OrdersClient() {
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex flex-col items-center">
-                            <span>{order.customer.name}</span>
-                            <span className="text-[10px] text-muted-foreground">{order.customer.email}</span>
+                            <span>
+                              {order.customer.name}
+                              {!order.userId || order.userId === 'null' ? <span className="ml-1 text-[10px] text-muted-foreground text-gray-500">(비회원)</span> : null}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">{order.customer.email}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">{formatDate(order.date)}</TableCell>

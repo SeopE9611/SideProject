@@ -11,6 +11,7 @@ export type Order = {
     email: string;
     phone: string;
   };
+  userId?: string;
   shippingInfo?: {
     shippingMethod?: 'courier' | 'quick' | 'visit';
     trackingNumber?: string;
