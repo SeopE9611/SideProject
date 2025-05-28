@@ -15,26 +15,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { shortenId } from '@/lib/shorten';
 import { toast } from 'sonner';
 import useSWR from 'swr';
-
-const orderStatusColors = {
-  대기중: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
-  처리중: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20',
-  완료: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
-  취소: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
-  환불: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
-};
-
-const paymentStatusColors = {
-  결제완료: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
-  결제대기: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
-  결제실패: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
-};
-
-const orderTypeColors = {
-  상품: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20',
-  서비스: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
-  클래스: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
-};
+import { orderStatusColors, orderTypeColors, paymentStatusColors, shippingStatusColors } from '@/lib/badge-style';
+import CustomerTypeFilter from '@/app/admin/orders/_components/order-filters/CustomerTypeFilter';
+import { OrderStatusFilter } from '@/app/admin/orders/_components/order-filters/OrderStatusFilter';
+import { PaymentStatusFilter } from '@/app/admin/orders/_components/order-filters/PaymentStatusFilter';
+import { ShippingStatusFilter } from '@/app/admin/orders/_components/order-filters/ShippingStatusFilter';
+import { OrderTypeFilter } from '@/app/admin/orders/_components/order-filters/OrderTypeFilter';
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -47,15 +33,40 @@ export default function OrdersClient() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
+  const [shippingFilter, setShippingFilter] = useState('all');
+  const [customerTypeFilter, setCustomerTypeFilter] = useState('all');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const resetFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setTypeFilter('all');
+    setPaymentFilter('all');
+    setShippingFilter('all');
+    setCustomerTypeFilter('all');
+  };
 
   const filteredOrders = orders.filter((order) => {
     const searchMatch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) || order.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
+
     const statusMatch = statusFilter === 'all' || order.status === statusFilter;
     const typeMatch = typeFilter === 'all' || order.type === typeFilter;
     const paymentMatch = paymentFilter === 'all' || order.paymentStatus === paymentFilter;
-    return searchMatch && statusMatch && typeMatch && paymentMatch;
-  });
+    const customerTypeMatch = customerTypeFilter === 'all' || (customerTypeFilter === 'member' && order.userId && order.userId !== 'null') || (customerTypeFilter === 'guest' && (!order.userId || order.userId === 'null'));
 
+    const shippingMatch =
+      shippingFilter === 'all' ||
+      (() => {
+        const method = order.shippingInfo?.shippingMethod;
+        if (shippingFilter === '등록됨') return method === 'courier' && order.invoice?.trackingNumber;
+        if (shippingFilter === '미등록') return method === 'courier' && !order.invoice?.trackingNumber;
+        if (shippingFilter === '방문수령') return method === 'visit';
+        if (shippingFilter === '퀵배송') return method === 'quick';
+        if (shippingFilter === '미입력') return !method;
+        return false;
+      })();
+
+    return searchMatch && statusMatch && typeMatch && paymentMatch && shippingMatch && customerTypeMatch;
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
 
@@ -93,43 +104,28 @@ export default function OrdersClient() {
                   </Button>
                 )}
               </div>
-              <div className="flex w-full flex-wrap gap-2 md:w-auto">
-                {/* 필터 트리거 스타일 */}
-                {[statusFilter, typeFilter, paymentFilter].map((_, i) => (
-                  <Select key={i} value={i === 0 ? statusFilter : i === 1 ? typeFilter : paymentFilter} onValueChange={i === 0 ? setStatusFilter : i === 1 ? setTypeFilter : setPaymentFilter}>
-                    <SelectTrigger className="w-[110px] h-9 text-xs">
-                      <Filter className="mr-1 h-3.5 w-3.5" />
-                      <SelectValue placeholder={i === 0 ? '주문 상태' : i === 1 ? '주문 유형' : '결제 상태'} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">전체</SelectItem>
-                      {i === 0 &&
-                        ['대기중', '처리중', '완료', '취소', '환불'].map((v) => (
-                          <SelectItem key={v} value={v}>
-                            {v}
-                          </SelectItem>
-                        ))}
-                      {i === 1 &&
-                        ['상품', '서비스', '클래스'].map((v) => (
-                          <SelectItem key={v} value={v}>
-                            {v}
-                          </SelectItem>
-                        ))}
-                      {i === 2 &&
-                        ['결제완료', '결제대기', '결제실패'].map((v) => (
-                          <SelectItem key={v} value={v}>
-                            {v}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                ))}
-                <Button variant="outline" className="h-9 px-2 text-xs">
-                  <Download className="mr-1 h-3.5 w-3.5" />
-                  내보내기
+              {/* 기본 필터: 고객 유형 + 주문 상태 */}
+              <div className="flex flex-wrap items-end gap-2">
+                <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
+                <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
+
+                <Button variant="outline" size="sm" onClick={() => setShowAdvanced((prev) => !prev)}>
+                  {showAdvanced ? '고급 필터 닫기' : '고급 필터 보기'}
+                </Button>
+
+                <Button variant="ghost" size="sm" onClick={resetFilters}>
+                  초기화
                 </Button>
               </div>
             </div>
+            {/* 고급 필터: 접히는 영역 */}
+            {showAdvanced && (
+              <div className="mt-4 pt-3 border-t flex flex-wrap gap-2">
+                <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
+                <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
+                <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -221,29 +217,12 @@ export default function OrdersClient() {
                           <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${paymentStatusColors[order.paymentStatus]}`}>{order.paymentStatus}</Badge>
                         </TableCell>
                         <TableCell className="text-center">
-                          {order.shippingInfo?.shippingMethod === 'courier' ? (
-                            order.invoice?.trackingNumber ? (
-                              <Badge variant="default" className="px-2 py-0.5 text-xs whitespace-nowrap">
-                                등록됨
-                              </Badge>
-                            ) : (
-                              <Badge variant="destructive" className="px-2 py-0.5 text-xs whitespace-nowrap">
-                                미등록
-                              </Badge>
-                            )
-                          ) : order.shippingInfo?.shippingMethod === 'visit' ? (
-                            <Badge variant="outline" className="px-2 py-0.5 text-xs whitespace-nowrap">
-                              방문수령
-                            </Badge>
-                          ) : order.shippingInfo?.shippingMethod === 'quick' ? (
-                            <Badge variant="outline" className="px-2 py-0.5 text-xs whitespace-nowrap">
-                              퀵배송
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="px-2 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
-                              미입력
-                            </Badge>
-                          )}
+                          {(() => {
+                            const method = order.shippingInfo?.shippingMethod;
+                            const label = method === 'courier' ? (order.invoice?.trackingNumber ? '등록됨' : '미등록') : method === 'visit' ? '방문수령' : method === 'quick' ? '퀵배송' : '미입력';
+
+                            return <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${shippingStatusColors[label]}`}>{label}</Badge>;
+                          })()}
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${orderTypeColors[order.type]}`}>{order.type}</Badge>

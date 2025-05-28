@@ -11,8 +11,8 @@ interface HistoryEvent {
   description: string;
 }
 
-export async function GET(req: NextRequest, context: { params: { id: string } }): Promise<NextResponse> {
-  const { id } = context.params;
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
 
   // 쿼리 파라미터 추출 (NextRequest의 req.url 사용)
   const { searchParams } = new URL(req.url);

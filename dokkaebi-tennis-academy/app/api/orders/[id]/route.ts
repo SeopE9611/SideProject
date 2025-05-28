@@ -80,12 +80,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       updateFields.cancelReason = reason;
     }
 
-    if (['배송중', '배송완료', '환불'].includes(status)) {
+    if (['결제완료', '배송중', '배송완료'].includes(status)) {
       updateFields.paymentStatus = '결제완료';
     } else if (status === '대기중') {
       updateFields.paymentStatus = '결제대기';
     } else if (status === '취소') {
       updateFields.paymentStatus = '결제취소';
+    } else if (status === '환불') {
+      updateFields.paymentStatus = '환불';
     }
 
     const historyEntry = {

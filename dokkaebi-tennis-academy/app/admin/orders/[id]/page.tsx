@@ -11,21 +11,7 @@ import { OrderCancelButton } from '@/app/admin/orders/_components/OrderCancelBut
 import { OrderStatusBadge } from '@/app/admin/orders/_components/OrderStatusBadge';
 import OrderHistory from '@/app/admin/orders/_components/OrderHistory';
 import OrderCancelButtonClient from '@/app/admin/orders/_components/OrderCancelButtonClient';
-
-// 결제 상태별 배지 색상
-const paymentStatusColors: Record<string, string> = {
-  결제완료: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
-  결제대기: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
-  결제취소: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
-  결제실패: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
-};
-
-// 주문 유형에 따른 배지 색상 정의
-const orderTypeColors = {
-  상품: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20',
-  서비스: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
-  클래스: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20',
-};
+import { paymentStatusColors } from '@/lib/badge-style';
 
 // 배송 카드
 const shippingMethodMap: Record<string, string> = {
