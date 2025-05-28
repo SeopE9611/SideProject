@@ -84,7 +84,7 @@ export function ShippingForm({ initialShippingMethod = '', initialEstimatedDeliv
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle>배송 정보 수정</CardTitle>
       </CardHeader>

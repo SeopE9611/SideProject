@@ -18,10 +18,11 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
 
   return (
     <div className="container py-10">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="mb-6 text-2xl font-bold">배송 정보 관리</h1>
-        <p className="mb-8 text-muted-foreground">주문의 배송 방법과 예상 수령일을 수정할 수 있습니다.</p>
-
+      <div className="mx-auto max-w-md">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold">배송 정보 관리</h1>
+          <p className="mt-2 text-sm text-muted-foreground">주문의 배송 방법과 예상 수령일을 수정할 수 있습니다.</p>
+        </div>
         <ShippingFormClient orderId={order._id} initialShippingMethod={order.shippingInfo?.shippingMethod ?? ''} initialEstimatedDelivery={order.shippingInfo?.estimatedDate ?? ''} />
       </div>
     </div>
