@@ -132,7 +132,7 @@ export default function OrdersClient() {
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <div className="w-full">
-              <Table className="text-xs whitespace-nowrap border border-border">
+              <Table className="min-w-full text-xs whitespace-nowrap border border-border">
                 <TableHeader>
                   <TableRow className="rounded-xl">
                     <TableHead className="text-center w-[140px]">주문 ID</TableHead>
