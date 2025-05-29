@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Order } from '@/lib/types/order';
 import { ArrowUpDown, ChevronDown, Copy, Download, Eye, Filter, MoreHorizontal, Search, Truck, X } from 'lucide-react';
 import Link from 'next/link';
@@ -21,6 +21,8 @@ import { OrderStatusFilter } from '@/app/admin/orders/_components/order-filters/
 import { PaymentStatusFilter } from '@/app/admin/orders/_components/order-filters/PaymentStatusFilter';
 import { ShippingStatusFilter } from '@/app/admin/orders/_components/order-filters/ShippingStatusFilter';
 import { OrderTypeFilter } from '@/app/admin/orders/_components/order-filters/OrderTypeFilter';
+import { cn } from '@/lib/utils';
+import { DateFilter } from '@/app/admin/orders/_components/order-filters/DateFilter';
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -45,6 +47,11 @@ export default function OrdersClient() {
     setCustomerTypeFilter('all');
   };
 
+  const [sortBy, setSortBy] = useState<'customer' | 'date' | 'total' | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
   const filteredOrders = orders.filter((order) => {
     const searchMatch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) || order.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -65,19 +72,59 @@ export default function OrdersClient() {
         return false;
       })();
 
-    return searchMatch && statusMatch && typeMatch && paymentMatch && shippingMatch && customerTypeMatch;
+    const matchDate = !selectedDate || new Date(order.date).toDateString() === selectedDate.toDateString();
+
+    return searchMatch && statusMatch && typeMatch && paymentMatch && shippingMatch && customerTypeMatch && matchDate;
   });
   const [currentPage, setCurrentPage] = useState(1);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedDate, searchTerm, statusFilter, typeFilter, paymentFilter, shippingFilter, customerTypeFilter]);
   const ordersPerPage = 10;
 
-  const totalPages = Math.ceil(orders.length / ordersPerPage);
-  const startIdx = (currentPage - 1) * ordersPerPage;
-  const endIdx = startIdx + ordersPerPage;
-
-  const paginatedOrders = filteredOrders.slice(startIdx, endIdx);
   const formatDate = (dateString: string) => new Intl.DateTimeFormat('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(dateString));
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
 
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    if (!sortBy) return 0;
+
+    let aValue, bValue;
+
+    switch (sortBy) {
+      case 'customer':
+        aValue = a.customer.name.toLowerCase();
+        bValue = b.customer.name.toLowerCase();
+        break;
+      case 'date':
+        aValue = new Date(a.date).getTime();
+        bValue = new Date(b.date).getTime();
+        break;
+      case 'total':
+        aValue = a.total;
+        bValue = b.total;
+        break;
+      default:
+        return 0;
+    }
+
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const startIdx = (currentPage - 1) * ordersPerPage;
+  const endIdx = startIdx + ordersPerPage;
+  const paginatedOrders = sortedOrders.slice(startIdx, endIdx);
+  const totalPages = Math.ceil(sortedOrders.length / ordersPerPage);
+
+  const handleSort = (key: 'customer' | 'date' | 'total') => {
+    if (sortBy === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(key);
+      setSortDirection('asc');
+    }
+  };
   return (
     <div className="container py-6">
       <div className="mx-auto max-w-7xl">
@@ -136,13 +183,24 @@ export default function OrdersClient() {
                 <TableHeader>
                   <TableRow className="rounded-xl">
                     <TableHead className="text-center w-[140px]">주문 ID</TableHead>
-                    <TableHead className="text-center w-[80px]">고객</TableHead>
-                    <TableHead className="text-center w-[180px]">날짜</TableHead>
+                    <TableHead onClick={() => handleSort('customer')} className={cn('text-center cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'customer' && 'text-primary')}>
+                      고객
+                      <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'customer' && 'text-primary', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('date')} className={cn('text-center cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'date' && 'text-primary')}>
+                      날짜
+                      <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'date' && 'text-primary', sortBy === 'date' && sortDirection === 'desc' && 'rotate-180')} />
+                      <DateFilter date={selectedDate} onChange={setSelectedDate} />
+                    </TableHead>
+
                     <TableHead className="text-center w-[80px]">상태</TableHead>
                     <TableHead className="text-center w-[80px]">결제</TableHead>
                     <TableHead className="text-center w-[90px]">운송장</TableHead>
                     <TableHead className="text-center w-[70px]">유형</TableHead>
-                    <TableHead className="text-center w-[80px]">금액</TableHead>
+                    <TableHead onClick={() => handleSort('total')} className={cn('text-right cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'total' && 'text-primary')}>
+                      금액
+                      <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'total' && 'text-primary', sortDirection === 'desc' && sortBy === 'total' && 'rotate-180')} />
+                    </TableHead>
                     <TableHead className="text-center w-[40px]">...</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -154,7 +212,7 @@ export default function OrdersClient() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    paginatedOrders.map((order) => (
+                    sortedOrders.slice(startIdx, endIdx).map((order) => (
                       <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
                         <TableCell className="text-center py-2 px-4">
                           <TooltipProvider delayDuration={10}>
