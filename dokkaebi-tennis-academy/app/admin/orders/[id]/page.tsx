@@ -31,15 +31,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const host = (await headers()).get('host');
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
 
-  // ───────────────────────────────────────────
   // 주문 상세 정보(fetch) — 원래 있던 부분
   const orderRes = await fetch(`${baseUrl}/api/orders/${id}`, { cache: 'no-store' });
   if (!orderRes.ok) throw new Error('주문 데이터를 불러오지 못했습니다.');
   const orderDetail = await orderRes.json();
 
-  // ───────────────────────────────────────────
-  // 2 전체 이력 개수만큼 한 번에 다 가져오기
-  const totalCount = orderDetail.history?.length ?? 0; // B안: 전체 이력 수
+  // 전체 이력 개수만큼 한 번에 다 가져오기
+  const totalCount = orderDetail.history?.length ?? 0; //전체 이력 수
   const historyRes = await fetch(`${baseUrl}/api/orders/${id}/history?page=1&limit=${totalCount}`, { cache: 'no-store' });
   if (!historyRes.ok) throw new Error('처리 이력 데이터를 불러오지 못했습니다.');
   const { history, total } = await historyRes.json();
@@ -124,7 +122,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
         <div className="grid gap-6 md:grid-cols-3">
           {/* 주문 상태 및 요약 */}
-          <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
+          <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md ">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle>주문 상태</CardTitle>
@@ -141,7 +139,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </CardFooter>
           </Card>
           {/* 고객 정보 */}
-          <Card className="border-border/40 bg-card/60 backdrop-blur">
+          <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center">
                 <User className="mr-2 h-5 w-5" />
@@ -179,7 +177,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </CardContent>
           </Card>
           {/* 배송 정보 */}
-          <Card className="border-border/40 bg-card/60 backdrop-blur">
+          <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center">
                 <Truck className="mr-2 h-5 w-5" />
@@ -215,7 +213,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </CardContent>
           </Card>
           {/* 결제 정보 */}
-          <Card className="border-border/40 bg-card/60 backdrop-blur">
+          <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center">
                 <CreditCard className="mr-2 h-5 w-5" />
@@ -242,7 +240,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </CardContent>
           </Card>
           {/* 주문 항목 */}
-          <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
+          <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center">
                 <ShoppingCart className="mr-2 h-5 w-5" />
@@ -250,31 +248,28 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b bg-muted/50">
-                      <th className="px-4 py-3 text-left text-sm font-medium">상품/서비스</th>
-                      <th className="px-4 py-3 text-center text-sm font-medium">수량</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium">가격</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium">합계</th>
+              <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-medium">상품/서비스</th>
+                      <th className="px-4 py-3 text-center font-medium">수량</th>
+                      <th className="px-4 py-3 text-right font-medium">가격</th>
+                      <th className="px-4 py-3 text-right font-medium">합계</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y">
                     {orderDetail.items.map((item: any, index: number) => (
-                      <tr key={index} className="border-b">
-                        <td className="px-4 py-3">
-                          <div className="font-medium">{item.name}</div>
-                          {item.description && <div className="text-sm text-muted-foreground">{item.description}</div>}
-                        </td>
+                      <tr key={index}>
+                        <td className="px-4 py-3">{item.name}</td>
                         <td className="px-4 py-3 text-center">{item.quantity}</td>
                         <td className="px-4 py-3 text-right">{formatCurrency(item.price)}</td>
-                        <td className="px-4 py-3 text-right font-medium">{formatCurrency(item.price * item.quantity)}</td>
+                        <td className="px-4 py-3 text-right">{formatCurrency(item.price * item.quantity)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="border-b">
+                    <tr>
                       <td colSpan={3} className="px-4 py-3 text-right font-medium">
                         총 합계
                       </td>
@@ -286,7 +281,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </CardContent>
           </Card>
           {/*  요청사항 */}
-          <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
+          <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
             <CardHeader className="pb-3">
               <CardTitle>배송 요청사항</CardTitle>
               <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>

@@ -117,7 +117,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   const totalPages = Math.max(1, Math.ceil(pageData.total / LIMIT));
 
   return (
-    <Card className="md:col-span-3 border-border/40 bg-card/60 backdrop-blur">
+    <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
       <CardHeader className="pb-3">
         <CardTitle>처리 이력</CardTitle>
         <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>

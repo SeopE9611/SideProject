@@ -82,14 +82,14 @@ export default function OrdersClient() {
     <div className="container py-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-5">
-          <h1 className="text-2xl font-semibold tracking-tight">주문 관리</h1>
+          <h1 className="text-4xl font-semibold tracking-tight">주문 관리</h1>
           <p className="mt-1 text-xs text-muted-foreground">도깨비 테니스 아카데미의 모든 주문을 관리하고 처리하세요.</p>
         </div>
 
         {/* 필터 및 검색 */}
-        <Card className="mb-6 border-border/40 bg-card/60 backdrop-blur">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">필터 및 검색</CardTitle>
+        <Card className="mb-5 rounded-xl border-gray-200 bg-white shadow-md px-6 py-5">
+          <CardHeader className="pb-3">
+            <CardTitle>필터 및 검색</CardTitle>
             <CardDescription className="text-xs">주문 상태, 유형, 결제 상태로 필터링하거나 주문 ID, 고객명, 이메일로 검색하세요.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -115,7 +115,7 @@ export default function OrdersClient() {
                 <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
                 <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
                 <Button variant="outline" size="sm" onClick={resetFilters} className="w-full">
-                  초기화
+                  필터 초기화
                 </Button>
               </div>
             </div>
@@ -123,18 +123,18 @@ export default function OrdersClient() {
         </Card>
 
         {/* 주문 목록 테이블 */}
-        <Card className="border-border/40 bg-card/60 backdrop-blur">
+        <Card className="rounded-xl border-gray-200 bg-white shadow-md px-4 py-5">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium">주문 목록</CardTitle>
-              <p className="text-xs text-muted-foreground">총 {filteredOrders.length}개의 주문</p>
+              <p className=" text-xs text-muted-foreground">총 {filteredOrders.length}개의 주문</p>
             </div>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <div className="w-full">
               <Table className="text-xs whitespace-nowrap border border-border">
                 <TableHeader>
-                  <TableRow className="bg-muted/30">
+                  <TableRow className="rounded-xl">
                     <TableHead className="text-center w-[140px]">주문 ID</TableHead>
                     <TableHead className="text-center w-[80px]">고객</TableHead>
                     <TableHead className="text-center w-[180px]">날짜</TableHead>
