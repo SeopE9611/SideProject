@@ -93,39 +93,32 @@ export default function OrdersClient() {
             <CardDescription className="text-xs">주문 상태, 유형, 결제 상태로 필터링하거나 주문 ID, 고객명, 이메일로 검색하세요.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-3 md:flex-row md:items-end">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input type="search" placeholder="주문 ID, 고객명, 이메일 검색..." className="pl-8 text-xs h-9" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                {searchTerm && (
-                  <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => setSearchTerm('')}>
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">검색어 지우기</span>
-                  </Button>
-                )}
+            <div className="flex flex-col gap-4">
+              {/* 검색 영역 */}
+              <div className="w-full max-w-md">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input type="search" placeholder="주문 ID, 고객명, 이메일 검색..." className="pl-8 text-xs h-9 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                  {searchTerm && (
+                    <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => setSearchTerm('')}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
-              {/* 기본 필터: 고객 유형 + 주문 상태 */}
-              <div className="flex flex-wrap items-end gap-2">
+
+              {/* 필터 영역 */}
+              <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
                 <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
                 <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
-
-                <Button variant="outline" size="sm" onClick={() => setShowAdvanced((prev) => !prev)}>
-                  {showAdvanced ? '고급 필터 닫기' : '고급 필터 보기'}
-                </Button>
-
-                <Button variant="ghost" size="sm" onClick={resetFilters}>
+                <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
+                <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
+                <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
+                <Button variant="outline" size="sm" onClick={resetFilters} className="w-full">
                   초기화
                 </Button>
               </div>
             </div>
-            {/* 고급 필터: 접히는 영역 */}
-            {showAdvanced && (
-              <div className="mt-4 pt-3 border-t flex flex-wrap gap-2">
-                <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
-                <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
-                <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
-              </div>
-            )}
           </CardContent>
         </Card>
 

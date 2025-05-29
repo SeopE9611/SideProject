@@ -10,7 +10,7 @@ interface Props {
 export default function CustomerTypeFilter({ value, onChange }: Props) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-[100px] h-9 text-xs">
+      <SelectTrigger className="w-full h-9 text-xs">
         <SelectValue placeholder="고객 유형 전체" />
       </SelectTrigger>
       <SelectContent>
