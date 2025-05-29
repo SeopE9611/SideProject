@@ -155,8 +155,8 @@ export default function OrdersClient() {
                     </TableRow>
                   ) : (
                     paginatedOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="text-center">
+                      <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
+                        <TableCell className="text-center py-2 px-4">
                           <TooltipProvider delayDuration={10}>
                             <Tooltip>
                               <TooltipTrigger asChild>
