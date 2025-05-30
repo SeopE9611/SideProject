@@ -26,33 +26,6 @@ export default async function MyPage() {
   if (!session) {
     redirect('/login');
   }
-  // 임시 주문 내역 데이터
-  const orders = [
-    {
-      id: 'ORD-2023-0001',
-      date: '2023-05-01',
-      total: 55000,
-      status: '배송 완료',
-      items: [
-        { name: '루키론 프로 스트링', quantity: 2 },
-        { name: '바볼랏 RPM 블라스트', quantity: 1 },
-      ],
-    },
-    {
-      id: 'ORD-2023-0002',
-      date: '2023-04-15',
-      total: 28000,
-      status: '입금 확인',
-      items: [{ name: '윌슨 NXT 파워', quantity: 1 }],
-    },
-    {
-      id: 'ORD-2023-0003',
-      date: '2023-04-10',
-      total: 32000,
-      status: '입금 대기',
-      items: [{ name: '테크니파이버 블랙코드', quantity: 1 }],
-    },
-  ];
 
   // 임시 리뷰 데이터
   const reviews = [
@@ -164,7 +137,7 @@ export default async function MyPage() {
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<OrderListSkeleton />}>
-                    <OrderList orders={orders} />
+                    <OrderList />
                   </Suspense>
                 </CardContent>
               </Card>
