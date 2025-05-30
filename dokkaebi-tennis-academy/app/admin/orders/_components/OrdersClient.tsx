@@ -187,13 +187,14 @@ export default function OrdersClient() {
                       고객
                       <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'customer' && 'text-primary', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
                     </TableHead>
-                    <TableHead
-                      onClick={() => handleSort('date')}
-                      className={cn('relative flex items-center justify-center space-x-1 whitespace-nowrap overflow-visible', 'cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'date' && 'text-primary')}
-                    >
-                      <span>날짜</span>
-                      <ChevronDown className={cn('w-3 h-3 transition-transform', sortBy === 'date' && sortDirection === 'desc' && 'rotate-180')} />
-                      <DateFilter date={selectedDate} onChange={setSelectedDate} />
+                    <TableHead className="relative whitespace-nowrap overflow-visible">
+                      <div className="flex items-center justify-center gap-2">
+                        <span onClick={() => handleSort('date')} className={cn('flex items-center gap-1 cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'date' && 'text-primary')}>
+                          <span>날짜</span>
+                          <ChevronDown className={cn('w-3 h-3 transition-transform', sortBy === 'date' && sortDirection === 'desc' && 'rotate-180')} />
+                        </span>
+                        <DateFilter date={selectedDate} onChange={setSelectedDate} />
+                      </div>
                     </TableHead>
 
                     <TableHead className="text-center w-[80px]">상태</TableHead>

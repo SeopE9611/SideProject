@@ -17,7 +17,14 @@ export function DateFilter({ date, onChange }: DateFilterProps) {
     <div className="flex items-center space-x-1">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="p-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="p-1"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
             <CalendarIcon className="w-4 h-4" />
           </Button>
         </PopoverTrigger>
