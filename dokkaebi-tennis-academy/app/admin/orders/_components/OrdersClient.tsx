@@ -177,7 +177,7 @@ export default function OrdersClient() {
               <p className=" text-xs text-muted-foreground">총 {filteredOrders.length}개의 주문</p>
             </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent className="overflow-x-auto overflow-visible">
             <div className="w-full">
               <Table className="min-w-full text-xs whitespace-nowrap border border-border">
                 <TableHeader>
@@ -187,9 +187,12 @@ export default function OrdersClient() {
                       고객
                       <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'customer' && 'text-primary', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
                     </TableHead>
-                    <TableHead onClick={() => handleSort('date')} className={cn('text-center cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'date' && 'text-primary')}>
-                      날짜
-                      <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'date' && 'text-primary', sortBy === 'date' && sortDirection === 'desc' && 'rotate-180')} />
+                    <TableHead
+                      onClick={() => handleSort('date')}
+                      className={cn('relative flex items-center justify-center space-x-1 whitespace-nowrap overflow-visible', 'cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'date' && 'text-primary')}
+                    >
+                      <span>날짜</span>
+                      <ChevronDown className={cn('w-3 h-3 transition-transform', sortBy === 'date' && sortDirection === 'desc' && 'rotate-180')} />
                       <DateFilter date={selectedDate} onChange={setSelectedDate} />
                     </TableHead>
 
