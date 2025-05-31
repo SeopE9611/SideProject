@@ -18,15 +18,10 @@ import ReviewListSkeleton from '@/app/mypage/tabs/ReviewListSkeleton';
 import ReviewList from '@/app/mypage/tabs/ReviewList';
 import WishlistSkeleton from '@/app/mypage/tabs/WishlistSkeleton';
 import Wishlist from '@/app/mypage/tabs/Wishlist';
+import UserSidebar from '@/app/mypage/orders/_components/UserSidebar';
 // import ProtectedClient from './ProtectedClient';
 
 export default async function MyPage() {
-  const session = await getServerSession(authConfig);
-
-  if (!session) {
-    redirect('/login');
-  }
-
   // 임시 리뷰 데이터
   const reviews = [
     {
@@ -83,39 +78,7 @@ export default async function MyPage() {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
         {/* 사용자 정보 */}
         <div className="md:col-span-1">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src="/placeholder.svg?height=64&width=64" alt="프로필 이미지" />
-                  <AvatarFallback>사용자</AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle>{session?.user?.name}님</CardTitle>
-                  <CardDescription>일반 회원</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <nav className="space-y-2">
-                <Button variant="ghost" className="w-full justify-start" asChild>
-                  <Link href="/mypage">주문 내역</Link>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start" asChild>
-                  <Link href="/mypage/wishlist">위시리스트</Link>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start" asChild>
-                  <Link href="/mypage/reviews">리뷰 관리</Link>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start" asChild>
-                  <Link href="/mypage/qna">Q&A 내역</Link>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start" asChild>
-                  <Link href="/mypage/profile">회원 정보 수정</Link>
-                </Button>
-              </nav>
-            </CardContent>
-          </Card>
+          <UserSidebar />
         </div>
 
         {/* 마이페이지 콘텐츠 */}
