@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth.config';
-import UserSidebar from '@/app/mypage/orders/_components/UserSidebar';
+import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;

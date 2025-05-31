@@ -1,50 +1,46 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
-import { Button } from '@/components/ui/button';
+'use client';
+
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getServerSession } from 'next-auth';
-import { authConfig } from '@/lib/auth.config';
-import { redirect } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ClipboardList, Heart, MessageCircleQuestion, Star, UserCog } from 'lucide-react';
 
-export default async function UserSidebar() {
-  const session = await getServerSession(authConfig);
+export function UserSidebar() {
+  const searchParams = useSearchParams();
+  const tab = searchParams.get('tab') ?? 'orders';
 
-  if (!session) {
-    redirect('/login');
-  }
+  // 메뉴 항목 정의
+  const menuItems = [
+    { label: '주문 내역', value: 'orders', icon: ClipboardList },
+    { label: '위시리스트', value: 'wishlist', icon: Heart },
+    { label: '리뷰 관리', value: 'reviews', icon: Star },
+    { label: 'Q&A 내역', value: 'qna', icon: MessageCircleQuestion },
+    { label: '회원 정보 수정', value: 'profile', icon: UserCog },
+  ];
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src="/placeholder.svg?height=64&width=64" alt="프로필 이미지" />
-            <AvatarFallback>사용자</AvatarFallback>
-          </Avatar>
-          <div>
-            <CardTitle>{session?.user?.name}님</CardTitle>
-            <CardDescription>일반 회원</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <nav className="space-y-2">
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link href="/mypage">주문 내역</Link>
+    <div className="space-y-2">
+      {menuItems.map(({ label, value, icon: Icon }) => {
+        const isProfile = value === 'profile';
+        const href = isProfile ? '/mypage/profile' : `/mypage?tab=${value}`;
+
+        return (
+          <Button
+            key={value}
+            variant={tab === value && !isProfile ? 'secondary' : 'ghost'}
+            className={cn('w-full justify-start gap-2', {
+              'font-semibold': tab === value && !isProfile,
+            })}
+            asChild
+          >
+            <Link href={href} replace={!isProfile}>
+              <Icon className="w-4 h-4" />
+              {label}
+            </Link>
           </Button>
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link href="/mypage/wishlist">위시리스트</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link href="/mypage/reviews">리뷰 관리</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link href="/mypage/qna">Q&A 내역</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link href="/mypage/profile">회원 정보 수정</Link>
-          </Button>
-        </nav>
-      </CardContent>
-    </Card>
+        );
+      })}
+    </div>
   );
 }
