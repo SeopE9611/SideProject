@@ -26,9 +26,9 @@ export async function GET() {
   }
 
   // 프론트에 필요한 정보만 골라서 보냄 (보안상 비밀번호 등 제외)
-  const { name, email, phone, birthDate, gender, address, postalCode } = user;
+  const { name, email, phone, birthDate, gender, address, postalCode, addressDetail } = user;
 
-  return Response.json({ name, email, phone, birthDate, gender, address, postalCode });
+  return Response.json({ name, email, phone, birthDate, gender, address, postalCode, addressDetail });
 }
 
 //  PATCH: 사용자 정보 수정
@@ -41,7 +41,7 @@ export async function PATCH(req: Request) {
 
   // 클라이언트에서 보낸 JSON 데이터를 파싱
   const body = await req.json();
-  const { name, phone, birthDate, gender, address, postalCode } = body;
+  const { name, phone, birthDate, gender, address, postalCode, addressDetail } = body;
 
   const client = await clientPromise;
   const db = client.db();
@@ -55,6 +55,7 @@ export async function PATCH(req: Request) {
         phone,
         address,
         postalCode,
+        addressDetail,
       },
     }
   );

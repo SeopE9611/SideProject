@@ -29,7 +29,12 @@ export default function ProfilePage() {
 
         const user = await res.json();
 
-        const { address, postalCode, ...rest } = user;
+        const {
+          address, // 기본 주소
+          postalCode, // 우편번호
+          addressDetail, // 상세 주소
+          ...rest // 그 외의 name, email, phone 등
+        } = user;
 
         setProfileData({
           ...profileData,
@@ -37,7 +42,7 @@ export default function ProfilePage() {
           address: {
             address1: address ?? '',
             postalCode: postalCode ?? '',
-            address2: '',
+            address2: addressDetail ?? '',
           },
         });
       } catch (err) {
@@ -96,16 +101,23 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      const fullAddress = `${profileData.address.address1} ${profileData.address.address2}`.trim();
+      const basicAddress = profileData.address.address1.trim();
+      const detailedAddress = profileData.address.address2.trim();
+      const postalCode = profileData.address.postalCode;
+
       const res = await fetch('/api/users/me', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...profileData,
-          address: fullAddress,
-          postalCode: profileData.address.postalCode,
+          name: profileData.name,
+          email: profileData.email,
+          phone: profileData.phone,
+          postalCode,
+          address: basicAddress, // 상세주소는 저장하지 않음
+          addressDetail: detailedAddress, //  별도로 저장하고 싶을 경우 이 필드로
+          marketing: profileData.marketing,
         }),
       });
 
