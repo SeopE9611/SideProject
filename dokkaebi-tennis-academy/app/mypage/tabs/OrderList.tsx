@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { orderStatusColors } from '@/lib/badge-style';
 
 //  주문 데이터 타입 정의
 interface Order {
@@ -53,7 +54,7 @@ export default function OrderList() {
                 <div className="font-medium">{order.id}</div>
                 <div className="text-sm text-muted-foreground">{order.date}</div>
               </div>
-              <Badge variant={order.status === '배송 완료' ? 'default' : order.status === '입금 확인' ? 'secondary' : 'outline'}>{order.status}</Badge>
+              <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${orderStatusColors[order.status]}`}>{order.status}</Badge>
             </div>
 
             <div className="mt-4">
