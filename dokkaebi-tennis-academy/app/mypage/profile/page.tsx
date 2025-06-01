@@ -15,8 +15,11 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import WithdrawalReasonSelect from '@/app/mypage/profile/_components/WithdrawalReasonSelect';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
+  const router = useRouter();
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -422,10 +425,18 @@ export default function ProfilePage() {
               <CardContent>
                 {showWithdrawalForm ? (
                   <WithdrawalReasonSelect
-                    onSubmit={(reason, detail) => {
-                      console.log('탈퇴 사유:', reason);
-                      if (detail) {
-                        console.log('기타 사유:', detail);
+                    onSubmit={async (reason, detail) => {
+                      try {
+                        const res = await fetch('/api/users/me/withdraw', {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ reason, detail }),
+                        });
+
+                        if (!res.ok) throw new Error('탈퇴 실패');
+                        router.push('/withdrawal');
+                      } catch (error) {
+                        toast.error('회원 탈퇴 중 오류가 발생했습니다.');
                       }
                     }}
                   />
