@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast, showToast } from '@/lib/toast';
 import WithdrawalReasonSelect from '@/app/mypage/profile/_components/WithdrawalReasonSelect';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -200,9 +200,7 @@ export default function ProfilePage() {
                   <AvatarImage src="/placeholder.svg?height=80&width=80" alt="프로필 이미지" />
                   <AvatarFallback>이미지</AvatarFallback>
                 </Avatar>
-                <Button variant="outline" size="sm"
-                
-                >
+                <Button variant="outline" size="sm" onClick={() => showToast('해당 기능은 준비 중입니다.')}>
                   <Camera className="mr-2 h-4 w-4" />
                   이미지 변경
                 </Button>
