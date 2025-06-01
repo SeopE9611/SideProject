@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import WithdrawalReasonSelect from '@/app/mypage/profile/_components/WithdrawalReasonSelect';
 
 export default function ProfilePage() {
   useEffect(() => {
@@ -154,7 +155,10 @@ export default function ProfilePage() {
     }
   };
 
-  console.log('🔍 저장 직전 상태:', profileData);
+  // console.log('🔍 저장 직전 상태:', profileData);
+
+  // 회원 탈퇴 상태 관리
+  const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
 
   return (
     <div className="container py-8">
@@ -414,10 +418,22 @@ export default function ProfilePage() {
                 <CardTitle className="text-destructive">회원 탈퇴</CardTitle>
                 <CardDescription>계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.</CardDescription>
               </CardHeader>
+
               <CardContent>
-                <Button variant="destructive" onClick={() => alert('회원 탈퇴 기능은 준비 중입니다.')}>
-                  회원 탈퇴
-                </Button>
+                {showWithdrawalForm ? (
+                  <WithdrawalReasonSelect
+                    onSubmit={(reason, detail) => {
+                      console.log('탈퇴 사유:', reason);
+                      if (detail) {
+                        console.log('기타 사유:', detail);
+                      }
+                    }}
+                  />
+                ) : (
+                  <Button variant="destructive" type="button" onClick={() => setShowWithdrawalForm(true)}>
+                    회원 탈퇴
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>
