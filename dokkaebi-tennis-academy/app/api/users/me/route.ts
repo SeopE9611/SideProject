@@ -1,12 +1,10 @@
-// app/api/users/me/route.ts
-
 // 로그인된 사용자의 세션 정보를 가져오기 위한 함수
 
 // MongoDB 연결을 위한 Promise 객체
 import { auth } from '@/lib/auth';
 import clientPromise from '@/lib/mongodb';
 
-// ✅ GET: 현재 로그인된 사용자의 정보 조회
+//  GET: 현재 로그인된 사용자의 정보 조회
 export async function GET() {
   const session = await auth(); // 로그인된 세션 가져오기
 
@@ -33,7 +31,7 @@ export async function GET() {
   return Response.json({ name, email, phone, birthDate, gender, address, postalCode });
 }
 
-// ✅ PATCH: 사용자 정보 수정
+//  PATCH: 사용자 정보 수정
 export async function PATCH(req: Request) {
   const session = await auth();
 

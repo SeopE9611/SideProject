@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'; // 사용자 인증을 위한 auth 함수
 import clientPromise from '@/lib/mongodb'; // MongoDB 연결 클라이언트
 import bcrypt from 'bcryptjs'; // 비밀번호 해싱 및 검증을 위한 bcryptjs
 
-// ✅ 비밀번호 유효성 검사 함수 (8자 이상, 영문 + 숫자 포함)
+//  비밀번호 유효성 검사 함수 (8자 이상, 영문 + 숫자 포함)
 function isPasswordValid(password: string) {
   const lengthOk = password.length >= 8; // 8자 이상
   const hasLetter = /[a-zA-Z]/.test(password); // 영문 포함 여부

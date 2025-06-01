@@ -33,9 +33,9 @@ export async function PATCH(req: Request) {
     );
 
     // 성공 응답
-    return NextResponse.json({ message: '회원 탈퇴 처리 완료' }, { status: 200 });
+    return NextResponse.json({ message: '탈퇴 완료', email: session.user.email }, { status: 200 });
   } catch (error) {
-    console.error('❌ 탈퇴 처리 중 오류:', error);
+    console.error(' 탈퇴 처리 중 오류:', error);
     return NextResponse.json({ message: '서버 오류 발생' }, { status: 500 });
   }
 }

@@ -198,9 +198,11 @@ export default function ProfilePage() {
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20">
                   <AvatarImage src="/placeholder.svg?height=80&width=80" alt="프로필 이미지" />
-                  <AvatarFallback>홍길동</AvatarFallback>
+                  <AvatarFallback>이미지</AvatarFallback>
                 </Avatar>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm"
+                
+                >
                   <Camera className="mr-2 h-4 w-4" />
                   이미지 변경
                 </Button>
@@ -435,7 +437,12 @@ export default function ProfilePage() {
                         });
 
                         if (!res.ok) throw new Error('탈퇴 실패');
-                        await signOut({ callbackUrl: '/withdrawal' });
+
+                        //  응답에서 이메일 꺼내기 (API에서 email 반환하도록 구현되어야 함)
+                        const { email } = await res.json();
+
+                        //  마이페이지 → 철회 페이지로 이동 + 쿼리 파라미터 전달
+                        await signOut({ callbackUrl: `/withdrawal?email=${email}` });
                       } catch (error) {
                         toast.error('회원 탈퇴 중 오류가 발생했습니다.');
                       }

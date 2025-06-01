@@ -1,28 +1,23 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authConfig } from '@/lib/auth.config';
 import clientPromise from '@/lib/mongodb';
 
-// PATCH 요청만 허용
-export async function PATCH() {
-  //  현재 로그인된 사용자 세션 가져오기
-  const session = await getServerSession(authConfig);
+// POST 요청만 허용
+export async function POST(req: Request) {
+  // 요청 본문에서 이메일 꺼내기
+  const { email } = await req.json();
 
-  //  로그인 안 되어 있으면 401 Unauthorized 반환
-  if (!session?.user?.email) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  // 이메일이 없으면 400 Bad Request
+  if (!email) {
+    return NextResponse.json({ message: '이메일이 전달되지 않았습니다.' }, { status: 400 });
   }
 
-  //  DB 연결
+  // DB 연결
   const client = await clientPromise;
   const db = client.db();
 
-  //  현재 로그인된 사용자의 이메일
-  const userEmail = session.user.email;
-
-  //  계정 복구 처리: 삭제 플래그 제거 및 탈퇴 관련 필드 제거
-  await db.collection('users').updateOne(
-    { email: userEmail },
+  // 해당 이메일 계정 복구
+  const result = await db.collection('users').updateOne(
+    { email },
     {
       $unset: {
         deletedAt: '', // 탈퇴 시점 제거
@@ -35,6 +30,10 @@ export async function PATCH() {
     }
   );
 
-  //  복구 성공 응답
-  return NextResponse.json({ message: '계정 복구 완료' }, { status: 200 });
+  // 결과 반환
+  if (result.modifiedCount === 1) {
+    return NextResponse.json({ message: '계정 복구 완료' }, { status: 200 });
+  } else {
+    return NextResponse.json({ message: '계정 복구 실패' }, { status: 500 });
+  }
 }

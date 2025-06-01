@@ -23,7 +23,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export default function OrderList() {
   //  SWR을 사용해 API에서 주문 데이터 가져오기
   const { data: orders, error, isLoading } = useSWR<Order[]>('/api/users/me/orders', fetcher);
-  console.log('✅ 주문:', orders);
+  console.log(' 주문:', orders);
   //  에러 처리
   if (error) {
     return <div className="text-center py-8 text-red-500">주문 내역을 불러오는 중 오류가 발생했습니다.</div>;

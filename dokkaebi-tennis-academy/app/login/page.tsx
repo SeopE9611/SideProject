@@ -37,6 +37,7 @@ export default function LoginPage() {
     const result = await res.json();
 
     if (!res.ok) {
+      // 유효성 검사 에러 분기 처리
       switch (result.error) {
         case 'not_found':
           showErrorToast('존재하지 않는 이메일입니다.');
@@ -45,8 +46,8 @@ export default function LoginPage() {
           showErrorToast(
             <>
               존재하지 않거나 탈퇴한 계정입니다.
-              <button className="text-sm text-blue-600 hover:underline ml-2" onClick={() => router.push('/withdrawal')}>
-                탈퇴 철회하기
+              <button className="text-sm text-blue-600 hover:underline ml-2" onClick={() => router.push(`/withdrawal?email=${encodeURIComponent(email)}`)}>
+                탈퇴 철회 페이지로 이동하기(클릭)
               </button>
             </>
           );
@@ -63,7 +64,7 @@ export default function LoginPage() {
       return;
     }
 
-    // 유효성 검사를 통과한 경우에만 NextAuth로 세션 생성
+    //  에러가 없을 경우에만 signIn 호출
     const nextAuthResult = await signIn('credentials', {
       email,
       password,

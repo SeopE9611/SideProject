@@ -1,4 +1,3 @@
-// ✅ /app/api/login/route.ts
 import { connectToDatabase } from '@/lib/db';
 import { compare } from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
@@ -29,7 +28,7 @@ export async function POST(req: NextRequest) {
 
   if (user.isDeleted) {
     console.warn(`탈퇴한 사용자 로그인 시도: ${email}`);
-    return NextResponse.json({ error: 'withdrawn' }, { status: 403 });
+    return NextResponse.json({ error: 'withdrawn', message: '탈퇴한 계정입니다. 복구를 진행해주세요.' }, { status: 403 });
   }
 
   return NextResponse.json({ success: true });

@@ -5,11 +5,35 @@ import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 export default function AccountDeletedPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email'); // 탈퇴한 사용자 이메일 추출
+
+  const handleRestore = async () => {
+    if (!email) {
+      showErrorToast('이메일 정보가 누락되었습니다.');
+      return;
+    }
+
+    // 복구 요청 전송 (POST 요청으로 변경)
+    const res = await fetch('/api/users/me/restore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }), // 이메일 포함
+    });
+
+    if (res.ok) {
+      showSuccessToast('계정이 복구되었습니다. 다시 로그인해주세요.');
+      router.push('/login');
+    } else {
+      showErrorToast('복구 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <Card className="w-full max-w-md shadow-lg">
@@ -24,22 +48,7 @@ export default function AccountDeletedPage() {
         </CardContent>
 
         <CardFooter className="flex flex-col sm:flex-row gap-3 justify-center pb-10">
-          <Button
-            onClick={async () => {
-              const res = await fetch('/api/users/me/restore', {
-                method: 'PATCH',
-              });
-
-              if (res.ok) {
-                showSuccessToast('계정이 복구되었습니다. 다시 로그인해주세요.');
-                router.push('/login');
-              } else {
-                showErrorToast('복구 중 오류가 발생했습니다.');
-              }
-            }}
-          >
-            탈퇴 철회하기
-          </Button>
+          <Button onClick={handleRestore}>탈퇴 철회하기</Button>
           <Button variant="outline" className="w-full sm:w-auto" asChild>
             <Link href="/">홈으로 이동</Link>
           </Button>
