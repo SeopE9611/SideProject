@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import WithdrawalReasonSelect from '@/app/mypage/profile/_components/WithdrawalReasonSelect';
 import { useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -434,7 +435,7 @@ export default function ProfilePage() {
                         });
 
                         if (!res.ok) throw new Error('탈퇴 실패');
-                        router.push('/withdrawal');
+                        await signOut({ callbackUrl: '/withdrawal' });
                       } catch (error) {
                         toast.error('회원 탈퇴 중 오류가 발생했습니다.');
                       }

@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { toast } from 'sonner';
 
 // 성공 토스트 전역 함수
@@ -8,7 +9,7 @@ export const showSuccessToast = (message: string) =>
   });
 
 // 실패 토스트 전역 함수
-export const showErrorToast = (message: string) =>
+export const showErrorToast = (message: ReactNode) =>
   toast.error(message, {
     icon: '🚫',
     style: {

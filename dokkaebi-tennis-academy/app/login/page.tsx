@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,24 +28,54 @@ export default function LoginPage() {
     const email = (document.getElementById('email') as HTMLInputElement)?.value;
     const password = (document.getElementById('password') as HTMLInputElement)?.value;
 
-    const result = await signIn('credentials', {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      switch (result.error) {
+        case 'not_found':
+          showErrorToast('존재하지 않는 이메일입니다.');
+          break;
+        case 'withdrawn':
+          showErrorToast(
+            <>
+              존재하지 않거나 탈퇴한 계정입니다.
+              <button className="text-sm text-blue-600 hover:underline ml-2" onClick={() => router.push('/withdrawal')}>
+                탈퇴 철회하기
+              </button>
+            </>
+          );
+          break;
+        case 'wrong_password':
+          showErrorToast('비밀번호가 일치하지 않습니다.');
+          break;
+        case 'missing_fields':
+          showErrorToast('이메일과 비밀번호를 모두 입력해주세요.');
+          break;
+        default:
+          showErrorToast('로그인에 실패했습니다.');
+      }
+      return;
+    }
+
+    // 유효성 검사를 통과한 경우에만 NextAuth로 세션 생성
+    const nextAuthResult = await signIn('credentials', {
       email,
       password,
       redirect: false,
     });
 
-    const from = params.get('from'); // URL에 ?from=cart 라는 쿼리가 있을 경우 "cart"를 반환
-
-    if (result?.ok) {
+    if (nextAuthResult?.ok) {
       localStorage.removeItem('cart-storage');
-
-      if (from === 'cart') {
-        router.push('/cart');
-      } else {
-        router.push('/');
-      }
+      const from = new URLSearchParams(window.location.search).get('from');
+      router.push(from === 'cart' ? '/cart' : '/');
     } else {
-      alert('이메일과 비밀번호를 확인해주세요.');
+      showErrorToast('로그인 세션 생성에 실패했습니다.');
     }
   };
 
@@ -57,12 +89,12 @@ export default function LoginPage() {
     const address = (document.getElementById('register-address') as HTMLInputElement)?.value;
 
     if (!email || !password || !confirmPassword || !name) {
-      alert('모든 필드를 입력해주세요.');
+      showErrorToast('모든 필드를 입력해주세요.');
       return;
     }
 
     if (password !== confirmPassword) {
-      alert('비밀번호가 일치하지 않습니다.');
+      showErrorToast('비밀번호가 일치하지 않습니다.');
       return;
     }
 
@@ -79,10 +111,10 @@ export default function LoginPage() {
     const from = params.get('from');
 
     if (res.ok) {
-      alert('회원가입이 완료되었습니다.');
+      showSuccessToast('회원가입이 완료되었습니다.');
       router.push(`/login?tab=login${from === 'cart' ? '&from=cart' : ''}`);
     } else {
-      alert(data.message || '회원가입 중 오류가 발생했습니다.');
+      showErrorToast(data.message || '회원가입 중 오류가 발생했습니다.');
     }
   };
 
