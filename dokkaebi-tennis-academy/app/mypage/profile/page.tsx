@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 
 export default function ProfilePage() {
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function ProfilePage() {
         });
       } catch (err) {
         console.error(err);
-        alert('회원 정보를 불러오는 중 오류가 발생했습니다.');
+        toast.error('회원 정보를 불러오는 중 오류가 발생했습니다.');
       }
     };
 
@@ -104,25 +105,52 @@ export default function ProfilePage() {
 
       if (!res.ok) throw new Error('저장 실패');
 
-      alert('회원 정보가 성공적으로 저장되었습니다.');
+      toast.success('회원 정보가 성공적으로 저장되었습니다.');
     } catch (err) {
       console.error(err);
-      alert('오류가 발생했습니다. 다시 시도해주세요.');
+      toast.error('오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
   };
+  // 비밀번호 변경 핸들러 함수
   const handlePasswordChange = async () => {
+    // 새 비밀번호와 확인용 비밀번호가 일치하지 않을 경우 얼럿 표시
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('새 비밀번호가 일치하지 않습니다.');
+      toast.error('새 비밀번호가 일치하지 않습니다.');
       return;
     }
-    setIsLoading(true);
-    // API 호출 시뮬레이션
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    alert('비밀번호가 변경되었습니다.');
+
+    setIsLoading(true); // 로딩 상태 활성화
+
+    try {
+      // API 호출: 실제 비밀번호 변경 요청
+      const res = await fetch('/api/users/me/password', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword, // 현재 비밀번호
+          newPassword: passwordData.newPassword, // 새 비밀번호
+        }),
+      });
+
+      // 응답이 실패일 경우 예외 처리
+      if (!res.ok) {
+        const { message } = await res.json();
+        throw new Error(message || '비밀번호 변경 실패');
+      }
+
+      // 성공 시 입력 필드 초기화
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast.success('비밀번호가 성공적으로 변경되었습니다.');
+    } catch (error: any) {
+      // 실패 시 에러 메시지 표시
+      toast.error(error.message || '오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false); // 로딩 상태 종료
+    }
   };
 
   console.log('🔍 저장 직전 상태:', profileData);
