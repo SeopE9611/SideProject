@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 export default function ProfilePage() {
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function ProfilePage() {
         });
       } catch (err) {
         console.error(err);
-        toast.error('회원 정보를 불러오는 중 오류가 발생했습니다.');
+        showErrorToast('회원 정보를 불러오는 중 오류가 발생했습니다.');
       }
     };
 
@@ -105,10 +106,10 @@ export default function ProfilePage() {
 
       if (!res.ok) throw new Error('저장 실패');
 
-      toast.success('회원 정보가 성공적으로 저장되었습니다.');
+      showSuccessToast('회원 정보가 성공적으로 저장되었습니다.');
     } catch (err) {
       console.error(err);
-      toast.error('오류가 발생했습니다. 다시 시도해주세요.');
+      showErrorToast('오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +118,7 @@ export default function ProfilePage() {
   const handlePasswordChange = async () => {
     // 새 비밀번호와 확인용 비밀번호가 일치하지 않을 경우 얼럿 표시
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('새 비밀번호가 일치하지 않습니다.');
+      showErrorToast('새 비밀번호가 일치하지 않습니다.');
       return;
     }
 
@@ -144,10 +145,10 @@ export default function ProfilePage() {
 
       // 성공 시 입력 필드 초기화
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      toast.success('비밀번호가 성공적으로 변경되었습니다.');
+      showSuccessToast('비밀번호가 성공적으로 변경되었습니다.');
     } catch (error: any) {
       // 실패 시 에러 메시지 표시
-      toast.error(error.message || '오류가 발생했습니다.');
+      showErrorToast(error.message || '오류가 발생했습니다.');
     } finally {
       setIsLoading(false); // 로딩 상태 종료
     }
