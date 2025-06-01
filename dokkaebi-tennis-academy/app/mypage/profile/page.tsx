@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Camera, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,22 +14,69 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 
 export default function ProfilePage() {
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/users/me');
+        if (!res.ok) throw new Error('정보를 불러올 수 없습니다');
+
+        const user = await res.json();
+
+        const { address, postalCode, ...rest } = user;
+
+        setProfileData({
+          ...profileData,
+          ...rest,
+          address: {
+            address1: address ?? '',
+            postalCode: postalCode ?? '',
+            address2: '',
+          },
+        });
+      } catch (err) {
+        console.error(err);
+        alert('회원 정보를 불러오는 중 오류가 발생했습니다.');
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  // 우편 번호 검색
+  const handleAddressSearch = () => {
+    new window.daum.Postcode({
+      oncomplete: function (data: any) {
+        const fullAddress = data.address;
+        const postalCode = data.zonecode;
+
+        setProfileData((prev) => ({
+          ...prev,
+          address: {
+            ...prev.address,
+            address1: fullAddress,
+            postalCode: postalCode,
+          },
+        }));
+      },
+    }).open();
+  };
+
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: '홍길동',
-    email: 'hong@example.com',
-    phone: '010-1234-5678',
-    birthDate: '1990-01-01',
-    gender: 'male',
+    name: '',
+    email: '',
+    phone: '',
+    birthDate: '',
+    gender: '',
     address: {
-      zipCode: '12345',
-      address1: '서울시 강남구 테헤란로 123',
-      address2: '456호',
+      postalCode: '',
+      address1: '',
+      address2: '',
     },
     marketing: {
-      email: true,
+      email: false,
       sms: false,
-      push: true,
+      push: false,
     },
   });
 
@@ -39,14 +86,32 @@ export default function ProfilePage() {
     confirmPassword: '',
   });
 
-  const handleProfileUpdate = async () => {
+  const handleSave = async () => {
     setIsLoading(true);
-    // API 호출 시뮬레이션
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    alert('프로필이 업데이트되었습니다.');
-  };
+    try {
+      const fullAddress = `${profileData.address.address1} ${profileData.address.address2}`.trim();
+      const res = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...profileData,
+          address: fullAddress,
+          postalCode: profileData.address.postalCode,
+        }),
+      });
 
+      if (!res.ok) throw new Error('저장 실패');
+
+      alert('회원 정보가 성공적으로 저장되었습니다.');
+    } catch (err) {
+      console.error(err);
+      alert('오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert('새 비밀번호가 일치하지 않습니다.');
@@ -59,6 +124,8 @@ export default function ProfilePage() {
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     alert('비밀번호가 변경되었습니다.');
   };
+
+  console.log('🔍 저장 직전 상태:', profileData);
 
   return (
     <div className="container py-8">
@@ -105,21 +172,21 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="name">이름 *</Label>
-                  <Input id="name" value={profileData.name} onChange={(e) => setProfileData({ ...profileData, name: e.target.value })} />
+                  <Input id="name" value={profileData.name ?? '이름 없음'} onChange={(e) => setProfileData({ ...profileData, name: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">이메일 *</Label>
-                  <Input id="email" type="email" value={profileData.email} onChange={(e) => setProfileData({ ...profileData, email: e.target.value })} />
+                  <Input id="email" type="email" value={profileData.email ?? '이메일 없음'} onChange={(e) => setProfileData({ ...profileData, email: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">전화번호</Label>
-                  <Input id="phone" value={profileData.phone} onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })} />
+                  <Input id="phone" value={profileData.phone ?? '전화번호 없음'} onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })} />
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="birthDate">생년월일</Label>
                   <Input id="birthDate" type="date" value={profileData.birthDate} onChange={(e) => setProfileData({ ...profileData, birthDate: e.target.value })} />
-                </div>
-                <div className="space-y-2">
+                </div> */}
+                {/* <div className="space-y-2">
                   <Label htmlFor="gender">성별</Label>
                   <Select value={profileData.gender} onValueChange={(value) => setProfileData({ ...profileData, gender: value })}>
                     <SelectTrigger>
@@ -131,11 +198,11 @@ export default function ProfilePage() {
                       <SelectItem value="other">기타</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleProfileUpdate} disabled={isLoading}>
+                <Button onClick={handleSave} disabled={isLoading}>
                   <Save className="mr-2 h-4 w-4" />
                   {isLoading ? '저장 중...' : '저장'}
                 </Button>
@@ -189,16 +256,21 @@ export default function ProfilePage() {
                   <Label htmlFor="zipCode">우편번호</Label>
                   <div className="flex gap-2">
                     <Input
-                      id="zipCode"
-                      value={profileData.address.zipCode}
+                      id="postalCode"
+                      value={profileData.address.postalCode}
+                      readOnly
+                      className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 cursor-default"
                       onChange={(e) =>
-                        setProfileData({
-                          ...profileData,
-                          address: { ...profileData.address, zipCode: e.target.value },
-                        })
+                        setProfileData((prev) => ({
+                          ...prev,
+                          address: {
+                            ...prev.address,
+                            postalCode: e.target.value,
+                          },
+                        }))
                       }
                     />
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleAddressSearch}>
                       검색
                     </Button>
                   </div>
@@ -209,11 +281,16 @@ export default function ProfilePage() {
                 <Input
                   id="address1"
                   value={profileData.address.address1}
+                  readOnly
+                  className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 cursor-default"
                   onChange={(e) =>
-                    setProfileData({
-                      ...profileData,
-                      address: { ...profileData.address, address1: e.target.value },
-                    })
+                    setProfileData((prev) => ({
+                      ...prev,
+                      address: {
+                        ...prev.address,
+                        address1: e.target.value,
+                      },
+                    }))
                   }
                 />
               </div>
@@ -232,7 +309,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleProfileUpdate} disabled={isLoading}>
+                <Button onClick={handleSave} disabled={isLoading}>
                   <Save className="mr-2 h-4 w-4" />
                   {isLoading ? '저장 중...' : '저장'}
                 </Button>
@@ -257,7 +334,7 @@ export default function ProfilePage() {
                   </div>
                   <Switch
                     id="email-marketing"
-                    checked={profileData.marketing.email}
+                    checked={profileData.marketing?.email ?? false}
                     onCheckedChange={(checked) =>
                       setProfileData({
                         ...profileData,
@@ -274,7 +351,7 @@ export default function ProfilePage() {
                   </div>
                   <Switch
                     id="sms-marketing"
-                    checked={profileData.marketing.sms}
+                    checked={profileData.marketing?.sms ?? false}
                     onCheckedChange={(checked) =>
                       setProfileData({
                         ...profileData,
@@ -291,7 +368,7 @@ export default function ProfilePage() {
                   </div>
                   <Switch
                     id="push-marketing"
-                    checked={profileData.marketing.push}
+                    checked={profileData.marketing?.push ?? false}
                     onCheckedChange={(checked) =>
                       setProfileData({
                         ...profileData,
