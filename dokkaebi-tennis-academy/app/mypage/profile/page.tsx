@@ -255,7 +255,7 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="newPassword">새 비밀번호 *</Label>
                 <Input id="newPassword" type="password" value={passwordData.newPassword} onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })} />
-                <p className="text-sm text-muted-foreground">8자 이상, 영문/숫자/특수문자 조합으로 입력해주세요.</p>
+                <p className="text-sm text-muted-foreground">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">새 비밀번호 확인 *</Label>

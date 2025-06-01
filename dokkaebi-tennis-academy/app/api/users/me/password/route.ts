@@ -2,6 +2,14 @@ import { auth } from '@/lib/auth'; // 사용자 인증을 위한 auth 함수
 import clientPromise from '@/lib/mongodb'; // MongoDB 연결 클라이언트
 import bcrypt from 'bcryptjs'; // 비밀번호 해싱 및 검증을 위한 bcryptjs
 
+// ✅ 비밀번호 유효성 검사 함수 (8자 이상, 영문 + 숫자 포함)
+function isPasswordValid(password: string) {
+  const lengthOk = password.length >= 8; // 8자 이상
+  const hasLetter = /[a-zA-Z]/.test(password); // 영문 포함 여부
+  const hasNumber = /\d/.test(password); // 숫자 포함 여부
+  return lengthOk && hasLetter && hasNumber;
+}
+
 // 비밀번호 변경 API (PATCH 메서드)
 export async function PATCH(req: Request) {
   const session = await auth(); // 현재 로그인된 사용자 세션 정보 확인
@@ -12,6 +20,11 @@ export async function PATCH(req: Request) {
 
   // 클라이언트에서 보낸 현재 비밀번호와 새 비밀번호 추출
   const { currentPassword, newPassword } = await req.json();
+
+  // 서버 측에서도 유효성 검사 진행
+  if (!isPasswordValid(newPassword)) {
+    return Response.json({ message: '비밀번호는 8자 이상이며, 영문과 숫자를 포함해야 합니다.' }, { status: 400 });
+  }
 
   const client = await clientPromise; // MongoDB 클라이언트 연결
   const db = client.db(); // DB 선택

@@ -55,8 +55,6 @@ export async function PATCH(req: Request) {
       $set: {
         name,
         phone,
-        birthDate,
-        gender,
         address,
         postalCode,
       },
