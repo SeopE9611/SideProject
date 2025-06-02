@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,10 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useSession, signOut } from 'next-auth/react';
+import { UserNav } from '@/components/nav/UserNav';
+import { UserNavMobile } from '@/components/nav/UserNavMobile';
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { data: session, status } = useSession();
   const menuItems = [
     { name: '홈', href: '/' },
     { name: '스트링', href: '/products' },
@@ -49,23 +47,7 @@ const Header = () => {
               <span className="sr-only">장바구니</span>
             </Button>
           </Link>
-          {status === 'loading' ? (
-            <span className="text-sm text-muted-foreground">로딩 중...</span>
-          ) : session ? (
-            <>
-              <span className="text-sm text-muted-foreground">{session.user?.name || session.user?.email} 님</span>
-              <Button variant="ghost" size="icon" onClick={() => signOut({ callbackUrl: '/' })}>
-                로그아웃
-              </Button>
-            </>
-          ) : (
-            <Link href="/login">
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-                <span className="sr-only">로그인</span>
-              </Button>
-            </Link>
-          )}
+          <UserNav />
           <ThemeToggle />
         </div>
 
@@ -93,19 +75,14 @@ const Header = () => {
                   </Link>
                 ))}
               </nav>
-              <div className="flex gap-4">
-                <Link href="/cart" className="flex-1">
+              <div className="flex flex-col gap-4">
+                <Link href="/cart" className="w-full">
                   <Button variant="outline" className="w-full">
                     <ShoppingCart className="mr-2 h-4 w-4" />
                     장바구니
                   </Button>
                 </Link>
-                <Link href="/login" className="flex-1">
-                  <Button className="w-full">
-                    <User className="mr-2 h-4 w-4" />
-                    로그인
-                  </Button>
-                </Link>
+                <UserNavMobile />
               </div>
               <div className="flex justify-center mt-4">
                 <ThemeToggle />

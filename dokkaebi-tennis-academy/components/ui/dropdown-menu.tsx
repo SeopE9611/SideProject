@@ -36,10 +36,14 @@ const DropdownMenuSubContent = React.forwardRef<React.ElementRef<typeof Dropdown
 ));
 DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
 
-const DropdownMenuContent = React.forwardRef<React.ElementRef<typeof DropdownMenuPrimitive.Content>, React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>>(({ className, sideOffset = 4, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
-    <DropdownMenuPrimitive.Content ref={ref} sideOffset={sideOffset} className={cn('z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white text-black dark:bg-gray-800 dark:text-white p-1 shadow-md', className)} {...props} />
-  </DropdownMenuPrimitive.Portal>
+const DropdownMenuContent = React.forwardRef<React.ElementRef<typeof DropdownMenuPrimitive.Content>, React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>>(({ className, sideOffset = 8, align = 'center', ...props }, ref) => (
+  <DropdownMenuPrimitive.Content
+    ref={ref}
+    align={align}
+    sideOffset={sideOffset}
+    className={cn('z-50 min-w-[10rem] rounded-md border border-border bg-white p-1 text-sm text-foreground shadow-md dark:bg-gray-800', 'animate-in fade-in slide-in-from-top-1', className)}
+    {...props}
+  />
 ));
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
