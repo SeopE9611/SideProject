@@ -9,6 +9,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
   }
 
+  function isPasswordValid(password: string) {
+    const lengthOk = password.length >= 8;
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    return lengthOk && hasLetter && hasNumber;
+  }
+
+  if (!isPasswordValid(password)) {
+    return NextResponse.json({ message: '비밀번호는 8자 이상이며, 영문과 숫자를 포함해야 합니다.' }, { status: 400 });
+  }
+
   let hashedPassword: string;
 
   try {

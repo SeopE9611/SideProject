@@ -247,7 +247,9 @@ export default function LoginPage() {
                 <Input id="register-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" />
               </div>
               <div className="col-span-2">
-                <Button className="w-full">회원가입</Button>
+                <Button className="w-full" onClick={handleRegister}>
+                  회원가입
+                </Button>
               </div>
               <div className="col-span-2">
                 <div className="relative my-4">
