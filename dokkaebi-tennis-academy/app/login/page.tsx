@@ -152,48 +152,55 @@ export default function LoginPage() {
               <CardTitle className="text-2xl text-center">로그인</CardTitle>
               <CardDescription className="text-center">도깨비 테니스 아카데미에 오신 것을 환영합니다.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">이메일</Label>
-                <Input id="email" type="email" placeholder="이메일 주소를 입력하세요" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">비밀번호</Label>
-                  <Link href="/forgot-password" className="text-xs text-primary hover:underline">
-                    비밀번호 찾기
-                  </Link>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLogin();
+              }}
+            >
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">이메일</Label>
+                  <Input id="email" type="email" placeholder="이메일 주소를 입력하세요" />
                 </div>
-                <Input id="password" type="password" placeholder="비밀번호를 입력하세요" />
-              </div>
-              <Button className="w-full" onClick={handleLogin}>
-                로그인
-              </Button>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">비밀번호</Label>
+                    <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                      비밀번호 찾기
+                    </Link>
+                  </div>
+                  <Input id="password" type="password" placeholder="비밀번호를 입력하세요" />
+                </div>
+                <Button type="submit" className="w-full" onClick={handleLogin}>
+                  로그인
+                </Button>
 
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">또는 SNS 계정으로 로그인</span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">또는 SNS 계정으로 로그인</span>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                <Button variant="outline" className="w-full">
-                  <Image src="/placeholder.svg?height=20&width=20" alt="카카오 로그인" width={20} height={20} className="mr-2" />
-                  카카오
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Image src="/placeholder.svg?height=20&width=20" alt="네이버 로그인" width={20} height={20} className="mr-2" />
-                  네이버
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Image src="/placeholder.svg?height=20&width=20" alt="구글 로그인" width={20} height={20} className="mr-2" />
-                  구글
-                </Button>
-              </div>
-            </CardContent>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button variant="outline" className="w-full">
+                    <Image src="/placeholder.svg?height=20&width=20" alt="카카오 로그인" width={20} height={20} className="mr-2" />
+                    카카오
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <Image src="/placeholder.svg?height=20&width=20" alt="네이버 로그인" width={20} height={20} className="mr-2" />
+                    네이버
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <Image src="/placeholder.svg?height=20&width=20" alt="구글 로그인" width={20} height={20} className="mr-2" />
+                    구글
+                  </Button>
+                </div>
+              </CardContent>
+            </form>
             <div className="text-center text-sm text-muted-foreground">
               비회원도 상품 구매가 가능하나 <span className="font-semibold text-primary">다양한 회원혜택</span>에서 제외됩니다.
             </div>
@@ -208,74 +215,81 @@ export default function LoginPage() {
               <CardTitle className="text-2xl text-center">회원가입</CardTitle>
               <CardDescription className="text-center">도깨비 테니스 아카데미의 회원이 되어보세요.</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 space-y-2">
-                <Label htmlFor="register-email">이메일</Label>
-                <Input id="register-email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@ddokaebi.com" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="register-password">비밀번호</Label>
-                <Input id="register-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호를 입력하세요" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">비밀번호 확인</Label>
-                <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="비밀번호를 다시 입력하세요" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">이름</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="이름을 입력하세요" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">연락처</Label>
-                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ( '-' 제외)" />
-              </div>
-              <div className="col-span-2 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="register-postalCode">우편번호</Label>
-                  <Button variant="outline" size="sm" onClick={handleFindPostcode}>
-                    우편번호 찾기
-                  </Button>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleRegister();
+              }}
+            >
+              <CardContent className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="register-email">이메일</Label>
+                  <Input id="register-email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@ddokaebi.com" />
                 </div>
-                <Input id="register-postalCode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="우편번호를 입력하세요" readOnly className=" bg-gray-100 cursor-not-allowed max-w-[200px]" />
-              </div>
-              <div className="col-span-2 space-y-2">
-                <Label htmlFor="register-address">기본 배송지 주소</Label>
-                <Input id="register-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소를 입력하세요" readOnly className="bg-gray-100 cursor-not-allowed" />
-              </div>
-              <div className="col-span-2 space-y-2">
-                <Label htmlFor="register-address-detail">상세 주소</Label>
-                <Input id="register-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" />
-              </div>
-              <div className="col-span-2">
-                <Button className="w-full" onClick={handleRegister}>
-                  회원가입
-                </Button>
-              </div>
-              <div className="col-span-2">
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">비밀번호</Label>
+                  <Input id="register-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호를 입력하세요" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">비밀번호 확인</Label>
+                  <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="비밀번호를 다시 입력하세요" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">이름</Label>
+                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="이름을 입력하세요" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">연락처</Label>
+                  <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ( '-' 제외)" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="register-postalCode">우편번호</Label>
+                    <Button variant="outline" size="sm" onClick={handleFindPostcode}>
+                      우편번호 찾기
+                    </Button>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">또는 SNS 계정으로 가입</span>
+                  <Input id="register-postalCode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="우편번호를 입력하세요" readOnly className=" bg-gray-100 cursor-not-allowed max-w-[200px]" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="register-address">기본 배송지 주소</Label>
+                  <Input id="register-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소를 입력하세요" readOnly className="bg-gray-100 cursor-not-allowed" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="register-address-detail">상세 주소</Label>
+                  <Input id="register-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" />
+                </div>
+                <div className="col-span-2">
+                  <Button type="submit" className="w-full" onClick={handleRegister}>
+                    회원가입
+                  </Button>
+                </div>
+                <div className="col-span-2">
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">또는 SNS 계정으로 가입</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button variant="outline" className="w-full">
+                      <Image src="/placeholder.svg?height=20&width=20" alt="카카오 가입" width={20} height={20} className="mr-2" />
+                      카카오
+                    </Button>
+                    <Button variant="outline" className="w-full">
+                      <Image src="/placeholder.svg?height=20&width=20" alt="네이버 가입" width={20} height={20} className="mr-2" />
+                      네이버
+                    </Button>
+                    <Button variant="outline" className="w-full">
+                      <Image src="/placeholder.svg?height=20&width=20" alt="구글 가입" width={20} height={20} className="mr-2" />
+                      구글
+                    </Button>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button variant="outline" className="w-full">
-                    <Image src="/placeholder.svg?height=20&width=20" alt="카카오 가입" width={20} height={20} className="mr-2" />
-                    카카오
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <Image src="/placeholder.svg?height=20&width=20" alt="네이버 가입" width={20} height={20} className="mr-2" />
-                    네이버
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <Image src="/placeholder.svg?height=20&width=20" alt="구글 가입" width={20} height={20} className="mr-2" />
-                    구글
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            </form>
           </TabsContent>
         </Tabs>
       </Card>
