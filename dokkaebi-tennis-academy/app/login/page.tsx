@@ -17,6 +17,15 @@ export default function LoginPage() {
   const params = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>('login');
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [address, setAddress] = useState('');
+  const [addressDetail, setAddressDetail] = useState('');
+
   useEffect(() => {
     const tabParam = params.get('tab');
     if (tabParam === 'login' || tabParam === 'register') {
@@ -81,14 +90,6 @@ export default function LoginPage() {
   };
 
   const handleRegister = async () => {
-    const email = (document.getElementById('register-email') as HTMLInputElement)?.value;
-    const password = (document.getElementById('register-password') as HTMLInputElement)?.value;
-    const confirmPassword = (document.getElementById('confirm-password') as HTMLInputElement)?.value;
-    const name = (document.getElementById('name') as HTMLInputElement)?.value;
-    const phone = (document.getElementById('phone') as HTMLInputElement)?.value;
-    const postalCode = (document.getElementById('register-postalCode') as HTMLInputElement)?.value;
-    const address = (document.getElementById('register-address') as HTMLInputElement)?.value;
-
     if (!email || !password || !confirmPassword || !name) {
       showErrorToast('모든 필드를 입력해주세요.');
       return;
@@ -104,7 +105,7 @@ export default function LoginPage() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password, name, phone, postalCode, address }),
+      body: JSON.stringify({ email, password, name, phone, postalCode, address, addressDetail }),
     });
 
     const data = await res.json();
@@ -132,8 +133,8 @@ export default function LoginPage() {
       oncomplete: function (data: any) {
         const fullAddress = data.address;
         const zonecode = data.zonecode;
-        (document.getElementById('register-postalCode') as HTMLInputElement).value = zonecode;
-        (document.getElementById('register-address') as HTMLInputElement).value = fullAddress;
+        setPostalCode(zonecode);
+        setAddress(fullAddress);
       },
     }).open();
   };
@@ -211,23 +212,23 @@ export default function LoginPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="register-email">이메일</Label>
-                <Input id="register-email" type="email" placeholder="이메일 주소를 입력하세요" />
+                <Input id="register-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="이메일 주소를 입력하세요" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="register-password">비밀번호</Label>
-                <Input id="register-password" type="password" placeholder="비밀번호를 입력하세요" />
+                <Input id="register-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호를 입력하세요" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">비밀번호 확인</Label>
-                <Input id="confirm-password" type="password" placeholder="비밀번호를 다시 입력하세요" />
+                <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="비밀번호를 다시 입력하세요" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="name">이름</Label>
-                <Input id="name" placeholder="이름을 입력하세요" />
+                <Input id="name" type="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="이름을 입력하세요" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">연락처</Label>
-                <Input id="phone" placeholder="연락처를 입력하세요" />
+                <Input id="phone" type="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요" />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -236,11 +237,15 @@ export default function LoginPage() {
                     우편번호 찾기
                   </Button>
                 </div>
-                <Input id="register-postalCode" placeholder="우편번호를 입력하세요" />
+                <Input id="register-postalCode" type="postalCode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="우편번호를 입력하세요" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="register-address">기본 배송지 주소</Label>
-                <Input id="register-address" placeholder="기본 주소를 입력하세요" />
+                <Input id="register-address" type="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소를 입력하세요" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="register-address-detail">상세 주소</Label>
+                <Input id="register-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">

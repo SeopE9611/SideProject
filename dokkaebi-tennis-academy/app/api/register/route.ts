@@ -3,7 +3,7 @@ import { connectToDatabase } from '@/lib/db';
 import { hash } from 'bcryptjs';
 
 export async function POST(req: Request) {
-  const { email, password, name, phone, address, postalCode } = await req.json();
+  const { email, password, name, phone, address, postalCode, addressDetail } = await req.json();
 
   if (!email || !password || !name) {
     return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       hashedPassword,
       phone,
       address,
+      addressDetail,
       postalCode,
       role: 'user',
       createdAt: new Date(),

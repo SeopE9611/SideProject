@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     }
     // 비회원이면 guestInfo 추가
     else {
-      order.guestInfo = guestInfo;
+      order.guestInfo = guestInfo;  
     }
 
     // MongoDB 클라이언트 연결 및 DB 선택
