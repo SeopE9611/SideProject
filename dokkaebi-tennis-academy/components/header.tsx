@@ -1,4 +1,5 @@
-import { useState } from 'react';
+'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, ShoppingCart, User, Menu } from 'lucide-react';
@@ -9,8 +10,23 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { useSession, signOut } from 'next-auth/react';
 import { UserNav } from '@/components/nav/UserNav';
 import { UserNavMobile } from '@/components/nav/UserNavMobile';
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+
+  // 창 크기 변경될 때 메뉴 자동 닫기
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setOpen(false); // md 이상이면 메뉴 닫기
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const menuItems = [
     { name: '홈', href: '/' },
     { name: '스트링', href: '/products' },
@@ -36,6 +52,7 @@ const Header = () => {
           </nav>
         </div>
 
+        {/* 데스크탑 */}
         <div className="hidden md:flex items-center gap-4">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[#64748b]" />
@@ -51,7 +68,8 @@ const Header = () => {
           <ThemeToggle />
         </div>
 
-        <Sheet>
+        {/* 모바일 */}
+        <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild className="md:hidden">
             <Button variant="ghost" size="icon">
               <Menu className="h-5 w-5" />
@@ -70,19 +88,33 @@ const Header = () => {
               </div>
               <nav className="grid gap-4">
                 {menuItems.map((item) => (
-                  <Link key={item.name} href={item.href} className="text-sm font-medium transition-colors hover:text-[#3b82f6]">
+                  <Button
+                    key={item.name}
+                    variant="ghost"
+                    className="justify-start text-sm font-medium w-full text-left hover:text-[#3b82f6]"
+                    onClick={() => {
+                      setOpen(false);
+                      router.push(item.href);
+                    }}
+                  >
                     {item.name}
-                  </Link>
+                  </Button>
                 ))}
               </nav>
+
               <div className="flex flex-col gap-4">
-                <Link href="/cart" className="w-full">
-                  <Button variant="outline" className="w-full">
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    장바구니
-                  </Button>
-                </Link>
-                <UserNavMobile />
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setOpen(false);
+                    router.push('/cart');
+                  }}
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  장바구니
+                </Button>
+                <UserNavMobile setOpen={setOpen} />
               </div>
               <div className="flex justify-center mt-4">
                 <ThemeToggle />

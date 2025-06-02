@@ -1,45 +1,57 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, LogOut, Settings, UserIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-export function UserNavMobile() {
-  const { data: session, status } = useSession();
+interface UserNavMobileProps {
+  setOpen: (open: boolean) => void;
+}
+
+export function UserNavMobile({ setOpen }: UserNavMobileProps) {
+  const { data: session } = useSession();
   const router = useRouter();
 
-  if (status === 'loading') return null;
-
-  if (!session) {
+  if (!session?.user) {
     return (
-      <Button variant="outline" className="w-full justify-center" onClick={() => router.push('/login')}>
-        <UserIcon className="mr-2 h-4 w-4" />
+      <Button
+        variant="outline"
+        className="w-full justify-center"
+        onClick={() => {
+          setOpen(false);
+          router.push('/login');
+        }}
+      >
         로그인
       </Button>
     );
   }
 
-  const isAdmin = session.user?.role === 'admin';
-
   return (
-    <div className="flex flex-col gap-3 px-2">
-      {/* 이름 표시 */}
-      <div className="text-sm font-medium px-1">
-        {session.user?.name} 님{isAdmin && <span className="ml-1 text-xs text-muted-foreground">(관리자)</span>}
-      </div>
-
-      {/* 마이페이지 */}
-      <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/mypage')}>
-        <Settings className="mr-2 h-4 w-4" />
+    <>
+      <p className="text-sm text-center">
+        {session.user.name} {session.user.role === 'admin' && <span className="text-muted-foreground">(관리자)</span>} 님
+      </p>
+      <Button
+        variant="outline"
+        className="w-full justify-center"
+        onClick={() => {
+          setOpen(false);
+          router.push('/mypage');
+        }}
+      >
         마이페이지
       </Button>
-
-      {/* 로그아웃 */}
-      <Button variant="outline" className="w-full justify-start" onClick={() => signOut({ callbackUrl: '/' })}>
-        <LogOut className="mr-2 h-4 w-4" />
+      <Button
+        variant="outline"
+        className="w-full justify-center"
+        onClick={() => {
+          setOpen(false);
+          signOut();
+        }}
+      >
         로그아웃
       </Button>
-    </div>
+    </>
   );
 }
