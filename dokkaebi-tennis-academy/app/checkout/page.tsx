@@ -132,7 +132,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="recipient-phone">연락처</Label>
-                    <Input id="recipient-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요" />
+                    <Input id="recipient-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외) " />
                   </div>
                 </div>
 

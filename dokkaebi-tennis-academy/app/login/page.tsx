@@ -211,7 +211,7 @@ export default function LoginPage() {
             <CardContent className="grid grid-cols-2 gap-4">
               <div className="col-span-2 space-y-2">
                 <Label htmlFor="register-email">이메일</Label>
-                <Input id="register-email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="이메일 주소를 입력하세요" />
+                <Input id="register-email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@ddokaebi.com" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="register-password">비밀번호</Label>
@@ -227,7 +227,7 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">연락처</Label>
-                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요" />
+                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ( '-' 제외)" />
               </div>
               <div className="col-span-2 space-y-2">
                 <div className="flex items-center justify-between">
@@ -236,11 +236,11 @@ export default function LoginPage() {
                     우편번호 찾기
                   </Button>
                 </div>
-                <Input id="register-postalCode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="우편번호를 입력하세요" />
+                <Input id="register-postalCode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="우편번호를 입력하세요" readOnly className=" bg-gray-100 cursor-not-allowed max-w-[200px]" />
               </div>
               <div className="col-span-2 space-y-2">
                 <Label htmlFor="register-address">기본 배송지 주소</Label>
-                <Input id="register-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소를 입력하세요" />
+                <Input id="register-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소를 입력하세요" readOnly className="bg-gray-100 cursor-not-allowed" />
               </div>
               <div className="col-span-2 space-y-2">
                 <Label htmlFor="register-address-detail">상세 주소</Label>
