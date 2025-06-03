@@ -44,6 +44,10 @@ type Order = {
     bank?: 'shinhan' | 'kookmin' | 'woori';
   };
   status: string;
+  userSnapshot?: {
+    name: string;
+    email: string;
+  };
 };
 
 // POST 메서드 처리 함수 – 주문 생성
@@ -75,18 +79,24 @@ export async function POST(req: Request) {
       status: '대기중',
     };
 
-    // 로그인된 사용자면 userId 추가
-    if (session?.user && 'id' in session.user) {
-      order.userId = session.user.id;
-    }
-    // 비회원이면 guestInfo 추가
-    else {
-      order.guestInfo = guestInfo;  
-    }
-
     // MongoDB 클라이언트 연결 및 DB 선택
     const client = await clientPromise;
     const db = client.db(); // 기본 DB (보통 .env에서 지정된 DB 사용됨)
+
+    // 로그인된 사용자면 userId 추가
+    if (session?.user && 'id' in session.user) {
+      order.userId = session.user.id;
+
+      const user = await db.collection('users').findOne({ _id: new ObjectId(session.user.id) });
+      if (user) {
+        order.userSnapshot = {
+          name: user.name || '(탈퇴한 회원)',
+          email: user.email || '(탈퇴한 회원)',
+        };
+      }
+    } else {
+      order.guestInfo = guestInfo;
+    }
 
     // 주문 컬렉션에 주문 문서 삽입
     const result = await db.collection('orders').insertOne(order);
@@ -118,15 +128,16 @@ export async function GET() {
   // 프론트엔드가 기대하는 형태로 가공 (타입 맞춤)
   const orders = await Promise.all(
     rawOrders.map(async (order) => {
-      // 기본 고객 정보
-      let customer = {
-        name: '비회원',
-        email: '-',
-        phone: '-',
-      };
+      // ✅ userSnapshot이 있으면 가장 우선 사용
+      let customer;
 
-      // userId가 있으면 회원 정보에서 가져오기
-      if (order.userId) {
+      if (order.userSnapshot) {
+        customer = {
+          name: order.userSnapshot.name || '(탈퇴한 회원)',
+          email: order.userSnapshot.email || '-',
+          phone: '-', // snapshot에는 phone 없음
+        };
+      } else if (order.userId) {
         const user = await usersCollection.findOne({ _id: new ObjectId(order.userId) });
         if (user) {
           customer = {
@@ -134,14 +145,24 @@ export async function GET() {
             email: user.email || '-',
             phone: user.phone || '-',
           };
+        } else {
+          customer = {
+            name: '(탈퇴한 회원)',
+            email: '-',
+            phone: '-',
+          };
         }
-      }
-      // 비회원 정보가 있을 경우
-      else if (order.guestInfo) {
+      } else if (order.guestInfo) {
         customer = {
           name: order.guestInfo.name || '비회원',
           email: order.guestInfo.email || '-',
           phone: order.guestInfo.phone || '-',
+        };
+      } else {
+        customer = {
+          name: '비회원',
+          email: '-',
+          phone: '-',
         };
       }
 

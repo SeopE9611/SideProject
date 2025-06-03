@@ -31,10 +31,14 @@ export async function GET() {
       .toArray(); // 배열 형태로 변환
 
     // _id 필드는 응답에서 완전히 빠지고 id만
-    const sanitized = orders.map(({ _id, ...rest }) => ({
-      id: _id.toString(),
-      ...rest,
-    }));
+    const sanitized = orders.map((order) => {
+      const { _id, ...rest } = order;
+      return {
+        id: _id.toString(),
+        ...rest,
+        userSnapshot: order.userSnapshot ?? null,
+      };
+    });
 
     //  JSON 형식으로 주문 데이터 반환
     return NextResponse.json(sanitized);

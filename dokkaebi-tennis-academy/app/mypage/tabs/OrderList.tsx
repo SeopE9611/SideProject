@@ -15,6 +15,10 @@ interface Order {
   status: string;
   items: { name: string; quantity: number }[];
   totalPrice: number;
+  userSnapshot?: {
+    name: string;
+    email: string;
+  };
 }
 
 //  fetcher 함수 정의 (SWR이 데이터를 불러올 때 사용)
@@ -53,6 +57,7 @@ export default function OrderList() {
               <div>
                 <div className="font-medium">{order.id}</div>
                 <div className="text-sm text-muted-foreground">{order.date}</div>
+                {order.userSnapshot?.name && <div className="text-sm text-muted-foreground">주문자: {order.userSnapshot.name}</div>}
               </div>
               <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${orderStatusColors[order.status]}`}>{order.status}</Badge>
             </div>

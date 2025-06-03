@@ -23,6 +23,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     if (order.guestInfo) {
       customer = order.guestInfo;
+    } else if (order.userSnapshot) {
+      customer = {
+        name: order.userSnapshot.name,
+        email: order.userSnapshot.email,
+        phone: '-', // 추가 필드 없음
+        address: '-', // 익명화된 상태일 수 있음
+      };
     } else if (order.userId) {
       const user = await db.collection('users').findOne({ _id: new ObjectId(order.userId) });
       if (user) {
