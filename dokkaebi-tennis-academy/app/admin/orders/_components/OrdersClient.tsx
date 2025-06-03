@@ -47,6 +47,14 @@ export default function OrdersClient() {
     setCustomerTypeFilter('all');
   };
 
+  function getDisplayUserType(order: any) {
+    const name = order.customer?.name;
+    if (!name) return '';
+    if (name === '(탈퇴한 회원)') return '(탈퇴한 회원)';
+    if (!order.userId || order.userId === 'null') return '(비회원)';
+    return '';
+  }
+
   const [sortBy, setSortBy] = useState<'customer' | 'date' | 'total' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -92,8 +100,8 @@ export default function OrdersClient() {
 
     switch (sortBy) {
       case 'customer':
-        aValue = a.customer.name.toLowerCase();
-        bValue = b.customer.name.toLowerCase();
+        aValue = a.customer?.name?.toLowerCase() ?? '';
+        bValue = b.customer?.name?.toLowerCase() ?? '';
         break;
       case 'date':
         aValue = new Date(a.date).getTime();
@@ -258,10 +266,21 @@ export default function OrdersClient() {
                         <TableCell className="text-center">
                           <div className="flex flex-col items-center">
                             <span>
-                              {order.customer.name}
-                              {!order.userId || order.userId === 'null' ? <span className="ml-1 text-[10px] text-muted-foreground text-gray-500">(비회원)</span> : null}
+                              {/* name 값이 없을 경우 붉은 글씨로 표시 */}
+                              {!order.customer?.name ? (
+                                <span className="text-red-500 text-xs">(고객 정보 없음)</span>
+                              ) : order.customer.name.includes('(탈퇴한 회원)') ? (
+                                <>
+                                  {order.customer.name.replace(' (탈퇴한 회원)', '')}
+                                  <span className="ml-1 text-[10px] text-muted-foreground">(탈퇴한 회원)</span>
+                                </>
+                              ) : (
+                                order.customer.name
+                              )}
                             </span>
-                            <span className="text-[11px] text-muted-foreground">{order.customer.email}</span>
+
+                            {/* 이메일은 fallback으로 대시 처리 */}
+                            <span className="text-[11px] text-muted-foreground">{order.customer?.email ?? '-'}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">{formatDate(order.date)}</TableCell>

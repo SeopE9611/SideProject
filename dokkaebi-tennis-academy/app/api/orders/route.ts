@@ -128,16 +128,29 @@ export async function GET() {
   // 프론트엔드가 기대하는 형태로 가공 (타입 맞춤)
   const orders = await Promise.all(
     rawOrders.map(async (order) => {
-      // ✅ userSnapshot이 있으면 가장 우선 사용
+      const usersCollection = db.collection('users');
       let customer;
 
+      // userSnapshot이 있는 경우
       if (order.userSnapshot) {
+        let userWasDeleted = false;
+
+        // userId가 있는 경우에만 삭제 여부 확인
+        if (order.userId) {
+          const user = await usersCollection.findOne({
+            _id: new ObjectId(order.userId),
+          });
+
+          userWasDeleted = !!user?.permanentlyDeleted;
+        }
+
         customer = {
-          name: order.userSnapshot.name || '(탈퇴한 회원)',
-          email: order.userSnapshot.email || '-',
-          phone: '-', // snapshot에는 phone 없음
+          name: userWasDeleted ? `${order.userSnapshot.name} (탈퇴한 회원)` : order.userSnapshot.name,
+          email: order.userSnapshot.email,
+          phone: '-', // snapshot엔 phone 없음
         };
       } else if (order.userId) {
+        // userSnapshot이 없을 때만 DB 조회
         const user = await usersCollection.findOne({ _id: new ObjectId(order.userId) });
         if (user) {
           customer = {
@@ -147,23 +160,11 @@ export async function GET() {
           };
         } else {
           customer = {
-            name: '(탈퇴한 회원)',
+            name: '비회원',
             email: '-',
             phone: '-',
           };
         }
-      } else if (order.guestInfo) {
-        customer = {
-          name: order.guestInfo.name || '비회원',
-          email: order.guestInfo.email || '-',
-          phone: order.guestInfo.phone || '-',
-        };
-      } else {
-        customer = {
-          name: '비회원',
-          email: '-',
-          phone: '-',
-        };
       }
 
       return {
