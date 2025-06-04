@@ -126,6 +126,10 @@ export async function GET() {
   const usersCollection = db.collection('users');
 
   // 프론트엔드가 기대하는 형태로 가공 (타입 맞춤)
+  // 로그인 회원  |	홍길동
+  // 탈퇴 회원    | 홍길동 (탈퇴한 회원)
+  // 비회원	홍길동| (비회원)
+  // DB 정보도 snapshot도 guest도 없으면	(고객 정보 없음)  <- 진짜 예외일 때만
   const orders = await Promise.all(
     rawOrders.map(async (order) => {
       const usersCollection = db.collection('users');
@@ -165,6 +169,20 @@ export async function GET() {
             phone: '-',
           };
         }
+      } else if (order.guestInfo) {
+        //  비회원 주문
+        customer = {
+          name: order.guestInfo.name || '비회원',
+          email: order.guestInfo.email || '-',
+          phone: order.guestInfo.phone || '-',
+        };
+      } else {
+        // 어떤 정보도 없을 때 fallback
+        customer = {
+          name: '(고객 정보 없음)',
+          email: '-',
+          phone: '-',
+        };
       }
 
       return {

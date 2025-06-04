@@ -48,10 +48,8 @@ export default function OrdersClient() {
   };
 
   function getDisplayUserType(order: any) {
-    const name = order.customer?.name;
-    if (!name) return '';
-    if (name === '(탈퇴한 회원)') return '(탈퇴한 회원)';
     if (!order.userId || order.userId === 'null') return '(비회원)';
+    if (order.customer?.name?.includes('(탈퇴한 회원)')) return '(탈퇴한 회원)';
     return '';
   }
 
@@ -266,20 +264,15 @@ export default function OrdersClient() {
                         <TableCell className="text-center">
                           <div className="flex flex-col items-center">
                             <span>
-                              {/* name 값이 없을 경우 붉은 글씨로 표시 */}
-                              {!order.customer?.name ? (
-                                <span className="text-red-500 text-xs">(고객 정보 없음)</span>
-                              ) : order.customer.name.includes('(탈퇴한 회원)') ? (
+                              {order.customer?.name ? (
                                 <>
                                   {order.customer.name.replace(' (탈퇴한 회원)', '')}
-                                  <span className="ml-1 text-[10px] text-muted-foreground">(탈퇴한 회원)</span>
+                                  {getDisplayUserType(order) && <span className="ml-1 text-[10px] text-muted-foreground">{getDisplayUserType(order)}</span>}
                                 </>
                               ) : (
-                                order.customer.name
+                                <span className="text-red-500 text-xs">(고객 정보 없음)</span>
                               )}
                             </span>
-
-                            {/* 이메일은 fallback으로 대시 처리 */}
                             <span className="text-[11px] text-muted-foreground">{order.customer?.email ?? '-'}</span>
                           </div>
                         </TableCell>
