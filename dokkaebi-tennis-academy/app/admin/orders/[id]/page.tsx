@@ -7,11 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { headers } from 'next/headers';
 import { OrderStatusSelect } from '../_components/OrderStatusSelect';
-import { OrderCancelButton } from '@/app/admin/orders/_components/OrderCancelButton';
+// import { OrderCancelButton } from '@/app/admin/orders/_components/OrderCancelButton';
 import { OrderStatusBadge } from '@/app/admin/orders/_components/OrderStatusBadge';
 import OrderHistory from '@/app/admin/orders/_components/OrderHistory';
-import OrderCancelButtonClient from '@/app/admin/orders/_components/OrderCancelButtonClient';
+// import OrderCancelButtonClient from '@/app/admin/orders/_components/OrderCancelButtonClient';
 import { paymentStatusColors } from '@/lib/badge-style';
+import AdminCancelOrderDialog from '@/app/admin/orders/_components/AdminCancelOrderDialog';
 
 // 배송 카드
 const shippingMethodMap: Record<string, string> = {
@@ -134,7 +135,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
                 {/* 주문 상태 변경 핸들러 */}
                 <OrderStatusSelect orderId={String(orderDetail._id)} currentStatus={orderDetail.status} />
-                <OrderCancelButtonClient orderId={String(orderDetail._id)} alreadyCancelledReason={orderDetail.cancelReason} key={'cancel-' + orderDetail.history?.length} />
+                {/* <OrderCancelButtonClient orderId={String(orderDetail._id)} alreadyCancelledReason={orderDetail.cancelReason} key={'cancel-' + orderDetail.history?.length} /> */}
+                {orderDetail.status === '취소' ? (
+                  <p className="text-sm text-muted-foreground italic mt-2">취소된 주문입니다. 상태 변경 및 취소가 불가능합니다.</p>
+                ) : (
+                  <AdminCancelOrderDialog orderId={String(orderDetail._id)} key={'cancel-' + orderDetail.history?.length} />
+                )}
               </div>
             </CardFooter>
           </Card>

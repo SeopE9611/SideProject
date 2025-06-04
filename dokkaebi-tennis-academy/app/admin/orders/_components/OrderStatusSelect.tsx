@@ -97,7 +97,7 @@ export function OrderStatusSelect({ orderId, currentStatus }: Props) {
           </SelectContent>
         </Select>
       )}
-      {isCancelled && <p className="mt-1 text-sm text-muted-foreground italic">이미 취소된 주문은 상태 변경이 불가능합니다.</p>}
+      {/* {isCancelled && <p className="mt-1 text-sm text-muted-foreground italic">이미 취소된 주문은 상태 변경이 불가능합니다.</p>} */}
     </div>
   );
 }
