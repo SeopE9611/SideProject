@@ -10,6 +10,7 @@ import OrderHistory from '@/app/admin/orders/_components/OrderHistory';
 import { paymentStatusColors } from '@/lib/badge-style';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth.config';
+import CancelOrderDialog from '@/app/mypage/orders/_components/CancelOrderDialog';
 
 // 배송 카드
 const shippingMethodMap: Record<string, string> = {
@@ -109,6 +110,7 @@ export default async function OrderDetailContent({ orderId }: Props) {
                 </CardHeader>
                 <CardFooter className=" pt-4">
                   <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between"></div>
+                  {['대기중', '결제완료'].includes(orderDetail.status) && <CancelOrderDialog orderId={orderDetail._id.toString()} />}
                 </CardFooter>
               </Card>
               {/* 고객 정보 */}

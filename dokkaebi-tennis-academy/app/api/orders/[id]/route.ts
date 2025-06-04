@@ -62,7 +62,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { status, reason } = await request.json();
+    const { status, reason, detail } = await request.json();
 
     if (!ObjectId.isValid(id)) {
       return new NextResponse('유효하지 않은 주문 ID입니다.', { status: 400 });
@@ -79,12 +79,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     if (existing.status === '취소') {
-      return new NextResponse('이미 취소된 주문입니다.', { status: 400 });
+      return new NextResponse('취소된 주문입니다.', { status: 400 });
     }
 
     const updateFields: Record<string, any> = { status };
-    if (status === '취소' && reason) {
+    if (status === '취소') {
       updateFields.cancelReason = reason;
+      if (reason === '기타') {
+        updateFields.cancelReasonDetail = detail || '';
+      }
     }
 
     if (['결제완료', '배송중', '배송완료'].includes(status)) {
@@ -97,10 +100,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       updateFields.paymentStatus = '환불';
     }
 
+    const description = status === '취소' ? `주문이 취소되었습니다. 사유: ${reason}${reason === '기타' && detail ? ` (${detail})` : ''}` : `주문 상태가 '${status}'(으)로 변경되었습니다.`;
+
     const historyEntry = {
       status,
       date: new Date(),
-      description: status === '취소' ? `주문이 취소되었습니다. 사유: ${reason}` : `주문 상태가 '${status}'(으)로 변경되었습니다.`,
+      description,
     };
 
     const result = await orders.updateOne({ _id: new ObjectId(id) }, {
