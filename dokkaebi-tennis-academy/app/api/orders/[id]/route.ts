@@ -62,7 +62,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { status, reason, detail } = await request.json();
+    const { status, cancelReason, cancelReasonDetail } = await request.json();
 
     if (!ObjectId.isValid(id)) {
       return new NextResponse('유효하지 않은 주문 ID입니다.', { status: 400 });
@@ -84,9 +84,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const updateFields: Record<string, any> = { status };
     if (status === '취소') {
-      updateFields.cancelReason = reason;
-      if (reason === '기타') {
-        updateFields.cancelReasonDetail = detail || '';
+      updateFields.cancelReason = cancelReason;
+      if (cancelReason === '기타') {
+        updateFields.cancelReasonDetail = cancelReasonDetail || '';
       }
     }
 
@@ -100,7 +100,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       updateFields.paymentStatus = '환불';
     }
 
-    const description = status === '취소' ? `주문이 취소되었습니다. 사유: ${reason}${reason === '기타' && detail ? ` (${detail})` : ''}` : `주문 상태가 '${status}'(으)로 변경되었습니다.`;
+    const description = status === '취소' ? `주문이 취소되었습니다. 사유: ${cancelReason}${cancelReason === '기타' && cancelReasonDetail ? ` (${cancelReasonDetail})` : ''}` : `주문 상태가 '${status}'(으)로 변경되었습니다.`;
 
     const historyEntry = {
       status,

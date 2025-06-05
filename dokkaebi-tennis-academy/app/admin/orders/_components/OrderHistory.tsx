@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Truck, CreditCard, RotateCcw, XCircle, Pencil, Clock, PackageCheck } from 'lucide-react';
 
+export const getOrderHistoryKey = (orderId: string) => (pageIndex: number, previousPageData: any) => {
+  if (previousPageData && !previousPageData.length) return null;
+  return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=5`;
+};
 // 상태별로 아이콘 컴포넌트와 클래스 리턴하는 헬퍼 함수
 function getIconProps(status: string) {
   switch (status) {

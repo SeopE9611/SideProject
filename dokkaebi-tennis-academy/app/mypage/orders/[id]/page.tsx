@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth.config';
 import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
+import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
 
 export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -22,7 +23,8 @@ export default async function Page({ params }: { params: { id: string } }) {
         {/* 오른쪽 콘텐츠 – Suspense 처리 */}
         <div className="md:col-span-3">
           <Suspense fallback={<OrderDetailSkeleton />}>
-            <OrderDetailContent orderId={id} />
+            {/* <OrderDetailContent orderId={id} /> */}
+            <OrderDetailClient orderId={id} />
           </Suspense>
         </div>
       </div>

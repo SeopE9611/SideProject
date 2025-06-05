@@ -39,45 +39,40 @@ interface Props {
 }
 
 export function OrderStatusSelect({ orderId, currentStatus }: Props) {
-  // 주문 상태용 SWR (뱃지 업데이트)
+  // 상태 전용 키
   const { data: statusData, mutate: mutateStatus } = useSWR<StatusResponse>(`/api/orders/${orderId}/status`, fetcher, { fallbackData: { status: currentStatus } });
+  // 주문 전체 객체 키
+  const { mutate: mutateOrderDetail } = useSWR(`/api/orders/${orderId}`, fetcher);
+  // 이력용 SWRInfinite 훅
+  const { mutate: mutateHistory } = useSWRInfinite(getHistoryKey(orderId), fetcher);
 
-  // 이력용 SWR Infinite (1~N페이지 자동 캐싱)
-  const { mutate: mutateHistory } = useSWRInfinite<HistoryResponse>(getHistoryKey(orderId), fetcher);
+  const current = statusData?.status || currentStatus;
+  const isCancelled = current === '취소';
 
-  // 페이지 이동 라우터
-  const router = useRouter();
-
-  // 상태 변경 핸들러
   const handleChange = async (newStatus: string) => {
     try {
-      // 서버에 PATCH 요청
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
-      if (!res.ok) throw new Error('서버 오류');
+      if (!res.ok) throw new Error('변경 실패');
 
-      // 뱃지 갱신
+      // 사태 전용 키 재검증
       await mutateStatus();
-      // 이력 전체 갱신 (useSWRInfinite의 mutate 호출)
+      // 주문 전체 객체 재검증
+      await mutateOrderDetail();
+      // 처리 이력 전체 재검증
       await mutateHistory();
-
+      // 주문 목록 전체 갱신
       await mutate('/api/orders');
 
-      window.dispatchEvent(new CustomEvent('order-history-page-reset'));
-
-      toast.success(`주문 상태가 '${newStatus}'로 변경되었습니다`);
-      router.refresh();
+      toast.success(`주문 상태가 '${newStatus}'로 변경되었습니다.`);
     } catch (err: any) {
       console.error(err);
-      toast.error(`변경 실패: ${err.message}`);
+      toast.error(`상태 변경 실패: ${err.message}`);
     }
   };
-
-  const current = statusData?.status ?? currentStatus;
-  const isCancelled = current === '취소';
 
   return (
     <div className="w-[200px]">

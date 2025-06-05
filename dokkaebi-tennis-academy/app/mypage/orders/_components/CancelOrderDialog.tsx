@@ -8,6 +8,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { mutate } from 'swr';
 
 // props: 주문 ID만 전달받음
 interface CancelOrderDialogProps {
@@ -47,6 +48,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
         body: JSON.stringify({
           status: '취소',
           cancelReason: finalReason,
+          detail: selectedReason === '기타' ? otherReason.trim() : undefined,
         }),
       });
 
@@ -55,7 +57,18 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
       }
 
       toast.success('주문이 성공적으로 취소되었습니다.');
-      router.refresh(); //   주문 상세 UI 갱신
+      // status 전용 버튼/Badge 갱신 (OrderStatusBadge가 /api/orders/{orderId}/status 를 SWR로 가져오는 경우)
+      await mutate(`/api/orders/${orderId}/status`, undefined, { revalidate: true });
+
+      // 처리 이력 갱신 (OrderHistory가 /api/orders/{orderId}/history를 SWR로 가져오는 경우)
+      await mutate(`/api/orders/${orderId}/history`, undefined, { revalidate: true });
+
+      //  마이페이지 목록 갱신 (OrderList가 /api/users/me/orders를 SWR로 가져오는 경우)
+      await mutate('/api/users/me/orders', undefined, { revalidate: true });
+
+      //  주문 전체 데이터 (/api/orders/{orderId}) 갱신 : OrderDetailClient가 이 키로 데이터를 가져오기 때문
+      await mutate(`/api/orders/${orderId}`, undefined, { revalidate: true });
+      // router.refresh(); //   주문 상세 UI 갱신
     } catch (err) {
       console.error(err);
       toast.error('주문 취소 중 오류가 발생했습니다.');
@@ -69,7 +82,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
       {/*  다이얼로그 트리거 버튼 */}
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm">
-          주문 취소하기
+          주문 취소
         </Button>
       </DialogTrigger>
 
