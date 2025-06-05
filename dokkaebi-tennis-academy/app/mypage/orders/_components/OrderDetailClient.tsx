@@ -1,4 +1,3 @@
-// app/mypage/orders/_components/OrderDetailClient.tsx
 'use client';
 
 import React from 'react';
@@ -13,6 +12,7 @@ import CancelOrderDialog from './CancelOrderDialog'; // 기존 다이얼로그 �
 import OrderHistory from '@/app/admin/orders/_components/OrderHistory';
 import { OrderStatusBadge } from '@/app/admin/orders/_components/OrderStatusBadge';
 import { paymentStatusColors } from '@/lib/badge-style';
+import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -63,7 +63,7 @@ export default function OrderDetailClient({ orderId }: { orderId: string }) {
     return <div className="text-center text-destructive">주문을 불러오는 중 오류가 발생했습니다.</div>;
   }
   if (!orderDetail) {
-    return <div className="text-center py-10">주문을 불러오는 중...</div>;
+    return <OrderDetailSkeleton />;
   }
 
   // 이력 페이지를 합쳐서 하나의 배열로

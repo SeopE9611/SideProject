@@ -14,6 +14,8 @@ import AdminCancelOrderDialog from '@/app/admin/orders/_components/AdminCancelOr
 import OrderHistory from '@/app/admin/orders/_components/OrderHistory';
 import { toast } from 'sonner';
 import { OrderStatusSelect } from '@/app/admin/orders/_components/OrderStatusSelect';
+import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
+import Loading from '@/app/admin/orders/[id]/loading';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -89,7 +91,7 @@ export default function OrderDetailClient({ orderId }: Props) {
     return <div className="text-center text-destructive">주문을 불러오는 중 오류가 발생했습니다.</div>;
   }
   if (!orderDetail) {
-    return <div className="text-center py-10">주문을 불러오는 중...</div>;
+    return <Loading />;
   }
 
   // 페이지네이션 없이 가져온 모든 이력 합치기
