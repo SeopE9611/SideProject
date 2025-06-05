@@ -446,15 +446,21 @@ export default function ProfilePage() {
                           body: JSON.stringify({ reason, detail }),
                         });
 
-                        if (!res.ok) throw new Error('탈퇴 실패');
-
+                        if (!res.ok) {
+                          const data = await res.json();
+                          throw new Error(data.error || '탈퇴 실패');
+                        }
                         //  응답에서 이메일 꺼내기 (API에서 email 반환하도록 구현되어야 함)
                         const { email } = await res.json();
 
                         //  마이페이지 → 철회 페이지로 이동 + 쿼리 파라미터 전달
                         await signOut({ callbackUrl: `/withdrawal?email=${email}` });
                       } catch (error) {
-                        toast.error('회원 탈퇴 중 오류가 발생했습니다.');
+                        if (error instanceof Error) {
+                          showErrorToast(error.message);
+                        } else {
+                          showErrorToast('회원 탈퇴 중 오류가 발생했습니다.');
+                        }
                       }
                     }}
                   />
