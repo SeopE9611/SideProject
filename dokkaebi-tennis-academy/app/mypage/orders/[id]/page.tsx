@@ -1,4 +1,4 @@
-import OrderDetailContent from '../_components/OrderDetailContent';
+// import OrderDetailContent from '../_components/OrderDetailContent';
 import OrderDetailSkeleton from '../_components/OrderDetailSkeleton';
 
 import { Suspense } from 'react';
