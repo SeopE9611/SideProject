@@ -1,3 +1,4 @@
+// Toaster.tsx
 'use client';
 
 import { useTheme } from 'next-themes';
@@ -11,13 +12,20 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps['theme']}
       position="top-center"
       toastOptions={{
-        className: 'w-fit bg-red-600 text-white px-6 py-5 mt-12 rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-red-800',
+        // ↓ 기존 스타일 + white-space, maxWidth 설정만 추가
+        className: [
+          'bg-red-600/10', // 연한 빨강 배경
+          'border border-red-600',
+          'rounded-lg',
+          'shadow-lg',
+          'py-4 px-6',
+        ].join(' '),
         style: {
           fontSize: '16px',
           fontWeight: 'bold',
           lineHeight: '1.5',
-          minWidth: '320px',
-          maxWidth: '500px',
+          whiteSpace: 'pre', // ← “오직 '\n'에서만 줄바꿈”, 그 외에는 한 줄 유지
+          maxWidth: 'none', // ← 자동으로 잘리지 않도록 폭 제한 해제
         },
         duration: 5000,
       }}
