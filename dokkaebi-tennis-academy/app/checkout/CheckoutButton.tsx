@@ -18,6 +18,7 @@ export default function CheckoutButton({
   shippingFee,
   selectedBank,
   deliveryRequest,
+  saveAddress,
 }: {
   disabled: boolean;
   name: string;
@@ -31,6 +32,7 @@ export default function CheckoutButton({
   shippingFee: number;
   selectedBank: string;
   deliveryRequest: string;
+  saveAddress: boolean;
 }) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -69,7 +71,20 @@ export default function CheckoutButton({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
       });
-
+      // '배송지 저장' 체크 시 회원 정보 업데이트
+      if (session?.user && saveAddress) {
+        await fetch('/api/users/me', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            phone,
+            address,
+            postalCode,
+            addressDetail,
+          }),
+        });
+      }
       const data = await res.json();
 
       if (data?.orderId) {

@@ -78,6 +78,28 @@ export default function CheckoutPage() {
   const [saveAddress, setSaveAddress] = useState(false);
   const { data: session } = useSession();
 
+  // 로그인된 회원이면 자동으로 배송 정보 불러오기
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const fetchUserInfo = async () => {
+      const res = await fetch('/api/users/me');
+      if (!res.ok) return;
+
+      const data = await res.json();
+
+      // 사용자 정보 상태 자동 세팅
+      setName(data.name || '');
+      setPhone(data.phone || '');
+      setEmail(data.email || '');
+      setPostalCode(data.postalCode || '');
+      setAddress(data.address || '');
+      setAddressDetail(data.addressDetail || '');
+    };
+
+    fetchUserInfo();
+  }, [session?.user]);
+
   // 주문자 동의 상태관리
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -365,6 +387,7 @@ export default function CheckoutPage() {
                   shippingFee={shippingFee}
                   selectedBank={selectedBank}
                   deliveryRequest={deliveryRequest}
+                  saveAddress={saveAddress}
                 />
                 <Button variant="outline" className="w-full" asChild>
                   <Link href="/cart">장바구니로 돌아가기</Link>
