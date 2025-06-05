@@ -35,6 +35,10 @@ export default function LoginPage() {
 
   // 이메일 중복 체크 여부
   const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(null); // null: 아직 확인 안함
+
+  // 이메일 저장
+  const [saveEmail, setSaveEmail] = useState(false);
+
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -50,6 +54,16 @@ export default function LoginPage() {
       setActiveTab(tabParam);
     }
   }, [params]);
+
+  // 이메일 저장 로직
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('saved-email');
+    if (savedEmail) {
+      const emailInput = document.getElementById('email') as HTMLInputElement | null;
+      if (emailInput) emailInput.value = savedEmail;
+      setSaveEmail(true);
+    }
+  }, []);
 
   const handleLogin = async () => {
     const email = (document.getElementById('email') as HTMLInputElement)?.value;
@@ -99,6 +113,12 @@ export default function LoginPage() {
     });
 
     if (nextAuthResult?.ok) {
+      if (saveEmail) {
+        localStorage.setItem('saved-email', email);
+      } else {
+        localStorage.removeItem('saved-email');
+      }
+
       localStorage.removeItem('cart-storage');
       const from = new URLSearchParams(window.location.search).get('from');
       router.push(from === 'cart' ? '/cart' : '/');
@@ -230,15 +250,24 @@ export default function LoginPage() {
                   <Label htmlFor="email">이메일</Label>
                   <Input id="email" type="email" placeholder="이메일 주소를 입력하세요" />
                 </div>
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">비밀번호</Label>
-                    <Link href="/forgot-password" className="text-xs text-primary hover:underline">
-                      비밀번호 찾기
-                    </Link>
                   </div>
                   <Input id="password" type="password" placeholder="비밀번호를 입력하세요" />
                 </div>
+                <div className="flex items-center justify-between text-sm text-muted-foreground mt-2">
+                  <label className="flex items-center gap-2">
+                    <input id="save-email" type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="accent-primary" />
+                    이메일 저장
+                  </label>
+
+                  <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                    비밀번호 찾기
+                  </Link>
+                </div>
+
                 <Button type="submit" className="w-full" onClick={handleLogin}>
                   로그인
                 </Button>
