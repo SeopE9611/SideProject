@@ -11,13 +11,29 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>('login');
 
-  const [email, setEmail] = useState('');
+  // const [email, setEmail] = useState('');
+
+  // 이메일 아이디 입력 (ex. pplo2)
+  const [emailId, setEmailId] = useState('');
+  // 이메일 도메인 선택 (ex. gmail.com)
+  const [emailDomain, setEmailDomain] = useState('gmail.com');
+  // '직접 입력' 여부
+  const [isCustomDomain, setIsCustomDomain] = useState(false);
+  // 최종 이메일 (조합된 값)
+  const email = `${emailId}@${emailDomain}`;
+  // 이메일 형식 유효
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // 영문 소문자 또는 숫자, 4~30자
+  const emailIdRegex = /^[a-z0-9]{4,30}$/;
+
+  // 이메일 중복 체크 여부
   const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(null); // null: 아직 확인 안함
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [password, setPassword] = useState('');
@@ -92,27 +108,38 @@ export default function LoginPage() {
   };
 
   const checkEmailAvailability = async () => {
-    if (!email) {
-      toast.error('이메일을 입력해주세요.');
+    const fullEmail = `${emailId}@${emailDomain}`;
+
+    if (!emailIdRegex.test(emailId)) {
+      showErrorToast('아이디는 영문 소문자 또는 숫자 조합으로\n4자 이상 입력해주세요.');
       return;
     }
 
-    setCheckingEmail(true);
-    setIsEmailAvailable(null);
+    if (!emailRegex.test(fullEmail)) {
+      showErrorToast('유효한 이메일 형식이 아닙니다.');
+      return;
+    }
 
     try {
-      const res = await fetch(`/api/check-email?email=${encodeURIComponent(email)}`);
+      setCheckingEmail(true);
+      setIsEmailAvailable(null);
+
+      const res = await fetch(`/api/check-email?email=${encodeURIComponent(fullEmail)}`);
       const data = await res.json();
 
       setIsEmailAvailable(data.isAvailable);
     } catch (error) {
-      toast.error('이메일 확인 중 오류가 발생했습니다.');
+      showErrorToast('이메일 확인 중 오류가 발생했습니다.');
     } finally {
       setCheckingEmail(false);
     }
   };
 
   const handleRegister = async () => {
+    if (!emailIdRegex.test(emailId)) {
+      showErrorToast('아이디는 영문 소문자와 숫자 조합으로\n4자 이상 입력해주세요.');
+      return;
+    }
     if (!email || !password || !confirmPassword || !name) {
       showErrorToast('모든 필드를 입력해주세요.');
       return;
@@ -265,23 +292,75 @@ export default function LoginPage() {
                 <div className="col-span-2 space-y-1">
                   <Label htmlFor="register-email">이메일</Label>
                   <div className="flex gap-2">
+                    {/* 이메일 아이디 입력 */}
                     <Input
                       id="register-email"
-                      value={email}
+                      placeholder="아이디 입력"
+                      value={emailId}
                       onChange={(e) => {
-                        setEmail(e.target.value);
-                        setIsEmailAvailable(null); // 입력 바뀌면 다시 초기화
+                        setEmailId(e.target.value);
+                        setIsEmailAvailable(null); // 변경되면 중복 확인 초기화
                       }}
-                      placeholder="example@ddokaebi.com"
                       className="flex-1"
                     />
-                    <Button type="button" onClick={checkEmailAvailability} disabled={checkingEmail} variant="outline">
-                      {checkingEmail ? '확인 중...' : '중복 확인'}
+
+                    {/* @ 기호 */}
+                    <span className="self-center">@</span>
+
+                    {/* 도메인 선택 or 입력 */}
+                    {isCustomDomain ? (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="직접 입력"
+                          value={emailDomain}
+                          onChange={(e) => {
+                            setEmailDomain(e.target.value);
+                            setIsEmailAvailable(null);
+                          }}
+                          className="w-[160px]"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setIsCustomDomain(false);
+                            setEmailDomain('gmail.com');
+                            setIsEmailAvailable(null);
+                          }}
+                        >
+                          다시 선택하기
+                        </Button>
+                      </div>
+                    ) : (
+                      <Select
+                        value={emailDomain}
+                        onValueChange={(value: string) => {
+                          if (value === 'custom') {
+                            setIsCustomDomain(true);
+                            setEmailDomain('');
+                          } else {
+                            setEmailDomain(value);
+                            setIsCustomDomain(false);
+                          }
+                          setIsEmailAvailable(null);
+                        }}
+                      >
+                        <SelectTrigger className="w-[160px]">
+                          <SelectValue placeholder="도메인 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gmail.com">gmail.com</SelectItem>
+                          <SelectItem value="naver.com">naver.com</SelectItem>
+                          <SelectItem value="daum.net">daum.net</SelectItem>
+                          <SelectItem value="custom">직접 입력</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                    <Button type="button" variant="outline" onClick={checkEmailAvailability} disabled={!emailRegex.test(`${emailId}@${emailDomain}`)}>
+                      중복 확인
                     </Button>
                   </div>
-
-                  {isEmailAvailable === true && <p className="text-sm text-green-600 mt-1">✅ 사용 가능한 이메일입니다.</p>}
-                  {isEmailAvailable === false && <p className="text-sm text-red-600 mt-1">❌ 이미 사용 중인 이메일입니다.</p>}
+                  {isEmailAvailable !== null && <p className={`text-sm mt-1 ${isEmailAvailable ? 'text-green-600' : 'text-red-600'}`}>{isEmailAvailable ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.'}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="register-password">비밀번호</Label>
