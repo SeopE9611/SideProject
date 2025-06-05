@@ -18,6 +18,8 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<string>('login');
 
   const [email, setEmail] = useState('');
+  const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(null); // null: 아직 확인 안함
+  const [checkingEmail, setCheckingEmail] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
@@ -89,9 +91,40 @@ export default function LoginPage() {
     }
   };
 
+  const checkEmailAvailability = async () => {
+    if (!email) {
+      toast.error('이메일을 입력해주세요.');
+      return;
+    }
+
+    setCheckingEmail(true);
+    setIsEmailAvailable(null);
+
+    try {
+      const res = await fetch(`/api/check-email?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+
+      setIsEmailAvailable(data.isAvailable);
+    } catch (error) {
+      toast.error('이메일 확인 중 오류가 발생했습니다.');
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
+
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword || !name) {
       showErrorToast('모든 필드를 입력해주세요.');
+      return;
+    }
+
+    if (isEmailAvailable === null) {
+      showErrorToast('이메일 중복 확인을 해주세요.');
+      return;
+    }
+
+    if (isEmailAvailable === false) {
+      showErrorToast('이미 사용 중인 이메일입니다.');
       return;
     }
 
@@ -105,11 +138,18 @@ export default function LoginPage() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password, name, phone, postalCode, address, addressDetail }),
+      body: JSON.stringify({
+        email,
+        password,
+        name,
+        phone,
+        postalCode,
+        address,
+        addressDetail,
+      }),
     });
 
     const data = await res.json();
-
     const from = params.get('from');
 
     if (res.ok) {
@@ -222,9 +262,26 @@ export default function LoginPage() {
               }}
             >
               <CardContent className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 space-y-2">
+                <div className="col-span-2 space-y-1">
                   <Label htmlFor="register-email">이메일</Label>
-                  <Input id="register-email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@ddokaebi.com" />
+                  <div className="flex gap-2">
+                    <Input
+                      id="register-email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setIsEmailAvailable(null); // 입력 바뀌면 다시 초기화
+                      }}
+                      placeholder="example@ddokaebi.com"
+                      className="flex-1"
+                    />
+                    <Button type="button" onClick={checkEmailAvailability} disabled={checkingEmail} variant="outline">
+                      {checkingEmail ? '확인 중...' : '중복 확인'}
+                    </Button>
+                  </div>
+
+                  {isEmailAvailable === true && <p className="text-sm text-green-600 mt-1">✅ 사용 가능한 이메일입니다.</p>}
+                  {isEmailAvailable === false && <p className="text-sm text-red-600 mt-1">❌ 이미 사용 중인 이메일입니다.</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="register-password">비밀번호</Label>
