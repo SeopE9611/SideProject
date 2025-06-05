@@ -245,7 +245,7 @@ export default function LoginPage() {
                 <div className="col-span-2 space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="register-postalCode">우편번호</Label>
-                    <Button variant="outline" size="sm" onClick={handleFindPostcode}>
+                    <Button type="button" variant="outline" size="sm" onClick={handleFindPostcode}>
                       우편번호 찾기
                     </Button>
                   </div>
