@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuthStore } from '@/lib/stores/auth-store';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -105,26 +106,34 @@ export default function LoginPage() {
       return;
     }
 
+    // 상태에 Access Token 저장
+    const setAccessToken = useAuthStore.getState().setAccessToken;
+    setAccessToken(result.accessToken);
+    // 디버깅 - 이메일과 비번 입력 후 로그인 시도하여 토큰 저장되는지 확인
+    console.log('accessToken:', useAuthStore.getState().accessToken);
+
     //  에러가 없을 경우에만 signIn 호출
-    const nextAuthResult = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    });
+    /* ※ signIn('credentials')은 NextAuth의 내부 authorize() 과정을 다시
+     * 거치기 때문에 이미 토큰을 발급해서 주스탄스에 저장했으므로 충돌 가능성이있기에
+     * 제거함. (임시 주석처리)
+     */
+    // const nextAuthResult = await signIn('credentials', {
+    //   email,
+    //   password,
+    //   redirect: false,
+    // });
 
-    if (nextAuthResult?.ok) {
-      if (saveEmail) {
-        localStorage.setItem('saved-email', email);
-      } else {
-        localStorage.removeItem('saved-email');
-      }
-
-      localStorage.removeItem('cart-storage');
-      const from = new URLSearchParams(window.location.search).get('from');
-      router.push(from === 'cart' ? '/cart' : '/');
+    //  이메일 저장 여부에 따른 처리 (비에러)
+    if (saveEmail) {
+      localStorage.setItem('saved-email', email);
     } else {
-      showErrorToast('로그인 세션 생성에 실패했습니다.');
+      localStorage.removeItem('saved-email');
     }
+
+    //  로그인 성공 후 공통 처리
+    localStorage.removeItem('cart-storage');
+    const from = new URLSearchParams(window.location.search).get('from');
+    router.push(from === 'cart' ? '/cart' : '/');
   };
 
   const checkEmailAvailability = async () => {

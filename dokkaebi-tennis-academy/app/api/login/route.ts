@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
   //  사용자 존재 여부 확인
   const user = await getUserByEmail(email);
-  if (!user || !(await verifyPassword(password, user.password))) {
+  if (!user || !user.hashedPassword || !(await verifyPassword(password, user.hashedPassword))) {
     return NextResponse.json({ error: '잘못된 로그인 정보입니다.' }, { status: 401 });
   }
 
