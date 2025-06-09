@@ -60,6 +60,6 @@ export async function POST(req: Request) {
     path: '/',
   });
 
-  // ✅클라이언트에는 Access Token만 반환
+  // 클라이언트에는 Access Token만 반환
   return NextResponse.json({ accessToken });
 }
