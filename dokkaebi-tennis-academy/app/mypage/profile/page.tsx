@@ -10,13 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast, showToast } from '@/lib/toast';
 import WithdrawalReasonSelect from '@/app/mypage/profile/_components/WithdrawalReasonSelect';
 import { useRouter } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { useAuthStore } from '@/lib/stores/auth-store';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -453,8 +451,12 @@ export default function ProfilePage() {
                         //  응답에서 이메일 꺼내기 (API에서 email 반환하도록 구현되어야 함)
                         const { email } = await res.json();
 
-                        //  마이페이지 → 철회 페이지로 이동 + 쿼리 파라미터 전달
-                        await signOut({ callbackUrl: `/withdrawal?email=${email}` });
+                        // 탈퇴 사유 제출 후
+                        // 커스텀 로그아웃 처리: 쿠키 삭제 & zustand 스토어 클리어
+                        await fetch('/api/logout', { method: 'POST' });
+                        useAuthStore.getState().logout();
+                        // 탈퇴 철회 페이지로 이동
+                        router.push(`/withdrawal?email=${encodeURIComponent(email)}`);
                       } catch (error) {
                         if (error instanceof Error) {
                           showErrorToast(error.message);

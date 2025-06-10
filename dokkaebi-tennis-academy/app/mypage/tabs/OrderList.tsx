@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { orderStatusColors } from '@/lib/badge-style';
+import { useAuthStore } from '@/lib/stores/auth-store';
 
 //  주문 데이터 타입 정의
 interface Order {
@@ -21,8 +22,19 @@ interface Order {
   };
 }
 
-//  fetcher 함수 정의 (SWR이 데이터를 불러올 때 사용)
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+//  fetcher 함수: Authorization 헤더 포함해서 호출
+const fetcher = (url: string) => {
+  const token = useAuthStore.getState().accessToken;
+  return fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error('Unauthorized');
+    return res.json();
+  });
+};
 
 export default function OrderList() {
   //  SWR을 사용해 API에서 주문 데이터 가져오기
@@ -34,7 +46,8 @@ export default function OrderList() {
   }
 
   //  로딩 처리 (부모 Suspense에서 fallback으로도 처리되지만 이중 보호)
-  if (isLoading || !orders) {
+  if (isLoading || !Array.isArray(orders)) {
+    // SWR이 `undefined`를 리턴하는 동안 isLoading 또는 !orders 체크
     return <div className="text-center py-8 text-muted-foreground">주문 내역을 불러오는 중입니다...</div>;
   }
 

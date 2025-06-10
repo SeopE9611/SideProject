@@ -13,15 +13,37 @@ import ReviewListSkeleton from '@/app/mypage/tabs/ReviewListSkeleton';
 import Wishlist from '@/app/mypage/tabs/Wishlist';
 import WishlistSkeleton from '@/app/mypage/tabs/WishlistSkeleton';
 import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
-import { Session } from 'next-auth';
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { getMyInfo } from '@/lib/auth.client';
+import { useAuthStore, User } from '@/lib/stores/auth-store';
 
-interface Props {
-  session: Session | null;
-}
-
-export default function MyPageClient({ session }: Props) {
+export default function MypageClient() {
   const searchParams = useSearchParams(); // 현재 URL의 searchParams (?tab=reviews 등)를 가져옴
   const router = useRouter();
+  const token = useAuthStore((state) => state.accessToken);
+  const logout = useAuthStore((state) => state.logout);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // 토큰 없으면 로그인 페이지로
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    // 토큰 있을 때만 유저 정보 로드
+    getMyInfo()
+      .then(({ user }) => setUser(user))
+      .catch(() => {
+        logout();
+        router.push('/login');
+      })
+      .finally(() => setLoading(false));
+  }, [token, router, logout]);
+
+  if (!user) return null;
 
   const currentTab = searchParams.get('tab') ?? 'orders'; // 쿼리에서 tab 값을 가져오고, 없으면 'orders'로 기본값 설정
 
