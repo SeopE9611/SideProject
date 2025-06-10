@@ -4,11 +4,11 @@ import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
-import { notFound } from 'next/navigation';
-import { getServerSession } from 'next-auth';
-import { auth } from '@/lib/auth';
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
   const orderId = searchParams.orderId;
@@ -26,10 +26,18 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
     kookmin: '국민은행 123-45-6789-012 (예금주: 도깨비테니스)',
     woori: '우리은행 1234-567-890123 (예금주: 도깨비테니스)',
   };
+  // 쿠키에서 리프레시 토큰 꺼내기
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get('refreshToken')?.value;
 
-  const session = await auth();
-  const isLoggedIn = !!session?.user;
-
+  // 리프레시 토큰 유효성 검사 -> 로그인 여부 판단
+  let isLoggedIn = false;
+  if (refreshToken) {
+    try {
+      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
+      isLoggedIn = true;
+    } catch {}
+  }
   return (
     <div className="container py-8">
       <div className="max-w-3xl mx-auto">

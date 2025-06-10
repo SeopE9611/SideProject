@@ -1,9 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/stores/cart';
+import { useState, useEffect } from 'react';
+import { useAuthStore, User } from '@/lib/stores/auth-store';
+import { getMyInfo } from '@/lib/auth.client';
 
 export default function CheckoutButton({
   disabled,
@@ -35,9 +37,24 @@ export default function CheckoutButton({
   saveAddress: boolean;
 }) {
   const router = useRouter();
-  const { data: session } = useSession();
+  const token = useAuthStore((state) => state.accessToken);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const { items } = useCartStore();
   const { clearCart } = useCartStore();
+
+  useEffect(() => {
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    getMyInfo()
+      .then(({ user }) => setUser(user))
+      .catch(() => router.push('/login'))
+      .finally(() => setLoading(false));
+  }, [token, router]);
+
+  if (!user) return null;
 
   const handleSubmit = async () => {
     const orderData = {
@@ -56,7 +73,7 @@ export default function CheckoutButton({
       },
       totalPrice,
       shippingFee,
-      guestInfo: !session?.user
+      guestInfo: !user
         ? {
             name,
             phone,
@@ -68,14 +85,20 @@ export default function CheckoutButton({
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // 토큰 추가
+        },
         body: JSON.stringify(orderData),
       });
       // '배송지 저장' 체크 시 회원 정보 업데이트
-      if (session?.user && saveAddress) {
+      if (user && saveAddress) {
         await fetch('/api/users/me', {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // 토큰 추가
+          },
           body: JSON.stringify({
             name,
             phone,

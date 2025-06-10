@@ -12,8 +12,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useCartStore } from '@/lib/stores/cart';
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import CheckoutButton from '@/app/checkout/CheckoutButton';
+import { useRouter } from 'next/navigation';
+import { useAuthStore, User } from '@/lib/stores/auth-store';
+import { getMyInfo } from '@/lib/auth.client';
 
 declare global {
   interface Window {
@@ -76,11 +78,31 @@ export default function CheckoutPage() {
 
   // 배송지 저장 상태관리
   const [saveAddress, setSaveAddress] = useState(false);
-  const { data: session } = useSession();
+  const router = useRouter();
+  const token = useAuthStore((state) => state.accessToken);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // 주문자 동의 상태관리
+  const [agreeAll, setAgreeAll] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreeRefund, setAgreeRefund] = useState(false);
+
+  useEffect(() => {
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    getMyInfo()
+      .then(({ user }) => setUser(user))
+      .catch(() => router.push('/login'))
+      .finally(() => setLoading(false));
+  }, [token, router]);
 
   // 로그인된 회원이면 자동으로 배송 정보 불러오기
   useEffect(() => {
-    if (!session?.user) return;
+    if (!user) return;
 
     const fetchUserInfo = async () => {
       const res = await fetch('/api/users/me');
@@ -98,13 +120,9 @@ export default function CheckoutPage() {
     };
 
     fetchUserInfo();
-  }, [session?.user]);
+  }, [user]);
 
-  // 주문자 동의 상태관리
-  const [agreeAll, setAgreeAll] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [agreePrivacy, setAgreePrivacy] = useState(false);
-  const [agreeRefund, setAgreeRefund] = useState(false);
+  if (!user) return null;
 
   return (
     <div className="container py-8">
@@ -184,13 +202,13 @@ export default function CheckoutPage() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                    <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!session?.user} />
-                    <label htmlFor="save-address" className={`text-sm ${!session?.user ? 'text-gray-400' : ''}`}>
+                    <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!user} />
+                    <label htmlFor="save-address" className={`text-sm ${!user ? 'text-gray-400' : ''}`}>
                       이 배송지 정보를 저장
                     </label>
                   </div>
 
-                  {!session?.user && <p className="text-xs text-muted-foreground ml-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
+                  {!user && <p className="text-xs text-muted-foreground ml-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
                 </div>
               </div>
             </CardContent>
