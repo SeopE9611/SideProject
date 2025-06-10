@@ -3,7 +3,7 @@ import { getTokenFromHeader, verifyAccessToken } from './auth.utils';
 
 export async function auth() {
   const headersList = await headers();
-  console.log('[AUTH HEADERS]', Object.fromEntries(headersList.entries())); // ✅ 추가
+  console.log('[AUTH HEADERS]', Object.fromEntries(headersList.entries()));
 
   const token = getTokenFromHeader(headersList);
   console.log('[AUTH TOKEN]', token);
@@ -17,3 +17,4 @@ export async function auth() {
 
   return { user: payload };
 }
+
