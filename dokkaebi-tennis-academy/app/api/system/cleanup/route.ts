@@ -1,13 +1,27 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { auth } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { deleteExpiredAccounts } from '@/lib/deleteExpiredAccounts';
 
-export async function GET(req: Request) {
-  const session = await auth();
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
-  // 로그인 안 되어 있거나 관리자가 아니면 403
-  if (!session || session.user.role !== 'admin') {
+export async function GET(req: NextRequest) {
+  // Bearer 토큰 파싱
+  const authHeader = req.headers.get('authorization') ?? '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+  const token = authHeader.slice(7);
+
+  // JWT 검증
+  let decoded: JwtPayload;
+  try {
+    decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
+  } catch {
+    return NextResponse.json({ message: 'Invalid token' }, { status: 403 });
+  }
+
+  // 관리자 권한 확인 (role 클레임이 payload에 있어야)
+  if (decoded.role !== 'admin') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
 

@@ -1,32 +1,46 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import clientPromise from '@/lib/mongodb';
-import { authConfig } from '@/lib/auth.config';
+import { ObjectId } from 'mongodb';
 
-export async function PATCH(req: Request) {
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
+
+export async function PATCH(req: NextRequest) {
   // 요청 본문에서 탈퇴 사유(reason)와 세부 사유(detail)를 추출
   const { reason, detail } = await req.json();
 
-  // 현재 로그인된 사용자 세션 가져오기
-  const session = await getServerSession(authConfig);
-
-  if (!session?.user?.email) {
-    // 로그인 상태가 아니면 401 반환
+  // Authorization 헤더에서 Bearer 토큰 추출
+  const authHeader = req.headers.get('authorization') ?? '';
+  if (!authHeader.startsWith('Bearer ')) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+  const token = authHeader.slice(7);
+
+  // JWT 검증
+  let decoded: JwtPayload;
+  try {
+    decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
+  } catch {
+    return NextResponse.json({ message: 'Invalid token' }, { status: 403 });
+  }
+
+  // sub 클레임(사용자 _id) 확인
+  const userId = decoded.sub;
+  if (!userId) {
+    return NextResponse.json({ message: 'Invalid token payload' }, { status: 400 });
   }
 
   try {
     const client = await clientPromise;
     const db = client.db();
 
-    // 현재 로그인된 사용자 정보를 가져옴
-    const user = await db.collection('users').findOne({ email: session.user.email });
+    // DB에서 userId 기반으로 사용자 조회
+    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
     // 탈퇴 제한 조건: 진행 중 주문이 있는 경우 탈퇴 차단
-    // orders.userId는 문자열이므로 user._id를 toString()으로 변환해 비교
     const hasOngoingOrder = await db.collection('orders').findOne({
       userId: user._id.toString(),
       status: { $in: ['결제대기', '결제완료', '배송중', '대기중'] },
@@ -37,8 +51,12 @@ export async function PATCH(req: Request) {
     }
 
     //  탈퇴 정보를 DB에 업데이트
+    // 업데이트 전 원본 이메일 저장 (추후 응답에 사용하기 위함)
+    const userEmail = user.email;
+
     await db.collection('users').updateOne(
-      { email: session.user.email },
+      // 이제 user._id 기준으로 업데이트
+      { _id: new ObjectId(userId) },
       {
         $set: {
           isDeleted: true, // soft delete 처리
@@ -54,8 +72,8 @@ export async function PATCH(req: Request) {
       }
     );
 
-    // 성공 응답
-    return NextResponse.json({ message: '탈퇴 완료', email: session.user.email }, { status: 200 });
+    // 원본 이메일(userEmail)을 응답에 포함
+    return NextResponse.json({ message: '탈퇴 완료', email: userEmail }, { status: 200 });
   } catch (error) {
     console.error('탈퇴 처리 중 오류:', error);
     return NextResponse.json({ message: '서버 오류 발생' }, { status: 500 });

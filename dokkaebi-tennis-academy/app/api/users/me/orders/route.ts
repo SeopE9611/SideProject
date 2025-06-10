@@ -1,23 +1,37 @@
 // 응답 객체를 생성하기 위한 도구
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // 로그인 세션 정보를 가져오기 위한 함수
-import { getServerSession } from 'next-auth';
-import { authConfig } from '@/lib/auth.config';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
+import { ObjectId } from 'mongodb';
+
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 //  MongoDB 클라이언트 연결 (clientPromise는 연결이 보장된 Promise 객체)
 import clientPromise from '@/lib/mongodb';
 
 //  GET 요청 처리 함수 (로그인된 유저의 주문 내역 조회)
-export async function GET() {
-  //  세션(로그인 정보)을 가져온다
-  const session = await getServerSession(authConfig);
+export async function GET(req: NextRequest) {
+  // “Bearer <token>” 헤더 파싱
+  const authHeader = req.headers.get('authorization') ?? '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const token = authHeader.slice(7);
 
-  //  로그인되어 있지 않다면 401(Unauthorized) 응답을 반환
-  if (!session || !session.user?.id) {
-    return new NextResponse('Unauthorized', { status: 401 });
+  // JWT 검증
+  let decoded: JwtPayload;
+  try {
+    decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
+  } catch {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
   }
 
+  // ) sub 클레임(사용자 _id) 반드시 확인
+  const userId = decoded.sub;
+  if (!userId) {
+    return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
+  }
   try {
     //  MongoDB 클라이언트에 연결
     const client = await clientPromise;
@@ -26,7 +40,7 @@ export async function GET() {
     //  로그인된 사용자의 ID 기준으로 주문 내역을 조회
     const orders = await db
       .collection('orders') // 'orders' 컬렉션에서
-      .find({ userId: session.user.id }) // 로그인된 유저의 주문만 필터링
+      .find({ userId: new ObjectId(userId) }) // 로그인된 유저의 주문만 필터링
       .sort({ date: -1 }) // 최신 주문 순으로 정렬
       .toArray(); // 배열 형태로 변환
 
