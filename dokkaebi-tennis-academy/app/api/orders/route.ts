@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'; // Next.js API 응답 처리를 위한 모듈
 import clientPromise from '@/lib/mongodb'; // MongoDB 연결을 위한 클라이언트 프라미스
-import { getServerSession } from 'next-auth'; // 현재 로그인된 세션 정보를 불러오는 함수
-import { authConfig } from '@/lib/auth.config'; // 우리가 설정한 인증 옵션 가져오기 (id 포함 확장됨)
 import { ObjectId } from 'mongodb'; // ObjectId 변환을 위해 추가
+import jwt, { JwtPayload } from 'jsonwebtoken';
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
 // 주문 객체의 타입 정의
 
@@ -29,7 +29,7 @@ type Order = {
   totalPrice: number; // 총 결제 금액
   shippingFee: number; // 배송비
   createdAt: Date; // 주문 시각
-  userId?: string; // 회원일 경우 사용자 ID (세션에서 가져옴)
+  userId?: string | ObjectId; // 회원일 경우 사용자 ID (세션에서 가져옴)
   invoice?: {
     trackingNumber?: string;
   };
@@ -53,9 +53,23 @@ type Order = {
 // POST 메서드 처리 함수 – 주문 생성
 export async function POST(req: Request) {
   try {
-    // 현재 로그인한 사용자 세션 가져오기 (로그인 안 되어 있으면 null)
-    const session = await getServerSession(authConfig);
+    // Authorization 헤더에서 Bearer 토큰 꺼내기
+    const authHeader = req.headers.get('authorization') ?? '';
+    if (!authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const token = authHeader.slice(7);
 
+    // JWT 검증
+    let decoded: JwtPayload;
+    try {
+      decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
+    }
+
+    // 사용자 ID 추출
+    const userId = decoded.sub!;
     // 클라이언트에서 보낸 요청 body(JSON 형식) 파싱
     const body = await req.json();
 
@@ -84,10 +98,11 @@ export async function POST(req: Request) {
     const db = client.db(); // 기본 DB (보통 .env에서 지정된 DB 사용됨)
 
     // 로그인된 사용자면 userId 추가
-    if (session?.user && 'id' in session.user) {
-      order.userId = session.user.id;
+    if (userId) {
+      // userId를 문자열이 아니라 ObjectId 인스턴스로 저장
+      order.userId = new ObjectId(userId);
 
-      const user = await db.collection('users').findOne({ _id: new ObjectId(session.user.id) });
+      const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
       if (user) {
         order.userSnapshot = {
           name: user.name || '(탈퇴한 회원)',
