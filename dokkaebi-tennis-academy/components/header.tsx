@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { useSession, signOut } from 'next-auth/react';
 import { UserNav } from '@/components/nav/UserNav';
 import { UserNavMobile } from '@/components/nav/UserNavMobile';
 import { useRouter } from 'next/navigation';
