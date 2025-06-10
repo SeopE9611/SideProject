@@ -6,18 +6,40 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCartStore } from '@/lib/stores/cart';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useSession } from 'next-auth/react';
+
+// JWT + zustand + 클라이언트 라우터
 import { useRouter } from 'next/navigation';
+import { useAuthStore, User } from '@/lib/stores/auth-store';
+import { getMyInfo } from '@/lib/auth.client';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCartStore();
 
-  // 사용자 세션 및 라우팅
-  const session = useSession();
+  // JWT 인증 로직 추가
   const router = useRouter();
+  const token = useAuthStore((state) => state.accessToken);
+  const logout = useAuthStore((state) => state.logout);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    getMyInfo()
+      .then(({ user }) => setUser(user))
+      .catch(() => {
+        logout();
+        router.push('/login');
+      })
+      .finally(() => setLoading(false));
+  }, [token, router, logout]);
+
+  if (!user) return null;
 
   const handleAddToCart = () => {
     const result = addItem({
@@ -33,7 +55,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       return;
     }
 
-    if (!session.data?.user) {
+    if (!user) {
       toast('장바구니에 담았습니다', {
         description: '비회원이신 경우 로그인 또는 비회원 주문하기로 진행하세요.',
         action: {
