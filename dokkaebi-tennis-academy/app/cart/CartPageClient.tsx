@@ -7,13 +7,41 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useCartStore } from '@/lib/stores/cart';
-import { useSession } from 'next-auth/react';
+import { useAuthStore, User } from '@/lib/stores/auth-store';
+import { getMyInfo } from '@/lib/auth.client';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function CartPageClient() {
-  const { data: session } = useSession();
-
+  const router = useRouter();
+  const token = useAuthStore((state) => state.accessToken);
+  const logout = useAuthStore((state) => state.logout);
   // 임시 장바구니 데이터
   const { items: cartItems, removeItem, updateQuantity, clearCart } = useCartStore();
+
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    //  토큰이 없으면 로그인 페이지로
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    // 토큰이 있을 때만 유저 정보 로드
+    getMyInfo()
+      .then(({ user }) => {
+        setUser(user);
+      })
+      .catch(() => {
+        router.push('/login');
+      })
+      .finally(() => setLoading(false));
+  }, [token, router]); // router, token 둘 다 있어야 안정적
+
+  if (loading) return <p>로딩 중…</p>;
+  if (!user) return null;
 
   // 장바구니 합계 계산
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -111,7 +139,7 @@ export default function CartPageClient() {
               </CardContent>
               <CardFooter>
                 <Button className="w-full" size="lg" asChild>
-                  <Link href="/checkout">{session?.user ? '주문하기' : '비회원 주문하기'}</Link>
+                  <Link href="/checkout">{user ? '주문하기' : '비회원 주문하기'}</Link>
                 </Button>
               </CardFooter>
             </Card>
