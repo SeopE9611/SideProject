@@ -1,18 +1,49 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, LayoutDashboard, Settings, UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect, useState } from 'react';
+import { useAuthStore, User } from '@/lib/stores/auth-store';
+import { getMyInfo } from '@/lib/auth.client';
+// 토큰과 유저 정보를 저장한 상태
+// accessToken으로 유저 정보 불러오는 함수
 
 export function UserNav() {
-  const { data: session, status } = useSession();
   const router = useRouter();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  console.log('현재 accessToken:', accessToken);
+  const logout = useAuthStore((state) => state.logout);
 
-  if (status === 'loading') {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchUser() {
+      if (!accessToken) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getMyInfo();
+        setUser(data.user);
+      } catch (err) {
+        console.error('유저 정보 가져오기 실패:', err);
+        logout(); // 토큰 유효하지 않으면 자동 로그아웃
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUser();
+  }, [accessToken, logout]);
+
+  if (loading) {
     return (
       <div className="flex items-center gap-2">
         <Skeleton className="h-6 w-6 rounded-full" />
@@ -20,7 +51,8 @@ export function UserNav() {
       </div>
     );
   }
-  if (!session) {
+
+  if (!user) {
     return (
       <Button variant="ghost" size="icon" onClick={() => router.push('/login')}>
         <UserIcon className="h-5 w-5" />
@@ -29,8 +61,7 @@ export function UserNav() {
     );
   }
 
-  const user = session.user;
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user.role === 'admin';
 
   return (
     <DropdownMenu>
@@ -58,7 +89,12 @@ export function UserNav() {
             관리자 페이지
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>
+        <DropdownMenuItem
+          onClick={() => {
+            logout();
+            router.push('/');
+          }}
+        >
           <LogOut className="mr-2 h-4 w-4" />
           로그아웃
         </DropdownMenuItem>

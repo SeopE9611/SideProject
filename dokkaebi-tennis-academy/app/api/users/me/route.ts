@@ -13,57 +13,102 @@ import { NextRequest, NextResponse } from 'next/server'; // 요청/응답을 위
 import jwt from 'jsonwebtoken'; // JWT 토큰 검증을 위한 라이브러리
 import clientPromise from '@/lib/mongodb'; // MongoDB 클라이언트 연결 함수
 import { ObjectId } from 'mongodb'; // MongoDB _id를 위해 필요
+import { JwtPayload } from '@supabase/supabase-js';
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!; // .env에서 가져온 JWT 비밀키
 
 export async function GET(req: NextRequest) {
-  // Authorization 헤더에서 토큰 문자열 추출: "Bearer <accessToken>"
-  const authHeader = req.headers.get('authorization');
-  const token = authHeader?.split(' ')[1]; // 앞의 "Bearer" 제거 후 토큰만 추출
+  // 1) 헤더가 실제로 오는지 찍어보기
+  console.log('[API users/me] authorization header:', req.headers.get('authorization'));
 
-  // 토큰이 없는 경우 -> 인증되지 않은 요청
-  if (!token) {
+  // 2) “Bearer ” 검증
+  const authHeader = req.headers.get('authorization') ?? '';
+  if (!authHeader.startsWith('Bearer ')) {
+    console.log('[API users/me] No Bearer token!');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const token = authHeader.slice(7);
 
+  // 3) 토큰 검증
+  let decoded: JwtPayload;
   try {
-    // 토큰 검증 → 유효하면 payload 반환, 아니면 예외 발생
-    const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as jwt.JwtPayload;
-
-    // 토큰 payload에서 사용자 ID 추출 (로그인 시 발급한 토큰의 sub에 userId 저장되어 있음)
-    const userId = decoded.sub;
-
-    // MongoDB에 연결
-    const client = await clientPromise;
-    const db = client.db();
-
-    // 사용자 정보를 DB에서 조회 (탈퇴한 사용자는 제외)
-    const user = await db.collection('users').findOne(
-      {
-        _id: new ObjectId(userId), // 사용자 _id로 찾음
-        isDeleted: false, // 탈퇴하지 않은 사용자만 조회
-      },
-      {
-        // 비밀번호 관련 필드는 응답에서 제거 (보안)
-        projection: {
-          hashedPassword: 0,
-          password: 0,
-        },
-      }
-    );
-
-    // 사용자가 존재하지 않을 경우
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    //  최종적으로 사용자 정보를 클라이언트에 반환
-    return NextResponse.json(user);
+    decoded = jwt.verify(token, ACCESS_TOKEN_SECRET!) as JwtPayload;
+    console.log('[API users/me] decoded payload:', decoded);
   } catch (err) {
-    // 토큰이 만료되었거나 변조된 경우 → 인증 실패
+    console.error('[API users/me] jwt.verify failed:', err);
     return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
   }
+
+  // 4) sub 체크
+  const userId = decoded.sub;
+  if (!userId) {
+    return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
+  }
+
+  // 5) DB 조회
+  const client = await clientPromise;
+  const db = client.db();
+  const user = await db.collection('users').findOne({ _id: new ObjectId(userId), isDeleted: false }, { projection: { hashedPassword: 0, password: 0 } });
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
+
+  // 6) raw user 반환 (getMyInfo 쪽에서 { user: … } 으로 래핑)
+  return NextResponse.json(user);
 }
+
+// export async function GET(req: NextRequest) {
+//   // Authorization 헤더에서 토큰 문자열 추출: "Bearer <accessToken>"
+//   const authHeader = req.headers.get('authorization');
+//   const token = authHeader?.split(' ')[1]; // 앞의 "Bearer" 제거 후 토큰만 추출
+
+//   // 토큰이 없는 경우 -> 인증되지 않은 요청
+//   if (!token) {
+//     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+//   }
+
+//   try {
+//     // 토큰 검증 → 유효하면 payload 반환, 아니면 예외 발생
+//     const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as jwt.JwtPayload;
+//     console.log('▶ decoded payload:', decoded);
+//     // 토큰 payload에서 사용자 ID 추출 (로그인 시 발급한 토큰의 sub에 userId 저장되어 있음)
+//     const userId = decoded.sub;
+
+//     if (!userId) {
+//       return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
+//     }
+
+//     // MongoDB에 연결
+//     const client = await clientPromise;
+//     const db = client.db();
+
+//     // 사용자 정보를 DB에서 조회 (탈퇴한 사용자는 제외)
+//     const user = await db.collection('users').findOne(
+//       {
+//         _id: new ObjectId(userId), // 사용자 _id로 찾음
+//         isDeleted: false, // 탈퇴하지 않은 사용자만 조회
+//       },
+//       {
+//         // 비밀번호 관련 필드는 응답에서 제거 (보안)
+//         projection: {
+//           hashedPassword: 0,
+//           password: 0,
+//         },
+//       }
+//     );
+
+//     // 사용자가 존재하지 않을 경우
+//     if (!user) {
+//       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+//     }
+
+//     //  최종적으로 사용자 정보를 클라이언트에 반환
+//     return NextResponse.json({ user });
+//   } catch (err) {
+//     // 토큰이 만료되었거나 변조된 경우 → 인증 실패
+//     return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
+//   }
+// }
 
 //  PATCH: 사용자 정보 수정
 export async function PATCH(req: Request) {

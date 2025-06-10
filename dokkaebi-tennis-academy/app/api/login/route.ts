@@ -26,29 +26,15 @@ export async function POST(req: Request) {
   }
 
   // Access Token 생성 (1시간 유효)
-  const accessToken = jwt.sign(
-    {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    },
-    ACCESS_TOKEN_SECRET,
-    {
-      expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-    }
-  );
-
+  const accessToken = jwt.sign({}, ACCESS_TOKEN_SECRET, {
+    subject: user._id.toString(), //  sub 클레임으로 MongoDB _id 문자열 전달
+    expiresIn: ACCESS_TOKEN_EXPIRES_IN,
+  });
   // Refresh Token 생성 (7일 유효)
-  const refreshToken = jwt.sign(
-    {
-      sub: user.id,
-    },
-    REFRESH_TOKEN_SECRET,
-    {
-      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-    }
-  );
-
+  const refreshToken = jwt.sign({}, REFRESH_TOKEN_SECRET, {
+    subject: user._id.toString(), // 동일하게 subject 옵션 사용
+    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+  });
   // Refresh Token을 HttpOnly 쿠키로 저장 (JS에서 접근 불가, 보안성 ↑)
   const response = NextResponse.json({ accessToken });
   //  response에 쿠키를 설정하는 방식
@@ -61,5 +47,5 @@ export async function POST(req: Request) {
   });
 
   // 클라이언트에는 Access Token만 반환
-  return NextResponse.json({ accessToken });
+  return response;
 }

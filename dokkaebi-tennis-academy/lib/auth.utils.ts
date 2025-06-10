@@ -5,6 +5,17 @@ import jwt from 'jsonwebtoken';
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
 /**
+ * 요청 헤더에서 Authorization 값을 파싱하여 Bearer 토큰을 추출한다.
+ * @param headers Request Headers 객체
+ * @returns Bearer <token> 형식에서 <token> 부분 반환
+ */
+export function getTokenFromHeader(headers: Headers): string | null {
+  const authorization = headers.get('Authorization');
+  if (!authorization || !authorization.startsWith('Bearer ')) return null;
+  return authorization.split(' ')[1]; // "Bearer abcd.efgh.ijkl" → "abcd.efgh.ijkl"
+}
+
+/**
  * 클라이언트가 보낸 Access Token을 검증하고,
  * 유효한 경우 Payload(사용자 정보 등)를 반환한다.
  *
