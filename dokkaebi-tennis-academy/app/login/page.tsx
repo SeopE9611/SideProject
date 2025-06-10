@@ -6,10 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -17,6 +15,7 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
+  const token = useAuthStore((state) => state.accessToken);
   const [activeTab, setActiveTab] = useState<string>('login');
 
   // const [email, setEmail] = useState('');
@@ -49,6 +48,14 @@ export default function LoginPage() {
   const [address, setAddress] = useState('');
   const [addressDetail, setAddressDetail] = useState('');
 
+  // 토큰이 이미 있으면 로그인 페이지 접근 차단
+  useEffect(() => {
+    if (token) {
+      router.replace('/'); // 토큰 있으면 홈으로 보냄
+    }
+  }, [token, router]);
+
+  // URL 파라미터에 따라 탭 전환
   useEffect(() => {
     const tabParam = params.get('tab');
     if (tabParam === 'login' || tabParam === 'register') {
