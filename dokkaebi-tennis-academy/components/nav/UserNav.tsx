@@ -90,8 +90,16 @@ export function UserNav() {
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
-          onClick={() => {
+          onClick={async () => {
+            // 서버에 로그아웃 요청 (쿠키 삭제)
+            await fetch('/api/logout', {
+              method: 'POST',
+              credentials: 'include', // 쿠키 삭제
+            });
+
+            // 클라이언트 상태 초기화
             logout();
+
             router.push('/');
           }}
         >

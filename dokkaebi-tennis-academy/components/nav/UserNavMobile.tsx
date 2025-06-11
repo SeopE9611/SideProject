@@ -70,10 +70,11 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
         onClick={async () => {
           setOpen(false);
           //  서버 쿠키 제거
-          await fetch('/api/logout', { method: 'POST' });
-          //  클라이언트 스토어 클리어
+          await fetch('/api/logout', {
+            method: 'POST',
+            credentials: 'include',
+          });
           logout();
-          //  홈으로 이동
           router.push('/');
         }}
       >

@@ -83,6 +83,7 @@ export default function LoginPage() {
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
 
@@ -119,8 +120,12 @@ export default function LoginPage() {
     // 상태에 Access Token 저장
     const setAccessToken = useAuthStore.getState().setAccessToken;
     setAccessToken(result.accessToken);
+    location.reload(); // 딜레이 없이 바로 새로고침으로 SSR layout.tsx를 재실행
     // 디버깅 - 이메일과 비번 입력 후 로그인 시도하여 토큰 저장되는지 확인
     console.log('accessToken:', useAuthStore.getState().accessToken);
+
+    // zustand 상태 주입 시간 확보
+    await new Promise((resolve) => setTimeout(resolve, 30));
 
     //  에러가 없을 경우에만 signIn 호출
     /* ※ signIn('credentials')은 NextAuth의 내부 authorize() 과정을 다시
