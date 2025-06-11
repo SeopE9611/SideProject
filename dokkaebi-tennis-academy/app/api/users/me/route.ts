@@ -18,10 +18,10 @@ import { JwtPayload } from '@supabase/supabase-js';
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!; // .env에서 가져온 JWT 비밀키
 
 export async function GET(req: NextRequest) {
-  // 1) 헤더가 실제로 오는지 찍어보기
+  //  헤더가 실제로 오는지 찍어보기
   console.log('[API users/me] authorization header:', req.headers.get('authorization'));
 
-  // 2) “Bearer ” 검증
+  // 2“Bearer ” 검증
   const authHeader = req.headers.get('authorization') ?? '';
   if (!authHeader.startsWith('Bearer ')) {
     console.log('[API users/me] No Bearer token!');
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   }
   const token = authHeader.slice(7);
 
-  // 3) 토큰 검증
+  // 토큰 검증
   let decoded: JwtPayload;
   try {
     decoded = jwt.verify(token, ACCESS_TOKEN_SECRET!) as JwtPayload;
@@ -39,13 +39,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
   }
 
-  // 4) sub 체크
+  // sub 체크
   const userId = decoded.sub;
   if (!userId) {
     return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
   }
 
-  // 5) DB 조회
+  // DB 조회
   const client = await clientPromise;
   const db = client.db();
   const user = await db.collection('users').findOne({ _id: new ObjectId(userId), isDeleted: false }, { projection: { hashedPassword: 0, password: 0 } });
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  // 6) raw user 반환 (getMyInfo 쪽에서 { user: … } 으로 래핑)
+  // raw user 반환 (getMyInfo 쪽에서 { user: … } 으로 래핑)
   return NextResponse.json(user);
 }
 
