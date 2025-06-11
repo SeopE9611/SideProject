@@ -1,51 +1,75 @@
-// /api/login/route.ts
-import { cookies as getCookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { getUserByEmail, verifyPassword } from '@/lib/user-service';
 
+// JWT 비밀 키 불러오기 (환경 변수에서 설정)
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
 
-const ACCESS_TOKEN_EXPIRES_IN = 60 * 60; // 1시간
-const REFRESH_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 7; // 7일
+// 토큰 만료 시간 설정
+const ACCESS_TOKEN_EXPIRES_IN = 60 * 60; // AccessToken: 1시간 (3600초)
+const REFRESH_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 7; // RefreshToken: 7일
 
 export async function POST(req: Request) {
   const body = await req.json();
   const { email, password } = body;
 
-  // 입력값 검증
+  // 필수 입력값 확인
   if (!email || !password) {
     return NextResponse.json({ error: '이메일과 비밀번호를 입력해주세요.' }, { status: 400 });
   }
 
-  //  사용자 존재 여부 확인
+  // 사용자 조회 + 비밀번호 검증
   const user = await getUserByEmail(email);
-  if (!user || !user.hashedPassword || !(await verifyPassword(password, user.hashedPassword))) {
+  const isValid = user?.hashedPassword && (await verifyPassword(password, user.hashedPassword));
+
+  if (!isValid) {
     return NextResponse.json({ error: '잘못된 로그인 정보입니다.' }, { status: 401 });
   }
 
-  // Access Token 생성 (1시간 유효)
-  const accessToken = jwt.sign({}, ACCESS_TOKEN_SECRET, {
-    subject: user._id.toString(), //  sub 클레임으로 MongoDB _id 문자열 전달
-    expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-  });
-  // Refresh Token 생성 (7일 유효)
-  const refreshToken = jwt.sign({}, REFRESH_TOKEN_SECRET, {
-    subject: user._id.toString(), // 동일하게 subject 옵션 사용
-    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-  });
-  // Refresh Token을 HttpOnly 쿠키로 저장 (JS에서 접근 불가, 보안성 ↑)
-  const response = NextResponse.json({ accessToken });
-  //  response에 쿠키를 설정하는 방식
-  response.cookies.set('refreshToken', refreshToken, {
-    httpOnly: true, // JS에서 접근 불가 (XSS 보호)
-    secure: process.env.NODE_ENV === 'production', // HTTPS 환경에서만 작동
-    sameSite: 'strict', // 크로스사이트 요청 차단
-    maxAge: REFRESH_TOKEN_EXPIRES_IN, // 쿠키 유효 시간 (7일)
-    path: '/',
+  // AccessToken 생성 (payload, 시크릿 키, 옵션)
+  const accessToken = jwt.sign(
+    {
+      sub: user._id.toString(), // JWT의 subject: 고유 식별자 (_id 사용)
+      role: user.role, // 사용자 권한 정보 (예: 'admin', 'user')
+    },
+    ACCESS_TOKEN_SECRET, // 비밀 키
+    {
+      expiresIn: ACCESS_TOKEN_EXPIRES_IN, // 만료 시간 (초 단위)
+    }
+  );
+
+  // RefreshToken 생성 (payload 최소화: user ID만 사용)
+  const refreshToken = jwt.sign(
+    {
+      sub: user._id.toString(), // subject에만 사용자 고유 ID 저장
+    },
+    REFRESH_TOKEN_SECRET, // 별도 비밀 키
+    {
+      expiresIn: REFRESH_TOKEN_EXPIRES_IN, // 7일 유효
+    }
+  );
+
+  // JSON 응답: 토큰은 쿠키로만 전달하므로 success만 반환
+  const response = NextResponse.json({ success: true });
+
+  // AccessToken을 HttpOnly 쿠키에 저장
+  response.cookies.set('accessToken', accessToken, {
+    httpOnly: true, // JS에서 접근 불가 (XSS 방지용)
+    secure: true, // HTTPS 환경에서만 전송됨 (배포 시 필수)
+    path: '/', // 사이트 전체에 쿠키 포함
+    maxAge: ACCESS_TOKEN_EXPIRES_IN, // 쿠키 만료 시간: 1시간
+    sameSite: 'lax', // CSRF 방지 기본 설정
   });
 
-  // 클라이언트에는 Access Token만 반환
+  // RefreshToken도 HttpOnly 쿠키로 저장
+  response.cookies.set('refreshToken', refreshToken, {
+    httpOnly: true, // 마찬가지로 JS 접근 불가
+    secure: true, // HTTPS 필수
+    path: '/', // 전역 쿠키
+    maxAge: REFRESH_TOKEN_EXPIRES_IN, // 7일 유효
+    sameSite: 'lax', // 기본 CSRF 보호
+  });
+
   return response;
 }
