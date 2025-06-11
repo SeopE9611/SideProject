@@ -82,8 +82,9 @@ export default function LoginPage() {
 
     const res = await fetch('/api/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      // headers: { 'Content-Type': 'application/json' },
+      // credentials: 'include',
+      headers: { Authorization: `Bearer ${token}` },
       body: JSON.stringify({ email, password }),
     });
 

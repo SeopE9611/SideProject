@@ -72,7 +72,8 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
           //  서버 쿠키 제거
           await fetch('/api/logout', {
             method: 'POST',
-            credentials: 'include',
+            // credentials: 'include',
+            headers: { Authorization: `Bearer ${token}` },
           });
           logout();
           router.push('/');

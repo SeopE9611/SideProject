@@ -17,7 +17,7 @@ export function UserNav() {
   const accessToken = useAuthStore((state) => state.accessToken);
   console.log('현재 accessToken:', accessToken);
   const logout = useAuthStore((state) => state.logout);
-
+  const token = useAuthStore.getState().accessToken;
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -94,7 +94,8 @@ export function UserNav() {
             // 서버에 로그아웃 요청 (쿠키 삭제)
             await fetch('/api/logout', {
               method: 'POST',
-              credentials: 'include', // 쿠키 삭제
+              // credentials: 'include', // 쿠키 삭제
+              headers: { Authorization: `Bearer ${token}` },
             });
 
             // 클라이언트 상태 초기화

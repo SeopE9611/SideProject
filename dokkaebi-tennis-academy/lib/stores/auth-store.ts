@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-// ✅ 유저 정보 타입 정의
+// 유저 정보 타입 정의
 export type User = {
   id: string;
   name: string | null; // 이름은 null일 수도 있음
@@ -9,7 +9,7 @@ export type User = {
   image?: string | null; // 프로필 이미지 (선택)
 };
 
-// ✅ Zustand 상태 인터페이스 정의
+// Zustand 상태 인터페이스 정의
 interface AuthState {
   accessToken: string | null; // JWT Access Token
   setAccessToken: (token: string) => void; // 토큰 설정 함수
@@ -21,7 +21,7 @@ interface AuthState {
   logout: () => void; // 토큰 + 유저 상태 모두 초기화
 }
 
-// ✅ Zustand 전역 상태 생성
+// Zustand 전역 상태 생성
 export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null, // 초기 AccessToken: null
 
