@@ -39,6 +39,9 @@ export default function LoginPage() {
   // 이메일 저장
   const [saveEmail, setSaveEmail] = useState(false);
 
+  // 중복 제출 방지
+  const [submitting, setSubmitting] = useState(false);
+
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -171,7 +174,11 @@ export default function LoginPage() {
     }
   };
 
-  const handleRegister = async () => {
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return; // 이미 제출 중이면 무시
+
+    // 유효성 검사 먼저
     if (!emailIdRegex.test(emailId)) {
       showErrorToast('아이디는 영문 소문자와 숫자 조합으로\n4자 이상 입력해주세요.');
       return;
@@ -180,46 +187,51 @@ export default function LoginPage() {
       showErrorToast('모든 필드를 입력해주세요.');
       return;
     }
-
     if (isEmailAvailable === null) {
       showErrorToast('이메일 중복 확인을 해주세요.');
       return;
     }
-
-    if (isEmailAvailable === false) {
+    if (!isEmailAvailable) {
       showErrorToast('이미 사용 중인 이메일입니다.');
       return;
     }
-
     if (password !== confirmPassword) {
       showErrorToast('비밀번호가 일치하지 않습니다.');
       return;
     }
+    // 제출 플래그 켜고 API 호출
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          phone,
+          postalCode,
+          address,
+          addressDetail,
+        }),
+      });
 
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        password,
-        name,
-        phone,
-        postalCode,
-        address,
-        addressDetail,
-      }),
-    });
+      const data = await res.json();
+      const from = params.get('from');
 
-    const data = await res.json();
-    const from = params.get('from');
-
-    if (res.ok) {
-      showSuccessToast('회원가입이 완료되었습니다.');
-      router.push(`/login?tab=login${from === 'cart' ? '&from=cart' : ''}`);
-    } else {
-      showErrorToast(data.message || '회원가입 중 오류가 발생했습니다.');
+      if (res.ok) {
+        showSuccessToast('회원가입이 완료되었습니다.');
+        router.push(`/login?tab=login${from === 'cart' ? '&from=cart' : ''}`);
+      } else {
+        showErrorToast(data.message || '회원가입 중 오류가 발생했습니다.');
+      }
+    } catch (err) {
+      console.error(err);
+      showErrorToast('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setSubmitting(false); // 제출 흐름 종료
     }
   };
 
@@ -327,12 +339,7 @@ export default function LoginPage() {
               <CardTitle className="text-2xl text-center">회원가입</CardTitle>
               <CardDescription className="text-center">도깨비 테니스 아카데미의 회원이 되어보세요.</CardDescription>
             </CardHeader>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleRegister();
-              }}
-            >
+            <form onSubmit={handleRegister}>
               <CardContent className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-1">
                   <Label htmlFor="register-email">이메일</Label>
@@ -441,8 +448,8 @@ export default function LoginPage() {
                   <Input id="register-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" />
                 </div>
                 <div className="col-span-2">
-                  <Button type="submit" className="w-full" onClick={handleRegister}>
-                    회원가입
+                  <Button type="submit" className="w-full" disabled={submitting}>
+                    {submitting ? '가입 중…' : '회원가입'}
                   </Button>
                 </div>
                 <div className="col-span-2">
