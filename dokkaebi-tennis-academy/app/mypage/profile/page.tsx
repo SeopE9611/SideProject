@@ -26,10 +26,7 @@ export default function ProfilePage() {
         const token = useAuthStore.getState().accessToken;
         const res = await fetch('/api/users/me', {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
         if (!res.ok) throw new Error('정보를 불러올 수 없습니다');
 
@@ -110,11 +107,14 @@ export default function ProfilePage() {
       const basicAddress = profileData.address.address1.trim();
       const detailedAddress = profileData.address.address2.trim();
       const postalCode = profileData.address.postalCode;
+      // zustand에서 방금 로그인해 저장한 토큰 꺼내오기
+      const token = useAuthStore.getState().accessToken;
 
       const res = await fetch('/api/users/me', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: profileData.name,
@@ -448,7 +448,11 @@ export default function ProfilePage() {
                       try {
                         const res = await fetch('/api/users/me/withdraw', {
                           method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
+                          // headers: { 'Content-Type': 'application/json' },
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+                          },
                           body: JSON.stringify({ reason, detail }),
                         });
 

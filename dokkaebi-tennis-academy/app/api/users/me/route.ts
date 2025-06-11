@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   //  헤더가 실제로 오는지 찍어보기
   console.log('[API users/me] authorization header:', req.headers.get('authorization'));
 
-  // 2“Bearer ” 검증
+  // “Bearer ” 검증
   const authHeader = req.headers.get('authorization') ?? '';
   if (!authHeader.startsWith('Bearer ')) {
     console.log('[API users/me] No Bearer token!');
@@ -111,33 +111,42 @@ export async function GET(req: NextRequest) {
 // }
 
 //  PATCH: 사용자 정보 수정
-export async function PATCH(req: Request) {
-  const session = await auth();
+export async function PATCH(req: NextRequest) {
+  // Authorization 헤더에서 "Bearer <token>" 문자열 가져오기
+  const authHeader = req.headers.get('authorization') ?? '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const token = authHeader.slice(7);
 
-  if (!session?.user?.email) {
-    return new Response('Unauthorized', { status: 401 });
+  // JWT 토큰 검증
+  let payload: { sub: string };
+  try {
+    payload = jwt.verify(token, ACCESS_TOKEN_SECRET) as { sub: string };
+  } catch (e) {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
   }
 
-  // 클라이언트에서 보낸 JSON 데이터를 파싱
-  const body = await req.json();
-  const { name, phone, birthDate, gender, address, postalCode, addressDetail } = body;
+  // 요청 바디에서 수정할 사용자 정보 추출
+  const { name, phone, postalCode, address, addressDetail, marketing } = await req.json();
 
+  // MongoDB 연결 후 사용자 문서 업데이트
   const client = await clientPromise;
   const db = client.db();
-
-  // 로그인된 사용자의 이메일 기준으로 필드 업데이트
   await db.collection('users').updateOne(
-    { email: session.user.email },
+    { _id: new ObjectId(payload.sub) },
     {
       $set: {
         name,
         phone,
-        address,
         postalCode,
+        address,
         addressDetail,
+        marketing,
       },
     }
   );
 
-  return new Response('Updated', { status: 200 });
+  // 성공 응답
+  return NextResponse.json({ success: true });
 }

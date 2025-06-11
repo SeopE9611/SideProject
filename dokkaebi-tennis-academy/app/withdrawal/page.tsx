@@ -7,12 +7,13 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useAuthStore } from '@/lib/stores/auth-store';
 
 export default function AccountDeletedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email'); // 탈퇴한 사용자 이메일 추출
-
+  const token = useAuthStore.getState().accessToken;
   const handleRestore = async () => {
     if (!email) {
       showErrorToast('이메일 정보가 누락되었습니다.');
@@ -22,7 +23,10 @@ export default function AccountDeletedPage() {
     // 복구 요청 전송 (POST 요청으로 변경)
     const res = await fetch('/api/users/me/restore', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ email }), // 이메일 포함
     });
 
