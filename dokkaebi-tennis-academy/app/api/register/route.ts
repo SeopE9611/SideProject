@@ -36,6 +36,7 @@ export async function POST(req: Request) {
       email,
       name,
       hashedPassword,
+      isDeleted: false,
       phone,
       address,
       addressDetail,
