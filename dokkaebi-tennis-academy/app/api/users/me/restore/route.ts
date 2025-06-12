@@ -1,39 +1,47 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import jwt from 'jsonwebtoken';
+import { ObjectId } from 'mongodb';
 
-// POST 요청만 허용
+const RECOVERY_TOKEN_SECRET = process.env.RECOVERY_TOKEN_SECRET!;
+
 export async function POST(req: Request) {
-  // 요청 본문에서 이메일 꺼내기
-  const { email } = await req.json();
-
-  // 이메일이 없으면 400 Bad Request
-  if (!email) {
-    return NextResponse.json({ message: '이메일이 전달되지 않았습니다.' }, { status: 400 });
+  // body에서 token 꺼내기
+  const { token } = await req.json();
+  if (!token) {
+    return NextResponse.json({ error: '토큰이 필요합니다.' }, { status: 400 });
   }
 
-  // DB 연결
+  // 토큰 검증
+  let payload: any;
+  try {
+    payload = jwt.verify(token, RECOVERY_TOKEN_SECRET);
+  } catch {
+    return NextResponse.json({ error: '유효하지 않거나 만료된 토큰입니다.' }, { status: 403 });
+  }
+
+  // sub 클레임(사용자 ID) 확인
+  const userId = payload.sub;
+  if (!userId) {
+    return NextResponse.json({ error: '잘못된 토큰입니다.' }, { status: 400 });
+  }
+
+  // soft-delete 해제
   const client = await clientPromise;
   const db = client.db();
-
-  // 해당 이메일 계정 복구
   const result = await db.collection('users').updateOne(
-    { email },
+    { _id: new ObjectId(userId) },
     {
-      $unset: {
-        deletedAt: '', // 탈퇴 시점 제거
-        withdrawalReason: '', // 탈퇴 사유 제거
-        withdrawalDetail: '', // 기타 사유 제거
-      },
-      $set: {
-        isDeleted: false, // 삭제 상태 해제
-      },
+      $set: { isDeleted: false, deletedAt: null },
+      $unset: { withdrawalReason: '', withdrawalDetail: '' },
     }
   );
 
-  // 결과 반환
-  if (result.modifiedCount === 1) {
-    return NextResponse.json({ message: '계정 복구 완료' }, { status: 200 });
-  } else {
-    return NextResponse.json({ message: '계정 복구 실패' }, { status: 500 });
+  // 실패 시
+  if (result.modifiedCount === 0) {
+    return NextResponse.json({ error: '사용자 복구에 실패했습니다.' }, { status: 500 });
   }
+
+  // 성공 시
+  return NextResponse.json({ message: '계정이 정상 복구되었습니다.' }, { status: 200 });
 }

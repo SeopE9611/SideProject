@@ -449,35 +449,34 @@ export default function ProfilePage() {
                   <WithdrawalReasonSelect
                     onSubmit={async (reason, detail) => {
                       try {
-                        const res = await fetch('/api/users/me/withdraw', {
-                          method: 'PATCH',
-                          // headers: { 'Content-Type': 'application/json' },
+                        // 1) DELETE로 탈퇴 요청
+                        const res = await fetch('/api/users/me/leave', {
+                          method: 'DELETE',
                           headers: {
-                            'Content-Type': 'application/json',
                             Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
                           },
-                          body: JSON.stringify({ reason, detail }),
                         });
-
                         if (!res.ok) {
-                          const data = await res.json();
-                          throw new Error(data.error || '탈퇴 실패');
+                          let errBody;
+                          try {
+                            errBody = await res.json();
+                          } catch {
+                            errBody = { error: '알 수 없는 오류' };
+                          }
+                          throw new Error(errBody.error || '탈퇴 실패');
                         }
-                        //  응답에서 이메일 꺼내기 (API에서 email 반환하도록 구현되어야 함)
-                        const { email } = await res.json();
 
-                        // 탈퇴 사유 제출 후
-                        // 커스텀 로그아웃 처리: 쿠키 삭제 & zustand 스토어 클리어
-                        await fetch('/api/logout', { method: 'POST' });
+                        // 2) 복구 토큰 꺼내기
+                        const { recoveryToken } = await res.json();
+
+                        // 3) 로그아웃 처리
+                        await fetch('/api/logout', { method: 'POST', credentials: 'include' });
                         useAuthStore.getState().logout();
-                        // 탈퇴 철회 페이지로 이동
-                        router.push(`/withdrawal?email=${encodeURIComponent(email)}`);
-                      } catch (error) {
-                        if (error instanceof Error) {
-                          showErrorToast(error.message);
-                        } else {
-                          showErrorToast('회원 탈퇴 중 오류가 발생했습니다.');
-                        }
+
+                        // 4) 복구 페이지로 이동 (토큰 전달)
+                        router.push(`/withdrawal?token=${encodeURIComponent(recoveryToken)}`);
+                      } catch (error: any) {
+                        showErrorToast(error.message || '회원 탈퇴 중 오류가 발생했습니다.');
                       }
                     }}
                   />

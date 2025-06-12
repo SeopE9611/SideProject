@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { showErrorToast, showSuccessToast, showToast } from '@/lib/toast';
+import { useAuthStore } from '@/lib/stores/auth-store';
 
 // 임시 회원 데이터
 const users = [
@@ -37,6 +38,7 @@ export default function UsersPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const token = useAuthStore.getState().accessToken;
 
   // 전체 선택 여부와 일부 선택 여부 계산
   const isAllSelected = users.length > 0 && selectedUsers.length === users.length;
@@ -229,7 +231,12 @@ export default function UsersPage() {
             variant="destructive"
             className="mt-4"
             onClick={async () => {
-              const previewRes = await fetch('/api/system/cleanup/preview');
+              const previewRes = await fetch('/api/system/cleanup/preview', {
+                method: 'GET',
+                headers: {
+                  Authorization: `Bearer ${token}`, // JWT 헤더 추가
+                },
+              });
               const preview = await previewRes.json();
 
               if (!Array.isArray(preview) || preview.length === 0) {
@@ -242,7 +249,12 @@ export default function UsersPage() {
               const ok = window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`);
               if (!ok) return;
 
-              const res = await fetch('/api/system/cleanup');
+              const res = await fetch('/api/system/cleanup', {
+                method: 'GET',
+                headers: {
+                  Authorization: `Bearer ${token}`, // JWT 토큰 기반
+                },
+              });
               const data = await res.json();
               if (res.ok) {
                 showSuccessToast(`삭제된 계정 수: ${data.deletedCount}`);
@@ -257,7 +269,10 @@ export default function UsersPage() {
             variant="destructive"
             className="mt-4"
             onClick={async () => {
-              const previewRes = await fetch('/api/system/purge');
+              const previewRes = await fetch('/api/system/purge', {
+                method: 'GET',
+                credentials: 'include', // NextAuth 세션 기반
+              });
               const preview = await previewRes.json();
 
               if (!Array.isArray(preview) || preview.length === 0) {
@@ -269,7 +284,10 @@ export default function UsersPage() {
               const ok = window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`);
               if (!ok) return;
 
-              const res = await fetch('/api/system/purge');
+              const res = await fetch('/api/system/purge', {
+                method: 'GET',
+                credentials: 'include', //  NextAuth 세션 기반
+              });
               const data = await res.json();
               if (res.ok) {
                 showSuccessToast(`완전 삭제된 계정 수: ${data.deletedCount}`);

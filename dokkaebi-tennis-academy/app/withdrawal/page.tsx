@@ -12,22 +12,19 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 export default function AccountDeletedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get('email'); // 탈퇴한 사용자 이메일 추출
-  const token = useAuthStore.getState().accessToken;
+  const token = searchParams.get('token'); // URL에서 복구 토큰을 꺼냅니다
+
   const handleRestore = async () => {
-    if (!email) {
-      showErrorToast('이메일 정보가 누락되었습니다.');
+    if (!token) {
+      showErrorToast('복구 토큰이 없습니다.');
       return;
     }
 
     // 복구 요청 전송 (POST 요청으로 변경)
     const res = await fetch('/api/users/me/restore', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ email }), // 이메일 포함
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
     });
 
     if (res.ok) {
@@ -48,11 +45,11 @@ export default function AccountDeletedPage() {
 
         <CardContent className="text-center pb-6">
           <p className="text-gray-600">탈퇴 후 7일간 개인정보를 보관 후 폐기됩니다.</p>
-          <p className="text-gray-500 mt-2 text-sm">탈퇴를 철회하시려면 아래 버튼을 클릭해주세요.</p>
+          {/* <p className="text-gray-500 mt-2 text-sm">탈퇴를 철회하시려면 아래 버튼을 클릭해주세요.</p> */}
         </CardContent>
 
         <CardFooter className="flex flex-col sm:flex-row gap-3 justify-center pb-10">
-          <Button onClick={handleRestore}>탈퇴 철회하기</Button>
+          {/* <Button onClick={handleRestore}>탈퇴 철회하기</Button> */}
           <Button variant="outline" className="w-full sm:w-auto" asChild>
             <Link href="/">홈으로 이동</Link>
           </Button>
