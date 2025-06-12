@@ -22,11 +22,14 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // 토큰을 zustand 스토어에서 꺼내서 헤더에 실어 보냅니다
+        // zustand 스토어에서 꺼낸 토큰을 Authorization 헤더에 실어 보냄
         const token = useAuthStore.getState().accessToken;
         const res = await fetch('/api/users/me', {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
         });
         if (!res.ok) throw new Error('정보를 불러올 수 없습니다');
 
