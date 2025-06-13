@@ -4,7 +4,7 @@ import clientPromise from '@/lib/mongodb';
 import { ACCESS_TOKEN_SECRET } from '@/lib/constants';
 
 export async function GET(req: NextRequest) {
-  // 1) JWT 토큰 검증 (cleanup/preview와 동일)
+  // JWT 토큰 검증 (cleanup/preview와 동일)
   const authHeader = req.headers.get('authorization') ?? '';
   if (!authHeader.startsWith('Bearer ')) {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
 
-  // 2) 1년 지난 soft-deleted 유저 하드 삭제
+  // 1년 지난 soft-deleted 유저 하드 삭제
   const db = (await clientPromise).db();
   const cutoff = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
   const result = await db.collection('users').deleteMany({

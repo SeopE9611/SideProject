@@ -1,5 +1,3 @@
-// app/api/orders/[id]/history/route.ts
-
 import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
@@ -29,10 +27,10 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   // 히스토리 배열 안전하게 추출 & 타입 단언
   const historyArray = (fullOrder?.history ?? []) as HistoryEvent[];
 
-  // 2) 날짜 기준 내림차순 정렬
+  // 날짜 기준 내림차순 정렬
   const sorted = historyArray.sort((a: HistoryEvent, b: HistoryEvent) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  // 3) 페이징 처리
+  // 페이징 처리
   const paginated = sorted.slice(skip, skip + limit);
 
   return NextResponse.json({
