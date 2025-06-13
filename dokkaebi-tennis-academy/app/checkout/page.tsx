@@ -105,7 +105,11 @@ export default function CheckoutPage() {
     if (!user) return;
 
     const fetchUserInfo = async () => {
-      const res = await fetch('/api/users/me');
+      const res = await fetch('/api/users/me', {
+        headers: {
+          Authorization: `Bearer ${token}`, // 토큰 직접 주입
+        },
+      });
       if (!res.ok) return;
 
       const data = await res.json();
