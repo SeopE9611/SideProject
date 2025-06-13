@@ -48,13 +48,45 @@ export async function GET(req: NextRequest) {
   // DB 조회
   const client = await clientPromise;
   const db = client.db();
-  const user = await db.collection('users').findOne({ _id: new ObjectId(userId), isDeleted: false }, { projection: { hashedPassword: 0, password: 0 } });
+  const user = await db.collection('users').findOne(
+    { _id: new ObjectId(userId) },
+    {
+      // hashedPassword 만 제외하고, 나머지 필드는 모두 내려주기
+      projection: {
+        hashedPassword: 0,
+        password: 0,
+      },
+    }
+  );
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  // raw user 반환 (getMyInfo 쪽에서 { user: … } 으로 래핑)
-  return NextResponse.json(user);
+  // 탈퇴 여부만 플래그로 내려줌
+  // (2) response 에 role 과 isDeleted 플래그를 추가
+  const {
+    name,
+    email,
+    phone,
+    address,
+    postalCode,
+    addressDetail,
+    marketing,
+    isDeleted,
+    role, // ← 이 줄을 추가하세요
+  } = user;
+
+  return NextResponse.json({
+    name,
+    email,
+    phone,
+    address,
+    postalCode,
+    addressDetail,
+    marketing,
+    isDeleted,
+    role, // ← 추가된 role
+  });
 }
 
 // export async function GET(req: NextRequest) {

@@ -51,12 +51,12 @@ export default function LoginPage() {
   const [address, setAddress] = useState('');
   const [addressDetail, setAddressDetail] = useState('');
 
-  // 토큰이 이미 있으면 로그인 페이지 접근 차단
-  useEffect(() => {
-    if (token) {
-      router.replace('/'); // 토큰 있으면 홈으로 보냄
-    }
-  }, [token, router]);
+  // // 토큰이 이미 있으면 로그인 페이지 접근 차단
+  // useEffect(() => {
+  //   if (token) {
+  //     router.replace('/'); // 토큰 있으면 홈으로 보냄
+  //   }
+  // }, [token, router]);
 
   // URL 파라미터에 따라 탭 전환
   useEffect(() => {
@@ -82,12 +82,11 @@ export default function LoginPage() {
 
     const res = await fetch('/api/login', {
       method: 'POST',
-      // headers: { 'Content-Type': 'application/json' },
-      // credentials: 'include',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ email, password }),
     });
-
     const result = await res.json();
 
     if (!res.ok) {
