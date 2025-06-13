@@ -48,7 +48,7 @@ export default function OrdersClient() {
   };
 
   function getDisplayUserType(order: any) {
-    if (!order.userId || order.userId === 'null') return '(비회원)';
+    // if (!order.userId || order.userId === 'null') return '(비회원)';
     if (order.customer?.name?.includes('(탈퇴한 회원)')) return '(탈퇴한 회원)';
     return '';
   }
