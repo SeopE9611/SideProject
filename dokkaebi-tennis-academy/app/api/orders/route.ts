@@ -147,52 +147,33 @@ export async function GET() {
   // DB 정보도 snapshot도 guest도 없으면	(고객 정보 없음)  <- 진짜 예외일 때만
   const orders = await Promise.all(
     rawOrders.map(async (order) => {
-      const usersCollection = db.collection('users');
-      let customer;
+      // users 컬렉션 참조
+      const usersColl = db.collection('users');
+      let customer: { name: string; email: string; phone: string };
 
-      // userSnapshot이 있는 경우
+      // 1) 회원 주문 (userSnapshot 이 반드시 존재)
       if (order.userSnapshot) {
-        let userWasDeleted = false;
-
-        // userId가 있는 경우에만 삭제 여부 확인
-        if (order.userId) {
-          const user = await usersCollection.findOne({
-            _id: new ObjectId(order.userId),
-          });
-
-          userWasDeleted = !!user?.permanentlyDeleted;
-        }
+        // 실제 users 컬렉션에서 이 계정이 soft-delete 되었는지 확인
+        const userDoc = order.userId ? await usersColl.findOne({ _id: new ObjectId(order.userId) }) : null;
+        const isDeleted = !!userDoc?.isDeleted;
 
         customer = {
-          name: userWasDeleted ? `${order.userSnapshot.name} (탈퇴한 회원)` : order.userSnapshot.name,
+          // 탈퇴한 회원이면 “이름 (탈퇴한 회원)”, 아니면 스냅샷 이름
+          name: isDeleted ? `${order.userSnapshot.name} (탈퇴한 회원)` : order.userSnapshot.name,
           email: order.userSnapshot.email,
-          phone: '-', // snapshot엔 phone 없음
+          phone: '-', // snapshot에 phone 정보가 없으므로 고정값
         };
-      } else if (order.userId) {
-        // userSnapshot이 없을 때만 DB 조회
-        const user = await usersCollection.findOne({ _id: new ObjectId(order.userId) });
-        if (user) {
-          customer = {
-            name: user.name || '회원',
-            email: user.email || '-',
-            phone: user.phone || '-',
-          };
-        } else {
-          customer = {
-            name: '비회원',
-            email: '-',
-            phone: '-',
-          };
-        }
+
+        // 2) 비회원 주문 (guestInfo 가 존재)
       } else if (order.guestInfo) {
-        //  비회원 주문
         customer = {
-          name: order.guestInfo.name || '비회원',
+          name: `${order.guestInfo.name} (비회원)`,
           email: order.guestInfo.email || '-',
           phone: order.guestInfo.phone || '-',
         };
+
+        // 3) DB·스냅샷·guestInfo 모두 없는 예외 케이스
       } else {
-        // 어떤 정보도 없을 때 fallback
         customer = {
           name: '(고객 정보 없음)',
           email: '-',
