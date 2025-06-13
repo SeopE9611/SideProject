@@ -63,19 +63,8 @@ export async function GET(req: NextRequest) {
   }
 
   // 탈퇴 여부만 플래그로 내려줌
-  // (2) response 에 role 과 isDeleted 플래그를 추가
-  const {
-    name,
-    email,
-    phone,
-    address,
-    postalCode,
-    addressDetail,
-    marketing,
-    isDeleted,
-    role, // ← 이 줄을 추가하세요
-  } = user;
-
+  // response 에 role 과 isDeleted 플래그를 추가
+  const { name, email, phone, address, postalCode, addressDetail, marketing, isDeleted, role, image } = user;
   return NextResponse.json({
     name,
     email,
@@ -85,7 +74,8 @@ export async function GET(req: NextRequest) {
     addressDetail,
     marketing,
     isDeleted,
-    role, // ← 추가된 role
+    role,
+    image,
   });
 }
 

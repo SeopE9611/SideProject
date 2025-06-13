@@ -120,7 +120,7 @@ export default function LoginPage() {
     // 상태에 Access Token 저장
     const setAccessToken = useAuthStore.getState().setAccessToken;
     setAccessToken(result.accessToken);
-    location.reload(); // 딜레이 없이 바로 새로고침으로 SSR layout.tsx를 재실행
+
     // 디버깅 - 이메일과 비번 입력 후 로그인 시도하여 토큰 저장되는지 확인
     console.log('accessToken:', useAuthStore.getState().accessToken);
 
@@ -148,7 +148,9 @@ export default function LoginPage() {
     //  로그인 성공 후 공통 처리
     localStorage.removeItem('cart-storage');
     const from = new URLSearchParams(window.location.search).get('from');
-    router.push(from === 'cart' ? '/cart' : '/');
+    window.location.href = from === 'cart' ? '/cart' : '/';
+    // router.push(from === 'cart' ? '/cart' : '/');
+    // location.reload(); // 딜레이 없이 바로 새로고침으로 SSR layout.tsx를 재실행
   };
 
   const checkEmailAvailability = async () => {
