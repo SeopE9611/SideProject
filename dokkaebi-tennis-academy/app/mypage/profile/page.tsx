@@ -449,32 +449,27 @@ export default function ProfilePage() {
                   <WithdrawalReasonSelect
                     onSubmit={async (reason, detail) => {
                       try {
-                        // 1) DELETE로 탈퇴 요청
+                        const token = useAuthStore.getState().accessToken;
+
                         const res = await fetch('/api/users/me/leave', {
                           method: 'DELETE',
                           headers: {
-                            Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
                           },
+                          body: JSON.stringify({
+                            // body에 reason/detail 담기
+                            reason,
+                            detail,
+                          }),
                         });
+
                         if (!res.ok) {
-                          let errBody;
-                          try {
-                            errBody = await res.json();
-                          } catch {
-                            errBody = { error: '알 수 없는 오류' };
-                          }
-                          throw new Error(errBody.error || '탈퇴 실패');
+                          const errBody = await res.json().catch(() => ({ error: '알 수 없는 오류' }));
+                          throw new Error(errBody.error);
                         }
 
-                        // 2) 복구 토큰 꺼내기
-                        const { recoveryToken } = await res.json();
-
-                        // 3) 로그아웃 처리
-                        await fetch('/api/logout', { method: 'POST', credentials: 'include' });
-                        useAuthStore.getState().logout();
-
-                        // 4) 복구 페이지로 이동 (토큰 전달)
-                        router.push(`/withdrawal?token=${encodeURIComponent(recoveryToken)}`);
+                        // 탈퇴 성공 흐름
                       } catch (error: any) {
                         showErrorToast(error.message || '회원 탈퇴 중 오류가 발생했습니다.');
                       }
