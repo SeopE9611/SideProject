@@ -300,10 +300,10 @@ export default function LoginPage() {
               </CardContent>
             </form>
             <div className="text-center text-sm text-muted-foreground">
-              비회원도 상품 구매가 가능하나 <span className="font-semibold text-primary">다양한 회원혜택</span>에서 제외됩니다.
+              <span className="font-semibold text-primary">비회원 주문</span>도 조회하실 수 있습니다.
             </div>
-            <Button variant="ghost" className="w-full" onClick={() => router.push('/cart')}>
-              비회원으로 구매하기
+            <Button variant="ghost" className="w-full" onClick={() => router.push('/order-lookup')}>
+              비회원 주문 조회하기
             </Button>
           </TabsContent>
 
