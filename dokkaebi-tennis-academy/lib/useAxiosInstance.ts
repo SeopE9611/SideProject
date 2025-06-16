@@ -36,3 +36,44 @@ instance.interceptors.request.use(
 export default function useAxiosInstance() {
   return instance;
 }
+
+// 응답 인터셉터 추가
+instance.interceptors.response.use(
+  (res) => res,
+  async (err) => {
+    const originalRequest = err.config;
+
+    // accessToken이 만료되어 401 응답인 경우만 처리
+    if (err.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // refresh API 호출
+        const res = await fetch('/api/auth/refresh', { method: 'POST' });
+
+        if (res.ok) {
+          const data = await res.json();
+          const newAccessToken = data.accessToken;
+
+          //  Zustand 상태 업데이트
+          useAuthStore.getState().setAccessToken(newAccessToken);
+
+          //  원래 요청에 새 accessToken 반영해서 재시도
+          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+          return instance(originalRequest);
+        } else {
+          // refresh 실패 시 로그아웃
+          useAuthStore.getState().logout();
+          console.error('[Axios] RefreshToken 만료 또는 실패');
+          return Promise.reject(err);
+        }
+      } catch (refreshError) {
+        useAuthStore.getState().logout();
+        console.error('[Axios] 세션 갱신 중 오류 발생');
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(err);
+  }
+);
