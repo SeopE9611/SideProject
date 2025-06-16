@@ -25,7 +25,7 @@ export async function POST(req: Request) {
   const isValid = user?.hashedPassword && (await verifyPassword(password, user.hashedPassword));
 
   if (!isValid) {
-    return NextResponse.json({ error: '잘못된 로그인 정보입니다.' }, { status: 401 });
+    return NextResponse.json({ error: '이메일 또는 비밀번호가 일치하지 않습니다.' }, { status: 401 });
   }
 
   // AccessToken 생성 (payload, 시크릿 키, 옵션)

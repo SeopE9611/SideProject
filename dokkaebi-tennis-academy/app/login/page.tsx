@@ -90,30 +90,8 @@ export default function LoginPage() {
     const result = await res.json();
 
     if (!res.ok) {
-      // 유효성 검사 에러 분기 처리
-      switch (result.error) {
-        case 'not_found':
-          showErrorToast('존재하지 않는 이메일입니다.');
-          break;
-        case 'withdrawn':
-          showErrorToast(
-            <>
-              존재하지 않거나 탈퇴한 계정입니다.
-              <button className="text-sm text-blue-600 hover:underline ml-2" onClick={() => router.push(`/withdrawal?email=${encodeURIComponent(email)}`)}>
-                탈퇴 철회 페이지로 이동하기(클릭)
-              </button>
-            </>
-          );
-          break;
-        case 'wrong_password':
-          showErrorToast('비밀번호가 일치하지 않습니다.');
-          break;
-        case 'missing_fields':
-          showErrorToast('이메일과 비밀번호를 모두 입력해주세요.');
-          break;
-        default:
-          showErrorToast('로그인에 실패했습니다.');
-      }
+      // 서버에서 내려준 에러 메시지를 직접 사용- HTTP 응답 상태 코드가 실패(400~599) 일 경우
+      showErrorToast(result.error || '로그인에 실패했습니다.');
       return;
     }
 
@@ -126,17 +104,6 @@ export default function LoginPage() {
 
     // zustand 상태 주입 시간 확보
     await new Promise((resolve) => setTimeout(resolve, 30));
-
-    //  에러가 없을 경우에만 signIn 호출
-    /* ※ signIn('credentials')은 NextAuth의 내부 authorize() 과정을 다시
-     * 거치기 때문에 이미 토큰을 발급해서 주스탄스에 저장했으므로 충돌 가능성이있기에
-     * 제거함. (임시 주석처리)
-     */
-    // const nextAuthResult = await signIn('credentials', {
-    //   email,
-    //   password,
-    //   redirect: false,
-    // });
 
     //  이메일 저장 여부에 따른 처리 (비에러)
     if (saveEmail) {
@@ -303,7 +270,7 @@ export default function LoginPage() {
                   </Link>
                 </div>
 
-                <Button type="submit" className="w-full" onClick={handleLogin}>
+                <Button type="submit" className="w-full">
                   로그인
                 </Button>
 
