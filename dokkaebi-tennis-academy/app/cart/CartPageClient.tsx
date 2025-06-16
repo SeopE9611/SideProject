@@ -22,26 +22,23 @@ export default function CartPageClient() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 토큰이 있을 때만 유저 정보 로드
   useEffect(() => {
-    //  토큰이 없으면 로그인 페이지로
-    if (!token) {
-      router.push('/login');
-      return;
+    if (token) {
+      getMyInfo()
+        .then(({ user }) => setUser(user))
+        .catch(() => {
+          logout(); // 토큰 만료 시 로그아웃
+        })
+        .finally(() => setLoading(false));
+    } else {
+      // 비회원도 접근 허용
+      setUser(null);
+      setLoading(false);
     }
-
-    // 토큰이 있을 때만 유저 정보 로드
-    getMyInfo()
-      .then(({ user }) => {
-        setUser(user);
-      })
-      .catch(() => {
-        router.push('/login');
-      })
-      .finally(() => setLoading(false));
-  }, [token, router]); // router, token 둘 다 있어야 안정적
+  }, [token, logout]);
 
   if (loading) return <p>로딩 중…</p>;
-  if (!user) return null;
 
   // 장바구니 합계 계산
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);

@@ -78,8 +78,9 @@ export default function CheckoutPage() {
 
   // 배송지 저장 상태관리
   const [saveAddress, setSaveAddress] = useState(false);
-  const router = useRouter();
+  // const router = useRouter();
   const token = useAuthStore((state) => state.accessToken);
+  const logout = useAuthStore((state) => state.logout);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -88,17 +89,21 @@ export default function CheckoutPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
-
   useEffect(() => {
-    if (!token) {
-      router.push('/login');
-      return;
+    if (token) {
+      getMyInfo()
+        .then(({ user }) => setUser(user))
+        .catch(() => {
+          // 토큰 만료 등 오류 시 강제 로그아웃
+          logout();
+        })
+        .finally(() => setLoading(false));
+    } else {
+      // 비회원 허용
+      setUser(null);
+      setLoading(false);
     }
-    getMyInfo()
-      .then(({ user }) => setUser(user))
-      .catch(() => router.push('/login'))
-      .finally(() => setLoading(false));
-  }, [token, router]);
+  }, [token, logout]);
 
   // 로그인된 회원이면 자동으로 배송 정보 불러오기
   useEffect(() => {
@@ -126,7 +131,7 @@ export default function CheckoutPage() {
     fetchUserInfo();
   }, [user]);
 
-  if (!user) return null;
+  // if (!user) return null;
 
   return (
     <div className="container py-8">

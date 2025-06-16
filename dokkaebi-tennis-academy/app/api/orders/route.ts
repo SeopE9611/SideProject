@@ -55,22 +55,22 @@ export async function POST(req: Request) {
   try {
     // Authorization 헤더에서 Bearer 토큰 꺼내기
     const authHeader = req.headers.get('authorization') ?? '';
-    if (!authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const token = authHeader.slice(7);
+    let userId: string | null = null;
 
-    // JWT 검증
-    let decoded: JwtPayload;
-    try {
-      decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
-    } catch {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
+    // Authorization 헤더가 존재하고 Bearer 토큰 형식일 경우 → JWT 검증
+    if (authHeader.startsWith('Bearer ')) {
+      const token = authHeader.slice(7); // "Bearer " 이후 문자열 추출
+
+      try {
+        const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
+        userId = decoded.sub || null; // JWT의 subject(sub)는 userId
+      } catch {
+        // 토큰 형식은 맞지만 검증 실패 → 유효하지 않은 토큰
+        return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
+      }
     }
 
-    // 사용자 ID 추출
-    const userId = decoded.sub!;
-    // 클라이언트에서 보낸 요청 body(JSON 형식) 파싱
+    //  클라이언트에서 보낸 요청 body(JSON 형식) 파싱
     const body = await req.json();
 
     // 요청에서 필요한 필드 구조분해
@@ -80,6 +80,11 @@ export async function POST(req: Request) {
       method: '무통장입금',
       bank: body.paymentInfo?.bank || 'shinhan',
     };
+
+    // 비회원이면서 guestInfo도 없으면 예외 처리
+    if (!userId && !guestInfo) {
+      return NextResponse.json({ error: '게스트 주문 정보 누락' }, { status: 400 });
+    }
 
     // 주문 객체 생성 – 기본 필드들만 먼저 채워넣음
     const order: Order = {
@@ -93,14 +98,13 @@ export async function POST(req: Request) {
       status: '대기중',
     };
 
-    // MongoDB 클라이언트 연결 및 DB 선택
+    //  MongoDB 클라이언트 연결 및 DB 선택
     const client = await clientPromise;
     const db = client.db(); // 기본 DB (보통 .env에서 지정된 DB 사용됨)
 
-    // 로그인된 사용자면 userId 추가
+    // 로그인된 사용자면 userId 추가 및 userSnapshot 저장
     if (userId) {
-      // userId를 문자열이 아니라 ObjectId 인스턴스로 저장
-      order.userId = new ObjectId(userId);
+      order.userId = new ObjectId(userId); // 문자열 → ObjectId로 변환
 
       const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
       if (user) {
@@ -109,19 +113,16 @@ export async function POST(req: Request) {
           email: user.email || '(탈퇴한 회원)',
         };
       }
-    } else {
-      order.guestInfo = guestInfo;
     }
 
     // 주문 컬렉션에 주문 문서 삽입
     const result = await db.collection('orders').insertOne(order);
 
-    // 성공적으로 삽입되었으면 클라이언트에 성공 응답 + orderId 반환
+    //성공적으로 삽입되었으면 클라이언트에 성공 응답 + orderId 반환
     return NextResponse.json({ success: true, orderId: result.insertedId });
   } catch (error) {
     // 에러 발생 시 서버 콘솔에 출력하고 클라이언트에 실패 응답 반환
     console.error('주문 POST 에러:', error);
-
     return NextResponse.json({ success: false, error: '주문 생성 중 오류 발생' }, { status: 500 });
   }
 }

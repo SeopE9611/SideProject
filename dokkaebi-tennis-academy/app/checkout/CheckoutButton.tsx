@@ -45,16 +45,19 @@ export default function CheckoutButton({
 
   useEffect(() => {
     if (!token) {
-      router.push('/login');
+      // 비회원이면 그냥 user는 null로 두고 통과
+      setUser(null);
+      setLoading(false);
       return;
     }
+
     getMyInfo()
       .then(({ user }) => setUser(user))
-      .catch(() => router.push('/login'))
+      .catch(() => setUser(null)) // 비회원 주문 가능
       .finally(() => setLoading(false));
-  }, [token, router]);
+  }, [token]);
 
-  if (!user) return null;
+  // if (!user) return null;
 
   const handleSubmit = async () => {
     const orderData = {
@@ -83,22 +86,32 @@ export default function CheckoutButton({
     };
 
     try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // 토큰 추가
-        },
+        headers,
         body: JSON.stringify(orderData),
       });
       // '배송지 저장' 체크 시 회원 정보 업데이트
       if (user && saveAddress) {
+        const patchHeaders: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+
+        if (token) {
+          patchHeaders['Authorization'] = `Bearer ${token}`;
+        }
+
         await fetch('/api/users/me', {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`, // 토큰 추가
-          },
+          headers: patchHeaders,
           body: JSON.stringify({
             name,
             phone,

@@ -26,20 +26,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login');
-      return;
+    if (token) {
+      getMyInfo()
+        .then(({ user }) => setUser(user))
+        .catch(() => {
+          logout();
+        })
+        .finally(() => setLoading(false));
+    } else {
+      // 로그인하지 않은 상태도 허용 (토큰 제한 해제)
+      setUser(null);
+      setLoading(false);
     }
-    getMyInfo()
-      .then(({ user }) => setUser(user))
-      .catch(() => {
-        logout();
-        router.push('/login');
-      })
-      .finally(() => setLoading(false));
   }, [token, router, logout]);
 
-  if (!user) return null;
+  // if (!user) return null;
 
   const handleAddToCart = () => {
     const result = addItem({
