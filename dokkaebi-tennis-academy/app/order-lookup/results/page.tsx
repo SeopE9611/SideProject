@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 // 주문 타입 정의
 interface Order {
@@ -139,6 +140,12 @@ export default function OrderLookupResultsPage() {
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="max-w-3xl mx-auto">
+        <div className="mb-6">
+          <Link href="/order-lookup" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            이전 페이지로 돌아가기
+          </Link>
+        </div>
         <Card className="shadow-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">주문 조회 결과</CardTitle>

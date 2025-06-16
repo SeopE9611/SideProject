@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag } from 'lucide-react';
+import Link from 'next/link';
 
 // 주문 상세 타입 정의
 interface OrderDetail {
@@ -136,10 +137,12 @@ export default function OrderDetailPage() {
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="max-w-3xl mx-auto">
-        <Button variant="ghost" className="mb-4 pl-0 flex items-center" onClick={handleGoBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          주문 목록으로 돌아가기
-        </Button>
+        <div className="mb-6">
+          <Button variant="ghost" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground" onClick={handleGoBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            주문 목록으로 돌아가기
+          </Button>
+        </div>
 
         <Card className="shadow-md mb-6">
           <CardHeader className="space-y-1">

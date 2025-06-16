@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export default function OrderLookupPage() {
   const router = useRouter();
@@ -98,6 +100,12 @@ export default function OrderLookupPage() {
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="max-w-md mx-auto">
+        <div className="mb-6">
+          <Link href="/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            이전 페이지로 돌아가기
+          </Link>
+        </div>
         <Card className="shadow-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">비회원 주문 조회</CardTitle>
