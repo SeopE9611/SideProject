@@ -3,13 +3,14 @@
 import { cookies } from 'next/headers'; // 쿠키 접근을 위한 Next.js 내장 함수
 import { NextResponse } from 'next/server'; // 응답을 위한 Next.js 헬퍼
 import jwt from 'jsonwebtoken'; // 토큰 생성 및 검증을 위한 라이브러리
+import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN } from '@/lib/constants';
 
-// 환경변수에서 Access Token과 Refresh Token 시크릿 키를 불러옴
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
+// // 환경변수에서 Access Token과 Refresh Token 시크릿 키를 불러옴
+// const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
+// const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
 
-// Access Token 만료 시간 (초 기준: 1시간)
-const ACCESS_TOKEN_EXPIRES_IN = 60 * 60;
+// // Access Token 만료 시간 (초 기준: 1시간)
+// const ACCESS_TOKEN_EXPIRES_IN = 60 * 60;
 
 export async function POST() {
   // 브라우저에 저장된 쿠키 중 refreshToken 가져오기
@@ -33,7 +34,7 @@ export async function POST() {
         role: decoded.role, // (선택적) 역할 정보
       },
       ACCESS_TOKEN_SECRET,
-      { expiresIn: ACCESS_TOKEN_EXPIRES_IN } // 1시간짜리 토큰
+      { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
     );
 
     // 새 Access Token을 JSON으로 클라이언트에게 전달

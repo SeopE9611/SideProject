@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { getUserByEmail, verifyPassword } from '@/lib/user-service';
+import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from '@/lib/constants';
 
-// JWT 비밀 키 불러오기 (환경 변수에서 설정)
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
+// // JWT 비밀 키 불러오기 (환경 변수에서 설정)
+// const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
+// const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
 
-// 토큰 만료 시간 설정
-const ACCESS_TOKEN_EXPIRES_IN = 60 * 60; // AccessToken: 1시간 (3600초)
-const REFRESH_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 7; // RefreshToken: 7일
+// // 토큰 만료 시간 설정
+// const ACCESS_TOKEN_EXPIRES_IN = 60 * 60; // AccessToken: 1시간 (3600초)
+// const REFRESH_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 7; // RefreshToken: 7일
 
 export async function POST(req: Request) {
   const body = await req.json();
