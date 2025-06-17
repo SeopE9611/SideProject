@@ -19,6 +19,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { getMyInfo } from '@/lib/auth.client';
 import { useAuthStore, User } from '@/lib/stores/auth-store';
+import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
+import OrderDetailClient from '@/app/admin/orders/_components/OrderDetailClient';
 
 export default function MypageClient() {
   const searchParams = useSearchParams(); // 현재 URL의 searchParams (?tab=reviews 등)를 가져옴
@@ -55,6 +57,9 @@ export default function MypageClient() {
     newParams.set('tab', value); // 새로운 탭 값 설정
     router.push(`/mypage?${newParams.toString()}`, { scroll: false }); // 쿼리 파라미터만 변경 (스크롤 이동 없이)
   };
+
+  const orderId = searchParams.get('orderId');
+  const selectedApplicationId = searchParams.get('id');
 
   // 임시 리뷰 데이터
   const reviews = [
@@ -134,9 +139,7 @@ export default function MypageClient() {
                   <CardDescription>최근 주문 내역을 확인하실 수 있습니다.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Suspense fallback={<OrderListSkeleton />}>
-                    <OrderList />
-                  </Suspense>
+                  <Suspense fallback={<OrderListSkeleton />}>{orderId ? <OrderDetailClient orderId={orderId} /> : <OrderList />}</Suspense>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -149,9 +152,13 @@ export default function MypageClient() {
                   <CardDescription>신청한 서비스의 상태를 확인할 수 있습니다.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Suspense fallback={<ApplicationsSkeleton />}>
-                    <Applications />
-                  </Suspense>
+                  {selectedApplicationId ? (
+                    <ApplicationDetail id={selectedApplicationId} />
+                  ) : (
+                    <Suspense fallback={<ApplicationsSkeleton />}>
+                      <Applications />
+                    </Suspense>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

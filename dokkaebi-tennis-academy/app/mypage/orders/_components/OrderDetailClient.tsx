@@ -13,8 +13,10 @@ import OrderHistory from '@/app/admin/orders/_components/OrderHistory';
 import { OrderStatusBadge } from '@/app/admin/orders/_components/OrderStatusBadge';
 import { paymentStatusColors } from '@/lib/badge-style';
 import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
+import { useRouter } from 'next/navigation';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const router = useRouter();
 
 // SWR Infinite용 getKey (처리 이력 페이지네이션)
 const LIMIT = 5;
@@ -50,8 +52,11 @@ interface OrderDetail {
   cancelReason?: string;
   cancelReasonDetail?: string;
 }
+interface Props {
+  orderId: string;
+}
 
-export default function OrderDetailClient({ orderId }: { orderId: string }) {
+export default function OrderDetailClient({ orderId }: Props) {
   // 주문 상세를 SWR로 가져오기
   const { data: orderDetail, error: orderError, mutate: mutateOrderDetail } = useSWR<OrderDetail>(`/api/orders/${orderId}`, fetcher);
 
@@ -86,11 +91,9 @@ export default function OrderDetailClient({ orderId }: { orderId: string }) {
         {/* 페이지 헤더 */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <Button variant="outline" size="sm" className="mb-3" asChild>
-              <Link href="/mypage">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                주문 목록으로 돌아가기
-              </Link>
+            <Button variant="ghost" onClick={() => router.push('/mypage?tab=orders')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              목록으로 돌아가기
             </Button>
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">주문 상세 정보</h1>
             <p className="mt-1 text-muted-foreground">주문 ID: {orderId}</p>

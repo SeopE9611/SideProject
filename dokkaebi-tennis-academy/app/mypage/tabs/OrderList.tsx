@@ -89,7 +89,7 @@ export default function OrderList() {
             <div className="mt-4 flex items-center justify-between">
               <div className="font-medium">총 결제 금액: {typeof order.totalPrice === 'number' ? `${order.totalPrice.toLocaleString()}원` : '총 결제 금액 정보 없음'}</div>
               <Button size="sm" variant="outline" asChild>
-                <Link href={`/mypage/orders/${order.id}`}>상세보기</Link>
+                <Link href={`/mypage?tab=orders&orderId=${order.id}`}>상세보기</Link>
               </Button>
             </div>
           </CardContent>

@@ -1,4 +1,4 @@
-import MyPageClient from '@/app/mypage/orders/_components/MypageClient';
+import MyPageClient from '@/app/mypage/MypageClient';
 
 export default async function MyPagePage() {
   return <MyPageClient />;

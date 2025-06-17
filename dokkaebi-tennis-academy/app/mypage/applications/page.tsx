@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Phone, User, FileText, ArrowRight } from 'lucide-react';
-
+import { useRouter } from 'next/navigation';
 // 샘플 데이터
 const applications = [
   {
@@ -66,6 +66,8 @@ const getStatusColor = (status: string) => {
 };
 
 export default function ApplicationsPage() {
+  const router = useRouter();
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {applications.length === 0 ? (
@@ -108,11 +110,9 @@ export default function ApplicationsPage() {
                   </div>
 
                   <div className="flex justify-end">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/mypage/applications/${application.id}`}>
-                        신청 상세 보기
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
+                    <Button variant="outline" size="sm" onClick={() => router.push(`/mypage?tab=applications&id=${application.id}`)}>
+                      신청 상세 보기
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
                 </div>
