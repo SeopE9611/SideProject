@@ -51,10 +51,18 @@ export default function StringServiceApplyPage() {
     setIsSubmitting(true);
 
     try {
-      // API 호출 시뮬레이션
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const res = await fetch('/api/applications/stringing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
-      // 성공 페이지로 이동
+      if (!res.ok) {
+        const { message } = await res.json();
+        throw new Error(message || '신청 실패');
+      }
+
+      toast.success('신청이 완료되었습니다!');
       router.push('/services/success');
     } catch (error) {
       showErrorToast('신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.');

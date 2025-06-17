@@ -22,65 +22,61 @@ interface Application {
   requests?: string;
 }
 
-const dummyData: Record<string, any> = {
-  '1': {
-    id: '1',
-    type: '스트링 장착 서비스',
-    applicantName: '김테니스',
-    phone: '010-1234-5678',
-    appliedAt: '2024-01-15',
-    status: '접수 완료',
-    racketType: '윌슨 프로 스태프 97',
-    stringType: '바볼랏 RPM 블라스트',
-    preferredDate: '2024-01-20',
-    requests: '텐션은 50파운드로 부탁드립니다.',
-  },
-  '2': {
-    id: '2',
-    type: '스트링 장착 서비스',
-    applicantName: '이라켓',
-    phone: '010-9876-5432',
-    appliedAt: '2024-01-10',
-    status: '검토 중',
-    racketType: '헤드 스피드 MP',
-    stringType: '룩솔론 알루파워',
-    preferredDate: '2024-01-18',
-    requests: '가능하면 빠른 처리 부탁드립니다.',
-  },
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case '접수 완료':
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-    case '검토 중':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-    case '완료':
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-  }
-};
-
 export default function ApplicationDetail({ id }: { id: string }) {
   const router = useRouter();
+  // 상태 선언: 신청서 데이터와 로딩 여부
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 상태에 따라 배지 색상을 결정하는 유틸 함수
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case '접수 완료':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      case '검토 중':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case '완료':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+    }
+  };
+
   // useEffect(() => {
-  //   fetch(`/api/applications/${id}`)
-  //     .then((res) => res.json())
-  //     .then((data) => setApplication(data))
-  //     .finally(() => setLoading(false));
+  //   // 실제 API 호출 전까지는 더미 데이터 사용
+  //   const dummy = dummyData[id];
+  //   if (dummy) setApplication(dummy);
+  //   setLoading(false);
   // }, [id]);
 
+  //  컴포넌트 마운트 시 API 호출
   useEffect(() => {
-    // 실제 API 호출 전까지는 더미 데이터 사용
-    const dummy = dummyData[id];
-    if (dummy) setApplication(dummy);
-    setLoading(false);
+    const fetchApplication = async () => {
+      try {
+        // `/api/applications/[id]` API 호출
+        const response = await fetch(`/api/applications/${id}`);
+
+        if (!response.ok) {
+          throw new Error('신청서 데이터를 불러오는 데 실패했습니다.');
+        }
+
+        // JSON 형식으로 응답 파싱
+        const data = await response.json();
+
+        // 상태에 저장
+        setApplication(data);
+      } catch (error) {
+        console.error(error);
+        setApplication(null); // 오류 발생 시 null로 설정
+      } finally {
+        setLoading(false); // 로딩 종료
+      }
+    };
+
+    fetchApplication();
   }, [id]);
 
+  // 로딩처리
   if (loading) return <div className="py-12 text-center text-muted-foreground">신청 내역을 불러오는 중입니다...</div>;
   if (!application) return <div className="py-12 text-center text-red-500">신청 내역을 찾을 수 없습니다.</div>;
 

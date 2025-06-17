@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Phone, User, FileText, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
+import { useAuthStore } from '@/lib/stores/auth-store';
 // 샘플 데이터
 const applications = [
   {
@@ -39,6 +41,23 @@ const applications = [
   },
 ];
 
+export interface Application {
+  _id: string;
+  type: '스트링 장착 서비스' | '아카데미 수강 신청';
+  applicantName: string;
+  phone: string;
+  appliedAt: string;
+  status: '접수 완료' | '검토 중' | '완료';
+
+  // 스트링 장착 서비스 전용 필드
+  racketType?: string;
+  stringType?: string;
+
+  // 아카데미 수강 신청 전용 필드
+  course?: string;
+  schedule?: string;
+}
+
 const getStatusBadgeVariant = (status: string) => {
   switch (status) {
     case '접수 완료':
@@ -65,8 +84,43 @@ const getStatusColor = (status: string) => {
   }
 };
 
+const fetcher = async (url: string) => {
+  const token = useAuthStore.getState().accessToken;
+
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token ?? ''}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('신청 데이터를 불러오는데 실패했습니다.');
+  }
+
+  return res.json();
+};
+
 export default function ApplicationsPage() {
   const router = useRouter();
+  const { data: applications, error, isLoading } = useSWR('/api/applications/me', fetcher);
+
+  if (isLoading) return <div className="text-center py-12">로딩 중...</div>;
+  if (error) return <div className="text-center py-12 text-destructive">데이터를 불러오는 데 실패했습니다.</div>;
+
+  if (!applications || applications.length === 0) {
+    return (
+      <Card className="text-center py-12">
+        <CardContent>
+          <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">신청 내역이 없습니다</h3>
+          <p className="text-muted-foreground mb-4">아직 신청한 서비스가 없습니다. 새로운 서비스를 신청해보세요.</p>
+          <Button asChild>
+            <Link href="/services">서비스 신청하기</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -83,8 +137,8 @@ export default function ApplicationsPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {applications.map((application) => (
-            <Card key={application.id} className="hover:shadow-md transition-shadow">
+          {applications.map((application: Application) => (
+            <Card key={application._id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="space-y-3 flex-1">
@@ -92,25 +146,58 @@ export default function ApplicationsPage() {
                       <h3 className="font-semibold text-lg">{application.type}</h3>
                       <Badge className={getStatusColor(application.status)}>{application.status}</Badge>
                     </div>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                      {/* 신청일 */}
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         <span>신청일: {application.appliedAt}</span>
                       </div>
+
+                      {/* 신청자 이름 */}
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
                         <span>신청자: {application.applicantName}</span>
                       </div>
+
+                      {/* 연락처 */}
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4" />
                         <span>연락처: {application.phone}</span>
                       </div>
+
+                      {/*  스트링 장착 서비스 전용 추가 필드 */}
+                      {application.type === '스트링 장착 서비스' && (
+                        <>
+                          {/* 라켓 종류 */}
+                          <div className="flex items-center gap-2">
+                            <span>라켓: {application.racketType ?? '정보 없음'}</span>
+                          </div>
+
+                          {/* 스트링 종류 */}
+                          <div className="flex items-center gap-2">
+                            <span>스트링: {application.stringType ?? '정보 없음'}</span>
+                          </div>
+                        </>
+                      )}
+                      {/*  아카데미 수강 신청 전용 추가 필드 */}
+                      {application.type === '아카데미 수강 신청' && (
+                        <>
+                          {/* 수강 코스 */}
+                          <div className="flex items-center gap-2">
+                            <span>코스: {application.course ?? '정보 없음'}</span>
+                          </div>
+
+                          {/* 수업 일정 */}
+                          <div className="flex items-center gap-2">
+                            <span>일정: {application.schedule ?? '정보 없음'}</span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
                   <div className="flex justify-end">
-                    <Button variant="outline" size="sm" onClick={() => router.push(`/mypage?tab=applications&id=${application.id}`)}>
+                    <Button variant="outline" size="sm" onClick={() => router.push(`/mypage?tab=applications&id=${application._id}`)}>
                       신청 상세 보기
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
