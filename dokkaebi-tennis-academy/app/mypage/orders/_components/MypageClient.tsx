@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Suspense } from 'react';
 import OrderList from '@/app/mypage/tabs/OrderList';
 import OrderListSkeleton from '@/app/mypage/tabs/OrderListSkeleton';
+import Applications from '@/app/mypage/applications/page';
+import ApplicationsSkeleton from '@/app/mypage/applications/loading';
 import QnAList from '@/app/mypage/tabs/QnAList';
 import QnAListSkeleton from '@/app/mypage/tabs/QnAListSkeleton';
 import ReviewList from '@/app/mypage/tabs/ReviewList';
@@ -116,8 +118,9 @@ export default function MypageClient() {
         <div className="md:col-span-3">
           <Tabs value={currentTab} onValueChange={handleTabChange}>
             {/* 탭 버튼 리스트 */}
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="orders">주문 내역</TabsTrigger>
+              <TabsTrigger value="applications">신청 내역</TabsTrigger>
               <TabsTrigger value="wishlist">위시리스트</TabsTrigger>
               <TabsTrigger value="reviews">리뷰 관리</TabsTrigger>
               <TabsTrigger value="qna">Q&A 내역</TabsTrigger>
@@ -133,6 +136,21 @@ export default function MypageClient() {
                 <CardContent>
                   <Suspense fallback={<OrderListSkeleton />}>
                     <OrderList />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* 신청 내역 탭 */}
+            <TabsContent value="applications" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>신청 내역</CardTitle>
+                  <CardDescription>신청한 서비스의 상태를 확인할 수 있습니다.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Suspense fallback={<ApplicationsSkeleton />}>
+                    <Applications />
                   </Suspense>
                 </CardContent>
               </Card>

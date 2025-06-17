@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ClipboardList, Heart, MessageCircleQuestion, Star, UserCog } from 'lucide-react';
+import { CalendarCheck, ClipboardList, Heart, MessageCircleQuestion, Star, UserCog } from 'lucide-react';
 
 export function UserSidebar() {
   const searchParams = useSearchParams();
@@ -13,6 +13,7 @@ export function UserSidebar() {
   // 메뉴 항목 정의
   const menuItems = [
     { label: '주문 내역', value: 'orders', icon: ClipboardList },
+    { label: '신청 내역', value: 'applications', icon: CalendarCheck },
     { label: '위시리스트', value: 'wishlist', icon: Heart },
     { label: '리뷰 관리', value: 'reviews', icon: Star },
     { label: 'Q&A 내역', value: 'qna', icon: MessageCircleQuestion },
