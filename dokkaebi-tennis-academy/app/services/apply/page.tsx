@@ -11,9 +11,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { showErrorToast } from '@/lib/toast';
-
+import { useSearchParams } from 'next/navigation';
 export default function StringServiceApplyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('orderId');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -54,7 +56,7 @@ export default function StringServiceApplyPage() {
       const res = await fetch('/api/applications/stringing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, orderId }),
       });
 
       if (!res.ok) {

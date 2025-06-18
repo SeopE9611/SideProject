@@ -89,6 +89,7 @@ export default function CheckoutButton({
             email,
           }
         : undefined,
+      isStringServiceApplied: withStringService,
     };
 
     try {

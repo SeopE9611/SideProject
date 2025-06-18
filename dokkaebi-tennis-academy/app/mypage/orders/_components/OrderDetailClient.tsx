@@ -4,7 +4,7 @@ import React from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, CreditCard, Mail, MapPin, Phone, ShoppingCart, Truck, User } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle, CreditCard, Mail, MapPin, Phone, ShoppingCart, Truck, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,6 +50,7 @@ interface OrderDetail {
   history: Array<any>;
   cancelReason?: string;
   cancelReasonDetail?: string;
+  isStringServiceApplied?: boolean;
 }
 interface Props {
   orderId: string;
@@ -122,12 +123,21 @@ export default function OrderDetailClient({ orderId }: Props) {
             </CardFooter>
 
             {orderDetail.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && orderDetail.shippingInfo?.withStringService && (
-              <div className="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded-md text-sm text-yellow-900">
-                <p className="mb-2 font-medium">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
-                <Link href={`/services/apply?orderId=${orderDetail._id}`} className="inline-block px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md text-sm">
-                  스트링 장착 서비스 신청하기
-                </Link>
-              </div>
+              <>
+                {!orderDetail.isStringServiceApplied ? (
+                  <div className="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded-md text-sm text-yellow-900">
+                    <p className="mb-2 font-medium">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
+                    <Link href={`/services/apply?orderId=${orderDetail._id}`} className="inline-block px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md text-sm">
+                      스트링 장착 서비스 신청하기
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="mt-6 p-4 bg-green-50 border border-green-300 rounded-md text-sm text-green-800 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <span className="font-medium">이 주문은 스트링 장착 서비스가 신청 완료되었습니다.</span>
+                  </div>
+                )}
+              </>
             )}
           </Card>
 

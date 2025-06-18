@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { name, phone, racketType, stringType, preferredDate, requirements } = body;
+    const { name, phone, racketType, stringType, preferredDate, requirements, orderId } = body;
 
     // 필수 필드 검증
     if (!name || !phone || !racketType || !stringType || !preferredDate) {
@@ -14,6 +15,13 @@ export async function POST(req: Request) {
 
     const client = await clientPromise;
     const db = client.db();
+
+    const stringDetails = {
+      racketType,
+      stringType,
+      preferredDate,
+      requirements,
+    };
 
     // 신청서 객체 구성
     const application = {
@@ -28,7 +36,18 @@ export async function POST(req: Request) {
       requirements,
     };
 
-    await db.collection('applications').insertOne(application);
+    const orderObjectId = new ObjectId(orderId);
+
+    await db.collection('applications').insertOne({
+      orderId: orderObjectId,
+      name,
+      phone,
+      stringDetails,
+      createdAt: new Date(),
+    });
+
+    // ✅ 2. 주문 상태 업데이트
+    await db.collection('orders').updateOne({ _id: orderObjectId }, { $set: { isStringServiceApplied: true } });
 
     return NextResponse.json({ message: 'success' }, { status: 201 });
   } catch (err) {

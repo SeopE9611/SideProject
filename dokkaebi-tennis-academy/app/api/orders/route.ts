@@ -48,6 +48,7 @@ type Order = {
     name: string;
     email: string;
   };
+  isStringServiceApplied?: boolean;
 };
 
 // POST 메서드 처리 함수 – 주문 생성
@@ -96,6 +97,7 @@ export async function POST(req: Request) {
       paymentInfo,
       createdAt: new Date(),
       status: '대기중',
+      isStringServiceApplied: false,
     };
 
     //  MongoDB 클라이언트 연결 및 DB 선택

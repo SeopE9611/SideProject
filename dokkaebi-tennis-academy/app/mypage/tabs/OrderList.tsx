@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { orderStatusColors } from '@/lib/badge-style';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 //  주문 데이터 타입 정의
 interface Order {
@@ -24,6 +25,7 @@ interface Order {
     deliveryMethod?: string;
     withStringService?: boolean;
   };
+  isStringServiceApplied?: boolean;
 }
 
 //  fetcher 함수: Authorization 헤더 포함해서 호출
@@ -97,12 +99,28 @@ export default function OrderList() {
                 <Button size="sm" variant="outline" asChild>
                   <Link href={`/mypage?tab=orders&orderId=${order.id}`}>상세보기</Link>
                 </Button>
-
-                {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
-                  <Button size="sm" variant="secondary" className="text-primary font-semibold" asChild>
-                    <Link href={`/services/apply?orderId=${order.id}`}>스트링 장착 신청</Link>
-                  </Button>
-                )}
+                <TooltipProvider>
+                  {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
+                    <>
+                      {!order.isStringServiceApplied ? (
+                        <Button size="sm" variant="secondary" className="text-primary font-semibold" asChild>
+                          <Link href={`/services/apply?orderId=${order.id}`}>스트링 장착 신청</Link>
+                        </Button>
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex h-9 items-center justify-center rounded-md border border-green-300 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:border-green-600 dark:bg-green-950 dark:text-green-300">
+                              스트링 신청 완료
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-sm">
+                            이미 신청이 완료된 주문입니다
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </>
+                  )}
+                </TooltipProvider>
               </div>
             </div>
           </CardContent>
