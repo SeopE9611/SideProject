@@ -44,7 +44,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({
       ...order,
       customer,
-      shipping: order.shippingInfo, // shipping 필드 추가
+      shippingInfo: {
+        ...order.shippingInfo,
+        deliveryMethod: order.shippingInfo?.deliveryMethod ?? '택배수령',
+        withStringService: order.shippingInfo?.withStringService ?? false,
+      },
       paymentStatus: order.paymentStatus || '결제대기',
       paymentMethod: order.paymentInfo?.method ?? '결제방법 없음',
       total: order.totalPrice,

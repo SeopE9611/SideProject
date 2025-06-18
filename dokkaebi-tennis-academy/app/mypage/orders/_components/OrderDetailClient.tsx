@@ -15,9 +15,6 @@ import { paymentStatusColors } from '@/lib/badge-style';
 import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
 import { useRouter } from 'next/navigation';
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-const router = useRouter();
-
 // SWR Infinite용 getKey (처리 이력 페이지네이션)
 const LIMIT = 5;
 const getOrderHistoryKey = (orderId: string) => (pageIndex: number, previousPageData: any) => {
@@ -38,6 +35,8 @@ interface OrderDetail {
   shippingInfo: {
     shippingMethod: string;
     estimatedDate: string;
+    withStringService?: boolean;
+    deliveryMethod?: string;
     invoice?: {
       courier: string;
       trackingNumber: string;
@@ -57,6 +56,9 @@ interface Props {
 }
 
 export default function OrderDetailClient({ orderId }: Props) {
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  const router = useRouter();
+
   // 주문 상세를 SWR로 가져오기
   const { data: orderDetail, error: orderError, mutate: mutateOrderDetail } = useSWR<OrderDetail>(`/api/orders/${orderId}`, fetcher);
 
@@ -111,12 +113,22 @@ export default function OrderDetailClient({ orderId }: Props) {
               </div>
               <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
             </CardHeader>
+
             <CardFooter className="pt-4">
               <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
                 {/* ‘대기중’ 또는 ‘결제완료’ 상태일 때만 취소 버튼 표시 */}
                 {['대기중', '결제완료'].includes(orderDetail.status) && <CancelOrderDialog orderId={orderDetail._id.toString()} />}
               </div>
             </CardFooter>
+
+            {orderDetail.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && orderDetail.shippingInfo?.withStringService && (
+              <div className="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded-md text-sm text-yellow-900">
+                <p className="mb-2 font-medium">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
+                <Link href={`/services/apply?orderId=${orderDetail._id}`} className="inline-block px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md text-sm">
+                  스트링 장착 서비스 신청하기
+                </Link>
+              </div>
+            )}
           </Card>
 
           {/*  고객 정보  */}

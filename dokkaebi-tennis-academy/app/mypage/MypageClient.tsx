@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { getMyInfo } from '@/lib/auth.client';
 import { useAuthStore, User } from '@/lib/stores/auth-store';
 import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
-import OrderDetailClient from '@/app/admin/orders/_components/OrderDetailClient';
+import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
 
 export default function MypageClient() {
   const searchParams = useSearchParams(); // 현재 URL의 searchParams (?tab=reviews 등)를 가져옴
