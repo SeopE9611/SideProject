@@ -1,14 +1,14 @@
-// app/checkout/success/page.tsx
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
+import { useEffect } from 'react';
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
   const orderId = searchParams.orderId;
@@ -38,6 +38,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       isLoggedIn = true;
     } catch {}
   }
+
   return (
     <div className="container py-8">
       <div className="max-w-3xl mx-auto">
@@ -47,6 +48,16 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
           </div>
           <h1 className="text-3xl font-bold">주문이 완료되었습니다</h1>
           <p className="text-muted-foreground mt-2">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
+          {order.shippingInfo?.deliveryMethod === '방문수령' && order.shippingInfo?.withStringService && (
+            <div className="mt-6 p-4 bg-yellow-100 text-sm text-yellow-900 border border-yellow-300 rounded-md">
+              <p className="font-medium text-lg">스트링 장착 서비스가 포함된 주문입니다.</p>
+              <p className="mt-1">
+                <Link href={`/services/apply?orderId=${order._id}`} className="underline font-semibold">
+                  장착 서비스 신청서를 작성하러 가기 →
+                </Link>
+              </p>
+            </div>
+          )}
         </div>
 
         <Card className="mb-6">

@@ -41,6 +41,10 @@ export default function CheckoutPage() {
     { bank: '우리은행', account: '1234-567-890123', owner: '도깨비테니스' },
   ];
 
+  // 수령 방식 상태 추가
+  const [deliveryMethod, setDeliveryMethod] = useState<'택배수령' | '방문수령'>('택배수령');
+  const [withStringService, setWithStringService] = useState(false);
+
   // 배송/결제 폼 항목들에 상태 연결
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -220,6 +224,34 @@ export default function CheckoutPage() {
                   {!user && <p className="text-xs text-muted-foreground ml-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* 수령 방식 및 장착 서비스 카드 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>상품 수령 방식</CardTitle>
+              <CardDescription>상품을 어떻게 수령하실지 선택해주세요.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <RadioGroup defaultValue="택배수령" onValueChange={(value) => setDeliveryMethod(value as '택배수령' | '방문수령')}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="택배수령" id="택배수령" />
+                  <Label htmlFor="택배수령">택배 수령 (자택 또는 지정 장소로 배송)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="방문수령" id="방문수령" />
+                  <Label htmlFor="방문수령">방문 수령 (도깨비 테니스 샵에서 직접 수령)</Label>
+                </div>
+              </RadioGroup>
+
+              {deliveryMethod === '방문수령' && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="withStringService" checked={withStringService} onCheckedChange={(checked) => setWithStringService(!!checked)} />
+                  <Label htmlFor="withStringService">스트링 장착 서비스도 함께 신청할게요</Label>
+                  <p className="text-sm text-muted-foreground mt-1">장착 서비스는 방문 시 바로 진행되며, 평균 소요 시간은 15~20분입니다.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -415,6 +447,8 @@ export default function CheckoutPage() {
                   selectedBank={selectedBank}
                   deliveryRequest={deliveryRequest}
                   saveAddress={saveAddress}
+                  deliveryMethod={deliveryMethod}
+                  withStringService={withStringService}
                 />
                 <Button variant="outline" className="w-full" asChild>
                   <Link href="/cart">장바구니로 돌아가기</Link>

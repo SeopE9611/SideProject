@@ -21,6 +21,8 @@ export default function CheckoutButton({
   selectedBank,
   deliveryRequest,
   saveAddress,
+  deliveryMethod,
+  withStringService,
 }: {
   disabled: boolean;
   name: string;
@@ -35,6 +37,8 @@ export default function CheckoutButton({
   selectedBank: string;
   deliveryRequest: string;
   saveAddress: boolean;
+  deliveryMethod: '택배수령' | '방문수령';
+  withStringService: boolean;
 }) {
   const router = useRouter();
   const token = useAuthStore((state) => state.accessToken);
@@ -69,6 +73,8 @@ export default function CheckoutButton({
         postalCode,
         depositor,
         deliveryRequest,
+        deliveryMethod,
+        withStringService,
       },
       paymentInfo: {
         method: '무통장입금',

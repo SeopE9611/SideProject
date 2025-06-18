@@ -25,6 +25,8 @@ export type Order = {
   shippingInfo?: {
     shippingMethod?: 'courier' | 'quick' | 'visit';
     trackingNumber?: string;
+    deliveryMethod?: '택배수령' | '방문수령';
+    withStringService?: boolean;
   };
 
   date: string; // ISO 8601 날짜 문자열
