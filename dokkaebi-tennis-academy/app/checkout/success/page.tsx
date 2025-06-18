@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { useEffect } from 'react';
+import ContinueShoppingButton from '@/app/checkout/_components/ContinueShoppingButton';
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
   const orderId = searchParams.orderId;
@@ -130,9 +131,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
             <Button className="w-full" asChild>
               <Link href={isLoggedIn ? '/mypage' : `/order-lookup/details/${order._id}`}>주문 내역 확인</Link>
             </Button>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/products">쇼핑 계속하기</Link>
-            </Button>
+            <ContinueShoppingButton deliveryMethod={order.shippingInfo?.deliveryMethod} withStringService={order.shippingInfo?.withStringService} />
           </CardFooter>
         </Card>
 
