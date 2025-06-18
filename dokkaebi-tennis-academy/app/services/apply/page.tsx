@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,19 +12,49 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { showErrorToast } from '@/lib/toast';
 import { useSearchParams } from 'next/navigation';
+import StringSelector from '@/app/services/_components/StringSelector';
+import { Order } from '@/lib/types/order';
+import PreferredTimeSelector from '@/app/services/_components/TimeSlotSelector';
+import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 export default function StringServiceApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [order, setOrder] = useState<Order | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     racketType: '',
     stringType: '',
     preferredDate: '',
+    preferredTime: '',
     requirements: '',
   });
+
+  // 주문 데이터 fetch + formData 초기화
+  useEffect(() => {
+    if (!orderId) return;
+
+    const fetchOrder = async () => {
+      try {
+        const res = await fetch(`/api/orders/${orderId}`);
+        const data = await res.json();
+
+        setOrder(data);
+        setFormData((prev) => ({
+          ...prev,
+          name: data.shippingInfo?.name ?? '',
+          phone: data.shippingInfo?.phone ?? '',
+        }));
+      } catch (err) {
+        console.error('주문 정보 fetch 실패:', err);
+      }
+    };
+
+    fetchOrder();
+  }, [orderId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -44,9 +74,11 @@ export default function StringServiceApplyPage() {
     }
 
     // 전화번호 형식 검증
-    const phoneRegex = /^010-\d{4}-\d{4}$/;
-    if (!phoneRegex.test(formData.phone)) {
-      showErrorToast('연락처를 올바른 형식으로 입력해주세요. (예: 01012345678)');
+    const cleaned = formData.phone.replace(/[^0-9]/g, ''); // 숫자만 남김
+
+    // 숫자 11자리 아니면 에러
+    if (!/^010\d{8}$/.test(cleaned)) {
+      showErrorToast('연락처는 010으로 시작하는 숫자 11자리로 입력해주세요. 예: 01012345678');
       return;
     }
 
@@ -56,7 +88,7 @@ export default function StringServiceApplyPage() {
       const res = await fetch('/api/applications/stringing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, orderId }),
+        body: JSON.stringify({ ...formData, phone: cleaned, orderId }),
       });
 
       if (!res.ok) {
@@ -72,9 +104,10 @@ export default function StringServiceApplyPage() {
       setIsSubmitting(false);
     }
   };
+  // console.log('📅 formData.preferredDate:', formData.preferredDate);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
@@ -96,7 +129,7 @@ export default function StringServiceApplyPage() {
                 <Label htmlFor="phone" className="text-sm font-medium">
                   연락처 <span className="text-red-500">*</span>
                 </Label>
-                <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} placeholder="010-1234-5678" required className="w-full" />
+                <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} placeholder="ex) 01012345678" required className="w-full" />
               </div>
 
               {/* 라켓 종류 */}
@@ -109,10 +142,10 @@ export default function StringServiceApplyPage() {
 
               {/* 스트링 종류 */}
               <div className="space-y-2">
-                <Label htmlFor="stringType" className="text-sm font-medium">
+                <Label className="text-sm font-medium">
                   스트링 종류 <span className="text-red-500">*</span>
                 </Label>
-                <Input id="stringType" name="stringType" type="text" value={formData.stringType} onChange={handleInputChange} placeholder="예: 바볼랏 RPM 블라스트" required className="w-full" />
+                <StringSelector items={order?.items ?? []} selected={formData.stringType} onSelect={(value) => setFormData((prev) => ({ ...prev, stringType: value }))} />
               </div>
 
               {/* 장착 희망일 */}
@@ -122,6 +155,10 @@ export default function StringServiceApplyPage() {
                 </Label>
                 <Input id="preferredDate" name="preferredDate" type="date" value={formData.preferredDate} onChange={handleInputChange} required className="w-full" min={new Date().toISOString().split('T')[0]} />
               </div>
+
+              {/* 장착 희망 시간대 */}
+
+              <TimeSlotSelector selected={formData.preferredTime} selectedDate={formData.preferredDate} onSelect={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))} />
 
               {/* 요청사항 */}
               <div className="space-y-2">

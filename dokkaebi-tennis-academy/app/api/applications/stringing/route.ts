@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { name, phone, racketType, stringType, preferredDate, requirements, orderId } = body;
+    const { name, phone, racketType, stringType, preferredDate, preferredTime, requirements, orderId } = body;
 
     // 필수 필드 검증
     if (!name || !phone || !racketType || !stringType || !preferredDate) {
@@ -20,21 +20,22 @@ export async function POST(req: Request) {
       racketType,
       stringType,
       preferredDate,
+      preferredTime,
       requirements,
     };
 
     // 신청서 객체 구성
-    const application = {
-      type: '스트링 장착 서비스', // 구분용
-      applicantName: name,
-      phone,
-      appliedAt: new Date().toISOString(), // 제출 시간
-      status: '접수 완료',
-      racketType,
-      stringType,
-      preferredDate,
-      requirements,
-    };
+    // const application = {
+    //   type: '스트링 장착 서비스', // 구분용
+    //   applicantName: name,
+    //   phone,
+    //   appliedAt: new Date().toISOString(), // 제출 시간
+    //   status: '접수 완료',
+    //   racketType,
+    //   stringType,
+    //   preferredDate,
+    //   requirements,
+    // };
 
     const orderObjectId = new ObjectId(orderId);
 
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
       createdAt: new Date(),
     });
 
-    // ✅ 2. 주문 상태 업데이트
+    // 주문 상태 업데이트
     await db.collection('orders').updateOne({ _id: orderObjectId }, { $set: { isStringServiceApplied: true } });
 
     return NextResponse.json({ message: 'success' }, { status: 201 });
