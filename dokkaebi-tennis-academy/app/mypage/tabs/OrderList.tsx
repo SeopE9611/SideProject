@@ -20,6 +20,10 @@ interface Order {
     name: string;
     email: string;
   };
+  shippingInfo?: {
+    deliveryMethod?: string;
+    withStringService?: boolean;
+  };
 }
 
 //  fetcher 함수: Authorization 헤더 포함해서 호출
@@ -86,11 +90,20 @@ export default function OrderList() {
               </ul>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
+            <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="font-medium">총 결제 금액: {typeof order.totalPrice === 'number' ? `${order.totalPrice.toLocaleString()}원` : '총 결제 금액 정보 없음'}</div>
-              <Button size="sm" variant="outline" asChild>
-                <Link href={`/mypage?tab=orders&orderId=${order.id}`}>상세보기</Link>
-              </Button>
+
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" asChild>
+                  <Link href={`/mypage?tab=orders&orderId=${order.id}`}>상세보기</Link>
+                </Button>
+
+                {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
+                  <Button size="sm" variant="secondary" className="text-primary font-semibold" asChild>
+                    <Link href={`/services/apply?orderId=${order.id}`}>스트링 장착 신청</Link>
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
