@@ -117,61 +117,84 @@ export default function StringServiceApplyPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* 신청인 이름 */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium">
-                  신청인 이름 <span className="text-red-500">*</span>
-                </Label>
-                <Input id="name" name="name" type="text" value={formData.name} onChange={handleInputChange} placeholder="이름을 입력해주세요" required className="w-full" />
+              <div className="space-y-8">
+                {/* 1. 신청자 정보 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">📌 신청자 정보</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* 이름 */}
+                    <div className="space-y-2">
+                      <Label htmlFor="name">
+                        신청인 이름 <span className="text-red-500">*</span>
+                      </Label>
+                      <Input id="name" name="name" value={formData.name} onChange={handleInputChange} />
+                    </div>
+
+                    {/* 연락처 */}
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">
+                        연락처 <span className="text-red-500">*</span>
+                      </Label>
+                      <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="01012345678" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 2. 장착 정보 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">🎾 장착 정보</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* 라켓 */}
+                    <div className="space-y-2">
+                      <Label htmlFor="racketType">
+                        라켓 종류 <span className="text-red-500">*</span>
+                      </Label>
+                      <Input id="racketType" name="racketType" value={formData.racketType} onChange={handleInputChange} placeholder="예: 윌슨 프로 스태프 97" />
+                    </div>
+
+                    {/* 스트링 */}
+                    <div className="space-y-2">
+                      <Label>
+                        스트링 종류 <span className="text-red-500">*</span>
+                      </Label>
+                      <p className="text-sm text-muted-foreground text-red-500">※ 두 개 이상의 스트링을 교체 원하신 경우, 직접 입력하기를 선택하여 아래에 상세히 적어주세요.</p>
+                      <p className="text-sm text-muted-foreground text-red-500">※ 이미 보유하고 계신 스트링으로 작성하셔도 됩니다.</p>
+                      <StringSelector items={order?.items ?? []} selected={formData.stringType} onSelect={(value) => setFormData((prev) => ({ ...prev, stringType: value }))} />
+                    </div>
+
+                    {/* 희망일 */}
+                    <div className="space-y-2">
+                      <Label htmlFor="preferredDate">
+                        장착 희망일 <span className="text-red-500">*</span>
+                      </Label>
+                      <Input id="preferredDate" name="preferredDate" type="date" value={formData.preferredDate} onChange={handleInputChange} min={new Date().toISOString().split('T')[0]} />
+                    </div>
+
+                    {/* 희망 시간대 */}
+                    <TimeSlotSelector selected={formData.preferredTime} selectedDate={formData.preferredDate} onSelect={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))} />
+                  </CardContent>
+                </Card>
+
+                {/* 3. 요청사항 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">📝 추가 요청사항</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <p className="text-sm text-muted-foreground text-red-500">※ 두 개 이상의 라켓 또는 스트링을 신청하신 경우, 장착 요청 내용을 아래에 자세히 적어주세요.</p>
+                    <Textarea id="requirements" name="requirements" value={formData.requirements} onChange={handleInputChange} placeholder="예: 첫 번째 라켓에는 RPM Blast, 두 번째 라켓에는 Xcel 장착 요청" rows={4} className="resize-none" />
+                  </CardContent>
+                </Card>
+
+                {/* 제출 버튼 */}
+                <Button type="submit" disabled={isSubmitting} className="w-full h-12 text-lg font-medium">
+                  {isSubmitting ? '신청서 제출 중...' : '신청서 제출하기'}
+                </Button>
               </div>
-
-              {/* 연락처 */}
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm font-medium">
-                  연락처 <span className="text-red-500">*</span>
-                </Label>
-                <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} placeholder="ex) 01012345678" required className="w-full" />
-              </div>
-
-              {/* 라켓 종류 */}
-              <div className="space-y-2">
-                <Label htmlFor="racketType" className="text-sm font-medium">
-                  라켓 종류 <span className="text-red-500">*</span>
-                </Label>
-                <Input id="racketType" name="racketType" type="text" value={formData.racketType} onChange={handleInputChange} placeholder="예: 윌슨 프로 스태프 97" required className="w-full" />
-              </div>
-
-              {/* 스트링 종류 */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  스트링 종류 <span className="text-red-500">*</span>
-                </Label>
-                <StringSelector items={order?.items ?? []} selected={formData.stringType} onSelect={(value) => setFormData((prev) => ({ ...prev, stringType: value }))} />
-              </div>
-
-              {/* 장착 희망일 */}
-              <div className="space-y-2">
-                <Label htmlFor="preferredDate" className="text-sm font-medium">
-                  장착 희망일 <span className="text-red-500">*</span>
-                </Label>
-                <Input id="preferredDate" name="preferredDate" type="date" value={formData.preferredDate} onChange={handleInputChange} required className="w-full" min={new Date().toISOString().split('T')[0]} />
-              </div>
-
-              {/* 장착 희망 시간대 */}
-
-              <TimeSlotSelector selected={formData.preferredTime} selectedDate={formData.preferredDate} onSelect={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))} />
-
-              {/* 요청사항 */}
-              <div className="space-y-2">
-                <Label htmlFor="requirements" className="text-sm font-medium">
-                  요청사항
-                </Label>
-                <Textarea id="requirements" name="requirements" value={formData.requirements} onChange={handleInputChange} placeholder="요청사항이 있다면 작성해주세요" rows={4} className="w-full resize-none" />
-              </div>
-
-              {/* 제출 버튼 */}
-              <Button type="submit" disabled={isSubmitting} className="w-full h-12 text-lg font-medium">
-                {isSubmitting ? '신청서 제출 중...' : '신청서 제출하기'}
-              </Button>
             </form>
           </CardContent>
         </Card>
