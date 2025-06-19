@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
@@ -11,49 +11,67 @@ interface Props {
 }
 
 export default function StringSelector({ items, selected, onSelect }: Props) {
+  // 직접 입력값을 저장하는 상태
   const [customInput, setCustomInput] = useState('');
-  const [isCustom, setIsCustom] = useState(false); // '직접입력' 모드인지 여부
 
-  // 셀렉트 변경 시
-  // selected 값이 'custom'일 때 isCustom을 true로 자동 반영
-  useEffect(() => {
-    setIsCustom(selected === 'custom');
-  }, [selected]);
+  //  '직접입력' 모드인지 여부를 별도로 관리
+  // '직접 입력하기' 선택 시 true, 다른 preset 선택 시 false
+  const [showCustomInput, setShowCustomInput] = useState(selected === 'custom');
 
-  // 입력창에서 직접 입력할 때 외부로 값 전달
-  useEffect(() => {
-    if (isCustom) {
-      onSelect(customInput); // 커스텀 입력값 외부에 전달
-    }
-  }, [customInput]);
-
-  // 셀렉트 선택 시 분기 처리
+  // 셀렉트에서 값이 변경되었을 때 호출
   const handleSelect = (value: string) => {
     if (value === 'custom') {
-      onSelect('custom'); //  selected를 'custom'으로 유지
+      // '직접 입력하기'를 선택한 경우
+      setShowCustomInput(true);
+      onSelect('custom'); // selected에 특별한 키 전달
     } else {
-      setCustomInput(''); // 이전 입력값 초기화
-      onSelect(value);
+      // preset 스트링 선택한 경우
+      setShowCustomInput(false);
+      setCustomInput(''); // 입력값 초기화
+      onSelect(value); // 선택한 스트링 값 외부로 전달
     }
   };
+
+  //  Enter 키를 눌렀을 때만 custom 입력값을 전달 (onBlur 사용 안함)
+  const handleCustomConfirm = () => {
+    const trimmed = customInput.trim();
+    if (trimmed) {
+      onSelect(trimmed); // 외부 상태에 직접 입력값 전달
+    }
+  };
+
   return (
     <div className="space-y-2">
-      <Select onValueChange={handleSelect} value={selected || undefined}>
+      {/* 스트링 선택 셀렉트 */}
+      <Select onValueChange={handleSelect} value={selected}>
         <SelectTrigger>
           <SelectValue placeholder="주문한 스트링 종류를 선택하세요" />
         </SelectTrigger>
         <SelectContent>
-          {items.map((item, index) => (
-            <SelectItem key={index} value={item.name}>
+          {items.map((item, i) => (
+            <SelectItem key={i} value={item.name}>
               {item.name}
             </SelectItem>
           ))}
+          {/* 직접 입력 옵션 */}
           <SelectItem value="custom">직접 입력하기</SelectItem>
         </SelectContent>
       </Select>
 
-      {/* selected가 custom이거나, isCustom이 true이면 입력창 표시 */}
-      {isCustom && <Input className="mt-2" placeholder="직접 입력한 스트링 이름" value={customInput} onChange={(e) => setCustomInput(e.target.value)} />}
+      {/*  직접 입력 모드일 때만 렌더링되는 입력창 */}
+      {showCustomInput && (
+        <Input
+          className="mt-2"
+          placeholder="직접 입력한 스트링 이름"
+          value={customInput}
+          onChange={(e) => setCustomInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleCustomConfirm(); // Enter로만 값 커밋
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
