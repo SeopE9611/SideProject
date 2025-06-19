@@ -12,22 +12,30 @@ interface Props {
 
 export default function StringSelector({ items, selected, onSelect }: Props) {
   const [customInput, setCustomInput] = useState('');
+  const [isCustom, setIsCustom] = useState(false); // '직접입력' 모드인지 여부
 
   // 셀렉트 변경 시
-  const handleSelect = (value: string) => {
-    onSelect(value);
-    if (value !== 'custom') {
-      setCustomInput('');
-    }
-  };
-
-  // 직접입력 값이 바뀔 때
+  // selected 값이 'custom'일 때 isCustom을 true로 자동 반영
   useEffect(() => {
-    if (selected === 'custom') {
-      onSelect(customInput);
+    setIsCustom(selected === 'custom');
+  }, [selected]);
+
+  // 입력창에서 직접 입력할 때 외부로 값 전달
+  useEffect(() => {
+    if (isCustom) {
+      onSelect(customInput); // 커스텀 입력값 외부에 전달
     }
   }, [customInput]);
 
+  // 셀렉트 선택 시 분기 처리
+  const handleSelect = (value: string) => {
+    if (value === 'custom') {
+      onSelect('custom'); //  selected를 'custom'으로 유지
+    } else {
+      setCustomInput(''); // 이전 입력값 초기화
+      onSelect(value);
+    }
+  };
   return (
     <div className="space-y-2">
       <Select onValueChange={handleSelect} value={selected || undefined}>
@@ -44,7 +52,8 @@ export default function StringSelector({ items, selected, onSelect }: Props) {
         </SelectContent>
       </Select>
 
-      {selected === 'custom' && <Input className="mt-2" placeholder="직접 입력한 스트링 이름" value={customInput} onChange={(e) => setCustomInput(e.target.value)} />}
+      {/* selected가 custom이거나, isCustom이 true이면 입력창 표시 */}
+      {isCustom && <Input className="mt-2" placeholder="직접 입력한 스트링 이름" value={customInput} onChange={(e) => setCustomInput(e.target.value)} />}
     </div>
   );
 }
