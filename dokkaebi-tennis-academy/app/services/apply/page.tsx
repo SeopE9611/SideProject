@@ -30,6 +30,7 @@ export default function StringServiceApplyPage() {
     phone: '',
     racketType: '',
     stringType: '',
+    customStringType: '',
     preferredDate: '',
     preferredTime: '',
     requirements: '',
@@ -83,16 +84,26 @@ export default function StringServiceApplyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 필수 필드 검증
-    if (!formData.name || !formData.phone || !formData.racketType || !formData.stringType || !formData.preferredDate) {
+    // 공통 필수 필드만 먼저 검증
+    if (!formData.name || !formData.phone || !formData.racketType || !formData.preferredDate) {
       showErrorToast('필수 항목을 모두 입력해주세요.');
       return;
     }
 
-    // 전화번호 형식 검증
-    const cleaned = formData.phone.replace(/[^0-9]/g, ''); // 숫자만 남김
+    // 스트링 종류 선택 여부 검증
+    if (!formData.stringType.trim()) {
+      showErrorToast('스트링 종류를 선택해주세요.');
+      return;
+    }
 
-    // 숫자 11자리 아니면 에러
+    // 직접입력 선택 시 입력 필드 값도 필수
+    if (formData.stringType === 'custom' && !formData.customStringType.trim()) {
+      showErrorToast('스트링 종류를 직접 입력해주세요.');
+      return;
+    }
+
+    // 연락처 정제
+    const cleaned = formData.phone.replace(/[^0-9]/g, '');
     if (!/^010\d{8}$/.test(cleaned)) {
       showErrorToast('연락처는 010으로 시작하는 숫자 11자리로 입력해주세요. 예: 01012345678');
       return;
@@ -100,11 +111,26 @@ export default function StringServiceApplyPage() {
 
     setIsSubmitting(true);
 
+    const stringToSave = formData.stringType === 'custom' ? formData.customStringType.trim() : formData.stringType.trim();
+
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      phone: cleaned,
+      racketType: formData.racketType,
+      stringType: formData.stringType,
+      customStringName: formData.stringType === 'custom' ? formData.customStringType.trim() : null,
+      preferredDate: formData.preferredDate,
+      preferredTime: formData.preferredTime,
+      requirements: formData.requirements,
+      orderId,
+    };
+
     try {
       const res = await fetch('/api/applications/stringing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, phone: cleaned, orderId }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -187,7 +213,13 @@ export default function StringServiceApplyPage() {
                       </Label>
                       <p className="text-sm text-muted-foreground text-red-500">※ 두 개 이상의 스트링을 교체 원하신 경우, 직접 입력하기를 선택하여 아래에 상세히 적어주세요.</p>
                       <p className="text-sm text-muted-foreground text-red-500">※ 이미 보유하고 계신 스트링으로 작성하셔도 됩니다.</p>
-                      <StringSelector items={order?.items ?? []} selected={formData.stringType} onSelect={(value) => setFormData((prev) => ({ ...prev, stringType: value }))} />
+                      <StringSelector
+                        items={order?.items ?? []}
+                        selected={formData.stringType}
+                        customInput={formData.customStringType}
+                        onSelect={(value) => setFormData((prev) => ({ ...prev, stringType: value }))}
+                        onCustomInputChange={(value) => setFormData((prev) => ({ ...prev, customStringType: value }))}
+                      />
                     </div>
 
                     {/* 희망일 */}

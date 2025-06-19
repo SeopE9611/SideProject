@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { name, phone, racketType, stringType, preferredDate, preferredTime, requirements, orderId } = body;
+    const { name, phone, racketType, stringType, customStringName, preferredDate, preferredTime, requirements, orderId } = body;
 
     // 필수 필드 검증
     if (!name || !phone || !racketType || !stringType || !preferredDate) {
@@ -19,23 +19,11 @@ export async function POST(req: Request) {
     const stringDetails = {
       racketType,
       stringType,
+      ...(stringType === 'custom' && customStringName ? { customStringName: customStringName.trim() } : {}), // ✅ 조건부 추가
       preferredDate,
       preferredTime,
       requirements,
     };
-
-    // 신청서 객체 구성
-    // const application = {
-    //   type: '스트링 장착 서비스', // 구분용
-    //   applicantName: name,
-    //   phone,
-    //   appliedAt: new Date().toISOString(), // 제출 시간
-    //   status: '접수 완료',
-    //   racketType,
-    //   stringType,
-    //   preferredDate,
-    //   requirements,
-    // };
 
     const orderObjectId = new ObjectId(orderId);
 
