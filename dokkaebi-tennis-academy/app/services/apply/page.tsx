@@ -16,6 +16,7 @@ import StringSelector from '@/app/services/_components/StringSelector';
 import { Order } from '@/lib/types/order';
 import PreferredTimeSelector from '@/app/services/_components/TimeSlotSelector';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
+import { useAuthStore } from '@/lib/stores/auth-store';
 export default function StringServiceApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,6 +26,7 @@ export default function StringServiceApplyPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     phone: '',
     racketType: '',
     stringType: '',
@@ -33,23 +35,37 @@ export default function StringServiceApplyPage() {
     requirements: '',
   });
 
-  // 주문 데이터 fetch + formData 초기화
+  // 주문 데이터 신청자 정보 불러오기
   useEffect(() => {
     if (!orderId) return;
 
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`/api/orders/${orderId}`);
-        const data = await res.json();
+        const orderRes = await fetch(`/api/orders/${orderId}`);
+        const orderData = await orderRes.json();
+        setOrder(orderData);
 
-        setOrder(data);
+        // accessToken 꺼내기
+        const token = useAuthStore.getState().accessToken;
+
+        const userRes = await fetch('/api/users/me', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const userData = await userRes.json();
+
         setFormData((prev) => ({
           ...prev,
-          name: data.shippingInfo?.name ?? '',
-          phone: data.shippingInfo?.phone ?? '',
+          name: orderData.shippingInfo?.name ?? '',
+          phone: orderData.shippingInfo?.phone ?? '',
+          email: userData.email ?? '',
         }));
       } catch (err) {
-        console.error('주문 정보 fetch 실패:', err);
+        console.error('정보 fetch 실패:', err);
       }
     };
 
@@ -104,7 +120,7 @@ export default function StringServiceApplyPage() {
       setIsSubmitting(false);
     }
   };
-  // console.log('📅 formData.preferredDate:', formData.preferredDate);
+  // console.log('formData.preferredDate:', formData.preferredDate);
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
@@ -118,31 +134,39 @@ export default function StringServiceApplyPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* 신청인 이름 */}
               <div className="space-y-8">
-                {/* 1. 신청자 정보 */}
+                {/* 신청자 정보 */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">📌 신청자 정보</CardTitle>
+                    <CardDescription className="text-sm leading-relaxed text-orange-600">
+                      <span className="font-medium">📢 안내:</span> 신청자 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로 작성됩니다. 회원정보를 수정하셨더라도{' '}
+                      <span className="font-semibold">신청자 정보는 변경되지 않습니다.</span>
+                      <br />
+                      변경이 필요한 경우, <span className="text-primary font-semibold">요청사항</span>에 기재해주세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* 이름 */}
                     <div className="space-y-2">
-                      <Label htmlFor="name">
-                        신청인 이름 <span className="text-red-500">*</span>
-                      </Label>
-                      <Input id="name" name="name" value={formData.name} onChange={handleInputChange} />
+                      <Label htmlFor="name">신청인 이름</Label>
+                      <Input id="name" name="name" value={formData.name} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
+                    </div>
+
+                    {/* 이메일 */}
+                    <div className="space-y-2">
+                      <Label htmlFor="email">이메일</Label>
+                      <Input id="email" name="email" value={formData.email} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
                     </div>
 
                     {/* 연락처 */}
                     <div className="space-y-2">
-                      <Label htmlFor="phone">
-                        연락처 <span className="text-red-500">*</span>
-                      </Label>
-                      <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="01012345678" />
+                      <Label htmlFor="phone">연락처</Label>
+                      <Input id="phone" name="phone" value={formData.phone} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* 2. 장착 정보 */}
+                {/* 장착 정보 */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">🎾 장착 정보</CardTitle>
@@ -179,7 +203,7 @@ export default function StringServiceApplyPage() {
                   </CardContent>
                 </Card>
 
-                {/* 3. 요청사항 */}
+                {/* 요청사항 */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">📝 추가 요청사항</CardTitle>
