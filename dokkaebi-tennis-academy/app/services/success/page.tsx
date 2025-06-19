@@ -17,7 +17,7 @@ export default function StringServiceSuccessPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center py-8 px-4">
       <div className="max-w-md w-full">
         <Card>
           <CardContent className="pt-8 pb-8 text-center">
@@ -27,10 +27,10 @@ export default function StringServiceSuccessPage() {
             </div>
 
             {/* 제목 */}
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">신청이 완료되었습니다.</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">신청이 완료되었습니다.</h1>
 
             {/* 부제목 */}
-            <p className="text-gray-600 mb-8 leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
               도깨비 테니스 아카데미에서 빠르게 확인 후 연락드리겠습니다.
               <br />
               신청해주셔서 감사합니다.
@@ -48,8 +48,8 @@ export default function StringServiceSuccessPage() {
             </div>
 
             {/* 추가 안내 */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-500">
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 문의사항이 있으시면 언제든지 연락주세요.
                 <br />
                 📞 02-1234-5678
