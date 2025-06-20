@@ -41,6 +41,7 @@ export async function POST(req: Request) {
       name,
       phone,
       stringDetails,
+      status: '접수 완료',
       createdAt: new Date(),
     });
 

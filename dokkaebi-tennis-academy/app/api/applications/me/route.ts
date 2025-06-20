@@ -31,7 +31,7 @@ export async function GET(req: Request) {
     applicantName: doc.name,
     phone: doc.phone,
     appliedAt: doc.createdAt.toISOString(),
-    status: '접수 완료',
+    status: doc.status,
     racketType: doc.stringDetails.racketType,
     stringType: doc.stringDetails.stringType,
     preferredDate: doc.stringDetails.preferredDate,
