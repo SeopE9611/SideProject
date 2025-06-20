@@ -5,6 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { APPLICATION_STATUSES } from '@/lib/application-status';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/lib/stores/auth-store';
 
 interface Props {
   applicationId: string;
@@ -14,6 +16,8 @@ interface Props {
 export function ApplicationStatusSelect({ applicationId, currentStatus }: Props) {
   const [isPending, startTransition] = useTransition();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus);
+  const router = useRouter();
+  const accessToken = useAuthStore.getState().accessToken;
 
   const handleChange = (newStatus: string) => {
     setSelectedStatus(newStatus);
@@ -21,13 +25,15 @@ export function ApplicationStatusSelect({ applicationId, currentStatus }: Props)
       try {
         const res = await fetch(`/api/applications/${applicationId}/status`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+
           body: JSON.stringify({ status: newStatus }),
         });
 
         if (!res.ok) throw new Error('상태 변경 실패');
 
         toast.success('상태가 성공적으로 변경되었습니다.');
+        router.refresh(); // 즉시 반영
       } catch (err) {
         toast.error('상태 변경 중 오류가 발생했습니다.');
         setSelectedStatus(currentStatus); // 실패 시 이전 상태로 되돌리기
