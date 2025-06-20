@@ -29,3 +29,10 @@ export const shippingStatusColors: Record<string, string> = {
   퀵배송: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
   미입력: 'bg-gray-700 text-gray-200 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-600 dark:hover:bg-gray-600',
 };
+
+export const applicationStatusColors = {
+  '접수 완료': 'bg-blue-100 text-blue-800',
+  '검토 중': 'bg-yellow-100 text-yellow-800',
+  완료: 'bg-green-100 text-green-800',
+  default: 'bg-gray-100 text-gray-800',
+} as const;

@@ -127,7 +127,7 @@ export default function StringServiceApplyPage() {
     };
 
     try {
-      const res = await fetch('/api/applications/stringing', {
+      const res = await fetch('/api/applications/stringing/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
