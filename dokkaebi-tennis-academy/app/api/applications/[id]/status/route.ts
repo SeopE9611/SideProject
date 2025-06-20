@@ -4,7 +4,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 // 허용된 상태 값 목록 (관리자가 선택 가능)
-const VALID_STATUSES = ['접수 완료', '검토 중', '완료'] as const;
+import { APPLICATION_STATUSES } from '@/lib/application-status';
 
 // PATCH 요청 핸들러: 신청서 상태를 변경함
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const { status } = await req.json();
 
   // 허용되지 않은 상태값이면 에러 처리
-  if (!VALID_STATUSES.includes(status)) {
+  if (!APPLICATION_STATUSES.includes(status)) {
     return new NextResponse('Invalid status value', { status: 400 });
   }
 
