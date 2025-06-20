@@ -12,31 +12,48 @@ export async function GET(req: Request, context: { params: { id: string } }) {
       return NextResponse.json({ error: '신청 ID가 제공되지 않았습니다.' }, { status: 400 });
     }
 
+    // MongoDB 연결
     const client = await clientPromise;
     const db = client.db();
 
-    // ObjectId 또는 문자열 ID 모두 처리 가능하도록 쿼리 구성
-    const application = await db
-      .collection('applications') // 🔍 'applications' 컬렉션에서
+    // 올바른 컬렉션 이름으로 변경
+    const raw = await db
+      .collection('stringing_applications') // 'applications' → 'stringing_applications'
       .findOne({
         $or: [
           { _id: new ObjectId(id) }, // MongoDB ObjectId 형태
-          { id }, // 혹시 문자열 id로 저장되어 있는 경우도 대응
+          { id }, // 혹시 문자열 id로 저장된 경우
         ],
       });
 
     // 신청서를 찾지 못한 경우
-    if (!application) {
+    if (!raw) {
       return NextResponse.json({ error: '해당 신청서를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    // 반환 전에 _id를 string으로 변환 (프론트와의 호환 위해)
-    const responseData = {
-      ...application,
-      _id: application._id.toString(),
+    // Application 형태로 매핑
+    const application = {
+      id: raw._id.toString(),
+      type: '스트링 장착 서비스',
+      applicantName: raw.name,
+      phone: raw.phone,
+      appliedAt: raw.createdAt.toISOString(),
+      status: '접수 완료',
+      racketType: raw.stringDetails.racketType,
+      stringType: raw.stringDetails.stringType,
+      preferredDate: raw.stringDetails.preferredDate,
+      preferredTime: raw.stringDetails.preferredTime,
+      requests: raw.stringDetails.requirements,
     };
 
-    return NextResponse.json(responseData);
+    // 기반환 전에 _id를 string으로 변환 (이제 application.id에 이미 반영됨)
+    // const responseData = {
+    //   ...application,
+    //   _id: application._id.toString(),
+    // };
+
+    //  가공된 application 객체를 바로 반환
+    return NextResponse.json(application);
   } catch (error) {
     console.error('신청서 조회 오류:', error);
     return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });

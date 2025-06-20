@@ -17,10 +17,27 @@ export async function GET(req: Request) {
   // DB 연결
   const client = await clientPromise;
   const db = client.db();
-  const collection = db.collection('applications');
+  const collection = db.collection('stringing_applications'); // 기존 코드
 
   // 이메일 기준 필터링
-  const applications = await collection.find({ email }).toArray();
+  // 최신 순으로 정렬하도록 .sort({ createdAt: -1 }) 추가
+  // 그리고 rawList 변수로 받아서 아래에서 매핑 처리
+  const rawList = await collection.find({ email }).sort({ createdAt: -1 }).toArray();
+
+  // Application 형태로 매핑
+  const applications = rawList.map((doc) => ({
+    id: doc._id.toString(),
+    type: '스트링 장착 서비스',
+    applicantName: doc.name,
+    phone: doc.phone,
+    appliedAt: doc.createdAt.toISOString(),
+    status: '접수 완료',
+    racketType: doc.stringDetails.racketType,
+    stringType: doc.stringDetails.stringType,
+    preferredDate: doc.stringDetails.preferredDate,
+    preferredTime: doc.stringDetails.preferredTime,
+    requests: doc.stringDetails.requirements,
+  }));
 
   return NextResponse.json(applications);
 }

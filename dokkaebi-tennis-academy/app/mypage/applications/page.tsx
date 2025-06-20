@@ -1,212 +1,112 @@
-'use client';
+`use client`;
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Phone, User, FileText, ArrowRight } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { useAuthStore } from '@/lib/stores/auth-store';
-// 샘플 데이터
-const applications = [
-  {
-    id: '1',
-    type: '스트링 장착 서비스',
-    applicantName: '김테니스',
-    phone: '010-1234-5678',
-    appliedAt: '2024-01-15',
-    status: '접수 완료',
-    racketType: '윌슨 프로 스태프 97',
-    stringType: '바볼랏 RPM 블라스트',
-  },
-  {
-    id: '2',
-    type: '스트링 장착 서비스',
-    applicantName: '이라켓',
-    phone: '010-9876-5432',
-    appliedAt: '2024-01-10',
-    status: '검토 중',
-    racketType: '헤드 스피드 MP',
-    stringType: '룩솔론 알루파워',
-  },
-  {
-    id: '3',
-    type: '아카데미 수강 신청',
-    applicantName: '박아카데미',
-    phone: '010-5555-1234',
-    appliedAt: '2024-01-05',
-    status: '완료',
-    course: '초급반',
-    schedule: '주 2회 (화, 목)',
-  },
-];
 
 export interface Application {
-  _id: string;
+  id: string;
   type: '스트링 장착 서비스' | '아카데미 수강 신청';
   applicantName: string;
   phone: string;
   appliedAt: string;
-  status: '접수 완료' | '검토 중' | '완료';
-
-  // 스트링 장착 서비스 전용 필드
   racketType?: string;
   stringType?: string;
-
-  // 아카데미 수강 신청 전용 필드
+  preferredDate?: string;
+  preferredTime?: string;
   course?: string;
   schedule?: string;
 }
 
-const getStatusBadgeVariant = (status: string) => {
-  switch (status) {
-    case '접수 완료':
-      return 'secondary';
-    case '검토 중':
-      return 'default'; // yellow-like
-    case '완료':
-      return 'default'; // green-like - we'll use custom classes
-    default:
-      return 'secondary';
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case '접수 완료':
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-    case '검토 중':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-    case '완료':
-      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-  }
+const formatDateTime = (iso: string) => {
+  const date = new Date(iso);
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
 };
 
 const fetcher = async (url: string) => {
   const token = useAuthStore.getState().accessToken;
-
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token ?? ''}`,
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error('신청 데이터를 불러오는데 실패했습니다.');
-  }
-
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('데이터 로딩 실패');
   return res.json();
 };
 
 export default function ApplicationsPage() {
   const router = useRouter();
-  const { data: applications, error, isLoading } = useSWR('/api/applications/me', fetcher);
+  const { data: applications, error } = useSWR<Application[]>('/api/applications/me', fetcher);
 
-  if (isLoading) return <div className="text-center py-12">로딩 중...</div>;
-  if (error) return <div className="text-center py-12 text-destructive">데이터를 불러오는 데 실패했습니다.</div>;
-
-  if (!applications || applications.length === 0) {
-    return (
-      <Card className="text-center py-12">
-        <CardContent>
-          <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">신청 내역이 없습니다</h3>
-          <p className="text-muted-foreground mb-4">아직 신청한 서비스가 없습니다. 새로운 서비스를 신청해보세요.</p>
-          <Button asChild>
-            <Link href="/services">서비스 신청하기</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
+  if (error) return <p className="text-center py-4 text-red-500">에러: {error.message}</p>;
+  if (!applications) return <p className="text-center py-4">로딩 중...</p>;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h2 className="text-xl font-semibold mb-4">신청 내역</h2>
       {applications.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">신청 내역이 없습니다</h3>
-            <p className="text-muted-foreground mb-4">아직 신청한 서비스가 없습니다. 새로운 서비스를 신청해보세요.</p>
-            <Button asChild>
-              <Link href="/services">서비스 신청하기</Link>
-            </Button>
-          </CardContent>
+        <Card className="p-6 text-center text-gray-700">
+          <p>신청 내역이 없습니다.</p>
+          <Button asChild className="mt-4">
+            <Link href="/services">서비스 신청하러 가기</Link>
+          </Button>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {applications.map((application: Application) => (
-            <Card key={application._id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="space-y-3 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-lg">{application.type}</h3>
-                      <Badge className={getStatusColor(application.status)}>{application.status}</Badge>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                      {/* 신청일 */}
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>신청일: {application.appliedAt}</span>
-                      </div>
-
-                      {/* 신청자 이름 */}
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span>신청자: {application.applicantName}</span>
-                      </div>
-
-                      {/* 연락처 */}
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        <span>연락처: {application.phone}</span>
-                      </div>
-
-                      {/*  스트링 장착 서비스 전용 추가 필드 */}
-                      {application.type === '스트링 장착 서비스' && (
-                        <>
-                          {/* 라켓 종류 */}
-                          <div className="flex items-center gap-2">
-                            <span>라켓: {application.racketType ?? '정보 없음'}</span>
-                          </div>
-
-                          {/* 스트링 종류 */}
-                          <div className="flex items-center gap-2">
-                            <span>스트링: {application.stringType ?? '정보 없음'}</span>
-                          </div>
-                        </>
-                      )}
-                      {/*  아카데미 수강 신청 전용 추가 필드 */}
-                      {application.type === '아카데미 수강 신청' && (
-                        <>
-                          {/* 수강 코스 */}
-                          <div className="flex items-center gap-2">
-                            <span>코스: {application.course ?? '정보 없음'}</span>
-                          </div>
-
-                          {/* 수업 일정 */}
-                          <div className="flex items-center gap-2">
-                            <span>일정: {application.schedule ?? '정보 없음'}</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
+        applications.map((app) => (
+          <Card key={app.id} className="p-4 mb-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-center mb-3">
+              <div className="text-sm text-gray-600 flex items-center">
+                <Calendar className="w-4 h-4 mr-1" />
+                {formatDateTime(app.appliedAt)}
+              </div>
+              <Button variant="outline" size="sm" onClick={() => router.push(`/mypage?tab=applications&id=${app.id}`)}>
+                상세보기
+              </Button>
+            </div>
+            <CardContent className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-800">
+              <div>
+                <span className="font-medium">이름: </span>
+                {app.applicantName}
+              </div>
+              <div>
+                <span className="font-medium">연락처: </span>
+                {app.phone}
+              </div>
+              <div>
+                <span className="font-medium">희망일시: </span>
+                {app.preferredDate?.replace(/-/g, '.') ?? '-'} {app.preferredTime ?? ''}
+              </div>
+              {app.type === '스트링 장착 서비스' ? (
+                <>
+                  <div>
+                    <span className="font-medium">라켓: </span>
+                    {app.racketType ?? '-'}
                   </div>
-
-                  <div className="flex justify-end">
-                    <Button variant="outline" size="sm" onClick={() => router.push(`/mypage?tab=applications&id=${application._id}`)}>
-                      신청 상세 보기
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                  <div>
+                    <span className="font-medium">스트링: </span>
+                    {app.stringType ?? '-'}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <span className="font-medium">코스: </span>
+                    {app.course ?? '-'}
+                  </div>
+                  <div>
+                    <span className="font-medium">일정: </span>
+                    {app.schedule ?? '-'}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        ))
       )}
     </div>
   );
