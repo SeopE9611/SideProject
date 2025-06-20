@@ -16,10 +16,19 @@ export async function POST(req: Request) {
     const client = await clientPromise;
     const db = client.db();
 
+    // 중복 예약 방지 로직
+    const existing = await db.collection('stringing_applications').findOne({
+      'stringDetails.preferredDate': preferredDate,
+      'stringDetails.preferredTime': preferredTime,
+    });
+    if (existing) {
+      return NextResponse.json({ error: '이미 해당 시간대에 신청이 존재합니다.' }, { status: 409 });
+    }
+
     const stringDetails = {
       racketType,
       stringType,
-      ...(stringType === 'custom' && customStringName ? { customStringName: customStringName.trim() } : {}), // ✅ 조건부 추가
+      ...(stringType === 'custom' && customStringName ? { customStringName: customStringName.trim() } : {}), // 조건부 추가
       preferredDate,
       preferredTime,
       requirements,
@@ -27,7 +36,7 @@ export async function POST(req: Request) {
 
     const orderObjectId = new ObjectId(orderId);
 
-    await db.collection('applications').insertOne({
+    await db.collection('stringing_applications').insertOne({
       orderId: orderObjectId,
       name,
       phone,
