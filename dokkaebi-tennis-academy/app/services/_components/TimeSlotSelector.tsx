@@ -46,6 +46,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect }: T
 
   // 예약된 시간대 (예시) ← 실제로는 서버에서 받아올 예정
   useEffect(() => {
+    if (!selectedDate) return; // date가 없으면 요청하지 않음
     //  예약된 시간대를 불러온다
     const fetchReservedTimes = async () => {
       if (!selectedDate) return;

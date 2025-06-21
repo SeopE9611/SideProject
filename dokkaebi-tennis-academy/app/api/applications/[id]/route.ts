@@ -38,7 +38,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
       applicantName: raw.name,
       phone: raw.phone,
       appliedAt: raw.createdAt.toISOString(),
-      status: '접수 완료',
+      status: raw.status,
       racketType: raw.stringDetails.racketType,
       stringType: raw.stringDetails.stringType,
       preferredDate: raw.stringDetails.preferredDate,

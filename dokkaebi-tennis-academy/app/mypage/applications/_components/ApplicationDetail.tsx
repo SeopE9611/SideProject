@@ -93,9 +93,9 @@ export default function ApplicationDetail({ id }: { id: string }) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle className="text-xl">{application.type}</CardTitle>
-              <p>
+              <div className="text-sm text-muted-foreground">
                 상태: <ApplicationStatusBadge status={application.status} />
-              </p>
+              </div>
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 <span>신청일: {application.appliedAt}</span>
