@@ -21,6 +21,7 @@ import { getMyInfo } from '@/lib/auth.client';
 import { useAuthStore, User } from '@/lib/stores/auth-store';
 import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
 import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 export default function MypageClient() {
   const searchParams = useSearchParams(); // 현재 URL의 searchParams (?tab=reviews 등)를 가져옴
@@ -111,105 +112,107 @@ export default function MypageClient() {
     },
   ];
   return (
-    <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-8">마이페이지</h1>
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-        {/* 사용자 정보 */}
-        <div className="md:col-span-1">
-          <UserSidebar />
-        </div>
+    <AuthGuard>
+      <div className="container py-8">
+        <h1 className="text-3xl font-bold mb-8">마이페이지</h1>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+          {/* 사용자 정보 */}
+          <div className="md:col-span-1">
+            <UserSidebar />
+          </div>
 
-        {/* 마이페이지 콘텐츠 */}
-        <div className="md:col-span-3">
-          <Tabs value={currentTab} onValueChange={handleTabChange}>
-            {/* 탭 버튼 리스트 */}
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="orders">주문 내역</TabsTrigger>
-              <TabsTrigger value="applications">신청 내역</TabsTrigger>
-              <TabsTrigger value="wishlist">위시리스트</TabsTrigger>
-              <TabsTrigger value="reviews">리뷰 관리</TabsTrigger>
-              <TabsTrigger value="qna">Q&A 내역</TabsTrigger>
-            </TabsList>
+          {/* 마이페이지 콘텐츠 */}
+          <div className="md:col-span-3">
+            <Tabs value={currentTab} onValueChange={handleTabChange}>
+              {/* 탭 버튼 리스트 */}
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="orders">주문 내역</TabsTrigger>
+                <TabsTrigger value="applications">신청 내역</TabsTrigger>
+                <TabsTrigger value="wishlist">위시리스트</TabsTrigger>
+                <TabsTrigger value="reviews">리뷰 관리</TabsTrigger>
+                <TabsTrigger value="qna">Q&A 내역</TabsTrigger>
+              </TabsList>
 
-            {/* 주문 내역 탭 */}
-            <TabsContent value="orders" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>주문 내역</CardTitle>
-                  <CardDescription>최근 주문 내역을 확인하실 수 있습니다.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Suspense fallback={<OrderListSkeleton />}>{orderId ? <OrderDetailClient orderId={orderId} /> : <OrderList />}</Suspense>
-                </CardContent>
-              </Card>
-            </TabsContent>
+              {/* 주문 내역 탭 */}
+              <TabsContent value="orders" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>주문 내역</CardTitle>
+                    <CardDescription>최근 주문 내역을 확인하실 수 있습니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Suspense fallback={<OrderListSkeleton />}>{orderId ? <OrderDetailClient orderId={orderId} /> : <OrderList />}</Suspense>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-            {/* 신청 내역 탭 */}
-            <TabsContent value="applications" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>신청 내역</CardTitle>
-                  <CardDescription>신청한 서비스의 상태를 확인할 수 있습니다.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {selectedApplicationId ? (
-                    <ApplicationDetail id={selectedApplicationId} />
-                  ) : (
-                    <Suspense fallback={<ApplicationsSkeleton />}>
-                      <Applications />
+              {/* 신청 내역 탭 */}
+              <TabsContent value="applications" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>신청 내역</CardTitle>
+                    <CardDescription>신청한 서비스의 상태를 확인할 수 있습니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedApplicationId ? (
+                      <ApplicationDetail id={selectedApplicationId} />
+                    ) : (
+                      <Suspense fallback={<ApplicationsSkeleton />}>
+                        <Applications />
+                      </Suspense>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* 위시리스트 탭 */}
+              <TabsContent value="wishlist" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>위시리스트</CardTitle>
+                    <CardDescription>찜한 상품 목록을 확인하실 수 있습니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Suspense fallback={<WishlistSkeleton />}>
+                      <Wishlist wishlist={wishlist} />
                     </Suspense>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-            {/* 위시리스트 탭 */}
-            <TabsContent value="wishlist" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>위시리스트</CardTitle>
-                  <CardDescription>찜한 상품 목록을 확인하실 수 있습니다.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Suspense fallback={<WishlistSkeleton />}>
-                    <Wishlist wishlist={wishlist} />
-                  </Suspense>
-                </CardContent>
-              </Card>
-            </TabsContent>
+              {/* 리뷰 관리 탭 */}
+              <TabsContent value="reviews" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>리뷰 관리</CardTitle>
+                    <CardDescription>작성한 리뷰를 확인하고 관리하실 수 있습니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Suspense fallback={<ReviewListSkeleton />}>
+                      <ReviewList reviews={reviews} />
+                    </Suspense>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-            {/* 리뷰 관리 탭 */}
-            <TabsContent value="reviews" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>리뷰 관리</CardTitle>
-                  <CardDescription>작성한 리뷰를 확인하고 관리하실 수 있습니다.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Suspense fallback={<ReviewListSkeleton />}>
-                    <ReviewList reviews={reviews} />
-                  </Suspense>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Q&A 내역 탭 */}
-            <TabsContent value="qna" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Q&A 내역</CardTitle>
-                  <CardDescription>문의 내역을 확인하실 수 있습니다.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Suspense fallback={<QnAListSkeleton />}>
-                    <QnAList qnas={qnas} />
-                  </Suspense>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+              {/* Q&A 내역 탭 */}
+              <TabsContent value="qna" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Q&A 내역</CardTitle>
+                    <CardDescription>문의 내역을 확인하실 수 있습니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Suspense fallback={<QnAListSkeleton />}>
+                      <QnAList qnas={qnas} />
+                    </Suspense>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { Order } from '@/lib/types/order';
-import OrdersClient from './_components/OrdersClient';
+import OrdersClient from '@/app/admin/orders/_components/OrdersClient';
 
 export default async function OrdersPage() {
   const headersList = await headers(); // 비동기 함수
