@@ -1,35 +1,30 @@
 import { create } from 'zustand';
 
-// 유저 정보 타입 정의
-export type User = {
+//유저 정보 타입 정의
+interface User {
   id: string;
   name: string | null; // 이름은 null일 수도 있음
   email: string; // 이메일은 로그인 계정 기준
   role: string; // 'user' 또는 'admin' 등
   image?: string | null; // 프로필 이미지 (선택)
-};
-
-// Zustand 상태 인터페이스 정의
-interface AuthState {
-  accessToken: string | null; // JWT Access Token
-  setAccessToken: (token: string) => void; // 토큰 설정 함수
-  clearAccessToken: () => void; // 토큰 초기화 (로그아웃 시)
-
-  user: User | null; // 현재 로그인한 유저 정보
-  setUser: (user: User | null) => void; // 유저 정보 설정 함수
-
-  logout: () => void; // 토큰 + 유저 상태 모두 초기화
+  // 필요한 경우 여기에서 추가 필드 확장 가능
 }
 
-// Zustand 전역 상태 생성
+// 상태 관리할 항목 정의
+interface AuthState {
+  user: User | null; // 로그인된 유저 정보 (없으면 null)
+  setUser: (user: User | null) => void; // 유저 상태 설정 함수
+  logout: () => void; // 로그아웃 (유저 정보 제거)
+}
+
+//  Zustand 스토어 생성
 export const useAuthStore = create<AuthState>((set) => ({
-  accessToken: null, // 초기 AccessToken: null
+  // 초기값: 로그인된 유저 없음
+  user: null,
 
-  setAccessToken: (token) => set({ accessToken: token }), // 토큰 저장
-  clearAccessToken: () => set({ accessToken: null }), // 토큰 초기화
+  // 로그인 후 유저 정보 저장할 때 사용
+  setUser: (user) => set({ user }),
 
-  user: null, // 초기 유저 정보: null
-  setUser: (user) => set({ user }), // 유저 상태 업데이트
-
-  logout: () => set({ accessToken: null, user: null }), // 전체 초기화
+  // 로그아웃 시 유저 상태 초기화
+  logout: () => set({ user: null }),
 }));
