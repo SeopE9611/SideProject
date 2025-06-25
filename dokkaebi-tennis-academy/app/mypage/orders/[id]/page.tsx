@@ -1,11 +1,17 @@
-// import OrderDetailContent from '../_components/OrderDetailContent';
 import OrderDetailSkeleton from '../_components/OrderDetailSkeleton';
 
 import { Suspense } from 'react';
 import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
 import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
+import { getCurrentUser } from '@/lib/hooks/get-current-user';
+import { redirect } from 'next/navigation';
 
-export default function OrderDetailPage({ params: { id } }: { params: { id: string } }) {
+export default async function OrderDetailPage({ params: { id } }: { params: { id: string } }) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect('/login');
+  }
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold mb-8">마이페이지</h1>

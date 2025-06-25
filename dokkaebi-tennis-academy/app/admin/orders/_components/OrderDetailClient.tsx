@@ -16,9 +16,10 @@ import { toast } from 'sonner';
 import { OrderStatusSelect } from '@/app/admin/orders/_components/OrderStatusSelect';
 import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
 import Loading from '@/app/admin/orders/[id]/loading';
+import { showErrorToast } from '@/lib/toast';
 
 // SWR fetcher
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 //  useSWRInfinite용 getKey (처리 이력)
 const LIMIT = 5; // 페이지 당 이력 개수
@@ -136,6 +137,14 @@ export default function OrderDetailClient({ orderId }: Props) {
     }
   };
 
+  const handleShippingUpdate = () => {
+    if (['취소', '결제취소'].includes(orderDetail.status)) {
+      showErrorToast('취소된 주문은 배송 정보를 수정할 수 없습니다.');
+      return;
+    }
+
+    router.push(`/admin/orders/${orderId}/shipping-update`);
+  };
   return (
     <div className="container py-10">
       <div className="mx-auto max-w-4xl">
@@ -156,11 +165,9 @@ export default function OrderDetailClient({ orderId }: Props) {
               <Download className="mr-2 h-4 w-4" />
               주문서 다운로드
             </Button>
-            <Button asChild>
-              <Link href={`/admin/orders/${orderId}/shipping-update`}>
-                <Truck className="mr-2 h-4 w-4" />
-                배송 정보 업데이트
-              </Link>
+            <Button onClick={handleShippingUpdate}>
+              <Truck className="mr-2 h-4 w-4" />
+              배송 정보 업데이트
             </Button>
           </div>
         </div>

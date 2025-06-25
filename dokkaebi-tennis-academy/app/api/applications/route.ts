@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb'; // MongoDB 연결을 위한 Promise 객체 불러오기
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 // 신청서 목록을 가져오는 GET API
 export async function GET() {
+  //  인증 처리
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+  if (!token) return new NextResponse('Unauthorized', { status: 401 });
+
+  const payload = verifyAccessToken(token);
+  if (!payload) return new NextResponse('Unauthorized', { status: 401 });
   try {
     // MongoDB 클라이언트 연결
     const client = await clientPromise;

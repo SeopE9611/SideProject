@@ -1,20 +1,18 @@
-// Next.js의 Response 헬퍼 객체를 불러옴
 import { NextResponse } from 'next/server';
-
-// 서버에서 세션 정보를 가져오는 auth() 함수 (lib/auth.ts에서 만든 것)
-import { auth } from '@/lib/auth';
-
-// MongoDB 클라이언트 (lib/mongodb.ts에 있는 clientPromise)
 import clientPromise from '@/lib/mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
-// GET 메서드 → 관리자 주문 목록 조회 API
+// GET 메서드 -> 관리자 주문 목록 조회 API
 export async function GET() {
-  // 현재 로그인한 사용자의 세션 정보 가져오기
-  const session = await auth();
-
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
   //  관리자 권한이 없는 경우 (로그인 안 했거나 role이 admin이 아닌 경우)
-  if (!session?.user || session.user.role !== 'admin') {
-    // 401 Unauthorized 응답 반환
+  if (!token) {
+    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+  }
+  const payload = verifyAccessToken(token);
+  if (!payload || payload.role !== 'admin') {
     return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 

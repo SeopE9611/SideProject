@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { shortenId } from '@/lib/shorten';
 import { toast } from 'sonner';
 import useSWR from 'swr';
-import { orderStatusColors, orderTypeColors, paymentStatusColors, shippingStatusColors } from '@/lib/badge-style';
+import { getShippingBadge, orderStatusColors, orderTypeColors, paymentStatusColors, shippingStatusColors } from '@/lib/badge-style';
 import CustomerTypeFilter from '@/app/admin/orders/_components/order-filters/CustomerTypeFilter';
 import { OrderStatusFilter } from '@/app/admin/orders/_components/order-filters/OrderStatusFilter';
 import { PaymentStatusFilter } from '@/app/admin/orders/_components/order-filters/PaymentStatusFilter';
@@ -24,9 +24,11 @@ import { OrderTypeFilter } from '@/app/admin/orders/_components/order-filters/Or
 import { cn } from '@/lib/utils';
 import { DateFilter } from '@/app/admin/orders/_components/order-filters/DateFilter';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { useRouter } from 'next/navigation';
+import { showErrorToast } from '@/lib/toast';
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url);
+  const res = await fetch(url, { credentials: 'include' });
   return res.json();
 };
 
@@ -67,17 +69,7 @@ export default function OrdersClient() {
     const paymentMatch = paymentFilter === 'all' || order.paymentStatus === paymentFilter;
     const customerTypeMatch = customerTypeFilter === 'all' || (customerTypeFilter === 'member' && order.userId && order.userId !== 'null') || (customerTypeFilter === 'guest' && (!order.userId || order.userId === 'null'));
 
-    const shippingMatch =
-      shippingFilter === 'all' ||
-      (() => {
-        const method = order.shippingInfo?.shippingMethod;
-        if (shippingFilter === '등록됨') return method === 'courier' && order.invoice?.trackingNumber;
-        if (shippingFilter === '미등록') return method === 'courier' && !order.invoice?.trackingNumber;
-        if (shippingFilter === '방문수령') return method === 'visit';
-        if (shippingFilter === '퀵배송') return method === 'quick';
-        if (shippingFilter === '미입력') return !method;
-        return false;
-      })();
+    const shippingMatch = shippingFilter === 'all' || getShippingBadge(order).label === shippingFilter;
 
     const matchDate = !selectedDate || new Date(order.date).toDateString() === selectedDate.toDateString();
 
@@ -130,6 +122,33 @@ export default function OrdersClient() {
     } else {
       setSortBy(key);
       setSortDirection('asc');
+    }
+  };
+
+  const router = useRouter();
+
+  const handleShippingUpdate = async (orderId: string) => {
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+
+      if (!res.ok) {
+        toast.error('주문 정보를 불러올 수 없습니다.');
+        return;
+      }
+
+      const order = await res.json();
+
+      if (['취소', '결제취소'].includes(order.status)) {
+        showErrorToast('취소된 주문은 배송 정보를 등록할 수 없습니다.');
+        return;
+      }
+
+      router.push(`/admin/orders/${orderId}/shipping-update`);
+    } catch (err) {
+      toast.error('오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
   return (
@@ -287,10 +306,8 @@ export default function OrdersClient() {
                           </TableCell>
                           <TableCell className="text-center">
                             {(() => {
-                              const method = order.shippingInfo?.shippingMethod;
-                              const label = method === 'courier' ? (order.invoice?.trackingNumber ? '등록됨' : '미등록') : method === 'visit' ? '방문수령' : method === 'quick' ? '퀵배송' : '미입력';
-
-                              return <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${shippingStatusColors[label]}`}>{label}</Badge>;
+                              const { label, color } = getShippingBadge(order);
+                              return <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${color}`}>{label}</Badge>;
                             })()}
                           </TableCell>
                           <TableCell className="text-center">
@@ -311,10 +328,8 @@ export default function OrdersClient() {
                                     <Eye className="mr-2 h-4 w-4" /> 상세 보기
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/admin/orders/${order.id}/shipping-update`}>
-                                    <Truck className="mr-2 h-4 w-4" /> 배송 정보 등록
-                                  </Link>
+                                <DropdownMenuItem onClick={() => handleShippingUpdate(order.id)}>
+                                  <Truck className="mr-2 h-4 w-4" /> 배송 정보 등록
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>

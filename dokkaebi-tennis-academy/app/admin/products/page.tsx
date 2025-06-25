@@ -1,33 +1,28 @@
-import Link from "next/link"
-import { PlusCircle, Search, Filter, ArrowUpDown, MoreHorizontal } from "lucide-react"
+import Link from 'next/link';
+import { PlusCircle, Search, Filter, ArrowUpDown, MoreHorizontal } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { getCurrentUser } from '@/lib/hooks/get-current-user';
+import { redirect } from 'next/navigation';
 
 // 스트링 상품 목록 데이터 (실제로는 API에서 가져올 것입니다)
 const strings = [
   {
-    id: "1",
-    name: "루키론 프로 스트링",
-    sku: "STR-LUX-001",
-    brand: "루키론",
-    gauge: "1.25mm (16G)",
-    material: "폴리에스터",
+    id: '1',
+    name: '루키론 프로 스트링',
+    sku: 'STR-LUX-001',
+    brand: '루키론',
+    gauge: '1.25mm (16G)',
+    material: '폴리에스터',
     price: 25000,
     stock: 15,
-    status: "active",
+    status: 'active',
     features: {
       power: 4,
       control: 3,
@@ -36,15 +31,15 @@ const strings = [
     },
   },
   {
-    id: "2",
-    name: "테크니파이버 블랙코드",
-    sku: "STR-TEC-002",
-    brand: "테크니파이버",
-    gauge: "1.28mm (16L)",
-    material: "폴리에스터",
+    id: '2',
+    name: '테크니파이버 블랙코드',
+    sku: 'STR-TEC-002',
+    brand: '테크니파이버',
+    gauge: '1.28mm (16L)',
+    material: '폴리에스터',
     price: 32000,
     stock: 8,
-    status: "active",
+    status: 'active',
     features: {
       power: 3,
       control: 4,
@@ -53,15 +48,15 @@ const strings = [
     },
   },
   {
-    id: "3",
-    name: "윌슨 NXT 파워",
-    sku: "STR-WIL-003",
-    brand: "윌슨",
-    gauge: "1.30mm (16)",
-    material: "멀티필라멘트",
+    id: '3',
+    name: '윌슨 NXT 파워',
+    sku: 'STR-WIL-003',
+    brand: '윌슨',
+    gauge: '1.30mm (16)',
+    material: '멀티필라멘트',
     price: 28000,
     stock: 0,
-    status: "out_of_stock",
+    status: 'out_of_stock',
     features: {
       power: 5,
       control: 3,
@@ -70,15 +65,15 @@ const strings = [
     },
   },
   {
-    id: "4",
-    name: "바볼랏 RPM 블라스트",
-    sku: "STR-BAB-004",
-    brand: "바볼랏",
-    gauge: "1.25mm (16G)",
-    material: "폴리에스터",
+    id: '4',
+    name: '바볼랏 RPM 블라스트',
+    sku: 'STR-BAB-004',
+    brand: '바볼랏',
+    gauge: '1.25mm (16G)',
+    material: '폴리에스터',
     price: 30000,
     stock: 3,
-    status: "low_stock",
+    status: 'low_stock',
     features: {
       power: 3,
       control: 4,
@@ -87,15 +82,15 @@ const strings = [
     },
   },
   {
-    id: "5",
-    name: "헤드 링키 스트링",
-    sku: "STR-HEA-005",
-    brand: "헤드",
-    gauge: "1.30mm (16)",
-    material: "폴리에스터",
+    id: '5',
+    name: '헤드 링키 스트링',
+    sku: 'STR-HEA-005',
+    brand: '헤드',
+    gauge: '1.30mm (16)',
+    material: '폴리에스터',
     price: 22000,
     stock: 20,
-    status: "active",
+    status: 'active',
     features: {
       power: 4,
       control: 3,
@@ -104,15 +99,15 @@ const strings = [
     },
   },
   {
-    id: "6",
-    name: "요넥스 폴리투어 프로",
-    sku: "STR-YON-006",
-    brand: "요넥스",
-    gauge: "1.25mm (16G)",
-    material: "폴리에스터",
+    id: '6',
+    name: '요넥스 폴리투어 프로',
+    sku: 'STR-YON-006',
+    brand: '요넥스',
+    gauge: '1.25mm (16G)',
+    material: '폴리에스터',
     price: 35000,
     stock: 12,
-    status: "active",
+    status: 'active',
     features: {
       power: 3,
       control: 5,
@@ -121,15 +116,15 @@ const strings = [
     },
   },
   {
-    id: "7",
-    name: "소링크 투어바이트",
-    sku: "STR-SOL-007",
-    brand: "소링크",
-    gauge: "1.25mm (16G)",
-    material: "폴리에스터",
+    id: '7',
+    name: '소링크 투어바이트',
+    sku: 'STR-SOL-007',
+    brand: '소링크',
+    gauge: '1.25mm (16G)',
+    material: '폴리에스터',
     price: 27000,
     stock: 5,
-    status: "low_stock",
+    status: 'low_stock',
     features: {
       power: 4,
       control: 4,
@@ -138,15 +133,15 @@ const strings = [
     },
   },
   {
-    id: "8",
-    name: "던롭 익스플로전",
-    sku: "STR-DUN-008",
-    brand: "던롭",
-    gauge: "1.30mm (16)",
-    material: "멀티필라멘트",
+    id: '8',
+    name: '던롭 익스플로전',
+    sku: 'STR-DUN-008',
+    brand: '던롭',
+    gauge: '1.30mm (16)',
+    material: '멀티필라멘트',
     price: 26000,
     stock: 18,
-    status: "active",
+    status: 'active',
     features: {
       power: 5,
       control: 3,
@@ -154,17 +149,23 @@ const strings = [
       durability: 3,
     },
   },
-]
+];
 
 // 상품 상태에 따른 배지 색상 및 텍스트
 const statusMap = {
-  active: { label: "판매중", variant: "default" },
-  out_of_stock: { label: "품절", variant: "destructive" },
-  low_stock: { label: "재고 부족", variant: "warning" },
-  draft: { label: "임시저장", variant: "secondary" },
-}
+  active: { label: '판매중', variant: 'default' },
+  out_of_stock: { label: '품절', variant: 'destructive' },
+  low_stock: { label: '재고 부족', variant: 'warning' },
+  draft: { label: '임시저장', variant: 'secondary' },
+};
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const user = await getCurrentUser();
+
+  if (!user || user.role !== 'admin') {
+    redirect('/login');
+  }
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
@@ -234,13 +235,9 @@ export default function ProductsPage() {
                     <TableCell>{string.gauge}</TableCell>
                     <TableCell>{string.material}</TableCell>
                     <TableCell className="text-right">{string.price.toLocaleString()}원</TableCell>
-                    <TableCell className="text-right">
-                      {string.stock > 0 ? string.stock : <span className="text-red-500">품절</span>}
-                    </TableCell>
+                    <TableCell className="text-right">{string.stock > 0 ? string.stock : <span className="text-red-500">품절</span>}</TableCell>
                     <TableCell>
-                      <Badge variant={statusMap[string.status as keyof typeof statusMap].variant as any}>
-                        {statusMap[string.status as keyof typeof statusMap].label}
-                      </Badge>
+                      <Badge variant={statusMap[string.status as keyof typeof statusMap].variant as any}>{statusMap[string.status as keyof typeof statusMap].label}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -271,5 +268,5 @@ export default function ProductsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

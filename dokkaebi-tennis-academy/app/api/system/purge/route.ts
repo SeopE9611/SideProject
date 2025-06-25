@@ -1,33 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt, { JwtPayload } from 'jsonwebtoken';
 import clientPromise from '@/lib/mongodb';
-import { ACCESS_TOKEN_SECRET } from '@/lib/constants';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
-export async function GET(req: NextRequest) {
-  // JWT 토큰 검증 (cleanup/preview와 동일)
-  const authHeader = req.headers.get('authorization') ?? '';
-  if (!authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+export async function DELETE(req: NextRequest) {
+  // 내가만든 쿠키ㅣ이이ㅣㅣㅣ
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const token = authHeader.slice(7);
 
-  let payload: JwtPayload;
+  const payload = verifyAccessToken(token);
+
+  if (payload?.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   try {
-    payload = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
-  } catch {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
-  if (payload.role !== 'admin') {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
+    const client = await clientPromise;
+    const db = client.db();
+    // 1년 지난 soft-deleted 유저 하드 삭제
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  // 1년 지난 soft-deleted 유저 하드 삭제
-  const db = (await clientPromise).db();
-  const cutoff = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
-  const result = await db.collection('users').deleteMany({
-    isDeleted: true,
-    deletedAt: { $lte: cutoff },
-  });
+    const result = await db.collection('users').deleteMany({
+      isDeleted: true,
+      deletedAt: { $lt: cutoff },
+    });
 
-  return NextResponse.json({ deletedCount: result.deletedCount });
+    return NextResponse.json({
+      message: '삭제 완료',
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error('[SYSTEM_PURGE_DELETE]', error);
+    return NextResponse.json({ error: '서버 오류' }, { status: 500 });
+  }
 }

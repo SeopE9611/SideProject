@@ -8,7 +8,6 @@ import Footer from '@/components/footer';
 import { Toaster } from '@/components/ui/sonner';
 import Script from 'next/script';
 import { cookies } from 'next/headers';
-import { ClientProvider } from '@/components/client-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,23 +22,21 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value ?? null; // 서버 쿠키에서 accessToken 추출
+  // const token = cookieStore.get('accessToken')?.value ?? null; // 서버 쿠키에서 accessToken 추출
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={`${inter.className} bg-background text-foreground`}>
         <Script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="beforeInteractive" />
 
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <ClientProvider accessToken={token}>
-            {' '}
-            {/* 클라이언트에게 accessToken 전달 */}
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
-          </ClientProvider>
+          {' '}
+          {/* 클라이언트에게 accessToken 전달 */}
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

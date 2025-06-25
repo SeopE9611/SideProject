@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/stores/cart';
 import { useState, useEffect } from 'react';
-import { useAuthStore, User } from '@/lib/stores/auth-store';
+import { User } from '@/lib/stores/auth-store';
 import { getMyInfo } from '@/lib/auth.client';
 
 export default function CheckoutButton({
@@ -41,84 +41,61 @@ export default function CheckoutButton({
   withStringService: boolean;
 }) {
   const router = useRouter();
-  const token = useAuthStore((state) => state.accessToken);
+  const { items, clearCart } = useCartStore();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { items } = useCartStore();
-  const { clearCart } = useCartStore();
 
   useEffect(() => {
-    if (!token) {
-      // 비회원이면 그냥 user는 null로 두고 통과
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
     getMyInfo()
       .then(({ user }) => setUser(user))
-      .catch(() => setUser(null)) // 비회원 주문 가능
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
-  }, [token]);
-
-  // if (!user) return null;
+  }, []);
 
   const handleSubmit = async () => {
+    const shippingInfo = {
+      name,
+      phone,
+      address: `${address} ${addressDetail}`,
+      postalCode,
+      depositor,
+      deliveryRequest,
+      deliveryMethod,
+      withStringService,
+    };
     const orderData = {
       items,
-      shippingInfo: {
-        name,
-        phone,
-        address: `${address} ${addressDetail}`,
-        postalCode,
-        depositor,
-        deliveryRequest,
-        deliveryMethod,
-        withStringService,
-      },
+      shippingInfo,
       paymentInfo: {
         method: '무통장입금',
         bank: selectedBank,
       },
       totalPrice,
       shippingFee,
-      guestInfo: !user
-        ? {
-            name,
-            phone,
-            email,
-          }
-        : undefined,
+      guestInfo: !user ? { name, phone, email } : undefined,
       isStringServiceApplied: withStringService,
     };
 
+    console.log('주문 요청 데이터', {
+      items,
+      shippingInfo,
+      totalPrice,
+      shippingFee,
+    });
+
     try {
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
+        credentials: 'include',
       });
-      // '배송지 저장' 체크 시 회원 정보 업데이트
+
+      // 회원이면 배송지 저장
       if (user && saveAddress) {
-        const patchHeaders: HeadersInit = {
-          'Content-Type': 'application/json',
-        };
-
-        if (token) {
-          patchHeaders['Authorization'] = `Bearer ${token}`;
-        }
-
         await fetch('/api/users/me', {
           method: 'PATCH',
-          headers: patchHeaders,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name,
             phone,
@@ -128,6 +105,7 @@ export default function CheckoutButton({
           }),
         });
       }
+
       const data = await res.json();
 
       if (data?.orderId) {

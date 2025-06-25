@@ -4,7 +4,7 @@ import useSWR from 'swr';
 import { Badge } from '@/components/ui/badge';
 import { orderStatusColors } from '@/lib/badge-style';
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 type Props = {
   orderId: string;

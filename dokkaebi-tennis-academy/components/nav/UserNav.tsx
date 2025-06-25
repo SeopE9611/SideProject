@@ -6,42 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, LayoutDashboard, Settings, UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useEffect, useState } from 'react';
-import { useAuthStore, User } from '@/lib/stores/auth-store';
-import { getMyInfo } from '@/lib/auth.client';
-// 토큰과 유저 정보를 저장한 상태
-// accessToken으로 유저 정보 불러오는 함수
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
+import { mutate } from 'swr';
 
 export function UserNav() {
   const router = useRouter();
-  const accessToken = useAuthStore((state) => state.accessToken);
-  console.log('현재 accessToken:', accessToken);
-  const logout = useAuthStore((state) => state.logout);
-  const token = useAuthStore.getState().accessToken;
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchUser() {
-      if (!accessToken) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data = await getMyInfo();
-        setUser(data.user);
-      } catch (err) {
-        console.error('유저 정보 가져오기 실패:', err);
-        logout(); // 토큰 유효하지 않으면 자동 로그아웃
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUser();
-  }, [accessToken, logout]);
+  const { user, loading, refresh } = useCurrentUser();
 
   if (loading) {
     return (
@@ -91,17 +61,8 @@ export function UserNav() {
         )}
         <DropdownMenuItem
           onClick={async () => {
-            // 서버에 로그아웃 요청 (쿠키 삭제)
-            await fetch('/api/logout', {
-              method: 'POST',
-              // credentials: 'include', // 쿠키 삭제
-              headers: { Authorization: `Bearer ${token}` },
-            });
-
-            // 클라이언트 상태 초기화
-            logout();
-
-            router.push('/');
+            await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+            window.location.href = '/';
           }}
         >
           <LogOut className="mr-2 h-4 w-4" />

@@ -57,7 +57,7 @@ interface Props {
 }
 
 export default function OrderDetailClient({ orderId }: Props) {
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
   const router = useRouter();
 
   // 주문 상세를 SWR로 가져오기

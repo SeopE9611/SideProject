@@ -61,7 +61,7 @@ function getIconProps(status: string) {
 }
 
 const LIMIT = 5;
-const fetcher = (u: string) => fetch(u).then((r) => r.json());
+const fetcher = (u: string) => fetch(u, { credentials: 'include' }).then((r) => r.json());
 
 interface HistoryItem {
   status: string;
@@ -123,7 +123,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
         <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
       </CardHeader>
       <CardContent>
-        {/* 1) 로딩 중일 때 스켈레톤 5줄 */}
+        {/* 로딩 중일 때 스켈레톤 5줄 */}
         {pages === undefined ? (
           Array.from({ length: LIMIT }).map((_, i) => (
             <div key={i} className="flex animate-pulse space-x-4 py-3">
@@ -134,11 +134,11 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
               </div>
             </div>
           ))
-        ) : /* 2) 빈 상태일 때 메시지 */
+        ) : /* 빈 상태일 때 메시지 */
         pageData.history.length === 0 ? (
           <div className="py-10 text-center text-muted-foreground">아직 처리 이력이 없습니다.</div>
         ) : (
-          /* 3) 실제 데이터 렌더 */
+          /* 실제 데이터 렌더 */
           pageItems.map((item, idx) => {
             const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status);
             return (
@@ -166,7 +166,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
           })
         )}
 
-        {/* 4) 페이지네이션 */}
+        {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="mt-6 flex justify-center gap-3">
             <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>

@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { getTokenFromHeader, verifyAccessToken } from '@/lib/auth.utils';
+import { cookies } from 'next/headers';
 
 export async function GET(req: Request) {
   // 토큰 추출
-  const token = getTokenFromHeader(req.headers);
-  const payload = token ? verifyAccessToken(token) : null;
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
 
+  if (!token) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  const payload = verifyAccessToken(token);
   if (!payload) {
     return new NextResponse('Unauthorized', { status: 401 });
   }

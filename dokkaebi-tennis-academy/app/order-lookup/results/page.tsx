@@ -44,6 +44,7 @@ export default function OrderLookupResultsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, phone }),
+          credentials: 'include',
         });
 
         const data = await res.json();

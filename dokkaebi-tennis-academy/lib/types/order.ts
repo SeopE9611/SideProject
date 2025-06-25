@@ -23,10 +23,13 @@ export type Order = {
   userId?: string;
 
   shippingInfo?: {
-    shippingMethod?: 'courier' | 'quick' | 'visit';
-    trackingNumber?: string;
-    deliveryMethod?: '택배수령' | '방문수령';
+    shippingMethod?: 'delivery' | 'quick' | 'visit';
+    estimatedDate?: string;
     withStringService?: boolean;
+    invoice?: {
+      courier?: string | null;
+      trackingNumber?: string | null;
+    };
   };
 
   date: string; // ISO 8601 날짜 문자열
@@ -40,8 +43,4 @@ export type Order = {
   total: number;
 
   items: OrderItem[];
-
-  invoice?: {
-    trackingNumber?: string;
-  };
 };

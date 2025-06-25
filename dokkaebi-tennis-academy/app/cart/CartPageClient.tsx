@@ -14,31 +14,25 @@ import { useRouter } from 'next/navigation';
 
 export default function CartPageClient() {
   const router = useRouter();
-  const token = useAuthStore((state) => state.accessToken);
-  const logout = useAuthStore((state) => state.logout);
+  const { logout } = useAuthStore();
   // 임시 장바구니 데이터
   const { items: cartItems, removeItem, updateQuantity, clearCart } = useCartStore();
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 토큰이 있을 때만 유저 정보 로드
   useEffect(() => {
-    if (token) {
-      getMyInfo()
-        .then(({ user }) => setUser(user))
-        .catch(() => {
-          logout(); // 토큰 만료 시 로그아웃
-        })
-        .finally(() => setLoading(false));
-    } else {
-      // 비회원도 접근 허용
-      setUser(null);
-      setLoading(false);
-    }
-  }, [token, logout]);
+    getMyInfo()
+      .then(({ user }) => {
+        setUser(user); // 로그인 유저 or null (비회원)
+      })
+      .catch(() => {
+        logout(); // 서버 인증 실패 시 로그아웃
+      })
+      .finally(() => setLoading(false));
+  }, [logout]);
 
-  if (loading) return <p>로딩 중…</p>;
+  if (loading) return <p>null</p>;
 
   // 장바구니 합계 계산
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);

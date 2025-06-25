@@ -83,8 +83,7 @@ export default function CheckoutPage() {
   // 배송지 저장 상태관리
   const [saveAddress, setSaveAddress] = useState(false);
   // const router = useRouter();
-  const token = useAuthStore((state) => state.accessToken);
-  const logout = useAuthStore((state) => state.logout);
+  const { logout } = useAuthStore();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -94,31 +93,20 @@ export default function CheckoutPage() {
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
   useEffect(() => {
-    if (token) {
-      getMyInfo()
-        .then(({ user }) => setUser(user))
-        .catch(() => {
-          // 토큰 만료 등 오류 시 강제 로그아웃
-          logout();
-        })
-        .finally(() => setLoading(false));
-    } else {
-      // 비회원 허용
-      setUser(null);
-      setLoading(false);
-    }
-  }, [token, logout]);
+    getMyInfo()
+      .then(({ user }) => setUser(user)) // 로그인한 유저일 경우
+      .catch(() => {
+        logout(); // 로그인 실패 -> 로그아웃 처리
+      })
+      .finally(() => setLoading(false));
+  }, [logout]);
 
   // 로그인된 회원이면 자동으로 배송 정보 불러오기
   useEffect(() => {
     if (!user) return;
 
     const fetchUserInfo = async () => {
-      const res = await fetch('/api/users/me', {
-        headers: {
-          Authorization: `Bearer ${token}`, // 토큰 직접 주입
-        },
-      });
+      const res = await fetch('/api/users/me', { credentials: 'include' });
       if (!res.ok) return;
 
       const data = await res.json();

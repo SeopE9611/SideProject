@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 // 배송 방법 한글 매핑
 const shippingMethodMap: Record<string, string> = {
-  standard: '일반 배송',
-  express: '빠른 배송',
-  premium: '퀵 배송',
-  pickup: '매장 수령',
+  courier: '택배 배송',
+  quick: '퀵 배송 (당일)',
   visit: '방문 수령',
 };
 
 // PATCH 메서드 정의
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  //  인증 처리
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+  if (!token) return new NextResponse('Unauthorized', { status: 401 });
+
+  const payload = verifyAccessToken(token);
+  if (!payload) return new NextResponse('Unauthorized', { status: 401 });
   try {
     // URL 파라미터에서 주문 ID 추출
     const { id } = await context.params;
@@ -31,30 +38,19 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     if (!order) {
       return NextResponse.json({ error: '주문을 찾을 수 없습니다.' }, { status: 404 });
     }
-    const updateFields: any = {
+    const setOps: any = {
       'shippingInfo.shippingMethod': shippingMethod,
       'shippingInfo.estimatedDate': estimatedDate,
     };
+
+    if (['취소', '결제취소'].includes(order.status)) {
+      return new NextResponse('취소된 주문은 배송 정보를 수정할 수 없습니다.', { status: 403 });
+    }
 
     // 필수 항목 누락 여부 확인 → 유효성 검사
     if (!shippingMethod || !estimatedDate) {
       return NextResponse.json({ success: false, message: '모든 필드를 입력해주세요.' }, { status: 400 });
     }
-
-    const updatedShippingInfo = {
-      ...(order.shippingInfo ?? {}),
-      shippingMethod,
-      estimatedDate,
-      ...(courier && trackingNumber
-        ? {
-            invoice: {
-              courier,
-              trackingNumber,
-            },
-          }
-        : {}),
-    };
-
     // 날짜 포맷을 한글로 변환 (예: 2025년 6월 3일)
     const formattedDate = new Intl.DateTimeFormat('ko-KR', {
       year: 'numeric',
@@ -62,40 +58,36 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       day: 'numeric',
     }).format(new Date(estimatedDate));
 
-    //  DB 업데이트 실행
-    const result = await db.collection('orders').updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          shippingInfo: updatedShippingInfo,
-        },
-      }
-    );
+    let updateResult;
+    if (shippingMethod === 'delivery') {
+      // 택배배송일 때만 invoice 세팅
+      setOps['shippingInfo.invoice'] = { courier, trackingNumber };
 
-    // PATCH: 배송 정보 + 운송장 정보 업데이트 + 처리이력 기록
+      updateResult = await db.collection('orders').updateOne({ _id: new ObjectId(id) }, { $set: setOps });
+    } else {
+      // 택배배송이 아니면 invoice 전체 필드 제거
+      updateResult = await db.collection('orders').updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: setOps,
+          $unset: { 'shippingInfo.invoice': '' },
+        }
+      );
+    }
 
-    const shippingUpdateResult = await db.collection('orders').updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          shippingInfo: updatedShippingInfo,
+    // 처리 이력
+    await db.collection('orders').updateOne({ _id: new ObjectId(id) }, {
+      $push: {
+        history: {
+          status: '배송정보변경',
+          date: new Date().toISOString(),
+          description: `배송 방법을 "${shippingMethodMap[shippingMethod]}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 설정했습니다.`,
         },
-        $push: {
-          history: {
-            $each: [
-              {
-                status: '배송정보변경',
-                date: new Date().toISOString(),
-                description: `배송 방법을 "${shippingMethodMap[shippingMethod]}"(으)로 변경하고, 예상 수령일을 "${formattedDate}"로 설정했습니다.`,
-              },
-            ],
-          },
-        } as any,
-      }
-    );
+      },
+    } as any);
 
     //  수정 성공 여부 전달
-    return NextResponse.json({ ok: shippingUpdateResult.modifiedCount > 0 });
+    return NextResponse.json({ ok: updateResult.modifiedCount > 0 });
   } catch (error) {
     console.error('[ORDER_SHIPPING_PATCH]', error);
     return NextResponse.json({ error: '배송 정보 업데이트에 실패했습니다.' }, { status: 500 });

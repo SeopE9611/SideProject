@@ -1,9 +1,19 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 // GET 메서드 정의
 export async function GET(req: Request, context: { params: { id: string } }) {
+  // 인증 처리
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+  if (!token) return new NextResponse('Unauthorized', { status: 401 });
+
+  const payload = verifyAccessToken(token);
+  if (!payload) return new NextResponse('Unauthorized', { status: 401 });
+
   try {
     const id = context.params.id;
 

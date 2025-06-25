@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 const LIMIT = 5; // 한 페이지에 보여줄 이력 개수
 
 // fetcher 함수: API 호출 후 JSON 파싱
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 // useSWRInfinite용 getKey: pageIndex와 이전 페이지 데이터를 이용해 API 경로 반환
 const getHistoryKey = (orderId: string) => (pageIndex: number, previousPageData: HistoryResponse | null) => {

@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -14,17 +14,44 @@ import { useRouter } from 'next/navigation';
 interface ShippingFormProps {
   initialShippingMethod?: string;
   initialEstimatedDelivery?: string;
+  initialCourier?: string;
+  initialTrackingNumber?: string;
   orderId?: string;
   onSuccess?: () => void;
 }
 
-export function ShippingForm({ initialShippingMethod = '', initialEstimatedDelivery = '', orderId = '', onSuccess }: ShippingFormProps) {
-  const [shippingMethod, setShippingMethod] = useState(initialShippingMethod);
-  const [estimatedDelivery, setEstimatedDelivery] = useState(initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split('T')[0] : '');
+export default function ShippingForm({ initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, orderId, onSuccess }: ShippingFormProps) {
+  // 빈 문자열로 초기화해서 Controlled 컴포넌트로 통일
+  const [shippingMethod, setShippingMethod] = useState<string>(initialShippingMethod || '');
+  // prop 변경에 반응하도록
+  useEffect(() => {
+    setShippingMethod(initialShippingMethod || '');
+  }, [initialShippingMethod]);
+
+  const [estimatedDelivery, setEstimatedDelivery] = useState<string>(initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split('T')[0] : '');
   const [courier, setCourier] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+
+  // courier / trackingNumber 초기값 세팅
+  // prop 변경 시 동기화
+  useEffect(() => {
+    setCourier(initialCourier || '');
+  }, [initialCourier]);
+  useEffect(() => {
+    setTrackingNumber(initialTrackingNumber || '');
+  }, [initialTrackingNumber]);
+
+  // 배송 수단이 바뀔 때, 택배 정보 초기화
+  useEffect(() => {
+    if (shippingMethod !== 'delivery') {
+      setCourier('');
+      setTrackingNumber('');
+    }
+  }, [shippingMethod]);
+
+  console.log('initialShippingMethod:', initialShippingMethod);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,19 +85,24 @@ export function ShippingForm({ initialShippingMethod = '', initialEstimatedDeliv
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
-          shippingMethod,
-          estimatedDate: estimatedDelivery,
-          ...(shippingMethod === 'delivery' && {
-            courier,
-            trackingNumber,
-          }),
+          shippingMethod: shippingMethod, // 공통 필드
+          estimatedDate: estimatedDelivery, // 공통 필드
+          courier:
+            shippingMethod === 'delivery'
+              ? courier // 택배 선택 시 입력값
+              : '', // 그 외는 빈 문자열로 초기화
+          trackingNumber: shippingMethod === 'delivery' ? trackingNumber : '',
         }),
       });
 
       console.log('배송 정보 업데이트 응답:', res);
 
       toast.success('배송 정보가 업데이트되었습니다');
+
+      router.refresh();
+
       if (onSuccess) {
         onSuccess();
       }
@@ -112,7 +144,7 @@ export function ShippingForm({ initialShippingMethod = '', initialEstimatedDeliv
           {shippingMethod === 'delivery' && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="courier">택배사</Label>
+                <Label htmlFor="delivery">택배사</Label>
                 <Select value={courier} onValueChange={setCourier}>
                   <SelectTrigger id="courier">
                     <SelectValue placeholder="택배사를 선택하세요" />

@@ -1,25 +1,23 @@
 import { NextResponse } from 'next/server';
 
 export async function POST() {
-  //  빈값 + maxAge=0 으로 쿠키를 재설정 -> 즉시 삭제
-  const response = NextResponse.json({ message: 'Logged out successfully' });
+  const response = NextResponse.json({ success: true });
 
-  // accessToken 삭제
+  //  accessToken 쿠키 제거
   response.cookies.set('accessToken', '', {
     httpOnly: true,
-    path: '/',
-    maxAge: 0,
-    sameSite: 'lax',
-  });
-
-  // refreshToken 삭제
-  response.cookies.set('refreshToken', '', {
-    httpOnly: true, // JS 접근 불가
+    secure: true,
     path: '/',
     maxAge: 0, // 즉시 만료
-    sameSite: 'lax',
   });
 
-  // 클라이언트에는 로그아웃 완료 메시지 반환
+  // refreshToken 쿠키도 제거
+  response.cookies.set('refreshToken', '', {
+    httpOnly: true,
+    secure: true,
+    path: '/',
+    maxAge: 0,
+  });
+
   return response;
 }

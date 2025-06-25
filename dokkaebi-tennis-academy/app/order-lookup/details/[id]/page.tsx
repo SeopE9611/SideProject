@@ -54,7 +54,7 @@ export default function OrderDetailPage() {
   useEffect(() => {
     const fetchOrderDetail = async () => {
       try {
-        const res = await fetch(`/api/guest-orders/${orderId}`);
+        const res = await fetch(`/api/guest-orders/${orderId}`, { credentials: 'include' });
         const data = await res.json();
 
         if (data.success && data.order) {

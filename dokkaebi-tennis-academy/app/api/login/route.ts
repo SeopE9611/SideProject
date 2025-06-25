@@ -32,6 +32,7 @@ export async function POST(req: Request) {
   const accessToken = jwt.sign(
     {
       sub: user._id.toString(), // JWT의 subject: 고유 식별자 (_id 사용)
+      email: user.email,
       role: user.role, // 사용자 권한 정보 (예: 'admin', 'user')
     },
     ACCESS_TOKEN_SECRET, // 비밀 키

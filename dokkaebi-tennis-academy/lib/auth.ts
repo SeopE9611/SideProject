@@ -1,20 +1,16 @@
-import { headers } from 'next/headers';
-import { getTokenFromHeader, verifyAccessToken } from './auth.utils';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from './auth.utils';
 
 export async function auth() {
-  const headersList = await headers();
-  console.log('[AUTH HEADERS]', Object.fromEntries(headersList.entries()));
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
 
-  const token = getTokenFromHeader(headersList);
-  console.log('[AUTH TOKEN]', token);
+  console.log('[AUTH COOKIE TOKEN]', token); // 디버깅용
 
   if (!token) return null;
 
   const payload = verifyAccessToken(token);
-  console.log('[AUTH PAYLOAD]', payload);
-
   if (!payload) return null;
 
   return { user: payload };
 }
-

@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 export async function POST(req: NextRequest) {
+  //  인증 처리
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+  if (!token) return new NextResponse('Unauthorized', { status: 401 });
+
+  const payload = verifyAccessToken(token);
+  if (!payload || payload.role !== 'admin') {
+    return NextResponse.json({ message: '관리자 권한이 필요합니다.' }, { status: 403 });
+  }
+
   try {
     const body = await req.json();
 

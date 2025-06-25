@@ -28,20 +28,13 @@ interface Order {
   isStringServiceApplied?: boolean;
 }
 
-//  fetcher 함수: Authorization 헤더 포함해서 호출
-const fetcher = (url: string) => {
-  const token = useAuthStore.getState().accessToken;
-  return fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  }).then((res) => {
-    if (!res.ok) throw new Error('Unauthorized');
-    return res.json();
+const fetcher = async (url: string): Promise<any> => {
+  const res = await fetch(url, {
+    credentials: 'include',
   });
+  if (!res.ok) throw new Error('Unauthorized');
+  return res.json();
 };
-
 export default function OrderList() {
   //  SWR을 사용해 API에서 주문 데이터 가져오기
   const { data: orders, error, isLoading } = useSWR<Order[]>('/api/users/me/orders', fetcher);

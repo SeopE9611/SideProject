@@ -1,37 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt, { JwtPayload } from 'jsonwebtoken';
 import clientPromise from '@/lib/mongodb';
-import { ACCESS_TOKEN_SECRET } from '@/lib/constants'; // 혹은 process.env.ACCESS_TOKEN_SECRET!
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 export async function GET(req: NextRequest) {
-  // JWT 토큰 가져오기
-  const authHeader = req.headers.get('authorization') ?? '';
-  if (!authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
-  const token = authHeader.slice(7);
+  // 쿠키
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
 
-  // 토큰 검증
-  let payload: JwtPayload;
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const payload = verifyAccessToken(token);
+  if (payload?.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   try {
-    payload = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
-  } catch {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    const client = await clientPromise;
+    const db = client.db();
+
+    // 7일 지난 유저 조회
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const users = await db
+      .collection('users')
+      .find({
+        isDeleted: true,
+        deletedAt: { $lt: cutoff },
+      })
+      .project({ hashedPassword: 0, password: 0 })
+      .toArray();
+
+    return NextResponse.json({ candidates: users });
+  } catch (error) {
+    console.error('[SYSTEM_CLEANUP_PREVIEW]', error);
+    return NextResponse.json({ error: '서버 오류' }, { status: 500 });
   }
-
-  // 관리자 권한 체크
-  if (payload.role !== 'admin') {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
-
-  // 7일 지난 soft-deleted 유저 조회
-  const db = (await clientPromise).db();
-  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const users = await db
-    .collection('users')
-    .find({ isDeleted: true, deletedAt: { $lte: cutoff } })
-    .project({ hashedPassword: 0, password: 0 })
-    .toArray();
-
-  return NextResponse.json(users);
 }

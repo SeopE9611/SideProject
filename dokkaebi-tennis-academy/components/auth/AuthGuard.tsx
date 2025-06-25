@@ -1,27 +1,37 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useHasHydrated } from '@/lib/hooks/useHasHydrated';
-import { useAuthStore } from '@/lib/stores/auth-store';
+import { getMyInfo } from '@/lib/auth.client';
 
 interface Props {
   children: React.ReactNode;
 }
 
 export default function AuthGuard({ children }: Props) {
-  const hasHydrated = useHasHydrated();
   const router = useRouter();
-  const accessToken = useAuthStore((state) => state.accessToken);
+  const [checked, setChecked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    if (hasHydrated && !accessToken) {
-      router.replace('/login'); // 로그인 안 됐으면 login으로 이동
-    }
-  }, [hasHydrated, accessToken, router]);
+    getMyInfo()
+      .then(({ user }) => {
+        if (user) {
+          setIsLoggedIn(true);
+        } else {
+          router.replace('/login');
+        }
+      })
+      .catch(() => {
+        router.replace('/login');
+      })
+      .finally(() => {
+        setChecked(true);
+      });
+  }, [router]);
 
-  if (!hasHydrated) return null; // SSR 시엔 렌더링 안 함
-  if (!accessToken) return null; // 로그인 전엔 화면 비워두기
+  if (!checked) return null;
+  if (!isLoggedIn) return null;
 
   return <>{children}</>;
 }

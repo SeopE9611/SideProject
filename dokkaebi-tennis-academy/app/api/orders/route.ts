@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'; // Next.js API 응답 처리를 위�
 import clientPromise from '@/lib/mongodb'; // MongoDB 연결을 위한 클라이언트 프라미스
 import { ObjectId } from 'mongodb'; // ObjectId 변환을 위해 추가
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { auth } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
 // 주문 객체의 타입 정의
@@ -54,28 +57,18 @@ type Order = {
 // POST 메서드 처리 함수 – 주문 생성
 export async function POST(req: Request) {
   try {
-    // Authorization 헤더에서 Bearer 토큰 꺼내기
-    const authHeader = req.headers.get('authorization') ?? '';
-    let userId: string | null = null;
-
-    // Authorization 헤더가 존재하고 Bearer 토큰 형식일 경우 → JWT 검증
-    if (authHeader.startsWith('Bearer ')) {
-      const token = authHeader.slice(7); // "Bearer " 이후 문자열 추출
-
-      try {
-        const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
-        userId = decoded.sub || null; // JWT의 subject(sub)는 userId
-      } catch {
-        // 토큰 형식은 맞지만 검증 실패 → 유효하지 않은 토큰
-        return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
-      }
-    }
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    const payload = token ? verifyAccessToken(token) : null;
+    const userId = payload?.sub ?? null;
 
     //  클라이언트에서 보낸 요청 body(JSON 형식) 파싱
     const body = await req.json();
-
     // 요청에서 필요한 필드 구조분해
     const { items, shippingInfo, totalPrice, shippingFee, guestInfo } = body;
+
+    console.log(' [POST /api/orders] 요청 body:', JSON.stringify(body, null, 2));
+    console.log('userId:', userId);
 
     const paymentInfo = {
       method: '무통장입금',
@@ -99,7 +92,8 @@ export async function POST(req: Request) {
       status: '대기중',
       isStringServiceApplied: false,
     };
-
+    console.log(' guestInfo:', guestInfo);
+    console.log(' shippingInfo:', shippingInfo);
     //  MongoDB 클라이언트 연결 및 DB 선택
     const client = await clientPromise;
     const db = client.db(); // 기본 DB (보통 .env에서 지정된 DB 사용됨)
@@ -167,7 +161,7 @@ export async function GET() {
           phone: '-', // snapshot에 phone 정보가 없으므로 고정값
         };
 
-        // 2) 비회원 주문 (guestInfo 가 존재)
+        // 비회원 주문 (guestInfo 가 존재)
       } else if (order.guestInfo) {
         customer = {
           name: `${order.guestInfo.name} (비회원)`,
@@ -175,7 +169,7 @@ export async function GET() {
           phone: order.guestInfo.phone || '-',
         };
 
-        // 3) DB·스냅샷·guestInfo 모두 없는 예외 케이스
+        // DB·스냅샷·guestInfo 모두 없는 예외 케이스
       } else {
         customer = {
           name: '(고객 정보 없음)',
@@ -196,10 +190,14 @@ export async function GET() {
         items: order.items || [], // 주문 품목
         shippingInfo: {
           shippingMethod: order.shippingInfo?.shippingMethod,
+          deliveryMethod:
+            order.shippingInfo?.deliveryMethod ?? (order.shippingInfo?.shippingMethod === 'courier' ? '택배수령' : order.shippingInfo?.shippingMethod === 'visit' ? '방문수령' : order.shippingInfo?.shippingMethod === 'quick' ? '퀵배송' : null),
           estimatedDate: order.shippingInfo?.estimatedDate,
-        },
-        invoice: {
-          trackingNumber: order.invoice?.trackingNumber,
+          withStringService: order.shippingInfo?.withStringService ?? false,
+          invoice: {
+            courier: order.shippingInfo?.invoice?.courier ?? null,
+            trackingNumber: order.shippingInfo?.invoice?.trackingNumber ?? null,
+          },
         },
       };
     })

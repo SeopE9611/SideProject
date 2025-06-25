@@ -49,7 +49,7 @@ export default function AdminCancelOrderDialog({
 
     setLoading(true);
     try {
-      // 1) 서버에 PATCH 요청 (status: '취소', cancelReason, cancelReasonDetail)
+      // 서버에 PATCH 요청 (status: '취소', cancelReason, cancelReasonDetail)
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -58,6 +58,7 @@ export default function AdminCancelOrderDialog({
           cancelReason: selectedReason,
           cancelReasonDetail: selectedReason === '기타' ? detail : undefined,
         }),
+        credentials: 'include',
       });
 
       if (!res.ok) {

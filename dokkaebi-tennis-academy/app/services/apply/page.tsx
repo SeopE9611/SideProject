@@ -42,20 +42,12 @@ export default function StringServiceApplyPage() {
 
     const fetchOrder = async () => {
       try {
-        const orderRes = await fetch(`/api/orders/${orderId}`);
+        const orderRes = await fetch(`/api/orders/${orderId}`, { credentials: 'include' });
         const orderData = await orderRes.json();
         setOrder(orderData);
 
         // accessToken 꺼내기
-        const token = useAuthStore.getState().accessToken;
-
-        const userRes = await fetch('/api/users/me', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const userRes = await fetch('/api/users/me', { credentials: 'include' });
 
         const userData = await userRes.json();
 
@@ -131,6 +123,7 @@ export default function StringServiceApplyPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
 
       if (!res.ok) {

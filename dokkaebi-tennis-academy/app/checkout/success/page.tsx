@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 import ContinueShoppingButton from '@/app/checkout/_components/ContinueShoppingButton';
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
-  const orderId = searchParams.orderId;
+  const orderId = await searchParams.orderId;
 
   if (!orderId) return notFound();
 

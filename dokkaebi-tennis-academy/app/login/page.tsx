@@ -15,8 +15,8 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
-  const token = useAuthStore((state) => state.accessToken);
   const [activeTab, setActiveTab] = useState<string>('login');
+  const { setUser } = useAuthStore();
 
   // const [email, setEmail] = useState('');
 
@@ -82,9 +82,8 @@ export default function LoginPage() {
 
     const res = await fetch('/api/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
     const result = await res.json();
@@ -95,12 +94,20 @@ export default function LoginPage() {
       return;
     }
 
-    // 상태에 Access Token 저장
-    const setAccessToken = useAuthStore.getState().setAccessToken;
-    setAccessToken(result.accessToken);
-
     // 디버깅 - 이메일과 비번 입력 후 로그인 시도하여 토큰 저장되는지 확인
-    console.log('accessToken:', useAuthStore.getState().accessToken);
+    // console.log('accessToken:', useAuthStore.getState().accessToken);
+
+    // 로그인 성공 후 유저 정보 가져오기
+    const meRes = await fetch('/api/users/me', {
+      credentials: 'include',
+    });
+
+    if (!meRes.ok) {
+      showErrorToast('유저 정보를 불러오지 못했습니다.');
+      return;
+    }
+    const user = await meRes.json();
+    setUser(user);
 
     // zustand 상태 주입 시간 확보
     await new Promise((resolve) => setTimeout(resolve, 30));

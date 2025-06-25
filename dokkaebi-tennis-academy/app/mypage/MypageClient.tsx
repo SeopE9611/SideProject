@@ -1,12 +1,11 @@
 'use client';
-
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Suspense } from 'react';
 import OrderList from '@/app/mypage/tabs/OrderList';
 import OrderListSkeleton from '@/app/mypage/tabs/OrderListSkeleton';
-import Applications from '@/app/mypage/applications/page';
+import ApplicationsClient from '@/app/mypage/applications/_components/ApplicationsClient';
 import ApplicationsSkeleton from '@/app/mypage/applications/loading';
 import QnAList from '@/app/mypage/tabs/QnAList';
 import QnAListSkeleton from '@/app/mypage/tabs/QnAListSkeleton';
@@ -17,39 +16,29 @@ import WishlistSkeleton from '@/app/mypage/tabs/WishlistSkeleton';
 import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { getMyInfo } from '@/lib/auth.client';
-import { useAuthStore, User } from '@/lib/stores/auth-store';
 import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
 import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
 import AuthGuard from '@/components/auth/AuthGuard';
 
-export default function MypageClient() {
+type Props = {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+};
+
+export default function MypageClient({ user }: Props) {
   const searchParams = useSearchParams(); // 현재 URL의 searchParams (?tab=reviews 등)를 가져옴
   const router = useRouter();
-  const token = useAuthStore((state) => state.accessToken);
-  const logout = useAuthStore((state) => state.logout);
-  const [user, setUser] = useState<User | null>(null);
+  // const { user, setUser } = useAuthStore();
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    // 토큰 없으면 로그인 페이지로
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
-    // 토큰 있을 때만 유저 정보 로드
-    getMyInfo()
-      .then(({ user }) => setUser(user))
-      .catch(() => {
-        logout();
-        router.push('/login');
-      })
-      .finally(() => setLoading(false));
-  }, [token, router, logout]);
-
+    setLoading(false);
+  }, []);
+  if (loading) return null;
   if (!user) return null;
-
   const currentTab = searchParams.get('tab') ?? 'orders'; // 쿼리에서 tab 값을 가져오고, 없으면 'orders'로 기본값 설정
 
   const handleTabChange = (value: string) => {
@@ -158,7 +147,7 @@ export default function MypageClient() {
                       <ApplicationDetail id={selectedApplicationId} />
                     ) : (
                       <Suspense fallback={<ApplicationsSkeleton />}>
-                        <Applications />
+                        <ApplicationsClient />
                       </Suspense>
                     )}
                   </CardContent>

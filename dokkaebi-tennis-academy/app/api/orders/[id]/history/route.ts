@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 // 히스토리 아이템 타입 정의
 interface HistoryEvent {
@@ -24,6 +26,22 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
 
   // 주문 전체 정보 조회
   const fullOrder = await db.collection('orders').findOne({ _id: new ObjectId(id) });
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+  const payload = token ? verifyAccessToken(token) : null;
+
+  if (!fullOrder) {
+    return new NextResponse('주문을 찾을 수 없습니다.', { status: 404 });
+  }
+
+  const isOwner = payload?.sub === fullOrder.userId?.toString();
+  const isAdmin = payload?.role === 'admin';
+
+  if (fullOrder.userId && !isOwner && !isAdmin) {
+    return new NextResponse('권한이 없습니다.', { status: 403 });
+  }
+
   // 히스토리 배열 안전하게 추출 & 타입 단언
   const historyArray = (fullOrder?.history ?? []) as HistoryEvent[];
 

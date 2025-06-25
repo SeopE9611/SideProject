@@ -1,3 +1,5 @@
+import { Order } from '@/lib/types/order';
+
 export const orderStatusColors: Record<string, string> = {
   대기중: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20',
   처리중: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20',
@@ -30,6 +32,17 @@ export const shippingStatusColors: Record<string, string> = {
   미입력: 'bg-gray-700 text-gray-200 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-600 dark:hover:bg-gray-600',
 };
 
+export function getShippingBadge(order: Order) {
+  const code = order.shippingInfo?.shippingMethod; // 'delivery' | 'quick' | 'visit'
+  const tn = order.shippingInfo?.invoice?.trackingNumber?.trim() ?? '';
+
+  let label: keyof typeof shippingStatusColors = '미입력';
+  if (code === 'delivery') label = tn ? '등록됨' : '미등록';
+  else if (code === 'quick') label = '퀵배송';
+  else if (code === 'visit') label = '방문수령';
+
+  return { label, color: shippingStatusColors[label]! };
+}
 export const applicationStatusColors = {
   '접수 완료': 'bg-blue-100 text-blue-800',
   '검토 중': 'bg-yellow-100 text-yellow-800',

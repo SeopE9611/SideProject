@@ -1,45 +1,27 @@
 'use client';
 
-import { useAuthStore, User } from '@/lib/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { getMyInfo } from '@/lib/auth.client';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 
 interface UserNavMobileProps {
   setOpen: (open: boolean) => void;
 }
 
 export function UserNavMobile({ setOpen }: UserNavMobileProps) {
-  const token = useAuthStore((state) => state.accessToken);
-  const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
-  // 유저 상태 로드 로직 추가
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading, refresh } = useCurrentUser();
 
-  useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    getMyInfo()
-      .then(({ user }) => setUser(user))
-      .catch(() => {
-        logout();
-        router.push('/login');
-      })
-      .finally(() => setLoading(false));
-  }, [token, logout, router]);
+  if (loading) return null;
 
-  if (!token) {
+  if (!user) {
     return (
       <Button
         variant="outline"
         className="w-full justify-center"
         onClick={() => {
           setOpen(false);
-          router.push('/login');
+          refresh();
         }}
       >
         로그인
@@ -47,12 +29,10 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
     );
   }
 
-  if (loading) return null;
-
   return (
     <>
       <p className="text-sm text-center">
-        {user?.name} {user?.role === 'admin' && <span className="text-muted-foreground">(관리자)</span>} 님
+        {user.name} {user.role === 'admin' && <span className="text-muted-foreground">(관리자)</span>} 님
       </p>
       <Button
         variant="outline"
@@ -69,14 +49,8 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
         className="w-full justify-center"
         onClick={async () => {
           setOpen(false);
-          //  서버 쿠키 제거
-          await fetch('/api/logout', {
-            method: 'POST',
-            // credentials: 'include',
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          logout();
-          router.push('/');
+          await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+          window.location.href = '/';
         }}
       >
         로그아웃

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
@@ -19,20 +21,14 @@ export async function DELETE(req: NextRequest) {
     }
 
     // 토큰 검증
-    const authHeader = req.headers.get('authorization') ?? '';
-    if (!authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    let payload: JwtPayload;
-    try {
-      payload = jwt.verify(authHeader.slice(7), ACCESS_TOKEN_SECRET) as JwtPayload;
-    } catch {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
-    }
-    const userId = payload.sub;
-    if (!userId) {
-      return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
-    }
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const payload = verifyAccessToken(token);
+    const userId = payload?.sub;
+    if (!userId) return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
 
     // MongoDB 연결
     const db = (await clientPromise).db();

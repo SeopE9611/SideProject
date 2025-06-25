@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -18,6 +20,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return new NextResponse('주문을 찾을 수 없습니다.', { status: 404 });
     }
 
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    const payload = token ? verifyAccessToken(token) : null;
+
+    const isOwner = payload?.sub === order.userId?.toString();
+    const isAdmin = payload?.role === 'admin';
+    console.log('💡 raw cookie header:', _req.headers.get('cookie'));
+    if (!isOwner && !isAdmin) {
+      return new NextResponse('권한이 없습니다.', { status: 403 });
+    }
     //  customer 통합 처리 시작
     let customer = null;
 
@@ -41,6 +53,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         };
       }
     }
+
     return NextResponse.json({
       ...order,
       customer,
@@ -48,6 +61,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         ...order.shippingInfo,
         deliveryMethod: order.shippingInfo?.deliveryMethod ?? '택배수령',
         withStringService: order.shippingInfo?.withStringService ?? false,
+        invoice: {
+          courier: order.shippingInfo?.invoice?.courier ?? null,
+          trackingNumber: order.shippingInfo?.invoice?.trackingNumber ?? null,
+        },
       },
       paymentStatus: order.paymentStatus || '결제대기',
       paymentMethod: order.paymentInfo?.method ?? '결제방법 없음',
@@ -80,6 +97,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     if (!existing) {
       return new NextResponse('해당 주문을 찾을 수 없습니다.', { status: 404 });
+    }
+
+    // 인증/보호 로직
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    const payload = token ? verifyAccessToken(token) : null;
+
+    const isOwner = payload?.sub === existing.userId?.toString();
+    const isAdmin = payload?.role === 'admin';
+
+    if (existing.userId && !isOwner && !isAdmin) {
+      return new NextResponse('권한이 없습니다.', { status: 403 });
     }
 
     if (existing.status === '취소') {

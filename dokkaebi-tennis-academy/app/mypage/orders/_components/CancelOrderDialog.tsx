@@ -45,6 +45,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           status: '취소',
           cancelReason: finalReason,

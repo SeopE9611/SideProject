@@ -9,36 +9,28 @@ import { useCartStore } from '@/lib/stores/cart';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
-// JWT + zustand + 클라이언트 라우터
 import { useRouter } from 'next/navigation';
-import { useAuthStore, User } from '@/lib/stores/auth-store';
-import { getMyInfo } from '@/lib/auth.client';
+import { User } from '@/lib/stores/auth-store';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCartStore();
 
-  // JWT 인증 로직 추가
   const router = useRouter();
-  const token = useAuthStore((state) => state.accessToken);
-  const logout = useAuthStore((state) => state.logout);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      getMyInfo()
-        .then(({ user }) => setUser(user))
-        .catch(() => {
-          logout();
-        })
-        .finally(() => setLoading(false));
-    } else {
-      // 로그인하지 않은 상태도 허용 (토큰 제한 해제)
-      setUser(null);
-      setLoading(false);
-    }
-  }, [token, router, logout]);
+    fetch('/api/users/me', { credentials: 'include' })
+      .then((res) => res.json())
+      .then(({ user }) => {
+        setUser(user);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   // if (!user) return null;
 

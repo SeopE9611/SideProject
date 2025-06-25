@@ -55,7 +55,7 @@ export default function ApplicationDetail({ id }: { id: string }) {
     const fetchApplication = async () => {
       try {
         // `/api/applications/[id]` API 호출
-        const response = await fetch(`/api/applications/${id}`);
+        const response = await fetch(`/api/applications/${id}`, { credentials: 'include' });
 
         if (!response.ok) {
           throw new Error('신청서 데이터를 불러오는 데 실패했습니다.');

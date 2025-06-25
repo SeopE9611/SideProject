@@ -7,12 +7,11 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { useAuthStore } from '@/lib/stores/auth-store';
 
 export default function AccountDeletedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get('token'); // URL에서 복구 토큰을 꺼냅니다
+  const token = searchParams.get('token');
 
   const handleRestore = async () => {
     if (!token) {
@@ -25,6 +24,7 @@ export default function AccountDeletedPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
+      credentials: 'include',
     });
 
     if (res.ok) {

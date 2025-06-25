@@ -7,28 +7,26 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
-//  MongoDB 클라이언트 연결 (clientPromise는 연결이 보장된 Promise 객체)
 import clientPromise from '@/lib/mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 //  GET 요청 처리 함수 (로그인된 유저의 주문 내역 조회)
 export async function GET(req: NextRequest) {
-  // “Bearer <token>” 헤더 파싱
-  const authHeader = req.headers.get('authorization') ?? '';
-  if (!authHeader.startsWith('Bearer ')) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+
+  if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const token = authHeader.slice(7);
 
-  // JWT 검증
-  let decoded: JwtPayload;
-  try {
-    decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
+  const payload = verifyAccessToken(token);
+  if (!payload?.sub) {
+    return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
   }
 
-  // ) sub 클레임(사용자 _id) 반드시 확인
-  const userId = decoded.sub;
+  // sub 클레임(사용자 _id) 반드시 확인
+  const userId = payload.sub;
   if (!userId) {
     return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
   }

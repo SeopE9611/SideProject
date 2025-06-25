@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-
-// zustand는 SSR 초기화 상태에선 accessToken이 undefined임
-//이걸 감지해서 hydration이 끝난 후에만 인증 판단.
+// 클라이언트에서 hydration(브라우저 초기 렌더링)이 완료됐는지 여부를 감지
+// SSR에서 발생할 수 있는 렌더링 불일치 문제 방지용
 export function useHasHydrated() {
   const [hasHydrated, setHasHydrated] = useState(false);
   useEffect(() => {
