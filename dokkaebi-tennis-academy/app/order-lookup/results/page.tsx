@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // 주문 타입 정의
 interface Order {
@@ -204,15 +205,33 @@ export default function OrderLookupResultsPage() {
                         </div>
                       </div>
 
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
                         <Button variant="outline" size="sm" className="flex items-center" onClick={() => handleViewDetails(order.id)}>
                           상세보기
                           <ChevronRight className="ml-1 h-4 w-4" />
                         </Button>
-                        {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && !order.isStringServiceApplied && (
-                          <Button variant="secondary" size="sm" className="text-primary font-semibold" onClick={() => router.push(`/services/apply?orderId=${order.id}`)}>
-                            스트링 장착 신청
-                          </Button>
+
+                        {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
+                          <>
+                            {!order.isStringServiceApplied ? (
+                              <Button variant="secondary" size="sm" className="text-primary font-semibold" onClick={() => router.push(`/services/apply?orderId=${order.id}`)}>
+                                스트링 장착 신청
+                              </Button>
+                            ) : (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex h-9 items-center justify-center rounded-md border border-green-300 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:border-green-600 dark:bg-green-950 dark:text-green-300">
+                                      스트링 신청 완료
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="text-sm">
+                                    이미 신청이 완료된 주문입니다
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { ObjectId } from 'mongodb';
 
 export async function GET() {
   //  인증 처리
@@ -16,10 +17,12 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db();
 
+    const userId = new ObjectId(payload.sub);
+
     // 'stringing_applications' 컬렉션에서 신청서 목록 전체 조회
     const applications = await db
       .collection('stringing_applications') // 정확한 컬렉션명 주의
-      .find({})
+      .find({ userId })
       .sort({ createdAt: -1 }) // 최신순 정렬
       .toArray();
 

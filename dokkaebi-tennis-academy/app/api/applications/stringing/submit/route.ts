@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+  const payload = token ? verifyAccessToken(token) : null;
+  const userId = payload?.sub ? new ObjectId(payload.sub) : null;
+
   try {
     const body = await req.json();
 
@@ -44,6 +51,7 @@ export async function POST(req: Request) {
       stringDetails,
       status: '접수 완료',
       createdAt: new Date(),
+      userId, // 로그인 한 경우에만 값 있음 - 비회원일때  스트링 교체 신청 주문이 회원 마이페이지-> 신청 내역에도 보이는 현상을 해결하기 위함
     });
 
     // 주문 상태 업데이트

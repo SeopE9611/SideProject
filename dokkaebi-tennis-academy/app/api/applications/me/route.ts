@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { getTokenFromHeader, verifyAccessToken } from '@/lib/auth.utils';
 import { cookies } from 'next/headers';
+import { ObjectId } from 'mongodb';
 
 export async function GET(req: Request) {
   // 토큰 추출
@@ -17,18 +18,18 @@ export async function GET(req: Request) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  // 사용자 이메일
-  const email = payload.email;
+  // 사용자
+  const userId = new ObjectId(payload.sub);
 
   // DB 연결
   const client = await clientPromise;
   const db = client.db();
   const collection = db.collection('stringing_applications'); // 기존 코드
 
-  // 이메일 기준 필터링
+  // userId 기준 필터링
   // 최신 순으로 정렬하도록 .sort({ createdAt: -1 }) 추가
   // 그리고 rawList 변수로 받아서 아래에서 매핑 처리
-  const rawList = await collection.find({ email }).sort({ createdAt: -1 }).toArray();
+  const rawList = await collection.find({ userId }).sort({ createdAt: -1 }).toArray();
 
   // Application 형태로 매핑
   const applications = rawList.map((doc) => ({

@@ -51,7 +51,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect }: T
     const fetchReservedTimes = async () => {
       if (!selectedDate) return;
       try {
-        const res = await fetch(`/api/applications/stringing/submit/reserved?date=${selectedDate}`, { credentials: 'include' });
+        const res = await fetch(`/api/applications/stringing/reserved?date=${selectedDate}`, { credentials: 'include' });
         if (!res.ok) throw new Error('예약된 시간 조회 실패');
         const data = await res.json();
 

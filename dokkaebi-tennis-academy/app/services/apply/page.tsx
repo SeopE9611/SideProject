@@ -55,7 +55,7 @@ export default function StringServiceApplyPage() {
           ...prev,
           name: orderData.shippingInfo?.name ?? '',
           phone: orderData.shippingInfo?.phone ?? '',
-          email: userData.email ?? '',
+          email: userData?.email ?? orderData?.guestInfo?.email ?? '',
         }));
       } catch (err) {
         console.error('정보 fetch 실패:', err);
