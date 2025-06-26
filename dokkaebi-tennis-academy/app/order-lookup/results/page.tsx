@@ -17,6 +17,11 @@ interface Order {
   contactNumber: string;
   totalAmount: number;
   status: '배송준비중' | '배송중' | '배송완료' | '주문취소';
+  shippingInfo?: {
+    deliveryMethod?: string;
+    withStringService?: boolean;
+  };
+  isStringServiceApplied?: boolean;
 }
 
 export default function OrderLookupResultsPage() {
@@ -59,6 +64,11 @@ export default function OrderLookupResultsPage() {
               contactNumber: o.shippingInfo?.phone ?? '',
               totalAmount: o.totalPrice ?? 0,
               status: o.status ?? '배송준비중',
+              shippingInfo: {
+                deliveryMethod: o.shippingInfo?.deliveryMethod,
+                withStringService: o.shippingInfo?.withStringService,
+              },
+              isStringServiceApplied: o.isStringServiceApplied,
             }))
           );
         } else {
@@ -199,6 +209,11 @@ export default function OrderLookupResultsPage() {
                           상세보기
                           <ChevronRight className="ml-1 h-4 w-4" />
                         </Button>
+                        {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && !order.isStringServiceApplied && (
+                          <Button variant="secondary" size="sm" className="text-primary font-semibold" onClick={() => router.push(`/services/apply?orderId=${order.id}`)}>
+                            스트링 장착 신청
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </Card>
