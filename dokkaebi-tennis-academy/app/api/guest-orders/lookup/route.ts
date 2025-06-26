@@ -4,13 +4,6 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
 export async function POST(req: Request) {
-  //  인증 처리
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-  if (!token) return new NextResponse('Unauthorized', { status: 401 });
-
-  const payload = verifyAccessToken(token);
-  if (!payload) return new NextResponse('Unauthorized', { status: 401 });
   try {
     const { name, email, phone } = await req.json();
 
