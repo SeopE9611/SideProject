@@ -29,7 +29,7 @@ export const shippingStatusColors: Record<string, string> = {
   미등록: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
   방문수령: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20',
   퀵배송: 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20',
-  미입력: 'bg-gray-700 text-gray-200 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-600 dark:hover:bg-gray-600',
+  미입력: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
 };
 
 export function getShippingBadge(order: Order) {
