@@ -44,3 +44,7 @@ export type Order = {
 
   items: OrderItem[];
 };
+
+export type OrderWithType = Order & {
+  __type: 'order' | 'stringing_application';
+};

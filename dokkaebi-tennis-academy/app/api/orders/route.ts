@@ -124,85 +124,115 @@ export async function POST(req: Request) {
 }
 
 //  GET 요청 처리: 관리자 주문 목록 요청 처리
-export async function GET() {
-  //  MongoDB 클라이언트 생성 (연결 기다림)
-  const client = await clientPromise;
 
-  //  기본 DB 선택 (tennis_academy 같은)
+export async function GET() {
+  const client = await clientPromise;
   const db = client.db();
 
-  //  orders 컬렉션에서 모든 주문 조회
+  // 1) 기존 일반 주문 조회 · 매핑
   const rawOrders = await db.collection('orders').find().toArray();
-
-  //  users 컬렉션에서 회원 정보 조회 가능하도록 설정
-  const usersCollection = db.collection('users');
-
-  // 프론트엔드가 기대하는 형태로 가공 (타입 맞춤)
-  // 로그인 회원  |	홍길동
-  // 탈퇴 회원    | 홍길동 (탈퇴한 회원)
-  // 비회원	홍길동| (비회원)
-  // DB 정보도 snapshot도 guest도 없으면	(고객 정보 없음)  <- 진짜 예외일 때만
   const orders = await Promise.all(
     rawOrders.map(async (order) => {
-      // users 컬렉션 참조
+      // --- customer 매핑 로직 (기존 코드와 동일) ---
       const usersColl = db.collection('users');
       let customer: { name: string; email: string; phone: string };
-
-      // 1) 회원 주문 (userSnapshot 이 반드시 존재)
       if (order.userSnapshot) {
-        // 실제 users 컬렉션에서 이 계정이 soft-delete 되었는지 확인
         const userDoc = order.userId ? await usersColl.findOne({ _id: new ObjectId(order.userId) }) : null;
         const isDeleted = !!userDoc?.isDeleted;
-
         customer = {
-          // 탈퇴한 회원이면 “이름 (탈퇴한 회원)”, 아니면 스냅샷 이름
           name: isDeleted ? `${order.userSnapshot.name} (탈퇴한 회원)` : order.userSnapshot.name,
           email: order.userSnapshot.email,
-          phone: '-', // snapshot에 phone 정보가 없으므로 고정값
+          phone: '-',
         };
-
-        // 비회원 주문 (guestInfo 가 존재)
       } else if (order.guestInfo) {
         customer = {
           name: `${order.guestInfo.name} (비회원)`,
           email: order.guestInfo.email || '-',
           phone: order.guestInfo.phone || '-',
         };
-
-        // DB·스냅샷·guestInfo 모두 없는 예외 케이스
       } else {
-        customer = {
-          name: '(고객 정보 없음)',
-          email: '-',
-          phone: '-',
-        };
+        customer = { name: '(고객 정보 없음)', email: '-', phone: '-' };
       }
 
       return {
-        id: order._id.toString(), // MongoDB의 ObjectId를 문자열로 변환
+        id: order._id.toString(),
+        __type: 'order' as const, // ← 분기용 타입 필드
         customer,
-        userId: order.userId ?? null,
-        date: order.createdAt, // createdAt 필드 → 주문 날짜
-        status: order.status || '대기중', // 기본값 대기중
-        paymentStatus: order.paymentStatus || '결제대기', // 결제 상태
-        type: '상품', // 현재는 고정 (필요 시 추후 구분)
-        total: order.totalPrice, // 총 가격
-        items: order.items || [], // 주문 품목
+        userId: order.userId ? order.userId.toString() : null,
+        date: order.createdAt,
+        status: order.status || '대기중',
+        paymentStatus: order.paymentStatus || '결제대기',
+        type: '상품', // 기존 ‘상품’ 뱃지
+        total: order.totalPrice,
+        items: order.items || [],
         shippingInfo: {
-          shippingMethod: order.shippingInfo?.shippingMethod,
-          deliveryMethod:
-            order.shippingInfo?.deliveryMethod ?? (order.shippingInfo?.shippingMethod === 'courier' ? '택배수령' : order.shippingInfo?.shippingMethod === 'visit' ? '방문수령' : order.shippingInfo?.shippingMethod === 'quick' ? '퀵배송' : null),
-          estimatedDate: order.shippingInfo?.estimatedDate,
-          withStringService: order.shippingInfo?.withStringService ?? false,
+          name: order.shippingInfo.name,
+          phone: order.shippingInfo.phone,
+          address: order.shippingInfo.address,
+          postalCode: order.shippingInfo.postalCode,
+          depositor: order.shippingInfo.depositor,
+          deliveryRequest: order.shippingInfo.deliveryRequest,
+          shippingMethod: order.shippingInfo.shippingMethod,
+          estimatedDate: order.shippingInfo.estimatedDate,
+          // string 서비스 여부도 기존 주문에서 가져옴
+          withStringService: order.shippingInfo.withStringService ?? false,
           invoice: {
-            courier: order.shippingInfo?.invoice?.courier ?? null,
-            trackingNumber: order.shippingInfo?.invoice?.trackingNumber ?? null,
+            courier: order.shippingInfo.invoice?.courier ?? null,
+            trackingNumber: order.shippingInfo.invoice?.trackingNumber ?? null,
           },
         },
       };
     })
   );
 
-  //  응답을 JSON 형태로 리턴
-  return NextResponse.json(orders);
+  // 2) 스트링 교체 서비스 신청 조회 · 매핑
+  const rawApps = await db.collection('stringing_applications').find().toArray();
+  const stringingOrders = rawApps.map((app) => {
+    // customer 매핑: 회원 스냅샷 vs. 비회원 정보
+    const customer = app.userSnapshot
+      ? {
+          name: app.userSnapshot.name,
+          email: app.userSnapshot.email,
+          phone: '-',
+        }
+      : {
+          name: `${app.guestName} (비회원)`,
+          email: app.guestEmail ?? '-',
+          phone: app.guestPhone ?? '-',
+        };
+
+    return {
+      id: app._id.toString(),
+      __type: 'stringing_application' as const, // ← 분기용 타입 필드
+      customer,
+      userId: app.userId ? app.userId.toString() : null,
+      date: app.createdAt,
+      status: app.status, // 스트링 전용 상태
+      paymentStatus: app.paymentStatus || '결제대기',
+      type: '서비스', // ‘서비스’ 뱃지
+      total: app.totalPrice || 0,
+      items: app.items || [],
+      shippingInfo: {
+        // 주소·연락처 등은 snapshot이거나 guestInfo에서 필요 없으면 '-' 처리
+        name: customer.name,
+        phone: customer.phone,
+        address: app.shippingInfo?.address ?? '-',
+        postalCode: app.shippingInfo?.postalCode ?? '-',
+        depositor: app.shippingInfo?.depositor ?? '-',
+        deliveryRequest: app.shippingInfo?.deliveryRequest,
+        shippingMethod: app.shippingInfo?.shippingMethod,
+        estimatedDate: app.shippingInfo?.estimatedDate,
+        withStringService: true, // 항상 true
+        invoice: {
+          courier: app.shippingInfo?.invoice?.courier ?? null,
+          trackingNumber: app.shippingInfo?.invoice?.trackingNumber ?? null,
+        },
+      },
+    };
+  });
+
+  // 3) 두 배열 합치고 날짜 역순 정렬
+  const combined = [...orders, ...stringingOrders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  return NextResponse.json(combined);
 }

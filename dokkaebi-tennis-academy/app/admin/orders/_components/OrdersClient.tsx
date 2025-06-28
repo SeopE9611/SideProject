@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Order } from '@/lib/types/order';
+import { Order, OrderWithType } from '@/lib/types/order';
 import { ArrowUpDown, ChevronDown, Copy, Download, Eye, Filter, MoreHorizontal, Search, Truck, X } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,7 @@ import { DateFilter } from '@/app/admin/orders/_components/order-filters/DateFil
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useRouter } from 'next/navigation';
 import { showErrorToast } from '@/lib/toast';
+import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
 
 const fetcher = async (url: string) => {
   const res = await fetch(url, { credentials: 'include' });
@@ -33,7 +34,7 @@ const fetcher = async (url: string) => {
 };
 
 export default function OrdersClient() {
-  const { data: orders = [] } = useSWR<Order[]>('/api/orders', fetcher);
+  const { data: orders = [] } = useSWR<OrderWithType[]>('/api/orders', fetcher);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -299,7 +300,13 @@ export default function OrdersClient() {
                           </TableCell>
                           <TableCell className="text-center">{formatDate(order.date)}</TableCell>
                           <TableCell className="text-center">
-                            <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${orderStatusColors[order.status]}`}>{order.status}</Badge>
+                            {order.__type === 'stringing_application' ? (
+                              // 스트링 서비스 전용 상태 뱃지 컴포넌트
+                              <ApplicationStatusBadge status={order.status} />
+                            ) : (
+                              // 일반 주문 상태 뱃지
+                              <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${orderStatusColors[order.status]}`}>{order.status}</Badge>
+                            )}
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${paymentStatusColors[order.paymentStatus]}`}>{order.paymentStatus}</Badge>
@@ -311,7 +318,15 @@ export default function OrdersClient() {
                             })()}
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${orderTypeColors[order.type]}`}>{order.type}</Badge>
+                            <Badge
+                              className={`px-2 py-0.5 text-xs whitespace-nowrap ${
+                                order.__type === 'stringing_application'
+                                  ? orderTypeColors['서비스'] // 서비스 뱃지 컬러
+                                  : orderTypeColors['상품'] // 상품 뱃지 컬러
+                              }`}
+                            >
+                              {order.type}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-center font-medium">{formatCurrency(order.total)}</TableCell>
                           <TableCell className="text-center">
