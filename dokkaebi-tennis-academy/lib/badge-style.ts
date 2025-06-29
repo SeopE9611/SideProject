@@ -44,7 +44,7 @@ export function getShippingBadge(order: Order) {
   return { label, color: shippingStatusColors[label]! };
 }
 export const applicationStatusColors = {
-  '접수 완료': 'bg-blue-100 text-blue-800',
+  접수완료: 'bg-blue-100 text-blue-800',
   '검토 중': 'bg-yellow-100 text-yellow-800',
   완료: 'bg-green-100 text-green-800',
   default: 'bg-gray-100 text-gray-800',

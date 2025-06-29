@@ -135,7 +135,7 @@ export default function OrderLookupPage() {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="phone">전화번호 (선택)</Label>
                 </div>
-                <Input id="phone" name="phone" type="tel" placeholder="010-1234-5678" value={formData.phone} onChange={handleChange} />
+                <Input id="phone" name="phone" type="tel" placeholder="01012345678 (- 제외)" value={formData.phone} onChange={handleChange} />
                 <p className="text-xs text-muted-foreground">주문 시 입력하신 전화번호를 입력해주세요.</p>
               </div>
             </CardContent>

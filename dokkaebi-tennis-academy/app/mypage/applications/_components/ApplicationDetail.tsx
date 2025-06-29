@@ -32,7 +32,7 @@ export default function ApplicationDetail({ id }: { id: string }) {
   // 상태에 따라 배지 색상을 결정하는 유틸 함수
   const getStatusColor = (status: string) => {
     switch (status) {
-      case '접수 완료':
+      case '접수완료':
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
       case '검토 중':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';

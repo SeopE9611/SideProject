@@ -14,7 +14,7 @@ export interface Application {
   applicantName: string;
   phone: string;
   appliedAt: string;
-  status: '접수 완료' | '검토 중' | '완료';
+  status: '접수완료' | '검토 중' | '완료';
   racketType?: string;
   stringType?: string;
   preferredDate?: string;

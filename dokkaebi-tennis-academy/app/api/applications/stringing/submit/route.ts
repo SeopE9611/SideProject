@@ -49,9 +49,13 @@ export async function POST(req: Request) {
       phone,
       email,
       stringDetails,
-      status: '접수 완료',
+      status: '접수완료',
       createdAt: new Date(),
       userId, // 로그인 한 경우에만 값 있음 - 비회원일때  스트링 교체 신청 주문이 회원 마이페이지-> 신청 내역에도 보이는 현상을 해결하기 위함
+      guestName: !userId ? name : null,
+      guestEmail: !userId ? email : null,
+      guestPhone: !userId ? phone : null,
+      userSnapshot: userId ? { name, email } : null,
     });
 
     // 주문 상태 업데이트

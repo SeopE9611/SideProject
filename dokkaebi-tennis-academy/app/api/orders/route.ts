@@ -194,17 +194,18 @@ export async function GET(req: NextRequest) {
   const rawApps = await db.collection('stringing_applications').find().toArray();
   const stringingOrders = rawApps.map((app) => {
     // customer 매핑: 회원 스냅샷 vs 비회원 정보
-    const customer = app.userSnapshot
-      ? {
-          name: app.userSnapshot.name,
-          email: app.userSnapshot.email,
-          phone: '-',
-        }
-      : {
-          name: `${app.guestName} (비회원)`,
-          email: app.guestEmail ?? '-',
-          phone: app.guestPhone ?? '-',
-        };
+    const customer =
+      app.userSnapshot && app.userSnapshot.name
+        ? {
+            name: app.userSnapshot.name,
+            email: app.userSnapshot.email ?? '-',
+            phone: '-',
+          }
+        : {
+            name: `${app.guestName ?? '비회원'} (비회원)`,
+            email: app.guestEmail || '-',
+            phone: app.guestPhone || '-',
+          };
 
     return {
       id: app._id.toString(),
