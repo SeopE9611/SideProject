@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'; // Next.js API 응답 처리를 위한 모듈
+import { NextRequest, NextResponse } from 'next/server'; // Next.js API 응답 처리를 위한 모듈
 import clientPromise from '@/lib/mongodb'; // MongoDB 연결을 위한 클라이언트 프라미스
 import { ObjectId } from 'mongodb'; // ObjectId 변환을 위해 추가
 import jwt, { JwtPayload } from 'jsonwebtoken';
@@ -124,16 +124,21 @@ export async function POST(req: Request) {
 }
 
 //  GET 요청 처리: 관리자 주문 목록 요청 처리
+export async function GET(req: NextRequest) {
+  //  쿼리 파라미터 추출 (page, limit -> 숫자로 파싱)
+  const sp = req.nextUrl.searchParams;
+  const page = parseInt(sp.get('page') || '1', 10);
+  const limit = parseInt(sp.get('limit') || '10', 10);
+  const skip = (page - 1) * limit;
 
-export async function GET() {
   const client = await clientPromise;
   const db = client.db();
 
-  // 1) 기존 일반 주문 조회 · 매핑
+  // 기존 일반 주문 조회 · 매핑
   const rawOrders = await db.collection('orders').find().toArray();
   const orders = await Promise.all(
     rawOrders.map(async (order) => {
-      // --- customer 매핑 로직 (기존 코드와 동일) ---
+      // customer 매핑 로직
       const usersColl = db.collection('users');
       let customer: { name: string; email: string; phone: string };
       if (order.userSnapshot) {
@@ -156,7 +161,7 @@ export async function GET() {
 
       return {
         id: order._id.toString(),
-        __type: 'order' as const, // ← 분기용 타입 필드
+        __type: 'order' as const, // 분기용 타입 필드
         customer,
         userId: order.userId ? order.userId.toString() : null,
         date: order.createdAt,
@@ -185,10 +190,10 @@ export async function GET() {
     })
   );
 
-  // 2) 스트링 교체 서비스 신청 조회 · 매핑
+  // 스트링 교체 서비스 신청 조회 / 매핑
   const rawApps = await db.collection('stringing_applications').find().toArray();
   const stringingOrders = rawApps.map((app) => {
-    // customer 매핑: 회원 스냅샷 vs. 비회원 정보
+    // customer 매핑: 회원 스냅샷 vs 비회원 정보
     const customer = app.userSnapshot
       ? {
           name: app.userSnapshot.name,
@@ -203,7 +208,7 @@ export async function GET() {
 
     return {
       id: app._id.toString(),
-      __type: 'stringing_application' as const, // ← 분기용 타입 필드
+      __type: 'stringing_application' as const, // 분기용 타입 필드
       customer,
       userId: app.userId ? app.userId.toString() : null,
       date: app.createdAt,
@@ -213,7 +218,7 @@ export async function GET() {
       total: app.totalPrice || 0,
       items: app.items || [],
       shippingInfo: {
-        // 주소·연락처 등은 snapshot이거나 guestInfo에서 필요 없으면 '-' 처리
+        // 주소 연락처 등은 snapshot이거나 guestInfo에서 필요 없으면 '-' 처리
         name: customer.name,
         phone: customer.phone,
         address: app.shippingInfo?.address ?? '-',
@@ -231,8 +236,12 @@ export async function GET() {
     };
   });
 
-  // 3) 두 배열 합치고 날짜 역순 정렬
+  // 두 배열 합치고 날짜 역순 정렬
   const combined = [...orders, ...stringingOrders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  return NextResponse.json(combined);
+  // 서버 사이드 페이징: slice 로 잘라낸 뒤, total 과 함께 반환
+  const paged = combined.slice(skip, skip + limit);
+  const total = combined.length;
+
+  return NextResponse.json({ items: paged, total });
 }

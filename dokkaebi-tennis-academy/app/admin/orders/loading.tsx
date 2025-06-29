@@ -88,9 +88,9 @@ export default function OrdersLoading() {
                 </TableBody>
               </Table>
             </div>
-            <div className="mt-6 flex items-center justify-center">
+            {/* <div className="mt-6 flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            </div> */}
           </CardContent>
         </Card>
       </div>

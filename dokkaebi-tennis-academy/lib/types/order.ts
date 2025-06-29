@@ -48,3 +48,8 @@ export type Order = {
 export type OrderWithType = Order & {
   __type: 'order' | 'stringing_application';
 };
+
+export interface ApiResponse {
+  items: OrderWithType[]; // 현재 페이지 항목
+  total: number; // 전체 레코드 수
+}
