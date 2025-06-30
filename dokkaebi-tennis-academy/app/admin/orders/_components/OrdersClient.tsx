@@ -398,15 +398,13 @@ export default function OrdersClient() {
                         {/* 고객 정보 셀 */}
                         <TableCell className={tdClasses}>
                           <div className="flex flex-col items-center">
-                            <span>
-                              {order.customer.name ? (
-                                <>
-                                  {order.customer.name.replace(' (탈퇴한 회원)', '')}
-                                  {getDisplayUserType(order) && <span className="ml-1 text-[10px] text-muted-foreground">{getDisplayUserType(order)}</span>}
-                                </>
-                              ) : (
-                                <span className="text-red-500 text-xs">(고객 정보 없음)</span>
-                              )}
+                            <span className="flex items-center">
+                              {/* “이름”만 남기기 */}
+                              {order.customer.name.replace(/\s*\(비회원\)$/, '').replace(/\s*\(탈퇴한 회원\)$/, '')}
+                              {/*  탈퇴한 회원 레이블 (기존 getDisplayUserType) */}
+                              {getDisplayUserType(order) && <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">{getDisplayUserType(order)}</span>}
+                              {/*  비회원 레이블 */}
+                              {order.customer.name.endsWith('(비회원)') && <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">(비회원)</span>}
                             </span>
                             <span className="text-[11px] text-muted-foreground">{order.customer.email}</span>
                           </div>
