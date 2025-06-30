@@ -209,6 +209,9 @@ export async function GET(req: NextRequest) {
 
     return {
       id: app._id.toString(),
+
+      linkedOrderId: app.orderId?.toString() ?? null,
+
       __type: 'stringing_application' as const, // 분기용 타입 필드
       customer,
       userId: app.userId ? app.userId.toString() : null,

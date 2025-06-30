@@ -2,9 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 다크 모드용 CSS 변수 정의 */
 .dark body {
   --background: 222.2 47.4% 11.2%; /* bg-gray-950 */
-  --foreground: 210 40% 98%;
+  --foreground: 210 40% 98%; /* text-gray-50 */
   --muted: 210 40% 16.1%;
   --muted-foreground: 215.4 16.3% 76.9%;
   --border: 214.3 31.8% 41.4%;
@@ -20,11 +21,16 @@
   --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
+
+  /* Tooltip (Popover) 색상 변수 (Dark) */
+  --popover: 55 65 81; /* bg-gray-700 */
+  --popover-foreground: 236 239 241; /* text-gray-100 */
 }
 
+/* 라이트 모드용 CSS 변수 정의 */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+  --background: 0 0% 100%; /* bg-white */
+  --foreground: 222.2 84% 4.9%; /* text-gray-900 */
   --muted: 210 40% 96.1%;
   --muted-foreground: 215.4 16.3% 46.9%;
   --border: 214.3 31.8% 91.4%;
@@ -32,7 +38,6 @@
   --ring: 215 20.2% 65.1%;
   --card: 0 0% 100%;
   --card-foreground: 222.2 84% 4.9%;
-
   --primary: 222.2 47.4% 11.2%;
   --primary-foreground: 210 40% 98%;
   --secondary: 210 40% 96.1%;
@@ -41,9 +46,13 @@
   --accent-foreground: 222.2 47.4% 11.2%;
   --destructive: 0 100% 50%;
   --destructive-foreground: 210 40% 98%;
+
+  /* Tooltip (Popover) 색상 변수 (Light) */
+  --popover: 255 255 255; /* bg-white */
+  --popover-foreground: 31 31 31; /* text-gray-800 */
 }
 
-/* 기본 스타일 */
+/* 전역 기본 스타일 */
 * {
   border-color: var(--border);
 }
@@ -51,35 +60,11 @@
 body {
   @apply bg-white text-black transition-colors duration-300 dark:bg-gray-950 dark:text-white;
 }
-/* 
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
-}
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
 }
-
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-  }
-  50% {
-    transform: translateY(-20px);
-    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-  }
+.scrollbar-hidden {
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
 }
-
-.animate-bounce {
-  animation: bounce 2s infinite;
-} */

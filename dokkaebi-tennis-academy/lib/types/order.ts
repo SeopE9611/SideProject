@@ -47,6 +47,7 @@ export type Order = {
 
 export type OrderWithType = Order & {
   __type: 'order' | 'stringing_application';
+  linkedOrderId?: string | null;
 };
 
 export interface ApiResponse {
