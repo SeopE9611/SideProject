@@ -450,14 +450,19 @@ export default function OrdersClient() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>작업</DropdownMenuLabel>
                               <DropdownMenuItem asChild>
-                                <Link href={`/admin/orders/${order.id}`}>
+                                <Link href={order.__type === 'stringing_application' ? `/admin/applications/stringing/${order.id}` : `/admin/orders/${order.id}`}>
                                   <Eye className="mr-2 h-4 w-4" /> 상세 보기
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleShippingUpdate(order.id)}>
-                                <Truck className="mr-2 h-4 w-4" /> 배송 정보 등록
-                              </DropdownMenuItem>
+
+                              {order.__type !== 'stringing_application' && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handleShippingUpdate(order.id)}>
+                                    <Truck className="mr-2 h-4 w-4" /> 배송 정보 등록
+                                  </DropdownMenuItem>
+                                </>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
