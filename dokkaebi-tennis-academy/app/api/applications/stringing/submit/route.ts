@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { name, phone, email, racketType, stringType, customStringName, preferredDate, preferredTime, requirements, orderId } = body;
+    const { name, phone, email, shippingInfo, racketType, stringType, customStringName, preferredDate, preferredTime, requirements, orderId } = body;
 
     // 필수 필드 검증
     if (!name || !phone || !racketType || !stringType || !preferredDate) {
@@ -48,6 +48,7 @@ export async function POST(req: Request) {
       name,
       phone,
       email,
+      shippingInfo,
       stringDetails,
       status: '접수완료',
       createdAt: new Date(),
