@@ -34,6 +34,14 @@ export default function StringServiceApplyPage() {
     preferredDate: '',
     preferredTime: '',
     requirements: '',
+    shippingName: '',
+    shippingPhone: '',
+    shippingEmail: '',
+    shippingAddress: '',
+    shippingAddressDetail: '',
+    shippingPostcode: '',
+    shippingDepositor: '',
+    shippingRequest: '',
   });
 
   // 주문 데이터 신청자 정보 불러오기
@@ -56,6 +64,14 @@ export default function StringServiceApplyPage() {
           name: orderData.shippingInfo?.name ?? '',
           phone: orderData.shippingInfo?.phone ?? '',
           email: userData?.email ?? orderData?.guestInfo?.email ?? '',
+          shippingName: orderData.shippingInfo?.name ?? '',
+          shippingPhone: orderData.shippingInfo?.phone ?? '',
+          shippingEmail: userData?.email ?? orderData?.guestInfo?.email ?? '',
+          shippingAddress: orderData.shippingInfo?.address ?? '',
+          shippingAddressDetail: orderData.shippingInfo?.addressDetail ?? '',
+          shippingPostcode: orderData.shippingInfo?.postalCode ?? '',
+          shippingDepositor: orderData.shippingInfo?.depositor ?? '',
+          shippingRequest: orderData.shippingInfo?.deliveryRequest ?? '',
         }));
       } catch (err) {
         console.error('정보 fetch 실패:', err);
@@ -116,6 +132,16 @@ export default function StringServiceApplyPage() {
       preferredTime: formData.preferredTime,
       requirements: formData.requirements,
       orderId,
+      shippingInfo: {
+        name: formData.shippingName,
+        phone: formData.shippingPhone,
+        email: formData.shippingEmail,
+        address: formData.shippingAddress,
+        addressDetail: formData.shippingAddressDetail,
+        postalCode: formData.shippingPostcode,
+        depositor: formData.shippingDepositor,
+        deliveryRequest: formData.shippingRequest,
+      },
     };
 
     try {
@@ -165,22 +191,39 @@ export default function StringServiceApplyPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* 이름 */}
                     <div className="space-y-2">
                       <Label htmlFor="name">신청인 이름</Label>
                       <Input id="name" name="name" value={formData.name} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
                     </div>
 
-                    {/* 이메일 */}
                     <div className="space-y-2">
                       <Label htmlFor="email">이메일</Label>
                       <Input id="email" name="email" value={formData.email} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
                     </div>
 
-                    {/* 연락처 */}
                     <div className="space-y-2">
                       <Label htmlFor="phone">연락처</Label>
                       <Input id="phone" name="phone" value={formData.phone} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="shippingAddress">주소</Label>
+                      <Input id="shippingAddress" name="shippingAddress" value={formData.shippingAddress} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="shippingAddressDetail">상세 주소</Label>
+                      <Input id="shippingAddressDetail" name="shippingAddressDetail" value={formData.shippingAddressDetail} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="shippingPostcode">우편번호</Label>
+                      <Input id="shippingPostcode" name="shippingPostcode" value={formData.shippingPostcode} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="shippingDepositor">입금자명</Label>
+                      <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="shippingRequest">요청사항</Label>
+                      <Textarea id="shippingRequest" name="shippingRequest" value={formData.shippingRequest} onChange={handleInputChange} />
                     </div>
                   </CardContent>
                 </Card>
