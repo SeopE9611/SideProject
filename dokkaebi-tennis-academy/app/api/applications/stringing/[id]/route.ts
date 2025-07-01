@@ -14,7 +14,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
-    // Map to DTO
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
@@ -27,6 +26,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       shippingInfo: app.shippingInfo || null,
       memo: app.memo || '',
       photos: app.photos || [],
+      stringDetails: app.stringDetails || null,
     });
   } catch (error) {
     console.error('[GET stringing_application] error:', error);
