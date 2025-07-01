@@ -25,14 +25,19 @@ interface ApplicationDetail {
     preferredTime: string;
     stringType: string;
     customStringName?: string;
+    racketType: string;
+    requirements?: string;
   };
+
   shippingInfo?: {
-    receiverName: string;
-    receiverPhone: string;
+    name: string;
+    phone: string;
+    email?: string;
     address: string;
-    addressDetail: string;
-    postcode: string;
-    requestMessage?: string;
+    addressDetail?: string;
+    postalCode: string;
+    depositor?: string;
+    deliveryRequest?: string;
   } | null;
 }
 
@@ -83,22 +88,24 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
           <CardTitle>스트링 정보</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          {data.stringDetails ? (
-            <>
-              <div>
-                <strong>희망 일시:</strong> {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
-              </div>
-              <div>
-                <strong>스트링 종류:</strong> {data.stringDetails.stringType === 'custom' ? data.stringDetails.customStringName : data.stringDetails.stringType}
-              </div>
-            </>
-          ) : (
-            <div className="text-muted-foreground">스트링 정보가 없습니다.</div>
+          <div>
+            <strong>희망 일시:</strong> {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
+          </div>
+          <div>
+            <strong>스트링 종류:</strong> {data.stringDetails.stringType === 'custom' ? data.stringDetails.customStringName : data.stringDetails.stringType}
+          </div>
+          <div>
+            <strong>라켓 종류:</strong> {data.stringDetails.racketType}
+          </div>
+          {data.stringDetails.requirements && (
+            <div>
+              <strong>추가 요청사항:</strong> {data.stringDetails.requirements}
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {/* 📦 배송지 정보 섹션 */}
+      {/* 배송지 정보 섹션 */}
       <Card>
         <CardHeader>
           <CardTitle>배송지 정보</CardTitle>
@@ -107,20 +114,40 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
           {data.shippingInfo ? (
             <>
               <div>
-                <strong>수령인:</strong> {data.shippingInfo.receiverName}
+                <strong>수령인:</strong> {data.shippingInfo.name}
               </div>
               <div>
-                <strong>연락처:</strong> {data.shippingInfo.receiverPhone}
+                <strong>연락처:</strong> {data.shippingInfo.phone}
               </div>
               <div>
                 <strong>주소:</strong> {data.shippingInfo.address} {data.shippingInfo.addressDetail}
               </div>
               <div>
-                <strong>우편번호:</strong> {data.shippingInfo.postcode}
+                <strong>우편번호:</strong> {data.shippingInfo.postalCode}
               </div>
-              {data.shippingInfo.requestMessage && (
+              {data.shippingInfo.deliveryRequest && (
                 <div>
-                  <strong>요청사항:</strong> {data.shippingInfo.requestMessage}
+                  <strong>배송 요청사항:</strong> {data.shippingInfo.deliveryRequest}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-muted-foreground">배송지 정보가 없습니다.</div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 결제 정보 섹션 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>결제 정보</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {data.shippingInfo ? (
+            <>
+              {data.shippingInfo.depositor && (
+                <div>
+                  <strong>입금자명:</strong> {data.shippingInfo.depositor}
                 </div>
               )}
             </>
