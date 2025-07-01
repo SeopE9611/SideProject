@@ -19,6 +19,7 @@ type ShippingInfo = {
   name: string;
   phone: string;
   address: string;
+  addressDetail?: string;
   postalCode: string;
   depositor: string;
   deliveryRequest?: string;
@@ -174,6 +175,7 @@ export async function GET(req: NextRequest) {
           name: order.shippingInfo.name,
           phone: order.shippingInfo.phone,
           address: order.shippingInfo.address,
+          addressDetail: order.shippingInfo.addressDetail ?? '-',
           postalCode: order.shippingInfo.postalCode,
           depositor: order.shippingInfo.depositor,
           deliveryRequest: order.shippingInfo.deliveryRequest,

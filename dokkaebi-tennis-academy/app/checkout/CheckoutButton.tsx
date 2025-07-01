@@ -56,7 +56,8 @@ export default function CheckoutButton({
     const shippingInfo = {
       name,
       phone,
-      address: `${address} ${addressDetail}`,
+      address,
+      addressDetail,
       postalCode,
       depositor,
       deliveryRequest,
