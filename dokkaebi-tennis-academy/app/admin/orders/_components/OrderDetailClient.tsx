@@ -38,6 +38,7 @@ interface OrderDetail {
     email: string;
     phone: string;
     address: string;
+    postalCode?: string;
   };
   shippingInfo: {
     shippingMethod: string;
@@ -243,7 +244,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <MapPin className="mr-1 h-3.5 w-3.5" />
                     주소
                   </div>
-                  <div>{orderDetail.customer.address ?? '주소 없음'}</div>
+                  <div>{`${orderDetail.customer.address ?? '주소 없음'}${orderDetail.customer.postalCode ? ` (${orderDetail.customer.postalCode})` : ''}`}</div>
                 </div>
               </div>
             </CardContent>

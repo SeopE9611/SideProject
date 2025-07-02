@@ -33,15 +33,38 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     //  customer 통합 처리 시작
     let customer = null;
 
+    //  비회원 주문일 때
     if (order.guestInfo) {
-      customer = order.guestInfo;
+      customer = {
+        name: order.guestInfo.name,
+        email: order.guestInfo.email,
+        phone: order.guestInfo.phone,
+
+        // 주소는 guestInfo에는 없고, shippingInfo에만 존재하므로 여기서 가져옴
+        // address + addressDetail을 합쳐서 하나의 전체 주소로 표현
+        address: order.shippingInfo?.addressDetail ? `${order.shippingInfo.address} ${order.shippingInfo.addressDetail}` : order.shippingInfo?.address ?? '주소 없음',
+
+        //  우편번호도 shippingInfo에만 존재
+        postalCode: order.shippingInfo?.postalCode ?? '-',
+      };
+
+      //  회원 주문이지만 userSnapshot만 남아 있는 경우 (탈퇴 or 백업 상태)
     } else if (order.userSnapshot) {
       customer = {
         name: order.userSnapshot.name,
         email: order.userSnapshot.email,
-        phone: '-', // 추가 필드 없음
-        address: '-', // 익명화된 상태일 수 있음
+
+        // 전화번호는 userSnapshot에는 없음 → shippingInfo에서 가져옴
+        phone: order.shippingInfo?.phone ?? '-',
+
+        // 주소도 마찬가지로 shippingInfo에서 가져와야 함
+        address: order.shippingInfo?.addressDetail ? `${order.shippingInfo.address} ${order.shippingInfo.addressDetail}` : order.shippingInfo?.address ?? '주소 없음',
+
+        // 우편번호 역시 shippingInfo에서
+        postalCode: order.shippingInfo?.postalCode ?? '-',
       };
+
+      // 완전한 회원 정보가 있는 경우 (회원 주문 & DB에도 사용자 존재)
     } else if (order.userId) {
       const user = await db.collection('users').findOne({ _id: new ObjectId(order.userId) });
       if (user) {
@@ -49,7 +72,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           name: user.name,
           email: user.email,
           phone: user.phone,
-          address: user.address,
+
+          // 이 경우 user.address가 존재하므로 그대로 사용 가능
+          address: user.address ?? '주소 없음',
+
+          // user 테이블에 postalCode 필드가 있는 경우에만 표시 (없으면 '-')
+          postalCode: user.postalCode ?? '-',
         };
       }
     }
