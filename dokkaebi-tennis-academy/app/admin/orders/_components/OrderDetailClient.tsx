@@ -319,18 +319,18 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium">결제 방법</div>
-                  <div>
-                    {orderDetail.paymentMethod}
-                    {orderDetail.paymentBank && bankLabelMap[orderDetail.paymentBank] && (
-                      <>
-                        {' '}
-                        ({bankLabelMap[orderDetail.paymentBank].label} / {bankLabelMap[orderDetail.paymentBank].account})
-                      </>
-                    )}
+                <div className="text-sm font-medium">결제 방법</div>
+
+                {orderDetail.paymentBank && bankLabelMap[orderDetail.paymentBank] ? (
+                  <div className="mt-2 rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-800 leading-relaxed border border-gray-200 space-y-1">
+                    <div className="font-semibold text-black">{orderDetail.paymentMethod}</div>
+                    <div className="font-medium">{bankLabelMap[orderDetail.paymentBank].label}</div>
+                    <div className="font-mono tracking-wide">{bankLabelMap[orderDetail.paymentBank].account}</div>
+                    <div className="text-sm">예금주: {bankLabelMap[orderDetail.paymentBank].holder}</div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-muted-foreground">선택된 결제 수단 없음</div>
+                )}
                 <div>
                   <div className="text-sm font-medium">결제 금액</div>
                   <div className="text-lg font-bold">{formatCurrency(orderDetail.total)}</div>

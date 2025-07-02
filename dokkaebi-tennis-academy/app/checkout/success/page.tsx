@@ -76,7 +76,16 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
             <div className="rounded-md bg-muted p-4">
               <p className="font-medium mb-2">입금 계좌 정보</p>
-              <p>{order.paymentInfo?.bank ? `${bankLabelMap[order.paymentInfo.bank].label} / ${bankLabelMap[order.paymentInfo.bank].account}` : '선택된 은행 없음'}</p>
+              {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
+                <div className="rounded-md bg-gray-100 px-4 py-3 border border-gray-200 text-sm text-gray-800 space-y-1 mt-2">
+                  <div className="font-medium">{order.paymentInfo.method}</div>
+                  <div className="font-medium">{bankLabelMap[order.paymentInfo.bank].label}</div>
+                  <div className="font-mono">{bankLabelMap[order.paymentInfo.bank].account}</div>
+                  <div className="text-sm text-muted-foreground">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</div>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">선택된 은행 없음</p>
+              )}
               <p className="mt-2 text-primary font-medium">입금 기한: {new Date(order.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
             </div>
 

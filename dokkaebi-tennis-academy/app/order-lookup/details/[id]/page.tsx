@@ -177,7 +177,16 @@ export default function OrderDetailPage() {
                       <dd>{new Date(order.createdAt).toLocaleDateString()}</dd>
                     </div>
                     <dt className="text-sm text-muted-foreground">입금 계좌</dt>
-                    <dd>{order.paymentInfo?.bank ? `${bankLabelMap[order.paymentInfo.bank].label} / ${bankLabelMap[order.paymentInfo.bank].account}` : '선택된 은행 없음'}</dd>
+                    {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
+                      <div className="rounded-md bg-gray-100 px-4 py-3 border border-gray-200 text-sm text-gray-800 space-y-1 mt-2">
+                        <div className="font-medium">{order.paymentInfo.method}</div>
+                        <div className="font-medium">{bankLabelMap[order.paymentInfo.bank].label}</div>
+                        <div className="font-mono">{bankLabelMap[order.paymentInfo.bank].account}</div>
+                        <div className="text-sm text-muted-foreground">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</div>
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">선택된 은행 없음</p>
+                    )}
                   </dl>
                 </div>
               </div>
