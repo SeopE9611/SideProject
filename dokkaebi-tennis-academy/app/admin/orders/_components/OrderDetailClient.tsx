@@ -17,6 +17,7 @@ import { OrderStatusSelect } from '@/app/admin/orders/_components/OrderStatusSel
 import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
 import Loading from '@/app/admin/orders/[id]/loading';
 import { showErrorToast } from '@/lib/toast';
+import { bankLabelMap } from '@/lib/constants';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -51,6 +52,7 @@ interface OrderDetail {
   };
   paymentStatus: string;
   paymentMethod: string;
+  paymentBank?: string;
   total: number;
   items: Array<{ name: string; quantity: number; price: number }>;
   history: Array<any>; // initialData용 (하지만 useSWRInfinite로 실제 이력 사용)
@@ -319,7 +321,15 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </div>
                 <div>
                   <div className="text-sm font-medium">결제 방법</div>
-                  <div>{orderDetail.paymentMethod}</div>
+                  <div>
+                    {orderDetail.paymentMethod}
+                    {orderDetail.paymentBank && bankLabelMap[orderDetail.paymentBank] && (
+                      <>
+                        {' '}
+                        ({bankLabelMap[orderDetail.paymentBank].label} / {bankLabelMap[orderDetail.paymentBank].account})
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm font-medium">결제 금액</div>

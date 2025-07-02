@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { bankLabelMap } from '@/lib/constants';
 
 // 주문 상세 타입 정의
 interface OrderDetail {
@@ -40,12 +41,6 @@ interface OrderDetail {
 }
 
 export default function OrderDetailPage() {
-  const bankLabelMap = {
-    shinhan: '신한은행 123-456-789012 (예금주: 도깨비테니스)',
-    kookmin: '국민은행 123-45-6789-012 (예금주: 도깨비테니스)',
-    woori: '우리은행 1234-567-890123 (예금주: 도깨비테니스)',
-  };
-
   const params = useParams();
   const orderId = params?.id as string;
 
@@ -181,10 +176,8 @@ export default function OrderDetailPage() {
                       <dt className="text-sm text-muted-foreground">주문일자</dt>
                       <dd>{new Date(order.createdAt).toLocaleDateString()}</dd>
                     </div>
-                    <div>
-                      <dt className="text-sm text-muted-foreground">입금 계좌</dt>
-                      <dd>{order.paymentInfo?.bank ? bankLabelMap[order.paymentInfo.bank] : '선택된 은행 없음'}</dd>
-                    </div>
+                    <dt className="text-sm text-muted-foreground">입금 계좌</dt>
+                    <dd>{order.paymentInfo?.bank ? `${bankLabelMap[order.paymentInfo.bank].label} / ${bankLabelMap[order.paymentInfo.bank].account}` : '선택된 은행 없음'}</dd>
                   </dl>
                 </div>
               </div>

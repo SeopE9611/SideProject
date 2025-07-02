@@ -96,6 +96,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       },
       paymentStatus: order.paymentStatus || '결제대기',
       paymentMethod: order.paymentInfo?.method ?? '결제방법 없음',
+      paymentBank: order.paymentInfo?.bank ?? null,
       total: order.totalPrice,
       date: order.createdAt,
       history: order.history ?? [],

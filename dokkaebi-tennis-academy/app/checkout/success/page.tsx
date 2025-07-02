@@ -10,6 +10,7 @@ import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { useEffect } from 'react';
 import ContinueShoppingButton from '@/app/checkout/_components/ContinueShoppingButton';
+import { bankLabelMap } from '@/lib/constants';
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
   const orderId = await searchParams.orderId;
@@ -22,11 +23,6 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
   if (!order) return notFound();
 
-  const bankLabelMap: Record<string, string> = {
-    shinhan: '신한은행 123-456-789012 (예금주: 도깨비테니스)',
-    kookmin: '국민은행 123-45-6789-012 (예금주: 도깨비테니스)',
-    woori: '우리은행 1234-567-890123 (예금주: 도깨비테니스)',
-  };
   // 쿠키에서 리프레시 토큰 꺼내기
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refreshToken')?.value;
@@ -80,7 +76,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
             <div className="rounded-md bg-muted p-4">
               <p className="font-medium mb-2">입금 계좌 정보</p>
-              <p>{order.paymentInfo?.bank ? bankLabelMap[order.paymentInfo.bank] : '선택된 은행 없음'}</p>
+              <p>{order.paymentInfo?.bank ? `${bankLabelMap[order.paymentInfo.bank].label} / ${bankLabelMap[order.paymentInfo.bank].account}` : '선택된 은행 없음'}</p>
               <p className="mt-2 text-primary font-medium">입금 기한: {new Date(order.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
             </div>
 
