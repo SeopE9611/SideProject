@@ -8,6 +8,7 @@ import ApplicationStatusBadge from '@/app/admin/applications/_components/Applica
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Truck } from 'lucide-react';
+import { ApplicationStatusSelect } from '@/app/admin/applications/_components/ApplicationStatusSelect';
 
 interface Props {
   id: string;
@@ -118,6 +119,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
           </div>
           <div>
             <ApplicationStatusBadge status={data.status} />
+          </div>
+          <div>
+            <ApplicationStatusSelect applicationId={data.id} currentStatus={data.status} />
           </div>
         </CardContent>
       </Card>
