@@ -5,10 +5,30 @@ import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Truck } from 'lucide-react';
 
 interface Props {
   id: string;
   baseUrl: string;
+}
+
+function courierLabel(code: string): string {
+  switch (code) {
+    case 'cj':
+      return 'CJ 대한통운';
+    case 'hanjin':
+      return '한진택배';
+    case 'logen':
+      return '로젠택배';
+    case 'post':
+      return '우체국택배';
+    case 'etc':
+      return '기타';
+    default:
+      return code;
+  }
 }
 
 interface ApplicationDetail {
@@ -38,6 +58,14 @@ interface ApplicationDetail {
     postalCode: string;
     depositor?: string;
     deliveryRequest?: string;
+
+    // ✅ 추가된 필드들
+    shippingMethod?: string;
+    estimatedDate?: string;
+    invoice?: {
+      courier: string;
+      trackingNumber: string;
+    };
   } | null;
 }
 
@@ -45,7 +73,7 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((re
 
 export default function StringingApplicationDetailClient({ id, baseUrl }: Props) {
   const { data, error, isLoading } = useSWR<ApplicationDetail>(`${baseUrl}/api/applications/stringing/${id}`, fetcher);
-
+  console.log('응답 받은 data:', data);
   if (isLoading) {
     return (
       <div className="p-10 space-y-4">
@@ -62,13 +90,21 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
 
   return (
     <div className="space-y-6 px-6 py-10">
+      <div className="text-right mt-4">
+        <Link href={`/admin/applications/stringing/${id}/shipping-update`}>
+          <Button variant="outline">
+            <Truck className="w-4 h-4 mr-2" />
+            배송 정보 수정
+          </Button>
+        </Link>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>신청자 정보</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <div>
-            <strong>이름:</strong> {data.customer.name}
+            <strong>이름:</strong> {data.customer?.name ?? '이름 없음'}
           </div>
           <div>
             <strong>이메일:</strong> {data.customer.email}
@@ -128,6 +164,27 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
               {data.shippingInfo.deliveryRequest && (
                 <div>
                   <strong>배송 요청사항:</strong> {data.shippingInfo.deliveryRequest}
+                </div>
+              )}
+              {data.shippingInfo.shippingMethod && (
+                <div>
+                  <strong>배송 방법:</strong>{' '}
+                  {data.shippingInfo.shippingMethod === 'visit' ? '방문 수령' : data.shippingInfo.shippingMethod === 'delivery' ? '택배 배송' : data.shippingInfo.shippingMethod === 'quick' ? '퀵 배송' : data.shippingInfo.shippingMethod}
+                </div>
+              )}
+              {data.shippingInfo.estimatedDate && (
+                <div>
+                  <strong>예상 수령일:</strong> {data.shippingInfo.estimatedDate}
+                </div>
+              )}
+              {data.shippingInfo.invoice?.courier && (
+                <div>
+                  <strong>택배사:</strong> {courierLabel(data.shippingInfo.invoice.courier)}
+                </div>
+              )}
+              {data.shippingInfo.invoice?.trackingNumber && (
+                <div>
+                  <strong>운송장 번호:</strong> {data.shippingInfo.invoice.trackingNumber}
                 </div>
               )}
             </>

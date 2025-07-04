@@ -1,5 +1,3 @@
-// /admin/applications/stringing/[id]/page.tsx
-
 import { headers } from 'next/headers';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { redirect } from 'next/navigation';
