@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { cookies } from 'next/headers';
+import { getStringingServicePrice } from '@/lib/stringing-prices';
 
 export async function POST(req: Request) {
   const cookieStore = await cookies();
@@ -43,6 +44,10 @@ export async function POST(req: Request) {
 
     const orderObjectId = new ObjectId(orderId);
 
+    // 스트링 금액 산정
+    const isCustom = stringType === 'custom';
+    const totalPrice = getStringingServicePrice(stringType, isCustom);
+
     await db.collection('stringing_applications').insertOne({
       orderId: orderObjectId,
       name,
@@ -50,6 +55,7 @@ export async function POST(req: Request) {
       email,
       shippingInfo,
       stringDetails,
+      totalPrice,
       status: '접수완료',
       createdAt: new Date(),
       userId, // 로그인 한 경우에만 값 있음 - 비회원일때  스트링 교체 신청 주문이 회원 마이페이지-> 신청 내역에도 보이는 현상을 해결하기 위함

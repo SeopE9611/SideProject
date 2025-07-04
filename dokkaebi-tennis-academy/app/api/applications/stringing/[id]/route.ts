@@ -28,6 +28,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       memo: app.memo || '',
       photos: app.photos || [],
       stringDetails: app.stringDetails || null,
+      totalPrice: app.totalPrice ?? 0,
     });
   } catch (error) {
     console.error('[GET stringing_application] error:', error);

@@ -54,6 +54,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
       preferredDate: raw.stringDetails.preferredDate,
       preferredTime: raw.stringDetails.preferredTime,
       requests: raw.stringDetails.requirements,
+      totalPrice: raw.totalPrice ?? 0,
     };
 
     // 기반환 전에 _id를 string으로 변환 (이제 application.id에 이미 반영됨)

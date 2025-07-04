@@ -49,6 +49,8 @@ interface ApplicationDetail {
     requirements?: string;
   };
 
+  totalPrice?: number;
+
   shippingInfo?: {
     name: string;
     phone: string;
@@ -59,7 +61,6 @@ interface ApplicationDetail {
     depositor?: string;
     deliveryRequest?: string;
 
-    // ✅ 추가된 필드들
     shippingMethod?: string;
     estimatedDate?: string;
     invoice?: {
@@ -87,6 +88,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
   if (error || !data) {
     return <div className="p-10 text-red-500">신청서를 불러오지 못했습니다.</div>;
   }
+
+  console.log('data.totalPrice:', data.totalPrice);
+  console.log('전체 data:', data);
 
   return (
     <div className="space-y-6 px-6 py-10">
@@ -200,17 +204,22 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
           <CardTitle>결제 정보</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          {data.shippingInfo ? (
-            <>
-              {data.shippingInfo.depositor && (
-                <div>
-                  <strong>입금자명:</strong> {data.shippingInfo.depositor}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-muted-foreground">배송지 정보가 없습니다.</div>
+          {/* 입금자명이 있는 경우 */}
+          {data.shippingInfo?.depositor && (
+            <div>
+              <strong>입금자명:</strong> {data.shippingInfo.depositor}
+            </div>
           )}
+
+          {/* 서비스 금액이 있는 경우 */}
+          {typeof data.totalPrice === 'number' && (
+            <div>
+              <strong>서비스 금액:</strong> {data.totalPrice.toLocaleString()}원
+            </div>
+          )}
+
+          {/* 아무 정보도 없을 때 */}
+          {!data.shippingInfo?.depositor && data.totalPrice === undefined && <div className="text-muted-foreground">결제 정보가 없습니다.</div>}
         </CardContent>
       </Card>
     </div>

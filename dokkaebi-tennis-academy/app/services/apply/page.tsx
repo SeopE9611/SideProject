@@ -17,6 +17,7 @@ import { Order } from '@/lib/types/order';
 import PreferredTimeSelector from '@/app/services/_components/TimeSlotSelector';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import { getStringingServicePrice } from '@/lib/stringing-prices';
 export default function StringServiceApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,6 +44,15 @@ export default function StringServiceApplyPage() {
     shippingDepositor: '',
     shippingRequest: '',
   });
+
+  // 가격 상태 추가 및 표시
+  const [price, setPrice] = useState<number>(0);
+
+  useEffect(() => {
+    const isCustom = formData.stringType === 'custom';
+    const calculated = getStringingServicePrice(formData.stringType, isCustom);
+    setPrice(calculated);
+  }, [formData.stringType]);
 
   // 주문 데이터 신청자 정보 불러오기
   useEffect(() => {
@@ -256,6 +266,18 @@ export default function StringServiceApplyPage() {
                         onSelect={(value) => setFormData((prev) => ({ ...prev, stringType: value }))}
                         onCustomInputChange={(value) => setFormData((prev) => ({ ...prev, customStringType: value }))}
                       />
+
+                      {/* 가격 표시 영역 */}
+                      <div className="text-sm text-muted-foreground mt-2">
+                        {formData.stringType === 'custom' ? (
+                          <>
+                            <div>💡 가격은 접수 후 안내됩니다.</div>
+                            <div className="text-xs text-muted-foreground">기본 장착 금액: 15,000원</div>
+                          </>
+                        ) : (
+                          <div>💰 금액: {price.toLocaleString()}원</div>
+                        )}
+                      </div>
                     </div>
 
                     {/* 희망일 */}
