@@ -150,7 +150,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             <ApplicationStatusBadge status={data.status} />
           </div>
           <div>
-            <ApplicationStatusSelect applicationId={data.id} currentStatus={data.status} />
+            <ApplicationStatusSelect applicationId={data.id} currentStatus={data.status} onUpdated={() => mutate()} />
           </div>
         </CardContent>
       </Card>

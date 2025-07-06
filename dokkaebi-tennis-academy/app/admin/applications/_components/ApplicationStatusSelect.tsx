@@ -2,17 +2,19 @@
 
 import { useTransition, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { APPLICATION_STATUSES } from '@/lib/application-status';
 import { useRouter } from 'next/navigation';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { applicationStatusColors } from '@/lib/badge-style';
 
 interface Props {
   applicationId: string;
   currentStatus: string;
+  onUpdated?: () => void; // 상태 변경 후 SWR 갱신 트리거
 }
 
-export function ApplicationStatusSelect({ applicationId, currentStatus }: Props) {
+export function ApplicationStatusSelect({ applicationId, currentStatus, onUpdated }: Props) {
   const [isPending, startTransition] = useTransition();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus);
   const router = useRouter();
@@ -30,10 +32,11 @@ export function ApplicationStatusSelect({ applicationId, currentStatus }: Props)
 
         if (!res.ok) throw new Error('상태 변경 실패');
 
-        toast.success('상태가 성공적으로 변경되었습니다.');
+        showSuccessToast('상태가 성공적으로 변경되었습니다.');
+        onUpdated?.(); //  상태 변경 후 부모에서 mutate() 실행
         router.refresh();
       } catch (err) {
-        toast.error('상태 변경 중 오류가 발생했습니다.');
+        showErrorToast('상태 변경 중 오류가 발생했습니다.');
         setSelectedStatus(currentStatus);
       }
     });
@@ -47,7 +50,7 @@ export function ApplicationStatusSelect({ applicationId, currentStatus }: Props)
       <SelectContent>
         {APPLICATION_STATUSES.map((status) => (
           <SelectItem key={status} value={status}>
-            <Badge variant="outline">{status}</Badge>
+            <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${applicationStatusColors[status]}`}>{status}</div>
           </SelectItem>
         ))}
       </SelectContent>
