@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Truck } from 'lucide-react';
 import { ApplicationStatusSelect } from '@/app/admin/applications/_components/ApplicationStatusSelect';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 interface Props {
   id: string;
@@ -74,8 +75,34 @@ interface ApplicationDetail {
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 export default function StringingApplicationDetailClient({ id, baseUrl }: Props) {
-  const { data, error, isLoading } = useSWR<ApplicationDetail>(`${baseUrl}/api/applications/stringing/${id}`, fetcher);
-  console.log('응답 받은 data:', data);
+  const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(`${baseUrl}/api/applications/stringing/${id}`, fetcher);
+
+  const [isPending, startTransition] = useTransition();
+
+  // console.log('응답 받은 data:', data);
+
+  const handleCancel = () => {
+    if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
+
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/applications/stringing/${id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: '취소' }),
+          credentials: 'include',
+        });
+
+        if (!res.ok) throw new Error('신청서 취소 실패');
+
+        showSuccessToast('신청서가 취소되었습니다.');
+        mutate(); // SWR 데이터 갱신
+      } catch (err) {
+        showErrorToast('취소 중 오류가 발생했습니다.');
+      }
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="p-10 space-y-4">
@@ -90,8 +117,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
     return <div className="p-10 text-red-500">신청서를 불러오지 못했습니다.</div>;
   }
 
-  console.log('data.totalPrice:', data.totalPrice);
-  console.log('전체 data:', data);
+  // console.log('data.totalPrice:', data.totalPrice);
 
   return (
     <div className="space-y-6 px-6 py-10">
@@ -102,6 +128,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             배송 정보 수정
           </Button>
         </Link>
+        <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
+          신청 취소
+        </Button>
       </div>
       <Card>
         <CardHeader>
