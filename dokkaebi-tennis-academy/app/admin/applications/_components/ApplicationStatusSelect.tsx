@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition, useState } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { APPLICATION_STATUSES } from '@/lib/application-status';
@@ -12,12 +12,19 @@ interface Props {
   applicationId: string;
   currentStatus: string;
   onUpdated?: () => void; // 상태 변경 후 SWR 갱신 트리거
+  disabled?: boolean;
 }
 
 export function ApplicationStatusSelect({ applicationId, currentStatus, onUpdated }: Props) {
   const [isPending, startTransition] = useTransition();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus);
   const router = useRouter();
+  const isCancelled = selectedStatus === '취소';
+
+  // 상태 동기화
+  useEffect(() => {
+    setSelectedStatus(currentStatus);
+  }, [currentStatus]);
 
   const handleChange = (newStatus: string) => {
     setSelectedStatus(newStatus);
@@ -43,10 +50,8 @@ export function ApplicationStatusSelect({ applicationId, currentStatus, onUpdate
   };
 
   return (
-    <Select value={selectedStatus} onValueChange={handleChange} disabled={isPending}>
-      <SelectTrigger className="w-[140px]">
-        <SelectValue placeholder="상태 선택" />
-      </SelectTrigger>
+    <Select value={selectedStatus} onValueChange={handleChange} disabled={isPending || isCancelled}>
+      <SelectTrigger className="w-[140px]">{isCancelled ? <span className="text-muted-foreground">{selectedStatus} (변경 불가)</span> : <SelectValue placeholder="상태 선택" />}</SelectTrigger>
       <SelectContent>
         {APPLICATION_STATUSES.map((status) => (
           <SelectItem key={status} value={status}>

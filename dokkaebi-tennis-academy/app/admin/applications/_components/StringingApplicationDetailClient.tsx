@@ -79,6 +79,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
 
   const [isPending, startTransition] = useTransition();
 
+  const isCancelled = data?.status === '취소';
   // console.log('응답 받은 data:', data);
 
   const handleCancel = () => {
@@ -128,9 +129,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             배송 정보 수정
           </Button>
         </Link>
-        <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
-          신청 취소
-        </Button>
+        {!isCancelled ? (
+          <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
+            신청 취소
+          </Button>
+        ) : (
+          <p className="text-sm text-muted-foreground">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</p>
+        )}
       </div>
       <Card>
         <CardHeader>
@@ -150,7 +155,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             <ApplicationStatusBadge status={data.status} />
           </div>
           <div>
-            <ApplicationStatusSelect applicationId={data.id} currentStatus={data.status} onUpdated={() => mutate()} />
+            <ApplicationStatusSelect applicationId={data.id} currentStatus={data.status} onUpdated={() => mutate()} disabled={isCancelled} />
           </div>
         </CardContent>
       </Card>
