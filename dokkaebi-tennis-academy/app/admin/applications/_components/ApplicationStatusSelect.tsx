@@ -30,7 +30,7 @@ export function ApplicationStatusSelect({ applicationId, currentStatus, onUpdate
     setSelectedStatus(newStatus);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/applications/${applicationId}/status`, {
+        const res = await fetch(`/api/applications/stringing/${applicationId}/status`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: newStatus }),

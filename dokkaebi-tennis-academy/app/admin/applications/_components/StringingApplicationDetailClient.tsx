@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Truck } from 'lucide-react';
 import { ApplicationStatusSelect } from '@/app/admin/applications/_components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import StringingApplicationHistory from '@/app/admin/applications/_components/StringingApplicationHistory';
 
 interface Props {
   id: string;
@@ -41,6 +42,12 @@ interface ApplicationDetail {
   };
   requestedAt: string;
   status: string;
+
+  history?: {
+    status: string;
+    date: string;
+    description: string;
+  }[];
 
   stringDetails: {
     preferredDate: string;
@@ -117,7 +124,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
   if (error || !data) {
     return <div className="p-10 text-red-500">신청서를 불러오지 못했습니다.</div>;
   }
-
+  console.log('📌 applicationId:', data.id);
   // console.log('data.totalPrice:', data.totalPrice);
 
   return (
@@ -260,6 +267,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
           {!data.shippingInfo?.depositor && data.totalPrice === undefined && <div className="text-muted-foreground">결제 정보가 없습니다.</div>}
         </CardContent>
       </Card>
+
+      {/* 주문서 상태 처리 이력 */}
+      <StringingApplicationHistory history={data.history ?? []} />
     </div>
   );
 }

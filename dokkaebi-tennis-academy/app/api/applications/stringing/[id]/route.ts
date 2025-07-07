@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { getDb } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+
+interface HistoryRecord {
+  status: string;
+  date: Date;
+  description: string;
+}
+
 export async function GET(req: Request, { params }: { params: { id: string } }) {
+  const { id } = await params;
   const client = await clientPromise;
-  const db = client.db();
-  const id = params.id;
+  const db = await getDb();
 
   try {
     const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
@@ -29,6 +36,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       photos: app.photos || [],
       stringDetails: app.stringDetails || null,
       totalPrice: app.totalPrice ?? 0,
+      history: (app.history ?? []).map((record: HistoryRecord) => ({
+        status: record.status,
+        date: record.date,
+        description: record.description,
+      })),
     });
   } catch (error) {
     console.error('[GET stringing_application] error:', error);

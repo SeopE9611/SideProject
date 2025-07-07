@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return new NextResponse('Unauthorized', { status: 401 }); // 인증 실패 시 401 반환
   }
 
-  const { id } = params;
+  const { id } = await params;
 
   // ObjectId 형식 확인 (잘못된 형식이면 에러 처리)
   if (!ObjectId.isValid(id)) {

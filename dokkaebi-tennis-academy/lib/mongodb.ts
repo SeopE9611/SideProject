@@ -22,3 +22,8 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export default clientPromise;
+
+export const getDb = async () => {
+  const client = await clientPromise;
+  return client.db('tennis_academy');
+};

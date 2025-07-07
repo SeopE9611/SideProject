@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb'; // MongoDB 연결을 위한 Promise 객체 불러오기
+import clientPromise, { getDb } from '@/lib/mongodb'; // MongoDB 연결을 위한 Promise 객체 불러오기
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
@@ -15,7 +15,7 @@ export async function GET() {
   try {
     // MongoDB 클라이언트 연결
     const client = await clientPromise;
-    const db = client.db();
+    const db = await getDb();
 
     // applications 컬렉션에서 모든 신청서를 createdAt 기준 내림차순으로 조회
     const applications = await db

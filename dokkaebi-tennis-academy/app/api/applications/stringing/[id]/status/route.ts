@@ -1,5 +1,6 @@
+export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { getDb } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
@@ -26,13 +27,27 @@ export async function PATCH(req: Request, context: { params: { id: string } }) {
 
   // MongoDB 연결
   const client = await clientPromise;
-  const db = client.db();
+  const db = await getDb();
 
-  // 해당 신청서의 상태 업데이트
-  const result = await db.collection('stringing_applications').updateOne(
-    { _id: new ObjectId(id) }, // 조건: 해당 신청 ID
-    { $set: { status } } // 변경: status 필드를 요청값으로 갱신
-  );
+  // description 따로 준비
+  const description = `신청서 상태가 [${status}]로 변경되었습니다.`;
+
+  // historyEntry 객체 구성
+  const historyEntry = {
+    status,
+    date: new Date(),
+    description,
+  };
+
+  // 상태 + 이력 함께 업데이트
+  const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, {
+    $set: { status }, // 상태 변경
+    $push: {
+      history: {
+        $each: [historyEntry], // 이력 추가
+      },
+    },
+  } as any);
 
   // 신청서를 찾지 못했을 경우
   if (result.matchedCount === 0) {

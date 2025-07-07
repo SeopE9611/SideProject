@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import clientPromise, { getDb } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     const client = await clientPromise;
-    const db = client.db();
+    const db = await getDb();
 
     const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
     if (!app) {
