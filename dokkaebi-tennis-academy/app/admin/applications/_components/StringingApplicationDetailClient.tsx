@@ -1,13 +1,16 @@
+// ✅ 주문 상세 페이지 레이아웃을 완전히 동일하게 적용한 스트링 신청 상세 컴포넌트
 'use client';
 
 import useSWR from 'swr';
-import { useEffect, useState, useTransition } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
+import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Truck } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle } from 'lucide-react';
+import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/admin/applications/_components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import StringingApplicationHistory from '@/app/admin/applications/_components/StringingApplicationHistory';
@@ -42,13 +45,8 @@ interface ApplicationDetail {
   };
   requestedAt: string;
   status: string;
-
-  history?: {
-    status: string;
-    date: string;
-    description: string;
-  }[];
-
+  totalPrice?: number;
+  history?: { status: string; date: string; description: string }[];
   stringDetails: {
     preferredDate: string;
     preferredTime: string;
@@ -57,9 +55,6 @@ interface ApplicationDetail {
     racketType: string;
     requirements?: string;
   };
-
-  totalPrice?: number;
-
   shippingInfo?: {
     name: string;
     phone: string;
@@ -69,7 +64,6 @@ interface ApplicationDetail {
     postalCode: string;
     depositor?: string;
     deliveryRequest?: string;
-
     shippingMethod?: string;
     estimatedDate?: string;
     invoice?: {
@@ -82,16 +76,12 @@ interface ApplicationDetail {
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 export default function StringingApplicationDetailClient({ id, baseUrl }: Props) {
+  const router = useRouter();
   const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(`${baseUrl}/api/applications/stringing/${id}`, fetcher);
-
   const [isPending, startTransition] = useTransition();
-
-  const isCancelled = data?.status === '취소';
-  // console.log('응답 받은 data:', data);
 
   const handleCancel = () => {
     if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
-
     startTransition(async () => {
       try {
         const res = await fetch(`/api/applications/stringing/${id}/status`, {
@@ -100,176 +90,156 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
           body: JSON.stringify({ status: '취소' }),
           credentials: 'include',
         });
-
-        if (!res.ok) throw new Error('신청서 취소 실패');
-
+        if (!res.ok) throw new Error();
         showSuccessToast('신청서가 취소되었습니다.');
-        mutate(); // SWR 데이터 갱신
+        mutate();
       } catch (err) {
         showErrorToast('취소 중 오류가 발생했습니다.');
       }
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-10 space-y-4">
-        <Skeleton className="h-8 w-1/3" />
-        <Skeleton className="h-6 w-full" />
-        <Skeleton className="h-6 w-2/3" />
-      </div>
-    );
-  }
+  if (isLoading || !data) return <Skeleton className="h-[300px] w-full" />;
+  if (error) return <div className="text-red-500 p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
 
-  if (error || !data) {
-    return <div className="p-10 text-red-500">신청서를 불러오지 못했습니다.</div>;
-  }
-  console.log('📌 applicationId:', data.id);
-  // console.log('data.totalPrice:', data.totalPrice);
+  const isCancelled = data.status === '취소';
 
   return (
-    <div className="space-y-6 px-6 py-10">
-      <div className="text-right mt-4">
-        <Link href={`/admin/applications/stringing/${id}/shipping-update`}>
-          <Button variant="outline">
-            <Truck className="w-4 h-4 mr-2" />
-            배송 정보 수정
-          </Button>
-        </Link>
-        {!isCancelled ? (
-          <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
-            신청 취소
-          </Button>
-        ) : (
-          <p className="text-sm text-muted-foreground">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</p>
-        )}
+    <div className="container py-10">
+      <div className="mx-auto max-w-4xl">
+        {/* 헤더 */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">신청 상세 정보</h1>
+            <p className="mt-1 text-muted-foreground">신청 ID: {data.id}</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={() => router.push(`/admin/applications/stringing/${id}/shipping-update`)}>
+              <Truck className="mr-2 h-4 w-4" /> 배송 정보 수정
+            </Button>
+            {!isCancelled && (
+              <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
+                <XCircle className="mr-2 h-4 w-4" /> 신청 취소
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* 상태 카드 */}
+          <Card className="md:col-span-3">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle>신청 상태</CardTitle>
+                <ApplicationStatusBadge status={data.status} />
+              </div>
+              <CardDescription>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                <ApplicationStatusSelect applicationId={data.id} currentStatus={data.status} onUpdated={() => mutate()} disabled={isCancelled} />
+                {isCancelled && <p className="text-sm text-muted-foreground italic mt-2">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</p>}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 고객 정보 */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center">
+                <User className="mr-2 h-5 w-5" /> 고객 정보
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div>
+                <strong>이름:</strong> {data.customer.name}
+              </div>
+              <div className="flex items-center">
+                <Mail className="mr-1 w-4 h-4" /> {data.customer.email}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 배송 정보 */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center">
+                <Truck className="mr-2 h-5 w-5" /> 배송 정보
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              {data.shippingInfo ? (
+                <>
+                  <div>
+                    <strong>수령인:</strong> {data.shippingInfo.name}
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="mr-1 w-4 h-4" /> {data.shippingInfo.phone}
+                  </div>
+                  <div className="flex items-center">
+                    <MapPin className="mr-1 w-4 h-4" /> {data.shippingInfo.address} {data.shippingInfo.addressDetail}
+                  </div>
+                  <div>
+                    <strong>우편번호:</strong> {data.shippingInfo.postalCode}
+                  </div>
+                </>
+              ) : (
+                <div className="text-muted-foreground">배송지 정보 없음</div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 결제 정보 */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center">
+                <CreditCard className="mr-2 h-5 w-5" /> 결제 정보
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              {data.shippingInfo?.depositor && (
+                <div>
+                  <strong>입금자명:</strong> {data.shippingInfo.depositor}
+                </div>
+              )}
+              {typeof data.totalPrice === 'number' && (
+                <div>
+                  <strong>서비스 금액:</strong> {data.totalPrice.toLocaleString()}원
+                </div>
+              )}
+              {!data.shippingInfo?.depositor && data.totalPrice === undefined && <div className="text-muted-foreground">결제 정보 없음</div>}
+            </CardContent>
+          </Card>
+
+          {/* 스트링 정보 */}
+          <Card className="md:col-span-3">
+            <CardHeader className="pb-3">
+              <CardTitle>스트링 정보</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div>
+                <strong>희망 일시:</strong> {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
+              </div>
+              <div>
+                <strong>스트링 종류:</strong> {data.stringDetails.stringType === 'custom' ? data.stringDetails.customStringName : data.stringDetails.stringType}
+              </div>
+              <div>
+                <strong>라켓 종류:</strong> {data.stringDetails.racketType}
+              </div>
+              {data.stringDetails.requirements && (
+                <div>
+                  <strong>요청사항:</strong> {data.stringDetails.requirements}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 처리 이력 */}
+          <div className="md:col-span-3">
+            <StringingApplicationHistory history={data.history ?? []} />
+          </div>
+        </div>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>신청자 정보</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div>
-            <strong>이름:</strong> {data.customer?.name ?? '이름 없음'}
-          </div>
-          <div>
-            <strong>이메일:</strong> {data.customer.email}
-          </div>
-          <div>
-            <strong>신청 일시:</strong> {new Date(data.requestedAt).toLocaleString()}
-          </div>
-          <div>
-            <ApplicationStatusBadge status={data.status} />
-          </div>
-          <div>
-            <ApplicationStatusSelect applicationId={data.id} currentStatus={data.status} onUpdated={() => mutate()} disabled={isCancelled} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 스트링 정보 섹션 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>스트링 정보</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div>
-            <strong>희망 일시:</strong> {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
-          </div>
-          <div>
-            <strong>스트링 종류:</strong> {data.stringDetails.stringType === 'custom' ? data.stringDetails.customStringName : data.stringDetails.stringType}
-          </div>
-          <div>
-            <strong>라켓 종류:</strong> {data.stringDetails.racketType}
-          </div>
-          {data.stringDetails.requirements && (
-            <div>
-              <strong>추가 요청사항:</strong> {data.stringDetails.requirements}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 배송지 정보 섹션 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>배송지 정보</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          {data.shippingInfo ? (
-            <>
-              <div>
-                <strong>수령인:</strong> {data.shippingInfo.name}
-              </div>
-              <div>
-                <strong>연락처:</strong> {data.shippingInfo.phone}
-              </div>
-              <div>
-                <strong>주소:</strong> {data.shippingInfo.address} {data.shippingInfo.addressDetail}
-              </div>
-              <div>
-                <strong>우편번호:</strong> {data.shippingInfo.postalCode}
-              </div>
-              {data.shippingInfo.deliveryRequest && (
-                <div>
-                  <strong>배송 요청사항:</strong> {data.shippingInfo.deliveryRequest}
-                </div>
-              )}
-              {data.shippingInfo.shippingMethod && (
-                <div>
-                  <strong>배송 방법:</strong>{' '}
-                  {data.shippingInfo.shippingMethod === 'visit' ? '방문 수령' : data.shippingInfo.shippingMethod === 'delivery' ? '택배 배송' : data.shippingInfo.shippingMethod === 'quick' ? '퀵 배송' : data.shippingInfo.shippingMethod}
-                </div>
-              )}
-              {data.shippingInfo.estimatedDate && (
-                <div>
-                  <strong>예상 수령일:</strong> {data.shippingInfo.estimatedDate}
-                </div>
-              )}
-              {data.shippingInfo.invoice?.courier && (
-                <div>
-                  <strong>택배사:</strong> {courierLabel(data.shippingInfo.invoice.courier)}
-                </div>
-              )}
-              {data.shippingInfo.invoice?.trackingNumber && (
-                <div>
-                  <strong>운송장 번호:</strong> {data.shippingInfo.invoice.trackingNumber}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-muted-foreground">배송지 정보가 없습니다.</div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 결제 정보 섹션 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>결제 정보</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          {/* 입금자명이 있는 경우 */}
-          {data.shippingInfo?.depositor && (
-            <div>
-              <strong>입금자명:</strong> {data.shippingInfo.depositor}
-            </div>
-          )}
-
-          {/* 서비스 금액이 있는 경우 */}
-          {typeof data.totalPrice === 'number' && (
-            <div>
-              <strong>서비스 금액:</strong> {data.totalPrice.toLocaleString()}원
-            </div>
-          )}
-
-          {/* 아무 정보도 없을 때 */}
-          {!data.shippingInfo?.depositor && data.totalPrice === undefined && <div className="text-muted-foreground">결제 정보가 없습니다.</div>}
-        </CardContent>
-      </Card>
-
-      {/* 주문서 상태 처리 이력 */}
-      <StringingApplicationHistory history={data.history ?? []} />
     </div>
   );
 }
