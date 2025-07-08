@@ -1,4 +1,3 @@
-// ✅ 주문 상세 페이지 레이아웃을 완전히 동일하게 적용한 스트링 신청 상세 컴포넌트
 'use client';
 
 import useSWR from 'swr';
@@ -14,6 +13,7 @@ import ApplicationStatusBadge from '@/app/admin/applications/_components/Applica
 import { ApplicationStatusSelect } from '@/app/admin/applications/_components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import StringingApplicationHistory from '@/app/admin/applications/_components/StringingApplicationHistory';
+import { paymentStatusColors } from '@/lib/badge-style';
 
 interface Props {
   id: string;
@@ -103,6 +103,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
   if (error) return <div className="text-red-500 p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
 
   const isCancelled = data.status === '취소';
+  const isPaid = ['접수완료', '작업 중', '교체완료'].includes(data.status);
+  const paymentStatus = isPaid ? '결제완료' : '결제대기';
 
   return (
     <div className="container py-10">
@@ -197,6 +199,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <span className="font-semibold">결제 상태:</span>
+                <Badge className={`inline-block ${paymentStatusColors[paymentStatus]}`}>{paymentStatus}</Badge>
+              </div>
               {data.shippingInfo?.depositor && (
                 <div>
                   <strong>입금자명:</strong> {data.shippingInfo.depositor}
