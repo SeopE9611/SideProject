@@ -14,7 +14,11 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    // body에서 필요한 값들 추출
     const { name, phone, email, shippingInfo, racketType, stringType, customStringName, preferredDate, preferredTime, requirements, orderId } = body;
+
+    // shippingInfo 내부에서 세부 필드 분해
+    const { name: shippingName, phone: shippingPhone, email: shippingEmail, address, addressDetail, postalCode, depositor, deliveryRequest, bank } = shippingInfo;
 
     // 필수 필드 검증
     if (!name || !phone || !racketType || !stringType || !preferredDate) {
@@ -36,7 +40,7 @@ export async function POST(req: Request) {
     const stringDetails = {
       racketType,
       stringType,
-      ...(stringType === 'custom' && customStringName ? { customStringName: customStringName.trim() } : {}), // 조건부 추가
+      ...(stringType === 'custom' && customStringName ? { customStringName: customStringName.trim() } : {}),
       preferredDate,
       preferredTime,
       requirements,
@@ -44,31 +48,44 @@ export async function POST(req: Request) {
 
     const orderObjectId = new ObjectId(orderId);
 
-    // 스트링 금액 산정
+    // 금액 계산
     const isCustom = stringType === 'custom';
     const totalPrice = getStringingServicePrice(stringType, isCustom);
 
-    await db.collection('stringing_applications').insertOne({
+    // 신청서 저장
+    const result = await db.collection('stringing_applications').insertOne({
       orderId: orderObjectId,
       name,
       phone,
       email,
-      shippingInfo,
+      shippingInfo: {
+        name: shippingName,
+        phone: shippingPhone,
+        email: shippingEmail,
+        address,
+        addressDetail,
+        postalCode,
+        depositor,
+        deliveryRequest,
+        bank,
+      },
       stringDetails,
       totalPrice,
       status: '접수완료',
       createdAt: new Date(),
-      userId, // 로그인 한 경우에만 값 있음 - 비회원일때  스트링 교체 신청 주문이 회원 마이페이지-> 신청 내역에도 보이는 현상을 해결하기 위함
+      userId,
       guestName: !userId ? name : null,
       guestEmail: !userId ? email : null,
       guestPhone: !userId ? phone : null,
       userSnapshot: userId ? { name, email } : null,
     });
 
-    // 주문 상태 업데이트
+    // insertedId 추출
+    const applicationId = result.insertedId;
+
     await db.collection('orders').updateOne({ _id: orderObjectId }, { $set: { isStringServiceApplied: true } });
 
-    return NextResponse.json({ message: 'success' }, { status: 201 });
+    return NextResponse.json({ message: 'success', applicationId }, { status: 201 });
   } catch (err) {
     console.error('신청서 저장 오류:', err);
     return NextResponse.json({ message: '서버 오류 발생' }, { status: 500 });

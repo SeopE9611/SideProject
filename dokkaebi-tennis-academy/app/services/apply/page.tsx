@@ -18,6 +18,14 @@ import PreferredTimeSelector from '@/app/services/_components/TimeSlotSelector';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
+import { bankLabelMap } from '@/lib/constants';
+
+declare global {
+  interface Window {
+    daum: any;
+  }
+}
+
 export default function StringServiceApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,6 +33,7 @@ export default function StringServiceApplyPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
+  const [isMember, setIsMember] = useState(false); // 회원 여부 판단
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -43,6 +52,7 @@ export default function StringServiceApplyPage() {
     shippingPostcode: '',
     shippingDepositor: '',
     shippingRequest: '',
+    shippingBank: '',
   });
 
   // 가격 상태 추가 및 표시
@@ -53,6 +63,39 @@ export default function StringServiceApplyPage() {
     const calculated = getStringingServicePrice(formData.stringType, isCustom);
     setPrice(calculated);
   }, [formData.stringType]);
+
+  // 주문서 없는 단독 신청일 경우만 실행
+  useEffect(() => {
+    if (orderId) return;
+
+    const checkUser = async () => {
+      try {
+        const res = await fetch('/api/users/me', { credentials: 'include' });
+        const user = await res.json();
+
+        if (user?.email) {
+          setIsMember(true);
+          setFormData((prev) => ({
+            ...prev,
+            name: user.name ?? '',
+            email: user.email ?? '',
+            phone: user.phone ?? '',
+            shippingName: user.name ?? '',
+            shippingEmail: user.email ?? '',
+            shippingPhone: user.phone ?? '',
+            shippingAddress: user.address ?? '',
+            shippingAddressDetail: user.addressDetail ?? '',
+            shippingPostcode: user.postalCode ?? '',
+          }));
+        }
+      } catch {
+        // 비회원인 경우 아무 처리하지 않음
+        setIsMember(false);
+      }
+    };
+
+    checkUser();
+  }, [orderId]);
 
   // 주문 데이터 신청자 정보 불러오기
   useEffect(() => {
@@ -66,7 +109,6 @@ export default function StringServiceApplyPage() {
 
         // accessToken 꺼내기
         const userRes = await fetch('/api/users/me', { credentials: 'include' });
-
         const userData = await userRes.json();
 
         setFormData((prev) => ({
@@ -81,6 +123,7 @@ export default function StringServiceApplyPage() {
           shippingAddressDetail: orderData.shippingInfo?.addressDetail ?? '',
           shippingPostcode: orderData.shippingInfo?.postalCode ?? '',
           shippingDepositor: orderData.shippingInfo?.depositor ?? '',
+          shippingBank: orderData.paymentInfo?.bank ?? '',
           shippingRequest: orderData.shippingInfo?.deliveryRequest ?? '',
         }));
       } catch (err) {
@@ -97,6 +140,18 @@ export default function StringServiceApplyPage() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleOpenPostcode = () => {
+    new window.daum.Postcode({
+      oncomplete: function (data: any) {
+        setFormData((prev) => ({
+          ...prev,
+          shippingAddress: data.roadAddress,
+          shippingPostcode: data.zonecode,
+        }));
+      },
+    }).open();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -150,6 +205,7 @@ export default function StringServiceApplyPage() {
         addressDetail: formData.shippingAddressDetail,
         postalCode: formData.shippingPostcode,
         depositor: formData.shippingDepositor,
+        bank: formData.shippingBank,
         deliveryRequest: formData.shippingRequest,
       },
     };
@@ -167,8 +223,10 @@ export default function StringServiceApplyPage() {
         throw new Error(message || '신청 실패');
       }
 
+      const result = await res.json();
+
       toast.success('신청이 완료되었습니다!');
-      router.push('/services/success');
+      router.push(`/services/success?applicationId=${result.applicationId}`);
     } catch (error) {
       showErrorToast('신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
@@ -203,38 +261,68 @@ export default function StringServiceApplyPage() {
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">신청인 이름</Label>
-                      <Input id="name" name="name" value={formData.name} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
+                      <Input id="name" name="name" value={formData.name} onChange={handleInputChange} readOnly={!!(orderId || isMember)} className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''} />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="email">이메일</Label>
-                      <Input id="email" name="email" value={formData.email} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
+                      <Input id="email" name="email" value={formData.email} onChange={handleInputChange} readOnly={!!(orderId || isMember)} className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''} />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="phone">연락처</Label>
-                      <Input id="phone" name="phone" value={formData.phone} readOnly className="bg-muted text-muted-foreground cursor-not-allowed" />
+                      <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} readOnly={!!(orderId || isMember)} className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="shippingAddress">주소</Label>
-                      <Input id="shippingAddress" name="shippingAddress" value={formData.shippingAddress} onChange={handleInputChange} />
+                      <div className="flex gap-2">
+                        <Input
+                          id="shippingAddress"
+                          name="shippingAddress"
+                          value={formData.shippingAddress}
+                          onChange={handleInputChange}
+                          readOnly={!!(orderId || isMember)}
+                          className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''}
+                        />
+                        {!orderId && !isMember && (
+                          <Button type="button" variant="outline" onClick={handleOpenPostcode}>
+                            주소 검색
+                          </Button>
+                        )}
+                      </div>
                     </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="shippingAddressDetail">상세 주소</Label>
-                      <Input id="shippingAddressDetail" name="shippingAddressDetail" value={formData.shippingAddressDetail} onChange={handleInputChange} />
+                      <Input
+                        id="shippingAddressDetail"
+                        name="shippingAddressDetail"
+                        value={formData.shippingAddressDetail}
+                        onChange={handleInputChange}
+                        readOnly={!!(orderId || isMember)}
+                        className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''}
+                      />
                     </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="shippingPostcode">우편번호</Label>
-                      <Input id="shippingPostcode" name="shippingPostcode" value={formData.shippingPostcode} onChange={handleInputChange} />
+                      <Input
+                        id="shippingPostcode"
+                        name="shippingPostcode"
+                        value={formData.shippingPostcode}
+                        onChange={handleInputChange}
+                        readOnly={!!(orderId || isMember)}
+                        className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''}
+                      />
                     </div>
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                       <Label htmlFor="shippingDepositor">입금자명</Label>
                       <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
+                    </div> */}
+                    {/* <div className="space-y-2">
                       <Label htmlFor="shippingRequest">요청사항</Label>
                       <Textarea id="shippingRequest" name="shippingRequest" value={formData.shippingRequest} onChange={handleInputChange} />
-                    </div>
+                    </div> */}
                   </CardContent>
                 </Card>
 
@@ -290,6 +378,43 @@ export default function StringServiceApplyPage() {
 
                     {/* 희망 시간대 */}
                     <TimeSlotSelector selected={formData.preferredTime} selectedDate={formData.preferredDate} onSelect={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))} />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">🏦 결제 정보</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="shippingBank">은행</Label>
+                      <select id="shippingBank" name="shippingBank" value={formData.shippingBank} onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })} className="w-full border px-3 py-2 rounded-md bg-white">
+                        <option value="" disabled hidden>
+                          입금하실 은행을 선택해주세요.
+                        </option>
+                        {Object.entries(bankLabelMap).map(([key, info]) => (
+                          <option key={key} value={key}>
+                            {info.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {formData.shippingBank && (
+                      <div className="p-3 rounded-md border bg-muted text-sm space-y-1">
+                        <p>
+                          💳 <strong>계좌번호:</strong> {bankLabelMap[formData.shippingBank].account}
+                        </p>
+                        <p>
+                          👤 <strong>예금주:</strong> {bankLabelMap[formData.shippingBank].holder}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="shippingDepositor">입금자명</Label>
+                      <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} placeholder="입금자명을 입력하세요" />
+                    </div>
                   </CardContent>
                 </Card>
 
