@@ -38,6 +38,12 @@ function courierLabel(code: string): string {
   }
 }
 
+const shippingMethodLabelMap: Record<string, string> = {
+  visit: '방문 수령',
+  delivery: '택배 배송',
+  quick: '퀵서비스',
+};
+
 interface ApplicationDetail {
   id: string;
   customer: {
@@ -172,23 +178,30 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              {data.shippingInfo ? (
+              {/* 배송 방법 */}
+              <div>
+                <span className="text-muted-foreground">배송 방법</span>
+                <div>{shippingMethodLabelMap[data?.shippingInfo?.shippingMethod ?? ''] || '정보 없음'}</div>
+              </div>
+
+              {/* 예상 수령일 */}
+              <div>
+                <span className="text-muted-foreground">예상 수령일</span>
+                <div>{data?.shippingInfo?.estimatedDate || '날짜 없음'}</div>
+              </div>
+
+              {/* 택배 배송일 경우 택배사, 운송장 번호 표시 */}
+              {data?.shippingInfo?.shippingMethod === 'delivery' && (
                 <>
                   <div>
-                    <strong>수령인:</strong> {data.shippingInfo.name}
-                  </div>
-                  <div className="flex items-center">
-                    <Phone className="mr-1 w-4 h-4" /> {data.shippingInfo.phone}
-                  </div>
-                  <div className="flex items-center">
-                    <MapPin className="mr-1 w-4 h-4" /> {data.shippingInfo.address} {data.shippingInfo.addressDetail}
+                    <span className="text-muted-foreground">택배사</span>
+                    <div>{courierLabel(data?.shippingInfo?.invoice?.courier || '정보 없음')}</div>
                   </div>
                   <div>
-                    <strong>우편번호:</strong> {data.shippingInfo.postalCode}
+                    <span className="text-muted-foreground">운송장 번호</span>
+                    <div>{data?.shippingInfo?.invoice?.trackingNumber || '정보 없음'}</div>
                   </div>
                 </>
-              ) : (
-                <div className="text-muted-foreground">배송지 정보 없음</div>
               )}
             </CardContent>
           </Card>
