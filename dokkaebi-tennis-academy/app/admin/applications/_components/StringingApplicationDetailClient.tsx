@@ -14,6 +14,7 @@ import { ApplicationStatusSelect } from '@/app/admin/applications/_components/Ap
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import StringingApplicationHistory from '@/app/admin/applications/_components/StringingApplicationHistory';
 import { paymentStatusColors } from '@/lib/badge-style';
+import { bankLabelMap } from '@/lib/constants';
 
 interface Props {
   id: string;
@@ -63,6 +64,7 @@ interface ApplicationDetail {
     addressDetail?: string;
     postalCode: string;
     depositor?: string;
+    bank?: string;
     deliveryRequest?: string;
     shippingMethod?: string;
     estimatedDate?: string;
@@ -192,28 +194,29 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
           </Card>
 
           {/* 결제 정보 */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center">
-                <CreditCard className="mr-2 h-5 w-5" /> 결제 정보
+          <Card className="mb-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                결제 정보
               </CardTitle>
+              <Badge variant="outline" className={paymentStatusColors[['접수완료', '작업중', '교체완료'].includes(data?.status || '') ? '결제완료' : '결제대기']}>
+                {['접수완료', '작업중', '교체완료'].includes(data?.status || '') ? '결제완료' : '결제대기'}
+              </Badge>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center space-x-2">
-                <span className="font-semibold">결제 상태:</span>
-                <Badge className={`inline-block ${paymentStatusColors[paymentStatus]}`}>{paymentStatus}</Badge>
+            <CardContent className="grid gap-2 text-sm">
+              {/* 결제 방식 */}
+              <div>
+                <span className="text-muted-foreground">결제 방식</span>
+                <div>무통장 입금 {data?.shippingInfo?.bank && `(${bankLabelMap[data.shippingInfo.bank]?.label || data.shippingInfo.bank})`}</div>
+                {data?.shippingInfo?.depositor && <div className="text-muted-foreground">입금자명: {data?.shippingInfo?.depositor || '미입력'}</div>}
               </div>
-              {data.shippingInfo?.depositor && (
-                <div>
-                  <strong>입금자명:</strong> {data.shippingInfo.depositor}
-                </div>
-              )}
-              {typeof data.totalPrice === 'number' && (
-                <div>
-                  <strong>서비스 금액:</strong> {data.totalPrice.toLocaleString()}원
-                </div>
-              )}
-              {!data.shippingInfo?.depositor && data.totalPrice === undefined && <div className="text-muted-foreground">결제 정보 없음</div>}
+
+              {/* 결제 금액 */}
+              <div>
+                <span className="text-muted-foreground">결제 금액</span>
+                <div>{data?.totalPrice?.toLocaleString()}원</div>
+              </div>
             </CardContent>
           </Card>
 
