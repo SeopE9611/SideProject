@@ -200,10 +200,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
                 <CreditCard className="w-5 h-5" />
                 결제 정보
               </CardTitle>
-              <Badge variant="outline" className={paymentStatusColors[['접수완료', '작업중', '교체완료'].includes(data?.status || '') ? '결제완료' : '결제대기']}>
-                {['접수완료', '작업중', '교체완료'].includes(data?.status || '') ? '결제완료' : '결제대기'}
+              <Badge variant="outline" className={paymentStatusColors[['접수완료', '작업 중', '교체완료'].includes(data?.status || '') ? '결제완료' : '결제대기']}>
+                {['접수완료', '작업 중', '교체완료'].includes(data?.status || '') ? '결제완료' : '결제대기'}
               </Badge>
             </CardHeader>
+
             <CardContent className="grid gap-2 text-sm">
               {/* 결제 방식 */}
               <div>
