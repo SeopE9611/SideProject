@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       },
       stringDetails,
       totalPrice,
-      status: '접수완료',
+      status: '검토 중',
       createdAt: new Date(),
       userId,
       guestName: !userId ? name : null,
