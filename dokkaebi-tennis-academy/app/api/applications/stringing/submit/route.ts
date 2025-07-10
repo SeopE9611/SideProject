@@ -80,6 +80,10 @@ export async function POST(req: Request) {
       userSnapshot: userId ? { name, email } : null,
     });
 
+    if (!depositor || !bank) {
+      return NextResponse.json({ message: '입금자명과 은행을 모두 입력해주세요.' }, { status: 400 });
+    }
+
     // insertedId 추출
     const applicationId = result.insertedId;
 

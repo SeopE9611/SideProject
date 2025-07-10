@@ -175,6 +175,12 @@ export default function StringServiceApplyPage() {
       return;
     }
 
+    // 입금자명 검증
+    if (!formData.shippingDepositor?.trim()) {
+      showErrorToast('입금자명을 입력해주세요.');
+      return;
+    }
+
     // 연락처 정제
     const cleaned = formData.phone.replace(/[^0-9]/g, '');
     if (!/^010\d{8}$/.test(cleaned)) {
