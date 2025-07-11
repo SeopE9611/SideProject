@@ -124,9 +124,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             <p className="mt-1 text-muted-foreground">신청 ID: {data.id}</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button variant="outline" onClick={() => router.push(`/admin/applications/stringing/${id}/shipping-update`)}>
-              <Truck className="mr-2 h-4 w-4" /> 배송 정보 수정
-            </Button>
             {!isCancelled && (
               <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
                 <XCircle className="mr-2 h-4 w-4" /> 신청 취소
@@ -154,7 +151,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
           </Card>
 
           {/* 고객 정보 */}
-          <Card>
+          <Card className="md:col-span-2">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center">
                 <User className="mr-2 h-5 w-5" /> 고객 정보
@@ -167,51 +164,20 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
               <div className="flex items-center">
                 <Mail className="mr-1 w-4 h-4" /> {data.customer.email}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* 배송 정보 */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center">
-                <Truck className="mr-2 h-5 w-5" /> 배송 정보
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              {/* 배송 방법 */}
               <div>
-                <span className="text-muted-foreground">배송 방법</span>
-                <div>{shippingMethodLabelMap[data?.shippingInfo?.shippingMethod ?? ''] || '정보 없음'}</div>
+                <strong>연락처:</strong> {data?.shippingInfo?.phone ?? '정보 없음'}
               </div>
-
-              {/* 예상 수령일 */}
               <div>
-                <span className="text-muted-foreground">예상 수령일</span>
-                <div>{data?.shippingInfo?.estimatedDate || '날짜 없음'}</div>
+                <strong>주소:</strong> {data?.shippingInfo?.address ? `${data.shippingInfo.address} ${data.shippingInfo.addressDetail ?? ''} (${data.shippingInfo.postalCode})` : '정보 없음'}
               </div>
-
-              {/* 택배 배송일 경우 택배사, 운송장 번호 표시 */}
-              {data?.shippingInfo?.shippingMethod === 'delivery' && (
-                <>
-                  <div>
-                    <span className="text-muted-foreground">택배사</span>
-                    <div>{courierLabel(data?.shippingInfo?.invoice?.courier || '정보 없음')}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">운송장 번호</span>
-                    <div>{data?.shippingInfo?.invoice?.trackingNumber || '정보 없음'}</div>
-                  </div>
-                </>
-              )}
             </CardContent>
           </Card>
 
           {/* 결제 정보 */}
-          <Card className="mb-6">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                결제 정보
+                <CreditCard className="w-5 h-5" /> 결제 정보
               </CardTitle>
               <Badge variant="outline" className={paymentStatusColors[['접수완료', '작업 중', '교체완료'].includes(data?.status || '') ? '결제완료' : '결제대기']}>
                 {['접수완료', '작업 중', '교체완료'].includes(data?.status || '') ? '결제완료' : '결제대기'}
@@ -219,14 +185,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             </CardHeader>
 
             <CardContent className="grid gap-2 text-sm">
-              {/* 결제 방식 */}
               <div>
                 <span className="text-muted-foreground">결제 방식</span>
                 <div>무통장 입금 {data?.shippingInfo?.bank && `(${bankLabelMap[data.shippingInfo.bank]?.label || data.shippingInfo.bank})`}</div>
                 {data?.shippingInfo?.depositor && <div className="text-muted-foreground">입금자명: {data?.shippingInfo?.depositor || '미입력'}</div>}
               </div>
 
-              {/* 결제 금액 */}
               <div>
                 <span className="text-muted-foreground">결제 금액</span>
                 <div>{data?.totalPrice?.toLocaleString()}원</div>
@@ -249,11 +213,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
               <div>
                 <strong>라켓 종류:</strong> {data.stringDetails.racketType}
               </div>
-              {data.stringDetails.requirements && (
-                <div>
-                  <strong>요청사항:</strong> {data.stringDetails.requirements}
-                </div>
-              )}
+              <div>
+                <strong>요청사항:</strong> {data.stringDetails.requirements ? data.stringDetails.requirements : '요청사항 없음'}
+              </div>
             </CardContent>
           </Card>
 
