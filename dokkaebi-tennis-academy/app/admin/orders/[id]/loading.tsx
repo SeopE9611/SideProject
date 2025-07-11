@@ -11,12 +11,6 @@ export default function OrderDetailLoading() {
         {/* 상단 헤더 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <Button variant="outline" size="sm" className="mb-3" asChild>
-              <Link href="/admin/orders">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                주문 목록으로 돌아가기
-              </Link>
-            </Button>
             <Skeleton className="h-8 w-72 rounded bg-gray-200 animate-pulse" />
             <Skeleton className="mt-2 h-4 w-48 rounded bg-gray-100 animate-pulse" />
           </div>

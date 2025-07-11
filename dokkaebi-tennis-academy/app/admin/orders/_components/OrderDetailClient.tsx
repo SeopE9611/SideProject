@@ -154,19 +154,19 @@ export default function OrderDetailClient({ orderId }: Props) {
         {/*  페이지 헤더  */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">주문 상세 정보</h1>
+            <p className="mt-1 text-muted-foreground">주문 ID: {orderDetail._id}</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {/* <Button variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              주문서 다운로드
+            </Button> */}
             <Button variant="outline" size="sm" className="mb-3" asChild>
               <Link href="/admin/orders">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 주문 목록으로 돌아가기
               </Link>
-            </Button>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">주문 상세 정보</h1>
-            <p className="mt-1 text-muted-foreground">주문 ID: {orderDetail._id}</p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              주문서 다운로드
             </Button>
             <Button onClick={handleShippingUpdate}>
               <Truck className="mr-2 h-4 w-4" />

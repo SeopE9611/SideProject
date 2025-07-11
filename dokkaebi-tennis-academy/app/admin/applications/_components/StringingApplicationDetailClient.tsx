@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle, ArrowLeft } from 'lucide-react';
 import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/admin/applications/_components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -123,13 +123,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">신청 상세 정보</h1>
             <p className="mt-1 text-muted-foreground">신청 ID: {data.id}</p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            {!isCancelled && (
-              <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
-                <XCircle className="mr-2 h-4 w-4" /> 신청 취소
-              </Button>
-            )}
-          </div>
+          <Link href="/admin/orders">
+            <Button variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              목록으로 돌아가기
+            </Button>
+          </Link>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -145,8 +144,17 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             <CardContent className="pt-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
                 <ApplicationStatusSelect applicationId={data.id} currentStatus={data.status} onUpdated={() => mutate()} disabled={isCancelled} />
-                {isCancelled && <p className="text-sm text-muted-foreground italic mt-2">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</p>}
+                {/* 취소된 경우 안내 문구 */}
+                {!isCancelled && (
+                  <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
+                    <XCircle className="mr-2 h-4 w-4" />
+                    신청 취소
+                  </Button>
+                )}
               </div>
+
+              {/* 취소 안내 메시지는 하단 별도로 */}
+              {isCancelled && <p className="text-sm text-muted-foreground italic mt-2">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</p>}
             </CardContent>
           </Card>
 
@@ -213,10 +221,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
               <div>
                 <strong>라켓 종류:</strong> {data.stringDetails.racketType}
               </div>
-              <div>
+              {/* <div>
                 <strong>요청사항:</strong> {data.stringDetails.requirements ? data.stringDetails.requirements : '요청사항 없음'}
-              </div>
+              </div> */}
             </CardContent>
+          </Card>
+
+          {/* 요청사항 카드 */}
+          <Card className="md:col-span-3">
+            <CardHeader className="pb-3">
+              <CardTitle>요청사항</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm">{data?.stringDetails?.requirements?.trim() ? data.stringDetails.requirements : <span className="text-muted-foreground">요청사항이 없습니다.</span>}</CardContent>
           </Card>
 
           {/* 처리 이력 */}
