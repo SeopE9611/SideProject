@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { useTransition } from 'react';
+import { useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -87,6 +87,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
   const router = useRouter();
   const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(`${baseUrl}/api/applications/stringing/${id}`, fetcher);
   const [isPending, startTransition] = useTransition();
+  const historyMutateRef = useRef<(() => Promise<any>) | undefined>(undefined);
 
   const handleCancel = () => {
     if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
@@ -101,6 +102,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
         if (!res.ok) throw new Error();
         showSuccessToast('신청서가 취소되었습니다.');
         mutate();
+        if (historyMutateRef.current) historyMutateRef.current();
       } catch (err) {
         showErrorToast('취소 중 오류가 발생했습니다.');
       }
@@ -143,7 +145,19 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             </CardHeader>
             <CardContent className="pt-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-                <ApplicationStatusSelect applicationId={data.id} currentStatus={data.status} onUpdated={() => mutate()} disabled={isCancelled} />
+                <ApplicationStatusSelect
+                  applicationId={data.id}
+                  currentStatus={data.status}
+                  onUpdated={async () => {
+                    // 상세 데이터 갱신
+                    await mutate();
+                    // 이력 컴포넌트 캐시 갱신
+                    if (historyMutateRef.current) {
+                      await historyMutateRef.current();
+                    }
+                  }}
+                  disabled={isCancelled}
+                />
                 {/* 취소된 경우 안내 문구 */}
                 {!isCancelled && (
                   <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
@@ -237,7 +251,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
 
           {/* 처리 이력 */}
           <div className="md:col-span-3">
-            <StringingApplicationHistory history={data.history ?? []} />
+            <StringingApplicationHistory
+              applicationId={id}
+              onHistoryMutate={(m) => {
+                historyMutateRef.current = m;
+              }}
+            />
           </div>
         </div>
       </div>
