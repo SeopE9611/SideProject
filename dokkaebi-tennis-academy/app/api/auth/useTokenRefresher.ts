@@ -1,4 +1,3 @@
-// useTokenRefresher.tsx (반드시 'use client' 최상단에 붙어 있어야 함)
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';

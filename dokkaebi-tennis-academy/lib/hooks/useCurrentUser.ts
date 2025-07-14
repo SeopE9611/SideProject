@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 interface CurrentUser {
@@ -14,6 +15,7 @@ export function useCurrentUser() {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
+  const pathname = usePathname();
 
   const refresh = () => setRefreshToken((prev) => prev + 1);
 
@@ -34,7 +36,7 @@ export function useCurrentUser() {
       }
     };
     fetchUser();
-  }, [refreshToken]);
+  }, [refreshToken, pathname]); // 로그인 후 router.push에 따른 경로 변경에도 재실행
 
   return { user, loading, refresh };
 }
