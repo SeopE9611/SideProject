@@ -1,29 +1,29 @@
+// useTokenRefresher.tsx (반드시 'use client' 최상단에 붙어 있어야 함)
 'use client';
-
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function useTokenRefresher() {
+export function useTokenRefresher(user: any) {
   const router = useRouter();
-
   useEffect(() => {
+    // console.log(' useTokenRefresher fired, user =', user);
+    if (!user) return;
+
     const refreshInterval = setInterval(async () => {
+      // console.log('refresh interval tick');
       try {
         const res = await fetch('/api/refresh', {
           method: 'POST',
-          credentials: 'include', // 쿠키 기반 요청
+          credentials: 'include',
         });
-
-        if (!res.ok) {
-          console.warn('토큰 재발급 실패');
-          throw new Error();
-        }
+        // console.log('refresh status', res.status);
+        if (!res.ok) throw new Error();
       } catch (err) {
-        console.error('세션 만료됨. 로그인 페이지로 이동합니다.');
+        console.error('세션 만료, 로그인 페이지로 이동');
         router.replace('/login');
       }
-    }, 5 * 60 * 1000); // 5분마다 실행
+    }, 5 * 60 * 1000);
 
     return () => clearInterval(refreshInterval);
-  }, [router]);
+  }, [user]);
 }

@@ -10,7 +10,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
 
 export default function QnaWritePage() {
-  useTokenRefresher();
   return (
     <div className="container py-8">
       <div className="max-w-3xl mx-auto">

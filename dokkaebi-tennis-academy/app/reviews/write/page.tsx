@@ -15,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
 
 export default function ReviewWritePage() {
-  useTokenRefresher();
   const router = useRouter();
   const searchParams = useSearchParams();
   const type = searchParams.get('type') || 'academy';

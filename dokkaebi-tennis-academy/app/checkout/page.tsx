@@ -25,7 +25,6 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  useTokenRefresher();
   const { items: orderItems } = useCartStore();
 
   // 주문 금액 계산

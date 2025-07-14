@@ -28,7 +28,6 @@ declare global {
 }
 
 export default function StringServiceApplyPage() {
-  useTokenRefresher();
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');

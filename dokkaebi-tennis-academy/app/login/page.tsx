@@ -122,8 +122,8 @@ export default function LoginPage() {
     //  로그인 성공 후 공통 처리
     localStorage.removeItem('cart-storage');
     const from = new URLSearchParams(window.location.search).get('from');
-    window.location.href = from === 'cart' ? '/cart' : '/';
-    // router.push(from === 'cart' ? '/cart' : '/');
+    // window.location.href = from === 'cart' ? '/cart' : '/';
+    router.push(from === 'cart' ? '/cart' : '/');
     // location.reload(); // 딜레이 없이 바로 새로고침으로 SSR layout.tsx를 재실행
   };
 

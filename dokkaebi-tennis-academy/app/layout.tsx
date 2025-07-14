@@ -8,6 +8,8 @@ import Footer from '@/components/footer';
 import { Toaster } from '@/components/ui/sonner';
 import Script from 'next/script';
 import { cookies } from 'next/headers';
+import { GlobalTokenGuard } from '@/components/system/GlobalTokenGuard';
+import ClientWrapper from '@/components/system/ClientWrapper';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,7 +31,6 @@ export default async function RootLayout({
         <Script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="beforeInteractive" />
 
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          {' '}
           {/* 클라이언트에게 accessToken 전달 */}
           <div className="flex min-h-screen flex-col">
             <Header />
@@ -37,6 +38,7 @@ export default async function RootLayout({
             <Footer />
           </div>
           <Toaster />
+          <ClientWrapper />
         </ThemeProvider>
       </body>
     </html>
