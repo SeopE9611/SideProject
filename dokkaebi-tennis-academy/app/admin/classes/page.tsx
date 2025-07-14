@@ -1,120 +1,119 @@
-"use client"
+'use client';
 
-import { useEffect, useRef, useState } from "react"
-import { Search, Filter, MoreHorizontal, Trash2, Edit, Calendar, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
+import { useEffect, useRef, useState } from 'react';
+import { Search, Filter, MoreHorizontal, Trash2, Edit, Calendar, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import { getCurrentUser } from '@/lib/hooks/get-current-user';
+import AccessDenied from '@/components/system/AccessDenied';
 
 // 임시 클래스 데이터
 const classes = [
   {
-    id: "1",
-    name: "성인반",
-    instructor: "김재민",
-    schedule: "월/수/금 10:00-12:00",
-    capacity: "10명",
+    id: '1',
+    name: '성인반',
+    instructor: '김재민',
+    schedule: '월/수/금 10:00-12:00',
+    capacity: '10명',
     enrolled: 8,
-    status: "recruiting", // recruiting, closed
-    level: "초급",
-    location: "실내 코트 A",
+    status: 'recruiting', // recruiting, closed
+    level: '초급',
+    location: '실내 코트 A',
   },
   {
-    id: "2",
-    name: "주니어반",
-    instructor: "김재민",
-    schedule: "화/목 16:00-18:00",
-    capacity: "8명",
+    id: '2',
+    name: '주니어반',
+    instructor: '김재민',
+    schedule: '화/목 16:00-18:00',
+    capacity: '8명',
     enrolled: 8,
-    status: "closed",
-    level: "중급",
-    location: "실내 코트 B",
+    status: 'closed',
+    level: '중급',
+    location: '실내 코트 B',
   },
   {
-    id: "3",
-    name: "성인반",
-    instructor: "김재민",
-    schedule: "월/수/금 19:00-21:00",
-    capacity: "12명",
+    id: '3',
+    name: '성인반',
+    instructor: '김재민',
+    schedule: '월/수/금 19:00-21:00',
+    capacity: '12명',
     enrolled: 9,
-    status: "recruiting",
-    level: "중급",
-    location: "실내 코트 C",
+    status: 'recruiting',
+    level: '중급',
+    location: '실내 코트 C',
   },
   {
-    id: "4",
-    name: "주말 집중반",
-    instructor: "김재민",
-    schedule: "토/일 09:00-12:00",
-    capacity: "10명",
+    id: '4',
+    name: '주말 집중반',
+    instructor: '김재민',
+    schedule: '토/일 09:00-12:00',
+    capacity: '10명',
     enrolled: 7,
-    status: "recruiting",
-    level: "초급",
-    location: "실외 코트 A",
+    status: 'recruiting',
+    level: '초급',
+    location: '실외 코트 A',
   },
-]
+];
 
-export default function ClassesPage() {
-  const [selectedClasses, setSelectedClasses] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+export default async function ClassesPage() {
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const user = await getCurrentUser();
+
+  if (!user || user.role !== 'admin') {
+    return <AccessDenied />;
+  }
 
   // 전체 선택 체크박스 상태
-  const isAllSelected = classes.length > 0 && selectedClasses.length === classes.length
-  const isPartiallySelected = selectedClasses.length > 0 && selectedClasses.length < classes.length
+  const isAllSelected = classes.length > 0 && selectedClasses.length === classes.length;
+  const isPartiallySelected = selectedClasses.length > 0 && selectedClasses.length < classes.length;
 
-  const allCheckboxRef = useRef<HTMLButtonElement>(null)
+  const allCheckboxRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (allCheckboxRef.current) {
-      const input = allCheckboxRef.current.querySelector("input[type='checkbox']")
+      const input = allCheckboxRef.current.querySelector("input[type='checkbox']");
       if (input instanceof HTMLInputElement) {
-        input.indeterminate = isPartiallySelected
+        input.indeterminate = isPartiallySelected;
       }
     }
-  }, [isPartiallySelected])
+  }, [isPartiallySelected]);
 
   // 전체 선택/해제 처리
   const handleSelectAll = () => {
     if (isAllSelected) {
-      setSelectedClasses([])
+      setSelectedClasses([]);
     } else {
-      setSelectedClasses(classes.map((cls) => cls.id))
+      setSelectedClasses(classes.map((cls) => cls.id));
     }
-  }
+  };
 
   // 개별 선택/해제 처리
   const handleSelectClass = (classId: string) => {
     if (selectedClasses.includes(classId)) {
-      setSelectedClasses(selectedClasses.filter((id) => id !== classId))
+      setSelectedClasses(selectedClasses.filter((id) => id !== classId));
     } else {
-      setSelectedClasses([...selectedClasses, classId])
+      setSelectedClasses([...selectedClasses, classId]);
     }
-  }
+  };
 
   // 필터링된 클래스 목록
   const filteredClasses = classes.filter((cls) => {
     // 검색어 필터링
-    const matchesSearch =
-      cls.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cls.instructor.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = cls.name.toLowerCase().includes(searchQuery.toLowerCase()) || cls.instructor.toLowerCase().includes(searchQuery.toLowerCase());
 
     // 상태 필터링
-    const matchesStatus = statusFilter === "all" || cls.status === statusFilter
+    const matchesStatus = statusFilter === 'all' || cls.status === statusFilter;
 
-    return matchesSearch && matchesStatus
-  })
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="container py-10">
@@ -128,12 +127,7 @@ export default function ClassesPage() {
         {/* 검색 및 필터 */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex w-full max-w-sm items-center space-x-2">
-            <Input
-              placeholder="클래스명 또는 강사명으로 검색"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9"
-            />
+            <Input placeholder="클래스명 또는 강사명으로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="h-9" />
             <Button variant="outline" size="sm" className="h-9 px-3">
               <Search className="h-4 w-4" />
             </Button>
@@ -185,12 +179,7 @@ export default function ClassesPage() {
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
                   <TableHead className="w-[50px]">
-                    <Checkbox
-                      ref={allCheckboxRef}
-                      checked={isAllSelected}
-                      onCheckedChange={handleSelectAll}
-                      aria-label="전체 선택"
-                    />
+                    <Checkbox ref={allCheckboxRef} checked={isAllSelected} onCheckedChange={handleSelectAll} aria-label="전체 선택" />
                   </TableHead>
                   <TableHead>클래스명</TableHead>
                   <TableHead>강사명</TableHead>
@@ -206,11 +195,7 @@ export default function ClassesPage() {
                   filteredClasses.map((cls) => (
                     <TableRow key={cls.id} className="hover:bg-muted/50">
                       <TableCell>
-                        <Checkbox
-                          checked={selectedClasses.includes(cls.id)}
-                          onCheckedChange={() => handleSelectClass(cls.id)}
-                          aria-label={`${cls.name} 선택`}
-                        />
+                        <Checkbox checked={selectedClasses.includes(cls.id)} onCheckedChange={() => handleSelectClass(cls.id)} aria-label={`${cls.name} 선택`} />
                       </TableCell>
                       <TableCell className="font-medium">
                         <div className="flex flex-col">
@@ -228,20 +213,17 @@ export default function ClassesPage() {
                           </span>
                           <div className="h-2 w-16 overflow-hidden rounded-full bg-muted">
                             <div
-                              className={`h-full ${cls.status === "closed" ? "bg-red-500" : "bg-green-500"}`}
+                              className={`h-full ${cls.status === 'closed' ? 'bg-red-500' : 'bg-green-500'}`}
                               style={{
-                                width: `${(Number(cls.enrolled) / Number(cls.capacity.replace("명", ""))) * 100}%`,
+                                width: `${(Number(cls.enrolled) / Number(cls.capacity.replace('명', ''))) * 100}%`,
                               }}
                             ></div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={cls.status === "recruiting" ? "default" : "secondary"}
-                          className={cls.status === "recruiting" ? "bg-green-500" : "bg-red-500"}
-                        >
-                          {cls.status === "recruiting" ? "모집 중" : "마감"}
+                        <Badge variant={cls.status === 'recruiting' ? 'default' : 'secondary'} className={cls.status === 'recruiting' ? 'bg-green-500' : 'bg-red-500'}>
+                          {cls.status === 'recruiting' ? '모집 중' : '마감'}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -263,9 +245,7 @@ export default function ClassesPage() {
                               일정 변경
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-amber-500">
-                              {cls.status === "recruiting" ? "마감으로 변경" : "모집 중으로 변경"}
-                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-amber-500">{cls.status === 'recruiting' ? '마감으로 변경' : '모집 중으로 변경'}</DropdownMenuItem>
                             <DropdownMenuItem className="text-red-500">
                               <Trash2 className="mr-2 h-4 w-4" />
                               삭제
@@ -304,5 +284,5 @@ export default function ClassesPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

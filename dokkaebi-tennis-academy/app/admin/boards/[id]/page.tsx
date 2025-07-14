@@ -1,30 +1,37 @@
-import Link from "next/link"
-import { ArrowLeft, Calendar, Eye, MessageSquare, Pencil, Trash2, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import Link from 'next/link';
+import { ArrowLeft, Calendar, Eye, MessageSquare, Pencil, Trash2, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { getCurrentUser } from '@/lib/hooks/get-current-user';
+import AccessDenied from '@/components/system/AccessDenied';
 
-export default function BoardPostDetailPage({ params }: { params: { id: string } }) {
-  const postId = Number.parseInt(params.id)
+export default async function BoardPostDetailPage({ params }: { params: { id: string } }) {
+  const postId = Number.parseInt(params.id);
+  const user = await getCurrentUser();
+
+  if (!user || user.role !== 'admin') {
+    return <AccessDenied />;
+  }
 
   // 샘플 게시물 데이터
   const post = {
     id: postId,
-    title: "5월 스트링 할인 이벤트",
-    author: "관리자",
-    email: "admin@dokkaebi.com",
-    boardType: "notice",
-    boardTypeName: "공지사항",
-    category: "이벤트",
-    status: "published",
-    statusName: "게시됨",
+    title: '5월 스트링 할인 이벤트',
+    author: '관리자',
+    email: 'admin@dokkaebi.com',
+    boardType: 'notice',
+    boardTypeName: '공지사항',
+    category: '이벤트',
+    status: 'published',
+    statusName: '게시됨',
     isPinned: true,
     commentCount: 0,
     viewCount: 245,
-    createdAt: "2023-05-01T09:00:00",
+    createdAt: '2023-05-01T09:00:00',
     content: `
       <h3>5월 가정의 달 맞이 스트링 할인 이벤트</h3>
       <p>안녕하세요, 도깨비 테니스 아카데미입니다.</p>
@@ -51,49 +58,49 @@ export default function BoardPostDetailPage({ params }: { params: { id: string }
     comments: [
       // 댓글이 있는 경우 여기에 추가
     ],
-  }
+  };
 
   // 게시물 상태에 따른 배지 색상 가져오기
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "published":
-        return "bg-green-500/20 text-green-500 hover:bg-green-500/30"
-      case "draft":
-        return "bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30"
-      case "hidden":
-        return "bg-gray-500/20 text-gray-500 hover:bg-gray-500/30"
+      case 'published':
+        return 'bg-green-500/20 text-green-500 hover:bg-green-500/30';
+      case 'draft':
+        return 'bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30';
+      case 'hidden':
+        return 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30';
       default:
-        return "bg-gray-500/20 text-gray-500 hover:bg-gray-500/30"
+        return 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30';
     }
-  }
+  };
 
   // 게시판 유형에 따른 배지 색상 가져오기
   const getBoardTypeColor = (type: string) => {
     switch (type) {
-      case "notice":
-        return "bg-primary/20 text-primary hover:bg-primary/30"
-      case "qna":
-        return "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30"
-      case "community":
-        return "bg-green-500/20 text-green-500 hover:bg-green-500/30"
-      case "faq":
-        return "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30"
+      case 'notice':
+        return 'bg-primary/20 text-primary hover:bg-primary/30';
+      case 'qna':
+        return 'bg-blue-500/20 text-blue-500 hover:bg-blue-500/30';
+      case 'community':
+        return 'bg-green-500/20 text-green-500 hover:bg-green-500/30';
+      case 'faq':
+        return 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30';
       default:
-        return "bg-gray-500/20 text-gray-500 hover:bg-gray-500/30"
+        return 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30';
     }
-  }
+  };
 
   // 날짜 포맷팅
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return new Intl.DateTimeFormat("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date)
-  }
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  };
 
   return (
     <div className="p-6">
@@ -219,16 +226,10 @@ export default function BoardPostDetailPage({ params }: { params: { id: string }
             <CardHeader>
               <CardTitle>댓글 ({post.comments.length})</CardTitle>
             </CardHeader>
-            <CardContent>
-              {post.comments.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">아직 댓글이 없습니다.</p>
-              ) : (
-                <div className="space-y-4">{/* 댓글 목록 렌더링 */}</div>
-              )}
-            </CardContent>
+            <CardContent>{post.comments.length === 0 ? <p className="text-center text-muted-foreground py-8">아직 댓글이 없습니다.</p> : <div className="space-y-4">{/* 댓글 목록 렌더링 */}</div>}</CardContent>
           </Card>
         )}
       </div>
     </div>
-  )
+  );
 }

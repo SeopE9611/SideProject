@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { redirect } from 'next/navigation';
+import AccessDenied from '@/components/system/AccessDenied';
 
 // 스트링 상품 목록 데이터 (실제로는 API에서 가져올 것입니다)
 const strings = [
@@ -163,7 +164,7 @@ export default async function ProductsPage() {
   const user = await getCurrentUser();
 
   if (!user || user.role !== 'admin') {
-    redirect('/login');
+    return <AccessDenied />;
   }
 
   return (

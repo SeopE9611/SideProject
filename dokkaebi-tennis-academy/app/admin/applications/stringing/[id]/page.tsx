@@ -2,11 +2,12 @@ import { headers } from 'next/headers';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { redirect } from 'next/navigation';
 import StringingApplicationDetailClient from '@/app/admin/applications/_components/StringingApplicationDetailClient';
+import AccessDenied from '@/components/system/AccessDenied';
 
 export default async function StringingApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user || user.role !== 'admin') {
-    redirect('/login');
+    return <AccessDenied />;
   }
 
   const { id } = await params;

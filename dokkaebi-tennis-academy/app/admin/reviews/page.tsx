@@ -1,160 +1,160 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import Link from "next/link"
-import { MoreHorizontal, Search, Star, Trash2, Eye } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useState } from 'react';
+import Link from 'next/link';
+import { MoreHorizontal, Search, Star, Trash2, Eye } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getCurrentUser } from '@/lib/hooks/get-current-user';
+import AccessDenied from '@/components/system/AccessDenied';
 
 // 리뷰 데이터 타입 정의
 interface Review {
-  id: string
-  authorName: string
-  authorEmail: string
-  content: string
-  rating: number
-  createdAt: string
-  type: "lesson" | "stringing" | "product"
-  productName?: string
+  id: string;
+  authorName: string;
+  authorEmail: string;
+  content: string;
+  rating: number;
+  createdAt: string;
+  type: 'lesson' | 'stringing' | 'product';
+  productName?: string;
 }
 
 // 샘플 리뷰 데이터
 const sampleReviews: Review[] = [
   {
-    id: "rev_001",
-    authorName: "김재민",
-    authorEmail: "tennis@example.com",
-    content:
-      "코치님의 지도가 매우 친절하고 전문적이었습니다. 기본기부터 차근차근 알려주셔서 실력이 많이 향상되었어요. 다음 시즌에도 꼭 등록하고 싶습니다.",
+    id: 'rev_001',
+    authorName: '김재민',
+    authorEmail: 'tennis@example.com',
+    content: '코치님의 지도가 매우 친절하고 전문적이었습니다. 기본기부터 차근차근 알려주셔서 실력이 많이 향상되었어요. 다음 시즌에도 꼭 등록하고 싶습니다.',
     rating: 5,
-    createdAt: "2025-01-01T09:30:00Z",
-    type: "lesson",
+    createdAt: '2025-01-01T09:30:00Z',
+    type: 'lesson',
   },
   {
-    id: "rev_002",
-    authorName: "김재민",
-    authorEmail: "tennis@example.com",
-    content: "스트링 장력이 제가 원하는 대로 정확하게 맞춰주셨어요. 타구감이 확실히 좋아졌습니다.",
+    id: 'rev_002',
+    authorName: '김재민',
+    authorEmail: 'tennis@example.com',
+    content: '스트링 장력이 제가 원하는 대로 정확하게 맞춰주셨어요. 타구감이 확실히 좋아졌습니다.',
     rating: 4,
-    createdAt: "2025-01-01T09:30:00Z",
-    type: "stringing",
+    createdAt: '2025-01-01T09:30:00Z',
+    type: 'stringing',
   },
   {
-    id: "rev_003",
-    authorName: "김재민",
-    authorEmail: "tennis@example.com",
-    content: "그룹 레슨이 너무 재미있었어요. 다른 회원들과 함께 배우면서 동기부여도 되고 좋았습니다.",
+    id: 'rev_003',
+    authorName: '김재민',
+    authorEmail: 'tennis@example.com',
+    content: '그룹 레슨이 너무 재미있었어요. 다른 회원들과 함께 배우면서 동기부여도 되고 좋았습니다.',
     rating: 5,
-    createdAt: "2025-01-01T09:30:00Z",
-    type: "lesson",
+    createdAt: '2025-01-01T09:30:00Z',
+    type: 'lesson',
   },
   {
-    id: "rev_004",
-    authorName: "섭",
-    authorEmail: "seop@example.com",
-    content: "스트링 교체 후 공이 너무 튕겨서 컨트롤이 어려웠어요. 다음에는 좀 더 낮은 장력으로 부탁드립니다.",
+    id: 'rev_004',
+    authorName: '섭',
+    authorEmail: 'seop@example.com',
+    content: '스트링 교체 후 공이 너무 튕겨서 컨트롤이 어려웠어요. 다음에는 좀 더 낮은 장력으로 부탁드립니다.',
     rating: 3,
-    createdAt: "2025-01-01T09:30:00Z",
-    type: "stringing",
+    createdAt: '2025-01-01T09:30:00Z',
+    type: 'stringing',
   },
- 
-]
+];
 
-export default function ReviewsPage() {
-  const [selectedReviews, setSelectedReviews] = useState<string[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
+export default async function ReviewsPage() {
+  const [selectedReviews, setSelectedReviews] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const user = await getCurrentUser();
+
+  if (!user || user.role !== 'admin') {
+    return <AccessDenied />;
+  }
 
   // 검색어로 필터링된 리뷰 목록
   const filteredReviews = sampleReviews.filter(
-    (review) =>
-      review.authorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      review.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      review.type.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+    (review) => review.authorName.toLowerCase().includes(searchTerm.toLowerCase()) || review.content.toLowerCase().includes(searchTerm.toLowerCase()) || review.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // 체크박스 전체 선택/해제 처리
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedReviews(filteredReviews.map((review) => review.id))
+      setSelectedReviews(filteredReviews.map((review) => review.id));
     } else {
-      setSelectedReviews([])
+      setSelectedReviews([]);
     }
-  }
+  };
 
   // 개별 체크박스 선택/해제 처리
   const handleSelectOne = (reviewId: string, checked: boolean) => {
     if (checked) {
-      setSelectedReviews((prev) => [...prev, reviewId])
+      setSelectedReviews((prev) => [...prev, reviewId]);
     } else {
-      setSelectedReviews((prev) => prev.filter((id) => id !== reviewId))
+      setSelectedReviews((prev) => prev.filter((id) => id !== reviewId));
     }
-  }
+  };
 
   // 리뷰 삭제 처리 (실제로는 API 호출 필요)
   const handleDelete = (reviewId: string) => {
     // 실제 구현에서는 API 호출 후 성공 시 상태 업데이트
-    setSelectedReviews((prev) => prev.filter((id) => id !== reviewId))
-    alert(`리뷰 ID: ${reviewId} 삭제 요청됨`)
-  }
+    setSelectedReviews((prev) => prev.filter((id) => id !== reviewId));
+    alert(`리뷰 ID: ${reviewId} 삭제 요청됨`);
+  };
 
   // 선택된 리뷰 일괄 삭제
   const handleBulkDelete = () => {
     // 실제 구현에서는 API 호출 후 성공 시 상태 업데이트
-    alert(`선택된 ${selectedReviews.length}개 리뷰 삭제 요청됨`)
-    setSelectedReviews([])
-  }
+    alert(`선택된 ${selectedReviews.length}개 리뷰 삭제 요청됨`);
+    setSelectedReviews([]);
+  };
 
   // 리뷰 내용 요약 (최대 50자)
   const summarizeContent = (content: string, maxLength = 50) => {
-    if (content.length <= maxLength) return content
-    return `${content.substring(0, maxLength)}...`
-  }
+    if (content.length <= maxLength) return content;
+    return `${content.substring(0, maxLength)}...`;
+  };
 
   // 평점을 별로 표시
   const renderRating = (rating: number) => {
     return (
       <div className="flex items-center">
         {Array.from({ length: 5 }).map((_, index) => (
-          <Star
-            key={index}
-            className={`h-4 w-4 ${index < rating ? "text-yellow-500 fill-yellow-500" : "text-gray-400"}`}
-          />
+          <Star key={index} className={`h-4 w-4 ${index < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-400'}`} />
         ))}
         <span className="ml-2 text-sm">{rating}/5</span>
       </div>
-    )
-  }
+    );
+  };
 
   // 날짜 포맷팅
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return new Intl.DateTimeFormat("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date)
-  }
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  };
 
   // 리뷰 타입 표시
-  const getReviewTypeLabel = (type: Review["type"], productName?: string) => {
+  const getReviewTypeLabel = (type: Review['type'], productName?: string) => {
     switch (type) {
-      case "lesson":
-        return "레슨 리뷰"
-      case "stringing":
-        return "스트링 서비스 리뷰"
-      case "product":
-        return `상품 리뷰${productName ? `: ${productName}` : ""}`
+      case 'lesson':
+        return '레슨 리뷰';
+      case 'stringing':
+        return '스트링 서비스 리뷰';
+      case 'product':
+        return `상품 리뷰${productName ? `: ${productName}` : ''}`;
       default:
-        return "기타 리뷰"
+        return '기타 리뷰';
     }
-  }
+  };
 
   return (
     <div className="space-y-4 p-8 pt-6">
@@ -171,13 +171,7 @@ export default function ReviewsPage() {
               <div className="flex items-center space-x-2">
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="리뷰 검색..."
-                    className="w-full pl-8"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+                  <Input type="search" placeholder="리뷰 검색..." className="w-full pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
               </div>
             </div>
@@ -198,11 +192,7 @@ export default function ReviewsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">
-                      <Checkbox
-                        checked={filteredReviews.length > 0 && selectedReviews.length === filteredReviews.length}
-                        onCheckedChange={handleSelectAll}
-                        aria-label="전체 선택"
-                      />
+                      <Checkbox checked={filteredReviews.length > 0 && selectedReviews.length === filteredReviews.length} onCheckedChange={handleSelectAll} aria-label="전체 선택" />
                     </TableHead>
                     <TableHead className="w-[180px]">작성자</TableHead>
                     <TableHead className="hidden md:table-cell">리뷰 내용</TableHead>
@@ -223,11 +213,7 @@ export default function ReviewsPage() {
                     filteredReviews.map((review) => (
                       <TableRow key={review.id}>
                         <TableCell>
-                          <Checkbox
-                            checked={selectedReviews.includes(review.id)}
-                            onCheckedChange={(checked) => handleSelectOne(review.id, !!checked)}
-                            aria-label={`${review.authorName} 리뷰 선택`}
-                          />
+                          <Checkbox checked={selectedReviews.includes(review.id)} onCheckedChange={(checked) => handleSelectOne(review.id, !!checked)} aria-label={`${review.authorName} 리뷰 선택`} />
                         </TableCell>
                         <TableCell className="font-medium">
                           <div>{review.authorName}</div>
@@ -248,9 +234,7 @@ export default function ReviewsPage() {
                         <TableCell>{renderRating(review.rating)}</TableCell>
                         <TableCell className="hidden md:table-cell">{formatDate(review.createdAt)}</TableCell>
                         <TableCell>
-                          <span className="whitespace-nowrap">
-                            {getReviewTypeLabel(review.type, review.productName)}
-                          </span>
+                          <span className="whitespace-nowrap">{getReviewTypeLabel(review.type, review.productName)}</span>
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -267,10 +251,7 @@ export default function ReviewsPage() {
                                   <span>상세 보기</span>
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={() => handleDelete(review.id)}
-                              >
+                              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(review.id)}>
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 <span>삭제</span>
                               </DropdownMenuItem>
@@ -287,5 +268,5 @@ export default function ReviewsPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
