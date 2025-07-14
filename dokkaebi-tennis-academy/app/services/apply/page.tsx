@@ -19,6 +19,7 @@ import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { bankLabelMap } from '@/lib/constants';
+import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
 
 declare global {
   interface Window {
@@ -27,6 +28,7 @@ declare global {
 }
 
 export default function StringServiceApplyPage() {
+  useTokenRefresher();
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');

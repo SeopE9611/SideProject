@@ -1,14 +1,16 @@
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
 
 export default function QnaWritePage() {
+  useTokenRefresher();
   return (
     <div className="container py-8">
       <div className="max-w-3xl mx-auto">
@@ -60,10 +62,7 @@ export default function QnaWritePage() {
 
             <div className="flex items-center space-x-2">
               <Checkbox id="private" />
-              <label
-                htmlFor="private"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <label htmlFor="private" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 비공개 문의로 작성
               </label>
             </div>
@@ -77,5 +76,5 @@ export default function QnaWritePage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

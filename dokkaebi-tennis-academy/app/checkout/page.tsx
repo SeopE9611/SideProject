@@ -16,6 +16,7 @@ import CheckoutButton from '@/app/checkout/CheckoutButton';
 import { useRouter } from 'next/navigation';
 import { useAuthStore, User } from '@/lib/stores/auth-store';
 import { getMyInfo } from '@/lib/auth.client';
+import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
 
 declare global {
   interface Window {
@@ -24,6 +25,7 @@ declare global {
 }
 
 export default function CheckoutPage() {
+  useTokenRefresher();
   const { items: orderItems } = useCartStore();
 
   // 주문 금액 계산
