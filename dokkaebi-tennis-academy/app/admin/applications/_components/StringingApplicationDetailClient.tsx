@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle, ArrowLeft } from 'lucide-react';
+import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon } from 'lucide-react';
 import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/admin/applications/_components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -46,6 +46,7 @@ const shippingMethodLabelMap: Record<string, string> = {
 
 interface ApplicationDetail {
   id: string;
+  orderId?: string;
   customer: {
     name: string;
     email: string;
@@ -170,6 +171,22 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
               {/* 취소 안내 메시지는 하단 별도로 */}
               {isCancelled && <p className="text-sm text-muted-foreground italic mt-2">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</p>}
             </CardContent>
+            {/* 연결된 주문 링크 */}
+            {data?.orderId && (
+              <Card className="border border-muted text-sm text-muted-foreground">
+                <CardContent className="flex justify-between items-center py-3">
+                  <div className="flex items-center gap-2">
+                    <LinkIcon className="w-4 h-4" />
+                    <span>이 신청은 상품 주문서와 연결되어 있습니다.</span>
+                  </div>
+                  <Link href={`/admin/orders/${data.orderId}`}>
+                    <Button variant="ghost" size="sm">
+                      주문 상세 보기
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
           </Card>
 
           {/* 고객 정보 */}

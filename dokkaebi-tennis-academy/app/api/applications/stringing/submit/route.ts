@@ -87,8 +87,15 @@ export async function POST(req: Request) {
     // insertedId 추출
     const applicationId = result.insertedId;
 
-    await db.collection('orders').updateOne({ _id: orderObjectId }, { $set: { isStringServiceApplied: true } });
-
+    await db.collection('orders').updateOne(
+      { _id: orderObjectId },
+      {
+        $set: {
+          isStringServiceApplied: true,
+          stringingApplicationId: applicationId.toString(),
+        },
+      }
+    );
     return NextResponse.json({ message: 'success', applicationId }, { status: 201 });
   } catch (err) {
     console.error('신청서 저장 오류:', err);

@@ -5,7 +5,7 @@ import useSWR, { mutate as globalMutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, CreditCard, Download, Mail, MapPin, Package, Phone, ShoppingCart, Truck, User } from 'lucide-react';
+import { ArrowLeft, Calendar, CreditCard, Download, LinkIcon, Mail, MapPin, Package, Phone, ShoppingCart, Truck, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +32,7 @@ const getOrderHistoryKey = (orderId: string) => (pageIndex: number, prev: any) =
 //  타입 정의 (서버에서 내려받는 주문 정보 형태)
 interface OrderDetail {
   _id: string;
+  stringingApplicationId?: string;
   status: string;
   date: string;
   customer: {
@@ -211,6 +212,21 @@ export default function OrderDetailClient({ orderId }: Props) {
                 )}
               </div>
             </CardFooter>
+            {orderDetail?.stringingApplicationId && (
+              <Card className="border border-muted text-sm text-muted-foreground">
+                <CardContent className="flex justify-between items-center py-3">
+                  <div className="flex items-center gap-2">
+                    <LinkIcon className="w-4 h-4" />
+                    <span>이 주문은 스트링 장착 서비스 신청서와 연결되어 있습니다.</span>
+                  </div>
+                  <Link href={`/admin/applications/stringing/${orderDetail.stringingApplicationId}`}>
+                    <Button variant="ghost" size="sm">
+                      신청서 보기
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
           </Card>
 
           {/*  고객 정보  */}
