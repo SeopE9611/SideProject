@@ -51,7 +51,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     if (!user) {
       toast('장바구니에 담았습니다', {
-        description: '비회원이신 경우 로그인 또는 비회원 주문하기로 진행하세요.',
+        description: (
+          <p>
+            비회원이신 경우 <strong>로그인</strong> 또는 <strong>비회원 주문하기</strong>로 진행하세요.
+          </p>
+        ),
         action: {
           label: '로그인하기',
           onClick: () => router.push('/login?from=cart'),
