@@ -8,8 +8,8 @@ interface HistoryRecord {
   description: string;
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const { id } = await params;
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   const client = await clientPromise;
   const db = await getDb();
 
@@ -48,10 +48,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   const client = await clientPromise;
   const db = client.db();
-  const id = params.id;
 
   try {
     const body = await req.json();
