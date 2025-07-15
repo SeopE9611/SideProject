@@ -18,15 +18,16 @@ import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkel
 import Loading from '@/app/admin/orders/[id]/loading';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { bankLabelMap } from '@/lib/constants';
+import { useOrderStore } from '@/app/store/orderStore';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 //  useSWRInfinite용 getKey (처리 이력)
 const LIMIT = 5; // 페이지 당 이력 개수
-const getOrderHistoryKey = (orderId: string) => (pageIndex: number, prev: any) => {
+const getOrderHistoryKey = (selectedOrderId: string) => (pageIndex: number, prev: any) => {
   if (prev && prev.history.length === 0) return null;
-  return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+  return `/api/orders/${selectedOrderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
 };
 
 //  타입 정의 (서버에서 내려받는 주문 정보 형태)
@@ -66,18 +67,20 @@ interface Props {
   orderId: string;
 }
 
-export default function OrderDetailClient({ orderId }: Props) {
+export default function OrderDetailClient() {
   const router = useRouter();
 
+  const { selectedOrderId } = useOrderStore();
+
   // 주문 전체 데이터를 SWR로 가져옴 (갱신 키: `/api/orders/${orderId}`)
-  const { data: orderDetail, error: orderError, mutate: mutateOrder } = useSWR<OrderDetail>(`/api/orders/${orderId}`, fetcher);
+  const { data: orderDetail, error: orderError, mutate: mutateOrder } = useSWR<OrderDetail>(selectedOrderId ? `/api/orders/${selectedOrderId}` : null, fetcher);
 
   //  처리 이력 데이터를 SWRInfinite로 가져옴. (키: `/api/orders/${orderId}/history?…`)
   const {
     data: historyPages,
     error: historyError,
     mutate: mutateHistory,
-  } = useSWRInfinite(getOrderHistoryKey(orderId), fetcher, {
+  } = useSWRInfinite(getOrderHistoryKey(selectedOrderId!), fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
@@ -147,7 +150,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       return;
     }
 
-    router.push(`/admin/orders/${orderId}/shipping-update`);
+    router.push(`/admin/orders/${selectedOrderId}/shipping-update`);
   };
   return (
     <div className="container py-10">
@@ -197,14 +200,14 @@ export default function OrderDetailClient({ orderId }: Props) {
                   currentStatus → localStatus
                   orderId: string
                 */}
-                <OrderStatusSelect orderId={orderId} currentStatus={localStatus} />
+                <OrderStatusSelect orderId={selectedOrderId!} currentStatus={localStatus} />
 
                 {/* 주문 취소 모달: status가 '취소'가 아닐 때만 보여줌 */}
                 {localStatus === '취소' ? (
                   <p className="text-sm text-muted-foreground italic mt-2">취소된 주문입니다. 상태 변경 및 취소가 불가능합니다.</p>
                 ) : (
                   <AdminCancelOrderDialog
-                    orderId={orderId}
+                    orderId={selectedOrderId!}
                     onCancelSuccess={handleCancelSuccess}
                     key={'cancel-' + allHistory.length}
                     // history 길이가 바뀔 때마다 모달 키를 바꿔주면 모달 내부 상태가 초기화
@@ -410,7 +413,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
           {/*  처리 이력  */}
           <div className="md:col-span-3">
-            <OrderHistory orderId={orderId} />
+            <OrderHistory orderId={selectedOrderId!} />
           </div>
         </div>
       </div>
