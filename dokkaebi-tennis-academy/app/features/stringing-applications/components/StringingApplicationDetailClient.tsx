@@ -15,6 +15,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import StringingApplicationHistory from '@/app/features/stringing-applications/components/StringingApplicationHistory';
 import { paymentStatusColors } from '@/lib/badge-style';
 import { bankLabelMap } from '@/lib/constants';
+import { useStringingStore } from '@/app/store/stringingStore';
 
 interface Props {
   id: string;
@@ -84,9 +85,10 @@ interface ApplicationDetail {
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
-export default function StringingApplicationDetailClient({ id, baseUrl }: Props) {
+export default function StringingApplicationDetailClient({ baseUrl }: Props) {
   const router = useRouter();
-  const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(`${baseUrl}/api/applications/stringing/${id}`, fetcher);
+  const applicationId = useStringingStore((state) => state.selectedApplicationId);
+  const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, fetcher);
   const [isPending, startTransition] = useTransition();
   const historyMutateRef = useRef<(() => Promise<any>) | undefined>(undefined);
 
@@ -94,7 +96,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
     if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/applications/stringing/${id}/status`, {
+        const res = await fetch(`/api/applications/stringing/${applicationId}/status`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: '취소' }),
@@ -268,12 +270,14 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
 
           {/* 처리 이력 */}
           <div className="md:col-span-3">
-            <StringingApplicationHistory
-              applicationId={id}
-              onHistoryMutate={(m) => {
-                historyMutateRef.current = m;
-              }}
-            />
+            {applicationId && (
+              <StringingApplicationHistory
+                applicationId={applicationId}
+                onHistoryMutate={(mutateFn) => {
+                  historyMutateRef.current = mutateFn;
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
