@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils';
 import { DateFilter } from '@/app/admin/orders/_components/order-filters/DateFilter';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useRouter } from 'next/navigation';
-import { showErrorToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -173,7 +173,7 @@ export default function OrdersClient() {
         cache: 'no-store',
       });
       if (!res.ok) {
-        toast.error('주문 정보를 불러올 수 없습니다.');
+        showErrorToast('주문 정보를 불러올 수 없습니다.');
         return;
       }
       const order = await res.json();
@@ -183,7 +183,7 @@ export default function OrdersClient() {
       }
       router.push(`/admin/orders/${orderId}/shipping-update`);
     } catch {
-      toast.error('오류가 발생했습니다. 다시 시도해주세요.');
+      showErrorToast('오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -384,7 +384,7 @@ export default function OrdersClient() {
                                     className="h-6 w-6"
                                     onClick={() => {
                                       navigator.clipboard.writeText(order.id);
-                                      toast.success('주문 ID가 클립보드에 복사되었습니다.');
+                                      showSuccessToast('주문 ID가 클립보드에 복사되었습니다.');
                                     }}
                                   >
                                     <Copy className="w-4 h-4" />

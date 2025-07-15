@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import { OrderStatusSelect } from '@/app/admin/orders/_components/OrderStatusSelect';
 import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
 import Loading from '@/app/admin/orders/[id]/loading';
-import { showErrorToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { bankLabelMap } from '@/lib/constants';
 
 // SWR fetcher
@@ -130,10 +130,10 @@ export default function OrderDetailClient({ orderId }: Props) {
       // SWR 캐시의 해당 키를 revalidate (서버에서 최신 정보 가져오기)
       await mutateOrder(); // `/api/orders/${orderId}` 다시 호출
       await mutateHistory(); // `/api/orders/${orderId}/history?…` 다시 호출
-      toast.success('주문이 취소되었습니다.');
+      showSuccessToast('주문이 취소되었습니다.');
     } catch (err) {
       console.error('[OrderDetailClient] cancel mutate error:', err);
-      toast.error('취소 후 데이터 갱신 중 오류가 발생했습니다.');
+      showErrorToast('취소 후 데이터 갱신 중 오류가 발생했습니다.');
       // 오류 시, 서버에서 받아온 원래 상태로 복원
       if (orderDetail.status !== '취소') {
         setLocalStatus(orderDetail.status);

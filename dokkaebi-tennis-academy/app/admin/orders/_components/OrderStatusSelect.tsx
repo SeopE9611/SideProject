@@ -5,6 +5,7 @@ import useSWRInfinite from 'swr/infinite';
 import { toast } from 'sonner';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 const LIMIT = 5; // 한 페이지에 보여줄 이력 개수
 
@@ -67,10 +68,10 @@ export function OrderStatusSelect({ orderId, currentStatus }: Props) {
       // 주문 목록 전체 갱신
       await mutate('/api/orders');
 
-      toast.success(`주문 상태가 '${newStatus}'로 변경되었습니다.`);
+      showSuccessToast(`주문 상태가 '${newStatus}'로 변경되었습니다.`);
     } catch (err: any) {
       console.error(err);
-      toast.error(`상태 변경 실패: ${err.message}`);
+      showErrorToast(`상태 변경 실패: ${err.message}`);
     }
   };
 

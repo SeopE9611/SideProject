@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { mutate } from 'swr';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 // props: 주문 ID만 전달받음
 interface CancelOrderDialogProps {
@@ -26,14 +27,14 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
   //  제출 처리 함수
   const handleSubmit = async () => {
     if (!selectedReason) {
-      toast.error('취소 사유를 선택해주세요.');
+      showErrorToast('취소 사유를 선택해주세요.');
       return;
     }
 
     const finalReason = selectedReason === '기타' ? otherReason.trim() : selectedReason;
 
     if (selectedReason === '기타' && !finalReason) {
-      toast.error('기타 사유를 입력해주세요.');
+      showErrorToast('기타 사유를 입력해주세요.');
       return;
     }
 
@@ -57,7 +58,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
         throw new Error('서버 응답 실패');
       }
 
-      toast.success('주문이 성공적으로 취소되었습니다.');
+      showSuccessToast('주문이 성공적으로 취소되었습니다.');
       // status 전용 버튼/Badge 갱신 (OrderStatusBadge가 /api/orders/{orderId}/status 를 SWR로 가져오는 경우)
       await mutate(`/api/orders/${orderId}/status`, undefined, { revalidate: true });
 
@@ -72,7 +73,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
       // router.refresh(); //   주문 상세 UI 갱신
     } catch (err) {
       console.error(err);
-      toast.error('주문 취소 중 오류가 발생했습니다.');
+      showErrorToast('주문 취소 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
     }

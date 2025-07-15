@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 
 import { useRouter } from 'next/navigation';
 import { User } from '@/lib/stores/auth-store';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
@@ -44,7 +45,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     });
 
     if (!result.success) {
-      toast.error(result.message);
+      showErrorToast(result.message);
       return;
     }
 
@@ -57,7 +58,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         },
       });
     } else {
-      toast.success('장바구니에 담았습니다.');
+      showSuccessToast('장바구니에 담았습니다.');
     }
   };
 

@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import AccessDenied from '@/components/system/AccessDenied';
+import { showSuccessToast } from '@/lib/toast';
 
 // 사이트 설정 스키마
 const siteSettingsSchema = z.object({
@@ -131,27 +132,27 @@ export default async function SettingsPage() {
   // 폼 제출 핸들러
   const onSubmitSiteSettings = (data: z.infer<typeof siteSettingsSchema>) => {
     console.log('사이트 설정 저장:', data);
-    toast.success('사이트 설정이 저장되었습니다.');
+    showSuccessToast('사이트 설정이 저장되었습니다.');
   };
 
   const onSubmitUserSettings = (data: z.infer<typeof userSettingsSchema>) => {
     console.log('사용자 설정 저장:', data);
-    toast.success('사용자 설정이 저장되었습니다.');
+    showSuccessToast('사용자 설정이 저장되었습니다.');
   };
 
   const onSubmitEmailSettings = (data: z.infer<typeof emailSettingsSchema>) => {
     console.log('이메일 설정 저장:', data);
-    toast.success('이메일 설정이 저장되었습니다.');
+    showSuccessToast('이메일 설정이 저장되었습니다.');
   };
 
   const onSubmitPaymentSettings = (data: z.infer<typeof paymentSettingsSchema>) => {
     console.log('결제 설정 저장:', data);
-    toast.success('결제 설정이 저장되었습니다.');
+    showSuccessToast('결제 설정이 저장되었습니다.');
   };
 
   // 테스트 이메일 발송
   const sendTestEmail = () => {
-    toast.success('테스트 이메일이 발송되었습니다.');
+    showSuccessToast('테스트 이메일이 발송되었습니다.');
   };
 
   return (

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 interface ShippingFormProps {
   applicationId: string;
@@ -57,22 +58,22 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
     e.preventDefault();
 
     if (!shippingMethod) {
-      toast.error('배송 방법을 선택해주세요');
+      showErrorToast('배송 방법을 선택해주세요');
       return;
     }
 
     if (!estimatedDelivery) {
-      toast.error('예상 수령일을 입력해주세요');
+      showErrorToast('예상 수령일을 입력해주세요');
       return;
     }
 
     if (shippingMethod === 'delivery') {
       if (!courier) {
-        toast.error('택배사를 선택해주세요');
+        showErrorToast('택배사를 선택해주세요');
         return;
       }
       if (!trackingNumber) {
-        toast.error('운송장 번호를 입력해주세요');
+        showErrorToast('운송장 번호를 입력해주세요');
         return;
       }
     }
@@ -100,7 +101,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
 
       console.log('배송 정보 업데이트 응답:', res);
 
-      toast.success('배송 정보가 업데이트되었습니다');
+      showSuccessToast('배송 정보가 업데이트되었습니다');
 
       router.refresh();
 
@@ -109,7 +110,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
       }
       router.push(`/admin/applications/stringing/${applicationId}`);
     } catch (error) {
-      toast.error('배송 정보 업데이트 중 문제가 발생했습니다. 다시 시도해주세요');
+      showErrorToast('배송 정보 업데이트 중 문제가 발생했습니다. 다시 시도해주세요');
       console.error('배송 정보 업데이트 오류:', error);
     } finally {
       setIsSubmitting(false);

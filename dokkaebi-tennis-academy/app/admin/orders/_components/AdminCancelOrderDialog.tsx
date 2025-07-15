@@ -8,6 +8,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { mutate } from 'swr';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 const CANCEL_REASONS = ['상품 품절', '고객 요청', '배송 지연', '결제 오류', '기타'];
 
@@ -43,7 +44,7 @@ export default function AdminCancelOrderDialog({
 
   const handleSubmit = async () => {
     if (!selectedReason) {
-      toast.error('취소 사유를 선택해주세요.');
+      showErrorToast('취소 사유를 선택해주세요.');
       return;
     }
 
@@ -65,7 +66,7 @@ export default function AdminCancelOrderDialog({
         throw new Error('서버 오류');
       }
 
-      toast.success('주문이 취소되었습니다.');
+      showSuccessToast('주문이 취소되었습니다.');
 
       // SWR 캐시 재검증
       //  주문 상태 뱃지(`/api/orders/${orderId}/status`) 다시 불러오기
@@ -89,7 +90,7 @@ export default function AdminCancelOrderDialog({
       setOpen(false);
     } catch (err: any) {
       console.error('취소 중 오류:', err);
-      toast.error(`주문 취소에 실패했습니다: ${err.message}`);
+      showErrorToast(`주문 취소에 실패했습니다: ${err.message}`);
     } finally {
       setLoading(false);
     }

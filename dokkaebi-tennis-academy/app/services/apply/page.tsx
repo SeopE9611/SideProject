@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { showErrorToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useSearchParams } from 'next/navigation';
 import StringSelector from '@/app/services/_components/StringSelector';
 import { Order } from '@/lib/types/order';
@@ -232,7 +232,7 @@ export default function StringServiceApplyPage() {
 
       const result = await res.json();
 
-      toast.success('신청이 완료되었습니다!');
+      showSuccessToast('신청이 완료되었습니다!');
       router.push(`/services/success?applicationId=${result.applicationId}`);
     } catch (error) {
       showErrorToast('신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.');
