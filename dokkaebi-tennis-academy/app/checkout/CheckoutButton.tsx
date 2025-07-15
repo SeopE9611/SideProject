@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useCartStore } from '@/lib/stores/cart';
+import { useCartStore } from '@/app/store/cartStore';
 import { useState, useEffect } from 'react';
-import { User } from '@/lib/stores/auth-store';
+import { User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
 
 export default function CheckoutButton({

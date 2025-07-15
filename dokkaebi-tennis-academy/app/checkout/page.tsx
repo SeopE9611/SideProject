@@ -10,11 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useCartStore } from '@/lib/stores/cart';
+import { useCartStore } from '@/app/store/cartStore';
 import { useEffect, useState } from 'react';
 import CheckoutButton from '@/app/checkout/CheckoutButton';
 import { useRouter } from 'next/navigation';
-import { useAuthStore, User } from '@/lib/stores/auth-store';
+import { useAuthStore, User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
 import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
 

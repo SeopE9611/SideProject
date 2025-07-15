@@ -5,12 +5,12 @@ import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCartStore } from '@/lib/stores/cart';
+import { useCartStore } from '@/app/store/cartStore';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 import { useRouter } from 'next/navigation';
-import { User } from '@/lib/stores/auth-store';
+import { User } from '@/app/store/authStore';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 export default function ProductDetailClient({ product }: { product: any }) {

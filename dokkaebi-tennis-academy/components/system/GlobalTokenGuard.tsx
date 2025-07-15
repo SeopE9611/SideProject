@@ -1,6 +1,6 @@
 'use client';
 import { useEffect } from 'react';
-import { useAuthStore } from '@/lib/stores/auth-store';
+import { useAuthStore } from '@/app/store/authStore';
 import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
 
 export function GlobalTokenGuard() {

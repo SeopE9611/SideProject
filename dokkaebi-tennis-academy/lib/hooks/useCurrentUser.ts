@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuthStore } from '@/lib/stores/auth-store';
+import { useAuthStore } from '@/app/store/authStore';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 

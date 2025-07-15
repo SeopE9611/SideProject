@@ -1,7 +1,7 @@
 'use client';
 
 import useAxiosInstance from './useAxiosInstance';
-import { useAuthStore, User } from './stores/auth-store';
+import { useAuthStore, User } from '../app/store/authStore';
 import { showErrorToast } from '@/lib/toast';
 
 export async function getMyInfo(): Promise<{ user: User | null }> {

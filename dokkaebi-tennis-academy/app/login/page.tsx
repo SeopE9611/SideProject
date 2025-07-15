@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuthStore } from '@/lib/stores/auth-store';
+import { useAuthStore } from '@/app/store/authStore';
 
 export default function LoginPage() {
   const router = useRouter();

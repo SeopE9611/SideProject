@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { orderStatusColors } from '@/lib/badge-style';
-import { useAuthStore } from '@/lib/stores/auth-store';
+import { useAuthStore } from '@/app/store/authStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 //  주문 데이터 타입 정의

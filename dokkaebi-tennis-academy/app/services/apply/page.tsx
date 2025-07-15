@@ -16,7 +16,7 @@ import StringSelector from '@/app/services/_components/StringSelector';
 import { Order } from '@/lib/types/order';
 import PreferredTimeSelector from '@/app/services/_components/TimeSlotSelector';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
-import { useAuthStore } from '@/lib/stores/auth-store';
+import { useAuthStore } from '@/app/store/authStore';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { bankLabelMap } from '@/lib/constants';
 import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
