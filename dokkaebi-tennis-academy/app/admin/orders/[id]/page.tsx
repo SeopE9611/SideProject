@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import OrderDetailClient from '@/app/admin/orders/_components/OrderDetailClient';
+import OrderDetailClient from '@/app/features/orders/components/OrderDetailClient';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import AccessDenied from '@/components/system/AccessDenied';
 

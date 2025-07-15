@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { redirect } from 'next/navigation';
-import StringingApplicationDetailClient from '@/app/admin/applications/_components/StringingApplicationDetailClient';
+import StringingApplicationDetailClient from '@/app/features/stringing-applications/components/StringingApplicationDetailClient';
 import AccessDenied from '@/components/system/AccessDenied';
 
 export default async function StringingApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {

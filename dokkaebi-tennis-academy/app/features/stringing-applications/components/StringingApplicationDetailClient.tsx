@@ -9,10 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon } from 'lucide-react';
-import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
-import { ApplicationStatusSelect } from '@/app/admin/applications/_components/ApplicationStatusSelect';
+import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
+import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import StringingApplicationHistory from '@/app/admin/applications/_components/StringingApplicationHistory';
+import StringingApplicationHistory from '@/app/features/stringing-applications/components/StringingApplicationHistory';
 import { paymentStatusColors } from '@/lib/badge-style';
 import { bankLabelMap } from '@/lib/constants';
 

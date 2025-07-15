@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
+import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 
 export interface Application {
   id: string;

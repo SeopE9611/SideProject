@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import CancelOrderDialog from './CancelOrderDialog'; // 기존 다이얼로그 그대로 사용
-import OrderHistory from '@/app/admin/orders/_components/OrderHistory';
-import { OrderStatusBadge } from '@/app/admin/orders/_components/OrderStatusBadge';
+import OrderHistory from '@/app/features/orders/components/OrderHistory';
+import { OrderStatusBadge } from '@/app/features/orders/components/OrderStatusBadge';
 import { paymentStatusColors } from '@/lib/badge-style';
 import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
 import { useRouter } from 'next/navigation';

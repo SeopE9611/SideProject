@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
-import { ApplicationStatusSelect } from '@/app/admin/applications/_components/ApplicationStatusSelect';
+import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
+import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 
 type Application = {
   _id: string;

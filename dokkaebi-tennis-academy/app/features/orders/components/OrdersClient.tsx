@@ -16,17 +16,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { shortenId } from '@/lib/shorten';
 import { toast } from 'sonner';
 import { getShippingBadge, orderStatusColors, orderTypeColors, paymentStatusColors, shippingStatusColors } from '@/lib/badge-style';
-import CustomerTypeFilter from '@/app/admin/orders/_components/order-filters/CustomerTypeFilter';
-import { OrderStatusFilter } from '@/app/admin/orders/_components/order-filters/OrderStatusFilter';
-import { PaymentStatusFilter } from '@/app/admin/orders/_components/order-filters/PaymentStatusFilter';
-import { ShippingStatusFilter } from '@/app/admin/orders/_components/order-filters/ShippingStatusFilter';
-import { OrderTypeFilter } from '@/app/admin/orders/_components/order-filters/OrderTypeFilter';
+import CustomerTypeFilter from '@/app/features/orders/components/order-filters/CustomerTypeFilter';
+import { OrderStatusFilter } from '@/app/features/orders/components/order-filters/OrderStatusFilter';
+import { PaymentStatusFilter } from '@/app/features/orders/components/order-filters/PaymentStatusFilter';
+import { ShippingStatusFilter } from '@/app/features/orders/components/order-filters/ShippingStatusFilter';
+import { OrderTypeFilter } from '@/app/features/orders/components/order-filters/OrderTypeFilter';
 import { cn } from '@/lib/utils';
-import { DateFilter } from '@/app/admin/orders/_components/order-filters/DateFilter';
+import { DateFilter } from '@/app/features/orders/components/order-filters/DateFilter';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useRouter } from 'next/navigation';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
+import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 
 /** 데이터를 받아오는 fetcher 함수 */

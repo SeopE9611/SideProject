@@ -6,7 +6,7 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, CheckCircle, XCircle, Search, ClipboardCheck } from 'lucide-react';
-import { HistorySkeleton } from '@/app/admin/orders/_components/HistorySkeleton';
+import { HistorySkeleton } from '@/app/features/orders/components/HistorySkeleton';
 
 const LIMIT = 5;
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());

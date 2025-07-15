@@ -1,4 +1,4 @@
-import StringingApplicationsClient from '@/app/admin/applications/_components/StringingApplicationsClient';
+import StringingApplicationsClient from '@/app/features/stringing-applications/components/StringingApplicationsClient';
 import AccessDenied from '@/components/system/AccessDenied';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 

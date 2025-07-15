@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, User, MessageSquare } from 'lucide-react';
 import { RatIcon as Racquet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import ApplicationStatusBadge from '@/app/admin/applications/_components/ApplicationStatusBadge';
+import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 
 interface Application {
   id: string;
