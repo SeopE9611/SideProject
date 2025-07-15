@@ -29,6 +29,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useOrderStore } from '@/app/store/orderStore';
+import { useStringingStore } from '@/app/store/stringingStore';
 
 /** 데이터를 받아오는 fetcher 함수 */
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -451,7 +452,16 @@ export default function OrdersClient() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>작업</DropdownMenuLabel>
                               <DropdownMenuItem asChild>
-                                <Link href={order.__type === 'stringing_application' ? `/admin/applications/stringing/${order.id}` : `/admin/orders/${order.id}`} onClick={() => useOrderStore.getState().setSelectedOrderId(order.id)}>
+                                <Link
+                                  href={order.__type === 'stringing_application' ? `/admin/applications/stringing/${order.id}` : `/admin/orders/${order.id}`}
+                                  onClick={() => {
+                                    if (order.__type === 'stringing_application') {
+                                      useStringingStore.getState().setSelectedApplicationId(order.id);
+                                    } else {
+                                      useOrderStore.getState().setSelectedOrderId(order.id);
+                                    }
+                                  }}
+                                >
                                   <Eye className="mr-2 h-4 w-4" /> 상세 보기
                                 </Link>
                               </DropdownMenuItem>
