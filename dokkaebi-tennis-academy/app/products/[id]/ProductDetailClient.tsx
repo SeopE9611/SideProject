@@ -56,7 +56,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     });
 
     if (!result.success) {
-      showErrorToast(result.message);
+      showErrorToast(result.message ?? '오류');
       return;
     }
 
