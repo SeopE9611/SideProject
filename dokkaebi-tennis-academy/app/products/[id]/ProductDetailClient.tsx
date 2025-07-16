@@ -77,7 +77,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
       showSuccessToast('장바구니에 담았습니다.');
     }
   };
-
   return (
     <div className="container py-8">
       <div className="mb-4">
@@ -148,23 +147,29 @@ export default function ProductDetailClient({ product }: { product: any }) {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">수량:</span>
-
               <Button variant="outline" size="sm" onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
                 -
               </Button>
-
               <span className="w-6 text-center">{quantity}</span>
-
               <Button variant="outline" size="sm" onClick={() => setQuantity((q) => q + 1)}>
                 +
               </Button>
             </div>
 
+            {product.inventory.manageStock && product.inventory.stock <= 5 && <p className="text-sm text-red-600 mt-2">현재 남은 수량이 {product.inventory.stock}개입니다.</p>}
+
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button className="flex-1" onClick={handleAddToCart} disabled={loading}>
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                장바구니에 담기
-              </Button>
+              {product.inventory.manageStock && product.inventory.stock <= 0 ? (
+                <Button disabled className="flex-1 bg-red-100 text-red-600 border border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-600 cursor-not-allowed hover:bg-red-100 dark:hover:bg-red-900">
+                  재고가 소진되었습니다
+                </Button>
+              ) : (
+                <Button className="flex-1" onClick={handleAddToCart} disabled={loading}>
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  장바구니에 담기
+                </Button>
+              )}
+
               <Button variant="outline">
                 <Heart className="mr-2 h-4 w-4" />
                 위시리스트에 추가
