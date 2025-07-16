@@ -1,27 +1,39 @@
-import { ReactNode } from 'react';
+// lib/toast.ts
+import React from 'react'; // React.createElement 를 쓰기 위해 필요
 import { toast } from 'sonner';
+import { CheckCircle, XCircle, Info } from 'lucide-react';
 
-// 성공 토스트 전역 함수
+// 성공
 export const showSuccessToast = (message: string) =>
   toast.success(message, {
-    icon: '✅',
+    icon: React.createElement(CheckCircle, {
+      className: 'text-emerald-500',
+      size: 20,
+    }),
     duration: 3000,
   });
 
-// 실패 토스트 전역 함수
-export const showErrorToast = (message: ReactNode) =>
+// 실패
+export const showErrorToast = (message: string) =>
   toast.error(message, {
-    icon: '🚫',
+    icon: React.createElement(XCircle, {
+      className: 'text-red-500',
+      size: 20,
+    }),
+    duration: 4000,
     style: {
-      background: '#fef2f2', // 연한 빨강
+      background: '#fef2f2',
       color: '#b91c1c',
       border: '1px solid #fca5a5',
     },
-    duration: 4000,
   });
 
-// 일반 알림
-export const showToast = (message: string) =>
+// 정보
+export const showInfoToast = (message: string) =>
   toast(message, {
-    icon: 'ℹ️',
+    icon: React.createElement(Info, {
+      className: 'text-blue-500',
+      size: 20,
+    }),
+    duration: 2500,
   });
