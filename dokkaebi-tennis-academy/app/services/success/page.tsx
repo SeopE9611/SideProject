@@ -21,7 +21,8 @@ function isValidObjectId(id: string | undefined): boolean {
   return typeof id === 'string' && /^[a-fA-F0-9]{24}$/.test(id);
 }
 
-export default async function StringServiceSuccessPage({ searchParams }: Props) {
+export default async function StringServiceSuccessPage(props: Props) {
+  const searchParams = await props.searchParams;
   const applicationId = searchParams.applicationId;
 
   if (!isValidObjectId(applicationId)) return notFound();
