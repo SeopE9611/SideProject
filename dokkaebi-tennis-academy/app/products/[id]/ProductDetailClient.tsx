@@ -24,18 +24,29 @@ export default function ProductDetailClient({ product }: { product: any }) {
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
       .then((res) => res.json())
-      .then(({ user }) => {
-        setUser(user);
+      .then((data) => {
+        console.log('응답:', data);
+        // API가 { error: '...' } 로 내려올 수도 있으니 안전하게 처리
+        if ('error' in data) {
+          setUser(null);
+        } else {
+          setUser(data); // data 자체가 User 객체
+        }
       })
       .catch(() => {
+        console.log('요청 실패');
         setUser(null);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        console.log('로딩 완료');
+      });
   }, []);
 
   // if (!user) return null;
 
   const handleAddToCart = () => {
+    if (loading) return;
     const result = addItem({
       id: product._id.toString(),
       name: product.name,
@@ -150,7 +161,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button className="flex-1" onClick={handleAddToCart}>
+              <Button className="flex-1" onClick={handleAddToCart} disabled={loading}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 장바구니에 담기
               </Button>
