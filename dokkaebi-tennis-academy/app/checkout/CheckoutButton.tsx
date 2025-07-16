@@ -65,7 +65,10 @@ export default function CheckoutButton({
       withStringService,
     };
     const orderData = {
-      items,
+      items: items.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+      })),
       shippingInfo,
       paymentInfo: {
         method: '무통장입금',
@@ -77,13 +80,12 @@ export default function CheckoutButton({
       isStringServiceApplied: withStringService,
     };
 
-    console.log('주문 요청 데이터', {
-      items,
-      shippingInfo,
-      totalPrice,
-      shippingFee,
-    });
-
+    // console.log('주문 요청 데이터', {
+    //   items,
+    //   shippingInfo,
+    //   totalPrice,
+    //   shippingFee,
+    // });
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
