@@ -86,7 +86,7 @@ export default function NewStringPage() {
     color: '',
     length: '',
     price: 0,
-    stringingFee: 0,
+    mountingFee: 0,
   });
 
   // 성능 및 특성 정보
@@ -545,12 +545,12 @@ export default function NewStringPage() {
                         id="string-stringing-fee"
                         type="text"
                         placeholder="0"
-                        value={basicInfo.stringingFee.toLocaleString()}
+                        value={basicInfo.mountingFee.toLocaleString()}
                         onChange={(e) => {
                           const raw = e.target.value.replace(/,/g, '');
                           const numeric = Number(raw);
                           if (!isNaN(numeric)) {
-                            setBasicInfo({ ...basicInfo, stringingFee: numeric });
+                            setBasicInfo({ ...basicInfo, mountingFee: numeric });
                           }
                         }}
                       />
