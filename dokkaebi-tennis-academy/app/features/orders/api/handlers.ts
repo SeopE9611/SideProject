@@ -52,13 +52,25 @@ export async function createOrder(req: Request): Promise<Response> {
       }
       // 재고가 부족한 경우 처리 차단
       if (product.inventory.stock < quantity) {
-        return NextResponse.json({ error: '재고가 부족합니다.' }, { status: 400 });
+        return NextResponse.json(
+          {
+            error: 'INSUFFICIENT_STOCK',
+            productName: product.name,
+            currentStock: product.inventory.stock,
+          },
+          { status: 400 }
+        );
       }
 
       //  상품 재고 차감
       await db.collection('products').updateOne(
         { _id: productId }, // 어떤 상품인지 지정
-        { $inc: { 'inventory.stock': -quantity } } // stock 필드를 음수로 감소시킴
+        {
+          $inc: {
+            'inventory.stock': -quantity, // stock 필드를 음수로 감소시킴
+            sold: quantity, // 누적 판매 수량 증가
+          },
+        }
       );
     }
 

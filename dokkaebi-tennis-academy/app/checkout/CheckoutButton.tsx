@@ -6,6 +6,7 @@ import { useCartStore } from '@/app/store/cartStore';
 import { useState, useEffect } from 'react';
 import { User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
+import { showErrorToast } from '@/lib/toast';
 
 export default function CheckoutButton({
   disabled,
@@ -114,12 +115,23 @@ export default function CheckoutButton({
       if (data?.orderId) {
         clearCart();
         router.push(`/checkout/success?orderId=${data.orderId}`);
+      } else if (data?.error === 'INSUFFICIENT_STOCK') {
+        // 서버에서 같이 넘겨준 productName, currentStock 활용
+        showErrorToast(
+          <div>
+            <p>
+              <strong>"{data.productName}"</strong> 상품의 재고가 부족합니다.
+            </p>
+            <p>수량을 다시 확인해주세요.</p>
+            <p>현재 재고: {data.currentStock}개</p>
+          </div>
+        );
       } else {
-        alert('주문 실패: 서버 오류');
+        showErrorToast(data?.error ?? '주문 실패: 서버 오류');
       }
     } catch (error) {
       console.error('주문 실패:', error);
-      alert('주문 중 문제가 발생했습니다.');
+      showErrorToast('주문 중 문제가 발생했습니다.');
     }
   };
 
