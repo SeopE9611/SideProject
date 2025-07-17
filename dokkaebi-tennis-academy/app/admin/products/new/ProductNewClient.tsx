@@ -86,6 +86,7 @@ export default function NewStringPage() {
     color: '',
     length: '',
     price: 0,
+    stringingFee: 0,
   });
 
   // 성능 및 특성 정보
@@ -501,6 +502,63 @@ export default function NewStringPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+            {/* 가격 정보 카드 */}
+            <Card>
+              <CardHeader>
+                <CardTitle>가격 정보</CardTitle>
+                <CardDescription>소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* 장착 서비스 비용 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="string-stringing-fee">
+                      장착 서비스 비용
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="inline ml-1 h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="top"
+                            align="center"
+                            sideOffset={4}
+                            style={{
+                              backgroundColor: 'rgb(var(--popover))',
+                              color: 'rgb(var(--popover-foreground))',
+                              border: '1px solid rgb(var(--border))',
+                              borderRadius: '8px',
+                              boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.1)',
+                            }}
+                            className="px-4 py-2 text-sm max-w-[260px]"
+                          >
+                            <p>해당 스트링을 이용한 장착 서비스 비용을 입력하세요.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Label>
+                    <div className="flex">
+                      <Input
+                        id="string-stringing-fee"
+                        type="text"
+                        placeholder="0"
+                        value={basicInfo.stringingFee.toLocaleString()}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/,/g, '');
+                          const numeric = Number(raw);
+                          if (!isNaN(numeric)) {
+                            setBasicInfo({ ...basicInfo, stringingFee: numeric });
+                          }
+                        }}
+                      />
+                      <span className="ml-2 flex items-center text-sm">원</span>
+                    </div>
+                  </div>
+
+                  {/* 가격 */}
                   <div className="space-y-2">
                     <Label htmlFor="string-regular-price">
                       가격 <span className="text-destructive">*</span>
@@ -510,9 +568,9 @@ export default function NewStringPage() {
                         id="string-regular-price"
                         type="text"
                         placeholder="0"
-                        value={basicInfo.price.toLocaleString()} // 숫자 → 천 단위 문자열
+                        value={basicInfo.price.toLocaleString()}
                         onChange={(e) => {
-                          const raw = e.target.value.replace(/,/g, ''); // 콤마 제거
+                          const raw = e.target.value.replace(/,/g, '');
                           const numeric = Number(raw);
                           if (!isNaN(numeric)) {
                             setBasicInfo({ ...basicInfo, price: numeric });

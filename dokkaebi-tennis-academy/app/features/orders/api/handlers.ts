@@ -21,12 +21,6 @@ export async function createOrder(req: Request): Promise<Response> {
     const body = await req.json();
     const { items, shippingInfo, totalPrice, shippingFee, guestInfo } = body;
 
-    /**
-     * 🔁 각 상품마다 반복문을 돌며,
-     * 1. 해당 상품이 실제로 존재하는지 확인
-     * 2. 재고가 충분한지 확인
-     * 3. 재고 수량에서 구매 수량만큼 차감
-     */
     for (const item of items) {
       // console.log(' 주문 상품 ID:', item.productId);
       const productId = new ObjectId(item.productId); // 상품의 MongoDB ObjectId 생성
