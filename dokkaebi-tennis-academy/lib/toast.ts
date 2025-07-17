@@ -1,5 +1,5 @@
 // lib/toast.ts
-import React from 'react'; // React.createElement 를 쓰기 위해 필요
+import React, { ReactNode } from 'react'; // React.createElement 를 쓰기 위해 필요
 import { toast } from 'sonner';
 import { CheckCircle, XCircle, Info } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export const showSuccessToast = (message: string) =>
   });
 
 // 실패
-export const showErrorToast = (message: string) =>
+export const showErrorToast = (message: string | ReactNode) =>
   toast.error(message, {
     icon: React.createElement(XCircle, {
       className: 'text-red-500',
