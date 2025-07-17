@@ -18,6 +18,7 @@ export type CartItem = {
   price: number;
   quantity: number;
   image?: string; // 이미지는 선택적 속성
+  stock?: number; // 재고 정보
 };
 
 // 타입 정의

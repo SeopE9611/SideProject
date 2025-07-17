@@ -11,6 +11,7 @@ import { useAuthStore, User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { showErrorToast } from '@/lib/toast';
 
 export default function CartPageClient() {
   const router = useRouter();
@@ -75,7 +76,26 @@ export default function CartPageClient() {
                         <span className="sr-only">수량 감소</span>
                       </Button>
                       <span className="w-8 text-center">{item.quantity}</span>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => {
+                          const stock = item.stock ?? Infinity;
+                          if (item.quantity + 1 > stock) {
+                            showErrorToast(
+                              <>
+                                <p>
+                                  <strong>{item.name}</strong>의 최대 주문 수량은 {stock}개입니다.
+                                </p>
+                                <p>더 이상 수량을 늘릴 수 없습니다.</p>
+                              </>
+                            );
+                            return;
+                          }
+                          updateQuantity(item.id, item.quantity + 1);
+                        }}
+                      >
                         <Plus className="h-3 w-3" />
                         <span className="sr-only">수량 증가</span>
                       </Button>

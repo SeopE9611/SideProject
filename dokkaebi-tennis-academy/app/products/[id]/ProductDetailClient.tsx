@@ -53,6 +53,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       price: product.price,
       quantity,
       image: product.images?.[0] || '/placeholder.svg',
+      stock: product.inventory?.stock,
     });
 
     if (!result.success) {
