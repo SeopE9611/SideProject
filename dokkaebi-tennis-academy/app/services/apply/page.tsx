@@ -60,10 +60,20 @@ export default function StringServiceApplyPage() {
   const [price, setPrice] = useState<number>(0);
 
   useEffect(() => {
-    const isCustom = formData.stringType === 'custom';
-    const calculated = getStringingServicePrice(formData.stringType, isCustom);
+    if (!order) return; // 주문 데이터 없으면 실행 금지
+
+    let calculated = 0;
+    if (formData.stringType === 'custom') {
+      // 직접입력 시 기본 수수료
+      calculated = 15000;
+    } else {
+      // order.items 에서 선택된 스트링 찾아 mountingFee 사용
+      const selected = order.items.find((it) => it.id === formData.stringType || it.name === formData.stringType);
+      calculated = selected?.mountingFee ?? 0;
+    }
+
     setPrice(calculated);
-  }, [formData.stringType]);
+  }, [formData.stringType, order]);
 
   // 주문서 없는 단독 신청일 경우만 실행
   useEffect(() => {
