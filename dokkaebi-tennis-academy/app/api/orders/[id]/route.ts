@@ -30,6 +30,37 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (!isOwner && !isAdmin) {
       return new NextResponse('권한이 없습니다.', { status: 403 });
     }
+    const enrichedItems = await Promise.all(
+      (order.items as { productId: any; quantity: number }[]).map(async (item) => {
+        // ObjectId 로 변환
+        const prodId = item.productId instanceof ObjectId ? item.productId : new ObjectId(item.productId);
+
+        // 상품 조회
+        const prod = await db.collection('products').findOne({ _id: prodId });
+
+        // prod 가 없으면 폴백
+        if (!prod) {
+          console.warn(`Product not found:`, prodId);
+          return {
+            id: prodId.toString(),
+            name: '알 수 없는 상품',
+            price: 0,
+            mountingFee: 0,
+            quantity: item.quantity,
+          };
+        }
+
+        // 정상 데이터
+        return {
+          id: prod._id.toString(),
+          name: prod.name,
+          price: prod.price,
+          mountingFee: prod.mountingFee ?? 0,
+          quantity: item.quantity,
+        };
+      })
+    );
+
     //  customer 통합 처리 시작
     let customer = null;
 
@@ -85,6 +116,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({
       ...order,
       customer,
+      items: enrichedItems,
       shippingInfo: {
         ...order.shippingInfo,
         deliveryMethod: order.shippingInfo?.deliveryMethod ?? '택배수령',

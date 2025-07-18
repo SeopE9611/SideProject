@@ -1,9 +1,10 @@
 export type OrderItem = {
+  id: string;
   name: string;
-  quantity: number;
   price: number;
+  mountingFee?: number;
+  quantity: number;
 };
-
 export type Order = {
   id: string;
 
