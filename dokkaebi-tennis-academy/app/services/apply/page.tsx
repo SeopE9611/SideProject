@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useSearchParams } from 'next/navigation';
-import StringSelector from '@/app/services/_components/StringSelector';
+import StringSelector from '@/app/services/_components/StringCheckboxes';
 import { Order } from '@/lib/types/order';
 import PreferredTimeSelector from '@/app/services/_components/TimeSlotSelector';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
@@ -20,6 +20,7 @@ import { useAuthStore } from '@/app/store/authStore';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { bankLabelMap } from '@/lib/constants';
 import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
+import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
 
 declare global {
   interface Window {
@@ -40,7 +41,7 @@ export default function StringServiceApplyPage() {
     email: '',
     phone: '',
     racketType: '',
-    stringType: '',
+    stringTypes: [] as string[],
     customStringType: '',
     preferredDate: '',
     preferredTime: '',
@@ -59,21 +60,25 @@ export default function StringServiceApplyPage() {
   // 가격 상태 추가 및 표시
   const [price, setPrice] = useState<number>(0);
 
+  // 체크박스 변화 콜백
+  const handleStringTypesChange = (ids: string[]) => setFormData((prev) => ({ ...prev, stringTypes: ids }));
+
+  const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
+
   useEffect(() => {
-    if (!order) return; // 주문 데이터 없으면 실행 금지
-
-    let calculated = 0;
-    if (formData.stringType === 'custom') {
-      // 직접입력 시 기본 수수료
-      calculated = 15000;
-    } else {
-      // order.items 에서 선택된 스트링 찾아 mountingFee 사용
-      const selected = order.items.find((it) => it.id === formData.stringType || it.name === formData.stringType);
-      calculated = selected?.mountingFee ?? 0;
-    }
-
-    setPrice(calculated);
-  }, [formData.stringType, order]);
+    if (!order) return;
+    let total = 0;
+    formData.stringTypes.forEach((id) => {
+      if (id === 'custom') {
+        // custom 선택 개수만큼 기본 수수료 곱하기 (보통 1개만 사용)
+        total += 15000;
+      } else {
+        const item = order.items.find((it) => it.id === id);
+        total += item?.mountingFee ?? 0;
+      }
+    });
+    setPrice(total);
+  }, [formData.stringTypes, order]);
 
   // 주문서 없는 단독 신청일 경우만 실행
   useEffect(() => {
@@ -175,13 +180,13 @@ export default function StringServiceApplyPage() {
     }
 
     // 스트링 종류 선택 여부 검증
-    if (!formData.stringType.trim()) {
-      showErrorToast('스트링 종류를 선택해주세요.');
+    if (formData.stringTypes.length === 0) {
+      showErrorToast('스트링 종류를 하나 이상 선택해주세요.');
       return;
     }
 
     // 직접입력 선택 시 입력 필드 값도 필수
-    if (formData.stringType === 'custom' && !formData.customStringType.trim()) {
+    if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) {
       showErrorToast('스트링 종류를 직접 입력해주세요.');
       return;
     }
@@ -201,15 +206,15 @@ export default function StringServiceApplyPage() {
 
     setIsSubmitting(true);
 
-    const stringToSave = formData.stringType === 'custom' ? formData.customStringType.trim() : formData.stringType.trim();
+    // const stringToSave = formData.stringType === 'custom' ? formData.customStringType.trim() : formData.stringType.trim();
 
     const payload = {
       name: formData.name,
       email: formData.email,
       phone: cleaned,
       racketType: formData.racketType,
-      stringType: formData.stringType,
-      customStringName: formData.stringType === 'custom' ? formData.customStringType.trim() : null,
+      stringTypes: formData.stringTypes,
+      customStringName: formData.stringTypes.includes('custom') ? formData.customStringType : null,
       preferredDate: formData.preferredDate,
       preferredTime: formData.preferredTime,
       requirements: formData.requirements,
@@ -364,17 +369,11 @@ export default function StringServiceApplyPage() {
                       </Label>
                       <p className="text-sm text-muted-foreground text-red-500">※ 두 개 이상의 스트링을 교체 원하신 경우, 직접 입력하기를 선택하여 아래에 상세히 적어주세요.</p>
                       <p className="text-sm text-muted-foreground text-red-500">※ 이미 보유하고 계신 스트링으로 작성하셔도 됩니다.</p>
-                      <StringSelector
-                        items={order?.items ?? []}
-                        selected={formData.stringType}
-                        customInput={formData.customStringType}
-                        onSelect={(value) => setFormData((prev) => ({ ...prev, stringType: value }))}
-                        onCustomInputChange={(value) => setFormData((prev) => ({ ...prev, customStringType: value }))}
-                      />
+                      <StringCheckboxes items={order?.items ?? []} stringTypes={formData.stringTypes} customInput={formData.customStringType} onChange={handleStringTypesChange} onCustomInputChange={handleCustomInputChange} />
 
                       {/* 가격 표시 영역 */}
                       <div className="text-sm text-muted-foreground mt-2">
-                        {formData.stringType === 'custom' ? (
+                        {formData.stringTypes.includes('custom') ? (
                           <>
                             <div>💡 가격은 접수 후 안내됩니다.</div>
                             <div className="text-xs text-muted-foreground">기본 장착 금액: 15,000원</div>

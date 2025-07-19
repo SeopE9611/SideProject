@@ -18,6 +18,17 @@ export async function handleGetStringingApplication(req: Request, context: { par
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
+    // 상품 ID 배열을 실제 상품명과 매핑
+    const stringItems = await Promise.all(
+      (app.stringDetails.stringTypes || []).map(async (prodIdStr: string) => {
+        const prod = await db.collection('products').findOne({ _id: new ObjectId(prodIdStr) }, { projection: { name: 1 } });
+        return {
+          id: prodIdStr,
+          name: prod?.name ?? '알 수 없는 상품',
+        };
+      })
+    );
+
     const customer = app.userSnapshot ? { name: app.userSnapshot.name, email: app.userSnapshot.email } : app.guestName && app.guestEmail ? { name: app.guestName, email: app.guestEmail } : { name: '-', email: '-' }; // fallback 값
 
     return NextResponse.json({
@@ -32,7 +43,22 @@ export async function handleGetStringingApplication(req: Request, context: { par
       shippingInfo: app.shippingInfo || null,
       memo: app.memo || '',
       photos: app.photos || [],
-      stringDetails: app.stringDetails || null,
+      stringDetails: {
+        racketType: app.stringDetails.racketType,
+        preferredDate: app.stringDetails.preferredDate,
+        preferredTime: app.stringDetails.preferredTime,
+        requirements: app.stringDetails.requirements,
+
+        // 저장된 ID 배열
+        stringTypes: app.stringDetails.stringTypes,
+        // 새로 붙인 이름 매핑 배열
+        stringItems,
+
+        // custom 입력이 있으면 포함
+        ...(app.stringDetails.customStringName && {
+          customStringName: app.stringDetails.customStringName,
+        }),
+      },
       totalPrice: app.totalPrice ?? 0,
       history: (app.history ?? []).map((record: HistoryRecord) => ({
         status: record.status,
@@ -303,13 +329,13 @@ export async function handleSubmitStringingApplication(req: Request) {
     const body = await req.json();
 
     // body에서 필요한 값들 추출
-    const { name, phone, email, shippingInfo, racketType, stringType, customStringName, preferredDate, preferredTime, requirements, orderId } = body;
+    const { name, phone, email, shippingInfo, racketType, stringTypes, customStringName, preferredDate, preferredTime, requirements, orderId } = body;
 
     // shippingInfo 내부에서 세부 필드 분해
     const { name: shippingName, phone: shippingPhone, email: shippingEmail, address, addressDetail, postalCode, depositor, deliveryRequest, bank } = shippingInfo;
 
     // 필수 필드 검증
-    if (!name || !phone || !racketType || !stringType || !preferredDate) {
+    if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0 || !preferredDate) {
       return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
     }
 
@@ -327,8 +353,9 @@ export async function handleSubmitStringingApplication(req: Request) {
 
     const stringDetails = {
       racketType,
-      stringType,
-      ...(stringType === 'custom' && customStringName ? { customStringName: customStringName.trim() } : {}),
+      stringTypes,
+      // custom 입력이 있으면 customStringName 필드 추가
+      ...(stringTypes.includes('custom') && customStringName ? { customStringName: customStringName.trim() } : {}),
       preferredDate,
       preferredTime,
       requirements,
@@ -337,9 +364,16 @@ export async function handleSubmitStringingApplication(req: Request) {
     const orderObjectId = new ObjectId(orderId);
 
     // 금액 계산
-    const isCustom = stringType === 'custom';
-    const totalPrice = getStringingServicePrice(stringType, isCustom);
-
+    let totalPrice = 0;
+    for (const id of stringTypes) {
+      if (id === 'custom') {
+        totalPrice += 15000; // 직접입력 기본요금
+      } else {
+        // products 컬렉션에서 mountingFee 조회
+        const prod = await db.collection('products').findOne({ _id: new ObjectId(id) });
+        totalPrice += prod?.mountingFee ?? 0;
+      }
+    }
     // 신청서 저장
     const result = await db.collection('stringing_applications').insertOne({
       orderId: orderObjectId,
