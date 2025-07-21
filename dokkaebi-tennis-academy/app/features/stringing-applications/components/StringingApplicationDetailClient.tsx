@@ -54,8 +54,15 @@ interface ApplicationDetail {
   };
   requestedAt: string;
   status: string;
-  totalPrice?: number;
+  // totalPrice?: number;
+  total: number;
   history?: { status: string; date: string; description: string }[];
+  items: Array<{
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+  }>;
   stringDetails: {
     preferredDate: string;
     preferredTime: string;
@@ -234,7 +241,7 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
 
               <div>
                 <span className="text-muted-foreground">결제 금액</span>
-                <div>{data?.totalPrice?.toLocaleString()}원</div>
+                <div>{data?.total?.toLocaleString()}원</div>
               </div>
             </CardContent>
           </Card>
@@ -249,7 +256,14 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
                 <strong>희망 일시:</strong> {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
               </div>
               <div>
-                <strong>스트링 종류:</strong> {data.stringDetails.stringType === 'custom' ? data.stringDetails.customStringName : data.stringDetails.stringType}
+                <strong>스트링 정보:</strong>
+                {data.items.length > 0
+                  ? data.items.map((item) => (
+                      <div key={item.id} className="ml-4">
+                        {item.name} ×{item.quantity} ({item.price.toLocaleString()}원)
+                      </div>
+                    ))
+                  : data.stringDetails.customStringName || '정보 없음'}
               </div>
               <div>
                 <strong>라켓 종류:</strong> {data.stringDetails.racketType}

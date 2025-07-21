@@ -90,49 +90,75 @@ export async function fetchCombinedOrders() {
   // 스트링 교체 서비스 신청서 불러오기
   const rawApps = await db.collection('stringing_applications').find().toArray();
 
-  const stringingOrders = rawApps.map((app) => {
-    const customer =
-      app.userSnapshot && app.userSnapshot.name
-        ? {
-            name: app.userSnapshot.name,
-            email: app.userSnapshot.email ?? '-',
-            phone: '-',
-          }
+  // 수정: 비동기 매핑으로 items 재구성
+  const stringingOrders = await Promise.all(
+    rawApps.map(async (app) => {
+      // 1) 고객 정보 매핑 (기존 로직 그대로)
+      const customer = app.userSnapshot?.name
+        ? { name: app.userSnapshot.name, email: app.userSnapshot.email ?? '-', phone: '-' }
         : {
             name: `${app.guestName ?? '비회원'} (비회원)`,
             email: app.guestEmail || '-',
             phone: app.guestPhone || '-',
           };
 
-    return {
-      id: app._id.toString(),
-      linkedOrderId: app.orderId?.toString() ?? null,
-      __type: 'stringing_application' as const,
-      customer,
-      userId: app.userId ? app.userId.toString() : null,
-      date: app.createdAt,
-      status: app.status,
-      paymentStatus: app.paymentStatus || '결제대기',
-      type: '서비스',
-      total: app.totalPrice || 0,
-      items: app.items || [],
-      shippingInfo: {
-        name: customer.name,
-        phone: customer.phone,
-        address: app.shippingInfo?.address ?? '-',
-        postalCode: app.shippingInfo?.postalCode ?? '-',
-        depositor: app.shippingInfo?.depositor ?? '-',
-        deliveryRequest: app.shippingInfo?.deliveryRequest,
-        shippingMethod: app.shippingInfo?.shippingMethod,
-        estimatedDate: app.shippingInfo?.estimatedDate,
-        withStringService: true,
-        invoice: {
-          courier: app.shippingInfo?.invoice?.courier ?? null,
-          trackingNumber: app.shippingInfo?.invoice?.trackingNumber ?? null,
+      // 2) items 배열 재구성
+      const items = await Promise.all(
+        (app.stringDetails.stringTypes ?? []).map(async (typeId: string) => {
+          // 커스텀 스트링 처리
+          if (typeId === 'custom') {
+            return {
+              id: 'custom',
+              name: app.stringDetails.customStringName ?? '커스텀 스트링',
+              price: 15000, // POST 핸들러에도 동일한 기본요금 사용
+              quantity: 1,
+            };
+          }
+
+          // DB에서 이름·mountingFee 조회
+          const prod = await db.collection('products').findOne({ _id: new ObjectId(typeId) }, { projection: { name: 1, mountingFee: 1 } });
+          return {
+            id: typeId,
+            name: prod?.name ?? '알 수 없는 상품',
+            price: prod?.mountingFee ?? 0,
+            quantity: 1,
+          };
+        })
+      );
+
+      // 3) totalPrice 재계산 (items 기반)
+      const totalCalculated = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+
+      return {
+        id: app._id.toString(),
+        linkedOrderId: app.orderId?.toString() ?? null,
+        __type: 'stringing_application' as const,
+        customer,
+        userId: app.userId ? app.userId.toString() : null,
+        date: app.createdAt,
+        status: app.status,
+        paymentStatus: app.paymentStatus || '결제대기',
+        type: '서비스',
+        total: totalCalculated, // app.totalPrice 대신 재계산된 값
+        items, // 방금 만들어낸 배열
+        shippingInfo: {
+          name: customer.name,
+          phone: customer.phone,
+          address: app.shippingInfo?.address ?? '-',
+          postalCode: app.shippingInfo?.postalCode ?? '-',
+          depositor: app.shippingInfo?.depositor ?? '-',
+          deliveryRequest: app.shippingInfo?.deliveryRequest,
+          shippingMethod: app.shippingInfo?.shippingMethod,
+          estimatedDate: app.shippingInfo?.estimatedDate,
+          withStringService: true,
+          invoice: {
+            courier: app.shippingInfo?.invoice?.courier ?? null,
+            trackingNumber: app.shippingInfo?.invoice?.trackingNumber ?? null,
+          },
         },
-      },
-    };
-  });
+      };
+    })
+  );
 
   // 일반 주문 + 스트링 신청 통합 후 날짜 내림차순 정렬
   const combined = [...orders, ...stringingOrders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

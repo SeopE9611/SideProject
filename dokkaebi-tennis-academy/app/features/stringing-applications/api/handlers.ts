@@ -29,6 +29,26 @@ export async function handleGetStringingApplication(req: Request, context: { par
       })
     );
 
+    //  items 배열 재구성 (id, name, price, quantity)
+    const items = await Promise.all(
+      stringItems.map(async (item) => {
+        const prod = await db.collection('products').findOne({ _id: new ObjectId(item.id) }, { projection: { mountingFee: 1 } });
+        return {
+          id: item.id,
+          name: item.name,
+          price:
+            // DB에 mountingFee가 있으면 사용
+            prod?.mountingFee ??
+            // 아니면 getStringingServicePrice에 isCustom=false로 호출
+            getStringingServicePrice(item.id, false),
+          quantity: 1,
+        };
+      })
+    );
+
+    // total 계산
+    const total = items.reduce((sum, x) => sum + x.price * x.quantity, 0);
+
     const customer = app.userSnapshot ? { name: app.userSnapshot.name, email: app.userSnapshot.email } : app.guestName && app.guestEmail ? { name: app.guestName, email: app.guestEmail } : { name: '-', email: '-' };
 
     return NextResponse.json({
@@ -53,6 +73,8 @@ export async function handleGetStringingApplication(req: Request, context: { par
           customStringName: app.stringDetails.customStringName,
         }),
       },
+      items,
+      total,
       totalPrice: app.totalPrice ?? 0,
       history: (app.history ?? []).map((record: HistoryRecord) => ({
         status: record.status,
