@@ -6,30 +6,30 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 
+// ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, context: { params: { id: string } }) {
-  const { id } = await context.params;
+  const { id } = context.params;
   const client = await clientPromise;
   const db = await getDb();
 
   try {
     const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
-
     if (!app) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     // 상품 ID 배열을 실제 상품명과 매핑
     const stringItems = await Promise.all(
-      (app.stringDetails.stringTypes || []).map(async (prodIdStr: string) => {
-        const prod = await db.collection('products').findOne({ _id: new ObjectId(prodIdStr) }, { projection: { name: 1 } });
+      (app.stringDetails.stringTypes || []).map(async (prodId: string) => {
+        const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
         return {
-          id: prodIdStr,
+          id: prodId,
           name: prod?.name ?? '알 수 없는 상품',
         };
       })
     );
 
-    const customer = app.userSnapshot ? { name: app.userSnapshot.name, email: app.userSnapshot.email } : app.guestName && app.guestEmail ? { name: app.guestName, email: app.guestEmail } : { name: '-', email: '-' }; // fallback 값
+    const customer = app.userSnapshot ? { name: app.userSnapshot.name, email: app.userSnapshot.email } : app.guestName && app.guestEmail ? { name: app.guestName, email: app.guestEmail } : { name: '-', email: '-' };
 
     return NextResponse.json({
       id: app._id.toString(),
@@ -37,7 +37,6 @@ export async function handleGetStringingApplication(req: Request, context: { par
       customer,
       requestedAt: app.createdAt,
       desiredDateTime: app.desiredDateTime,
-      stringType: app.stringType,
       status: app.status,
       paymentStatus: app.paymentStatus,
       shippingInfo: app.shippingInfo || null,
@@ -48,13 +47,8 @@ export async function handleGetStringingApplication(req: Request, context: { par
         preferredDate: app.stringDetails.preferredDate,
         preferredTime: app.stringDetails.preferredTime,
         requirements: app.stringDetails.requirements,
-
-        // 저장된 ID 배열
-        stringTypes: app.stringDetails.stringTypes,
-        // 새로 붙인 이름 매핑 배열
         stringItems,
 
-        // custom 입력이 있으면 포함
         ...(app.stringDetails.customStringName && {
           customStringName: app.stringDetails.customStringName,
         }),
@@ -66,26 +60,21 @@ export async function handleGetStringingApplication(req: Request, context: { par
         description: record.description,
       })),
     });
-  } catch (error) {
-    console.error('[GET stringing_application] error:', error);
+  } catch (e) {
+    console.error('[GET stringing_application]', e);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
 
+// ================= PATCH (관리자용 수정) =================
 export async function handlePatchStringingApplication(req: Request, context: { params: { id: string } }) {
-  const { id } = await context.params;
+  const { id } = context.params;
   const client = await clientPromise;
-  const db = client.db();
-
+  const db = await getDb();
   try {
-    const body = await req.json();
-    const { status, memo, photoUrls, shippingInfo } = body;
-
+    const { status, memo, photoUrls, shippingInfo } = await req.json();
     const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
-
-    if (!app) {
-      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
-    }
+    if (!app) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
 
     const updateFields: Record<string, any> = {};
     if (status) updateFields.status = status;
@@ -94,18 +83,14 @@ export async function handlePatchStringingApplication(req: Request, context: { p
     if (shippingInfo) updateFields.shippingInfo = shippingInfo;
 
     const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, { $set: updateFields });
-
     if (shippingInfo && app.orderId) {
       await db.collection('orders').updateOne({ _id: new ObjectId(app.orderId) }, { $set: { shippingInfo } });
     }
-
-    if (result.modifiedCount === 0) {
-      return NextResponse.json({ error: 'Update failed' }, { status: 400 });
-    }
+    if (result.modifiedCount === 0) return NextResponse.json({ error: 'Update failed' }, { status: 400 });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('[PATCH stringing_application] error:', error);
+  } catch (e) {
+    console.error('[PATCH stringing_application]', e);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
@@ -278,7 +263,6 @@ export async function handleGetApplicationList() {
 }
 
 // ==== 특정 날짜(preferredDate)에 예약된 시간대(preferredTime) 목록을 반환 ====
-
 export async function handleGetReservedTimeSlots(req: Request) {
   // 요청 URL에서 쿼리 파라미터(searchParams)를 추출함
   const { searchParams } = new URL(req.url);
@@ -326,13 +310,8 @@ export async function handleSubmitStringingApplication(req: Request) {
   const userId = payload?.sub ? new ObjectId(payload.sub) : null;
 
   try {
-    const body = await req.json();
-
     // body에서 필요한 값들 추출
-    const { name, phone, email, shippingInfo, racketType, stringTypes, customStringName, preferredDate, preferredTime, requirements, orderId } = body;
-
-    // shippingInfo 내부에서 세부 필드 분해
-    const { name: shippingName, phone: shippingPhone, email: shippingEmail, address, addressDetail, postalCode, depositor, deliveryRequest, bank } = shippingInfo;
+    const { name, phone, email, shippingInfo, racketType, stringTypes, customStringName, preferredDate, preferredTime, requirements, orderId } = await req.json();
 
     // 필수 필드 검증
     if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0 || !preferredDate) {
@@ -340,7 +319,7 @@ export async function handleSubmitStringingApplication(req: Request) {
     }
 
     const client = await clientPromise;
-    const db = client.db();
+    const db = await getDb();
 
     // 중복 예약 방지 로직
     const existing = await db.collection('stringing_applications').findOne({
@@ -351,17 +330,26 @@ export async function handleSubmitStringingApplication(req: Request) {
       return NextResponse.json({ error: '이미 해당 시간대에 신청이 존재합니다.' }, { status: 409 });
     }
 
-    const stringDetails = {
+    // 상품명까지 매핑
+    const stringItems = await Promise.all(
+      stringTypes.map(async (prodId: string) => {
+        const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
+        return {
+          id: prodId,
+          name: prod?.name ?? '알 수 없는 상품',
+        };
+      })
+    );
+
+    const stringDetails: any = {
       racketType,
       stringTypes,
-      // custom 입력이 있으면 customStringName 필드 추가
-      ...(stringTypes.includes('custom') && customStringName ? { customStringName: customStringName.trim() } : {}),
+      stringItems,
+      ...(stringTypes.includes('custom') && customStringName ? { customStringName: customStringName.trim() } : {}), // custom 입력이 있으면 customStringName 필드 추가
       preferredDate,
       preferredTime,
       requirements,
     };
-
-    const orderObjectId = new ObjectId(orderId);
 
     // 금액 계산
     let totalPrice = 0;
@@ -374,53 +362,39 @@ export async function handleSubmitStringingApplication(req: Request) {
         totalPrice += prod?.mountingFee ?? 0;
       }
     }
+
     // 신청서 저장
     const result = await db.collection('stringing_applications').insertOne({
-      orderId: orderObjectId,
+      orderId: new ObjectId(orderId),
       name,
       phone,
       email,
-      shippingInfo: {
-        name: shippingName,
-        phone: shippingPhone,
-        email: shippingEmail,
-        address,
-        addressDetail,
-        postalCode,
-        depositor,
-        deliveryRequest,
-        bank,
-      },
+      shippingInfo,
       stringDetails,
       totalPrice,
       status: '검토 중',
       createdAt: new Date(),
       userId,
-      guestName: !userId ? name : null,
-      guestEmail: !userId ? email : null,
-      guestPhone: !userId ? phone : null,
+      guestName: userId ? null : name,
+      guestEmail: userId ? null : email,
+      guestPhone: userId ? null : phone,
       userSnapshot: userId ? { name, email } : null,
     });
 
-    if (!depositor || !bank) {
-      return NextResponse.json({ message: '입금자명과 은행을 모두 입력해주세요.' }, { status: 400 });
-    }
-
-    // insertedId 추출
-    const applicationId = result.insertedId;
-
+    // 주문에도 플래그 추가
     await db.collection('orders').updateOne(
-      { _id: orderObjectId },
+      { _id: new ObjectId(orderId) },
       {
         $set: {
           isStringServiceApplied: true,
-          stringingApplicationId: applicationId.toString(),
+          stringingApplicationId: result.insertedId.toString(),
         },
       }
     );
-    return NextResponse.json({ message: 'success', applicationId }, { status: 201 });
-  } catch (err) {
-    console.error('신청서 저장 오류:', err);
+
+    return NextResponse.json({ message: 'success', applicationId: result.insertedId }, { status: 201 });
+  } catch (e) {
+    console.error('[POST stringing_application]', e);
     return NextResponse.json({ message: '서버 오류 발생' }, { status: 500 });
   }
 }
