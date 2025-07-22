@@ -7,8 +7,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 
 // ================= GET (단일 신청서 조회) =================
-export async function handleGetStringingApplication(req: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function handleGetStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
   const db = await getDb();
 
@@ -21,6 +20,12 @@ export async function handleGetStringingApplication(req: Request, context: { par
     // 상품 ID 배열을 실제 상품명과 매핑
     const stringItems = await Promise.all(
       (app.stringDetails.stringTypes || []).map(async (prodId: string) => {
+        if (prodId === 'custom') {
+          return {
+            id: 'custom',
+            name: app.stringDetails.customStringName ?? '커스텀 스트링',
+          };
+        }
         const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
         return {
           id: prodId,
@@ -32,6 +37,14 @@ export async function handleGetStringingApplication(req: Request, context: { par
     //  items 배열 재구성 (id, name, price, quantity)
     const items = await Promise.all(
       stringItems.map(async (item) => {
+        if (item.id === 'custom') {
+          return {
+            id: 'custom',
+            name: item.name,
+            price: getStringingServicePrice(item.id, true), // 커스텀 요금
+            quantity: 1,
+          };
+        }
         const prod = await db.collection('products').findOne({ _id: new ObjectId(item.id) }, { projection: { mountingFee: 1 } });
         return {
           id: item.id,
@@ -352,9 +365,17 @@ export async function handleSubmitStringingApplication(req: Request) {
       return NextResponse.json({ error: '이미 해당 시간대에 신청이 존재합니다.' }, { status: 409 });
     }
 
-    // 상품명까지 매핑
+    // 상품 ID 배열을 실제 상품명과 매핑 (custom 스킵)
     const stringItems = await Promise.all(
       stringTypes.map(async (prodId: string) => {
+        if (prodId === 'custom') {
+          // 직접 입력인 경우 DB 조회 없이 커스텀 이름 사용
+          return {
+            id: 'custom',
+            name: customStringName?.trim() || '커스텀 스트링',
+          };
+        }
+        // 그 외엔 정상 조회
         const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
         return {
           id: prodId,
@@ -362,7 +383,6 @@ export async function handleSubmitStringingApplication(req: Request) {
         };
       })
     );
-
     const stringDetails: any = {
       racketType,
       stringTypes,
