@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { mutate } from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { XCircle } from 'lucide-react';
 
 const CANCEL_REASONS = ['상품 품절', '고객 요청', '배송 지연', '결제 오류', '기타'];
 
@@ -100,6 +101,7 @@ export default function AdminCancelOrderDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="destructive" disabled={disabled || loading} size="sm">
+          <XCircle className="mr-2 h-4 w-4" />
           주문 취소
         </Button>
       </DialogTrigger>

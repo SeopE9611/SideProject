@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { mutate } from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { XCircle } from 'lucide-react';
 
 // props: 주문 ID만 전달받음
 interface CancelOrderDialogProps {
@@ -84,6 +85,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
       {/*  다이얼로그 트리거 버튼 */}
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm">
+          <XCircle className="mr-2 h-4 w-4" />
           주문 취소
         </Button>
       </DialogTrigger>
