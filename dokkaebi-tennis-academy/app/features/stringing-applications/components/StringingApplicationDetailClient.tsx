@@ -259,12 +259,13 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
                 <strong>희망 일시:</strong> {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
               </div>
               <div>
-                <strong>스트링 정보:</strong>
+                <strong>스트링 정보:</strong>{' '}
                 {data.items.length > 0
-                  ? data.items.map((item) => (
-                      <div key={item.id} className="ml-4">
+                  ? data.items.map((item, idx) => (
+                      <span key={item.id}>
                         {item.name} ×{item.quantity} ({item.price.toLocaleString()}원)
-                      </div>
+                        {idx < data.items.length - 1 && ', '}
+                      </span>
                     ))
                   : data.stringDetails.customStringName || '정보 없음'}
               </div>
