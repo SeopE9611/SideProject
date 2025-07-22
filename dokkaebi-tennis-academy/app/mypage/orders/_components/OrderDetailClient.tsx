@@ -17,8 +17,10 @@ import { useRouter } from 'next/navigation';
 
 // SWR Infinite용 getKey (처리 이력 페이지네이션)
 const LIMIT = 5;
-const getOrderHistoryKey = (orderId: string) => (pageIndex: number, previousPageData: any) => {
-  if (previousPageData && previousPageData.history.length === 0) return null;
+const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) => {
+  // orderId가 없으면 요청 중단
+  if (!orderId) return null;
+  if (prev && prev.history.length === 0) return null;
   return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
 };
 

@@ -62,54 +62,38 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     );
 
     //  customer 통합 처리 시작
-    let customer = null;
+    // PATCH에서 $set: { customer: … } 한 값이 있으면 우선 사용
+    let customer = (order as any).customer ?? null;
 
-    //  비회원 주문일 때
-    if (order.guestInfo) {
-      customer = {
-        name: order.guestInfo.name,
-        email: order.guestInfo.email,
-        phone: order.guestInfo.phone,
-
-        // 주소는 guestInfo에는 없고, shippingInfo에만 존재하므로 여기서 가져옴
-        // address + addressDetail을 합쳐서 하나의 전체 주소로 표현
-        address: order.shippingInfo?.addressDetail ? `${order.shippingInfo.address} ${order.shippingInfo.addressDetail}` : order.shippingInfo?.address ?? '주소 없음',
-
-        //  우편번호도 shippingInfo에만 존재
-        postalCode: order.shippingInfo?.postalCode ?? '-',
-      };
-
-      //  회원 주문이지만 userSnapshot만 남아 있는 경우 (탈퇴 or 백업 상태)
-    } else if (order.userSnapshot) {
-      customer = {
-        name: order.userSnapshot.name,
-        email: order.userSnapshot.email,
-
-        // 전화번호는 userSnapshot에는 없음 → shippingInfo에서 가져옴
-        phone: order.shippingInfo?.phone ?? '-',
-
-        // 주소도 마찬가지로 shippingInfo에서 가져와야 함
-        address: order.shippingInfo?.addressDetail ? `${order.shippingInfo.address} ${order.shippingInfo.addressDetail}` : order.shippingInfo?.address ?? '주소 없음',
-
-        // 우편번호 역시 shippingInfo에서
-        postalCode: order.shippingInfo?.postalCode ?? '-',
-      };
-
-      // 완전한 회원 정보가 있는 경우 (회원 주문 & DB에도 사용자 존재)
-    } else if (order.userId) {
-      const user = await db.collection('users').findOne({ _id: new ObjectId(order.userId) });
-      if (user) {
+    // DB에 customer 필드가 없을 때만, 기존 guestInfo/userSnapshot/userId 로 로직 실행
+    if (!customer) {
+      if (order.guestInfo) {
         customer = {
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-
-          // 이 경우 user.address가 존재하므로 그대로 사용 가능
-          address: user.address ?? '주소 없음',
-
-          // user 테이블에 postalCode 필드가 있는 경우에만 표시 (없으면 '-')
-          postalCode: user.postalCode ?? '-',
+          name: order.guestInfo.name,
+          email: order.guestInfo.email,
+          phone: order.guestInfo.phone,
+          address: order.shippingInfo?.addressDetail ? `${order.shippingInfo.address} ${order.shippingInfo.addressDetail}` : order.shippingInfo?.address ?? '주소 없음',
+          postalCode: order.shippingInfo?.postalCode ?? '-',
         };
+      } else if (order.userSnapshot) {
+        customer = {
+          name: order.userSnapshot.name,
+          email: order.userSnapshot.email,
+          phone: order.shippingInfo?.phone ?? '-',
+          address: order.shippingInfo?.addressDetail ? `${order.shippingInfo.address} ${order.shippingInfo.addressDetail}` : order.shippingInfo?.address ?? '주소 없음',
+          postalCode: order.shippingInfo?.postalCode ?? '-',
+        };
+      } else if (order.userId) {
+        const user = await db.collection('users').findOne({ _id: new ObjectId(order.userId) });
+        if (user) {
+          customer = {
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            address: user.address ?? '주소 없음',
+            postalCode: user.postalCode ?? '-',
+          };
+        }
       }
     }
 
@@ -144,8 +128,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { status, cancelReason, cancelReasonDetail } = await request.json();
-
+    // 전체 payload를 body에 저장
+    const body = await request.json();
+    // 필요한 필드만 꺼내기
+    const { status, cancelReason, cancelReasonDetail, payment, deliveryRequest, customer } = body;
     if (!ObjectId.isValid(id)) {
       return new NextResponse('유효하지 않은 주문 ID입니다.', { status: 400 });
     }
@@ -176,6 +162,58 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return new NextResponse('취소된 주문입니다.', { status: 400 });
     }
 
+    // 고객 정보 업데이트 분기
+    if (customer) {
+      const updateFields = {
+        customer: {
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          address: customer.address,
+          postalCode: customer.postalCode,
+        },
+      };
+      const historyEntry = {
+        status: '고객정보수정',
+        date: new Date(),
+        description: '고객 정보가 업데이트되었습니다.',
+      };
+      await orders.updateOne({ _id: new ObjectId(id) }, {
+        $set: updateFields,
+        $push: { history: historyEntry },
+      } as any);
+      return NextResponse.json({ ok: true });
+    }
+
+    // 2) 결제 금액 수정
+    if (payment) {
+      const { total } = payment;
+      const historyEntry = {
+        status: '결제금액수정',
+        date: new Date(),
+        description: `결제 금액이 ${total.toLocaleString()}원(으)로 수정되었습니다.`,
+      };
+      await orders.updateOne({ _id: new ObjectId(id) }, {
+        $set: { totalPrice: total },
+        $push: { history: historyEntry },
+      } as any);
+      return NextResponse.json({ ok: true });
+    }
+
+    // 3) 배송 요청사항 수정
+    if (deliveryRequest !== undefined) {
+      const historyEntry = {
+        status: '배송요청사항수정',
+        date: new Date(),
+        description: `배송 요청사항이 수정되었습니다.`,
+      };
+      await orders.updateOne({ _id: new ObjectId(id) }, {
+        $set: { 'shippingInfo.deliveryRequest': deliveryRequest },
+        $push: { history: historyEntry },
+      } as any);
+      return NextResponse.json({ ok: true });
+    }
+
     const updateFields: Record<string, any> = { status };
     if (status === '취소') {
       updateFields.cancelReason = cancelReason;
@@ -204,11 +242,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const result = await orders.updateOne({ _id: new ObjectId(id) }, {
       $set: updateFields,
-      $push: {
-        history: {
-          $each: [historyEntry],
-        },
-      },
+      $push: { history: historyEntry },
     } as any);
 
     if (result.modifiedCount === 0) {

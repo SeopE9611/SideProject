@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Truck, CreditCard, RotateCcw, XCircle, Pencil, Clock, PackageCheck } from 'lucide-react';
 
-export const getOrderHistoryKey = (orderId: string) => (pageIndex: number, previousPageData: any) => {
+export const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, previousPageData: any) => {
+  // orderId가 없으면 요청 중단
+  if (!orderId) return null;
   if (previousPageData && !previousPageData.length) return null;
   return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=5`;
 };

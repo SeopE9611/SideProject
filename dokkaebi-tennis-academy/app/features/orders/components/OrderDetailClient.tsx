@@ -5,7 +5,7 @@ import useSWR, { mutate as globalMutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, CreditCard, Download, LinkIcon, Mail, MapPin, Package, Phone, ShoppingCart, Truck, User } from 'lucide-react';
+import { ArrowLeft, Calendar, CreditCard, Download, LinkIcon, Mail, MapPin, Package, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,16 +18,21 @@ import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkel
 import Loading from '@/app/admin/orders/[id]/loading';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { bankLabelMap } from '@/lib/constants';
+import CustomerEditForm from '@/app/features/orders/components/CustomerEditForm';
 import { useOrderStore } from '@/app/store/orderStore';
+import PaymentEditForm from '@/app/features/orders/components/PaymentEditForm';
+import RequestEditForm from '@/app/features/orders/components/RequestEditForm';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 //  useSWRInfinite용 getKey (처리 이력)
 const LIMIT = 5; // 페이지 당 이력 개수
-const getOrderHistoryKey = (selectedOrderId: string) => (pageIndex: number, prev: any) => {
+const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) => {
+  // orderId가 없으면 요청 중단
+  if (!orderId) return null;
   if (prev && prev.history.length === 0) return null;
-  return `/api/orders/${selectedOrderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+  return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
 };
 
 //  타입 정의 (서버에서 내려받는 주문 정보 형태)
@@ -67,20 +72,25 @@ interface Props {
   orderId: string;
 }
 
-export default function OrderDetailClient() {
+export default function OrderDetailClient({ orderId }: Props) {
   const router = useRouter();
 
-  const { selectedOrderId } = useOrderStore();
+  // 편집 모드
+  const [isEditMode, setIsEditMode] = useState(false);
+  // 카드별 편집 토글
+  const [editingCustomer, setEditingCustomer] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(false);
+  const [editingItems, setEditingItems] = useState(false);
+  const [editingRequest, setEditingRequest] = useState(false);
 
-  // 주문 전체 데이터를 SWR로 가져옴 (갱신 키: `/api/orders/${orderId}`)
-  const { data: orderDetail, error: orderError, mutate: mutateOrder } = useSWR<OrderDetail>(selectedOrderId ? `/api/orders/${selectedOrderId}` : null, fetcher);
-
+  // 주문 전체 데이터를 SWR로 가져옴
+  const { data: orderDetail, error: orderError, mutate: mutateOrder } = useSWR<OrderDetail>(orderId ? `/api/orders/${orderId}` : null, fetcher);
   //  처리 이력 데이터를 SWRInfinite로 가져옴. (키: `/api/orders/${orderId}/history?…`)
   const {
     data: historyPages,
     error: historyError,
     mutate: mutateHistory,
-  } = useSWRInfinite(getOrderHistoryKey(selectedOrderId!), fetcher, {
+  } = useSWRInfinite(getOrderHistoryKey(orderId), fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
@@ -150,8 +160,9 @@ export default function OrderDetailClient() {
       return;
     }
 
-    router.push(`/admin/orders/${selectedOrderId}/shipping-update`);
+    router.push(`/admin/orders/${orderId}/shipping-update`);
   };
+
   return (
     <div className="container py-10">
       <div className="mx-auto max-w-4xl">
@@ -166,11 +177,16 @@ export default function OrderDetailClient() {
               <Download className="mr-2 h-4 w-4" />
               주문서 다운로드
             </Button> */}
+
             <Button variant="outline" size="sm" className="mb-3" asChild>
               <Link href="/admin/orders">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 주문 목록으로 돌아가기
               </Link>
+            </Button>
+            <Button variant={isEditMode ? 'destructive' : 'outline'} size="sm" onClick={() => setIsEditMode(!isEditMode)}>
+              <Pencil className="mr-1 h-4 w-4" />
+              {isEditMode ? '편집 취소' : '편집 모드'}
             </Button>
             <Button onClick={handleShippingUpdate}>
               <Truck className="mr-2 h-4 w-4" />
@@ -200,14 +216,14 @@ export default function OrderDetailClient() {
                   currentStatus → localStatus
                   orderId: string
                 */}
-                <OrderStatusSelect orderId={selectedOrderId!} currentStatus={localStatus} />
+                <OrderStatusSelect orderId={orderId!} currentStatus={localStatus} />
 
                 {/* 주문 취소 모달: status가 '취소'가 아닐 때만 보여줌 */}
                 {localStatus === '취소' ? (
                   <p className="text-sm text-muted-foreground italic mt-2">취소된 주문입니다. 상태 변경 및 취소가 불가능합니다.</p>
                 ) : (
                   <AdminCancelOrderDialog
-                    orderId={selectedOrderId!}
+                    orderId={orderId!}
                     onCancelSuccess={handleCancelSuccess}
                     key={'cancel-' + allHistory.length}
                     // history 길이가 바뀔 때마다 모달 키를 바꿔주면 모달 내부 상태가 초기화
@@ -233,42 +249,78 @@ export default function OrderDetailClient() {
           </Card>
 
           {/*  고객 정보  */}
-          <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
+          <Card className="rounded-xl border-gray-200 bg-white shadow-md p-4">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center">
                 <User className="mr-2 h-5 w-5" />
                 고객 정보
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm font-medium">이름</div>
-                  <div>{orderDetail.customer.name ?? '이름 없음'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium flex items-center">
-                    <Mail className="mr-1 h-3.5 w-3.5" />
-                    이메일
-                  </div>
-                  <div>{orderDetail.customer.email ?? '이메일 없음'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium flex items-center">
-                    <Phone className="mr-1 h-3.5 w-3.5" />
-                    전화번호
-                  </div>
-                  <div>{orderDetail.customer.phone ?? '전화번호 없음'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium flex items-center">
-                    <MapPin className="mr-1 h-3.5 w-3.5" />
-                    주소
-                  </div>
-                  <div>{`${orderDetail.customer.address ?? '주소 없음'}${orderDetail.customer.postalCode ? ` (${orderDetail.customer.postalCode})` : ''}`}</div>
-                </div>
-              </div>
-            </CardContent>
+
+            {editingCustomer ? (
+              <CardContent>
+                <CustomerEditForm
+                  initialData={{
+                    name: orderDetail.customer.name,
+                    email: orderDetail.customer.email,
+                    phone: orderDetail.customer.phone,
+                    address: orderDetail.customer.address,
+                    postalCode: orderDetail.customer.postalCode || '',
+                  }}
+                  orderId={orderDetail._id}
+                  onSuccess={(updated: any) => {
+                    mutateOrder(); // SWR 캐시 갱신
+                    mutateHistory();
+                    setEditingCustomer(false);
+                  }}
+                  onCancel={() => setEditingCustomer(false)}
+                />
+              </CardContent>
+            ) : (
+              <>
+                <CardContent>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-sm font-medium">이름</div>
+                        <div>{orderDetail.customer.name ?? '이름 없음'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium flex items-center">
+                          <Mail className="mr-1 h-3.5 w-3.5" />
+                          이메일
+                        </div>
+                        <div>{orderDetail.customer.email ?? '이메일 없음'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium flex items-center">
+                          <Phone className="mr-1 h-3.5 w-3.5" />
+                          전화번호
+                        </div>
+                        <div>{orderDetail.customer.phone ?? '전화번호 없음'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium flex items-center">
+                          <MapPin className="mr-1 h-3.5 w-3.5" />
+                          주소
+                        </div>
+                        <div>
+                          {orderDetail.customer.address ?? '주소 없음'}
+                          {orderDetail.customer.postalCode ? ` (${orderDetail.customer.postalCode})` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </CardContent>
+                {isEditMode && (
+                  <CardFooter className="pt-3 flex justify-center">
+                    <Button variant="outline" size="sm" onClick={() => setEditingCustomer(true)}>
+                      수정하기
+                    </Button>
+                  </CardFooter>
+                )}
+              </>
+            )}
           </Card>
 
           {/*  배송 정보  */}
@@ -330,34 +382,58 @@ export default function OrderDetailClient() {
                 결제 정보
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm font-medium">결제 상태</div>
-                  <div>
-                    <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
-                  </div>
-                </div>
-                <div className="text-sm font-medium">결제 방법</div>
 
-                {orderDetail.paymentBank && bankLabelMap[orderDetail.paymentBank] ? (
-                  <div className="mt-2 rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-800 leading-relaxed border border-gray-200 space-y-1">
-                    <div className="font-semibold text-black">{orderDetail.paymentMethod}</div>
-                    <div className="font-medium">{bankLabelMap[orderDetail.paymentBank].label}</div>
-                    <div className="font-mono tracking-wide">{bankLabelMap[orderDetail.paymentBank].account}</div>
-                    <div className="text-sm">예금주: {bankLabelMap[orderDetail.paymentBank].holder}</div>
+            {editingPayment ? (
+              <CardContent>
+                <PaymentEditForm
+                  initialData={{ total: orderDetail.total }}
+                  orderId={orderId}
+                  onSuccess={() => {
+                    mutateOrder();
+                    mutateHistory();
+                    setEditingPayment(false);
+                  }}
+                  onCancel={() => setEditingPayment(false)}
+                />
+              </CardContent>
+            ) : (
+              <>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="text-sm font-medium">결제 상태</div>
+                      <div>
+                        <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
+                      </div>
+                    </div>
+                    <div className="text-sm font-medium">결제 방법</div>
+
+                    {orderDetail.paymentBank && bankLabelMap[orderDetail.paymentBank] ? (
+                      <div className="mt-2 rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-800 leading-relaxed border border-gray-200 space-y-1">
+                        <div className="font-semibold text-black">{orderDetail.paymentMethod}</div>
+                        <div className="font-medium">{bankLabelMap[orderDetail.paymentBank].label}</div>
+                        <div className="font-mono tracking-wide">{bankLabelMap[orderDetail.paymentBank].account}</div>
+                        <div className="text-sm">예금주: {bankLabelMap[orderDetail.paymentBank].holder}</div>
+                      </div>
+                    ) : (
+                      <div className="text-muted-foreground">선택된 결제 수단 없음</div>
+                    )}
+                    <div>
+                      <div className="text-sm font-medium">결제 금액</div>
+                      <div className="text-lg font-bold">{formatCurrency(orderDetail.total)}</div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-muted-foreground">선택된 결제 수단 없음</div>
+                </CardContent>
+                {isEditMode && (
+                  <CardFooter className="flex justify-center">
+                    <Button variant="outline" size="sm" onClick={() => setEditingPayment(true)}>
+                      수정하기
+                    </Button>
+                  </CardFooter>
                 )}
-                <div>
-                  <div className="text-sm font-medium">결제 금액</div>
-                  <div className="text-lg font-bold">{formatCurrency(orderDetail.total)}</div>
-                </div>
-              </div>
-            </CardContent>
+              </>
+            )}
           </Card>
-
           {/*  주문 항목  */}
           <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
             <CardHeader className="pb-3">
@@ -406,14 +482,35 @@ export default function OrderDetailClient() {
               <CardTitle>배송 요청사항</CardTitle>
               <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
             </CardHeader>
-            <CardContent>
-              {orderDetail.shippingInfo.deliveryRequest ? <p className="whitespace-pre-line text-sm text-foreground">{orderDetail.shippingInfo.deliveryRequest}</p> : <p className="text-sm text-muted-foreground">요청사항이 입력되지 않았습니다.</p>}
-            </CardContent>
+            {editingRequest ? (
+              <CardContent>
+                <RequestEditForm
+                  initialData={orderDetail.shippingInfo.deliveryRequest || ''}
+                  orderId={orderId}
+                  onSuccess={() => {
+                    mutateOrder();
+                    mutateHistory();
+                    setEditingRequest(false);
+                  }}
+                  onCancel={() => setEditingRequest(false)}
+                />
+              </CardContent>
+            ) : (
+              <>
+                <CardContent>{orderDetail.shippingInfo.deliveryRequest ? <p className="whitespace-pre-line …">{orderDetail.shippingInfo.deliveryRequest}</p> : <p className="text-muted-foreground">요청사항이 입력되지 않았습니다.</p>}</CardContent>
+                {isEditMode && (
+                  <CardFooter className="flex justify-center">
+                    <Button variant="outline" size="sm" onClick={() => setEditingRequest(true)}>
+                      수정하기
+                    </Button>
+                  </CardFooter>
+                )}
+              </>
+            )}
           </Card>
-
           {/*  처리 이력  */}
           <div className="md:col-span-3">
-            <OrderHistory orderId={selectedOrderId!} />
+            <OrderHistory orderId={orderId} />
           </div>
         </div>
       </div>
