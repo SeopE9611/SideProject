@@ -120,7 +120,22 @@ export default function OrdersClient() {
     return 0;
   });
 
-  // 유틸리티 함수
+  // 제한형 페이지 네이션
+  const getPaginationRange = () => {
+    const delta = 2;
+    const range = [];
+
+    const start = Math.max(2, page - delta);
+    const end = Math.min(totalPages - 1, page + delta);
+
+    if (start > 2) range.push('...');
+    for (let i = start; i <= end; i++) {
+      range.push(i);
+    }
+    if (end < totalPages - 1) range.push('...');
+
+    return [1, ...range, totalPages];
+  };
 
   // 비회원 vs 탈퇴회원 표시
   function getDisplayUserType(order: OrderWithType) {
@@ -485,16 +500,24 @@ export default function OrdersClient() {
             </Table>
 
             {/* 페이지네이션 */}
-            <div className="mt-4 flex justify-end space-x-2">
-              <Button onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={page === 1} variant="outline">
+            <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
+              <Button size="sm" variant="outline" onClick={() => setPage(page - 1)} disabled={page === 1}>
                 이전
               </Button>
-              {Array.from({ length: totalPages }).map((_, idx) => (
-                <Button key={idx} onClick={() => setPage(idx + 1)} variant={page === idx + 1 ? 'default' : 'outline'} size="sm">
-                  {idx + 1}
-                </Button>
-              ))}
-              <Button onClick={() => setPage((p) => Math.min(p + 1, totalPages))} disabled={page === totalPages} variant="outline">
+
+              {getPaginationRange().map((p, idx) =>
+                p === '...' ? (
+                  <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+                    ...
+                  </span>
+                ) : (
+                  <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => setPage(Number(p))}>
+                    {p}
+                  </Button>
+                )
+              )}
+
+              <Button size="sm" variant="outline" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
                 다음
               </Button>
             </div>
