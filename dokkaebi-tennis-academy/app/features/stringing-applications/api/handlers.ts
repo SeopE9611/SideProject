@@ -102,8 +102,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 }
 
 // ================= PATCH (관리자용 수정) =================
-export async function handlePatchStringingApplication(req: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function handlePatchStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
   const db = await getDb();
   const { status, name, email, phone, address, addressDetail, postalCode, totalPrice, stringDetails } = await req.json();
@@ -113,8 +112,19 @@ export async function handlePatchStringingApplication(req: Request, context: { p
 
   const updateFields: any = {};
   if (status) updateFields.status = status;
+
+  // === 고객 이름/이메일 업데이트 ===
   if (name) updateFields.guestName = name;
   if (email) updateFields.guestEmail = email;
+
+  // 이미 userSnapshot이 있으면, 그 안의 name/email도 함께 덮어쓰기
+  if (app.userSnapshot && (name || email)) {
+    updateFields.userSnapshot = {
+      ...app.userSnapshot,
+      ...(name ? { name } : {}),
+      ...(email ? { email } : {}),
+    };
+  }
 
   if (phone || address || addressDetail || postalCode) {
     updateFields.shippingInfo = {
@@ -131,9 +141,11 @@ export async function handlePatchStringingApplication(req: Request, context: { p
 
   const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, { $set: updateFields });
 
-  if (result.modifiedCount === 0) {
-    return NextResponse.json({ error: 'Update failed' }, { status: 400 });
+  if (result.matchedCount === 0) {
+    return NextResponse.json({ error: 'Application not found' }, { status: 404 });
   }
+  // 실제로 변경이 일어났든, 변경값이 기존과 같아 modifiedCount===0 이든
+  // 여기서는 모두 성공으로 처리
   return NextResponse.json({ success: true });
 }
 

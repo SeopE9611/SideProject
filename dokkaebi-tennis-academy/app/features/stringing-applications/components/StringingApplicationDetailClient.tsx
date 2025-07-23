@@ -1,11 +1,11 @@
 'use client';
 
 import useSWR from 'swr';
-import { useRef, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart } from 'lucide-react';
@@ -16,34 +16,12 @@ import StringingApplicationHistory from '@/app/features/stringing-applications/c
 import { paymentStatusColors } from '@/lib/badge-style';
 import { bankLabelMap } from '@/lib/constants';
 import { useStringingStore } from '@/app/store/stringingStore';
+import CustomerEditForm, { CustomerFormValues } from '@/app/features/stringing-applications/components/CustomerEditForm';
 
 interface Props {
   id: string;
   baseUrl: string;
 }
-
-function courierLabel(code: string): string {
-  switch (code) {
-    case 'cj':
-      return 'CJ 대한통운';
-    case 'hanjin':
-      return '한진택배';
-    case 'logen':
-      return '로젠택배';
-    case 'post':
-      return '우체국택배';
-    case 'etc':
-      return '기타';
-    default:
-      return code;
-  }
-}
-
-const shippingMethodLabelMap: Record<string, string> = {
-  visit: '방문 수령',
-  delivery: '택배 배송',
-  quick: '퀵서비스',
-};
 
 interface ApplicationDetail {
   id: string;
@@ -98,7 +76,10 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
   const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, fetcher);
   const [isPending, startTransition] = useTransition();
   const historyMutateRef = useRef<(() => Promise<any>) | undefined>(undefined);
-
+  // 전역 편집 모드 토글
+  const [isEditMode, setIsEditMode] = useState(false);
+  // 고객 정보 카드 편집 토글
+  const [editingCustomer, setEditingCustomer] = useState(false);
   const handleCancel = () => {
     if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
     startTransition(async () => {
@@ -135,12 +116,23 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">신청 상세 정보</h1>
             <p className="mt-1 text-muted-foreground">신청 ID: {data.id}</p>
           </div>
-          <Link href="/admin/orders">
-            <Button variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              목록으로 돌아가기
+          <div className="flex space-x-2">
+            <Button
+              variant={isEditMode ? 'destructive' : 'outline'}
+              onClick={() => {
+                setIsEditMode((m) => !m);
+                setEditingCustomer(false);
+              }}
+            >
+              {isEditMode ? '편집 취소' : '편집 모드'}
             </Button>
-          </Link>
+            <Link href="/admin/orders">
+              <Button variant="outline">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                목록으로 돌아가기
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -206,19 +198,56 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div>
-                <strong>이름:</strong> {data.customer.name}
-              </div>
-              <div className="flex items-center">
-                <Mail className="mr-1 w-4 h-4" /> {data.customer.email}
-              </div>
-              <div>
-                <strong>연락처:</strong> {data?.shippingInfo?.phone ?? '정보 없음'}
-              </div>
-              <div>
-                <strong>주소:</strong> {data?.shippingInfo?.address ? `${data.shippingInfo.address} ${data.shippingInfo.addressDetail ?? ''} (${data.shippingInfo.postalCode})` : '정보 없음'}
-              </div>
+              {editingCustomer ? (
+                <CustomerEditForm
+                  initialData={{
+                    name: data.customer.name,
+                    email: data.customer.email,
+                    phone: data.shippingInfo?.phone ?? '',
+                    address: data.shippingInfo?.address ?? '',
+                    addressDetail: data.shippingInfo?.addressDetail ?? '',
+                    postalCode: data.shippingInfo?.postalCode ?? '',
+                  }}
+                  resourcePath={`${baseUrl}/api/applications/stringing`}
+                  entityId={data.id}
+                  onSuccess={() => {
+                    mutate(); // 상세 데이터 갱신
+                    historyMutateRef.current?.(); // 이력 갱신
+                    setEditingCustomer(false); // 폼 닫기
+                  }}
+                  onCancel={() => setEditingCustomer(false)}
+                />
+              ) : (
+                <>
+                  <div>
+                    <strong>이름:</strong> {data.customer.name}
+                  </div>
+                  <div className="flex items-center">
+                    <Mail className="mr-1 w-4 h-4" /> {data.customer.email}
+                  </div>
+                  <div>
+                    <strong>전화번호:</strong> {data.shippingInfo?.phone ?? '정보 없음'}
+                  </div>
+                  <div>
+                    <strong>주소:</strong> {data.shippingInfo?.address ?? '정보 없음'}
+                  </div>
+                  <div>
+                    <strong>상세주소:</strong> {data.shippingInfo?.addressDetail ?? '-'}
+                  </div>
+                  <div>
+                    <strong>우편번호:</strong> {data.shippingInfo?.postalCode ?? '-'}
+                  </div>
+                </>
+              )}
             </CardContent>
+
+            {!editingCustomer && isEditMode && (
+              <CardFooter className="pt-2 flex justify-center">
+                <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)}>
+                  수정하기
+                </Button>
+              </CardFooter>
+            )}
           </Card>
 
           {/* 결제 정보 */}
