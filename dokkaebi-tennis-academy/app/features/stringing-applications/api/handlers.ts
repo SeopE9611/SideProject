@@ -106,28 +106,35 @@ export async function handlePatchStringingApplication(req: Request, context: { p
   const { id } = context.params;
   const client = await clientPromise;
   const db = await getDb();
-  try {
-    const { status, memo, photoUrls, shippingInfo } = await req.json();
-    const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
-    if (!app) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+  const { status, name, email, phone, address, addressDetail, postalCode, totalPrice, stringDetails } = await req.json();
 
-    const updateFields: Record<string, any> = {};
-    if (status) updateFields.status = status;
-    if (memo) updateFields.memo = memo;
-    if (photoUrls) updateFields.photos = photoUrls;
-    if (shippingInfo) updateFields.shippingInfo = shippingInfo;
+  const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
+  if (!app) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
 
-    const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, { $set: updateFields });
-    if (shippingInfo && app.orderId) {
-      await db.collection('orders').updateOne({ _id: new ObjectId(app.orderId) }, { $set: { shippingInfo } });
-    }
-    if (result.modifiedCount === 0) return NextResponse.json({ error: 'Update failed' }, { status: 400 });
+  const updateFields: any = {};
+  if (status) updateFields.status = status;
+  if (name) updateFields.guestName = name;
+  if (email) updateFields.guestEmail = email;
 
-    return NextResponse.json({ success: true });
-  } catch (e) {
-    console.error('[PATCH stringing_application]', e);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+  if (phone || address || addressDetail || postalCode) {
+    updateFields.shippingInfo = {
+      ...app.shippingInfo,
+      ...(phone !== undefined && { phone }),
+      ...(address !== undefined && { address }),
+      ...(addressDetail !== undefined && { addressDetail }),
+      ...(postalCode !== undefined && { postalCode }),
+    };
   }
+
+  if (totalPrice !== undefined) updateFields.totalPrice = totalPrice;
+  if (stringDetails) updateFields.stringDetails = stringDetails;
+
+  const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, { $set: updateFields });
+
+  if (result.modifiedCount === 0) {
+    return NextResponse.json({ error: 'Update failed' }, { status: 400 });
+  }
+  return NextResponse.json({ success: true });
 }
 
 // ========== 신청서의 상태 업데이트 ==========
