@@ -62,8 +62,14 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     // total 계산
     const total = items.reduce((sum, x) => sum + x.price * x.quantity, 0);
 
-    const customer = app.userSnapshot ? { name: app.userSnapshot.name, email: app.userSnapshot.email } : app.guestName && app.guestEmail ? { name: app.guestName, email: app.guestEmail } : { name: '-', email: '-' };
-
+    const customer = {
+      name: app.customer?.name ?? app.userSnapshot?.name ?? app.guestName ?? '-',
+      email: app.customer?.email ?? app.userSnapshot?.email ?? app.guestEmail ?? '-',
+      phone: app.customer?.phone ?? app.shippingInfo?.phone ?? app.guestPhone ?? '',
+      address: app.customer?.address ?? app.shippingInfo?.address ?? '',
+      addressDetail: app.customer?.addressDetail ?? app.shippingInfo?.addressDetail ?? '',
+      postalCode: app.customer?.postalCode ?? app.shippingInfo?.postalCode ?? '',
+    };
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
@@ -113,32 +119,25 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
   const updateFields: any = {};
   if (status) updateFields.status = status;
 
-  // === 고객 이름/이메일 업데이트 ===
-  if (name) updateFields.guestName = name;
-  if (email) updateFields.guestEmail = email;
-
-  // 이미 userSnapshot이 있으면, 그 안의 name/email도 함께 덮어쓰기
-  if (app.userSnapshot && (name || email)) {
-    updateFields.userSnapshot = {
-      ...app.userSnapshot,
-      ...(name ? { name } : {}),
-      ...(email ? { email } : {}),
-    };
-  }
-
-  if (phone || address || addressDetail || postalCode) {
-    updateFields.shippingInfo = {
-      ...app.shippingInfo,
-      ...(phone !== undefined && { phone }),
-      ...(address !== undefined && { address }),
-      ...(addressDetail !== undefined && { addressDetail }),
-      ...(postalCode !== undefined && { postalCode }),
-    };
-  }
-
-  if (totalPrice !== undefined) updateFields.totalPrice = totalPrice;
-  if (stringDetails) updateFields.stringDetails = stringDetails;
-
+  // customer 서브도큐먼트 설정 (없으면 초기값 생성)
+  const baseCustomer = app.customer ?? {
+    name: app.userSnapshot?.name ?? app.guestName ?? '',
+    email: app.userSnapshot?.email ?? app.guestEmail ?? '',
+    phone: app.guestPhone ?? app.shippingInfo?.phone ?? '',
+    address: app.shippingInfo?.address ?? '',
+    addressDetail: app.shippingInfo?.addressDetail ?? '',
+    postalCode: app.shippingInfo?.postalCode ?? '',
+  };
+  const newCustomer = {
+    ...baseCustomer,
+    ...(name !== undefined ? { name } : {}),
+    ...(email !== undefined ? { email } : {}),
+    ...(phone !== undefined ? { phone } : {}),
+    ...(address !== undefined ? { address } : {}),
+    ...(addressDetail !== undefined ? { addressDetail } : {}),
+    ...(postalCode !== undefined ? { postalCode } : {}),
+  };
+  updateFields.customer = newCustomer;
   const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, { $set: updateFields });
 
   if (result.matchedCount === 0) {
