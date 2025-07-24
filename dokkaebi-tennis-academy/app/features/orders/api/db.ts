@@ -36,25 +36,13 @@ export async function fetchCombinedOrders() {
 
   const orders = await Promise.all(
     rawOrders.map(async (order) => {
-      let customer: { name: string; email: string; phone: string };
-
-      if (order.userSnapshot) {
-        const userDoc = order.userId ? await usersColl.findOne({ _id: new ObjectId(order.userId) }) : null;
-        const isDeleted = !!userDoc?.isDeleted;
-        customer = {
-          name: isDeleted ? `${order.userSnapshot.name} (탈퇴한 회원)` : order.userSnapshot.name,
-          email: order.userSnapshot.email,
-          phone: '-',
-        };
-      } else if (order.guestInfo) {
-        customer = {
-          name: `${order.guestInfo.name} (비회원)`,
-          email: order.guestInfo.email || '-',
-          phone: order.guestInfo.phone || '-',
-        };
-      } else {
-        customer = { name: '(고객 정보 없음)', email: '-', phone: '-' };
-      }
+      const customer: { name: string; email: string; phone: string } = order.customer
+        ? { name: order.customer.name, email: order.customer.email ?? '-', phone: order.customer.phone ?? '-' }
+        : order.userSnapshot
+        ? { name: order.userSnapshot.name, email: order.userSnapshot.email ?? '-', phone: '-' }
+        : order.guestInfo
+        ? { name: `${order.guestInfo.name} (비회원)`, email: order.guestInfo.email ?? '-', phone: order.guestInfo.phone ?? '-' }
+        : { name: '(고객 정보 없음)', email: '-', phone: '-' };
 
       return {
         id: order._id.toString(),
@@ -90,19 +78,16 @@ export async function fetchCombinedOrders() {
   // 스트링 교체 서비스 신청서 불러오기
   const rawApps = await db.collection('stringing_applications').find().toArray();
 
-  // 수정: 비동기 매핑으로 items 재구성
   const stringingOrders = await Promise.all(
     rawApps.map(async (app) => {
-      // 1) 고객 정보 매핑 (기존 로직 그대로)
-      const customer = app.userSnapshot?.name
+      // 고객 정보 매핑 (
+      const customer = app.customer
+        ? { name: app.customer.name, email: app.customer.email ?? '-', phone: app.customer.phone ?? '-' }
+        : app.userSnapshot?.name
         ? { name: app.userSnapshot.name, email: app.userSnapshot.email ?? '-', phone: '-' }
-        : {
-            name: `${app.guestName ?? '비회원'} (비회원)`,
-            email: app.guestEmail || '-',
-            phone: app.guestPhone || '-',
-          };
+        : { name: `${app.guestName ?? '비회원'} (비회원)`, email: app.guestEmail || '-', phone: app.guestPhone || '-' };
 
-      // 2) items 배열 재구성
+      // items 배열
       const items = await Promise.all(
         (app.stringDetails.stringTypes ?? []).map(async (typeId: string) => {
           // 커스텀 스트링 처리
