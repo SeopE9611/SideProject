@@ -29,6 +29,10 @@ interface ApplicationDetail {
   customer: {
     name: string;
     email: string;
+    phone: string;
+    address: string;
+    addressDetail: string;
+    postalCode: string;
   };
   requestedAt: string;
   status: string;
@@ -106,7 +110,6 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
   const isCancelled = data.status === '취소';
   const isPaid = ['접수완료', '작업 중', '교체완료'].includes(data.status);
   const paymentStatus = isPaid ? '결제완료' : '결제대기';
-
   return (
     <div className="container py-10">
       <div className="mx-auto max-w-4xl">
@@ -201,12 +204,12 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
               {editingCustomer ? (
                 <CustomerEditForm
                   initialData={{
-                    name: data.customer.name,
-                    email: data.customer.email,
-                    phone: data.shippingInfo?.phone ?? '',
-                    address: data.shippingInfo?.address ?? '',
-                    addressDetail: data.shippingInfo?.addressDetail ?? '',
-                    postalCode: data.shippingInfo?.postalCode ?? '',
+                    name: data.customer.name ?? '이름 미입력',
+                    email: data.customer.email ?? '이메일 미입력',
+                    phone: data.shippingInfo?.phone ?? '전화번호 미입력',
+                    address: data.shippingInfo?.address ?? '주소 미입력',
+                    addressDetail: data.shippingInfo?.addressDetail ?? '상세 주소 미입력',
+                    postalCode: data.shippingInfo?.postalCode ?? '우편번호 미입력',
                   }}
                   resourcePath={`${baseUrl}/api/applications/stringing`}
                   entityId={data.id}
@@ -220,22 +223,22 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
               ) : (
                 <>
                   <div>
-                    <strong>이름:</strong> {data.customer.name}
+                    <strong>이름:</strong> {data.customer.name ?? '정보 없음'}
                   </div>
                   <div className="flex items-center">
-                    <Mail className="mr-1 w-4 h-4" /> {data.customer.email}
+                    <Mail className="mr-1 w-4 h-4" /> {data.customer.email ?? '정보 없음'}
                   </div>
                   <div>
-                    <strong>전화번호:</strong> {data.shippingInfo?.phone ?? '정보 없음'}
+                    <strong>전화번호:</strong> {data.customer?.phone ?? '정보 없음'}
                   </div>
                   <div>
-                    <strong>주소:</strong> {data.shippingInfo?.address ?? '정보 없음'}
+                    <strong>주소:</strong> {data.customer?.address ?? '정보 없음'}
                   </div>
                   <div>
-                    <strong>상세주소:</strong> {data.shippingInfo?.addressDetail ?? '-'}
+                    <strong>상세주소:</strong> {data.customer?.addressDetail ?? '-'}
                   </div>
                   <div>
-                    <strong>우편번호:</strong> {data.shippingInfo?.postalCode ?? '-'}
+                    <strong>우편번호:</strong> {data.customer?.postalCode ?? '-'}
                   </div>
                 </>
               )}

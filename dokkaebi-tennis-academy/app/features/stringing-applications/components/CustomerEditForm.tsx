@@ -1,4 +1,3 @@
-// app/features/stringing-applications/components/CustomerEditForm.tsx
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -12,14 +11,14 @@ export interface CustomerFormValues {
   email: string;
   phone: string;
   address: string;
-  addressDetail: string; // 상세주소 추가
+  addressDetail: string;
   postalCode: string;
 }
 
 interface Props {
   initialData: CustomerFormValues;
-  resourcePath: string; // ex) '/api/applications/stringing'
-  entityId: string; // applicationId
+  resourcePath: string;
+  entityId: string;
   onSuccess: (updated: CustomerFormValues) => void;
   onCancel: () => void;
 }
