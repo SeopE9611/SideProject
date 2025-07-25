@@ -111,43 +111,80 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 export async function handlePatchStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
   const db = await getDb();
-  const { status, name, email, phone, address, addressDetail, postalCode, totalPrice, stringDetails } = await req.json();
+  const { name, email, phone, address, addressDetail, postalCode, depositor, totalPrice, stringDetails } = await req.json();
 
   const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
   if (!app) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
 
-  const updateFields: any = {};
-  if (status) updateFields.status = status;
+  const setFields: any = {};
+  const pushHistory: any[] = [];
 
-  // customer 서브도큐먼트 설정 (없으면 초기값 생성)
-  const baseCustomer = app.customer ?? {
-    name: app.userSnapshot?.name ?? app.guestName ?? '',
-    email: app.userSnapshot?.email ?? app.guestEmail ?? '',
-    phone: app.guestPhone ?? app.shippingInfo?.phone ?? '',
-    address: app.shippingInfo?.address ?? '',
-    addressDetail: app.shippingInfo?.addressDetail ?? '',
-    postalCode: app.shippingInfo?.postalCode ?? '',
-  };
-  const newCustomer = {
-    ...baseCustomer,
-    ...(name !== undefined ? { name } : {}),
-    ...(email !== undefined ? { email } : {}),
-    ...(phone !== undefined ? { phone } : {}),
-    ...(address !== undefined ? { address } : {}),
-    ...(addressDetail !== undefined ? { addressDetail } : {}),
-    ...(postalCode !== undefined ? { postalCode } : {}),
-  };
-  updateFields.customer = newCustomer;
-  const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, { $set: updateFields });
+  // 고객정보 변경
+  if (name || email || phone || address || addressDetail || postalCode) {
+    // 기존 customer 병합
+    const baseCustomer = app.customer ?? {
+      name: app.userSnapshot?.name ?? app.guestName ?? '',
+      email: app.userSnapshot?.email ?? app.guestEmail ?? '',
+      phone: app.guestPhone ?? app.shippingInfo?.phone ?? '',
+      address: app.shippingInfo?.address ?? '',
+      addressDetail: app.shippingInfo?.addressDetail ?? '',
+      postalCode: app.shippingInfo?.postalCode ?? '',
+    };
+    setFields.customer = {
+      ...baseCustomer,
+      ...(name ? { name } : {}),
+      ...(email ? { email } : {}),
+      ...(phone ? { phone } : {}),
+      ...(address ? { address } : {}),
+      ...(addressDetail ? { addressDetail } : {}),
+      ...(postalCode ? { postalCode } : {}),
+    };
+    pushHistory.push({
+      status: '고객정보수정',
+      date: new Date(),
+      description: '고객 정보를 수정했습니다.',
+    });
+  }
+
+  // 결제정보 변경
+  if (depositor !== undefined) {
+    setFields['shippingInfo.depositor'] = depositor;
+    pushHistory.push({
+      status: '입금자명 수정',
+      date: new Date(),
+      description: `입금자명을 "${depositor}"(으)로 수정했습니다.`,
+    });
+  }
+  if (totalPrice !== undefined) {
+    setFields.totalPrice = totalPrice;
+    pushHistory.push({
+      status: '결제 금액 수정',
+      date: new Date(),
+      description: `결제 금액을 ${totalPrice.toLocaleString()}원으로 수정했습니다.`,
+    });
+  }
+
+  // 스트링 세부정보 변경
+  if (stringDetails) {
+    setFields.stringDetails = stringDetails;
+    pushHistory.push({
+      status: '스트링 정보 수정',
+      date: new Date(),
+      description: '스트링 세부 정보를 수정했습니다.',
+    });
+  }
+
+  // 실제 업데이트
+  const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, {
+    $set: setFields,
+    $push: { history: { $each: pushHistory } },
+  } as any);
 
   if (result.matchedCount === 0) {
     return NextResponse.json({ error: 'Application not found' }, { status: 404 });
   }
-  // 실제로 변경이 일어났든, 변경값이 기존과 같아 modifiedCount===0 이든
-  // 여기서는 모두 성공으로 처리
   return NextResponse.json({ success: true });
 }
-
 // ========== 신청서의 상태 업데이트 ==========
 export async function handleUpdateApplicationStatus(req: Request, context: { params: { id: string } }) {
   // 쿠키에서 accessToken 추출

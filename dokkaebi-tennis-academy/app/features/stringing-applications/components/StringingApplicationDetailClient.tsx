@@ -17,6 +17,7 @@ import { paymentStatusColors } from '@/lib/badge-style';
 import { bankLabelMap } from '@/lib/constants';
 import { useStringingStore } from '@/app/store/stringingStore';
 import CustomerEditForm, { CustomerFormValues } from '@/app/features/stringing-applications/components/CustomerEditForm';
+import PaymentEditForm from '@/app/features/stringing-applications/components/PaymentEditForm';
 
 interface Props {
   id: string;
@@ -37,7 +38,7 @@ interface ApplicationDetail {
   requestedAt: string;
   status: string;
   // totalPrice?: number;
-  total: number;
+  totalPrice: number;
   history?: { status: string; date: string; description: string }[];
   items: Array<{
     id: string;
@@ -84,6 +85,8 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
   const [isEditMode, setIsEditMode] = useState(false);
   // 고객 정보 카드 편집 토글
   const [editingCustomer, setEditingCustomer] = useState(false);
+  // 결제정보 편집 토글
+  const [editingPayment, setEditingPayment] = useState(false);
   const handleCancel = () => {
     if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
     startTransition(async () => {
@@ -264,18 +267,47 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
               </Badge>
             </CardHeader>
 
-            <CardContent className="grid gap-2 text-sm">
-              <div>
-                <span className="text-muted-foreground">결제 방식</span>
-                <div>무통장 입금 {data?.shippingInfo?.bank && `(${bankLabelMap[data.shippingInfo.bank]?.label || data.shippingInfo.bank})`}</div>
-                {data?.shippingInfo?.depositor && <div className="text-muted-foreground">입금자명: {data?.shippingInfo?.depositor || '미입력'}</div>}
-              </div>
-
-              <div>
-                <span className="text-muted-foreground">결제 금액</span>
-                <div>{data?.total?.toLocaleString()}원</div>
-              </div>
+            <CardContent className="text-sm">
+              {editingPayment ? (
+                <PaymentEditForm
+                  initialData={{
+                    depositor: data.shippingInfo?.depositor || '',
+                    totalPrice: data.totalPrice,
+                  }}
+                  resourcePath={`${baseUrl}/api/applications/stringing`}
+                  entityId={data.id}
+                  onSuccess={() => {
+                    mutate(); // 상세 데이터 갱신
+                    historyMutateRef.current?.(); // 처리 이력 컴포넌트 갱신
+                    setEditingPayment(false); // 폼 닫기
+                  }}
+                  onCancel={() => setEditingPayment(false)}
+                />
+              ) : (
+                <div className="grid gap-2">
+                  <div>
+                    <span className="text-muted-foreground">결제 방식</span>
+                    <div>무통장 입금 {data.shippingInfo?.bank && `(${bankLabelMap[data.shippingInfo.bank]?.label || data.shippingInfo.bank})`}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">입금자명</span>
+                    <div>{data.shippingInfo?.depositor || '미입력'}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">결제 금액</span>
+                    <div>{data.totalPrice.toLocaleString()}원</div>
+                  </div>
+                </div>
+              )}
             </CardContent>
+
+            {!editingPayment && isEditMode && (
+              <CardFooter className="flex justify-center">
+                <Button size="sm" variant="outline" onClick={() => setEditingPayment(true)}>
+                  결제 정보 수정
+                </Button>
+              </CardFooter>
+            )}
           </Card>
 
           {/* 스트링 정보 */}
