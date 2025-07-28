@@ -369,8 +369,21 @@ export default function StringServiceApplyPage() {
                       </Label>
                       <p className="text-sm text-muted-foreground text-red-500">※ 두 개 이상의 스트링을 교체 원하신 경우, 직접 입력하기를 선택하여 아래에 상세히 적어주세요.</p>
                       <p className="text-sm text-muted-foreground text-red-500">※ 이미 보유하고 계신 스트링으로 작성하셔도 됩니다.</p>
-                      <StringCheckboxes items={order?.items ?? []} stringTypes={formData.stringTypes} customInput={formData.customStringType} onChange={handleStringTypesChange} onCustomInputChange={handleCustomInputChange} />
-
+                      <StringCheckboxes
+                        items={(order?.items ?? [])
+                          // mountingFee가 undefined인 경우 제거
+                          .filter((i) => i.mountingFee !== undefined)
+                          // id, name, mountingFee를 확실히 number로 매핑
+                          .map((i) => ({
+                            id: i.id,
+                            name: i.name,
+                            mountingFee: i.mountingFee!, // or i.mountingFee ?? 0
+                          }))}
+                        stringTypes={formData.stringTypes}
+                        customInput={formData.customStringType}
+                        onChange={handleStringTypesChange}
+                        onCustomInputChange={handleCustomInputChange}
+                      />
                       {/* 가격 표시 영역 */}
                       <div className="text-sm text-muted-foreground mt-2">
                         {formData.stringTypes.includes('custom') ? (

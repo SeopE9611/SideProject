@@ -5,6 +5,7 @@ import { HistoryItem, HistoryRecord } from '@/lib/types/stringing-application-db
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
+import { OrderItem } from '@/lib/types/order';
 
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
@@ -49,11 +50,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         return {
           id: item.id,
           name: item.name,
-          price:
-            // DB에 mountingFee가 있으면 사용
-            prod?.mountingFee ??
-            // 아니면 getStringingServicePrice에 isCustom=false로 호출
-            getStringingServicePrice(item.id, false),
+          price: prod?.mountingFee ?? getStringingServicePrice(item.id, false),
           quantity: 1,
         };
       })
@@ -62,18 +59,35 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     // total 계산
     const total = items.reduce((sum, x) => sum + x.price * x.quantity, 0);
 
-    const customer = {
-      name: app.customer?.name ?? app.userSnapshot?.name ?? app.guestName ?? '-',
-      email: app.customer?.email ?? app.userSnapshot?.email ?? app.guestEmail ?? '-',
-      phone: app.customer?.phone ?? app.shippingInfo?.phone ?? app.guestPhone ?? '',
-      address: app.customer?.address ?? app.shippingInfo?.address ?? '',
-      addressDetail: app.customer?.addressDetail ?? app.shippingInfo?.addressDetail ?? '',
-      postalCode: app.customer?.postalCode ?? app.shippingInfo?.postalCode ?? '',
-    };
+    // 원본 주문서에서 구매한 스트링만 → orderStrings
+    const order = await db.collection('orders').findOne({ _id: new ObjectId(app.orderId) }, { projection: { items: 1 } });
+    const orderStrings = (order?.items ?? ([] as OrderItem[]))
+      .filter((it: OrderItem) => it.mountingFee! > 0)
+      .map((it: OrderItem) => ({
+        id: it.id.toString(),
+        name: it.name,
+        mountingFee: it.mountingFee!,
+      }));
+
+    // purchasedStrings: current items as checkbox options
+    const purchasedStrings = items.map((it) => ({
+      id: it.id,
+      name: it.name,
+      mountingFee: it.price,
+    }));
+
+    // build the response
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
-      customer,
+      customer: {
+        name: app.customer?.name ?? app.userSnapshot?.name ?? app.guestName ?? '-',
+        email: app.customer?.email ?? app.userSnapshot?.email ?? app.guestEmail ?? '-',
+        phone: app.customer?.phone ?? app.shippingInfo?.phone ?? app.guestPhone ?? '',
+        address: app.customer?.address ?? app.shippingInfo?.address ?? '',
+        addressDetail: app.customer?.addressDetail ?? app.shippingInfo?.addressDetail ?? '',
+        postalCode: app.customer?.postalCode ?? app.shippingInfo?.postalCode ?? '',
+      },
       requestedAt: app.createdAt,
       desiredDateTime: app.desiredDateTime,
       status: app.status,
@@ -86,8 +100,8 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         preferredDate: app.stringDetails.preferredDate,
         preferredTime: app.stringDetails.preferredTime,
         requirements: app.stringDetails.requirements,
+        stringTypes: app.stringDetails.stringTypes || [],
         stringItems,
-
         ...(app.stringDetails.customStringName && {
           customStringName: app.stringDetails.customStringName,
         }),
@@ -100,6 +114,8 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         date: record.date,
         description: record.description,
       })),
+      purchasedStrings,
+      orderStrings,
     });
   } catch (e) {
     console.error('[GET stringing_application]', e);
@@ -166,7 +182,46 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 
   // 스트링 세부정보 변경
   if (stringDetails) {
-    setFields.stringDetails = stringDetails;
+    // 날짜/시간
+    if (stringDetails.desiredDateTime) {
+      const [date, time] = stringDetails.desiredDateTime.split('T');
+      setFields['stringDetails.preferredDate'] = date;
+      setFields['stringDetails.preferredTime'] = time;
+      setFields.desiredDateTime = stringDetails.desiredDateTime;
+    }
+
+    // stringTypes
+    const types: string[] = Array.isArray(stringDetails.stringTypes) ? stringDetails.stringTypes : app.stringDetails.stringTypes;
+    setFields['stringDetails.stringTypes'] = types;
+
+    // customStringName
+    setFields['stringDetails.customStringName'] = stringDetails.customStringName ?? null;
+
+    // racketType
+    if (stringDetails.racketType) {
+      setFields['stringDetails.racketType'] = stringDetails.racketType;
+    }
+
+    // stringItems 계산 및 저장
+    const newItems = await Promise.all(
+      types.map(async (prodId) => {
+        if (prodId === 'custom') {
+          return {
+            id: 'custom',
+            name: stringDetails.customStringName?.trim() || '커스텀 스트링',
+          };
+        }
+        // 제품명 조회
+        const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1, mountingFee: 1 } });
+        return {
+          id: prodId,
+          name: prod?.name ?? '알 수 없는 상품',
+          price: prod?.mountingFee ?? getStringingServicePrice(prodId, false),
+        };
+      })
+    );
+    setFields['stringDetails.stringItems'] = newItems;
+
     pushHistory.push({
       status: '스트링 정보 수정',
       date: new Date(),

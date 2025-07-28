@@ -13,17 +13,15 @@ interface Props {
 export default function StringCheckboxes({ items, stringTypes, customInput, onChange, onCustomInputChange }: Props) {
   const toggle = (id: string) => {
     if (id === 'custom') {
-      // custom 선택 시 다른 항목 제거
-      const next = stringTypes.includes('custom') ? [] : ['custom'];
+      // custom 토글: 기존 항목은 그대로 두고 추가/제거만
+      const next = stringTypes.includes('custom') ? stringTypes.filter((x) => x !== 'custom') : [...stringTypes, 'custom'];
       onChange(next);
     } else {
-      if (stringTypes.includes('custom')) return; // custom 선택 중이면 상품 선택 불가
-
+      // 일반 항목 토글: custom 이 있든 없든 허용
       const next = stringTypes.includes(id) ? stringTypes.filter((x) => x !== id) : [...stringTypes, id];
       onChange(next);
     }
   };
-
   return (
     <div className="space-y-3">
       {/* 상품 리스트 항목 */}

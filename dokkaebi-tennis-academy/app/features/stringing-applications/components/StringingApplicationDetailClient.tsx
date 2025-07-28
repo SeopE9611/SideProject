@@ -18,6 +18,8 @@ import { bankLabelMap } from '@/lib/constants';
 import { useStringingStore } from '@/app/store/stringingStore';
 import CustomerEditForm, { CustomerFormValues } from '@/app/features/stringing-applications/components/CustomerEditForm';
 import PaymentEditForm from '@/app/features/stringing-applications/components/PaymentEditForm';
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import StringInfoEditForm from '@/app/features/stringing-applications/components/StringInfoEditForm';
 
 interface Props {
   id: string;
@@ -49,7 +51,7 @@ interface ApplicationDetail {
   stringDetails: {
     preferredDate: string;
     preferredTime: string;
-    stringType: string;
+    stringTypes: string[];
     customStringName?: string;
     racketType: string;
     requirements?: string;
@@ -71,6 +73,16 @@ interface ApplicationDetail {
       trackingNumber: string;
     };
   } | null;
+  purchasedStrings: {
+    id: string;
+    name: string;
+    mountingFee: number;
+  }[];
+  orderStrings: {
+    id: string;
+    name: string;
+    mountingFee: number;
+  }[];
 }
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -87,6 +99,9 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
   const [editingCustomer, setEditingCustomer] = useState(false);
   // 결제정보 편집 토글
   const [editingPayment, setEditingPayment] = useState(false);
+  // 신청 스트링 정보 모달 상태
+  const [isStringModalOpen, setIsStringModalOpen] = useState(false);
+
   const handleCancel = () => {
     if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
     startTransition(async () => {
@@ -250,7 +265,7 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
             {!editingCustomer && isEditMode && (
               <CardFooter className="pt-2 flex justify-center">
                 <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)}>
-                  수정하기
+                  고객 정보 수정
                 </Button>
               </CardFooter>
             )}
@@ -340,6 +355,39 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
                 <strong>요청사항:</strong> {data.stringDetails.requirements ? data.stringDetails.requirements : '요청사항 없음'}
               </div> */}
             </CardContent>
+
+            {isEditMode && (
+              <CardFooter className="flex justify-end">
+                <Button size="sm" variant="outline" onClick={() => setIsStringModalOpen(true)}>
+                  스트링 정보 수정
+                </Button>
+              </CardFooter>
+            )}
+
+            <Dialog open={isStringModalOpen} onOpenChange={setIsStringModalOpen}>
+              <DialogTrigger asChild></DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogTitle className="text-xl font-semibold mb-4">신청 스트링 정보 수정</DialogTitle>
+                <StringInfoEditForm
+                  id={data.id}
+                  initial={{
+                    desiredDateTime: `${data.stringDetails.preferredDate}T${data.stringDetails.preferredTime}`,
+                    stringTypes: data.stringDetails.stringTypes,
+                    customStringName: data.stringDetails.customStringName,
+                    racketType: data.stringDetails.racketType,
+                  }}
+                  stringOptions={data.purchasedStrings}
+                  onDone={() => setIsStringModalOpen(false)}
+                  mutateData={mutate}
+                  mutateHistory={() => historyMutateRef.current?.()}
+                />
+                <DialogClose asChild>
+                  <Button variant="outline" className="mt-4">
+                    닫기
+                  </Button>
+                </DialogClose>
+              </DialogContent>
+            </Dialog>
           </Card>
 
           {/* 요청사항 카드 */}
