@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -88,11 +88,9 @@ interface ApplicationDetail {
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
-export default function StringingApplicationDetailClient({ baseUrl }: Props) {
+export default function StringingApplicationDetailClient({ id, baseUrl }: Props) {
   const router = useRouter();
-  const applicationId = useStringingStore((state) => state.selectedApplicationId);
-  const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, fetcher);
-  const [isPending, startTransition] = useTransition();
+
   const historyMutateRef = useRef<(() => Promise<any>) | undefined>(undefined);
   // 전역 편집 모드 토글
   const [isEditMode, setIsEditMode] = useState(false);
@@ -105,6 +103,7 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
   // 요청사항 편집 모드
   const [editingRequirements, setEditingRequirements] = useState(false);
 
+  const [isPending, startTransition] = useTransition();
   const handleCancel = () => {
     if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
     startTransition(async () => {
@@ -124,6 +123,21 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
       }
     });
   };
+
+  // 기존 store 아이디
+  const storeId = useStringingStore((state) => state.selectedApplicationId);
+  // 새로고침 대비 fallback: prop 으로 내려준 id 를 쓰거나, storeId 사용
+  const applicationId = storeId ?? id;
+
+  // store가 비어 있을 땐 id 로 채워두면 이후 내비게이션 시에도 동일하게 동작
+  useEffect(() => {
+    if (!storeId) {
+      useStringingStore.setState({ selectedApplicationId: id });
+    }
+  }, [id, storeId]);
+
+  // SWR 키가 항상 applicationId 로 고정 (새로고침해도 fetch가 정상 동작하기 위함)
+  const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, (url: any) => fetch(url, { credentials: 'include' }).then((r) => r.json()));
 
   if (isLoading || !data) return <Skeleton className="h-[300px] w-full" />;
   if (error) return <div className="text-red-500 p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
