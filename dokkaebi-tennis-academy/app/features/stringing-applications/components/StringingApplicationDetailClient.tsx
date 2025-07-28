@@ -21,6 +21,7 @@ import PaymentEditForm from '@/app/features/stringing-applications/components/Pa
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import StringInfoEditForm from '@/app/features/stringing-applications/components/StringInfoEditForm';
 import RequirementsEditForm from '@/app/features/stringing-applications/components/RequirementsEditForm';
+import StringingApplicationDetailSkeleton from '@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton';
 
 interface Props {
   id: string;
@@ -139,7 +140,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
   // SWR 키가 항상 applicationId 로 고정 (새로고침해도 fetch가 정상 동작하기 위함)
   const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, (url: any) => fetch(url, { credentials: 'include' }).then((r) => r.json()));
 
-  if (isLoading || !data) return <Skeleton className="h-[300px] w-full" />;
+  if (isLoading || !data) {
+    return <StringingApplicationDetailSkeleton />;
+  }
   if (error) return <div className="text-red-500 p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
 
   const isCancelled = data.status === '취소';
