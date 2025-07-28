@@ -227,6 +227,17 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
       date: new Date(),
       description: '스트링 세부 정보를 수정했습니다.',
     });
+
+    // 요청사항 업데이트
+    if ('requirements' in stringDetails) {
+      setFields['stringDetails.requirements'] = stringDetails.requirements;
+    }
+
+    pushHistory.push({
+      status: '요청사항 수정',
+      date: new Date(),
+      description: '요청사항을 수정했습니다.',
+    });
   }
 
   // 실제 업데이트

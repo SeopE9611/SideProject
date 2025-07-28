@@ -20,6 +20,7 @@ import CustomerEditForm, { CustomerFormValues } from '@/app/features/stringing-a
 import PaymentEditForm from '@/app/features/stringing-applications/components/PaymentEditForm';
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import StringInfoEditForm from '@/app/features/stringing-applications/components/StringInfoEditForm';
+import RequirementsEditForm from '@/app/features/stringing-applications/components/RequirementsEditForm';
 
 interface Props {
   id: string;
@@ -101,6 +102,8 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
   const [editingPayment, setEditingPayment] = useState(false);
   // 신청 스트링 정보 모달 상태
   const [isStringModalOpen, setIsStringModalOpen] = useState(false);
+  // 요청사항 편집 모드
+  const [editingRequirements, setEditingRequirements] = useState(false);
 
   const handleCancel = () => {
     if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
@@ -395,9 +398,33 @@ export default function StringingApplicationDetailClient({ baseUrl }: Props) {
             <CardHeader className="pb-3">
               <CardTitle>요청사항</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm">{data?.stringDetails?.requirements?.trim() ? data.stringDetails.requirements : <span className="text-muted-foreground">요청사항이 없습니다.</span>}</CardContent>
+            <CardContent className="text-sm">
+              {editingRequirements ? (
+                <RequirementsEditForm
+                  initial={data.stringDetails.requirements ?? ''}
+                  resourcePath={`${baseUrl}/api/applications/stringing`}
+                  entityId={data.id}
+                  onSuccess={() => {
+                    mutate();
+                    historyMutateRef.current?.();
+                    setEditingRequirements(false);
+                  }}
+                  onCancel={() => setEditingRequirements(false)}
+                />
+              ) : data.stringDetails.requirements?.trim() ? (
+                data.stringDetails.requirements
+              ) : (
+                <span className="text-muted-foreground">요청사항이 없습니다.</span>
+              )}
+            </CardContent>
+            {!editingRequirements && isEditMode && (
+              <CardFooter className="flex justify-center">
+                <Button size="sm" variant="outline" onClick={() => setEditingRequirements(true)}>
+                  요청사항 수정
+                </Button>
+              </CardFooter>
+            )}
           </Card>
-
           {/* 처리 이력 */}
           <div className="md:col-span-3">
             {applicationId && (
