@@ -8,10 +8,12 @@ interface Props {
   customInput: string; // 직접 입력값
   onChange: (value: string[]) => void; // 배열로 넘겨줌
   onCustomInputChange: (value: string) => void;
+  disabled?: boolean;
 }
 
-export default function StringCheckboxes({ items, stringTypes, customInput, onChange, onCustomInputChange }: Props) {
+export default function StringCheckboxes({ items, stringTypes, customInput, onChange, onCustomInputChange, disabled = false }: Props) {
   const toggle = (id: string) => {
+    if (disabled) return;
     // custom 체크박스를 토글할 때는 오직 ['custom'] 만 남기고 모두 해제
     if (id === 'custom') {
       const next = stringTypes.includes('custom') ? [] : ['custom'];

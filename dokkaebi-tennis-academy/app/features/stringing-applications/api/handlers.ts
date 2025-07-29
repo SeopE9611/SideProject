@@ -181,62 +181,69 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 
   // 스트링 세부정보 변경
   if (stringDetails) {
+    //  스트링 관련 필드 변경 감지
+    const hasTimeChange = typeof stringDetails.desiredDateTime !== 'undefined';
+    const hasTypesChange = Array.isArray(stringDetails.stringTypes);
+    const hasCustomNameChange = 'customStringName' in stringDetails;
+    const hasRacketChange = typeof stringDetails.racketType !== 'undefined';
+
     // 날짜/시간
-    if (stringDetails.desiredDateTime) {
-      const [date, time] = stringDetails.desiredDateTime.split('T');
+    if (hasTimeChange) {
+      const [date, time] = stringDetails.desiredDateTime!.split('T');
       setFields['stringDetails.preferredDate'] = date;
       setFields['stringDetails.preferredTime'] = time;
       setFields.desiredDateTime = stringDetails.desiredDateTime;
     }
 
-    // stringTypes
-    const types: string[] = Array.isArray(stringDetails.stringTypes) ? stringDetails.stringTypes : app.stringDetails.stringTypes;
-    setFields['stringDetails.stringTypes'] = types;
+    // 스트링 타입 & 커스텀 이름
+    if (hasTypesChange) {
+      const types: string[] = Array.isArray(stringDetails.stringTypes) ? stringDetails.stringTypes : app.stringDetails.stringTypes;
+      setFields['stringDetails.stringTypes'] = types;
+      setFields['stringDetails.customStringName'] = stringDetails.customStringName ?? null;
+    }
 
-    // customStringName
-    setFields['stringDetails.customStringName'] = stringDetails.customStringName ?? null;
-
-    // racketType
-    if (stringDetails.racketType) {
+    // 라켓 종류
+    if (hasRacketChange) {
       setFields['stringDetails.racketType'] = stringDetails.racketType;
     }
 
-    // stringItems 계산 및 저장
-    const newItems = await Promise.all(
-      types.map(async (prodId) => {
-        if (prodId === 'custom') {
+    // stringItems 재계산
+    if (hasTypesChange || hasCustomNameChange) {
+      const newItems = await Promise.all(
+        (Array.isArray(stringDetails.stringTypes) ? stringDetails.stringTypes : app.stringDetails.stringTypes).map(async (prodId: any) => {
+          if (prodId === 'custom') {
+            return {
+              id: 'custom',
+              name: stringDetails.customStringName?.trim() || '커스텀 스트링',
+            };
+          }
+          const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1, mountingFee: 1 } });
           return {
-            id: 'custom',
-            name: stringDetails.customStringName?.trim() || '커스텀 스트링',
+            id: prodId,
+            name: prod?.name ?? '알 수 없는 상품',
+            price: prod?.mountingFee ?? getStringingServicePrice(prodId, false),
           };
-        }
-        // 제품명 조회
-        const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1, mountingFee: 1 } });
-        return {
-          id: prodId,
-          name: prod?.name ?? '알 수 없는 상품',
-          price: prod?.mountingFee ?? getStringingServicePrice(prodId, false),
-        };
-      })
-    );
-    setFields['stringDetails.stringItems'] = newItems;
-
-    pushHistory.push({
-      status: '스트링 정보 수정',
-      date: new Date(),
-      description: '스트링 세부 정보를 수정했습니다.',
-    });
-
-    // 요청사항 업데이트
-    if ('requirements' in stringDetails) {
-      setFields['stringDetails.requirements'] = stringDetails.requirements;
+        })
+      );
+      setFields['stringDetails.stringItems'] = newItems;
     }
 
-    pushHistory.push({
-      status: '요청사항 수정',
-      date: new Date(),
-      description: '요청사항을 수정했습니다.',
-    });
+    if (hasTimeChange || hasTypesChange || hasCustomNameChange || hasRacketChange) {
+      pushHistory.push({
+        status: '스트링 정보 수정',
+        date: new Date(),
+        description: '스트링 세부 정보를 수정했습니다.',
+      });
+    }
+
+    if (typeof stringDetails.requirements !== 'undefined' && stringDetails.requirements !== app.stringDetails?.requirements) {
+      setFields['stringDetails.requirements'] = stringDetails.requirements;
+      pushHistory.push({
+        status: '요청사항 수정',
+        date: new Date(),
+        description: '요청사항을 수정했습니다.',
+      });
+    }
   }
 
   // 실제 업데이트
