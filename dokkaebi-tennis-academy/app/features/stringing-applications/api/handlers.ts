@@ -126,7 +126,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 export async function handlePatchStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
   const db = await getDb();
-  const { name, email, phone, address, addressDetail, postalCode, depositor, totalPrice, stringDetails } = await req.json();
+  const { name, email, phone, address, addressDetail, postalCode, depositor, stringDetails } = await req.json();
 
   const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
   if (!app) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
@@ -168,14 +168,6 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
       status: '입금자명 수정',
       date: new Date(),
       description: `입금자명을 "${depositor}"(으)로 수정했습니다.`,
-    });
-  }
-  if (totalPrice !== undefined) {
-    setFields.totalPrice = totalPrice;
-    pushHistory.push({
-      status: '결제 금액 수정',
-      date: new Date(),
-      description: `결제 금액을 ${totalPrice.toLocaleString()}원으로 수정했습니다.`,
     });
   }
 
@@ -226,6 +218,15 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
         })
       );
       setFields['stringDetails.stringItems'] = newItems;
+
+      // 스트링 요금(newItems) 합산하여 totalPrice 자동 설정
+      const calculatedTotal = newItems.reduce((sum, x) => sum + x.price * (x.quantity ?? 1), 0);
+      setFields.totalPrice = calculatedTotal;
+      pushHistory.push({
+        status: '결제 금액 자동 업데이트',
+        date: new Date(),
+        description: `결제 정보의 결제 금액을 ${calculatedTotal.toLocaleString()}원으로 자동 업데이트했습니다.`,
+      });
     }
 
     if (hasTimeChange || hasTypesChange || hasCustomNameChange || hasRacketChange) {

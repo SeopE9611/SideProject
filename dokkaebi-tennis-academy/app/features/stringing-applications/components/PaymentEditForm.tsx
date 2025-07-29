@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 
 export interface PaymentFormValues {
   depositor: string;
-  totalPrice: number;
 }
 
 interface Props {
@@ -32,7 +31,6 @@ export default function PaymentEditForm({ initialData, resourcePath, entityId, o
       credentials: 'include',
       body: JSON.stringify({
         depositor: data.depositor,
-        totalPrice: data.totalPrice,
       }),
     });
     if (!res.ok) {
@@ -48,19 +46,6 @@ export default function PaymentEditForm({ initialData, resourcePath, entityId, o
         <Label htmlFor="depositor">입금자명</Label>
         <Input id="depositor" {...register('depositor', { required: '필수 입력입니다.' })} />
         {errors.depositor && <p className="text-red-500 text-xs">{errors.depositor.message}</p>}
-      </div>
-
-      <div>
-        <Label htmlFor="totalPrice">결제 금액</Label>
-        <Input
-          id="totalPrice"
-          type="number"
-          {...register('totalPrice', {
-            required: '필수 입력입니다.',
-            valueAsNumber: true,
-          })}
-        />
-        {errors.totalPrice && <p className="text-red-500 text-xs">{errors.totalPrice.message}</p>}
       </div>
 
       <div className="flex justify-end space-x-2">
