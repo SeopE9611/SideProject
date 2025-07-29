@@ -307,7 +307,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
                 <PaymentEditForm
                   initialData={{
                     depositor: data.shippingInfo?.depositor || '',
-                    totalPrice: data.totalPrice,
                   }}
                   resourcePath={`${baseUrl}/api/applications/stringing`}
                   entityId={data.id}
