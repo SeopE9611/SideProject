@@ -5,24 +5,81 @@ import useSWR from 'swr';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, CheckCircle, XCircle, Search, ClipboardCheck } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Search, ClipboardCheck, Edit2, MessageSquare, DollarSign, User } from 'lucide-react';
 import { HistorySkeleton } from '@/app/features/orders/components/HistorySkeleton';
 
 const LIMIT = 5;
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 function getIconProps(status: string) {
-  switch (status) {
+  switch (status.trim()) {
+    // 기본 신청 상태
     case '접수완료':
-      return { Icon: ClipboardCheck, wrapperClasses: 'border-yellow-300 bg-yellow-100', iconClasses: 'text-yellow-600' };
-    case '검토중':
-      return { Icon: Search, wrapperClasses: 'border-blue-300 bg-blue-100', iconClasses: 'text-blue-600' };
-    case '완료':
-      return { Icon: CheckCircle, wrapperClasses: 'border-green-300 bg-green-100', iconClasses: 'text-green-600' };
+    case '접수 완료':
+      return {
+        Icon: ClipboardCheck,
+        wrapperClasses: 'border-yellow-300 bg-yellow-100',
+        iconClasses: 'text-yellow-600',
+      };
+    case '검토 중':
+      return {
+        Icon: Search,
+        wrapperClasses: 'border-blue-300 bg-blue-100',
+        iconClasses: 'text-blue-600',
+      };
+    case '작업 중':
+      return {
+        Icon: Edit2,
+        wrapperClasses: 'border-indigo-300 bg-indigo-100',
+        iconClasses: 'text-indigo-600',
+      };
+    case '교체완료':
+    case '교체 완료':
+      return {
+        Icon: CheckCircle,
+        wrapperClasses: 'border-green-300 bg-green-100',
+        iconClasses: 'text-green-600',
+      };
     case '취소':
-      return { Icon: XCircle, wrapperClasses: 'border-red-300 bg-red-100', iconClasses: 'text-red-600' };
+      return {
+        Icon: XCircle,
+        wrapperClasses: 'border-red-300 bg-red-100',
+        iconClasses: 'text-red-600',
+      };
+
+    // 커스텀 이력 항목
+    case '고객정보수정':
+      return {
+        Icon: User,
+        wrapperClasses: 'border-purple-300 bg-purple-100',
+        iconClasses: 'text-purple-600',
+      };
+    case '요청사항 수정':
+      return {
+        Icon: MessageSquare,
+        wrapperClasses: 'border-indigo-300 bg-indigo-100',
+        iconClasses: 'text-indigo-600',
+      };
+    case '스트링 정보 수정':
+      return {
+        Icon: Edit2,
+        wrapperClasses: 'border-blue-300 bg-blue-100',
+        iconClasses: 'text-blue-600',
+      };
+    case '결제 금액 자동 업데이트':
+      return {
+        Icon: DollarSign,
+        wrapperClasses: 'border-green-300 bg-green-100',
+        iconClasses: 'text-green-600',
+      };
+
+    // default
     default:
-      return { Icon: Clock, wrapperClasses: 'border-gray-300 bg-gray-100', iconClasses: 'text-gray-600' };
+      return {
+        Icon: Clock,
+        wrapperClasses: 'border-gray-300 bg-gray-100',
+        iconClasses: 'text-gray-600',
+      };
   }
 }
 
@@ -43,7 +100,6 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
 
   const {
     data: res,
-    error,
     isValidating,
     mutate: mutateHistory,
   } = useSWR<HistoryResponse>(url, fetcher, {
@@ -51,7 +107,6 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
     revalidateOnReconnect: false,
   });
 
-  // 부모에게 mutate 함수 노출
   useEffect(() => {
     if (onHistoryMutate) onHistoryMutate(mutateHistory);
   }, [mutateHistory, onHistoryMutate]);
