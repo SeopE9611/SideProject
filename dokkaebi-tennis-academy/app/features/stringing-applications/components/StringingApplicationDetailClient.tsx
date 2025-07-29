@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart } from 'lucide-react';
+import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, TargetIcon, Target } from 'lucide-react';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -345,44 +345,65 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
           </Card>
 
           {/* 스트링 정보 */}
-          <Card className="md:col-span-3">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center">
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                신청 스트링 정보
-              </CardTitle>
+          <Card className="md:col-span-3 border rounded-lg shadow-sm">
+            {/* 헤더 */}
+            <CardHeader className="flex flex-col items-center py-4">
+              <ShoppingCart className="w-6 h-6 text-gray-700" />
+              <CardTitle className="mt-2 text-lg font-semibold">신청 스트링 정보</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div>
-                <strong>희망 일시:</strong> {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
+
+            {/* 본문 */}
+            <CardContent className="px-6 pb-6 space-y-6">
+              {/* 희망 일시 */}
+              <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Calendar className="w-5 h-5" />
+                  <span className="font-medium">희망 일시</span>
+                </div>
+                <div className="text-gray-900">
+                  {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
+                </div>
               </div>
-              <div>
-                <strong>스트링 정보:</strong>{' '}
-                {data.items.length > 0
-                  ? data.items.map((item, idx) => (
-                      <span key={item.id}>
-                        {item.name} ×{item.quantity} ({item.price.toLocaleString()}원)
-                        {idx < data.items.length - 1 && ', '}
-                      </span>
-                    ))
-                  : data.stringDetails.customStringName || '정보 없음'}
+
+              {/* 스트링 정보 */}
+              <div className="border-b border-gray-200 pb-3">
+                <div className="flex items-center gap-2 text-gray-700 mb-2">
+                  <ShoppingCart className="w-5 h-5" />
+                  <span className="font-medium">스트링 정보</span>
+                </div>
+                <div className="space-y-3 pl-7">
+                  {data.items.map((item) => (
+                    <div key={item.id} className="flex justify-between items-start">
+                      {/* 왼쪽: 이름 + 수량 */}
+                      <div>
+                        <p className="font-medium text-gray-900">{item.name}</p>
+                        <p className="text-xs text-muted-foreground">수량: {item.quantity}개</p>
+                      </div>
+                      {/* 오른쪽: 가격 */}
+                      <span className="font-medium text-gray-900">{item.price.toLocaleString()}원</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <strong>라켓 종류:</strong> {data.stringDetails.racketType}
+
+              {/* 라켓 종류 */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Target className="w-5 h-5" />
+                  <span className="font-medium">라켓 종류</span>
+                </div>
+                <div className="text-gray-900">{data.stringDetails.racketType}</div>
               </div>
-              {/* <div>
-                <strong>요청사항:</strong> {data.stringDetails.requirements ? data.stringDetails.requirements : '요청사항 없음'}
-              </div> */}
             </CardContent>
 
+            {/* 수정 버튼 (가운데 정렬) */}
             {isEditMode && (
-              <CardFooter className="flex justify-end">
+              <CardFooter className="flex justify-center pt-2">
                 <Button size="sm" variant="outline" onClick={() => setIsStringModalOpen(true)}>
                   스트링 정보 수정
                 </Button>
               </CardFooter>
             )}
-
             <Dialog open={isStringModalOpen} onOpenChange={setIsStringModalOpen}>
               <DialogTrigger asChild></DialogTrigger>
               <DialogContent className="max-w-lg">
