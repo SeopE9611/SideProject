@@ -59,24 +59,23 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     // total 계산
     const total = items.reduce((sum, x) => sum + x.price * x.quantity, 0);
 
-    // 원본 주문서에서 구매한 스트링만 → orderStrings
     const order = await db.collection('orders').findOne({ _id: new ObjectId(app.orderId) }, { projection: { items: 1 } });
-    const orderStrings = (order?.items ?? ([] as OrderItem[]))
-      .filter((it: OrderItem) => it.mountingFee! > 0)
-      .map((it: OrderItem) => ({
-        id: it.id.toString(),
-        name: it.name,
-        mountingFee: it.mountingFee!,
-      }));
+    const rawOrderItems = (order?.items ?? []) as { productId: string; quantity: number }[];
 
-    // purchasedStrings: current items as checkbox options
-    const purchasedStrings = items.map((it) => ({
-      id: it.id,
-      name: it.name,
-      mountingFee: it.price,
-    }));
+    const orderStrings = await Promise.all(
+      rawOrderItems.map(async (oi) => {
+        const prod = await db.collection('products').findOne({ _id: new ObjectId(oi.productId) }, { projection: { name: 1, mountingFee: 1 } });
+        return {
+          id: oi.productId,
+          name: prod?.name ?? '알 수 없는 상품',
+          mountingFee: prod?.mountingFee ?? 0,
+        };
+      })
+    );
 
-    // build the response
+    // 체크박스 옵션으로 그대로 사용
+    const purchasedStrings = orderStrings;
+
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,

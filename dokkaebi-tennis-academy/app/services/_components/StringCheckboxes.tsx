@@ -12,15 +12,21 @@ interface Props {
 
 export default function StringCheckboxes({ items, stringTypes, customInput, onChange, onCustomInputChange }: Props) {
   const toggle = (id: string) => {
+    // custom 체크박스를 토글할 때는 오직 ['custom'] 만 남기고 모두 해제
     if (id === 'custom') {
-      // custom 토글: 기존 항목은 그대로 두고 추가/제거만
-      const next = stringTypes.includes('custom') ? stringTypes.filter((x) => x !== 'custom') : [...stringTypes, 'custom'];
+      const next = stringTypes.includes('custom') ? [] : ['custom'];
       onChange(next);
-    } else {
-      // 일반 항목 토글: custom 이 있든 없든 허용
-      const next = stringTypes.includes(id) ? stringTypes.filter((x) => x !== id) : [...stringTypes, id];
-      onChange(next);
+      return;
     }
+
+    // 일반 옵션 토글 시, custom 이 있으면 먼저 제거
+    const withoutCustom = stringTypes.filter((x) => x !== 'custom');
+    const next = withoutCustom.includes(id)
+      ? // 이미 체크된 항목이면 해제
+        withoutCustom.filter((x) => x !== id)
+      : // 체크되지 않은 항목이면 추가
+        [...withoutCustom, id];
+    onChange(next);
   };
   return (
     <div className="space-y-3">
