@@ -68,7 +68,7 @@ export function OrderStatusSelect({ orderId, currentStatus }: Props) {
       // 주문 목록 전체 갱신
       await mutate('/api/orders');
 
-      showSuccessToast(`주문 상태가 '${newStatus}'로 변경되었습니다.`);
+      showSuccessToast(`주문 상태가 변경되었습니다.`);
     } catch (err: any) {
       console.error(err);
       showErrorToast(`상태 변경 실패: ${err.message}`);
