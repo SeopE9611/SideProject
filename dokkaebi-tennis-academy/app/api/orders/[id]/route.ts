@@ -72,7 +72,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           name: order.guestInfo.name,
           email: order.guestInfo.email,
           phone: order.guestInfo.phone,
-          address: order.shippingInfo?.addressDetail ? `${order.shippingInfo.address} ${order.shippingInfo.addressDetail}` : order.shippingInfo?.address ?? '주소 없음',
+          address: order.shippingInfo?.address ?? '주소 없음',
+          addressDetail: order.shippingInfo?.addressDetail ?? '',
           postalCode: order.shippingInfo?.postalCode ?? '-',
         };
       } else if (order.userSnapshot) {
@@ -80,7 +81,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           name: order.userSnapshot.name,
           email: order.userSnapshot.email,
           phone: order.shippingInfo?.phone ?? '-',
-          address: order.shippingInfo?.addressDetail ? `${order.shippingInfo.address} ${order.shippingInfo.addressDetail}` : order.shippingInfo?.address ?? '주소 없음',
+          address: order.shippingInfo?.address ?? '주소 없음',
+          addressDetail: order.shippingInfo?.addressDetail ?? '',
           postalCode: order.shippingInfo?.postalCode ?? '-',
         };
       } else if (order.userId) {
@@ -91,6 +93,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
             email: user.email,
             phone: user.phone,
             address: user.address ?? '주소 없음',
+            addressDetail: order.shippingInfo?.addressDetail ?? '',
             postalCode: user.postalCode ?? '-',
           };
         }
@@ -170,6 +173,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           email: customer.email,
           phone: customer.phone,
           address: customer.address,
+          addressDetail: customer.addressDetail,
           postalCode: customer.postalCode,
         },
       };

@@ -46,6 +46,7 @@ interface OrderDetail {
     email: string;
     phone: string;
     address: string;
+    addressDetail: string;
     postalCode?: string;
   };
   shippingInfo: {
@@ -265,9 +266,11 @@ export default function OrderDetailClient({ orderId }: Props) {
                     email: orderDetail.customer.email,
                     phone: orderDetail.customer.phone,
                     address: orderDetail.customer.address,
+                    addressDetail: orderDetail.customer.addressDetail ?? '',
                     postalCode: orderDetail.customer.postalCode || '',
                   }}
                   orderId={orderDetail._id}
+                  resourcePath="/api/orders"
                   onSuccess={(updated: any) => {
                     mutateOrder(); // SWR 캐시 갱신
                     mutateHistory();
@@ -304,10 +307,15 @@ export default function OrderDetailClient({ orderId }: Props) {
                           <MapPin className="mr-1 h-3.5 w-3.5" />
                           주소
                         </div>
-                        <div>
-                          {orderDetail.customer.address ?? '주소 없음'}
-                          {orderDetail.customer.postalCode ? ` (${orderDetail.customer.postalCode})` : ''}
-                        </div>
+                        <div>{orderDetail.customer.address ?? '주소 없음'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">상세주소</div>
+                        <div>{orderDetail.customer.addressDetail ?? '-'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">우편번호</div>
+                        <div>{orderDetail.customer.postalCode ?? '-'}</div>
                       </div>
                     </div>
                   </CardContent>

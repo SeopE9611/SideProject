@@ -36,6 +36,7 @@ interface OrderDetail {
     phone: string;
     address: string;
     postalCode?: string;
+    addressDetail?: string;
   };
   shippingInfo: {
     shippingMethod: string;
@@ -192,8 +193,10 @@ export default function OrderDetailClient({ orderId }: Props) {
                   phone: orderDetail.customer.phone,
                   address: orderDetail.customer.address,
                   postalCode: orderDetail.customer.postalCode || '',
+                  addressDetail: orderDetail.customer.addressDetail || '',
                 }}
                 orderId={orderId}
+                resourcePath="/api/orders"
                 onSuccess={() => {
                   mutateOrderDetail();
                   mutateHistory();
@@ -229,6 +232,14 @@ export default function OrderDetailClient({ orderId }: Props) {
                     주소
                   </div>
                   <div>{orderDetail.customer.address ?? '주소 없음'}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium">상세주소</div>
+                  <div>{orderDetail.customer.addressDetail ?? '-'}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium">우편번호</div>
+                  <div>{orderDetail.customer.postalCode ?? '-'}</div>
                 </div>
               </div>
             </CardContent>
