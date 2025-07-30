@@ -22,6 +22,7 @@ import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '
 import StringInfoEditForm from '@/app/features/stringing-applications/components/StringInfoEditForm';
 import RequirementsEditForm from '@/app/features/stringing-applications/components/RequirementsEditForm';
 import StringingApplicationDetailSkeleton from '@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Props {
   id: string;
@@ -165,25 +166,37 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">신청 상세 정보</h1>
             <p className="mt-1 text-muted-foreground">신청 ID: {data.id}</p>
           </div>
-          <div className="flex space-x-2">
-            {isEditableAllowed && (
-              <Button
-                variant={isEditMode ? 'destructive' : 'outline'}
-                onClick={() => {
-                  setIsEditMode((m) => !m);
-                  setEditingCustomer(false);
-                }}
-              >
-                {isEditMode ? '편집 취소' : '편집 모드'}
-              </Button>
-            )}
-            <Link href={backUrl}>
-              <Button variant="outline">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                목록으로 돌아가기
-              </Button>
-            </Link>
-          </div>
+          <TooltipProvider>
+            <div className="flex space-x-2">
+              <Tooltip>
+                {/* disabled 버튼 래핑용 span: 호버 이벤트 수신 */}
+                <TooltipTrigger asChild>
+                  <span className="inline-block" /* optional title for extra 안내 */>
+                    <Button
+                      variant={isEditMode ? 'destructive' : 'outline'}
+                      disabled={!isEditableAllowed}
+                      className={!isEditableAllowed ? 'opacity-50 cursor-not-allowed' : ''}
+                      onClick={() => {
+                        if (!isEditableAllowed) return;
+                        setIsEditMode((m) => !m);
+                        setEditingCustomer(false);
+                      }}
+                    >
+                      {isEditMode ? '편집 취소' : '편집 모드'}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!isEditableAllowed && <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>}
+              </Tooltip>
+
+              <Link href={backUrl}>
+                <Button variant="outline">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  목록으로 돌아가기
+                </Button>
+              </Link>
+            </div>
+          </TooltipProvider>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
