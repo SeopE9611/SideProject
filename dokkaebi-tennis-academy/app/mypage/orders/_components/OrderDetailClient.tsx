@@ -56,6 +56,7 @@ interface OrderDetail {
   cancelReason?: string;
   cancelReasonDetail?: string;
   isStringServiceApplied?: boolean;
+  stringingApplicationId?: string;
 }
 interface Props {
   orderId: string;
@@ -157,9 +158,18 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </Link>
                 </div>
               ) : (
-                <div className="mt-6 p-4 bg-green-50 border border-green-300 rounded-md text-sm text-green-800 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="font-medium">이 주문은 스트링 장착 서비스가 신청 완료되었습니다.</span>
+                <div className="mt-6 p-4 bg-green-50 border border-green-300 rounded-md text-sm text-green-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <span className="font-medium">이 주문은 스트링 장착 서비스가 신청 완료되었습니다.</span>
+                  </div>
+                  {orderDetail.stringingApplicationId && (
+                    <Link href={`/mypage?tab=applications&id=${orderDetail.stringingApplicationId}`}>
+                      <Button variant="ghost" size="sm" className="transition-colors duration-200 hover:bg-green-100 focus:ring-2 focus:ring-offset-1">
+                        신청 상세 보기
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               )}
             </>
