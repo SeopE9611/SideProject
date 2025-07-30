@@ -246,7 +246,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <LinkIcon className="w-4 h-4" />
                     <span>이 신청은 상품 주문서와 연결되어 있습니다.</span>
                   </div>
-                  <Link href={`/admin/orders/${data.orderId}`}>
+                  <Link href={isAdmin ? `/admin/orders//${data.orderId}` : `/mypage?tab=orders&orderId=${data.orderId}`}>
                     <Button variant="ghost" size="sm">
                       주문 상세 보기
                     </Button>
