@@ -26,6 +26,9 @@ import StringingApplicationDetailSkeleton from '@/app/features/stringing-applica
 interface Props {
   id: string;
   baseUrl: string;
+  backUrl?: string /** 뒤로 가기 링크(관리자 기본: '/admin/orders') */;
+  isAdmin?: boolean /** 관리자 여부(기본: true) */;
+  userEditableStatuses?: string[] /** 일반 사용자가 편집 가능한 상태 */;
 }
 
 interface ApplicationDetail {
@@ -89,7 +92,7 @@ interface ApplicationDetail {
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
-export default function StringingApplicationDetailClient({ id, baseUrl }: Props) {
+export default function StringingApplicationDetailClient({ id, baseUrl, backUrl = '/admin/orders', isAdmin = true, userEditableStatuses = ['검토 중', '접수완료'] }: Props) {
   const router = useRouter();
 
   const historyMutateRef = useRef<(() => Promise<any>) | undefined>(undefined);
@@ -139,10 +142,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
 
   // SWR 키가 항상 applicationId 로 고정 (새로고침해도 fetch가 정상 동작하기 위함)
   const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, (url: any) => fetch(url, { credentials: 'include' }).then((r) => r.json()));
+  // 관리자는 항상, 일반 사용자는 지정된 상태에서만 편집 허용
+  const [isEditable, setIsEditable] = useState(isAdmin || userEditableStatuses.includes(data?.status || ''));
 
   if (isLoading || !data) {
     return <StringingApplicationDetailSkeleton />;
   }
+  // 관리자이거나(isAdmin), 또는 상태가 userEditableStatuses에 포함될 때를 판단
+  const isEditableAllowed = isAdmin || userEditableStatuses.includes(data.status);
+
   if (error) return <div className="text-red-500 p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
 
   const isCancelled = data.status === '취소';
@@ -158,16 +166,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             <p className="mt-1 text-muted-foreground">신청 ID: {data.id}</p>
           </div>
           <div className="flex space-x-2">
-            <Button
-              variant={isEditMode ? 'destructive' : 'outline'}
-              onClick={() => {
-                setIsEditMode((m) => !m);
-                setEditingCustomer(false);
-              }}
-            >
-              {isEditMode ? '편집 취소' : '편집 모드'}
-            </Button>
-            <Link href="/admin/orders">
+            {isEditableAllowed && (
+              <Button
+                variant={isEditMode ? 'destructive' : 'outline'}
+                onClick={() => {
+                  setIsEditMode((m) => !m);
+                  setEditingCustomer(false);
+                }}
+              >
+                {isEditMode ? '편집 취소' : '편집 모드'}
+              </Button>
+            )}
+            <Link href={backUrl}>
               <Button variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 목록으로 돌아가기
@@ -188,19 +198,21 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
             </CardHeader>
             <CardContent className="pt-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-                <ApplicationStatusSelect
-                  applicationId={data.id}
-                  currentStatus={data.status}
-                  onUpdated={async () => {
-                    // 상세 데이터 갱신
-                    await mutate();
-                    // 이력 컴포넌트 캐시 갱신
-                    if (historyMutateRef.current) {
-                      await historyMutateRef.current();
-                    }
-                  }}
-                  disabled={isCancelled}
-                />
+                {isAdmin && (
+                  <ApplicationStatusSelect
+                    applicationId={data.id}
+                    currentStatus={data.status}
+                    onUpdated={async () => {
+                      // 상세 데이터 갱신
+                      await mutate();
+                      // 이력 컴포넌트 캐시 갱신
+                      if (historyMutateRef.current) {
+                        await historyMutateRef.current();
+                      }
+                    }}
+                    disabled={isCancelled}
+                  />
+                )}
                 {/* 취소된 경우 안내 문구 */}
                 {!isCancelled && (
                   <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
@@ -420,6 +432,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl }: Props)
                   onDone={() => setIsStringModalOpen(false)}
                   mutateData={mutate}
                   mutateHistory={() => historyMutateRef.current?.()}
+                  /** 필드 제한: 관리자 전체, 일반 사용자는 desiredDateTime만 */
+                  fields={isAdmin ? ['desiredDateTime', 'stringType', 'racketType'] : ['desiredDateTime']}
                 />
                 <DialogClose asChild>
                   <Button variant="outline" className="mt-4">

@@ -18,13 +18,14 @@ interface Props {
     racketType?: string;
     customStringName?: string; // 추가
   };
+  fields?: Array<'desiredDateTime' | 'stringType' | 'racketType'>;
   stringOptions: { id: string; name: string; mountingFee: number }[];
   onDone: () => void;
   mutateData: () => void;
   mutateHistory: () => void;
 }
 
-export default function StringInfoEditForm({ id, initial, stringOptions, onDone, mutateData, mutateHistory }: Props) {
+export default function StringInfoEditForm({ id, initial, stringOptions, onDone, mutateData, mutateHistory, fields = ['desiredDateTime', 'stringType', 'racketType'] }: Props) {
   // 날짜(YYYY-MM-DD)와 시간(hh:mm) 분리 관리
   const [date, setDate] = useState<string>('');
   const [time, setTime] = useState<string>('');
@@ -107,46 +108,49 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* 시간 예약 섹션 */}
-      <div className="flex items-center justify-between">
-        <Label>교체 희망일/시간</Label>
-        <Switch checked={enableTime} onCheckedChange={handleTimeToggle} />
-      </div>
-      <div className={enableTime ? '' : 'opacity-50 pointer-events-none'}>
-        <Input id="desiredDate" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-        <TimeSlotSelector selected={time} selectedDate={date} onSelect={setTime} />
-      </div>
-
+      {fields.includes('desiredDateTime') && (
+        <>
+          <div className="flex items-center justify-between">
+            <Label>교체 희망일/시간</Label>
+            <Switch checked={enableTime} onCheckedChange={handleTimeToggle} />
+          </div>
+          <div className={enableTime ? '' : 'opacity-50 pointer-events-none'}>
+            <Input id="desiredDate" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+            <TimeSlotSelector selected={time} selectedDate={date} onSelect={setTime} />
+          </div>
+        </>
+      )}
       {/* 스트링 선택 섹션 */}
-      <div className="flex items-center justify-between mt-4">
-        <Label>스트링 종류</Label>
-        <Switch checked={enableStrings} onCheckedChange={handleStringsToggle} />
-      </div>
-      <div className={enableStrings ? '' : 'opacity-50 pointer-events-none'}>
-        <StringCheckboxes
-          items={stringOptions}
-          stringTypes={stringTypes}
-          customInput={customStringType}
-          onChange={setStringTypes}
-          onCustomInputChange={setCustomStringType}
-          disabled={!enableStrings} // 새로 추가된 prop
-        />
-        <p className="text-xs text-muted-foreground">※ 두 개 이상의 스트링을 교체 원하신 경우, “직접 입력”을 선택하세요.</p>
-      </div>
-
+      {fields.includes('stringType') && (
+        <>
+          <div className="flex items-center justify-between mt-4">
+            <Label>스트링 종류</Label>
+            <Switch checked={enableStrings} onCheckedChange={handleStringsToggle} />
+          </div>
+          <div className={enableStrings ? '' : 'opacity-50 pointer-events-none'}>
+            <StringCheckboxes items={stringOptions} stringTypes={stringTypes} customInput={customStringType} onChange={setStringTypes} onCustomInputChange={setCustomStringType} disabled={!enableStrings} />
+            <p className="text-xs text-muted-foreground">※ 두 개 이상의 스트링을 교체 원하신 경우, “직접 입력”을 선택하세요.</p>
+          </div>
+        </>
+      )}
       {/* 라켓 종류 섹션 */}
-      <div className="flex items-center justify-between mt-4">
-        <Label htmlFor="racketType">라켓 종류</Label>
-        <Switch checked={enableRacket} onCheckedChange={handleRacketToggle} />
-      </div>
-      <Input
-        id="racketType"
-        type="text"
-        value={racketType}
-        onChange={(e) => setRacketType(e.target.value)}
-        placeholder="예: Yonex EZONE 98"
-        required
-        disabled={!enableRacket} // disabled prop 직접 추가
-      />
+      {fields.includes('racketType') && (
+        <>
+          <div className="flex items-center justify-between mt-4">
+            <Label htmlFor="racketType">라켓 종류</Label>
+            <Switch checked={enableRacket} onCheckedChange={handleRacketToggle} />
+          </div>
+          <Input
+            id="racketType"
+            type="text"
+            value={racketType}
+            onChange={(e) => setRacketType(e.target.value)}
+            placeholder="예: Yonex EZONE 98"
+            required
+            disabled={!enableRacket} // disabled prop 직접 추가
+          />
+        </>
+      )}
 
       {/* 저장/취소 버튼 */}
       <div className="flex justify-end gap-2">
