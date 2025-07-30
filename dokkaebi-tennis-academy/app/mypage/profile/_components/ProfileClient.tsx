@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { showErrorToast, showSuccessToast, showToast } from '@/lib/toast';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import WithdrawalReasonSelect from '@/app/mypage/profile/_components/WithdrawalReasonSelect';
 import { useRouter } from 'next/navigation';
 
@@ -227,7 +227,7 @@ export default function ProfileClient({ user }: Props) {
                   <AvatarImage src="/placeholder.svg?height=80&width=80" alt="프로필 이미지" />
                   <AvatarFallback>이미지</AvatarFallback>
                 </Avatar>
-                <Button variant="outline" size="sm" onClick={() => showToast('해당 기능은 준비 중입니다.')}>
+                <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')}>
                   <Camera className="mr-2 h-4 w-4" />
                   이미지 변경
                 </Button>
