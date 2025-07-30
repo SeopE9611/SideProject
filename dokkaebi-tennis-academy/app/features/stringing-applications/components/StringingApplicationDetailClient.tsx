@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, TargetIcon, Target } from 'lucide-react';
+import { Mail, Phone, MapPin, Truck, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, TargetIcon, Target, Pencil } from 'lucide-react';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -166,8 +166,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">신청 상세 정보</h1>
             <p className="mt-1 text-muted-foreground">신청 ID: {data.id}</p>
           </div>
+
           <TooltipProvider>
             <div className="flex space-x-2">
+              <Link href={backUrl}>
+                <Button variant="outline">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  신청 목록으로 돌아가기
+                </Button>
+              </Link>
               <Tooltip>
                 {/* disabled 버튼 래핑용 span: 호버 이벤트 수신 */}
                 <TooltipTrigger asChild>
@@ -182,19 +189,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         setEditingCustomer(false);
                       }}
                     >
+                      <Pencil className="mr-1 h-4 w-4" />
                       {isEditMode ? '편집 취소' : '편집 모드'}
                     </Button>
                   </span>
                 </TooltipTrigger>
                 {!isEditableAllowed && <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>}
               </Tooltip>
-
-              <Link href={backUrl}>
-                <Button variant="outline">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  목록으로 돌아가기
-                </Button>
-              </Link>
             </div>
           </TooltipProvider>
         </div>
