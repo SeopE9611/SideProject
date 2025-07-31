@@ -16,6 +16,7 @@ import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkel
 import { useRouter } from 'next/navigation';
 import RequestEditForm from '@/app/mypage/orders/_components/RequestEditForm';
 import CustomerEditForm from '@/app/features/orders/components/CustomerEditForm';
+import PaymentMethodDetail from '@/app/mypage/orders/_components/PaymentMethodDetail';
 
 // SWR Infinite용 getKey (처리 이력 페이지네이션)
 const LIMIT = 5;
@@ -48,9 +49,11 @@ interface OrderDetail {
       trackingNumber: string;
     };
     deliveryRequest?: string;
+    depositor: string;
   };
   paymentStatus: string;
   paymentMethod: string;
+  paymentBank: string;
   total: number;
   items: Array<{ name: string; quantity: number; price: number }>;
   history: Array<any>;
@@ -316,12 +319,11 @@ export default function OrderDetailClient({ orderId }: Props) {
             <div className="space-y-3">
               <div>
                 <div className="text-sm font-medium">결제 상태</div>
-                <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
+                <div>
+                  <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
+                </div>
               </div>
-              <div>
-                <div className="text-sm font-medium">결제 방법</div>
-                <div>{orderDetail.paymentMethod}</div>
-              </div>
+              <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
               <div>
                 <div className="text-sm font-medium">결제 금액</div>
                 <div className="text-lg font-bold">{formatCurrency(orderDetail.total)}</div>

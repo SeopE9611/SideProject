@@ -23,6 +23,7 @@ import StringInfoEditForm from '@/app/features/stringing-applications/components
 import RequirementsEditForm from '@/app/features/stringing-applications/components/RequirementsEditForm';
 import StringingApplicationDetailSkeleton from '@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import PaymentMethodDetail from '@/app/features/stringing-applications/components/PaymentMethodDetail';
 
 interface Props {
   id: string;
@@ -344,17 +345,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   onCancel={() => setEditingPayment(false)}
                 />
               ) : (
-                <div className="grid gap-2">
+                <div className="space-y-3">
                   <div>
-                    <span className="text-muted-foreground">결제 방식</span>
-                    <div>무통장 입금 {data.shippingInfo?.bank && `(${bankLabelMap[data.shippingInfo.bank]?.label || data.shippingInfo.bank})`}</div>
+                    <PaymentMethodDetail method="무통장입금" bankKey={data.shippingInfo?.bank} depositor={data.shippingInfo?.depositor} />
                   </div>
                   <div>
-                    <span className="text-muted-foreground">입금자명</span>
-                    <div>{data.shippingInfo?.depositor || '미입력'}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">결제 금액</span>
+                    <div className="text-sm font-medium">결제 금액</div>
                     <div>{data.totalPrice.toLocaleString()}원</div>
                   </div>
                 </div>
