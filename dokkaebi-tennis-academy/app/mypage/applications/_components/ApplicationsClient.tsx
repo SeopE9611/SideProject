@@ -45,7 +45,7 @@ export default function ApplicationsClient() {
   const { data: applications, error } = useSWR<Application[]>('/api/applications/me', fetcher);
 
   if (error) return <p className="text-center py-4 text-red-500">에러: {error.message}</p>;
-  if (!applications) return <p className="text-center py-4">로딩 중...</p>;
+  if (!applications) return <div className="text-center py-8 text-muted-foreground">신청 내역을 불러오는 중입니다...</div>;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
