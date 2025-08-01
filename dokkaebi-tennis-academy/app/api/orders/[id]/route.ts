@@ -186,10 +186,35 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         $set: updateFields,
         $push: { history: historyEntry },
       } as any);
+
+      // === 동기화: 연결된 스트링 신청서가 있으면 고객 정보도 반영 ===
+      if ((existing as any).stringingApplicationId && ObjectId.isValid((existing as any).stringingApplicationId)) {
+        const stringingColl = db.collection('stringing_applications');
+        await stringingColl.updateOne({ _id: new ObjectId((existing as any).stringingApplicationId) }, {
+          $set: {
+            customer: {
+              ...((await stringingColl.findOne({ _id: new ObjectId((existing as any).stringingApplicationId) }))?.customer ?? {}),
+              name: customer.name,
+              email: customer.email,
+              phone: customer.phone,
+              address: customer.address,
+              addressDetail: customer.addressDetail || '',
+              postalCode: customer.postalCode,
+            },
+          },
+          $push: {
+            history: {
+              status: '고객정보수정(동기화)',
+              date: new Date(),
+              description: '연결된 주문서에서 고객 정보를 동기화했습니다.',
+            },
+          },
+        } as any);
+      }
+
       return NextResponse.json({ ok: true });
     }
-
-    // 2) 결제 금액 수정
+    // 결제 금액 수정
     if (payment) {
       const { total } = payment;
       const historyEntry = {
@@ -204,7 +229,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ ok: true });
     }
 
-    // 3) 배송 요청사항 수정
+    // 배송 요청사항 수정
     if (deliveryRequest !== undefined) {
       const historyEntry = {
         status: '배송요청사항수정',

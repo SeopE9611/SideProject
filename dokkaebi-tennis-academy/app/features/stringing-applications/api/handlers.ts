@@ -256,6 +256,51 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
   if (result.matchedCount === 0) {
     return NextResponse.json({ error: 'Application not found' }, { status: 404 });
   }
+
+  // 동기화: 연결된 일반 주문서가 있으면 고객 정보 / 입금자명 반영
+  if (app.orderId && ObjectId.isValid(app.orderId)) {
+    const ordersColl = db.collection('orders');
+    const order = await ordersColl.findOne({ _id: new ObjectId(app.orderId) });
+    if (order) {
+      // 고객 정보 동기화
+      if (setFields.customer) {
+        await ordersColl.updateOne({ _id: new ObjectId(app.orderId) }, {
+          $set: {
+            customer: {
+              ...((order as any).customer ?? {}),
+              name: setFields.customer.name,
+              email: setFields.customer.email,
+              phone: setFields.customer.phone,
+              address: setFields.customer.address,
+              addressDetail: setFields.customer.addressDetail ?? '',
+              postalCode: setFields.customer.postalCode,
+            },
+          },
+          $push: {
+            history: {
+              status: '고객정보수정(동기화)',
+              date: new Date(),
+              description: '스트링 신청서에서 고객 정보를 동기화했습니다.',
+            },
+          },
+        } as any);
+      }
+
+      // 입금자명(depositor) 동기화 (스트링 신청서에서 변경된 경우)
+      if (typeof depositor !== 'undefined') {
+        await ordersColl.updateOne({ _id: new ObjectId(app.orderId) }, {
+          $set: { 'shippingInfo.depositor': depositor },
+          $push: {
+            history: {
+              status: '입금자명 수정(동기화)',
+              date: new Date(),
+              description: '스트링 신청서에서 입금자명을 동기화했습니다.',
+            },
+          },
+        } as any);
+      }
+    }
+  }
   return NextResponse.json({ success: true });
 }
 // ========== 신청서의 상태 업데이트 ==========

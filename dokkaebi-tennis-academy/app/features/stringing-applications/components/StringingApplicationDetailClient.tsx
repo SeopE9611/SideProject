@@ -271,10 +271,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   initialData={{
                     name: data.customer.name ?? '이름 미입력',
                     email: data.customer.email ?? '이메일 미입력',
-                    phone: data.shippingInfo?.phone ?? '전화번호 미입력',
-                    address: data.shippingInfo?.address ?? '주소 미입력',
-                    addressDetail: data.shippingInfo?.addressDetail ?? '상세 주소 미입력',
-                    postalCode: data.shippingInfo?.postalCode ?? '우편번호 미입력',
+                    phone: data.customer?.phone ?? '전화번호 미입력',
+                    address: data.customer?.address ?? '주소 미입력',
+                    addressDetail: data.customer?.addressDetail ?? '상세 주소 미입력',
+                    postalCode: data.customer?.postalCode ?? '우편번호 미입력',
                   }}
                   resourcePath={`${baseUrl}/api/applications/stringing`}
                   entityId={data.id}
