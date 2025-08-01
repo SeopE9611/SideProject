@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-
+import { useEffect, useState } from 'react';
 export interface CustomerFormValues {
   name: string;
   email: string;
@@ -27,8 +27,28 @@ export default function CustomerEditForm({ initialData, resourcePath, entityId, 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CustomerFormValues>({ defaultValues: initialData });
+
+  // 다음 주소 API 준비 상태
+  const [daumReady, setDaumReady] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).daum?.Postcode) {
+      setDaumReady(true);
+    }
+  }, []);
+
+  const handleOpenPostcode = () => {
+    if (!daumReady) return;
+    new (window as any).daum.Postcode({
+      oncomplete: (data: any) => {
+        setValue('postalCode', data.zonecode);
+        setValue('address', data.roadAddress);
+        setValue('addressDetail', ''); // 상세주소는 초기화
+      },
+    }).open();
+  };
 
   async function onSubmit(data: CustomerFormValues) {
     const res = await fetch(`${resourcePath}/${entityId}`, {
@@ -82,19 +102,24 @@ export default function CustomerEditForm({ initialData, resourcePath, entityId, 
       </div>
 
       <div>
-        <Label htmlFor="address">주소</Label>
-        <Textarea id="address" {...register('address', { required: '필수 입력입니다.' })} rows={2} />
-        {errors.address && <p className="text-red-500 text-xs">{errors.address.message}</p>}
+        <Label htmlFor="postalCode">우편번호</Label>
+        <div className="flex gap-2">
+          <Input readOnly id="postalCode" {...register('postalCode', { required: '필수 입력입니다.' })} />
+          <Button type="button" size="sm" onClick={handleOpenPostcode}>
+            주소 검색
+          </Button>
+        </div>
+        {errors.postalCode && <p className="text-red-500 text-xs">{errors.postalCode.message}</p>}
       </div>
 
+      <div>
+        <Label htmlFor="address">기본 주소</Label>
+        <Textarea readOnly id="address" {...register('address', { required: '필수 입력입니다.' })} rows={2} />
+        {errors.address && <p className="text-red-500 text-xs">{errors.address.message}</p>}
+      </div>
       <div>
         <Label htmlFor="addressDetail">상세주소</Label>
         <Input id="addressDetail" {...register('addressDetail')} />
-      </div>
-
-      <div>
-        <Label htmlFor="postalCode">우편번호</Label>
-        <Input id="postalCode" {...register('postalCode')} />
       </div>
 
       <div className="flex justify-end space-x-2">
