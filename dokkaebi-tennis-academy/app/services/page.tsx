@@ -51,7 +51,7 @@ export default function ServicesPage() {
   const pricingInfo = [
     {
       service: '스트링 장착 (스트링 미포함)',
-      price: 15000,
+      price: 12000,
       description: '자신의 스트링 또는 별도 구매한 스트링 장착 서비스',
       icon: <Clock className="h-6 w-6" />,
       duration: '30-45분',
@@ -67,16 +67,16 @@ export default function ServicesPage() {
     },
     {
       service: '하이브리드 장착',
-      price: 20000,
+      price: 13000,
       description: '메인과 크로스에 서로 다른 스트링 조합 장착 (스트링 미포함)',
       icon: <Award className="h-6 w-6" />,
       duration: '45-60분',
       popular: false,
     },
     {
-      service: '급행 서비스',
-      price: 5000,
-      description: '당일 완료 서비스 (1시간 이내, 예약자에 한함)',
+      service: '급행 서비스(서비스 X)',
+      price: 0,
+      description: '현재 해당 서비스는 이용하실 수 없습니다.',
       icon: <Zap className="h-6 w-6" />,
       duration: '1시간 이내',
       popular: false,
@@ -350,7 +350,7 @@ export default function ServicesPage() {
           </div>
 
           {/* 할인 혜택 */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 mb-12">
+          {/* <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 mb-12">
             <h3 className="text-2xl font-bold text-white mb-6 text-center">
               <Star className="w-6 h-6 inline mr-2" />
               특별 할인 혜택
@@ -378,7 +378,7 @@ export default function ServicesPage() {
                 <p className="text-blue-100 text-sm">3개 이상 라켓당 2,000원 할인</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* 추가 서비스 */}
           <div className="bg-white/95 backdrop-blur-sm dark:bg-gray-800/95 rounded-2xl p-8">
@@ -555,22 +555,22 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {[
               {
-                name: '김테니스',
-                role: '동호회 선수',
+                name: '김재민',
+                role: '메창',
                 rating: 5,
                 comment: '프로 수준의 정확한 장력과 세심한 작업으로 스트링 장착해주셔서 경기력이 크게 향상되었습니다. 특히 스핀이 잘 걸리는 스트링 추천에 매우 만족합니다.',
                 avatar: '/placeholder.svg?height=60&width=60&text=김테니스',
               },
               {
-                name: '박초보',
-                role: '아카데미 회원',
+                name: '윤형섭',
+                role: '백수',
                 rating: 5,
                 comment: '테니스를 시작한 지 얼마 안 된 초보자였는데, 친절하게 스트링과 장력에 대해 상세히 설명해주셨어요. 덕분에 테니스에 더 재미를 붙이게 되었습니다!',
                 avatar: '/placeholder.svg?height=60&width=60&text=박초보',
               },
               {
-                name: '이프로',
-                role: '대회 참가자',
+                name: '죡팡',
+                role: '메붕이',
                 rating: 5,
                 comment: '하이브리드 조합을 추천받아 사용해봤는데, 정말 제 플레이 스타일에 딱 맞았습니다. 장착 후 실력이 눈에 띄게 향상되어 대회에서도 좋은 성적을 거둘 수 있었습니다.',
                 avatar: '/placeholder.svg?height=60&width=60&text=이프로',

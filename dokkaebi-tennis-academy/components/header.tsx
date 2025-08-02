@@ -32,7 +32,7 @@ const Header = () => {
     { name: '스트링', href: '/products' },
     { name: '장착 서비스', href: '/services' },
     { name: '아카데미', href: '/academy' },
-    { name: '게시판', href: '/board' },
+    { name: '게시판', href: '/board/notice' }, // ★ 추후 수정
   ];
 
   return (
