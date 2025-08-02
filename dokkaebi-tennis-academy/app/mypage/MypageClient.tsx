@@ -131,22 +131,18 @@ export default function MypageClient({ user }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
                   <ShoppingBag className="h-8 w-8 mx-auto mb-3 text-blue-200" />
-                  <div className="text-2xl font-bold mb-1">12</div>
+                  <div className="text-2xl font-bold mb-1">0</div>
                   <div className="text-sm text-blue-200">총 주문</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
                   <Calendar className="h-8 w-8 mx-auto mb-3 text-purple-200" />
-                  <div className="text-2xl font-bold mb-1">8</div>
+                  <div className="text-2xl font-bold mb-1">0</div>
                   <div className="text-sm text-purple-200">서비스 신청</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
-                  <Star className="h-8 w-8 mx-auto mb-3 text-yellow-200" />
-                  <div className="text-2xl font-bold mb-1">4.8</div>
-                  <div className="text-sm text-yellow-200">평균 평점</div>
-                </div>
+
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
                   <Trophy className="h-8 w-8 mx-auto mb-3 text-green-200" />
-                  <div className="text-2xl font-bold mb-1">VIP</div>
+                  <div className="text-2xl font-bold mb-1">관리자</div>
                   <div className="text-sm text-green-200">회원 등급</div>
                 </div>
               </div>
