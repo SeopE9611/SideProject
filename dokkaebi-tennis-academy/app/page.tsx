@@ -115,22 +115,22 @@ export default function Home() {
   // 고객 후기
   const testimonials = [
     {
-      name: '김민수',
-      role: '동호회 회장',
+      name: '죡팡',
+      role: '메접 전분가',
       content: '도깨비 테니스 아카데미의 스트링 장착 서비스는 정말 전문적입니다. 제 플레이 스타일에 맞는 완벽한 세팅을 해주셨어요.',
       rating: 5,
       image: '/placeholder.svg?height=60&width=60',
     },
     {
-      name: '이지영',
-      role: '주니어 선수',
+      name: '주말',
+      role: '메붕이',
       content: '다양한 스트링을 체험해볼 수 있어서 좋았고, 전문가의 조언이 경기력 향상에 큰 도움이 되었습니다.',
       rating: 5,
       image: '/placeholder.svg?height=60&width=60',
     },
     {
-      name: '박성호',
-      role: '테니스 코치',
+      name: '쑹빵이',
+      role: '백수',
       content: '학생들에게 추천하고 있는 곳입니다. 품질과 서비스 모두 만족스럽고, 가격도 합리적이에요.',
       rating: 5,
       image: '/placeholder.svg?height=60&width=60',

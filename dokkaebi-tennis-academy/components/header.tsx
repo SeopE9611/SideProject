@@ -46,7 +46,7 @@ const Header = () => {
             </div>
             <div className="flex items-center space-x-2">
               <Mail className="h-4 w-4" />
-              <span>info@dokkaebi-tennis.com</span>
+              <span>싸좡님@돈좀줘폰요금내게.com</span>
             </div>
           </div>
           <div className="text-blue-100">⭐ 100년 전통의 전문 테니스 서비스 ⭐</div>
