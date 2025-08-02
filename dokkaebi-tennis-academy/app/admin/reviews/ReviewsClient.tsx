@@ -69,12 +69,6 @@ export default async function ReviewsClient() {
   const [selectedReviews, setSelectedReviews] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const user = await getCurrentUser();
-
-  if (!user || user.role !== 'admin') {
-    return <AccessDenied />;
-  }
-
   // 검색어로 필터링된 리뷰 목록
   const filteredReviews = sampleReviews.filter(
     (review) => review.authorName.toLowerCase().includes(searchTerm.toLowerCase()) || review.content.toLowerCase().includes(searchTerm.toLowerCase()) || review.type.toLowerCase().includes(searchTerm.toLowerCase())

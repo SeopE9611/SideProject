@@ -1,4 +1,3 @@
-// app/admin/layout.tsx
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Home, Users, Calendar, Star, ShoppingBag, Settings, BarChart3, FileText, Package } from 'lucide-react';

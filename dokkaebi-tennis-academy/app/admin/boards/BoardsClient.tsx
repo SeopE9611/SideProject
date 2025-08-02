@@ -170,11 +170,6 @@ export default async function BoardsPageClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const [boardTypeFilter, setBoardTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const user = await getCurrentUser();
-
-  if (!user || user.role !== 'admin') {
-    return <AccessDenied />;
-  }
 
   // 모든 게시물 선택/해제
   const toggleSelectAll = () => {

@@ -33,12 +33,6 @@ const locations = [
 ];
 
 export default async function NewClassClient() {
-  const user = await getCurrentUser();
-
-  if (!user || user.role !== 'admin') {
-    return <AccessDenied />;
-  }
-
   const [formData, setFormData] = useState({
     name: '',
     instructor: '',

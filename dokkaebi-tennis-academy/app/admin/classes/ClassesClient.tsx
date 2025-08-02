@@ -65,11 +65,6 @@ export default async function ClassesPage() {
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const user = await getCurrentUser();
-
-  if (!user || user.role !== 'admin') {
-    return <AccessDenied />;
-  }
 
   // 전체 선택 체크박스 상태
   const isAllSelected = classes.length > 0 && selectedClasses.length === classes.length;
