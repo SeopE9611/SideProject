@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
@@ -110,85 +110,114 @@ export default function OrderDetailClient({ orderId }: Props) {
   };
 
   return (
-    <main className="container mx-auto p-6">
-      <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        {/* 왼쪽 제목 */}
-        <div className="text-left">
-          <h1 className="text-3xl font-bold">주문 상세 정보</h1>
-          <p className="text-sm text-muted-foreground">
-            주문 ID: <code>{orderId}</code>
-          </p>
+    <main className="container mx-auto p-6 space-y-8">
+      <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/30 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+          <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+            <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
+              <ShoppingCart className="h-8 w-8 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">주문 상세정보</h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">주문번호: {orderId}</p>
+            </div>
+          </div>
+
+          <div className="flex space-x-3">
+            <Button variant="outline" size="sm" onClick={() => router.push('/mypage?tab=orders')} className="bg-white/60 backdrop-blur-sm border-blue-200 hover:bg-blue-50">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              주문 목록으로 돌아가기
+            </Button>
+            <Button variant={isEditMode ? 'destructive' : 'outline'} size="sm" onClick={() => setIsEditMode((m) => !m)} disabled={!canUserEdit} className={isEditMode ? '' : 'bg-white/60 backdrop-blur-sm border-blue-200 hover:bg-blue-50'}>
+              <Pencil className="mr-1 h-4 w-4" />
+              {isEditMode ? '편집 종료' : '편집 모드'}
+            </Button>
+          </div>
         </div>
 
-        {/* 오른쪽 버튼 그룹 */}
-        <div className="flex space-x-2 mt-4 sm:mt-0">
-          <Button variant="outline" size="sm" onClick={() => router.push('/mypage?tab=orders')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            주문 목록으로 돌아가기
-          </Button>
-          <Button variant={isEditMode ? 'destructive' : 'outline'} size="sm" onClick={() => setIsEditMode((m) => !m)} disabled={!canUserEdit}>
-            <Pencil className="mr-1 h-4 w-4" />
-            {isEditMode ? '편집 종료' : '편집 모드'}
-          </Button>
-        </div>
-      </header>
-
-      <div className="grid gap-6 md:grid-cols-3">
         {/*  주문 상태 및 요약  */}
-        <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle>주문 상태</CardTitle>
-              {/* SWR로 가져온 orderDetail.status를 반영 */}
-              <OrderStatusBadge orderId={orderId} initialStatus={orderDetail.status} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-center space-x-2 mb-2">
+              <Calendar className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">주문일시</span>
             </div>
-            <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
-          </CardHeader>
+            <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{formatDate(orderDetail.date)}</p>
+          </div>
 
-          <CardFooter className="pt-4">
-            <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
-              {/* ‘대기중’ 또는 ‘결제완료’ 상태일 때만 취소 버튼 표시 */}
-              {['대기중', '결제완료'].includes(orderDetail.status) && <CancelOrderDialog orderId={orderDetail._id.toString()} />}
+          <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-center space-x-2 mb-2">
+              <CreditCard className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">총 결제금액</span>
             </div>
-          </CardFooter>
+            <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(orderDetail.total)}</p>
+          </div>
 
-          {orderDetail.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && orderDetail.shippingInfo?.withStringService && (
-            <>
-              {!orderDetail.isStringServiceApplied ? (
-                <div className="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded-md text-sm text-yellow-900">
-                  <p className="mb-2 font-medium">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
-                  <Link href={`/services/apply?orderId=${orderDetail._id}`} className="inline-block px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md text-sm">
-                    스트링 장착 서비스 신청하기
-                  </Link>
-                </div>
-              ) : (
-                <div className="mt-6 p-4 bg-green-50 border border-green-300 rounded-md text-sm text-green-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="font-medium">이 주문은 스트링 장착 서비스가 신청 완료되었습니다.</span>
+          <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-center space-x-2 mb-2">
+              <Truck className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">주문 상태</span>
+            </div>
+            <OrderStatusBadge orderId={orderId} initialStatus={orderDetail.status} />
+          </div>
+        </div>
+      </div>
+
+      {orderDetail.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && orderDetail.shippingInfo?.withStringService && (
+        <>
+          {!orderDetail.isStringServiceApplied ? (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border border-yellow-200 dark:border-yellow-800/30 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-yellow-100 dark:bg-yellow-900/30 rounded-full p-2">
+                    <CheckCircle className="h-6 w-6 text-yellow-600" />
                   </div>
-                  {orderDetail.stringingApplicationId && (
-                    <Link href={`/mypage?tab=applications&id=${orderDetail.stringingApplicationId}`}>
-                      <Button variant="ghost" size="sm" className="transition-colors duration-200 hover:bg-green-100 focus:ring-2 focus:ring-offset-1">
-                        신청 상세 보기
-                      </Button>
-                    </Link>
-                  )}
+                  <div>
+                    <p className="font-semibold text-yellow-900 dark:text-yellow-100">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">아래 버튼을 클릭하여 스트링 장착 서비스를 신청해주세요.</p>
+                  </div>
                 </div>
-              )}
-            </>
+                <Link href={`/services/apply?orderId=${orderDetail._id}`}>
+                  <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg">스트링 장착 서비스 신청하기</Button>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-green-200 dark:border-green-800/30 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-2">
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-green-900 dark:text-green-100">이 주문은 스트링 장착 서비스가 신청 완료되었습니다.</p>
+                    <p className="text-sm text-green-700 dark:text-green-300">신청 상세 정보를 확인하실 수 있습니다.</p>
+                  </div>
+                </div>
+                {orderDetail.stringingApplicationId && (
+                  <Link href={`/mypage?tab=applications&id=${orderDetail.stringingApplicationId}`}>
+                    <Button variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-950/20 bg-transparent">
+                      신청 상세 보기
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
           )}
-        </Card>
+        </>
+      )}
 
-        {/*  고객 정보  */}
-        <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center">
-              <User className="mr-2 h-5 w-5" />내 정보
+      <div className="grid gap-8 lg:grid-cols-2">
+        {/* 고객 정보 */}
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <User className="h-5 w-5 text-blue-600" />
+              <span>내 정보</span>
             </CardTitle>
           </CardHeader>
           {editingCustomer ? (
-            <CardContent>
+            <CardContent className="p-6">
               <CustomerEditForm
                 initialData={{
                   name: orderDetail.customer.name,
@@ -209,97 +238,106 @@ export default function OrderDetailClient({ orderId }: Props) {
               />
             </CardContent>
           ) : (
-            <CardContent>
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm font-medium">이름</div>
-                  <div>{orderDetail.customer.name ?? '이름 없음'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium flex items-center">
-                    <Mail className="mr-1 h-3.5 w-3.5" />
-                    이메일
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <User className="h-4 w-4 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">이름</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{orderDetail.customer.name ?? '이름 없음'}</p>
                   </div>
-                  <div>{orderDetail.customer.email ?? '이메일 없음'}</div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium flex items-center">
-                    <Phone className="mr-1 h-3.5 w-3.5" />
-                    전화번호
+
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <Mail className="h-4 w-4 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">이메일</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{orderDetail.customer.email ?? '이메일 없음'}</p>
                   </div>
-                  <div>{orderDetail.customer.phone ?? '전화번호 없음'}</div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium flex items-center">
-                    <MapPin className="mr-1 h-3.5 w-3.5" />
-                    주소
+
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <Phone className="h-4 w-4 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">전화번호</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{orderDetail.customer.phone ?? '전화번호 없음'}</p>
                   </div>
-                  <div>{orderDetail.customer.address ?? '주소 없음'}</div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium">상세주소</div>
-                  <div>{orderDetail.customer.addressDetail ?? '-'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium">우편번호</div>
-                  <div>{orderDetail.customer.postalCode ?? '-'}</div>
+
+                <div className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <MapPin className="h-4 w-4 text-gray-500 mt-1" />
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">주소</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{orderDetail.customer.address ?? '주소 없음'}</p>
+                    {orderDetail.customer.addressDetail && <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{orderDetail.customer.addressDetail}</p>}
+                    {orderDetail.customer.postalCode && <p className="text-sm text-gray-600 dark:text-gray-400">우편번호: {orderDetail.customer.postalCode}</p>}
+                  </div>
                 </div>
               </div>
             </CardContent>
           )}
           {isEditMode && canUserEdit && !editingCustomer && (
-            <CardFooter className="pt-3 flex justify-center">
-              <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)}>
+            <CardFooter className="pt-3 flex justify-center bg-gray-50/50 dark:bg-gray-800/50">
+              <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-blue-50 border-blue-200">
                 고객정보 수정
               </Button>
             </CardFooter>
           )}
         </Card>
 
-        {/*  배송 정보  */}
-        <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center">
-              <Truck className="mr-2 h-5 w-5" />
-              배송 정보
+        {/* 배송 정보 */}
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <Truck className="h-5 w-5 text-green-600" />
+              <span>배송 정보</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div>
-                <div className="text-sm font-medium">배송 방법</div>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <Truck className="h-4 w-4 text-gray-500" />
                 <div>
-                  {{
-                    delivery: '택배 배송',
-                    quick: '퀵 배송 (당일)',
-                    visit: '방문 수령',
-                  }[orderDetail.shippingInfo.shippingMethod] || '정보 없음'}
+                  <p className="text-sm text-gray-600 dark:text-gray-400">배송 방법</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">
+                    {{
+                      delivery: '택배 배송',
+                      quick: '퀵 배송 (당일)',
+                      visit: '방문 수령',
+                    }[orderDetail.shippingInfo.shippingMethod] || '정보 없음'}
+                  </p>
                 </div>
               </div>
-              <div>
-                <div className="text-sm font-medium flex items-center">
-                  <Calendar className="mr-1 h-3.5 w-3.5" />
-                  예상 수령일
+
+              <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <Calendar className="h-4 w-4 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">예상 수령일</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">{formatDate(orderDetail.shippingInfo.estimatedDate)}</p>
                 </div>
-                <div>{formatDate(orderDetail.shippingInfo.estimatedDate)}</div>
               </div>
+
               {orderDetail.shippingInfo.invoice?.trackingNumber && (
                 <>
-                  <div>
-                    <div className="text-sm font-medium">택배사</div>
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <div>
-                      {{
-                        cj: 'CJ 대한통운',
-                        hanjin: '한진택배',
-                        logen: '로젠택배',
-                        post: '우체국택배',
-                        etc: '기타',
-                      }[orderDetail.shippingInfo.invoice.courier] || '미지정'}
+                      <p className="text-sm text-gray-600 dark:text-gray-400">택배사</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">
+                        {{
+                          cj: 'CJ 대한통운',
+                          hanjin: '한진택배',
+                          logen: '로젠택배',
+                          post: '우체국택배',
+                          etc: '기타',
+                        }[orderDetail.shippingInfo.invoice.courier] || '미지정'}
+                      </p>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-sm font-medium">운송장 번호</div>
-                    <div>{orderDetail.shippingInfo.invoice.trackingNumber}</div>
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">운송장 번호</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{orderDetail.shippingInfo.invoice.trackingNumber}</p>
+                    </div>
                   </div>
                 </>
               )}
@@ -307,109 +345,121 @@ export default function OrderDetailClient({ orderId }: Props) {
           </CardContent>
         </Card>
 
-        {/*  결제 정보  */}
-        <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center">
-              <CreditCard className="mr-2 h-5 w-5" />
-              결제 정보
+        {/* 결제 정보 */}
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <CreditCard className="h-5 w-5 text-purple-600" />
+              <span>결제 정보</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div>
-                <div className="text-sm font-medium">결제 상태</div>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">결제 상태</p>
                   <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
                 </div>
               </div>
-              <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
-              <div>
-                <div className="text-sm font-medium">결제 금액</div>
-                <div className="text-lg font-bold">{formatCurrency(orderDetail.total)}</div>
+
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-100 dark:border-blue-800/30">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">결제 금액</p>
+                  <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(orderDetail.total)}</p>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/*  주문 항목  */}
-        <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center">
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              주문 항목
+        {/* 주문 항목 */}
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <ShoppingCart className="h-5 w-5 text-orange-600" />
+              <span>주문 항목</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-medium">상품/서비스</th>
-                    <th className="px-4 py-3 text-center font-medium">수량</th>
-                    <th className="px-4 py-3 text-right font-medium">가격</th>
-                    <th className="px-4 py-3 text-right font-medium">합계</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {orderDetail.items.map((item, idx) => (
-                    <tr key={idx}>
-                      <td className="px-4 py-3">{item.name}</td>
-                      <td className="px-4 py-3 text-center">{item.quantity}</td>
-                      <td className="px-4 py-3 text-right">{formatCurrency(item.price)}</td>
-                      <td className="px-4 py-3 text-right">{formatCurrency(item.price * item.quantity)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colSpan={3} className="px-4 py-3 text-right font-medium">
-                      총 합계
-                    </td>
-                    <td className="px-4 py-3 text-right text-lg font-bold">{formatCurrency(orderDetail.total)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {orderDetail.items.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">{item.name}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">수량: {item.quantity}개</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(item.price)}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">소계: {formatCurrency(item.price * item.quantity)}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
-
-        {/*  요청사항  */}
-        <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
-          <CardHeader className="pb-3">
-            <CardTitle>배송 요청사항</CardTitle>
-            <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
-          </CardHeader>
-          {editingRequest ? (
-            <CardContent>
-              <RequestEditForm
-                initialData={orderDetail.shippingInfo.deliveryRequest || ''}
-                orderId={orderId}
-                onSuccess={() => {
-                  mutateOrderDetail();
-                  mutateHistory();
-                  setEditingRequest(false);
-                }}
-                onCancel={() => setEditingRequest(false)}
-              />
-            </CardContent>
-          ) : (
-            <CardContent>
-              {orderDetail.shippingInfo.deliveryRequest ? <p className="whitespace-pre-line text-sm text-foreground">{orderDetail.shippingInfo.deliveryRequest}</p> : <p className="text-sm text-muted-foreground">요청사항이 입력되지 않았습니다.</p>}
-            </CardContent>
-          )}
-          {isEditMode && canUserEdit && !editingRequest && (
-            <CardFooter className="flex justify-center">
-              <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)}>
-                요청사항 수정
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
-
-        {/*  처리 이력  */}
-        <OrderHistory orderId={orderId} />
       </div>
+
+      {/* 요청사항 */}
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+          <CardTitle>배송 요청사항</CardTitle>
+          <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
+        </CardHeader>
+        {editingRequest ? (
+          <CardContent className="p-6">
+            <RequestEditForm
+              initialData={orderDetail.shippingInfo.deliveryRequest || ''}
+              orderId={orderId}
+              onSuccess={() => {
+                mutateOrderDetail();
+                mutateHistory();
+                setEditingRequest(false);
+              }}
+              onCancel={() => setEditingRequest(false)}
+            />
+          </CardContent>
+        ) : (
+          <CardContent className="p-6">
+            {orderDetail.shippingInfo.deliveryRequest ? (
+              <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400 italic">요청사항이 입력되지 않았습니다.</p>
+            )}
+          </CardContent>
+        )}
+        {isEditMode && canUserEdit && !editingRequest && (
+          <CardFooter className="flex justify-center bg-gray-50/50 dark:bg-gray-800/50">
+            <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="hover:bg-orange-50 border-orange-200">
+              요청사항 수정
+            </Button>
+          </CardFooter>
+        )}
+      </Card>
+
+      {/* 처리 이력 */}
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+          <CardTitle className="flex items-center space-x-2">
+            <Calendar className="h-5 w-5 text-indigo-600" />
+            <span>주문 이력</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <OrderHistory orderId={orderId} />
+        </CardContent>
+      </Card>
+
+      {['대기중', '결제완료'].includes(orderDetail.status) && (
+        <div className="flex justify-center">
+          <CancelOrderDialog orderId={orderDetail._id.toString()} />
+        </div>
+      )}
     </main>
   );
 }
