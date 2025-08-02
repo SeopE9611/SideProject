@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { Search, Filter, Grid3X3, List, Star, ShoppingCart, Eye, Heart } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Product = {
   _id: string;
@@ -50,118 +52,111 @@ const brandLabelMap: Record<string, string> = Object.fromEntries(brands.map(({ v
 export default function FilterableProductList({ products }: { products: Product[] }) {
   // 정렬 옵션상태 관리
   const [sortOption, setSortOption] = useState('latest');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // 필터 상태 관리
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null); // 선택된 브랜드
-  const [selectedBounce, setSelectedBounce] = useState<number | null>(null); // 선택된 반발력
-  const [selectedDurability, setSelectedDurability] = useState<number | null>(null); // 선택된 내구성
-  const [selectedSpin, setSelectedSpin] = useState<number | null>(null); // 선택된 스핀 성능
-  const [selectedControl, setSelectedControl] = useState<number | null>(null); // 선택된 컨트롤
-  const [selectedComfort, setSelectedComfort] = useState<number | null>(null); // 선택된 편안함
-
-  // 사용자가 조작중인 값
-  // draftFilter: 유저가 조작 중인 임시 상태, 즉시 화면에 반영하지 않음
-  const [draftFilter, setDraftFilter] = useState({
-    name: '',
-    priceRange: [0, 50000],
-  });
-
-  // 실제로 화면에 적용된 필터 값
-  // appliedFilter: 화면에 실제로 적용된 상태, 이걸 기준으로 상품 필터링
-  const [appliedFilter, setAppliedFilter] = useState({
-    brand: null,
-    bounce: null,
-    durability: null,
-    spin: null,
-    control: null,
-    comfort: null,
-    name: '',
-    priceRange: [0, 50000],
-  });
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedBounce, setSelectedBounce] = useState<number | null>(null);
+  const [selectedDurability, setSelectedDurability] = useState<number | null>(null);
+  const [selectedSpin, setSelectedSpin] = useState<number | null>(null);
+  const [selectedControl, setSelectedControl] = useState<number | null>(null);
+  const [selectedComfort, setSelectedComfort] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [priceRange, setPriceRange] = useState([0, 50000]);
+  const [showFilters, setShowFilters] = useState(false);
 
   // 필터링된 상품 목록
-  const filteredProducts = products.filter((product) => {
-    const features = product.features ?? {};
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const features = product.features ?? {};
 
-    const f = {
-      ...appliedFilter, // ← draftFilter에서 반영된 name, priceRange
-      brand: selectedBrand,
-      bounce: selectedBounce,
-      durability: selectedDurability,
-      spin: selectedSpin,
-      control: selectedControl,
-      comfort: selectedComfort,
-    };
+      const brandMatch = selectedBrand === null ? true : (product.brand ?? '').toLowerCase() === selectedBrand;
+      const bounceMatch = selectedBounce !== null ? (features.power ?? 0) >= selectedBounce : true;
+      const durabilityMatch = selectedDurability !== null ? (features.durability ?? 0) >= selectedDurability : true;
+      const spinMatch = selectedSpin !== null ? (features.spin ?? 0) >= selectedSpin : true;
+      const controlMatch = selectedControl !== null ? (features.control ?? 0) >= selectedControl : true;
+      const comfortMatch = selectedComfort !== null ? (features.comfort ?? 0) >= selectedComfort : true;
+      const nameMatch = searchQuery === '' ? true : product.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
 
-    const brandMatch = f.brand === null ? true : (product.brand ?? '').toLowerCase() === f.brand;
+      return brandMatch && bounceMatch && durabilityMatch && spinMatch && controlMatch && comfortMatch && nameMatch && priceMatch;
+    });
+  }, [products, selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, searchQuery, priceRange]);
 
-    const bounceMatch = selectedBounce !== null ? (features.power ?? 0) >= selectedBounce : true;
+  // 정렬된 상품 목록
+  const sortedProducts = useMemo(() => {
+    return [...filteredProducts].sort((a, b) => {
+      switch (sortOption) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'popular':
+          return 0; // 아직 인기순 데이터 없음
+        case 'latest':
+        default:
+          return b._id.localeCompare(a._id);
+      }
+    });
+  }, [filteredProducts, sortOption]);
 
-    const durabilityMatch = selectedDurability !== null ? (features.durability ?? 0) >= selectedDurability : true;
+  const resetFilters = () => {
+    setSelectedBrand(null);
+    setSelectedBounce(null);
+    setSelectedDurability(null);
+    setSelectedSpin(null);
+    setSelectedControl(null);
+    setSelectedComfort(null);
+    setSearchQuery('');
+    setPriceRange([0, 50000]);
+  };
 
-    const spinMatch = selectedSpin !== null ? (features.spin ?? 0) >= selectedSpin : true;
-
-    const controlMatch = selectedControl !== null ? (features.control ?? 0) >= selectedControl : true;
-
-    const comfortMatch = selectedComfort !== null ? (features.comfort ?? 0) >= selectedComfort : true;
-
-    const nameMatch = f.name === '' ? true : product.name.includes(f.name);
-    const priceMatch = product.price >= f.priceRange[0] && product.price <= f.priceRange[1];
-
-    // console.log('현재 브랜드:', product.brand);
-    // console.log('현재 반발력:', product.features?.반발력);
-    console.log('선택된 브랜드:', selectedBrand);
-    console.log('상품 브랜드:', product.brand);
-
-    return brandMatch && bounceMatch && durabilityMatch && spinMatch && controlMatch && comfortMatch && nameMatch && priceMatch;
-  });
-
-  // filteredProducts 정렬 적용
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sortOption) {
-      case 'price-low':
-        return a.price - b.price;
-      case 'price-high':
-        return b.price - a.price;
-      case 'popular':
-        return 0; // 아직 인기순 데이터 없음
-      case 'latest':
-      default:
-        return b._id.localeCompare(a._id);
-    }
-  });
+  const activeFiltersCount = [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, searchQuery, priceRange[0] > 0 || priceRange[1] < 50000].filter(Boolean).length;
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
       {/* 필터 사이드바 */}
-      <div className="space-y-6 lg:col-span-1">
-        <div className="rounded-lg border p-4">
-          <h2 className="font-semibold text-lg mb-4">필터</h2>
+      <div className={cn('space-y-6 lg:col-span-1', 'lg:block', showFilters ? 'block' : 'hidden')}>
+        <div className="rounded-xl border bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">필터</h2>
+            {activeFiltersCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs">
+                초기화 ({activeFiltersCount})
+              </Button>
+            )}
+          </div>
+
           {/* 검색 */}
           <div className="mb-6">
-            <Label htmlFor="search" className="mb-2 block">
+            <Label htmlFor="search" className="mb-3 block font-medium">
               검색
             </Label>
-            <Input value={draftFilter.name} onChange={(e) => setDraftFilter((prev) => ({ ...prev, name: e.target.value }))} placeholder="상품명 검색..." />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="상품명 검색..." className="pl-10 rounded-lg border-2 focus:border-blue-500 transition-colors" />
+            </div>
           </div>
+
           {/* 가격 범위 */}
           <div className="mb-6">
-            <Label className="mb-2 block">가격 범위</Label>
+            <Label className="mb-3 block font-medium">가격 범위</Label>
             <div className="space-y-4">
-              <Slider value={draftFilter.priceRange} onValueChange={(range) => setDraftFilter((prev) => ({ ...prev, priceRange: range }))} min={0} max={50000} step={500} />
+              <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={50000} step={500} className="w-full" />
               <div className="flex justify-between text-sm text-muted-foreground">
-                <span>{`₩${draftFilter.priceRange[0].toLocaleString()}`}</span>
-                <span>{`₩${draftFilter.priceRange[1].toLocaleString()}`}</span>
+                <span className="font-medium">₩{priceRange[0].toLocaleString()}</span>
+                <span className="font-medium">₩{priceRange[1].toLocaleString()}</span>
               </div>
             </div>
           </div>
+
           {/* 브랜드 필터 */}
           <div className="mb-6">
-            <Label htmlFor="brand" className="mb-2 block">
+            <Label htmlFor="brand" className="mb-3 block font-medium">
               브랜드
             </Label>
             <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
-              <SelectTrigger>
+              <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
                 <SelectValue placeholder="브랜드 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -174,138 +169,242 @@ export default function FilterableProductList({ products }: { products: Product[
               </SelectContent>
             </Select>
           </div>
+
           {/* 성능 필터 */}
           <div className="space-y-4">
-            <h3 className="font-medium">성능</h3>
+            <h3 className="font-medium text-lg">성능</h3>
 
-            <div>
-              <Label className="mb-2 block text-sm">반발력</Label>
-              <Select onValueChange={(value) => setSelectedBounce(value === 'all' ? null : Number(value))} value={selectedBounce !== null ? String(selectedBounce) : '5'}>
-                <SelectTrigger>
-                  <SelectValue placeholder="선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">★★★★★</SelectItem>
-                  <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                  <SelectItem value="3">★★★☆☆ 이상</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label className="mb-2 block text-sm">컨트롤</Label>
-              <Select onValueChange={(value) => setSelectedControl(value === 'all' ? null : Number(value))} value={selectedControl !== null ? String(selectedControl) : '5'}>
-                <SelectTrigger>
-                  <SelectValue placeholder="선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">★★★★★</SelectItem>
-                  <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                  <SelectItem value="3">★★★☆☆ 이상</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label className="mb-2 block text-sm">스핀</Label>
-              <Select onValueChange={(value) => setSelectedSpin(value === 'all' ? null : Number(value))} value={selectedSpin !== null ? String(selectedSpin) : '5'}>
-                <SelectTrigger>
-                  <SelectValue placeholder="선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">★★★★★</SelectItem>
-                  <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                  <SelectItem value="3">★★★☆☆ 이상</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {[
+              { key: 'bounce', label: '반발력', value: selectedBounce, setter: setSelectedBounce },
+              { key: 'control', label: '컨트롤', value: selectedControl, setter: setSelectedControl },
+              { key: 'spin', label: '스핀', value: selectedSpin, setter: setSelectedSpin },
+              { key: 'durability', label: '내구성', value: selectedDurability, setter: setSelectedDurability },
+              { key: 'comfort', label: '편안함', value: selectedComfort, setter: setSelectedComfort },
+            ].map(({ key, label, value, setter }) => (
+              <div key={key}>
+                <Label className="mb-2 block text-sm font-medium">{label}</Label>
+                <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={value !== null ? String(value) : 'all'}>
+                  <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
+                    <SelectValue placeholder="선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    <SelectItem value="5">★★★★★</SelectItem>
+                    <SelectItem value="4">★★★★☆ 이상</SelectItem>
+                    <SelectItem value="3">★★★☆☆ 이상</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
           </div>
-          <div>
-            <Label className="mb-2 block text-sm">내구성</Label>
-            <Select onValueChange={(value) => setSelectedDurability(value === 'all' ? null : Number(value))} value={selectedDurability !== null ? String(selectedDurability) : '5'}>
-              <SelectTrigger>
-                <SelectValue placeholder="선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">★★★★★</SelectItem>
-                <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                <SelectItem value="3">★★★☆☆ 이상</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="mb-2 block text-sm">편안함</Label>
-            <Select onValueChange={(value) => setSelectedComfort(value === 'all' ? null : Number(value))} value={selectedComfort !== null ? String(selectedComfort) : '5'}>
-              <SelectTrigger>
-                <SelectValue placeholder="선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">★★★★★</SelectItem>
-                <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                <SelectItem value="3">★★★☆☆ 이상</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button className="w-full mt-6" onClick={() => setAppliedFilter((prev) => ({ ...prev, name: draftFilter.name, priceRange: draftFilter.priceRange }))}>
-            필터 적용
-          </Button>
         </div>
       </div>
 
       {/* 상품 목록 */}
       <div className="lg:col-span-3">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <span className="text-muted-foreground">총 {products.length}개 상품</span>
+        {/* 상단 컨트롤 바 */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="text-lg font-semibold">
+              총 <span className="text-blue-600 font-bold">{sortedProducts.length}</span>개 상품
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="lg:hidden">
+              <Filter className="w-4 h-4 mr-2" />
+              필터 {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+            </Button>
           </div>
-          <Select value={sortOption} onValueChange={(value) => setSortOption(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="정렬 기준" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="latest">최신순</SelectItem>
-              <SelectItem value="popular">인기순</SelectItem>
-              <SelectItem value="price-low">가격 낮은순</SelectItem>
-              <SelectItem value="price-high">가격 높은순</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <div className="flex items-center gap-3">
+            {/* 뷰 모드 토글 */}
+            <div className="flex items-center border rounded-lg p-1">
+              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} className="px-3">
+                <Grid3X3 className="w-4 h-4" />
+              </Button>
+              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} className="px-3">
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* 정렬 옵션 */}
+            <Select value={sortOption} onValueChange={setSortOption}>
+              <SelectTrigger className="w-[180px] rounded-lg border-2 focus:border-blue-500">
+                <SelectValue placeholder="정렬 기준" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="latest">최신순</SelectItem>
+                <SelectItem value="popular">인기순</SelectItem>
+                <SelectItem value="price-low">가격 낮은순</SelectItem>
+                <SelectItem value="price-high">가격 높은순</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {sortedProducts.map((product) => (
-            <Link key={product._id.toString()} href={`/products/${product._id.toString()}`}>
-              <Card className="h-full overflow-hidden transition-all hover:shadow-md">
-                <div className="relative">
-                  <Image src={(product.images?.[0] as string) || '/placeholder.svg'} alt={product.name} width={200} height={200} className="h-48 w-full object-cover" />
-                  {product.isNew && <Badge className="absolute right-2 top-2">NEW</Badge>}
-                </div>
-                <CardContent className="p-4">
-                  <div className="text-sm text-muted-foreground mb-1">{brandLabelMap[product.brand.toLowerCase()] ?? product.brand}</div>
-                  <CardTitle className="text-base">{product.name}</CardTitle>
-                  <div className="mt-2 text-sm space-y-1">
-                    {product.features ? (
-                      Object.entries(product.features as Record<string, number>).map(([key, value]) => (
-                        <div key={key}>
-                          {keyMap[key as keyof typeof keyMap] || key}: {'★'.repeat(value)}
-                          {'☆'.repeat(5 - value)}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-muted-foreground">성능 정보 없음</div>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter className="p-4 pt-0 flex justify-between items-center">
-                  <div className="font-bold">{product.price.toLocaleString()}원</div>
-                  <Button variant="secondary" size="sm">
-                    상세보기
-                  </Button>
-                </CardFooter>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        {/* 상품 그리드/리스트 */}
+        {sortedProducts.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center">
+              <Search className="w-12 h-12 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">검색 결과가 없습니다</h3>
+            <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
+            <Button onClick={resetFilters} variant="outline">
+              필터 초기화
+            </Button>
+          </div>
+        ) : (
+          <div className={cn('grid gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+            {sortedProducts.map((product) => (
+              <ProductCard key={product._id} product={product} viewMode={viewMode} brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function ProductCard({ product, viewMode, brandLabel }: { product: Product; viewMode: 'grid' | 'list'; brandLabel: string }) {
+  if (viewMode === 'list') {
+    return (
+      <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-2 hover:border-blue-300">
+        <div className="flex">
+          <div className="relative w-48 h-48 flex-shrink-0">
+            <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
+            {product.isNew && <Badge className="absolute right-2 top-2 bg-gradient-to-r from-red-500 to-pink-500 text-white">NEW</Badge>}
+          </div>
+
+          <div className="flex-1 p-6">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <div className="text-sm text-muted-foreground mb-1 font-medium">{brandLabel}</div>
+                <h3 className="text-xl font-bold mb-2">{product.name}</h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <span className="text-sm text-muted-foreground">(128 리뷰)</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-blue-600">{product.price.toLocaleString()}원</div>
+                <div className="text-sm text-muted-foreground line-through">{Math.round(product.price * 1.2).toLocaleString()}원</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {product.features ? (
+                Object.entries(product.features as Record<string, number>).map(([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">{keyMap[key as keyof typeof keyMap] || key}:</span>
+                    <span className="text-sm font-medium">
+                      {'★'.repeat(value)}
+                      {'☆'.repeat(5 - value)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-muted-foreground text-sm">성능 정보 없음</div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <Link href={`/products/${product._id}`} className="flex-1">
+                <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  <Eye className="w-4 h-4 mr-2" />
+                  상세보기
+                </Button>
+              </Link>
+              <Button variant="outline" size="icon" className="hover:bg-red-50 hover:border-red-300 bg-transparent">
+                <Heart className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="hover:bg-blue-50 hover:border-blue-300 bg-transparent">
+                <ShoppingCart className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Link href={`/products/${product._id}`}>
+      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-2 hover:border-blue-300 group">
+        <div className="relative">
+          <Image
+            src={(product.images?.[0] as string) || '/placeholder.svg?height=300&width=300&query=tennis+string'}
+            alt={product.name}
+            width={300}
+            height={300}
+            className="h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          {product.isNew && <Badge className="absolute right-3 top-3 bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg">NEW</Badge>}
+          <div className="absolute top-3 left-3">
+            <Badge variant="secondary" className="bg-white/90 text-gray-800 shadow-lg">
+              15% 할인
+            </Badge>
+          </div>
+
+          {/* 호버 오버레이 */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <div className="flex gap-2">
+              <Button size="sm" className="bg-white text-black hover:bg-gray-100">
+                <Eye className="w-4 h-4 mr-1" />
+                보기
+              </Button>
+              <Button size="sm" variant="outline" className="bg-white/90 hover:bg-white">
+                <Heart className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <CardContent className="p-5">
+          <div className="text-sm text-muted-foreground mb-2 font-medium">{brandLabel}</div>
+          <CardTitle className="text-lg mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">{product.name}</CardTitle>
+
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground">(128)</span>
+          </div>
+
+          <div className="space-y-1 mb-4 text-xs">
+            {product.features ? (
+              Object.entries(product.features as Record<string, number>)
+                .slice(0, 3)
+                .map(([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className="text-muted-foreground">{keyMap[key as keyof typeof keyMap] || key}:</span>
+                    <span className="font-medium">
+                      {'★'.repeat(value)}
+                      {'☆'.repeat(5 - value)}
+                    </span>
+                  </div>
+                ))
+            ) : (
+              <div className="text-muted-foreground">성능 정보 없음</div>
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className="p-5 pt-0 flex justify-between items-center">
+          <div>
+            <div className="font-bold text-lg text-blue-600">{product.price.toLocaleString()}원</div>
+            <div className="text-xs text-muted-foreground line-through">{Math.round(product.price * 1.2).toLocaleString()}원</div>
+          </div>
+          <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg">
+            <ShoppingCart className="w-4 h-4 mr-1" />
+            담기
+          </Button>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 }
