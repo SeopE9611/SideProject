@@ -14,9 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import AccessDenied from '@/components/system/AccessDenied';
 import { showSuccessToast } from '@/lib/toast';
 
 // 사이트 설정 스키마
@@ -66,11 +63,6 @@ const paymentSettingsSchema = z.object({
 
 export default async function SettingsPage() {
   const [activeTab, setActiveTab] = useState('site');
-  const user = await getCurrentUser();
-
-  if (!user || user.role !== 'admin') {
-    return <AccessDenied />;
-  }
 
   // 사이트 설정 폼
   const siteForm = useForm<z.infer<typeof siteSettingsSchema>>({

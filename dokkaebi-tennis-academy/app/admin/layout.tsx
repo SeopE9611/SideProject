@@ -1,9 +1,22 @@
-import type React from 'react';
+// app/admin/layout.tsx
+import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { Home, Users, Calendar, Star, ShoppingBag, Settings, BarChart3, FileText, Package, Zap } from 'lucide-react';
+import { Home, Users, Calendar, Star, ShoppingBag, Settings, BarChart3, FileText, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '@/lib/hooks/get-current-user';
+import AccessDenied from '@/components/system/AccessDenied';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export const metadata = {
+  title: 'Admin – Dokkaebi Tennis Academy',
+};
+
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  // 인증/권한 체크 (서버 컴포넌트에서만 가능한 부분)
+  const user = await getCurrentUser();
+  if (!user || user.role !== 'admin') {
+    return <AccessDenied />;
+  }
+
   // 관리자 메뉴 항목
   const menuItems = [
     { name: '대시보드', href: '/admin/dashboard', icon: <BarChart3 className="mr-2 h-4 w-4" /> },
