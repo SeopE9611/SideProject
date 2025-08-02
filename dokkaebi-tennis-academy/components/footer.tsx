@@ -118,11 +118,11 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">연락처 & 뉴스레터</h3>
+            <h3 className="text-lg font-semibold mb-6 text-white">연락처</h3>
             <div className="space-y-4 mb-6">
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-blue-300 flex-shrink-0" />
-                <span className="text-blue-100">02-123-4567</span>
+                <span className="text-blue-100">010-5218-5248</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-green-300 flex-shrink-0" />
@@ -140,17 +140,6 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-
-            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
-              <h4 className="font-semibold mb-3 text-white">뉴스레터 구독</h4>
-              <p className="text-sm text-blue-200 mb-4">최신 소식과 특별 할인 정보를 받아보세요</p>
-              <div className="flex gap-2">
-                <Input type="email" placeholder="이메일 주소" className="bg-white/10 border-white/20 text-white placeholder:text-blue-200 focus:border-blue-400" />
-                <Button size="icon" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 flex-shrink-0">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -160,7 +149,7 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-center md:text-left">
               <p className="text-blue-200 text-sm">&copy; {new Date().getFullYear()} 도깨비 테니스 아카데미. All rights reserved.</p>
-              <p className="text-blue-300 text-xs mt-1">사업자등록번호: 123-45-67890 | 대표: 김도깨비 | 통신판매업신고: 2024-서울강남-1234</p>
+              <p className="text-blue-300 text-xs mt-1">사업자등록번호: 123-45-67890 | 대표: 김재민 | 통신판매업신고: 2024-서울강남-1234</p>
             </div>
             <div className="flex items-center space-x-6 text-sm text-blue-200">
               <span className="flex items-center space-x-2">

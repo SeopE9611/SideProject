@@ -42,7 +42,7 @@ const Header = () => {
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
               <Phone className="h-4 w-4" />
-              <span>02-123-4567</span>
+              <span>010-5218-5248</span>
             </div>
             <div className="flex items-center space-x-2">
               <Mail className="h-4 w-4" />
@@ -153,7 +153,7 @@ const Header = () => {
                     }}
                   >
                     <ShoppingCart className="mr-2 h-4 w-4" />
-                    장바구니 (3)
+                    장바구니 (99)
                   </Button>
                   <UserNavMobile setOpen={setOpen} />
                 </div>
