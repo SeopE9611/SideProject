@@ -255,7 +255,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {categories.map((category) => (
-              <Link key={category.name} href={category.href} className="group">
+              <Link key={category.name} href={'/'} className="group">
                 <Card className="h-full overflow-hidden border-0 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
                   <CardContent className="p-8 text-center relative">
                     <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -300,7 +300,7 @@ export default function Home() {
             <TabsContent value="popular" className="mt-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {featuredProducts.map((product) => (
-                  <Link key={product.id} href={`/products/${product.id}`} className="group">
+                  <Link key={product.id} href={`/`} className="group">
                     <Card className="h-full overflow-hidden border-0 bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
                       <div className="relative overflow-hidden">
                         <Image src={product.image || '/placeholder.svg'} alt={product.name} width={300} height={300} className="h-64 w-full object-cover group-hover:scale-110 transition-transform duration-300" />
@@ -357,7 +357,7 @@ export default function Home() {
                 {featuredProducts
                   .filter((product) => product.isNew)
                   .map((product) => (
-                    <Link key={product.id} href={`/products/${product.id}`} className="group">
+                    <Link key={product.id} href={`/`} className="group">
                       <Card className="h-full overflow-hidden border-0 bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
                         <div className="relative overflow-hidden">
                           <Image src={product.image || '/placeholder.svg'} alt={product.name} width={300} height={300} className="h-64 w-full object-cover group-hover:scale-110 transition-transform duration-300" />
