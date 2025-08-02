@@ -118,7 +118,7 @@ export default async function AdminDashboardPage() {
     },
     {
       title: '스트링 서비스 신청',
-      description: '이영희님이 스트링 교체를 신청했습니다',
+      description: '쑹빵이님이 스트링 교체를 신청했습니다',
       time: '12분 전',
       icon: <Zap className="h-4 w-4" />,
       color: 'text-blue-600',
@@ -126,7 +126,7 @@ export default async function AdminDashboardPage() {
     },
     {
       title: '새로운 리뷰',
-      description: '박민수님이 5점 리뷰를 작성했습니다',
+      description: '죡팡님이 5점 리뷰를 작성했습니다',
       time: '25분 전',
       icon: <Star className="h-4 w-4" />,
       color: 'text-yellow-600',
@@ -134,7 +134,7 @@ export default async function AdminDashboardPage() {
     },
     {
       title: '새 회원 가입',
-      description: '정수진님이 회원가입을 완료했습니다',
+      description: '넌적혈구님이 회원가입을 완료했습니다',
       time: '1시간 전',
       icon: <Users className="h-4 w-4" />,
       color: 'text-purple-600',
