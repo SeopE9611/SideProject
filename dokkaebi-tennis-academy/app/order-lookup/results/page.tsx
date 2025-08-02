@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft, Package, Search, CheckCircle2, Clock, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -24,6 +24,34 @@ interface Order {
   };
   isStringServiceApplied?: boolean;
 }
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case '배송완료':
+      return <CheckCircle2 className="w-4 h-4" />;
+    case '배송중':
+      return <Truck className="w-4 h-4" />;
+    case '배송준비중':
+      return <Clock className="w-4 h-4" />;
+    default:
+      return <Package className="w-4 h-4" />;
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case '배송완료':
+      return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    case '배송중':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case '배송준비중':
+      return 'bg-amber-100 text-amber-800 border-amber-200';
+    case '주문취소':
+      return 'bg-red-100 text-red-800 border-red-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+};
 
 export default function OrderLookupResultsPage() {
   const router = useRouter();
@@ -109,21 +137,35 @@ export default function OrderLookupResultsPage() {
   // 로딩 상태
   if (loading) {
     return (
-      <div className="container mx-auto py-10 px-4 md:px-6">
-        <div className="max-w-3xl mx-auto">
-          <Card className="shadow-md">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">주문 조회 결과</CardTitle>
-              <CardDescription className="text-center">주문 정보를 불러오는 중입니다...</CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-center items-center py-12">
-              <div className="animate-pulse flex flex-col items-center">
-                <div className="h-12 w-12 rounded-full bg-gray-200 mb-4"></div>
-                <div className="h-4 w-48 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 w-32 bg-gray-200 rounded"></div>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative container mx-auto px-4 py-16">
+            <div className="text-center text-white">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+                <Search className="w-8 h-8 animate-pulse" />
               </div>
-            </CardContent>
-          </Card>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 조회 중...</h1>
+              <p className="text-xl text-emerald-100">주문 정보를 불러오고 있습니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto py-12 px-4 md:px-6">
+          <div className="max-w-4xl mx-auto">
+            <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+              <CardContent className="flex justify-center items-center py-16">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mb-6">
+                    <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">주문 정보 조회 중</h3>
+                  <p className="text-gray-600">잠시만 기다려주세요...</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -132,128 +174,203 @@ export default function OrderLookupResultsPage() {
   // 에러 상태
   if (error) {
     return (
-      <div className="container mx-auto py-10 px-4 md:px-6">
-        <div className="max-w-3xl mx-auto">
-          <Card className="shadow-md">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">주문 조회 오류</CardTitle>
-              <CardDescription className="text-center">주문 정보를 불러오는 중 문제가 발생했습니다</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-red-500 mb-6">{error}</p>
-              <Button onClick={handleGoBack}>주문 조회 페이지로 돌아가기</Button>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-pink-600">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative container mx-auto px-4 py-16">
+            <div className="text-center text-white">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+                <Package className="w-8 h-8" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">조회 오류</h1>
+              <p className="text-xl text-red-100">주문 정보를 불러오는 중 문제가 발생했습니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto py-12 px-4 md:px-6">
+          <div className="max-w-4xl mx-auto">
+            <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-6">
+                    <Package className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">오류가 발생했습니다</h3>
+                  <p className="text-red-600 mb-8 max-w-md">{error}</p>
+                  <Button onClick={handleGoBack} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    주문 조회 페이지로 돌아가기
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10 px-4 md:px-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6">
-          <Link href="/order-lookup" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            이전 페이지로 돌아가기
-          </Link>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative container mx-auto px-4 py-16">
+          <div className="text-center text-white">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 조회 결과</h1>
+            <p className="text-xl text-emerald-100">
+              {name}님의 주문 내역 {orders?.length || 0}건
+            </p>
+          </div>
         </div>
-        <Card className="shadow-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">주문 조회 결과</CardTitle>
-            <CardDescription className="text-center">{name}님의 주문 내역입니다</CardDescription>
-          </CardHeader>
-          <Separator />
-          <CardContent className="pt-6">
-            {orders && orders.length > 0 ? (
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <Card key={order.id} className="overflow-hidden">
-                    <div className="p-4 md:p-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                        <div className="flex items-center mb-2 md:mb-0">
-                          <ShoppingBag className="h-5 w-5 mr-2 text-primary" />
-                          <span className="font-medium">{order.orderNumber}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <span
-                            className={`text-sm px-2 py-1 rounded-full ${
-                              order.status === '배송완료' ? 'bg-green-100 text-green-800' : order.status === '배송중' ? 'bg-blue-100 text-blue-800' : order.status === '배송준비중' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {order.status}
-                          </span>
-                        </div>
-                      </div>
+      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                          <span className="text-sm">주문일자: {order.orderDate}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 mr-2 text-gray-500" />
-                          <span className="text-sm">수령인: {order.recipient}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                          <span className="text-sm">연락처: {order.contactNumber}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <CreditCard className="h-4 w-4 mr-2 text-gray-500" />
-                          <span className="text-sm font-medium">결제금액: {formatCurrency(order.totalAmount)}</span>
-                        </div>
-                      </div>
+      <div className="container mx-auto py-12 px-4 md:px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Back Button */}
+          <div className="mb-8">
+            <Link href="/order-lookup" className="inline-flex items-center text-sm text-muted-foreground hover:text-emerald-600 transition-colors group">
+              <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+              이전 페이지로 돌아가기
+            </Link>
+          </div>
 
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" className="flex items-center" onClick={() => handleViewDetails(order.id)}>
-                          상세보기
-                          <ChevronRight className="ml-1 h-4 w-4" />
-                        </Button>
-
-                        {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
-                          <>
-                            {!order.isStringServiceApplied ? (
-                              <Button variant="secondary" size="sm" className="text-primary font-semibold" onClick={() => router.push(`/services/apply?orderId=${order.id}`)}>
-                                스트링 장착 신청
-                              </Button>
-                            ) : (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className="inline-flex h-9 items-center justify-center rounded-md border border-green-300 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:border-green-600 dark:bg-green-950 dark:text-green-300">
-                                      스트링 신청 완료
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="text-sm">
-                                    이미 신청이 완료된 주문입니다
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+          <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm mb-8">
+            <CardHeader className="text-center pb-8">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mb-4 mx-auto">
+                <ShoppingBag className="w-6 h-6 text-white" />
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="rounded-full bg-gray-100 p-3 mb-4">
-                  <ShoppingBag className="h-6 w-6 text-gray-400" />
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">주문 내역</CardTitle>
+              <CardDescription className="text-base">{name}님의 주문 내역입니다</CardDescription>
+            </CardHeader>
+
+            <Separator className="mx-6" />
+
+            <CardContent className="pt-8">
+              {orders && orders.length > 0 ? (
+                <div className="space-y-6">
+                  {orders.map((order, index) => (
+                    <Card key={order.id} className="overflow-hidden border-2 border-gray-100 hover:border-emerald-200 transition-all duration-200 hover:shadow-lg">
+                      <div className="p-6">
+                        {/* Order Header */}
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
+                          <div className="flex items-center mb-4 lg:mb-0">
+                            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mr-4">
+                              <span className="text-white font-bold">#{index + 1}</span>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-lg text-gray-900">주문번호: {order.orderNumber}</h3>
+                              <p className="text-sm text-gray-600">주문일자: {order.orderDate}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`inline-flex items-center gap-1 text-sm px-3 py-1.5 rounded-full border font-medium ${getStatusColor(order.status)}`}>
+                              {getStatusIcon(order.status)}
+                              {order.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Order Details Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                            <User className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs text-gray-500 mb-1">수령인</p>
+                              <p className="font-medium text-gray-900 truncate">{order.recipient}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                            <Phone className="h-5 w-5 text-teal-600 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs text-gray-500 mb-1">연락처</p>
+                              <p className="font-medium text-gray-900 truncate">{order.contactNumber}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                            <Calendar className="h-5 w-5 text-cyan-600 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs text-gray-500 mb-1">주문일자</p>
+                              <p className="font-medium text-gray-900">{order.orderDate}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-200">
+                            <CreditCard className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs text-emerald-600 mb-1">결제금액</p>
+                              <p className="font-bold text-emerald-700">{formatCurrency(order.totalAmount)}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-3 justify-end">
+                          <Button variant="outline" className="flex items-center gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 bg-transparent" onClick={() => handleViewDetails(order.id)}>
+                            <Package className="w-4 h-4" />
+                            상세보기
+                            <ChevronRight className="ml-1 h-4 w-4" />
+                          </Button>
+
+                          {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
+                            <>
+                              {!order.isStringServiceApplied ? (
+                                <Button
+                                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                  onClick={() => router.push(`/services/apply?orderId=${order.id}`)}
+                                >
+                                  <ShoppingBag className="w-4 h-4 mr-2" />
+                                  스트링 장착 신청
+                                </Button>
+                              ) : (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 cursor-default">
+                                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                                        스트링 신청 완료
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="text-sm">
+                                      이미 신청이 완료된 주문입니다
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-                <h3 className="text-lg font-medium mb-2">조회된 주문이 없습니다</h3>
-                <p className="text-sm text-gray-500 text-center mb-6">
-                  입력하신 정보와 일치하는 주문 내역이 없습니다.
-                  <br />
-                  주문 시 입력한 정보를 다시 확인해주세요.
-                </p>
-                <Button onClick={handleGoBack}>주문 조회 페이지로 돌아가기</Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+                    <ShoppingBag className="h-10 w-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-4">조회된 주문이 없습니다</h3>
+                  <p className="text-gray-600 text-center mb-8 max-w-md">
+                    입력하신 정보와 일치하는 주문 내역이 없습니다.
+                    <br />
+                    주문 시 입력한 정보를 다시 확인해주세요.
+                  </p>
+                  <Button onClick={handleGoBack} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    주문 조회 페이지로 돌아가기
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

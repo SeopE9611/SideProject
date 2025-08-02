@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle, Package, User, Phone, Truck, Clock, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { bankLabelMap } from '@/lib/constants';
+import Image from 'next/image';
 
 // 주문 상세 타입 정의
 interface OrderDetail {
@@ -28,17 +29,45 @@ interface OrderDetail {
   totalPrice: number;
   shippingFee: number;
   status: string;
-  paymentMethod?: string; //  선택적 필드로 추가
-  trackingNumber?: string; // 선택적 필드로 추가
+  paymentMethod?: string;
+  trackingNumber?: string;
   items: {
-    id?: string; //  선택적 필드로 추가
+    id?: string;
     name: string;
-    option?: string; // 선택적 필드로 추가
+    option?: string;
     price: number;
     quantity: number;
     image?: string;
   }[];
 }
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case '배송완료':
+      return <CheckCircle className="w-5 h-5" />;
+    case '배송중':
+      return <Truck className="w-5 h-5" />;
+    case '배송준비중':
+      return <Clock className="w-5 h-5" />;
+    default:
+      return <Package className="w-5 h-5" />;
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case '배송완료':
+      return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    case '배송중':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case '배송준비중':
+      return 'bg-amber-100 text-amber-800 border-amber-200';
+    case '주문취소':
+      return 'bg-red-100 text-red-800 border-red-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+};
 
 export default function OrderDetailPage() {
   const params = useParams();
@@ -88,21 +117,35 @@ export default function OrderDetailPage() {
   // 로딩 상태
   if (loading) {
     return (
-      <div className="container mx-auto py-10 px-4 md:px-6">
-        <div className="max-w-3xl mx-auto">
-          <Card className="shadow-md">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">주문 상세 정보</CardTitle>
-              <CardDescription className="text-center">주문 정보를 불러오는 중입니다...</CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-center items-center py-12">
-              <div className="animate-pulse flex flex-col items-center">
-                <div className="h-12 w-12 rounded-full bg-gray-200 mb-4"></div>
-                <div className="h-4 w-48 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 w-32 bg-gray-200 rounded"></div>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative container mx-auto px-4 py-16">
+            <div className="text-center text-white">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+                <Package className="w-8 h-8 animate-pulse" />
               </div>
-            </CardContent>
-          </Card>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 상세 정보</h1>
+              <p className="text-xl text-emerald-100">주문 정보를 불러오는 중입니다...</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto py-12 px-4 md:px-6">
+          <div className="max-w-4xl mx-auto">
+            <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+              <CardContent className="flex justify-center items-center py-16">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mb-6">
+                    <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">주문 정보 로딩 중</h3>
+                  <p className="text-gray-600">잠시만 기다려주세요...</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -111,18 +154,39 @@ export default function OrderDetailPage() {
   // 에러 상태
   if (error) {
     return (
-      <div className="container mx-auto py-10 px-4 md:px-6">
-        <div className="max-w-3xl mx-auto">
-          <Card className="shadow-md">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">주문 상세 정보 오류</CardTitle>
-              <CardDescription className="text-center">주문 정보를 불러오는 중 문제가 발생했습니다</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-red-500 mb-6">{error}</p>
-              <Button onClick={handleGoBack}>이전 페이지로 돌아가기</Button>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-pink-600">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative container mx-auto px-4 py-16">
+            <div className="text-center text-white">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+                <Package className="w-8 h-8" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 상세 정보 오류</h1>
+              <p className="text-xl text-red-100">주문 정보를 불러오는 중 문제가 발생했습니다</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto py-12 px-4 md:px-6">
+          <div className="max-w-4xl mx-auto">
+            <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-6">
+                    <Package className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">오류가 발생했습니다</h3>
+                  <p className="text-red-600 mb-8 max-w-md">{error}</p>
+                  <Button onClick={handleGoBack} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    이전 페이지로 돌아가기
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -133,176 +197,259 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="container mx-auto py-10 px-4 md:px-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6">
-          <Button variant="ghost" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground" onClick={handleGoBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            주문 목록으로 돌아가기
-          </Button>
-        </div>
-
-        <Card className="shadow-md mb-6">
-          <CardHeader className="space-y-1">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-              <div>
-                <CardTitle className="text-2xl font-bold">주문 상세 정보</CardTitle>
-                <CardDescription className="mt-1">주문번호: {order._id}</CardDescription>
-              </div>
-              <div className="mt-2 md:mt-0">
-                <span
-                  className={`text-sm px-3 py-1 rounded-full ${
-                    order.status === '배송완료' ? 'bg-green-100 text-green-800' : order.status === '배송중' ? 'bg-blue-100 text-blue-800' : order.status === '배송준비중' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                  }`}
-                >
-                  {order.status}
-                </span>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative container mx-auto px-4 py-16">
+          <div className="text-center text-white">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+              <Package className="w-8 h-8" />
             </div>
-          </CardHeader>
-          <Separator />
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 상세 정보</h1>
+            <p className="text-xl text-emerald-100">주문번호: {order._id.slice(-8)}</p>
+            <div className="mt-4">
+              <span className={`inline-flex items-center gap-2 text-lg px-4 py-2 rounded-full border-2 font-semibold ${getStatusColor(order.status)} bg-white/20 backdrop-blur-sm border-white/30 text-white`}>
+                {getStatusIcon(order.status)}
+                {order.status}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto py-12 px-4 md:px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Back Button */}
+          <div className="mb-8">
+            <Button variant="ghost" className="inline-flex items-center text-sm text-muted-foreground hover:text-emerald-600 transition-colors group" onClick={handleGoBack}>
+              <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+              주문 목록으로 돌아가기
+            </Button>
+          </div>
+
+          {/* String Service Alert */}
           {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
-            <>
-              {!order.isStringServiceApplied ? (
-                <div className="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded-md text-sm text-yellow-900">
-                  <p className="mb-2 font-medium">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
-                  <Link href={`/services/apply?orderId=${order._id}`} className="inline-block px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md text-sm">
-                    스트링 장착 서비스 신청하기
-                  </Link>
-                </div>
-              ) : (
-                <div className="mt-6 p-4 bg-green-50 border border-green-300 rounded-md text-sm text-green-800 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="font-medium">이 주문은 스트링 장착 서비스가 신청 완료되었습니다.</span>
-                </div>
-              )}
-            </>
+            <Card className="mb-8 border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+              <CardContent className="p-6">
+                {!order.isStringServiceApplied ? (
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
+                      <ShoppingBag className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-amber-800 mb-2">스트링 장착 서비스 신청 가능</h3>
+                      <p className="text-amber-700 mb-4">이 주문은 스트링 장착 서비스가 포함되어 있습니다. 아래 버튼을 클릭하여 신청해주세요.</p>
+                      <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors">
+                        <ShoppingBag className="w-4 h-4 mr-2" />
+                        스트링 장착 서비스 신청하기
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-emerald-800 mb-1">스트링 장착 서비스 신청 완료</h3>
+                      <p className="text-emerald-700">이 주문의 스트링 장착 서비스 신청이 완료되었습니다.</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           )}
 
-          <CardContent className="pt-6">
-            <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8">
               {/* 주문 정보 */}
-              <div>
-                <h3 className="text-lg font-medium flex items-center mb-3">
-                  <Calendar className="mr-2 h-5 w-5 text-primary" />
-                  주문 정보
-                </h3>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm text-muted-foreground">주문일자</dt>
-                      <dd>{new Date(order.createdAt).toLocaleDateString()}</dd>
+              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-white" />
                     </div>
-                    <dt className="text-sm text-muted-foreground">입금 계좌</dt>
-                    {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
-                      <div className="rounded-md bg-gray-100 px-4 py-3 border border-gray-200 text-sm text-gray-800 space-y-1 mt-2">
-                        <div className="font-medium">{order.paymentInfo.method}</div>
-                        <div className="font-medium">{bankLabelMap[order.paymentInfo.bank].label}</div>
-                        <div className="font-mono">{bankLabelMap[order.paymentInfo.bank].account}</div>
-                        <div className="text-sm text-muted-foreground">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</div>
+                    <CardTitle className="text-xl font-bold">주문 정보</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">주문일자</p>
+                        <p className="font-semibold">{new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
-                    ) : (
-                      <p className="text-muted-foreground">선택된 은행 없음</p>
-                    )}
-                  </dl>
-                </div>
-              </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">주문번호</p>
+                        <p className="font-mono text-sm bg-gray-100 px-3 py-1 rounded">{order._id}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-2">입금 계좌</p>
+                      {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
+                        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4">
+                          <div className="space-y-2">
+                            <p className="font-semibold text-emerald-800">{order.paymentInfo.method}</p>
+                            <p className="font-semibold text-emerald-700">{bankLabelMap[order.paymentInfo.bank].label}</p>
+                            <p className="font-mono text-emerald-600">{bankLabelMap[order.paymentInfo.bank].account}</p>
+                            <p className="text-sm text-emerald-600">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">선택된 은행 없음</p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* 배송 정보 */}
-              <div>
-                <h3 className="text-lg font-medium flex items-center mb-3">
-                  <MapPin className="mr-2 h-5 w-5 text-primary" />
-                  배송 정보
-                </h3>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm text-muted-foreground">수령인</dt>
-                      <dd>{order.shippingInfo.name}</dd>
+              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full flex items-center justify-center">
+                      <MapPin className="w-5 h-5 text-white" />
                     </div>
-                    <div>
-                      <dt className="text-sm text-muted-foreground">연락처</dt>
-                      <dd>{order.shippingInfo.phone}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-muted-foreground">배송지</dt>
-                      <dd>{order.shippingInfo.address}</dd>
-                    </div>
-                    {order.trackingNumber && (
-                      <div>
-                        <dt className="text-sm text-muted-foreground">운송장 번호</dt>
-                        <dd className="flex items-center">
-                          {order.trackingNumber}
-                          <Button variant="link" className="h-auto p-0 ml-2 text-primary">
-                            배송 조회
-                          </Button>
-                        </dd>
+                    <CardTitle className="text-xl font-bold">배송 정보</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <User className="w-5 h-5 text-emerald-600" />
+                        <div>
+                          <p className="text-sm text-gray-500">수령인</p>
+                          <p className="font-semibold">{order.shippingInfo.name}</p>
+                        </div>
                       </div>
-                    )}
-                  </dl>
-                </div>
-              </div>
-
-              {/* 주문 상품 */}
-              <div>
-                <h3 className="text-lg font-medium flex items-center mb-3">
-                  <ShoppingBag className="mr-2 h-5 w-5 text-primary" />
-                  주문 상품
-                </h3>
-                <div className="space-y-4">
-                  {order.items.map((item) => (
-                    <div key={item.id} className="flex flex-col md:flex-row border rounded-lg p-4">
-                      <div className="flex-shrink-0 w-full md:w-auto flex justify-center md:justify-start mb-4 md:mb-0">
-                        <img src={item.image || '/placeholder.svg'} alt={item.name} className="w-20 h-20 object-cover rounded" />
-                      </div>
-                      <div className="flex-grow md:ml-4">
-                        <h4 className="font-medium">{item.name}</h4>
-                        <p className="text-sm text-muted-foreground mt-1">{item.option}</p>
-                        <div className="flex flex-col md:flex-row md:items-center justify-between mt-2">
-                          <p className="text-sm">
-                            {formatCurrency(item.price)} × {item.quantity}개
-                          </p>
-                          <p className="font-medium mt-1 md:mt-0">{formatCurrency(item.price * item.quantity)}</p>
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <Phone className="w-5 h-5 text-teal-600" />
+                        <div>
+                          <p className="text-sm text-gray-500">연락처</p>
+                          <p className="font-semibold">{order.shippingInfo.phone}</p>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="space-y-4">
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-500 mb-1">배송지</p>
+                        <p className="font-semibold">{order.shippingInfo.address}</p>
+                      </div>
+                      {order.trackingNumber && (
+                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <Truck className="w-5 h-5 text-blue-600" />
+                          <div className="flex-1">
+                            <p className="text-sm text-blue-600 mb-1">운송장 번호</p>
+                            <p className="font-mono font-semibold text-blue-800">{order.trackingNumber}</p>
+                          </div>
+                          <Button variant="link" className="text-blue-600 hover:text-blue-700 p-0">
+                            배송 조회
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* 결제 정보 */}
-              <div>
-                <h3 className="text-lg font-medium flex items-center mb-3">
-                  <CreditCard className="mr-2 h-5 w-5 text-primary" />
-                  결제 정보
-                </h3>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <dl className="space-y-2">
-                    <div className="flex justify-between">
-                      <dt>상품 금액</dt>
-                      <dd>{formatCurrency(order.totalPrice - order.shippingFee)}</dd>
+              {/* 주문 상품 */}
+              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
+                      <ShoppingBag className="w-5 h-5 text-white" />
                     </div>
-                    <div className="flex justify-between">
-                      <dt>배송비</dt>
-                      <dd>{formatCurrency(order.shippingFee)}</dd>
-                    </div>
-                    <Separator className="my-2" />
-                    <div className="flex justify-between font-medium">
-                      <dt>총 결제금액</dt>
-                      <dd className="text-primary">{formatCurrency(order.totalPrice)}</dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
+                    <CardTitle className="text-xl font-bold">주문 상품</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {order.items.map((item, index) => (
+                      <div key={item.id || index} className="flex flex-col md:flex-row gap-4 p-4 border-2 border-gray-100 rounded-lg hover:border-emerald-200 transition-colors">
+                        <div className="flex-shrink-0 w-full md:w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
+                          <Image src={item.image || '/placeholder.svg'} alt={item.name} width={96} height={96} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 mb-1 truncate">{item.name}</h4>
+                          {item.option && <p className="text-sm text-gray-600 mb-2">{item.option}</p>}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center gap-4 text-sm text-gray-600">
+                              <span>단가: {formatCurrency(item.price)}</span>
+                              <span>수량: {item.quantity}개</span>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-lg text-emerald-600">{formatCurrency(item.price * item.quantity)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
 
-          <CardFooter className="flex justify-center pt-2 pb-6">
-            <Button variant="outline" onClick={handleGoBack}>
-              주문 목록으로 돌아가기
-            </Button>
-          </CardFooter>
-        </Card>
+            {/* Sidebar - 결제 정보 */}
+            <div className="lg:col-span-1">
+              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm sticky top-8">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                      <CreditCard className="w-5 h-5 text-white" />
+                    </div>
+                    <CardTitle className="text-xl font-bold">결제 정보</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-gray-600">상품 금액</span>
+                      <span className="font-semibold">{formatCurrency(order.totalPrice - order.shippingFee)}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-gray-600">배송비</span>
+                      <span className="font-semibold">{order.shippingFee > 0 ? formatCurrency(order.shippingFee) : '무료'}</span>
+                    </div>
+                    <Separator className="my-4" />
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-lg font-bold text-gray-900">총 결제금액</span>
+                      <span className="text-xl font-bold text-emerald-600">{formatCurrency(order.totalPrice)}</span>
+                    </div>
+
+                    {/* Benefits */}
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <Shield className="w-5 h-5 text-emerald-600" />
+                        <div>
+                          <p className="text-sm font-medium text-emerald-800">안전한 결제</p>
+                          <p className="text-xs text-emerald-600">SSL 보안 결제 시스템</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <Truck className="w-5 h-5 text-blue-600" />
+                        <div>
+                          <p className="text-sm font-medium text-blue-800">배송 보장</p>
+                          <p className="text-xs text-blue-600">30,000원 이상 무료배송</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+
+                <CardFooter className="pt-6">
+                  <Button variant="outline" onClick={handleGoBack} className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 bg-transparent">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    주문 목록으로 돌아가기
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
