@@ -62,8 +62,8 @@ export default async function AdminDashboardPage() {
   const additionalStats = [
     {
       title: '월 매출',
-      value: '₩45,230,000',
-      change: '+18.7%',
+      value: '₩99,999,999',
+      change: '+99.9%',
       trend: 'up',
       icon: <DollarSign className="h-6 w-6" />,
       description: '지난 달 대비',
@@ -73,8 +73,8 @@ export default async function AdminDashboardPage() {
     },
     {
       title: '방문자 수',
-      value: '12,847',
-      change: '+9.4%',
+      value: '10,597',
+      change: '+99.9%',
       trend: 'up',
       icon: <Activity className="h-6 w-6" />,
       description: '지난 달 대비',
@@ -84,8 +84,8 @@ export default async function AdminDashboardPage() {
     },
     {
       title: '평균 체류 시간',
-      value: '4분 32초',
-      change: '+12.3%',
+      value: '18분 18초',
+      change: '+99.9%',
       trend: 'up',
       icon: <Clock className="h-6 w-6" />,
       description: '지난 달 대비',
@@ -95,8 +95,8 @@ export default async function AdminDashboardPage() {
     },
     {
       title: '전환율',
-      value: '3.8%',
-      change: '+0.7%',
+      value: '18.18%',
+      change: '+99.9%',
       trend: 'up',
       icon: <TrendingUp className="h-6 w-6" />,
       description: '지난 달 대비',
