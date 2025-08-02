@@ -6,7 +6,7 @@ import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import AccessDenied from '@/components/system/AccessDenied';
 
 export const metadata = {
-  title: 'Admin – Dokkaebi Tennis Academy',
+  title: '관리자 페이지 - 도깨비 테니스 아카데미',
 };
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
