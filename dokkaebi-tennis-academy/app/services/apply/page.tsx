@@ -4,23 +4,18 @@ import type React from 'react';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useSearchParams } from 'next/navigation';
-import StringSelector from '@/app/services/_components/StringCheckboxes';
-import { Order } from '@/lib/types/order';
-import PreferredTimeSelector from '@/app/services/_components/TimeSlotSelector';
+import type { Order } from '@/lib/types/order';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
-import { useAuthStore } from '@/app/store/authStore';
-import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { bankLabelMap } from '@/lib/constants';
-import { useTokenRefresher } from '@/app/api/auth/useTokenRefresher';
 import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
+import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -35,7 +30,8 @@ export default function StringServiceApplyPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
-  const [isMember, setIsMember] = useState(false); // 회원 여부 판단
+  const [isMember, setIsMember] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -62,7 +58,6 @@ export default function StringServiceApplyPage() {
 
   // 체크박스 변화 콜백
   const handleStringTypesChange = (ids: string[]) => setFormData((prev) => ({ ...prev, stringTypes: ids }));
-
   const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
 
   useEffect(() => {
@@ -160,7 +155,7 @@ export default function StringServiceApplyPage() {
 
   const handleOpenPostcode = () => {
     new window.daum.Postcode({
-      oncomplete: function (data: any) {
+      oncomplete: (data: any) => {
         setFormData((prev) => ({
           ...prev,
           shippingAddress: data.roadAddress,
@@ -173,7 +168,11 @@ export default function StringServiceApplyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 공통 필수 필드만 먼저 검증
+    // 마지막 단계(5단계)가 아니면 제출하지 않음
+    if (currentStep !== 5) {
+      return;
+    }
+
     if (!formData.name || !formData.phone || !formData.racketType || !formData.preferredDate) {
       showErrorToast('필수 항목을 모두 입력해주세요.');
       return;
@@ -205,8 +204,6 @@ export default function StringServiceApplyPage() {
     }
 
     setIsSubmitting(true);
-
-    // const stringToSave = formData.stringType === 'custom' ? formData.customStringType.trim() : formData.stringType.trim();
 
     const payload = {
       name: formData.name,
@@ -255,217 +252,447 @@ export default function StringServiceApplyPage() {
       setIsSubmitting(false);
     }
   };
-  // console.log('formData.preferredDate:', formData.preferredDate);
+
+  const steps = [
+    { id: 1, title: '신청자 정보', icon: User, description: '기본 정보를 입력해주세요' },
+    { id: 2, title: '장착 정보', icon: Racquet, description: '라켓과 스트링 정보를 선택해주세요' },
+    { id: 3, title: '결제 정보', icon: CreditCard, description: '결제 방법을 선택해주세요' },
+    { id: 4, title: '추가 요청', icon: CheckCircle, description: '추가 요청사항을 입력해주세요' },
+  ];
+
+  const getCurrentStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-4">
+                <User className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">신청자 정보</h2>
+              <p className="text-muted-foreground">정확한 정보를 입력해주세요</p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium">
+                  신청인 이름 <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  readOnly={!!(orderId || isMember)}
+                  className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+                  placeholder="이름을 입력해주세요"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">
+                  이메일 <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  readOnly={!!(orderId || isMember)}
+                  className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+                  placeholder="이메일을 입력해주세요"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium">
+                  연락처 <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  readOnly={!!(orderId || isMember)}
+                  className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+                  placeholder="010-1234-5678"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="shippingPostcode" className="text-sm font-medium">
+                  우편번호 <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="shippingPostcode"
+                  name="shippingPostcode"
+                  value={formData.shippingPostcode}
+                  onChange={handleInputChange}
+                  readOnly={!!(orderId || isMember)}
+                  className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+                  placeholder="우편번호"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="shippingAddress" className="text-sm font-medium">
+                  주소 <span className="text-red-500">*</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="shippingAddress"
+                    name="shippingAddress"
+                    value={formData.shippingAddress}
+                    onChange={handleInputChange}
+                    readOnly={!!(orderId || isMember)}
+                    className={`flex-1 transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+                    placeholder="주소를 입력해주세요"
+                  />
+                  {!orderId && !isMember && (
+                    <Button type="button" variant="outline" onClick={handleOpenPostcode} className="whitespace-nowrap hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 bg-transparent">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      주소 검색
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="shippingAddressDetail" className="text-sm font-medium">
+                  상세 주소
+                </Label>
+                <Input
+                  id="shippingAddressDetail"
+                  name="shippingAddressDetail"
+                  value={formData.shippingAddressDetail}
+                  onChange={handleInputChange}
+                  readOnly={!!(orderId || isMember)}
+                  className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+                  placeholder="상세 주소를 입력해주세요"
+                />
+              </div>
+            </div>
+
+            {(orderId || isMember) && (
+              <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <Shield className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-medium text-orange-800 mb-1">📢 안내사항</p>
+                    <p className="text-orange-700 leading-relaxed">
+                      신청자 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로 작성됩니다. 회원정보를 수정하셨더라도 <span className="font-semibold">신청자 정보는 변경되지 않습니다.</span>
+                      <br />
+                      변경이 필요한 경우, <span className="text-orange-600 font-semibold">추가 요청사항</span>에 기재해주세요.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-blue-600 mb-4">
+                <Racquet className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">장착 정보</h2>
+              <p className="text-muted-foreground">라켓과 스트링 정보를 선택해주세요</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="racketType" className="text-sm font-medium">
+                  라켓 종류 <span className="text-red-500">*</span>
+                </Label>
+                <Input id="racketType" name="racketType" value={formData.racketType} onChange={handleInputChange} placeholder="예: 윌슨 프로 스태프 97" className="focus:ring-2 focus:ring-green-500 transition-all duration-200" />
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">
+                    스트링 종류 <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="mt-2 space-y-2">
+                    <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <Zap className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm text-red-700">
+                          <p className="font-medium mb-1">⚠️ 중요 안내</p>
+                          <p>• 두 개 이상의 스트링을 교체 원하신 경우, 직접 입력하기를 선택하여 아래에 상세히 적어주세요.</p>
+                          <p>• 이미 보유하고 계신 스트링으로 작성하셔도 됩니다.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <StringCheckboxes
+                  items={(order?.items ?? [])
+                    .filter((i) => i.mountingFee !== undefined)
+                    .map((i) => ({
+                      id: i.id,
+                      name: i.name,
+                      mountingFee: i.mountingFee!,
+                    }))}
+                  stringTypes={formData.stringTypes}
+                  customInput={formData.customStringType}
+                  onChange={handleStringTypesChange}
+                  onCustomInputChange={handleCustomInputChange}
+                />
+
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <Award className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                    <div className="text-sm">
+                      {formData.stringTypes.includes('custom') ? (
+                        <div className="text-blue-700">
+                          <p className="font-medium">💡 가격은 접수 후 안내됩니다.</p>
+                          <p className="text-xs text-blue-600 mt-1">기본 장착 금액: 15,000원</p>
+                        </div>
+                      ) : (
+                        <p className="font-medium text-blue-700">💰 총 장착 금액: {price.toLocaleString()}원</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="preferredDate" className="text-sm font-medium">
+                    장착 희망일 <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="preferredDate"
+                    name="preferredDate"
+                    type="date"
+                    value={formData.preferredDate}
+                    onChange={handleInputChange}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="focus:ring-2 focus:ring-green-500 transition-all duration-200"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">희망 시간대</Label>
+                  <TimeSlotSelector selected={formData.preferredTime} selectedDate={formData.preferredDate} onSelect={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))} />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 mb-4">
+                <CreditCard className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
+              <p className="text-muted-foreground">결제 방법을 선택해주세요</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="shippingBank" className="text-sm font-medium">
+                  은행 선택 <span className="text-red-500">*</span>
+                </Label>
+                <select
+                  id="shippingBank"
+                  name="shippingBank"
+                  value={formData.shippingBank}
+                  onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })}
+                  className="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="" disabled hidden>
+                    입금하실 은행을 선택해주세요.
+                  </option>
+                  {Object.entries(bankLabelMap).map(([key, info]) => (
+                    <option key={key} value={key}>
+                      {info.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {formData.shippingBank && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                  <h3 className="font-semibold text-blue-900 mb-4 flex items-center">
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    계좌 정보
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <span className="text-sm text-gray-600">은행</span>
+                      <span className="font-medium text-gray-900">{bankLabelMap[formData.shippingBank].label}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <span className="text-sm text-gray-600">계좌번호</span>
+                      <span className="font-mono font-medium text-gray-900">{bankLabelMap[formData.shippingBank].account}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <span className="text-sm text-gray-600">예금주</span>
+                      <span className="font-medium text-gray-900">{bankLabelMap[formData.shippingBank].holder}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="shippingDepositor" className="text-sm font-medium">
+                  입금자명 <span className="text-red-500">*</span>
+                </Label>
+                <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} placeholder="입금자명을 입력하세요" className="focus:ring-2 focus:ring-purple-500 transition-all duration-200" />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-teal-600 mb-4">
+                <CheckCircle className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">추가 요청사항</h2>
+              <p className="text-muted-foreground">특별한 요청사항이 있으시면 입력해주세요</p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <CheckCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-amber-700">
+                    <p className="font-medium mb-1">💡 안내사항</p>
+                    <p>두 개 이상의 라켓 또는 스트링을 신청하신 경우, 장착 요청 내용을 아래에 자세히 적어주세요.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="requirements" className="text-sm font-medium">
+                  요청사항
+                </Label>
+                <Textarea
+                  id="requirements"
+                  name="requirements"
+                  value={formData.requirements}
+                  onChange={handleInputChange}
+                  placeholder="예: 첫 번째 라켓에는 RPM Blast, 두 번째 라켓에는 Xcel 장착 요청"
+                  rows={6}
+                  className="resize-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">스트링 장착 서비스 신청</CardTitle>
-            <CardDescription className="text-center text-gray-600">전문가가 직접 라켓에 스트링을 장착해드립니다. 신청서를 작성해주시면 빠르게 연락드리겠습니다.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* 신청인 이름 */}
-              <div className="space-y-8">
-                {/* 신청자 정보 */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">📌 신청자 정보</CardTitle>
-                    <CardDescription className="text-sm leading-relaxed text-orange-600">
-                      <span className="font-medium">📢 안내:</span> 신청자 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로 작성됩니다. 회원정보를 수정하셨더라도{' '}
-                      <span className="font-semibold">신청자 정보는 변경되지 않습니다.</span>
-                      <br />
-                      변경이 필요한 경우, <span className="text-primary font-semibold">요청사항</span>에 기재해주세요.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">신청인 이름</Label>
-                      <Input id="name" name="name" value={formData.name} onChange={handleInputChange} readOnly={!!(orderId || isMember)} className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 py-16">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative container mx-auto px-4 text-center text-white">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-6">
+            <Racquet className="h-10 w-10" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">스트링 장착 서비스 신청</h1>
+          <p className="text-xl text-blue-100 max-w-2xl mx-auto">전문가가 직접 라켓에 스트링을 장착해드립니다</p>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto">
+          {/* Progress Steps */}
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-8">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${
+                        currentStep >= step.id ? 'bg-gradient-to-r from-blue-500 to-purple-600 border-transparent text-white' : 'border-gray-300 text-gray-400 bg-white'
+                      }`}
+                    >
+                      <step.icon className="h-6 w-6" />
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">이메일</Label>
-                      <Input id="email" name="email" value={formData.email} onChange={handleInputChange} readOnly={!!(orderId || isMember)} className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''} />
+                    <div className="mt-2 text-center">
+                      <p className={`text-sm font-medium ${currentStep >= step.id ? 'text-blue-600' : 'text-gray-400'}`}>{step.title}</p>
+                      <p className="text-xs text-gray-500 mt-1 hidden sm:block">{step.description}</p>
                     </div>
+                  </div>
+                  {index < steps.length - 1 && <div className={`flex-1 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.id ? 'bg-gradient-to-r from-blue-500 to-purple-600' : 'bg-gray-300'}`} />}
+                </div>
+              ))}
+            </div>
+          </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">연락처</Label>
-                      <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} readOnly={!!(orderId || isMember)} className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="shippingAddress">주소</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="shippingAddress"
-                          name="shippingAddress"
-                          value={formData.shippingAddress}
-                          onChange={handleInputChange}
-                          readOnly={!!(orderId || isMember)}
-                          className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''}
-                        />
-                        {!orderId && !isMember && (
-                          <Button type="button" variant="outline" onClick={handleOpenPostcode}>
-                            주소 검색
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl">
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit}>
+                {getCurrentStepContent()}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="shippingAddressDetail">상세 주소</Label>
-                      <Input
-                        id="shippingAddressDetail"
-                        name="shippingAddressDetail"
-                        value={formData.shippingAddressDetail}
-                        onChange={handleInputChange}
-                        readOnly={!!(orderId || isMember)}
-                        className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''}
-                      />
-                    </div>
+                <div className="flex justify-between mt-12 pt-8 border-t">
+                  <Button type="button" variant="outline" onClick={() => setCurrentStep(Math.max(1, currentStep - 1))} disabled={currentStep === 1} className="px-8 py-3 hover:bg-gray-50 transition-colors duration-200">
+                    이전
+                  </Button>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="shippingPostcode">우편번호</Label>
-                      <Input
-                        id="shippingPostcode"
-                        name="shippingPostcode"
-                        value={formData.shippingPostcode}
-                        onChange={handleInputChange}
-                        readOnly={!!(orderId || isMember)}
-                        className={orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''}
-                      />
-                    </div>
-                    {/* <div className="space-y-2">
-                      <Label htmlFor="shippingDepositor">입금자명</Label>
-                      <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} />
-                    </div> */}
-                    {/* <div className="space-y-2">
-                      <Label htmlFor="shippingRequest">요청사항</Label>
-                      <Textarea id="shippingRequest" name="shippingRequest" value={formData.shippingRequest} onChange={handleInputChange} />
-                    </div> */}
-                  </CardContent>
-                </Card>
+                  {currentStep < 4 ? (
+                    <Button type="button" onClick={() => setCurrentStep(Math.min(4, currentStep + 1))} className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white transition-all duration-200">
+                      다음
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white transition-all duration-200 disabled:opacity-50">
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          신청서 제출 중...
+                        </>
+                      ) : (
+                        <>
+                          신청서 제출하기
+                          <CheckCircle className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </CardContent>
+          </Card>
 
-                {/* 장착 정보 */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">🎾 장착 정보</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* 라켓 */}
-                    <div className="space-y-2">
-                      <Label htmlFor="racketType">
-                        라켓 종류 <span className="text-red-500">*</span>
-                      </Label>
-                      <Input id="racketType" name="racketType" value={formData.racketType} onChange={handleInputChange} placeholder="예: 윌슨 프로 스태프 97" />
-                    </div>
-
-                    {/* 스트링 */}
-                    <div className="space-y-2">
-                      <Label>
-                        스트링 종류 <span className="text-red-500">*</span>
-                      </Label>
-                      <p className="text-sm text-muted-foreground text-red-500">※ 두 개 이상의 스트링을 교체 원하신 경우, 직접 입력하기를 선택하여 아래에 상세히 적어주세요.</p>
-                      <p className="text-sm text-muted-foreground text-red-500">※ 이미 보유하고 계신 스트링으로 작성하셔도 됩니다.</p>
-                      <StringCheckboxes
-                        items={(order?.items ?? [])
-                          // mountingFee가 undefined인 경우 제거
-                          .filter((i) => i.mountingFee !== undefined)
-                          // id, name, mountingFee를 확실히 number로 매핑
-                          .map((i) => ({
-                            id: i.id,
-                            name: i.name,
-                            mountingFee: i.mountingFee!, // or i.mountingFee ?? 0
-                          }))}
-                        stringTypes={formData.stringTypes}
-                        customInput={formData.customStringType}
-                        onChange={handleStringTypesChange}
-                        onCustomInputChange={handleCustomInputChange}
-                      />
-                      {/* 가격 표시 영역 */}
-                      <div className="text-sm text-muted-foreground mt-2">
-                        {formData.stringTypes.includes('custom') ? (
-                          <>
-                            <div>💡 가격은 접수 후 안내됩니다.</div>
-                            <div className="text-xs text-muted-foreground">기본 장착 금액: 15,000원</div>
-                          </>
-                        ) : (
-                          <div>💰 금액: {price.toLocaleString()}원</div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 희망일 */}
-                    <div className="space-y-2">
-                      <Label htmlFor="preferredDate">
-                        장착 희망일 <span className="text-red-500">*</span>
-                      </Label>
-                      <Input id="preferredDate" name="preferredDate" type="date" value={formData.preferredDate} onChange={handleInputChange} min={new Date().toISOString().split('T')[0]} />
-                    </div>
-
-                    {/* 희망 시간대 */}
-                    <TimeSlotSelector selected={formData.preferredTime} selectedDate={formData.preferredDate} onSelect={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))} />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">🏦 결제 정보</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="shippingBank">은행</Label>
-                      <select id="shippingBank" name="shippingBank" value={formData.shippingBank} onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })} className="w-full border px-3 py-2 rounded-md bg-white">
-                        <option value="" disabled hidden>
-                          입금하실 은행을 선택해주세요.
-                        </option>
-                        {Object.entries(bankLabelMap).map(([key, info]) => (
-                          <option key={key} value={key}>
-                            {info.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {formData.shippingBank && (
-                      <div className="p-3 rounded-md border bg-muted text-sm space-y-1">
-                        <p>
-                          💳 <strong>계좌번호:</strong> {bankLabelMap[formData.shippingBank].account}
-                        </p>
-                        <p>
-                          👤 <strong>예금주:</strong> {bankLabelMap[formData.shippingBank].holder}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <Label htmlFor="shippingDepositor">입금자명</Label>
-                      <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} placeholder="입금자명을 입력하세요" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* 요청사항 */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">📝 추가 요청사항</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm text-muted-foreground text-red-500">※ 두 개 이상의 라켓 또는 스트링을 신청하신 경우, 장착 요청 내용을 아래에 자세히 적어주세요.</p>
-                    <Textarea id="requirements" name="requirements" value={formData.requirements} onChange={handleInputChange} placeholder="예: 첫 번째 라켓에는 RPM Blast, 두 번째 라켓에는 Xcel 장착 요청" rows={4} className="resize-none" />
-                  </CardContent>
-                </Card>
-
-                {/* 제출 버튼 */}
-                <Button type="submit" disabled={isSubmitting} className="w-full h-12 text-lg font-medium">
-                  {isSubmitting ? '신청서 제출 중...' : '신청서 제출하기'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
+              <Shield className="h-8 w-8 text-blue-500 mx-auto mb-3" />
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">정품 보장</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">100% 정품 스트링만 사용합니다</p>
+            </div>
+            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
+              <Clock className="h-8 w-8 text-green-500 mx-auto mb-3" />
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">당일 완료</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">빠르고 정확한 장착 서비스</p>
+            </div>
+            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
+              <Award className="h-8 w-8 text-purple-500 mx-auto mb-3" />
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">전문가 상담</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">15년 경력의 전문가가 직접</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
