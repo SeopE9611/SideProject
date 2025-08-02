@@ -133,457 +133,468 @@ export default function AcademyPage() {
   ];
 
   return (
-    <div className="flex flex-col">
-      {/* Hero 섹션 */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        {/* 배경 그라데이션 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-600 via-blue-600 to-purple-600">
-          <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=1200&text=Tennis+Academy')] bg-cover bg-center opacity-20"></div>
-          <div className="absolute inset-0 bg-black/20"></div>
-        </div>
+    <div className="relative">
+      {/* ▶ 고정된 오버레이 */}
+      <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 text-center">
+        <p className="text-white text-2xl md:text-4xl font-medium">
+          이 페이지는 사용하지 않습니다. (아카데미 페이지)
+          <br />
+          만일에 대비하여 냅둠 (임시 보관)
+        </p>
+      </div>
 
-        {/* 장식 요소 */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-24 h-24 bg-yellow-400/20 rounded-full blur-lg animate-bounce"></div>
-        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-green-400/30 rounded-full blur-md animate-pulse delay-1000"></div>
+      <div className="flex flex-col">
+        {/* Hero 섹션 */}
+        <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+          {/* 배경 그라데이션 */}
+          <div className="absolute inset-0 bg-gradient-to-br from-green-600 via-blue-600 to-purple-600">
+            <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=1200&text=Tennis+Academy')] bg-cover bg-center opacity-20"></div>
+            <div className="absolute inset-0 bg-black/20"></div>
+          </div>
 
-        <div className="container relative z-10 text-center text-white">
-          <div className="max-w-4xl mx-auto">
-            <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">
-              <Award className="w-4 h-4 mr-2" />
-              15년 전통의 테니스 교육 전문 기관
-            </Badge>
+          {/* 장식 요소 */}
+          <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-24 h-24 bg-yellow-400/20 rounded-full blur-lg animate-bounce"></div>
+          <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-green-400/30 rounded-full blur-md animate-pulse delay-1000"></div>
 
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-green-100 to-white bg-clip-text text-transparent">도깨비 테니스 아카데미</h1>
+          <div className="container relative z-10 text-center text-white">
+            <div className="max-w-4xl mx-auto">
+              <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                <Award className="w-4 h-4 mr-2" />
+                15년 전통의 테니스 교육 전문 기관
+              </Badge>
 
-            <p className="text-xl md:text-2xl mb-8 text-green-100 leading-relaxed">
-              누구나 즐길 수 있는 체계적인 테니스 프로그램
-              <br />
-              <span className="text-yellow-300 font-semibold">당신의 테니스 실력을 한 단계 업그레이드하세요</span>
-            </p>
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-green-100 to-white bg-clip-text text-transparent">도깨비 테니스 아카데미</h1>
 
-            {/* 통계 정보 */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-3xl font-bold text-yellow-300">240+</div>
-                <div className="text-sm text-green-100">수강생</div>
+              <p className="text-xl md:text-2xl mb-8 text-green-100 leading-relaxed">
+                누구나 즐길 수 있는 체계적인 테니스 프로그램
+                <br />
+                <span className="text-yellow-300 font-semibold">당신의 테니스 실력을 한 단계 업그레이드하세요</span>
+              </p>
+
+              {/* 통계 정보 */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                  <div className="text-3xl font-bold text-yellow-300">240+</div>
+                  <div className="text-sm text-green-100">수강생</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                  <div className="text-3xl font-bold text-yellow-300">15년</div>
+                  <div className="text-sm text-green-100">운영 경력</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                  <div className="text-3xl font-bold text-yellow-300">96%</div>
+                  <div className="text-sm text-green-100">만족도</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                  <div className="text-3xl font-bold text-yellow-300">4.8</div>
+                  <div className="text-sm text-green-100">평점</div>
+                </div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-3xl font-bold text-yellow-300">15년</div>
-                <div className="text-sm text-green-100">운영 경력</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-3xl font-bold text-yellow-300">96%</div>
-                <div className="text-sm text-green-100">만족도</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-3xl font-bold text-yellow-300">4.8</div>
-                <div className="text-sm text-green-100">평점</div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
+                  <Link href="#apply">
+                    <Calendar className="w-5 h-5 mr-2" />
+                    수강 신청하기
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm bg-transparent" asChild>
+                  <Link href="#programs">
+                    <ArrowRight className="w-5 h-5 mr-2" />
+                    프로그램 둘러보기
+                  </Link>
+                </Button>
               </div>
             </div>
+          </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
-                <Link href="#apply">
-                  <Calendar className="w-5 h-5 mr-2" />
-                  수강 신청하기
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm bg-transparent" asChild>
-                <Link href="#programs">
-                  <ArrowRight className="w-5 h-5 mr-2" />
-                  프로그램 둘러보기
-                </Link>
-              </Button>
+          {/* 스크롤 인디케이터 */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
+              <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-pulse"></div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* 스크롤 인디케이터 */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-pulse"></div>
-          </div>
-        </div>
-      </section>
+        {/* 프로그램 소개 섹션 */}
+        <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800" id="programs">
+          <div className="container">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                <Trophy className="w-4 h-4 mr-2" />
+                맞춤형 교육 프로그램
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">프로그램 소개</h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                도깨비 테니스 아카데미는 다양한 연령과 수준에 맞춘 프로그램을 제공합니다.
+                <br />
+                여러분의 목표와 일정에 맞는 프로그램을 선택해보세요.
+              </p>
+            </div>
 
-      {/* 프로그램 소개 섹션 */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800" id="programs">
-        <div className="container">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-              <Trophy className="w-4 h-4 mr-2" />
-              맞춤형 교육 프로그램
-            </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">프로그램 소개</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              도깨비 테니스 아카데미는 다양한 연령과 수준에 맞춘 프로그램을 제공합니다.
-              <br />
-              여러분의 목표와 일정에 맞는 프로그램을 선택해보세요.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {programs.map((program) => (
-              <Card
-                key={program.id}
-                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 ${
-                  program.isPopular ? 'ring-2 ring-purple-500 scale-105' : ''
-                }`}
-              >
-                {program.isPopular && (
-                  <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 text-sm font-bold rounded-bl-xl">
-                    <Star className="w-4 h-4 inline mr-1" />
-                    인기 프로그램
-                  </div>
-                )}
-
-                {/* 상단 그라데이션 바 */}
-                <div className={`h-2 bg-gradient-to-r ${program.color}`}></div>
-
-                <CardHeader className="text-center pb-4">
-                  <div className={`mx-auto mb-4 w-20 h-20 rounded-full bg-gradient-to-br ${program.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>{program.icon}</div>
-                  <CardTitle className="text-2xl font-bold mb-2">{program.title}</CardTitle>
-                  <CardDescription className="text-base">{program.description}</CardDescription>
-
-                  {/* 통계 정보 */}
-                  <div className="flex justify-center gap-4 mt-4">
-                    <div className="text-center">
-                      <div className="font-bold text-lg text-blue-600">{program.students}</div>
-                      <div className="text-xs text-gray-500">수강생</div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {programs.map((program) => (
+                <Card
+                  key={program.id}
+                  className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 ${
+                    program.isPopular ? 'ring-2 ring-purple-500 scale-105' : ''
+                  }`}
+                >
+                  {program.isPopular && (
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 text-sm font-bold rounded-bl-xl">
+                      <Star className="w-4 h-4 inline mr-1" />
+                      인기 프로그램
                     </div>
-                    <div className="text-center">
-                      <div className="font-bold text-lg text-green-600">{program.satisfaction}</div>
-                      <div className="text-xs text-gray-500">만족도</div>
-                    </div>
-                  </div>
-                </CardHeader>
+                  )}
 
-                <CardContent className="space-y-6">
-                  {/* 주요 특징 */}
-                  <div>
-                    <h4 className="font-semibold mb-3 flex items-center">
-                      <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                      프로그램 특징
-                    </h4>
-                    <ul className="space-y-2">
-                      {program.features.map((feature, index) => (
-                        <li key={index} className="flex items-start text-sm">
-                          <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${program.color} mt-2 mr-3 flex-shrink-0`}></div>
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {/* 상단 그라데이션 바 */}
+                  <div className={`h-2 bg-gradient-to-r ${program.color}`}></div>
 
-                  {/* 가격 정보 */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4">
-                    <div className="text-center">
-                      <div className="font-medium text-gray-700 dark:text-gray-300">수강료</div>
-                      <div className={`text-lg font-bold bg-gradient-to-r ${program.color} bg-clip-text text-transparent`}>{program.price}</div>
-                      <div className="text-sm text-gray-500 mt-1">{program.duration}</div>
-                    </div>
-                  </div>
-                </CardContent>
+                  <CardHeader className="text-center pb-4">
+                    <div className={`mx-auto mb-4 w-20 h-20 rounded-full bg-gradient-to-br ${program.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>{program.icon}</div>
+                    <CardTitle className="text-2xl font-bold mb-2">{program.title}</CardTitle>
+                    <CardDescription className="text-base">{program.description}</CardDescription>
 
-                <CardFooter>
-                  <Button className={`w-full bg-gradient-to-r ${program.color} hover:opacity-90 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300`} asChild>
-                    <Link href="#apply">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      신청하기
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 강사 소개 섹션 */}
-      <section className="py-20 bg-gradient-to-br from-blue-600 via-purple-600 to-green-500 relative overflow-hidden">
-        {/* 배경 패턴 */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('/placeholder.svg?height=400&width=400&text=Pattern')] bg-repeat opacity-20"></div>
-        </div>
-
-        <div className="container relative z-10">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-white/20 text-white border-white/30">
-              <Users className="w-4 h-4 mr-2" />
-              전문 코칭진
-            </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">강사 소개</h2>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
-              도깨비 테니스 아카데미의 전문 코치진을 소개합니다.
-              <br />
-              풍부한 경험과 전문 지식을 바탕으로 여러분의 테니스 실력 향상을 도와드립니다.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {coaches.map((coach) => (
-              <Card key={coach.id} className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white/95 backdrop-blur-sm dark:bg-gray-800/95">
-                <div className="relative overflow-hidden">
-                  <Image src={coach.image || '/placeholder.svg'} alt={coach.name} width={400} height={400} className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center">
-                    <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                    <span className="text-sm font-bold">{coach.rating}</span>
-                  </div>
-                </div>
-
-                <CardHeader>
-                  <div className="text-center">
-                    <CardTitle className="text-2xl font-bold mb-1">{coach.name}</CardTitle>
-                    <div className="text-blue-600 font-semibold mb-2">{coach.position}</div>
-                    <Badge variant="outline" className="mb-4">
-                      {coach.experience}
-                    </Badge>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{coach.description}</p>
-
-                  <div>
-                    <h4 className="font-semibold mb-2 flex items-center">
-                      <Target className="w-4 h-4 mr-2 text-blue-500" />
-                      전문 분야
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {coach.specialties.map((specialty, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {specialty}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold mb-2 flex items-center">
-                      <Award className="w-4 h-4 mr-2 text-green-500" />
-                      주요 경력
-                    </h4>
-                    <ul className="space-y-1">
-                      {coach.achievements.map((achievement, index) => (
-                        <li key={index} className="flex items-start text-sm">
-                          <CheckCircle className="w-3 h-3 mt-1 mr-2 text-green-500 flex-shrink-0" />
-                          <span>{achievement}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 아카데미 시설 섹션 */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
-        <div className="container">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-              <Award className="w-4 h-4 mr-2" />
-              최신 시설 완비
-            </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">아카데미 시설</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              최신 시설과 장비를 갖춘 도깨비 테니스 아카데미에서
-              <br />
-              최적의 환경에서 테니스를 배워보세요.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {facilities.map((facility, index) => (
-              <Card key={index} className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white dark:bg-gray-800">
-                <div className="relative overflow-hidden">
-                  <Image src={facility.image || '/placeholder.svg'} alt={facility.name} width={400} height={300} className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold mb-3">{facility.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">{facility.description}</p>
-
-                  <div className="space-y-2">
-                    {facility.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center text-sm">
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                        <span>{feature}</span>
+                    {/* 통계 정보 */}
+                    <div className="flex justify-center gap-4 mt-4">
+                      <div className="text-center">
+                        <div className="font-bold text-lg text-blue-600">{program.students}</div>
+                        <div className="text-xs text-gray-500">수강생</div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+                      <div className="text-center">
+                        <div className="font-bold text-lg text-green-600">{program.satisfaction}</div>
+                        <div className="text-xs text-gray-500">만족도</div>
+                      </div>
+                    </div>
+                  </CardHeader>
 
-      {/* 고객 후기 섹션 */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="container">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-              <Star className="w-4 h-4 mr-2" />
-              수강생 만족도 96%
-            </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">고객 후기</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              도깨비 테니스 아카데미를 수강한
-              <br />
-              수강생들의 생생한 후기입니다.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            {reviews.map((review, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white dark:bg-gray-800">
-                <CardContent className="p-8">
-                  <div className="flex items-center mb-4">
-                    <Image src={review.avatar || '/placeholder.svg'} alt={review.name} width={60} height={60} className="rounded-full mr-4" />
+                  <CardContent className="space-y-6">
+                    {/* 주요 특징 */}
                     <div>
-                      <h4 className="font-bold text-lg">{review.name}</h4>
-                      <p className="text-sm text-blue-600">{review.program}</p>
-                      <p className="text-xs text-gray-500">{review.date}</p>
+                      <h4 className="font-semibold mb-3 flex items-center">
+                        <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                        프로그램 특징
+                      </h4>
+                      <ul className="space-y-2">
+                        {program.features.map((feature, index) => (
+                          <li key={index} className="flex items-start text-sm">
+                            <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${program.color} mt-2 mr-3 flex-shrink-0`}></div>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* 가격 정보 */}
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4">
+                      <div className="text-center">
+                        <div className="font-medium text-gray-700 dark:text-gray-300">수강료</div>
+                        <div className={`text-lg font-bold bg-gradient-to-r ${program.color} bg-clip-text text-transparent`}>{program.price}</div>
+                        <div className="text-sm text-gray-500 mt-1">{program.duration}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+
+                  <CardFooter>
+                    <Button className={`w-full bg-gradient-to-r ${program.color} hover:opacity-90 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300`} asChild>
+                      <Link href="#apply">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        신청하기
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 강사 소개 섹션 */}
+        <section className="py-20 bg-gradient-to-br from-blue-600 via-purple-600 to-green-500 relative overflow-hidden">
+          {/* 배경 패턴 */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('/placeholder.svg?height=400&width=400&text=Pattern')] bg-repeat opacity-20"></div>
+          </div>
+
+          <div className="container relative z-10">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-white/20 text-white border-white/30">
+                <Users className="w-4 h-4 mr-2" />
+                전문 코칭진
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">강사 소개</h2>
+              <p className="text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+                도깨비 테니스 아카데미의 전문 코치진을 소개합니다.
+                <br />
+                풍부한 경험과 전문 지식을 바탕으로 여러분의 테니스 실력 향상을 도와드립니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {coaches.map((coach) => (
+                <Card key={coach.id} className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white/95 backdrop-blur-sm dark:bg-gray-800/95">
+                  <div className="relative overflow-hidden">
+                    <Image src={coach.image || '/placeholder.svg'} alt={coach.name} width={400} height={400} className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center">
+                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                      <span className="text-sm font-bold">{coach.rating}</span>
                     </div>
                   </div>
 
-                  <div className="flex mb-4">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    ))}
+                  <CardHeader>
+                    <div className="text-center">
+                      <CardTitle className="text-2xl font-bold mb-1">{coach.name}</CardTitle>
+                      <div className="text-blue-600 font-semibold mb-2">{coach.position}</div>
+                      <Badge variant="outline" className="mb-4">
+                        {coach.experience}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{coach.description}</p>
+
+                    <div>
+                      <h4 className="font-semibold mb-2 flex items-center">
+                        <Target className="w-4 h-4 mr-2 text-blue-500" />
+                        전문 분야
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {coach.specialties.map((specialty, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {specialty}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold mb-2 flex items-center">
+                        <Award className="w-4 h-4 mr-2 text-green-500" />
+                        주요 경력
+                      </h4>
+                      <ul className="space-y-1">
+                        {coach.achievements.map((achievement, index) => (
+                          <li key={index} className="flex items-start text-sm">
+                            <CheckCircle className="w-3 h-3 mt-1 mr-2 text-green-500 flex-shrink-0" />
+                            <span>{achievement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 아카데미 시설 섹션 */}
+        <section className="py-20 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
+          <div className="container">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                <Award className="w-4 h-4 mr-2" />
+                최신 시설 완비
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">아카데미 시설</h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                최신 시설과 장비를 갖춘 도깨비 테니스 아카데미에서
+                <br />
+                최적의 환경에서 테니스를 배워보세요.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {facilities.map((facility, index) => (
+                <Card key={index} className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white dark:bg-gray-800">
+                  <div className="relative overflow-hidden">
+                    <Image src={facility.image || '/placeholder.svg'} alt={facility.name} width={400} height={300} className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
 
-                  <blockquote className="text-gray-700 dark:text-gray-300 italic leading-relaxed">"{review.comment}"</blockquote>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-bold mb-3">{facility.name}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">{facility.description}</p>
+
+                    <div className="space-y-2">
+                      {facility.features.map((feature, idx) => (
+                        <div key={idx} className="flex items-center text-sm">
+                          <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 고객 후기 섹션 */}
+        <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+          <div className="container">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                <Star className="w-4 h-4 mr-2" />
+                수강생 만족도 96%
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">고객 후기</h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                도깨비 테니스 아카데미를 수강한
+                <br />
+                수강생들의 생생한 후기입니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+              {reviews.map((review, index) => (
+                <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white dark:bg-gray-800">
+                  <CardContent className="p-8">
+                    <div className="flex items-center mb-4">
+                      <Image src={review.avatar || '/placeholder.svg'} alt={review.name} width={60} height={60} className="rounded-full mr-4" />
+                      <div>
+                        <h4 className="font-bold text-lg">{review.name}</h4>
+                        <p className="text-sm text-blue-600">{review.program}</p>
+                        <p className="text-xs text-gray-500">{review.date}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex mb-4">
+                      {[...Array(review.rating)].map((_, i) => (
+                        <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+
+                    <blockquote className="text-gray-700 dark:text-gray-300 italic leading-relaxed">"{review.comment}"</blockquote>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="text-center">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
+                <Link href="/reviews/write?type=academy">
+                  <Star className="w-5 h-5 mr-2" />
+                  리뷰 작성하기
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* 수강 신청 안내 섹션 */}
+        <section className="py-20 bg-gradient-to-br from-green-600 via-blue-600 to-purple-600 relative overflow-hidden" id="apply">
+          {/* 배경 장식 */}
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute bottom-10 right-10 w-24 h-24 bg-yellow-400/20 rounded-full blur-lg animate-bounce"></div>
+
+          <div className="container relative z-10">
+            <div className="max-w-4xl mx-auto">
+              <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm dark:bg-gray-800/95 overflow-hidden">
+                <div className="bg-gradient-to-r from-green-600 to-blue-600 p-8 text-center text-white">
+                  <h2 className="text-4xl font-bold mb-4">수강 신청 안내</h2>
+                  <p className="text-xl text-green-100">
+                    도깨비 테니스 아카데미의 프로그램에 관심이 있으신가요?
+                    <br />
+                    아래 문의하기 버튼을 통해 상담을 신청하시거나, 전화로 문의해주세요.
+                  </p>
+                </div>
+
+                <CardContent className="p-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
+                      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                        <Phone className="h-8 w-8" />
+                      </div>
+                      <h3 className="text-lg font-bold mb-2">전화 문의</h3>
+                      <div className="text-2xl font-bold text-blue-600 mb-2">02-123-4567</div>
+                      <p className="text-sm text-gray-500">
+                        평일 09:00 - 18:00
+                        <br />
+                        토요일 09:00 - 12:00
+                      </p>
+                    </div>
+
+                    <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                        <Mail className="h-8 w-8" />
+                      </div>
+                      <h3 className="text-lg font-bold mb-2">이메일 문의</h3>
+                      <div className="text-lg font-bold text-blue-600 mb-2">info@dokkaebi.com</div>
+                      <p className="text-sm text-gray-500">
+                        24시간 접수
+                        <br />
+                        1일 이내 답변
+                      </p>
+                    </div>
+
+                    <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
+                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-green-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                        <MapPin className="h-8 w-8" />
+                      </div>
+                      <h3 className="text-lg font-bold mb-2">방문 상담</h3>
+                      <div className="text-sm font-medium text-blue-600 mb-2">서울시 강남구 테니스로 123</div>
+                      <p className="text-sm text-gray-500">
+                        사전 예약 필수
+                        <br />
+                        현장 시설 견학 가능
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 mb-8">
+                    <h3 className="text-xl font-bold mb-4 text-center">
+                      <CheckCircle className="w-5 h-5 inline mr-2 text-green-500" />
+                      수강 신청 혜택
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex items-center">
+                        <Award className="w-5 h-5 text-blue-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium">무료 체험 레슨</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">첫 수업 무료 체험</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <Trophy className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium">장비 무료 대여</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">라켓, 볼 무료 제공</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <Users className="w-5 h-5 text-purple-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium">개인 맞춤 상담</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">레벨 테스트 및 상담</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button size="lg" className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
+                      <Link href="/board/qna/write">
+                        <Mail className="mr-2 h-5 w-5" />
+                        문의하러 가기
+                      </Link>
+                    </Button>
+                    <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent" asChild>
+                      <Link href="/board/qna">
+                        <ArrowRight className="mr-2 h-5 w-5" />
+                        자주 묻는 질문 보기
+                      </Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
-            ))}
+            </div>
           </div>
-
-          <div className="text-center">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
-              <Link href="/reviews/write?type=academy">
-                <Star className="w-5 h-5 mr-2" />
-                리뷰 작성하기
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* 수강 신청 안내 섹션 */}
-      <section className="py-20 bg-gradient-to-br from-green-600 via-blue-600 to-purple-600 relative overflow-hidden" id="apply">
-        {/* 배경 장식 */}
-        <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-10 right-10 w-24 h-24 bg-yellow-400/20 rounded-full blur-lg animate-bounce"></div>
-
-        <div className="container relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm dark:bg-gray-800/95 overflow-hidden">
-              <div className="bg-gradient-to-r from-green-600 to-blue-600 p-8 text-center text-white">
-                <h2 className="text-4xl font-bold mb-4">수강 신청 안내</h2>
-                <p className="text-xl text-green-100">
-                  도깨비 테니스 아카데미의 프로그램에 관심이 있으신가요?
-                  <br />
-                  아래 문의하기 버튼을 통해 상담을 신청하시거나, 전화로 문의해주세요.
-                </p>
-              </div>
-
-              <CardContent className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
-                      <Phone className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-lg font-bold mb-2">전화 문의</h3>
-                    <div className="text-2xl font-bold text-blue-600 mb-2">02-123-4567</div>
-                    <p className="text-sm text-gray-500">
-                      평일 09:00 - 18:00
-                      <br />
-                      토요일 09:00 - 12:00
-                    </p>
-                  </div>
-
-                  <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
-                      <Mail className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-lg font-bold mb-2">이메일 문의</h3>
-                    <div className="text-lg font-bold text-blue-600 mb-2">info@dokkaebi.com</div>
-                    <p className="text-sm text-gray-500">
-                      24시간 접수
-                      <br />
-                      1일 이내 답변
-                    </p>
-                  </div>
-
-                  <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-green-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
-                      <MapPin className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-lg font-bold mb-2">방문 상담</h3>
-                    <div className="text-sm font-medium text-blue-600 mb-2">서울시 강남구 테니스로 123</div>
-                    <p className="text-sm text-gray-500">
-                      사전 예약 필수
-                      <br />
-                      현장 시설 견학 가능
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 mb-8">
-                  <h3 className="text-xl font-bold mb-4 text-center">
-                    <CheckCircle className="w-5 h-5 inline mr-2 text-green-500" />
-                    수강 신청 혜택
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-center">
-                      <Award className="w-5 h-5 text-blue-500 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">무료 체험 레슨</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">첫 수업 무료 체험</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <Trophy className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">장비 무료 대여</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">라켓, 볼 무료 제공</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="w-5 h-5 text-purple-500 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">개인 맞춤 상담</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">레벨 테스트 및 상담</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
-                    <Link href="/board/qna/write">
-                      <Mail className="mr-2 h-5 w-5" />
-                      문의하러 가기
-                    </Link>
-                  </Button>
-                  <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent" asChild>
-                    <Link href="/board/qna">
-                      <ArrowRight className="mr-2 h-5 w-5" />
-                      자주 묻는 질문 보기
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }
