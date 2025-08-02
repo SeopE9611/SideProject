@@ -14,8 +14,8 @@ export default async function AdminDashboardPage() {
   const stats = [
     {
       title: '전체 회원 수',
-      value: '1,247',
-      change: '+11.1%',
+      value: '1',
+      change: '+1%',
       trend: 'up',
       icon: <Users className="h-6 w-6" />,
       description: '지난 달 대비',
@@ -25,8 +25,8 @@ export default async function AdminDashboardPage() {
     },
     {
       title: '등록된 클래스 수',
-      value: '24',
-      change: '+8.3%',
+      value: '0',
+      change: '0%',
       trend: 'up',
       icon: <Calendar className="h-6 w-6" />,
       description: '지난 달 대비',
@@ -36,8 +36,8 @@ export default async function AdminDashboardPage() {
     },
     {
       title: '작성된 리뷰 수',
-      value: '892',
-      change: '+15.2%',
+      value: '141',
+      change: '141%',
       trend: 'up',
       icon: <Star className="h-6 w-6" />,
       description: '지난 달 대비',
@@ -47,8 +47,8 @@ export default async function AdminDashboardPage() {
     },
     {
       title: '총 주문 건수',
-      value: '3,456',
-      change: '+23.1%',
+      value: '10,597',
+      change: '+99.9%',
       trend: 'up',
       icon: <ShoppingBag className="h-6 w-6" />,
       description: '지난 달 대비',
