@@ -135,12 +135,12 @@ export default function AcademyPage() {
   return (
     <div className="relative">
       {/* ▶ 고정된 오버레이 */}
-      <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 text-center">
-        <p className="text-white text-2xl md:text-4xl font-medium">
-          이 페이지는 사용하지 않습니다. (아카데미 페이지)
-          <br />
-          만일에 대비하여 냅둠 (임시 보관)
-        </p>
+      <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
+        <p className="text-white text-2xl md:text-4xl font-semibold">이 페이지는 사용하지 않습니다. (아카데미 페이지)</p>
+        <p className="text-sm text-gray-300">다시 활성화되기 전까지 현재 이 페이지는 접근 제한 상태입니다.</p>
+        <Button asChild size="lg" className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white shadow-xl">
+          <Link href="/">홈으로 이동</Link>
+        </Button>
       </div>
 
       <div className="flex flex-col">
