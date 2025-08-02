@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { showErrorToast, showSuccessToast, showToast } from '@/lib/toast';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import AuthGuard from '@/components/auth/AuthGuard';
 
 // 임시 회원 데이터
@@ -237,7 +237,7 @@ export default function UsersPage() {
                 const preview = await previewRes.json();
 
                 if (!Array.isArray(preview) || preview.length === 0) {
-                  showToast('삭제 예정인 탈퇴 회원이 없습니다.');
+                  showInfoToast('삭제 예정인 탈퇴 회원이 없습니다.');
                   return;
                 }
 
@@ -270,7 +270,7 @@ export default function UsersPage() {
                 const preview = await previewRes.json();
 
                 if (!Array.isArray(preview) || preview.length === 0) {
-                  showToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
+                  showInfoToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
                   return;
                 }
 
