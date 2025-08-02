@@ -63,7 +63,7 @@ const Header = () => {
                   <Image src="/placeholder.svg?height=32&width=32" alt="도깨비 테니스 아카데미 로고" width={32} height={32} className="filter brightness-0 invert" />
                 </div> */}
               </div>
-              <div className="hidden sm:block">
+              <div>
                 <div className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">도깨비 테니스</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 -mt-1">DOKKAEBI TENNIS ACADEMY</div>
               </div>
@@ -113,9 +113,9 @@ const Header = () => {
             <SheetContent side="left" className="w-[300px] bg-white/95 backdrop-blur-md dark:bg-gray-900/95">
               <div className="grid gap-6 py-6">
                 <Link href="/" className="flex items-center gap-3">
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-full">
+                  {/* <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-full">
                     <Image src="/placeholder.svg?height=32&width=32" alt="도깨비 테니스 아카데미 로고" width={32} height={32} className="filter brightness-0 invert" />
-                  </div>
+                  </div> */}
                   <div>
                     <div className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">도깨비 테니스</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">DOKKAEBI TENNIS</div>

@@ -21,7 +21,7 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
         className="w-full justify-center"
         onClick={() => {
           setOpen(false);
-          refresh();
+          router.push('/login');
         }}
       >
         로그인
