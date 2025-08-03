@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useDeferredValue, useEffect, useRef } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +33,6 @@ const keyMap = {
   comfort: '편안함',
 };
 
-// 브랜드 필터 옵션
 const brands = [
   { label: '루키론', value: 'lookielon' },
   { label: '테크니파이버', value: 'technifibre' },
@@ -50,11 +51,15 @@ const brands = [
 const brandLabelMap: Record<string, string> = Object.fromEntries(brands.map(({ value, label }) => [value, label]));
 
 export default function FilterableProductList({ products }: { products: Product[] }) {
-  // 정렬 옵션상태 관리
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  // 정렬 / 뷰모드
   const [sortOption, setSortOption] = useState('latest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // 필터 상태 관리
+  // 필터 상태
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [selectedBounce, setSelectedBounce] = useState<number | null>(null);
   const [selectedDurability, setSelectedDurability] = useState<number | null>(null);
@@ -62,28 +67,158 @@ export default function FilterableProductList({ products }: { products: Product[
   const [selectedControl, setSelectedControl] = useState<number | null>(null);
   const [selectedComfort, setSelectedComfort] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState([0, 50000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
   const [showFilters, setShowFilters] = useState(false);
 
-  // 필터링된 상품 목록
+  // deferred + 안정된 검색어
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+  const [syncSearchQuery, setSyncSearchQuery] = useState(deferredSearchQuery);
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setSyncSearchQuery(deferredSearchQuery);
+    }, 200);
+    return () => clearTimeout(id);
+  }, [deferredSearchQuery]);
+
+  // 리셋 애니메이션 key
+  const [resetKey, setResetKey] = useState(0);
+
+  // 성능 필터 배열 (중복 제거)
+  const performanceFiltersConfig = useMemo(
+    () => [
+      {
+        label: '반발력',
+        state: selectedBounce,
+        setter: setSelectedBounce,
+        featureKey: 'power' as const,
+      },
+      {
+        label: '컨트롤',
+        state: selectedControl,
+        setter: setSelectedControl,
+        featureKey: 'control' as const,
+      },
+      {
+        label: '스핀',
+        state: selectedSpin,
+        setter: setSelectedSpin,
+        featureKey: 'spin' as const,
+      },
+      {
+        label: '내구성',
+        state: selectedDurability,
+        setter: setSelectedDurability,
+        featureKey: 'durability' as const,
+      },
+      {
+        label: '편안함',
+        state: selectedComfort,
+        setter: setSelectedComfort,
+        featureKey: 'comfort' as const,
+      },
+    ],
+    [selectedBounce, selectedControl, selectedSpin, selectedDurability, selectedComfort]
+  );
+
+  // 루프 방지용 refs
+  const isInitializingRef = useRef(true);
+  const lastSerializedRef = useRef('');
+
+  // URL -> 상태 (초기/히스토리 네비게이션)
+  useEffect(() => {
+    if (isInitializingRef.current) {
+      const brand = searchParams.get('brand');
+      setSelectedBrand(brand || null);
+
+      const bounce = searchParams.get('power');
+      setSelectedBounce(bounce ? Number(bounce) : null);
+
+      const control = searchParams.get('control');
+      setSelectedControl(control ? Number(control) : null);
+
+      const spin = searchParams.get('spin');
+      setSelectedSpin(spin ? Number(spin) : null);
+
+      const durability = searchParams.get('durability');
+      setSelectedDurability(durability ? Number(durability) : null);
+
+      const comfort = searchParams.get('comfort');
+      setSelectedComfort(comfort ? Number(comfort) : null);
+
+      setSearchQuery(searchParams.get('q') || '');
+      setSortOption(searchParams.get('sort') || 'latest');
+
+      const view = searchParams.get('view');
+      setViewMode(view === 'list' ? 'list' : 'grid');
+
+      const minPrice = searchParams.get('minPrice');
+      const maxPrice = searchParams.get('maxPrice');
+      setPriceRange([minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 50000]);
+
+      // 초기 상태 반영된 쿼리 기억해두면 바로 replace 안 함
+      lastSerializedRef.current = searchParams.toString();
+      isInitializingRef.current = false;
+      return;
+    }
+
+    // 뒤로/앞으로 등 searchParams 변화 시 필요한 부분만 업데이트
+    const brand = searchParams.get('brand');
+    if ((brand || null) !== selectedBrand) setSelectedBrand(brand || null);
+
+    const bounce = searchParams.get('power');
+    const bounceVal = bounce ? Number(bounce) : null;
+    if (bounceVal !== selectedBounce) setSelectedBounce(bounceVal);
+
+    const control = searchParams.get('control');
+    const controlVal = control ? Number(control) : null;
+    if (controlVal !== selectedControl) setSelectedControl(controlVal);
+
+    const spin = searchParams.get('spin');
+    const spinVal = spin ? Number(spin) : null;
+    if (spinVal !== selectedSpin) setSelectedSpin(spinVal);
+
+    const durability = searchParams.get('durability');
+    const durabilityVal = durability ? Number(durability) : null;
+    if (durabilityVal !== selectedDurability) setSelectedDurability(durabilityVal);
+
+    const comfort = searchParams.get('comfort');
+    const comfortVal = comfort ? Number(comfort) : null;
+    if (comfortVal !== selectedComfort) setSelectedComfort(comfortVal);
+
+    const q = searchParams.get('q') || '';
+    if (q !== searchQuery) setSearchQuery(q);
+
+    const sort = searchParams.get('sort') || 'latest';
+    if (sort !== sortOption) setSortOption(sort);
+
+    const view = searchParams.get('view');
+    const desiredView = view === 'list' ? 'list' : 'grid';
+    if (desiredView !== viewMode) setViewMode(desiredView as 'grid' | 'list');
+
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const pr: [number, number] = [minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 50000];
+    if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
+  }, [searchParams]);
+
+  // 필터링된 상품
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const features = product.features ?? {};
 
       const brandMatch = selectedBrand === null ? true : (product.brand ?? '').toLowerCase() === selectedBrand;
-      const bounceMatch = selectedBounce !== null ? (features.power ?? 0) >= selectedBounce : true;
-      const durabilityMatch = selectedDurability !== null ? (features.durability ?? 0) >= selectedDurability : true;
-      const spinMatch = selectedSpin !== null ? (features.spin ?? 0) >= selectedSpin : true;
-      const controlMatch = selectedControl !== null ? (features.control ?? 0) >= selectedControl : true;
-      const comfortMatch = selectedComfort !== null ? (features.comfort ?? 0) >= selectedComfort : true;
-      const nameMatch = searchQuery === '' ? true : product.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const performanceMatch = performanceFiltersConfig.every(({ state, featureKey }) => (state !== null ? (features[featureKey] ?? 0) >= state : true));
+
+      const nameMatch = deferredSearchQuery === '' ? true : product.name.toLowerCase().includes(deferredSearchQuery.toLowerCase());
+
       const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
 
-      return brandMatch && bounceMatch && durabilityMatch && spinMatch && controlMatch && comfortMatch && nameMatch && priceMatch;
+      return brandMatch && performanceMatch && nameMatch && priceMatch;
     });
-  }, [products, selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, searchQuery, priceRange]);
+  }, [products, selectedBrand, performanceFiltersConfig, deferredSearchQuery, priceRange]);
 
-  // 정렬된 상품 목록
+  // 정렬된 상품
   const sortedProducts = useMemo(() => {
     return [...filteredProducts].sort((a, b) => {
       switch (sortOption) {
@@ -92,7 +227,7 @@ export default function FilterableProductList({ products }: { products: Product[
         case 'price-high':
           return b.price - a.price;
         case 'popular':
-          return 0; // 아직 인기순 데이터 없음
+          return 0;
         case 'latest':
         default:
           return b._id.localeCompare(a._id);
@@ -110,106 +245,134 @@ export default function FilterableProductList({ products }: { products: Product[
     setSearchQuery('');
     setPriceRange([0, 50000]);
   };
+  const handleReset = () => {
+    setResetKey((k) => k + 1);
+    resetFilters();
+  };
 
-  const activeFiltersCount = [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, searchQuery, priceRange[0] > 0 || priceRange[1] < 50000].filter(Boolean).length;
+  const priceChanged = priceRange[0] > 0 || priceRange[1] < 50000;
+  const activeFiltersCount = [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, searchQuery, priceChanged].filter(Boolean).length;
+
+  // 상태 -> URL 반영 (중복/루프 방지)
+  useEffect(() => {
+    if (isInitializingRef.current) return;
+
+    const params = new URLSearchParams();
+
+    if (selectedBrand) params.set('brand', selectedBrand);
+    if (selectedBounce !== null) params.set('power', String(selectedBounce));
+    if (selectedControl !== null) params.set('control', String(selectedControl));
+    if (selectedSpin !== null) params.set('spin', String(selectedSpin));
+    if (selectedDurability !== null) params.set('durability', String(selectedDurability));
+    if (selectedComfort !== null) params.set('comfort', String(selectedComfort));
+    if (syncSearchQuery) params.set('q', syncSearchQuery);
+    if (sortOption && sortOption !== 'latest') params.set('sort', sortOption);
+    if (viewMode !== 'grid') params.set('view', viewMode);
+    if (priceRange[0] > 0) params.set('minPrice', String(priceRange[0]));
+    if (priceRange[1] < 50000) params.set('maxPrice', String(priceRange[1]));
+
+    const newSearch = params.toString();
+    if (newSearch === lastSerializedRef.current) return;
+    lastSerializedRef.current = newSearch;
+
+    router.replace(`${pathname}?${newSearch}`, { scroll: false });
+  }, [selectedBrand, selectedBounce, selectedControl, selectedSpin, selectedDurability, selectedComfort, syncSearchQuery, sortOption, viewMode, priceRange, router, pathname]);
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
       {/* 필터 사이드바 */}
       <div className={cn('space-y-6 lg:col-span-1', 'lg:block', showFilters ? 'block' : 'hidden')}>
         <div className="sticky top-20 self-start">
-          <div className="rounded-xl border bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">필터</h2>
-              {activeFiltersCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs">
-                  초기화 ({activeFiltersCount})
-                </Button>
-              )}
-            </div>
-
-            {/* 검색 */}
-            <div className="mb-6">
-              <Label htmlFor="search" className="mb-3 block font-medium">
-                검색
-              </Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="상품명 검색..." className="pl-10 rounded-lg border-2 focus:border-blue-500 transition-colors" />
-              </div>
-            </div>
-
-            {/* 가격 범위 */}
-            <div className="mb-6">
-              <Label className="mb-3 block font-medium">가격 범위</Label>
-              <div className="space-y-4">
-                <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={50000} step={500} className="w-full" />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span className="font-medium">₩{priceRange[0].toLocaleString()}</span>
-                  <span className="font-medium">₩{priceRange[1].toLocaleString()}</span>
+          <div className="max-h-[calc(100vh-6rem)] overflow-y-auto rounded-xl border bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm p-6 shadow-lg">
+            <AnimatePresence mode="wait">
+              <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">필터</h2>
+                  {activeFiltersCount > 0 && (
+                    <Button variant="ghost" size="sm" onClick={handleReset} className="text-xs">
+                      초기화 ({activeFiltersCount})
+                    </Button>
+                  )}
                 </div>
-              </div>
-            </div>
 
-            {/* 브랜드 필터 */}
-            <div className="mb-6">
-              <Label htmlFor="brand" className="mb-3 block font-medium">
-                브랜드
-              </Label>
-              <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
-                <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
-                  <SelectValue placeholder="브랜드 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {brands.map((brand) => (
-                    <SelectItem key={brand.value} value={brand.value}>
-                      {brand.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                {/* 검색 */}
+                <div className="mb-6">
+                  <Label htmlFor="search" className="mb-3 block font-medium">
+                    검색
+                  </Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="상품명 검색..." className="pl-10 rounded-lg border-2 focus:border-blue-500 transition-colors" />
+                  </div>
+                </div>
 
-            {/* 성능 필터 */}
-            <div className="space-y-4">
-              <h3 className="font-medium text-lg">성능</h3>
+                {/* 가격 범위 */}
+                <div className="mb-6">
+                  <Label className="mb-3 block font-medium">가격 범위</Label>
+                  <div className="space-y-4">
+                    <Slider value={priceRange} onValueChange={(val) => setPriceRange([val[0] as number, val[1] as number])} min={0} max={50000} step={500} className="w-full" />
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span className="font-medium">₩{priceRange[0].toLocaleString()}</span>
+                      <span className="font-medium">₩{priceRange[1].toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
 
-              {[
-                { key: 'bounce', label: '반발력', value: selectedBounce, setter: setSelectedBounce },
-                { key: 'control', label: '컨트롤', value: selectedControl, setter: setSelectedControl },
-                { key: 'spin', label: '스핀', value: selectedSpin, setter: setSelectedSpin },
-                { key: 'durability', label: '내구성', value: selectedDurability, setter: setSelectedDurability },
-                { key: 'comfort', label: '편안함', value: selectedComfort, setter: setSelectedComfort },
-              ].map(({ key, label, value, setter }) => (
-                <div key={key}>
-                  <Label className="mb-2 block text-sm font-medium">{label}</Label>
-                  <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={value !== null ? String(value) : 'all'}>
+                {/* 브랜드 */}
+                <div className="mb-6">
+                  <Label htmlFor="brand" className="mb-3 block font-medium">
+                    브랜드
+                  </Label>
+                  <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
                     <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
-                      <SelectValue placeholder="선택" />
+                      <SelectValue placeholder="브랜드 선택" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">전체</SelectItem>
-                      <SelectItem value="5">★★★★★</SelectItem>
-                      <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                      <SelectItem value="3">★★★☆☆ 이상</SelectItem>
+                      {brands.map((brand) => (
+                        <SelectItem key={brand.value} value={brand.value}>
+                          {brand.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
-              ))}
-            </div>
+
+                {/* 성능 필터 */}
+                <div className="space-y-4">
+                  <h3 className="font-medium text-lg">성능</h3>
+                  {performanceFiltersConfig.map(({ label, state, setter, featureKey }) => (
+                    <div key={featureKey}>
+                      <Label className="mb-2 block text-sm font-medium">{label}</Label>
+                      <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={state !== null ? String(state) : 'all'}>
+                        <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
+                          <SelectValue placeholder="선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">전체</SelectItem>
+                          <SelectItem value="5">★★★★★</SelectItem>
+                          <SelectItem value="4">★★★★☆ 이상</SelectItem>
+                          <SelectItem value="3">★★★☆☆ 이상</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>
+
       {/* 상품 목록 */}
       <div className="lg:col-span-3">
         {/* 상단 컨트롤 바 */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div className="flex items-center gap-4">
             <div className="text-lg font-semibold">
-              총 <span className="text-blue-600 font-bold">{sortedProducts.length}</span>개 상품
+              총 <span className="text-blue-600 font-bold">{sortedProducts.length}</span> 개 상품
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="lg:hidden">
+            <Button variant="outline" size="sm" onClick={() => setShowFilters((f) => !f)} className="lg:hidden" aria-expanded={showFilters} aria-label="필터 열기">
               <Filter className="w-4 h-4 mr-2" />
               필터 {activeFiltersCount > 0 && `(${activeFiltersCount})`}
             </Button>
@@ -226,7 +389,7 @@ export default function FilterableProductList({ products }: { products: Product[
               </Button>
             </div>
 
-            {/* 정렬 옵션 */}
+            {/* 정렬 */}
             <Select value={sortOption} onValueChange={setSortOption}>
               <SelectTrigger className="w-[180px] rounded-lg border-2 focus:border-blue-500">
                 <SelectValue placeholder="정렬 기준" />
@@ -249,7 +412,7 @@ export default function FilterableProductList({ products }: { products: Product[
             </div>
             <h3 className="text-xl font-semibold mb-2">검색 결과가 없습니다</h3>
             <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
-            <Button onClick={resetFilters} variant="outline">
+            <Button onClick={handleReset} variant="outline">
               필터 초기화
             </Button>
           </div>
