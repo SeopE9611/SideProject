@@ -61,7 +61,7 @@ const paymentSettingsSchema = z.object({
   stripeSecretKey: z.string().optional().or(z.literal('')),
 });
 
-export default async function SettingsPage() {
+export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('site');
 
   // 사이트 설정 폼
