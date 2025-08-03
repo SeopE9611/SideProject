@@ -123,22 +123,22 @@ export default function SettingsPage() {
 
   // 폼 제출 핸들러
   const onSubmitSiteSettings = (data: z.infer<typeof siteSettingsSchema>) => {
-    console.log('사이트 설정 저장:', data);
+    // console.log('사이트 설정 저장:', data);
     showSuccessToast('사이트 설정이 저장되었습니다.');
   };
 
   const onSubmitUserSettings = (data: z.infer<typeof userSettingsSchema>) => {
-    console.log('사용자 설정 저장:', data);
+    // console.log('사용자 설정 저장:', data);
     showSuccessToast('사용자 설정이 저장되었습니다.');
   };
 
   const onSubmitEmailSettings = (data: z.infer<typeof emailSettingsSchema>) => {
-    console.log('이메일 설정 저장:', data);
+    // console.log('이메일 설정 저장:', data);
     showSuccessToast('이메일 설정이 저장되었습니다.');
   };
 
   const onSubmitPaymentSettings = (data: z.infer<typeof paymentSettingsSchema>) => {
-    console.log('결제 설정 저장:', data);
+    // console.log('결제 설정 저장:', data);
     showSuccessToast('결제 설정이 저장되었습니다.');
   };
 

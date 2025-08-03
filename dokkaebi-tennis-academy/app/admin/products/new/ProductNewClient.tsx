@@ -308,7 +308,7 @@ export default function NewStringPage() {
       inventory, // 재고 관리 정보
     };
 
-    console.log(' 등록된 상품 데이터:', product);
+    // console.log(' 등록된 상품 데이터:', product);
 
     // API 전송 로직 위치
 
@@ -344,7 +344,7 @@ export default function NewStringPage() {
       router.push(`/products/${data.id}`); // 등록된 상품 상세 페이지로 즉시 이동
     } catch (error) {
       // 상품 등록 중 에러 발생시
-      console.log('상품 등록 에러', error);
+      // console.log('상품 등록 에러', error);
       toast('❌ 등록 실패', {
         description: '서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요',
         className: 'bg-red-600 text-white font-bold shadow-lg',

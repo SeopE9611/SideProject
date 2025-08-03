@@ -26,7 +26,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     const isOwner = payload?.sub === order.userId?.toString();
     const isAdmin = payload?.role === 'admin';
-    console.log('💡 raw cookie header:', _req.headers.get('cookie'));
+    // console.log('raw cookie header:', _req.headers.get('cookie'));
     if (!isOwner && !isAdmin) {
       return new NextResponse('권한이 없습니다.', { status: 403 });
     }

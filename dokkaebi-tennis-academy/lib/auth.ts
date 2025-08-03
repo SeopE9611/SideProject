@@ -5,7 +5,7 @@ export async function auth() {
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
 
-  console.log('[AUTH COOKIE TOKEN]', token); // 디버깅용
+  // console.log('[AUTH COOKIE TOKEN]', token); // 디버깅용
 
   if (!token) return null;
 

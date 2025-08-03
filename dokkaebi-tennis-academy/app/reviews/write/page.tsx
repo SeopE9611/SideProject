@@ -47,10 +47,10 @@ export default function ReviewWritePage() {
     setIsSubmitting(true);
 
     // 폼 데이터 로깅 (실제 구현에서는 API 호출로 대체)
-    console.log('제출된 후기:', {
-      type,
-      ...formData,
-    });
+    // console.log('제출된 후기:', {
+    //   type,
+    //   ...formData,
+    // });
 
     // 잠시 후 리뷰 페이지로 리디렉션
     setTimeout(() => {

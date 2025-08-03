@@ -12,7 +12,6 @@ type Props = {
 };
 
 export function OrderStatusBadge({ orderId, initialStatus }: Props) {
-  console.log('[OrderStatusBadge] SWR key:', `/api/orders/${orderId}/status`);
   const { data } = useSWR<{ status: string }>(`/api/orders/${orderId}/status`, fetcher, {
     fallbackData: { status: initialStatus },
     revalidateOnMount: true, //  mount 될 때 강제 fetch

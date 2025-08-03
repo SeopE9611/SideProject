@@ -57,7 +57,7 @@ export default async function NewClassClient() {
     setIsSubmitting(true);
 
     // 폼 데이터 로깅 (실제 구현에서는 API 호출로 대체)
-    console.log('제출된 클래스 정보:', formData);
+    // console.log('제출된 클래스 정보:', formData);
 
     // 잠시 후 제출 상태 해제 (실제 구현에서는 API 응답 후 처리)
     setTimeout(() => {

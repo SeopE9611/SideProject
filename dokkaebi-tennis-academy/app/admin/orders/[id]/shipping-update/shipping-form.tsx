@@ -52,7 +52,7 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
     }
   }, [shippingMethod]);
 
-  console.log('initialShippingMethod:', initialShippingMethod);
+  // console.log('initialShippingMethod:', initialShippingMethod);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,7 +98,7 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
         }),
       });
 
-      console.log('배송 정보 업데이트 응답:', res);
+      // console.log('배송 정보 업데이트 응답:', res);
 
       showSuccessToast('배송 정보가 업데이트되었습니다');
 

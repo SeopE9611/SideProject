@@ -34,12 +34,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
         }
       })
       .catch(() => {
-        console.log('요청 실패');
+        // console.log('요청 실패');
         setUser(null);
       })
       .finally(() => {
         setLoading(false);
-        console.log('로딩 완료');
+        // console.log('로딩 완료');
       });
   }, []);
 

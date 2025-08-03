@@ -67,7 +67,7 @@ export default function OrderLookupPage() {
     setIsSubmitting(true);
 
     try {
-      console.log('주문 조회 요청:', formData);
+      // console.log('주문 조회 요청:', formData);
 
       // 성공 시 주문 결과 페이지로 이동 (예시)
       // router.push(`/order-results?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}`)
