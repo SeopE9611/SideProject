@@ -20,6 +20,7 @@ import ApplicationDetail from '@/app/mypage/applications/_components/Application
 import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { User, ShoppingBag, Calendar, Heart, Star, MessageCircleQuestion, Trophy, Award, TrendingUp, UserStar, UserStarIcon } from 'lucide-react';
+import { Order } from '@/lib/types/order';
 
 type Props = {
   user: {
@@ -44,11 +45,11 @@ export default function MypageClient({ user }: Props) {
   useEffect(() => {
     fetch('/api/users/me/orders')
       .then((res) => res.json())
-      .then((data: any[]) => setOrdersCount(data.length));
+      .then((data: { items: Order[]; total: number }) => setOrdersCount(data.total));
 
     fetch('/api/applications/me')
       .then((res) => res.json())
-      .then((data: any[]) => setApplicationsCount(data.length));
+      .then((data: { items: any[]; total: number }) => setApplicationsCount(data.total));
   }, []);
 
   useEffect(() => {
