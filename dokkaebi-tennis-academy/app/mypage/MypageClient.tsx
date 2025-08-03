@@ -19,7 +19,7 @@ import { useState, useEffect } from 'react';
 import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
 import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { User, ShoppingBag, Calendar, Heart, Star, MessageCircleQuestion, Trophy, Award, TrendingUp } from 'lucide-react';
+import { User, ShoppingBag, Calendar, Heart, Star, MessageCircleQuestion, Trophy, Award, TrendingUp, UserStar, UserStarIcon } from 'lucide-react';
 
 type Props = {
   user: {
@@ -30,10 +30,26 @@ type Props = {
   };
 };
 
+// 주문, 신청서 카운터 상태관리
+
 export default function MypageClient({ user }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+
+  // 주문, 신청서 카운터 상태관리
+  const [ordersCount, setOrdersCount] = useState(0);
+  const [applicationsCount, setApplicationsCount] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/users/me/orders')
+      .then((res) => res.json())
+      .then((data: any[]) => setOrdersCount(data.length));
+
+    fetch('/api/applications/me')
+      .then((res) => res.json())
+      .then((data: any[]) => setApplicationsCount(data.length));
+  }, []);
 
   useEffect(() => {
     setLoading(false);
@@ -131,18 +147,18 @@ export default function MypageClient({ user }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
                   <ShoppingBag className="h-8 w-8 mx-auto mb-3 text-blue-200" />
-                  <div className="text-2xl font-bold mb-1">0</div>
+                  <div className="text-2xl font-bold mb-1">{ordersCount}</div>
                   <div className="text-sm text-blue-200">총 주문</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
                   <Calendar className="h-8 w-8 mx-auto mb-3 text-purple-200" />
-                  <div className="text-2xl font-bold mb-1">0</div>
+                  <div className="text-2xl font-bold mb-1">{applicationsCount}</div>
                   <div className="text-sm text-purple-200">서비스 신청</div>
                 </div>
 
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
-                  <Trophy className="h-8 w-8 mx-auto mb-3 text-green-200" />
-                  <div className="text-2xl font-bold mb-1">관리자</div>
+                  <UserStarIcon className="h-8 w-8 mx-auto mb-3 text-green-200" />
+                  <div className="text-2xl font-bold mb-1"> {user.role === 'admin' ? '관리자' : '일반 회원'}</div>
                   <div className="text-sm text-green-200">회원 등급</div>
                 </div>
               </div>
