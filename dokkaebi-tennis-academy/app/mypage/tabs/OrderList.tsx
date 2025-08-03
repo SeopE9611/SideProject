@@ -8,8 +8,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { orderStatusColors } from '@/lib/badge-style';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck } from 'lucide-react';
+import { ApiResponse } from '@/lib/types/order';
+import { useState } from 'react';
 
 //  주문 데이터 타입 정의
+
+type OrderResponse = {
+  items: Order[];
+  total: number;
+};
+
 interface Order {
   id: string;
   date: string;
@@ -62,9 +70,32 @@ const formatDate = (dateString: string) => {
 };
 
 export default function OrderList() {
-  //  SWR을 사용해 API에서 주문 데이터 가져오기
-  const { data: orders, error, isLoading } = useSWR<Order[]>('/api/users/me/orders', fetcher);
-  console.log(' 주문:', orders);
+  // 페이지 상태 선언
+  const [page, setPage] = useState(1);
+  const limit = 5;
+
+  // 제한형 페이지 네이션
+  const getPaginationRange = () => {
+    const delta = 2;
+    const range = [];
+
+    const start = Math.max(2, page - delta);
+    const end = Math.min(totalPages - 1, page + delta);
+
+    if (start > 2) range.push('...');
+    for (let i = start; i <= end; i++) {
+      range.push(i);
+    }
+    if (end < totalPages - 1) range.push('...');
+
+    return [1, ...range, totalPages];
+  };
+
+  // 페이징 API 호출
+  const { data, error, isLoading } = useSWR<OrderResponse>(`/api/users/me/orders?page=${page}&limit=${limit}`, fetcher);
+
+  const orders = data?.items ?? [];
+  const totalPages = data ? Math.ceil(data.total / limit) : 0;
 
   //  에러 처리
   if (error) {
@@ -218,6 +249,28 @@ export default function OrderList() {
           </CardContent>
         </Card>
       ))}
+
+      <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
+        <Button size="sm" variant="outline" onClick={() => setPage(page - 1)} disabled={page === 1}>
+          이전
+        </Button>
+
+        {getPaginationRange().map((p, idx) =>
+          p === '...' ? (
+            <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+              ...
+            </span>
+          ) : (
+            <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => setPage(Number(p))}>
+              {p}
+            </Button>
+          )
+        )}
+
+        <Button size="sm" variant="outline" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
+          다음
+        </Button>
+      </div>
     </div>
   );
 }
