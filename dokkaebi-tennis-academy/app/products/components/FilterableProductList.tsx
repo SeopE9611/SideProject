@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useDeferredValue, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Grid3X3, List } from 'lucide-react';
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SkeletonProductCard } from '@/app/products/components/SkeletonProductCard';
 import ProductCard from '@/app/products/components/ProductCard';
 
-// 브랜드 리스트 (필터패널에 내려줌)
+// 브랜드 리스트
 const brands = [
   { label: '루키론', value: 'lookielon' },
   { label: '테크니파이버', value: 'technifibre' },
@@ -38,7 +38,7 @@ export default function FilterableProductList() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // 정렬/뷰 모드
+  // 정렬 / 뷰 모드
   const [sortOption, setSortOption] = useState('latest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -49,19 +49,14 @@ export default function FilterableProductList() {
   const [selectedSpin, setSelectedSpin] = useState<number | null>(null);
   const [selectedControl, setSelectedControl] = useState<number | null>(null);
   const [selectedComfort, setSelectedComfort] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
-  const [showFilters, setShowFilters] = useState(false);
 
-  // 디바운스된 안정된 검색어 (검색어 입력 과도한 요청 방지)
-  const deferredSearchQuery = useDeferredValue(searchQuery);
-  const [syncSearchQuery, setSyncSearchQuery] = useState(deferredSearchQuery);
-  useEffect(() => {
-    const id = setTimeout(() => {
-      setSyncSearchQuery(deferredSearchQuery);
-    }, 200);
-    return () => clearTimeout(id);
-  }, [deferredSearchQuery]);
+  // 검색어: 입력 중인 것 / 실제 제출되어 조회에 쓰이는 것
+  const [searchQuery, setSearchQuery] = useState('');
+  const [submittedQuery, setSubmittedQuery] = useState('');
+
+  // 토글 (모바일용)
+  const [showFilters, setShowFilters] = useState(false);
 
   // 애니메이션 / 리셋 key
   const [resetKey, setResetKey] = useState(0);
@@ -70,9 +65,9 @@ export default function FilterableProductList() {
   const isInitializingRef = useRef(true);
   const lastSerializedRef = useRef('');
 
+  // 초기 URL -> 상태
   useEffect(() => {
     if (isInitializingRef.current) {
-      // URL -> 상태 초기 반영
       const brand = searchParams.get('brand');
       setSelectedBrand(brand || null);
 
@@ -91,22 +86,25 @@ export default function FilterableProductList() {
       const comfort = searchParams.get('comfort');
       setSelectedComfort(comfort ? Number(comfort) : null);
 
-      setSearchQuery(searchParams.get('q') || '');
+      const minPrice = searchParams.get('minPrice');
+      const maxPrice = searchParams.get('maxPrice');
+      setPriceRange([minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 50000]);
+
       setSortOption(searchParams.get('sort') || 'latest');
 
       const view = searchParams.get('view');
       setViewMode(view === 'list' ? 'list' : 'grid');
 
-      const minPrice = searchParams.get('minPrice');
-      const maxPrice = searchParams.get('maxPrice');
-      setPriceRange([minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 50000]);
+      const q = searchParams.get('q') || '';
+      setSearchQuery(q);
+      setSubmittedQuery(q);
 
       lastSerializedRef.current = searchParams.toString();
       isInitializingRef.current = false;
       return;
     }
 
-    // history/navigation 변화 시 필요한 state만 업데이트
+    // 뒤로/앞으로 등 URL 변화 동기화 (필터 관련만, 검색은 submittedQuery 기준)
     const brand = searchParams.get('brand');
     if ((brand || null) !== selectedBrand) setSelectedBrand(brand || null);
 
@@ -130,8 +128,10 @@ export default function FilterableProductList() {
     const comfortVal = comfort ? Number(comfort) : null;
     if (comfortVal !== selectedComfort) setSelectedComfort(comfortVal);
 
-    const q = searchParams.get('q') || '';
-    if (q !== searchQuery) setSearchQuery(q);
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const pr: [number, number] = [minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 50000];
+    if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
 
     const sort = searchParams.get('sort') || 'latest';
     if (sort !== sortOption) setSortOption(sort);
@@ -139,11 +139,6 @@ export default function FilterableProductList() {
     const view = searchParams.get('view');
     const desiredView = view === 'list' ? 'list' : 'grid';
     if (desiredView !== viewMode) setViewMode(desiredView as 'grid' | 'list');
-
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const pr: [number, number] = [minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 50000];
-    if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
   }, [searchParams]);
 
   // 서버 필터링 + 무한 스크롤
@@ -162,13 +157,28 @@ export default function FilterableProductList() {
     spin: selectedSpin ?? undefined,
     durability: selectedDurability ?? undefined,
     comfort: selectedComfort ?? undefined,
-    q: syncSearchQuery,
+    q: submittedQuery,
     sort: sortOption,
     limit: 6,
   });
 
-  // 필터 초기화 / 리셋 (참조 고정 위해 useCallback)
-  const handleReset = useCallback(() => {
+  // 검색 제출 handler
+  const handleSearchSubmit = useCallback(() => {
+    // 새 검색이면 submittedQuery 바꾸고 페이징 리셋
+    setSubmittedQuery(searchQuery);
+    // resetInfinite를 직접 호출해서 새로 고침 보장 (훅 내부에서 감지 안할 경우 대비)
+    resetInfinite();
+  }, [searchQuery, resetInfinite]);
+
+  // 검색 초기화
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setSubmittedQuery('');
+    resetInfinite();
+  }, [resetInfinite]);
+
+  // 필터 초기화
+  const handleResetAll = useCallback(() => {
     setResetKey((k) => k + 1);
     setSelectedBrand(null);
     setSelectedBounce(null);
@@ -176,30 +186,34 @@ export default function FilterableProductList() {
     setSelectedSpin(null);
     setSelectedControl(null);
     setSelectedComfort(null);
-    setSearchQuery('');
     setPriceRange([0, 50000]);
     setSortOption('latest');
     setViewMode('grid');
+    setSearchQuery('');
+    setSubmittedQuery('');
     resetInfinite();
   }, [resetInfinite]);
 
+  const handleClearInput = useCallback(() => {
+    setSearchQuery('');
+  }, []);
+
   // active filter 개수 계산
   const priceChanged = priceRange[0] > 0 || priceRange[1] < 50000;
-  const activeFiltersCount = [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, syncSearchQuery, priceChanged].filter(Boolean).length;
+  const activeFiltersCount = [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, priceChanged].filter(Boolean).length;
 
-  // 상태 -> URL (중복/루프 방지)
+  // 상태 -> URL 반영 (검색어는 submittedQuery만)
   useEffect(() => {
     if (isInitializingRef.current) return;
 
     const params = new URLSearchParams();
-
     if (selectedBrand) params.set('brand', selectedBrand);
     if (selectedBounce !== null) params.set('power', String(selectedBounce));
     if (selectedControl !== null) params.set('control', String(selectedControl));
     if (selectedSpin !== null) params.set('spin', String(selectedSpin));
     if (selectedDurability !== null) params.set('durability', String(selectedDurability));
     if (selectedComfort !== null) params.set('comfort', String(selectedComfort));
-    if (syncSearchQuery) params.set('q', syncSearchQuery);
+    if (submittedQuery) params.set('q', submittedQuery);
     if (sortOption && sortOption !== 'latest') params.set('sort', sortOption);
     if (viewMode !== 'grid') params.set('view', viewMode);
     if (priceRange[0] > 0) params.set('minPrice', String(priceRange[0]));
@@ -210,7 +224,7 @@ export default function FilterableProductList() {
     lastSerializedRef.current = newSearch;
 
     router.replace(`${pathname}?${newSearch}`, { scroll: false });
-  }, [selectedBrand, selectedBounce, selectedControl, selectedSpin, selectedDurability, selectedComfort, syncSearchQuery, sortOption, viewMode, priceRange, router, pathname]);
+  }, [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, submittedQuery, sortOption, viewMode, priceRange, router, pathname]);
 
   // infinite scroll 관찰자
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -231,7 +245,7 @@ export default function FilterableProductList() {
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
       {/* 필터 사이드바 */}
-      <div className={cn('space-y-6 lg:col-span-1', showFilters ? 'block' : 'hidden', 'lg:block')}>
+      <div className={cn(showFilters ? 'block' : 'hidden', 'lg:block', 'space-y-6 lg:col-span-1')}>
         <div className="sticky top-20 self-start">
           <FilterPanel
             selectedBrand={selectedBrand}
@@ -252,10 +266,15 @@ export default function FilterableProductList() {
             setPriceRange={setPriceRange}
             resetKey={resetKey}
             activeFiltersCount={activeFiltersCount}
-            onReset={handleReset}
+            onReset={handleResetAll}
             isLoadingInitial={isLoadingInitial}
+            showFilters={showFilters}
+            setShowFilters={setShowFilters}
             brands={brands}
             onClose={() => setShowFilters(false)}
+            onSearchSubmit={handleSearchSubmit}
+            onClearSearch={handleClearSearch}
+            onClearInput={handleClearInput}
           />
         </div>
       </div>
@@ -322,7 +341,7 @@ export default function FilterableProductList() {
             </div>
             <h3 className="text-xl font-semibold mb-2">검색 결과가 없습니다</h3>
             <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
-            <Button onClick={handleReset} variant="outline">
+            <Button onClick={handleResetAll} variant="outline">
               필터 초기화
             </Button>
           </div>
