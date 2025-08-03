@@ -64,7 +64,7 @@ const sampleReviews: Review[] = [
   },
 ];
 
-export default async function ReviewsClient() {
+export default function ReviewsClient() {
   const [selectedReviews, setSelectedReviews] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
