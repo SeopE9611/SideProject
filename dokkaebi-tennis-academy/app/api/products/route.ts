@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { getHangulInitials } from '@/lib/hangul-utils';
 
 export async function POST(req: NextRequest) {
   //  인증 처리
@@ -39,12 +40,44 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET: 필터/정렬/페이징된 상품 리스트를 반환
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const params = url.searchParams;
 
+    // preview=1일 경우: 실시간 미리보기용 검색 (초성 포함)
+    if (params.get('preview') === '1') {
+      const query = params.get('query')?.trim() || '';
+      const client = await clientPromise;
+      const db = client.db();
+      const products = await db.collection('products').find().toArray();
+
+      const initialsQuery = getHangulInitials(query);
+      const isChosungOnly = /^[ㄱ-ㅎ]+$/.test(query); // 초성만 입력된 경우
+
+      const filtered = products.filter((product: any) => {
+        const name = product.name ?? '';
+        const nameInitials = getHangulInitials(name);
+
+        if (isChosungOnly) {
+          // 초성 검색일 경우
+          return nameInitials.includes(initialsQuery);
+        } else {
+          // 일반 문자열 검색일 경우
+          return name.includes(query);
+        }
+      });
+      return NextResponse.json(
+        filtered.slice(0, 10).map((product: any) => ({
+          _id: product._id.toString(),
+          name: product.name,
+          price: product.price,
+          image: product.images?.[0] ?? null,
+        }))
+      );
+    }
+
+    // 필터/페이징 상품 리스트 반환
     // 필터 파싱
     const brand = params.get('brand');
     const power = params.get('power');
@@ -55,44 +88,31 @@ export async function GET(req: NextRequest) {
     const q = params.get('q') || '';
     const sort = params.get('sort') || 'latest';
 
-    // 페이징: 기본 page=1, limit=20 (최대 100까지 제한)
+    // 페이징
     const page = Math.max(1, Number(params.get('page') || '1'));
     const limit = Math.min(100, Number(params.get('limit') || '20'));
     const skip = (page - 1) * limit;
 
-    // Mongo 필터 조합
     const filter: Record<string, any> = {};
-
     if (brand) filter.brand = brand;
     if (power) filter['features.power'] = { $gte: Number(power) };
     if (control) filter['features.control'] = { $gte: Number(control) };
     if (spin) filter['features.spin'] = { $gte: Number(spin) };
     if (durability) filter['features.durability'] = { $gte: Number(durability) };
     if (comfort) filter['features.comfort'] = { $gte: Number(comfort) };
-    if (q) filter.name = { $regex: q, $options: 'i' }; // 대소문자 무시 부분 일치 검색
+    if (q) filter.name = { $regex: q, $options: 'i' };
 
     const client = await clientPromise;
-    const db = client.db(); // 기본 DB: dokkaebi-tennis
+    const db = client.db();
     const collection = db.collection('products');
 
-    // 정렬 매핑
-    let sortObj: Record<string, number> = { _id: -1 }; // 최신순 기본
+    let sortObj: { [key: string]: 1 | -1 } = { _id: -1 };
+
     if (sort === 'price-low') sortObj = { price: 1 };
     else if (sort === 'price-high') sortObj = { price: -1 };
-    // popular 같은 추가 정렬 기준은 나중에 metric 기반으로 확장 가능
 
-    // 병렬로 총 갯수와 실제 페이지 데이터 가져오기
-    const [total, itemsRaw] = await Promise.all([
-      collection.countDocuments(filter),
-      collection
-        .find(filter)
-        .sort(sortObj as any)
-        .skip(skip)
-        .limit(limit)
-        .toArray(),
-    ]);
+    const [total, itemsRaw] = await Promise.all([collection.countDocuments(filter), collection.find(filter).sort(sortObj).skip(skip).limit(limit).toArray()]);
 
-    // ObjectId -> string 변환 포함
     const items = itemsRaw.map((product: any) => ({
       ...product,
       _id: product._id.toString(),
@@ -102,12 +122,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       products: items,
-      pagination: {
-        page,
-        limit,
-        total,
-        hasMore,
-      },
+      pagination: { page, limit, total, hasMore },
     });
   } catch (err) {
     console.error('[상품 리스트 조회 오류]', err);

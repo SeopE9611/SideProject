@@ -10,6 +10,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { UserNav } from '@/components/nav/UserNav';
 import { UserNavMobile } from '@/components/nav/UserNavMobile';
 import { useRouter } from 'next/navigation';
+import SearchPreview from '@/components/SearchPreview';
 
 const Header = () => {
   const router = useRouter();
@@ -81,14 +82,7 @@ const Header = () => {
 
           {/* 데스크탑 */}
           <div className="hidden md:flex items-center gap-4">
-            <div className="relative group">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
-              <Input
-                type="search"
-                placeholder="스트링 검색..."
-                className="w-[250px] lg:w-[300px] pl-10 rounded-full bg-gray-50 dark:bg-gray-800 border-0 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-700 transition-all duration-300"
-              />
-            </div>
+            <SearchPreview className="w-[250px] lg:w-[300px]" placeholder="스트링 검색..." />
 
             <Link href="/cart">
               <Button variant="ghost" size="icon" className="relative hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full">
@@ -124,7 +118,7 @@ const Header = () => {
 
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input type="search" placeholder="스트링 검색..." className="pl-10 rounded-full bg-gray-50 dark:bg-gray-800 border-0" />
+                  <SearchPreview className="mt-1" placeholder="스트링 검색..." />
                 </div>
 
                 <nav className="grid gap-2">
