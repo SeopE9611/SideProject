@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useDeferredValue, useEffect, useRef } from 'react';
+import { useState, useMemo, useDeferredValue, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,7 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Search, Filter, Grid3X3, List, Star, ShoppingCart, Eye, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts'; // 경로가 다르면 조정
+import { SkeletonFilterDetailed, SkeletonProductCard } from '@/app/products/SkeletonProductCard';
 
+// 타입 정의 (서버에서 받는 형태)
 type Product = {
   _id: string;
   name: string;
@@ -25,6 +28,7 @@ type Product = {
   isNew?: boolean;
 };
 
+// 키맵 (성능 항목 한글 라벨)
 const keyMap = {
   power: '반발력',
   durability: '내구성',
@@ -33,6 +37,7 @@ const keyMap = {
   comfort: '편안함',
 };
 
+// 브랜드 목록
 const brands = [
   { label: '루키론', value: 'lookielon' },
   { label: '테크니파이버', value: 'technifibre' },
@@ -47,15 +52,14 @@ const brands = [
   { label: '키르쉬바움', value: 'kirschbaum' },
   { label: '고센', value: 'gosen' },
 ];
-
 const brandLabelMap: Record<string, string> = Object.fromEntries(brands.map(({ value, label }) => [value, label]));
 
-export default function FilterableProductList({ products }: { products: Product[] }) {
+export default function FilterableProductList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // 정렬 / 뷰모드
+  // 정렬 / 뷰 모드
   const [sortOption, setSortOption] = useState('latest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -70,62 +74,37 @@ export default function FilterableProductList({ products }: { products: Product[
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
   const [showFilters, setShowFilters] = useState(false);
 
-  // deferred + 안정된 검색어
+  // deferred + 디바운스된 안정된 검색어 (입력 빠르게 바뀌어도 과도한 요청 막기)
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [syncSearchQuery, setSyncSearchQuery] = useState(deferredSearchQuery);
   useEffect(() => {
     const id = setTimeout(() => {
       setSyncSearchQuery(deferredSearchQuery);
-    }, 200);
+    }, 200); // 200ms 디바운스
     return () => clearTimeout(id);
   }, [deferredSearchQuery]);
 
-  // 리셋 애니메이션 key
+  // 애니메이션 reset key
   const [resetKey, setResetKey] = useState(0);
 
-  // 성능 필터 배열 (중복 제거)
+  // 성능 필터 배열로 중복 제거
   const performanceFiltersConfig = useMemo(
     () => [
-      {
-        label: '반발력',
-        state: selectedBounce,
-        setter: setSelectedBounce,
-        featureKey: 'power' as const,
-      },
-      {
-        label: '컨트롤',
-        state: selectedControl,
-        setter: setSelectedControl,
-        featureKey: 'control' as const,
-      },
-      {
-        label: '스핀',
-        state: selectedSpin,
-        setter: setSelectedSpin,
-        featureKey: 'spin' as const,
-      },
-      {
-        label: '내구성',
-        state: selectedDurability,
-        setter: setSelectedDurability,
-        featureKey: 'durability' as const,
-      },
-      {
-        label: '편안함',
-        state: selectedComfort,
-        setter: setSelectedComfort,
-        featureKey: 'comfort' as const,
-      },
+      { label: '반발력', state: selectedBounce, setter: setSelectedBounce, featureKey: 'power' as const },
+      { label: '컨트롤', state: selectedControl, setter: setSelectedControl, featureKey: 'control' as const },
+      { label: '스핀', state: selectedSpin, setter: setSelectedSpin, featureKey: 'spin' as const },
+      { label: '내구성', state: selectedDurability, setter: setSelectedDurability, featureKey: 'durability' as const },
+      { label: '편안함', state: selectedComfort, setter: setSelectedComfort, featureKey: 'comfort' as const },
     ],
     [selectedBounce, selectedControl, selectedSpin, selectedDurability, selectedComfort]
   );
 
-  // 루프 방지용 refs
+  // URL sync 초기화/변경 관리 (루프 방지)
   const isInitializingRef = useRef(true);
   const lastSerializedRef = useRef('');
 
-  // URL -> 상태 (초기/히스토리 네비게이션)
   useEffect(() => {
+    // 최초 마운트 시 URL -> 상태
     if (isInitializingRef.current) {
       const brand = searchParams.get('brand');
       setSelectedBrand(brand || null);
@@ -155,13 +134,12 @@ export default function FilterableProductList({ products }: { products: Product[
       const maxPrice = searchParams.get('maxPrice');
       setPriceRange([minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 50000]);
 
-      // 초기 상태 반영된 쿼리 기억해두면 바로 replace 안 함
       lastSerializedRef.current = searchParams.toString();
       isInitializingRef.current = false;
       return;
     }
 
-    // 뒤로/앞으로 등 searchParams 변화 시 필요한 부분만 업데이트
+    // 뒤로/앞으로 등 searchParams 변화 대응: 필요한 것만 다시 세팅
     const brand = searchParams.get('brand');
     if ((brand || null) !== selectedBrand) setSelectedBrand(brand || null);
 
@@ -201,41 +179,30 @@ export default function FilterableProductList({ products }: { products: Product[
     if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
   }, [searchParams]);
 
-  // 필터링된 상품
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const features = product.features ?? {};
+  // 서버 필터링 + 무한 스크롤 훅에 전달할 현재 상태를 묶음
+  const {
+    products: productsList,
+    isLoadingInitial,
+    isFetchingMore,
+    error,
+    hasMore,
+    loadMore,
+    reset: resetInfinite,
+  } = useInfiniteProducts({
+    brand: selectedBrand ?? undefined,
+    power: selectedBounce ?? undefined,
+    control: selectedControl ?? undefined,
+    spin: selectedSpin ?? undefined,
+    durability: selectedDurability ?? undefined,
+    comfort: selectedComfort ?? undefined,
+    q: syncSearchQuery,
+    sort: sortOption,
+    limit: 6,
+  });
 
-      const brandMatch = selectedBrand === null ? true : (product.brand ?? '').toLowerCase() === selectedBrand;
-
-      const performanceMatch = performanceFiltersConfig.every(({ state, featureKey }) => (state !== null ? (features[featureKey] ?? 0) >= state : true));
-
-      const nameMatch = deferredSearchQuery === '' ? true : product.name.toLowerCase().includes(deferredSearchQuery.toLowerCase());
-
-      const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
-
-      return brandMatch && performanceMatch && nameMatch && priceMatch;
-    });
-  }, [products, selectedBrand, performanceFiltersConfig, deferredSearchQuery, priceRange]);
-
-  // 정렬된 상품
-  const sortedProducts = useMemo(() => {
-    return [...filteredProducts].sort((a, b) => {
-      switch (sortOption) {
-        case 'price-low':
-          return a.price - b.price;
-        case 'price-high':
-          return b.price - a.price;
-        case 'popular':
-          return 0;
-        case 'latest':
-        default:
-          return b._id.localeCompare(a._id);
-      }
-    });
-  }, [filteredProducts, sortOption]);
-
-  const resetFilters = () => {
+  // 필터 reset: 로컬 상태 + 훅 상태 + 애니메이션
+  const handleReset = () => {
+    setResetKey((k) => k + 1);
     setSelectedBrand(null);
     setSelectedBounce(null);
     setSelectedDurability(null);
@@ -244,16 +211,16 @@ export default function FilterableProductList({ products }: { products: Product[
     setSelectedComfort(null);
     setSearchQuery('');
     setPriceRange([0, 50000]);
-  };
-  const handleReset = () => {
-    setResetKey((k) => k + 1);
-    resetFilters();
+    setSortOption('latest');
+    setViewMode('grid');
+    resetInfinite(); // 서버쪽도 리셋
   };
 
+  // active filters 개수 (URL 동기화 대상 기준)
   const priceChanged = priceRange[0] > 0 || priceRange[1] < 50000;
-  const activeFiltersCount = [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, searchQuery, priceChanged].filter(Boolean).length;
+  const activeFiltersCount = [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, syncSearchQuery, priceChanged].filter(Boolean).length;
 
-  // 상태 -> URL 반영 (중복/루프 방지)
+  // 상태 -> URL 반영 (루프 방지)
   useEffect(() => {
     if (isInitializingRef.current) return;
 
@@ -278,88 +245,108 @@ export default function FilterableProductList({ products }: { products: Product[
     router.replace(`${pathname}?${newSearch}`, { scroll: false });
   }, [selectedBrand, selectedBounce, selectedControl, selectedSpin, selectedDurability, selectedComfort, syncSearchQuery, sortOption, viewMode, priceRange, router, pathname]);
 
+  // 무한 스크롤: 마지막 아이템 감지해서 loadMore 트리거
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const lastProductRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isFetchingMore) return;
+      if (observerRef.current) observerRef.current.disconnect();
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMore();
+        }
+      });
+      if (node) observerRef.current.observe(node);
+    },
+    [isFetchingMore, hasMore, loadMore]
+  );
+
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
       {/* 필터 사이드바 */}
       <div className={cn('space-y-6 lg:col-span-1', 'lg:block', showFilters ? 'block' : 'hidden')}>
         <div className="sticky top-20 self-start">
-          <div className="max-h-[calc(100vh-6rem)] overflow-y-auto rounded-xl border bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm p-6 shadow-lg">
-            <AnimatePresence mode="wait">
-              <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">필터</h2>
-                  {activeFiltersCount > 0 && (
-                    <Button variant="ghost" size="sm" onClick={handleReset} className="text-xs">
-                      초기화 ({activeFiltersCount})
-                    </Button>
-                  )}
-                </div>
-
-                {/* 검색 */}
-                <div className="mb-6">
-                  <Label htmlFor="search" className="mb-3 block font-medium">
-                    검색
-                  </Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="상품명 검색..." className="pl-10 rounded-lg border-2 focus:border-blue-500 transition-colors" />
+          <div className="rounded-xl border bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm p-6 shadow-lg">
+            {isLoadingInitial ? (
+              <SkeletonFilterDetailed performanceCount={performanceFiltersConfig.length} />
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">필터</h2>
+                    {activeFiltersCount > 0 && (
+                      <Button variant="ghost" size="sm" onClick={handleReset} className="text-xs">
+                        초기화 ({activeFiltersCount})
+                      </Button>
+                    )}
                   </div>
-                </div>
 
-                {/* 가격 범위 */}
-                <div className="mb-6">
-                  <Label className="mb-3 block font-medium">가격 범위</Label>
+                  {/* 검색 */}
+                  <div className="mb-6">
+                    <Label htmlFor="search" className="mb-3 block font-medium">
+                      검색
+                    </Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="상품명 검색..." className="pl-10 rounded-lg border-2 focus:border-blue-500 transition-colors" />
+                    </div>
+                  </div>
+
+                  {/* 가격 범위 */}
+                  <div className="mb-6">
+                    <Label className="mb-3 block font-medium">가격 범위</Label>
+                    <div className="space-y-4">
+                      <Slider value={priceRange} onValueChange={(val) => setPriceRange([val[0] as number, val[1] as number])} min={0} max={50000} step={500} className="w-full" />
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span className="font-medium">₩{priceRange[0].toLocaleString()}</span>
+                        <span className="font-medium">₩{priceRange[1].toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 브랜드 */}
+                  <div className="mb-6">
+                    <Label htmlFor="brand" className="mb-3 block font-medium">
+                      브랜드
+                    </Label>
+                    <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
+                      <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
+                        <SelectValue placeholder="브랜드 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체</SelectItem>
+                        {brands.map((brand) => (
+                          <SelectItem key={brand.value} value={brand.value}>
+                            {brand.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* 성능 필터 */}
                   <div className="space-y-4">
-                    <Slider value={priceRange} onValueChange={(val) => setPriceRange([val[0] as number, val[1] as number])} min={0} max={50000} step={500} className="w-full" />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span className="font-medium">₩{priceRange[0].toLocaleString()}</span>
-                      <span className="font-medium">₩{priceRange[1].toLocaleString()}</span>
-                    </div>
+                    <h3 className="font-medium text-lg">성능</h3>
+                    {performanceFiltersConfig.map(({ label, state, setter, featureKey }) => (
+                      <div key={featureKey}>
+                        <Label className="mb-2 block text-sm font-medium">{label}</Label>
+                        <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={state !== null ? String(state) : 'all'}>
+                          <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
+                            <SelectValue placeholder="선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체</SelectItem>
+                            <SelectItem value="5">★★★★★</SelectItem>
+                            <SelectItem value="4">★★★★☆ 이상</SelectItem>
+                            <SelectItem value="3">★★★☆☆ 이상</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ))}
                   </div>
-                </div>
-
-                {/* 브랜드 */}
-                <div className="mb-6">
-                  <Label htmlFor="brand" className="mb-3 block font-medium">
-                    브랜드
-                  </Label>
-                  <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
-                    <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
-                      <SelectValue placeholder="브랜드 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">전체</SelectItem>
-                      {brands.map((brand) => (
-                        <SelectItem key={brand.value} value={brand.value}>
-                          {brand.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* 성능 필터 */}
-                <div className="space-y-4">
-                  <h3 className="font-medium text-lg">성능</h3>
-                  {performanceFiltersConfig.map(({ label, state, setter, featureKey }) => (
-                    <div key={featureKey}>
-                      <Label className="mb-2 block text-sm font-medium">{label}</Label>
-                      <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={state !== null ? String(state) : 'all'}>
-                        <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
-                          <SelectValue placeholder="선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">전체</SelectItem>
-                          <SelectItem value="5">★★★★★</SelectItem>
-                          <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                          <SelectItem value="3">★★★☆☆ 이상</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
+            )}
           </div>
         </div>
       </div>
@@ -370,7 +357,7 @@ export default function FilterableProductList({ products }: { products: Product[
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div className="flex items-center gap-4">
             <div className="text-lg font-semibold">
-              총 <span className="text-blue-600 font-bold">{sortedProducts.length}</span> 개 상품
+              총 <span className="text-blue-600 font-bold">{(productsList ?? []).length}</span> 개 상품
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowFilters((f) => !f)} className="lg:hidden" aria-expanded={showFilters} aria-label="필터 열기">
               <Filter className="w-4 h-4 mr-2" />
@@ -404,8 +391,22 @@ export default function FilterableProductList({ products }: { products: Product[
           </div>
         </div>
 
-        {/* 상품 그리드/리스트 */}
-        {sortedProducts.length === 0 ? (
+        {/* 상품 그리드 / 빈 상태 / 로딩 */}
+        {isLoadingInitial ? (
+          // 초기 로딩 스켈레톤 자리 표시자
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonProductCard key={i} />
+            ))}
+          </div>
+        ) : error ? (
+          // 에러 발생 시
+          <div className="text-center py-16">
+            <p className="text-red-500 mb-2">불러불러오는 중 오류가 발생했습니다.</p>
+            <Button onClick={() => loadMore()}>다시 시도</Button>
+          </div>
+        ) : productsList.length === 0 ? (
+          // 결과 없음
           <div className="text-center py-16">
             <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center">
               <Search className="w-12 h-12 text-gray-400" />
@@ -417,27 +418,44 @@ export default function FilterableProductList({ products }: { products: Product[
             </Button>
           </div>
         ) : (
-          <div className={cn('grid gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
-            {sortedProducts.map((product) => (
-              <ProductCard key={product._id} product={product} viewMode={viewMode} brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand} />
-            ))}
-          </div>
+          // 정상 상품 리스트
+          <>
+            <div className={cn('grid gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+              {productsList.map((product, i) => {
+                const isLast = i === productsList.length - 1;
+                return (
+                  <div key={product._id} ref={isLast ? lastProductRef : undefined}>
+                    <ProductCard product={product} viewMode={viewMode} brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand} />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 추가 로딩 표시 */}
+            {isFetchingMore && (
+              <div aria-live="polite" className="text-center py-4 flex justify-center items-center gap-2">
+                <div className="h-4 w-4 rounded-full border-2 border-t-transparent animate-spin" />
+                <span>더 불러오는 중...</span>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 }
 
+// ProductCard는 기존 것과 동일. 필요시 React.memo로 감싸서 렌더 최적화 가능
 function ProductCard({ product, viewMode, brandLabel }: { product: Product; viewMode: 'grid' | 'list'; brandLabel: string }) {
   if (viewMode === 'list') {
     return (
       <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-2 hover:border-blue-300">
+        {/* ... 기존 list view 내용 그대로 ... */}
         <div className="flex">
           <div className="relative w-48 h-48 flex-shrink-0">
             <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
             {product.isNew && <Badge className="absolute right-2 top-2 bg-gradient-to-r from-red-500 to-pink-500 text-white">NEW</Badge>}
           </div>
-
           <div className="flex-1 p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -457,10 +475,9 @@ function ProductCard({ product, viewMode, brandLabel }: { product: Product; view
                 <div className="text-sm text-muted-foreground line-through">{Math.round(product.price * 1.2).toLocaleString()}원</div>
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-4 mb-4">
               {product.features ? (
-                Object.entries(product.features as Record<string, number>).map(([key, value]) => (
+                Object.entries(product.features).map(([key, value]) => (
                   <div key={key} className="flex justify-between">
                     <span className="text-sm text-muted-foreground">{keyMap[key as keyof typeof keyMap] || key}:</span>
                     <span className="text-sm font-medium">
@@ -473,7 +490,6 @@ function ProductCard({ product, viewMode, brandLabel }: { product: Product; view
                 <div className="text-muted-foreground text-sm">성능 정보 없음</div>
               )}
             </div>
-
             <div className="flex gap-2">
               <Link href={`/products/${product._id}`} className="flex-1">
                 <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
@@ -494,9 +510,11 @@ function ProductCard({ product, viewMode, brandLabel }: { product: Product; view
     );
   }
 
+  // grid view (기본)
   return (
     <Link href={`/products/${product._id}`}>
       <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-2 hover:border-blue-300 group">
+        {/* ... 기존 grid view 내용 그대로 ... */}
         <div className="relative">
           <Image
             src={(product.images?.[0] as string) || '/placeholder.svg?height=300&width=300&query=tennis+string'}
@@ -511,8 +529,6 @@ function ProductCard({ product, viewMode, brandLabel }: { product: Product; view
               15% 할인
             </Badge>
           </div>
-
-          {/* 호버 오버레이 */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
             <div className="flex gap-2">
               <Button size="sm" className="bg-white text-black hover:bg-gray-100">
@@ -529,7 +545,6 @@ function ProductCard({ product, viewMode, brandLabel }: { product: Product; view
         <CardContent className="p-5">
           <div className="text-sm text-muted-foreground mb-2 font-medium">{brandLabel}</div>
           <CardTitle className="text-lg mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">{product.name}</CardTitle>
-
           <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -538,10 +553,9 @@ function ProductCard({ product, viewMode, brandLabel }: { product: Product; view
             </div>
             <span className="text-xs text-muted-foreground">(128)</span>
           </div>
-
           <div className="space-y-1 mb-4 text-xs">
             {product.features ? (
-              Object.entries(product.features as Record<string, number>)
+              Object.entries(product.features)
                 .slice(0, 3)
                 .map(([key, value]) => (
                   <div key={key} className="flex justify-between">
