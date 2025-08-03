@@ -165,7 +165,7 @@ const posts = [
   },
 ];
 
-export default async function BoardsPageClient() {
+export default function BoardsPageClient() {
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [boardTypeFilter, setBoardTypeFilter] = useState('all');

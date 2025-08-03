@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Star, Trash2, User, Calendar, Tag, Mail } from 'lucide-react';
+import { ArrowLeft, Star, Trash2, User, Calendar, Tag, Mail, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
+// 리뷰 데이터 타입 정의
 interface Review {
   id: string;
   authorName: string;
@@ -20,7 +21,7 @@ interface Review {
   productName?: string;
 }
 
-// 샘플 리뷰 데이터 (임시)
+// 샘플 리뷰 데이터 (실제에는 API로 교체)
 const sampleReviews: Review[] = [
   {
     id: 'rev_001',
@@ -51,40 +52,50 @@ const sampleReviews: Review[] = [
   },
 ];
 
-interface ReviewDetailClientProps {
+interface Props {
   reviewId: string;
 }
 
-export default function ReviewDetailClient({ reviewId }: ReviewDetailClientProps) {
+export default function ReviewDetailClient({ reviewId }: Props) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // 리뷰 ID로 데이터 조회 (실제에는 fetch / SWR 등으로 교체)
   const review = sampleReviews.find((r) => r.id === reviewId);
 
   if (!review) {
     return (
-      <div className="flex h-[80vh] flex-col items-center justify-center space-y-4">
-        <h1 className="text-2xl font-bold">리뷰를 찾을 수 없습니다</h1>
-        <Button asChild>
-          <Link href="/admin/reviews">
-            <ArrowLeft className="mr-2 h-4 w-4" /> 리뷰 목록으로 돌아가기
-          </Link>
-        </Button>
+      <div className="p-6">
+        <div className="flex h-[60vh] flex-col items-center justify-center space-y-6">
+          <div className="text-center">
+            <MessageSquare className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">리뷰를 찾을 수 없습니다</h1>
+            <p className="text-gray-600">요청하신 리뷰가 존재하지 않거나 삭제되었습니다.</p>
+          </div>
+          <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white">
+            <Link href="/admin/reviews">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              리뷰 목록으로 돌아가기
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
+  // 평점을 별로 표시
   const renderRating = (rating: number) => {
     return (
-      <div className="flex items-center">
+      <div className="flex items-center space-x-1">
         {Array.from({ length: 5 }).map((_, index) => (
-          <Star key={index} className={`h-5 w-5 ${index < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-400'}`} />
+          <Star key={index} className={`h-6 w-6 ${index < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
         ))}
-        <span className="ml-2 text-sm font-medium">{rating}/5</span>
+        <span className="ml-2 text-lg font-semibold text-gray-900">{rating}/5</span>
       </div>
     );
   };
 
+  // 날짜 포맷팅
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('ko-KR', {
@@ -97,22 +108,25 @@ export default function ReviewDetailClient({ reviewId }: ReviewDetailClientProps
     }).format(date);
   };
 
+  // 리뷰 타입에 따른 배지
   const getReviewTypeBadge = (type: Review['type']) => {
     switch (type) {
       case 'lesson':
-        return <Badge className="bg-blue-600 hover:bg-blue-700">레슨 리뷰</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">레슨 리뷰</Badge>;
       case 'stringing':
-        return <Badge className="bg-green-600 hover:bg-green-700">스트링 서비스 리뷰</Badge>;
+        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">스트링 서비스 리뷰</Badge>;
       case 'product':
-        return <Badge className="bg-purple-600 hover:bg-purple-700">상품 리뷰</Badge>;
+        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">상품 리뷰</Badge>;
       default:
-        return <Badge>기타 리뷰</Badge>;
+        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">기타 리뷰</Badge>;
     }
   };
 
+  // 삭제 처리
   const handleDelete = () => {
     if (confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
       setIsDeleting(true);
+      // 실제 구현에서는 API 호출
       setTimeout(() => {
         router.push('/admin/reviews');
       }, 1000);
@@ -120,80 +134,117 @@ export default function ReviewDetailClient({ reviewId }: ReviewDetailClientProps
   };
 
   return (
-    <div className="container mx-auto max-w-4xl space-y-6 p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" asChild>
+    <div className="p-6 space-y-8">
+      {/* 제목 */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg">
+            <MessageSquare className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">리뷰 상세 보기</h1>
+            <p className="mt-2 text-lg text-gray-600">고객 리뷰의 상세 정보를 확인하고 관리하세요</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 네비게이션 */}
+      <div className="flex items-center justify-between mb-6">
+        <Button variant="outline" size="sm" asChild className="border-gray-200 text-gray-700 hover:bg-gray-50 bg-transparent">
           <Link href="/admin/reviews">
-            <ArrowLeft className="mr-2 h-4 w-4" /> 리뷰 목록으로 돌아가기
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            리뷰 목록으로 돌아가기
           </Link>
         </Button>
       </div>
 
-      <Card className="bg-background text-foreground">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col space-y-1.5">
-            <CardTitle className="text-2xl font-bold">리뷰 상세 보기</CardTitle>
-            <CardDescription>해당 리뷰에 대한 상세 정보를 확인할 수 있습니다.</CardDescription>
+      {/* 카드 */}
+      <Card className="border-0 bg-white/80 shadow-xl backdrop-blur-sm max-w-4xl mx-auto">
+        <CardHeader className="pb-6">
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl font-bold text-gray-900">리뷰 정보</CardTitle>
+              {getReviewTypeBadge(review.type)}
+            </div>
+            <CardDescription className="text-gray-600">해당 리뷰에 대한 상세 정보를 확인할 수 있습니다.</CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
-          <div className="rounded-md bg-muted/40 p-4 shadow-md">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex items-start space-x-3">
-                <User className="mt-0.5 h-5 w-5 text-muted" />
+        <CardContent className="space-y-8">
+          {/* 평점 */}
+          <div className="text-center py-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">고객 평점</h3>
+            {renderRating(review.rating)}
+          </div>
+
+          {/* 기본 정보 */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-4 p-6 bg-gray-50 rounded-xl">
+              <div className="flex items-center space-x-3">
+                <div className="bg-blue-100 rounded-lg p-2">
+                  <User className="h-5 w-5 text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900">작성자 정보</h3>
+              </div>
+              <div className="space-y-2">
                 <div>
-                  <h3 className="font-medium text-foreground">작성자</h3>
-                  <p className="text-muted-foreground">{review.authorName}</p>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <Mail className="h-3.5 w-3.5" />
-                    <span>{review.authorEmail}</span>
+                  <p className="text-sm text-gray-600">이름</p>
+                  <p className="font-medium text-gray-900">{review.authorName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">이메일</p>
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-4 w-4 text-gray-400" />
+                    <p className="text-gray-700">{review.authorEmail}</p>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-start space-x-3">
-                <Calendar className="mt-0.5 h-5 w-5 text-muted" />
-                <div>
-                  <h3 className="font-medium text-foreground">작성일</h3>
-                  <p className="text-muted-foreground">{formatDate(review.createdAt)}</p>
+            <div className="space-y-4 p-6 bg-gray-50 rounded-xl">
+              <div className="flex items-center space-x-3">
+                <div className="bg-emerald-100 rounded-lg p-2">
+                  <Calendar className="h-5 w-5 text-emerald-600" />
                 </div>
+                <h3 className="font-semibold text-gray-900">리뷰 정보</h3>
               </div>
-
-              <div className="flex items-start space-x-3">
-                <Tag className="mt-0.5 h-5 w-5 text-muted" />
+              <div className="space-y-2">
                 <div>
-                  <h3 className="font-medium text-foreground">리뷰 타입</h3>
-                  <div className="mt-1">{getReviewTypeBadge(review.type)}</div>
-                  {review.type === 'product' && review.productName && <p className="mt-1 text-sm text-muted-foreground">상품명: {review.productName}</p>}
+                  <p className="text-sm text-gray-600">작성일</p>
+                  <p className="font-medium text-gray-900">{formatDate(review.createdAt)}</p>
                 </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <Star className="mt-0.5 h-5 w-5 text-muted" />
                 <div>
-                  <h3 className="font-medium text-foreground">평점</h3>
-                  <div className="mt-1">{renderRating(review.rating)}</div>
+                  <p className="text-sm text-gray-600">리뷰 타입</p>
+                  <div className="flex items-center space-x-2">
+                    <Tag className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-700">
+                      {review.type === 'lesson' && '레슨 리뷰'}
+                      {review.type === 'stringing' && '스트링 서비스 리뷰'}
+                      {review.type === 'product' && '상품 리뷰'}
+                    </span>
+                  </div>
+                  {review.type === 'product' && review.productName && <p className="text-sm text-gray-500 mt-1">상품명: {review.productName}</p>}
                 </div>
               </div>
             </div>
           </div>
 
-          <Separator className="bg-muted" />
+          <Separator className="bg-gray-200" />
 
-          <div>
-            <h3 className="mb-2 font-medium text-foreground">리뷰 내용</h3>
-            <div className="rounded-md bg-muted/40 p-4 shadow-md">
-              <p className="whitespace-pre-line text-muted-foreground">{review.content}</p>
+          {/* 내용 */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">리뷰 내용</h3>
+            <div className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border-l-4 border-emerald-500">
+              <p className="text-gray-800 leading-relaxed whitespace-pre-line text-lg">"{review.content}"</p>
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end space-x-2 pt-2">
-          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} className="bg-[#ef4444] text-[#ffffff] hover:bg-opacity-90 dark:bg-[#b91c1c] dark:text-foreground">
+        <CardFooter className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} className="bg-red-600 hover:bg-red-700 text-white">
             {isDeleting ? (
               <>
-                <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></span>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                 삭제 중...
               </>
             ) : (

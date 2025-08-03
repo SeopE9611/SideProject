@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { PlusCircle, Search, Filter, ArrowUpDown, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Search, Filter, ArrowUpDown, MoreHorizontal, Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,12 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import { redirect } from 'next/navigation';
-import AccessDenied from '@/components/system/AccessDenied';
 
-// 스트링 상품 목록 데이터 (실제로는 API에서 가져올 것입니다)
+// 스트링 상품 목록 더미 데이터
 const strings = [
   {
     id: '1',
@@ -154,110 +150,183 @@ const strings = [
 
 // 상품 상태에 따른 배지 색상 및 텍스트
 const statusMap = {
-  active: { label: '판매중', variant: 'default' },
-  out_of_stock: { label: '품절', variant: 'destructive' },
-  low_stock: { label: '재고 부족', variant: 'warning' },
-  draft: { label: '임시저장', variant: 'secondary' },
+  active: { label: '판매중', variant: 'default', color: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' },
+  out_of_stock: { label: '품절', variant: 'destructive', color: 'bg-red-100 text-red-800 hover:bg-red-200' },
+  low_stock: { label: '재고 부족', variant: 'warning', color: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' },
+  draft: { label: '임시저장', variant: 'secondary', color: 'bg-gray-100 text-gray-800 hover:bg-gray-200' },
 };
 
 export default async function ProductsPage() {
-  const user = await getCurrentUser();
-
-  if (!user || user.role !== 'admin') {
-    return <AccessDenied />;
-  }
+  // 통계 계산
+  const totalProducts = strings.length;
+  const activeProducts = strings.filter((s) => s.status === 'active').length;
+  const outOfStockProducts = strings.filter((s) => s.status === 'out_of_stock').length;
+  const lowStockProducts = strings.filter((s) => s.status === 'low_stock').length;
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">스트링 상품 관리</h2>
-          <p className="text-muted-foreground">테니스 스트링 상품을 관리하고 새로운 스트링을 등록하세요.</p>
+    <div className="p-6 space-y-8">
+      {/* 페이지 제목 */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
+            <Package className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">상품 관리</h1>
+            <p className="mt-2 text-lg text-gray-600">테니스 스트링 상품을 효율적으로 관리하세요</p>
+          </div>
         </div>
-        <Button asChild>
-          <Link href="/admin/products/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            스트링 등록
-          </Link>
-        </Button>
       </div>
 
-      <Separator />
+      {/* 통계 카드 */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">전체 상품</p>
+                <p className="text-3xl font-bold text-gray-900">{totalProducts}</p>
+              </div>
+              <div className="bg-blue-50 rounded-xl p-3">
+                <Package className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>스트링 목록</CardTitle>
-          <CardDescription>총 {strings.length}개의 스트링이 등록되어 있습니다.</CardDescription>
+        <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">판매 중</p>
+                <p className="text-3xl font-bold text-gray-900">{activeProducts}</p>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-3">
+                <CheckCircle className="h-6 w-6 text-emerald-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">재고 부족</p>
+                <p className="text-3xl font-bold text-gray-900">{lowStockProducts}</p>
+              </div>
+              <div className="bg-yellow-50 rounded-xl p-3">
+                <AlertTriangle className="h-6 w-6 text-yellow-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">품절</p>
+                <p className="text-3xl font-bold text-gray-900">{outOfStockProducts}</p>
+              </div>
+              <div className="bg-red-50 rounded-xl p-3">
+                <TrendingUp className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 상품 관리 카드 */}
+      <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+            <div>
+              <CardTitle className="text-xl font-semibold text-gray-900">스트링 목록</CardTitle>
+              <CardDescription className="text-gray-600">총 {strings.length}개의 스트링이 등록되어 있습니다.</CardDescription>
+            </div>
+            <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg">
+              <Link href="/admin/products/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                스트링 등록
+              </Link>
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+
+        <CardContent className="space-y-6">
           <div className="mb-4 flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div className="flex w-full max-w-sm items-center space-x-2">
-              <Input placeholder="스트링명, 브랜드, SKU로 검색" className="h-9" type="search" />
-              <Button variant="outline" size="sm" className="h-9 px-2 lg:px-3">
-                <Search className="h-4 w-4" />
-                <span className="ml-2 hidden lg:inline">검색</span>
-              </Button>
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input placeholder="스트링명, 브랜드, SKU로 검색" className="pl-10 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500" type="search" />
+              </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" className="h-9">
+              <Button variant="outline" size="sm" className="border-gray-200 text-gray-700 hover:bg-gray-50 bg-transparent">
                 <Filter className="mr-2 h-4 w-4" />
                 필터
               </Button>
-              <Button variant="outline" size="sm" className="h-9">
+              <Button variant="outline" size="sm" className="border-gray-200 text-gray-700 hover:bg-gray-50 bg-transparent">
                 <ArrowUpDown className="mr-2 h-4 w-4" />
                 정렬
               </Button>
             </div>
           </div>
 
-          <div className="rounded-md border">
+          <div className="rounded-lg border border-gray-200 overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>스트링명</TableHead>
-                  <TableHead>브랜드</TableHead>
-                  <TableHead>게이지</TableHead>
-                  <TableHead>재질</TableHead>
-                  <TableHead className="text-right">가격</TableHead>
-                  <TableHead className="text-right">재고</TableHead>
-                  <TableHead>상태</TableHead>
-                  <TableHead className="text-right">관리</TableHead>
+                <TableRow className="bg-gray-50/80 hover:bg-gray-50/80">
+                  <TableHead className="font-semibold text-gray-900">스트링명</TableHead>
+                  <TableHead className="font-semibold text-gray-900">브랜드</TableHead>
+                  <TableHead className="font-semibold text-gray-900">게이지</TableHead>
+                  <TableHead className="font-semibold text-gray-900">재질</TableHead>
+                  <TableHead className="font-semibold text-gray-900 text-right">가격</TableHead>
+                  <TableHead className="font-semibold text-gray-900 text-right">재고</TableHead>
+                  <TableHead className="font-semibold text-gray-900">상태</TableHead>
+                  <TableHead className="font-semibold text-gray-900 text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {strings.map((string) => (
-                  <TableRow key={string.id}>
+                  <TableRow key={string.id} className="hover:bg-gray-50/50 transition-colors">
                     <TableCell className="font-medium">
-                      <Link href={`/admin/products/${string.id}`} className="hover:underline">
-                        {string.name}
+                      <Link href={`/admin/products/${string.id}`} className="hover:text-emerald-600 transition-colors">
+                        <div className="space-y-1">
+                          <div className="text-gray-900">{string.name}</div>
+                          <div className="text-xs text-gray-500">{string.sku}</div>
+                        </div>
                       </Link>
                     </TableCell>
-                    <TableCell>{string.brand}</TableCell>
-                    <TableCell>{string.gauge}</TableCell>
-                    <TableCell>{string.material}</TableCell>
-                    <TableCell className="text-right">{string.price.toLocaleString()}원</TableCell>
-                    <TableCell className="text-right">{string.stock > 0 ? string.stock : <span className="text-red-500">품절</span>}</TableCell>
+                    <TableCell className="text-gray-700">{string.brand}</TableCell>
+                    <TableCell className="text-gray-700">{string.gauge}</TableCell>
+                    <TableCell className="text-gray-700">{string.material}</TableCell>
+                    <TableCell className="text-right font-medium text-gray-900">{string.price.toLocaleString()}원</TableCell>
+                    <TableCell className="text-right">{string.stock > 0 ? <span className="font-medium text-gray-900">{string.stock}</span> : <span className="font-medium text-red-600">품절</span>}</TableCell>
                     <TableCell>
-                      <Badge variant={statusMap[string.status as keyof typeof statusMap].variant as any}>{statusMap[string.status as keyof typeof statusMap].label}</Badge>
+                      <Badge variant="outline" className={statusMap[string.status as keyof typeof statusMap].color}>
+                        {statusMap[string.status as keyof typeof statusMap].label}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
                             <span className="sr-only">메뉴 열기</span>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuLabel>작업</DropdownMenuLabel>
-                          <DropdownMenuItem asChild>
+                          <DropdownMenuItem asChild className="cursor-pointer">
                             <Link href={`/admin/products/${string.id}`}>상세 보기</Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
+                          <DropdownMenuItem asChild className="cursor-pointer">
                             <Link href={`/admin/products/${string.id}/edit`}>수정</Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">삭제</DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600 cursor-pointer">삭제</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
