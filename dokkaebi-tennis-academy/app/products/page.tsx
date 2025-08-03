@@ -1,5 +1,5 @@
 import clientPromise from '@/lib/mongodb';
-import FilterableProductList from '@/app/products/FilterableProductList';
+import FilterableProductList from '@/app/products/components/FilterableProductList';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
