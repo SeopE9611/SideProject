@@ -7,6 +7,7 @@ import { Calendar, Clock, Phone, User, RatIcon as Racquet, Zap, GraduationCap, A
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
+import { useState } from 'react';
 
 export interface Application {
   id: string;
@@ -42,10 +43,35 @@ const fetcher = async (url: string) => {
 
 export default function ApplicationsClient() {
   const router = useRouter();
-  const { data: applications, error } = useSWR<Application[]>('/api/applications/me', fetcher);
+
+  // 페이지 상태
+  const [page, setPage] = useState(1);
+  const limit = 5;
+  // 페이징 API 호출
+  type AppResponse = { items: Application[]; total: number };
+  const { data, error } = useSWR<AppResponse>(`/api/applications/me?page=${page}&limit=${limit}`, fetcher);
+  const applications = data?.items ?? [];
+  const totalPages = data ? Math.ceil(data.total / limit) : 0;
+
+  // 제한형 페이지 네이션
+  const getPaginationRange = () => {
+    const delta = 2;
+    const range = [];
+
+    const start = Math.max(2, page - delta);
+    const end = Math.min(totalPages - 1, page + delta);
+
+    if (start > 2) range.push('...');
+    for (let i = start; i <= end; i++) {
+      range.push(i);
+    }
+    if (end < totalPages - 1) range.push('...');
+
+    return [1, ...range, totalPages];
+  };
 
   if (error) return <p className="text-center py-4 text-red-500">에러: {error.message}</p>;
-  if (!applications) return <div className="text-center py-8 text-muted-foreground">신청 내역을 불러오는 중입니다...</div>;
+  if (!data) return <div className="text-center py-8 text-muted-foreground">신청 내역을 불러오는 중입니다...</div>;
 
   return (
     <div className="space-y-6">
@@ -71,13 +97,11 @@ export default function ApplicationsClient() {
 
           return (
             <Card key={app.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              {/* Gradient border effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
                 <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
               </div>
 
               <CardContent className="relative p-6">
-                {/* Header */}
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div
@@ -107,7 +131,6 @@ export default function ApplicationsClient() {
                   </Button>
                 </div>
 
-                {/* Content Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
                     <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />
@@ -158,7 +181,6 @@ export default function ApplicationsClient() {
                   )}
                 </div>
 
-                {/* Status Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-slate-500 dark:text-slate-400">상태:</span>
@@ -170,6 +192,27 @@ export default function ApplicationsClient() {
           );
         })
       )}
+      <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
+        <Button size="sm" variant="outline" onClick={() => setPage(page - 1)} disabled={page === 1}>
+          이전
+        </Button>
+
+        {getPaginationRange().map((p, idx) =>
+          p === '...' ? (
+            <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+              ...
+            </span>
+          ) : (
+            <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => setPage(Number(p))}>
+              {p}
+            </Button>
+          )
+        )}
+
+        <Button size="sm" variant="outline" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
+          다음
+        </Button>
+      </div>
     </div>
   );
 }

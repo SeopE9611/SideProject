@@ -5,42 +5,35 @@ import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 
 export async function GET(req: Request) {
-  // 토큰 추출
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-
-  if (!token) {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
-
+  // 인증
+  const token = (await cookies()).get('accessToken')?.value;
+  if (!token) return new NextResponse('Unauthorized', { status: 401 });
   const payload = verifyAccessToken(token);
-  if (!payload) {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
-
-  // 사용자
+  if (!payload?.sub) return new NextResponse('Unauthorized', { status: 401 });
   const userId = new ObjectId(payload.sub);
 
-  // DB 연결
+  // 페이지 파라미터
+  const url = new URL(req.url);
+  const page = parseInt(url.searchParams.get('page') || '1', 10);
+  const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+  const skip = (page - 1) * limit;
+
+  // DB 조회: count + paged
   const client = await clientPromise;
   const db = client.db();
-  const collection = db.collection('stringing_applications'); // 기존 코드
 
-  // userId 기준 필터링
-  // 최신 순으로 정렬하도록 .sort({ createdAt: -1 }) 추가
-  // 그리고 rawList 변수로 받아서 아래에서 매핑 처리
-  const rawList = await collection.find({ userId }).sort({ createdAt: -1 }).toArray();
+  const total = await db.collection('stringing_applications').countDocuments({ userId });
 
-  const applications = await Promise.all(
+  const rawList = await db.collection('stringing_applications').find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
+
+  // sanitize + stringType 매핑
+  const items = await Promise.all(
     rawList.map(async (doc) => {
-      // stringTypes 배열 -> 상품명 배열로 변환
       const names = await Promise.all(
         (doc.stringDetails.stringTypes || []).map(async (prodId: string) => {
-          if (prodId === 'custom') {
-            return doc.stringDetails.customStringName ?? '커스텀 스트링';
-          }
+          if (prodId === 'custom') return doc.stringDetails.customStringName || '커스텀 스트링';
           const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
-          return prod?.name ?? '알 수 없는 상품';
+          return prod?.name || '알 수 없는 상품';
         })
       );
 
@@ -60,5 +53,5 @@ export async function GET(req: Request) {
     })
   );
 
-  return NextResponse.json(applications);
+  return NextResponse.json({ items, total });
 }
