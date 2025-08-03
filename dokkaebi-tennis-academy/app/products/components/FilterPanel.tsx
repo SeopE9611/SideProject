@@ -149,7 +149,7 @@ export const FilterPanel = React.memo(function FilterPanel({
           </form>
 
           {/* 가격 */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <Label className="mb-3 block font-medium">가격 범위</Label>
             <div className="space-y-4">
               <Slider value={priceRange} onValueChange={(val) => setPriceRange([val[0] as number, val[1] as number])} min={0} max={50000} step={500} className="w-full" />
@@ -158,7 +158,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                 <span className="font-medium">₩{priceRange[1].toLocaleString()}</span>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* 브랜드 */}
           <div className="mb-6">

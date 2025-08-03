@@ -160,6 +160,8 @@ export default function FilterableProductList() {
     q: submittedQuery,
     sort: sortOption,
     limit: 6,
+    minPrice: priceRange[0],
+    maxPrice: priceRange[1],
   });
 
   // 검색 제출 handler

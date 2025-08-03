@@ -20,6 +20,8 @@ type Filters = {
   q?: string;
   sort?: string;
   limit?: number;
+  minPrice?: number;
+  maxPrice?: number;
 };
 
 type ResponseShape = {
@@ -32,7 +34,6 @@ type ResponseShape = {
   };
 };
 
-// serialize filters into query string (excluding undefined/null appropriately)
 function buildQueryString(filters: Filters, page: number) {
   const params = new URLSearchParams();
   if (filters.brand) params.set('brand', filters.brand);
@@ -44,6 +45,8 @@ function buildQueryString(filters: Filters, page: number) {
   if (filters.q) params.set('q', filters.q);
   if (filters.sort && filters.sort !== 'latest') params.set('sort', filters.sort);
   if (filters.limit) params.set('limit', String(filters.limit));
+  if (filters.minPrice !== undefined) params.set('minPrice', String(filters.minPrice));
+  if (filters.maxPrice !== undefined) params.set('maxPrice', String(filters.maxPrice));
   params.set('page', String(page));
   return params.toString();
 }
