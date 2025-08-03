@@ -117,89 +117,90 @@ export default function FilterableProductList({ products }: { products: Product[
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
       {/* 필터 사이드바 */}
       <div className={cn('space-y-6 lg:col-span-1', 'lg:block', showFilters ? 'block' : 'hidden')}>
-        <div className="rounded-xl border bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">필터</h2>
-            {activeFiltersCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs">
-                초기화 ({activeFiltersCount})
-              </Button>
-            )}
-          </div>
-
-          {/* 검색 */}
-          <div className="mb-6">
-            <Label htmlFor="search" className="mb-3 block font-medium">
-              검색
-            </Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="상품명 검색..." className="pl-10 rounded-lg border-2 focus:border-blue-500 transition-colors" />
+        <div className="sticky top-20 self-start">
+          <div className="rounded-xl border bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">필터</h2>
+              {activeFiltersCount > 0 && (
+                <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs">
+                  초기화 ({activeFiltersCount})
+                </Button>
+              )}
             </div>
-          </div>
 
-          {/* 가격 범위 */}
-          <div className="mb-6">
-            <Label className="mb-3 block font-medium">가격 범위</Label>
+            {/* 검색 */}
+            <div className="mb-6">
+              <Label htmlFor="search" className="mb-3 block font-medium">
+                검색
+              </Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="상품명 검색..." className="pl-10 rounded-lg border-2 focus:border-blue-500 transition-colors" />
+              </div>
+            </div>
+
+            {/* 가격 범위 */}
+            <div className="mb-6">
+              <Label className="mb-3 block font-medium">가격 범위</Label>
+              <div className="space-y-4">
+                <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={50000} step={500} className="w-full" />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span className="font-medium">₩{priceRange[0].toLocaleString()}</span>
+                  <span className="font-medium">₩{priceRange[1].toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 브랜드 필터 */}
+            <div className="mb-6">
+              <Label htmlFor="brand" className="mb-3 block font-medium">
+                브랜드
+              </Label>
+              <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
+                <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
+                  <SelectValue placeholder="브랜드 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {brands.map((brand) => (
+                    <SelectItem key={brand.value} value={brand.value}>
+                      {brand.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 성능 필터 */}
             <div className="space-y-4">
-              <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={50000} step={500} className="w-full" />
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span className="font-medium">₩{priceRange[0].toLocaleString()}</span>
-                <span className="font-medium">₩{priceRange[1].toLocaleString()}</span>
-              </div>
+              <h3 className="font-medium text-lg">성능</h3>
+
+              {[
+                { key: 'bounce', label: '반발력', value: selectedBounce, setter: setSelectedBounce },
+                { key: 'control', label: '컨트롤', value: selectedControl, setter: setSelectedControl },
+                { key: 'spin', label: '스핀', value: selectedSpin, setter: setSelectedSpin },
+                { key: 'durability', label: '내구성', value: selectedDurability, setter: setSelectedDurability },
+                { key: 'comfort', label: '편안함', value: selectedComfort, setter: setSelectedComfort },
+              ].map(({ key, label, value, setter }) => (
+                <div key={key}>
+                  <Label className="mb-2 block text-sm font-medium">{label}</Label>
+                  <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={value !== null ? String(value) : 'all'}>
+                    <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
+                      <SelectValue placeholder="선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      <SelectItem value="5">★★★★★</SelectItem>
+                      <SelectItem value="4">★★★★☆ 이상</SelectItem>
+                      <SelectItem value="3">★★★☆☆ 이상</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
             </div>
-          </div>
-
-          {/* 브랜드 필터 */}
-          <div className="mb-6">
-            <Label htmlFor="brand" className="mb-3 block font-medium">
-              브랜드
-            </Label>
-            <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
-              <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
-                <SelectValue placeholder="브랜드 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                {brands.map((brand) => (
-                  <SelectItem key={brand.value} value={brand.value}>
-                    {brand.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 성능 필터 */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-lg">성능</h3>
-
-            {[
-              { key: 'bounce', label: '반발력', value: selectedBounce, setter: setSelectedBounce },
-              { key: 'control', label: '컨트롤', value: selectedControl, setter: setSelectedControl },
-              { key: 'spin', label: '스핀', value: selectedSpin, setter: setSelectedSpin },
-              { key: 'durability', label: '내구성', value: selectedDurability, setter: setSelectedDurability },
-              { key: 'comfort', label: '편안함', value: selectedComfort, setter: setSelectedComfort },
-            ].map(({ key, label, value, setter }) => (
-              <div key={key}>
-                <Label className="mb-2 block text-sm font-medium">{label}</Label>
-                <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={value !== null ? String(value) : 'all'}>
-                  <SelectTrigger className="rounded-lg border-2 focus:border-blue-500">
-                    <SelectValue placeholder="선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체</SelectItem>
-                    <SelectItem value="5">★★★★★</SelectItem>
-                    <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                    <SelectItem value="3">★★★☆☆ 이상</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
           </div>
         </div>
       </div>
-
       {/* 상품 목록 */}
       <div className="lg:col-span-3">
         {/* 상단 컨트롤 바 */}
