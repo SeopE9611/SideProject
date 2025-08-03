@@ -42,15 +42,33 @@ export async function GET(req: NextRequest) {
       .sort({ date: -1 }) // 최신 주문 순으로 정렬
       .toArray(); // 배열 형태로 변환
 
-    // _id 필드는 응답에서 완전히 빠지고 id만
-    const sanitized = orders.map((order) => {
-      const { _id, ...rest } = order;
-      return {
-        id: _id.toString(),
-        ...rest,
-        userSnapshot: order.userSnapshot ?? null,
-      };
-    });
+    const sanitized = await Promise.all(
+      orders.map(async (order) => {
+        // 1) 날짜 매핑
+        const date = order.createdAt.toISOString();
+
+        // 2) items 매핑 (상품명 조회)
+        const items = await Promise.all(
+          order.items.map(async (item: { productId: ObjectId; quantity: number }) => {
+            const product = await db.collection('products').findOne({ _id: new ObjectId(item.productId) });
+            return {
+              name: product?.name ?? '알 수 없음',
+              quantity: item.quantity,
+            };
+          })
+        );
+
+        return {
+          id: order._id.toString(),
+          date,
+          total: order.totalPrice,
+          status: order.status,
+          items,
+          totalPrice: order.totalPrice,
+          userSnapshot: order.userSnapshot ?? null,
+        };
+      })
+    );
 
     //  JSON 형식으로 주문 데이터 반환
     return NextResponse.json(sanitized);

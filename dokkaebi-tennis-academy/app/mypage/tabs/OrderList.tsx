@@ -49,6 +49,18 @@ const getStatusIcon = (status: string) => {
   }
 };
 
+// 날짜 포맷팅
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+};
+
 export default function OrderList() {
   //  SWR을 사용해 API에서 주문 데이터 가져오기
   const { data: orders, error, isLoading } = useSWR<Order[]>('/api/users/me/orders', fetcher);
@@ -122,7 +134,7 @@ export default function OrderList() {
                   <h3 className="font-semibold text-slate-900 dark:text-slate-100">주문 #{order.id}</h3>
                   <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
                     <Calendar className="h-3 w-3" />
-                    {order.date}
+                    {formatDate(order.date)}
                   </div>
                 </div>
               </div>
