@@ -15,7 +15,7 @@ import type { Order } from '@/lib/types/order';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { bankLabelMap } from '@/lib/constants';
 import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
-import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign } from 'lucide-react';
+import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign, SlidersHorizontal, Settings2, Wrench, PanelTopClose, FormInput, ClipboardList } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -255,7 +255,7 @@ export default function StringServiceApplyPage() {
 
   const steps = [
     { id: 1, title: '신청자 정보', icon: User, description: '기본 정보를 입력해주세요' },
-    { id: 2, title: '장착 정보', icon: Racquet, description: '라켓과 스트링 정보를 선택해주세요' },
+    { id: 2, title: '장착 정보', icon: ClipboardList, description: '라켓과 스트링 정보를 선택해주세요' },
     { id: 3, title: '결제 정보', icon: CreditCard, description: '결제 방법을 선택해주세요' },
     { id: 4, title: '추가 요청', icon: CheckCircle, description: '추가 요청사항을 입력해주세요' },
   ];
@@ -399,7 +399,7 @@ export default function StringServiceApplyPage() {
           <div className="space-y-6">
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-blue-600 mb-4">
-                <Racquet className="h-8 w-8 text-white" />
+                <ClipboardList className="h-8 w-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold mb-2">장착 정보</h2>
               <p className="text-muted-foreground">라켓과 스트링 정보를 선택해주세요</p>
@@ -607,7 +607,7 @@ export default function StringServiceApplyPage() {
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative container mx-auto px-4 text-center text-white">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-6">
-            <Racquet className="h-10 w-10" />
+            <Wrench className="h-10 w-10" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">스트링 장착 서비스 신청</h1>
           <p className="text-xl text-blue-100 max-w-2xl mx-auto">전문가가 직접 라켓에 스트링을 장착해드립니다</p>
