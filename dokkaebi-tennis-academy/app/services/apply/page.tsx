@@ -424,8 +424,8 @@ export default function StringServiceApplyPage() {
                         <Zap className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
                         <div className="text-sm text-red-700">
                           <p className="font-medium mb-1">⚠️ 중요 안내</p>
-                          <p>• 두 개 이상의 스트링을 교체 원하신 경우, 직접 입력하기를 선택하여 아래에 상세히 적어주세요.</p>
-                          <p>• 이미 보유하고 계신 스트링으로 작성하셔도 됩니다.</p>
+                          <p>• 스트링을 구매하시고 난 후 신청서를 작성하셔야 구매한 스트링 종류가 나옵니다.</p>
+                          <p>• 고객님께서 보유하고 계신 스트링으로 단일 신청서를 작성하시려는 경우 "직접 입력하기" 를 클릭하여 신청해주세요.</p>
                         </div>
                       </div>
                     </div>
