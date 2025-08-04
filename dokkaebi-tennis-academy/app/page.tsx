@@ -95,7 +95,7 @@ export default function Home() {
       name: '하이브리드',
       icon: (
         <div className="flex flex-col items-center justify-center mb-4">
-          <Merge className="w-8 h-8 text-blue-500 group-hover:text-blue-700 dark:text-blue-400" />
+          <Shuffle className="w-8 h-8 text-blue-500 group-hover:text-blue-700 dark:text-blue-400" />
         </div>
       ),
       href: '/products/hybrid',
