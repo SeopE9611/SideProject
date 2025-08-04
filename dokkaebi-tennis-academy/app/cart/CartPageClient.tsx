@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Star, Package, Truck, Shield } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Star, Package, Truck, Shield, ShoppingCart, PackageOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -318,7 +318,7 @@ export default function CartPageClient() {
             <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl text-center overflow-hidden">
               <div className="bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 p-12">
                 <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mb-6 shadow-xl">
-                  <ShoppingBag className="h-12 w-12 text-white" />
+                  <PackageOpen className="h-12 w-12 text-white" />
                 </div>
                 <h2 className="text-3xl font-bold mb-4 text-slate-800 dark:text-slate-200">장바구니가 비어있습니다</h2>
                 <p className="text-slate-600 dark:text-slate-400 mb-8 text-lg">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
@@ -327,11 +327,11 @@ export default function CartPageClient() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                   <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                     <Package className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                    <p className="text-sm font-medium">프리미엄 상품</p>
+                    <p className="text-sm font-medium">추천 상품</p>
                   </div>
                   <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                     <Star className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                    <p className="text-sm font-medium">인기 상품 보기</p>
+                    <p className="text-sm font-medium">인기 상품</p>
                   </div>
                   <div className="text-center p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
                     <Truck className="h-8 w-8 text-teal-500 mx-auto mb-2" />
