@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, Award, Users, Clock, Shield, Zap, Target, TrendingUp, CheckCircle, ArrowRight, Play, Quote, Calendar, MapPin, Phone, Mail } from 'lucide-react';
+import { Star, Award, Users, Clock, Shield, Zap, Target, TrendingUp, CheckCircle, ArrowRight, Play, Quote, Calendar, MapPin, Phone, Mail, Flame, Merge, Swords, SwordsIcon, Equal, SquaresIntersectIcon, Shuffle, ShuffleIcon } from 'lucide-react';
 
 export default function Home() {
   // 임시 상품 데이터
@@ -75,7 +75,11 @@ export default function Home() {
     // },
     {
       name: '폴리에스터',
-      icon: '🔄',
+      icon: (
+        <div className="flex flex-col items-center justify-center mb-4">
+          <Flame className="w-8 h-8 text-pink-500 group-hover:text-pink-700 transition-colors" />
+        </div>
+      ),
       href: '/products/polyester',
       description: '강력한 스핀과 컨트롤',
       color: 'from-purple-500 to-pink-500',
@@ -89,7 +93,11 @@ export default function Home() {
     // },
     {
       name: '하이브리드',
-      icon: '🔀',
+      icon: (
+        <div className="flex flex-col items-center justify-center mb-4">
+          <Merge className="w-8 h-8 text-blue-500 group-hover:text-blue-700 dark:text-blue-400" />
+        </div>
+      ),
       href: '/products/hybrid',
       description: '최적의 조합',
       color: 'from-orange-500 to-red-500',
@@ -263,7 +271,7 @@ export default function Home() {
                       <div className="text-4xl mb-4">{category.icon}</div>
                       <h3 className="text-xl font-bold mb-2">{category.name}</h3>
                       <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{category.description}</p>
-                      <div className="flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors">
+                      <div className="flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:text-gray-800 dark:group-hover:text-white transition-colors">
                         <span className="text-sm font-medium">자세히 보기</span>
                         <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                       </div>
