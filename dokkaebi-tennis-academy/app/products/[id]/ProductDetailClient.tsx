@@ -18,6 +18,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
+  const stock = product.inventory?.stock ?? 0;
 
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -45,13 +46,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const handleAddToCart = () => {
     if (loading) return;
+    // 재고 검증 (기존 장바구니에 담긴 수량 + 지금 선택 수량이 stock 초과인지)
+    const wouldBe = quantity;
+    if (wouldBe > stock) {
+      showErrorToast(`재고가 부족합니다. 현재 재고: ${stock}개`);
+      return;
+    }
     const result = addItem({
       id: product._id.toString(),
       name: product.name,
       price: product.price,
       quantity,
       image: product.images?.[0] || '/placeholder.svg',
-      stock: product.inventory?.stock,
+      // stock: product.inventory?.stock,
+      stock,
     });
 
     if (!result.success) {
@@ -230,7 +238,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           <Minus className="h-4 w-4" />
                         </Button>
                         <span className="w-12 text-center font-medium">{quantity}</span>
-                        <Button variant="ghost" size="sm" onClick={() => setQuantity(quantity + 1)} className="h-10 w-10">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (quantity + 1 > stock) {
+                              showErrorToast(`더 이상 담을 수 없습니다. 재고: ${stock}개`);
+                              return;
+                            }
+                            setQuantity(quantity + 1);
+                          }}
+                          className="h-10 w-10"
+                          disabled={quantity >= stock} // 버튼 비활성화
+                        >
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
@@ -250,7 +270,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           재고가 소진되었습니다
                         </Button>
                       ) : (
-                        <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg" onClick={handleAddToCart} disabled={loading}>
+                        <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg" onClick={handleAddToCart} disabled={loading || quantity > stock}>
                           <ShoppingCart className="mr-2 h-4 w-4" />
                           장바구니에 담기
                         </Button>
