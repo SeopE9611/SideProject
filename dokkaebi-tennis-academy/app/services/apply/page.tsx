@@ -15,7 +15,7 @@ import type { Order } from '@/lib/types/order';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { bankLabelMap } from '@/lib/constants';
 import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
-import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap } from 'lucide-react';
+import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -316,7 +316,7 @@ export default function StringServiceApplyPage() {
                   onChange={handleInputChange}
                   readOnly={!!(orderId || isMember)}
                   className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
-                  placeholder="010-1234-5678"
+                  placeholder="01012345678"
                 />
               </div>
 
@@ -448,7 +448,7 @@ export default function StringServiceApplyPage() {
 
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-center space-x-3">
-                    <Award className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                    <DollarSign className="h-5 w-5 text-blue-500 flex-shrink-0" />
                     <div className="text-sm">
                       {formData.stringTypes.includes('custom') ? (
                         <div className="text-blue-700">
@@ -456,7 +456,7 @@ export default function StringServiceApplyPage() {
                           <p className="text-xs text-blue-600 mt-1">기본 장착 금액: 15,000원</p>
                         </div>
                       ) : (
-                        <p className="font-medium text-blue-700">💰 총 장착 금액: {price.toLocaleString()}원</p>
+                        <p className="font-medium text-blue-700">총 장착 금액: {price.toLocaleString()}원</p>
                       )}
                     </div>
                   </div>
@@ -571,8 +571,8 @@ export default function StringServiceApplyPage() {
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-amber-700">
-                    <p className="font-medium mb-1">💡 안내사항</p>
-                    <p>두 개 이상의 라켓 또는 스트링을 신청하신 경우, 장착 요청 내용을 아래에 자세히 적어주세요.</p>
+                    <p className="font-medium mb-1">안내사항</p>
+                    <p>스트링 교체 및 장착 요청 내용을 아래에 자세히 적어주세요.</p>
                   </div>
                 </div>
               </div>

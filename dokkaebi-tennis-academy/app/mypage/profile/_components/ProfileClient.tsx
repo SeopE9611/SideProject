@@ -287,7 +287,7 @@ export default function ProfileClient({ user }: Props) {
                         <Phone className="h-4 w-4" />
                         전화번호
                       </Label>
-                      <Input id="phone" value={profileData.phone ?? '전화번호 없음'} onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })} className="h-12" placeholder="010-1234-5678" />
+                      <Input id="phone" value={profileData.phone ?? '전화번호 없음'} onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })} className="h-12" placeholder="01012345678" />
                     </div>
                   </div>
 
