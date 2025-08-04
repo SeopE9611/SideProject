@@ -218,32 +218,29 @@ export default function OrderList() {
                   </Link>
                 </Button>
 
-                {/* 이거 안먹음 해결해야함 */}
                 <TooltipProvider>
-                  {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
-                    <>
-                      {!order.isStringServiceApplied ? (
-                        <Button size="sm" className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
-                          <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">
-                            스트링 장착 신청
-                            <ArrowRight className="h-3 w-3" />
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="inline-flex h-9 items-center justify-center rounded-md border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 text-sm font-semibold text-green-700 dark:border-green-600 dark:from-green-950 dark:to-emerald-950 dark:text-green-300">
-                              <CheckCircle className="mr-1 h-3 w-3" />
-                              스트링 신청 완료
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="text-sm">
-                            이미 신청이 완료된 주문입니다
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </>
-                  )}
+                  {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' &&
+                    order.shippingInfo?.withStringService &&
+                    (!order.isStringServiceApplied ? (
+                      <Button size="sm" className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                        <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">
+                          스트링 장착 신청
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="inline-flex h-9 items-center justify-center rounded-md border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 text-sm font-semibold text-green-700 dark:border-green-600 dark:from-green-950 dark:to-emerald-950 dark:text-green-300">
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                            스트링 신청 완료
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-sm">
+                          이미 신청이 완료된 주문입니다
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
                 </TooltipProvider>
               </div>
             </div>

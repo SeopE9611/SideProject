@@ -6,16 +6,26 @@ import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+type OrderResponseItem = {
+  id: string;
+  date: string;
+  status: string;
+  totalPrice: number;
+  items: { name: string; quantity: number }[];
+
+  // ↓ 여기를 추가
+  shippingInfo?: {
+    deliveryMethod?: string;
+    withStringService?: boolean;
+  };
+  isStringServiceApplied: boolean;
+};
+
 type OrderResponse = {
-  items: {
-    id: string;
-    date: string;
-    status: string;
-    totalPrice: number;
-    items: { name: string; quantity: number }[];
-  }[];
+  items: OrderResponseItem[];
   total: number;
 };
+
 //  GET 요청 처리 함수 (로그인된 유저의 주문 내역 조회)
 export async function GET(req: NextRequest) {
   // 인증
@@ -68,7 +78,7 @@ export async function GET(req: NextRequest) {
         const shippingInfo = order.shippingInfo ?? {};
 
         // 해당 주문에 대한 스트링 신청서가 이미 있는지 확인
-        const appliedCount = await db.collection('stringing_applications').countDocuments({ orderId: order._id.toString() });
+        const appliedCount = await db.collection('stringing_applications').countDocuments({ orderId: new ObjectId(order._id) });
 
         return {
           id: order._id.toString(),
