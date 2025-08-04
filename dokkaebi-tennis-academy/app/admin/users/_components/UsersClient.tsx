@@ -93,6 +93,10 @@ export default function UsersPage() {
   return (
     <AuthGuard>
       <div className="container py-10">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
+          <p className="text-white text-2xl md:text-4xl font-semibold">이 기능은 개발 중 입니다. (회원 관리)</p>
+          <p className="text-lg text-gray-300">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
+        </div>
         <div className="mx-auto max-w-7xl">
           {/* 페이지 제목 */}
           <div className="mb-8">

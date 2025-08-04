@@ -284,7 +284,11 @@ export default function BoardsPageClient() {
               전체 게시물 {posts.length}개 중 {filteredPosts.length}개 표시 중
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center gap-6">
+              <p className="text-white text-2xl md:text-4xl font-semibold">이 기능은 개발 중 입니다. (게시판 관리)</p>
+              <p className="text-lg text-gray-300">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
+            </div>
             <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap gap-2">
                 <Select value={boardTypeFilter} onValueChange={setBoardTypeFilter}>

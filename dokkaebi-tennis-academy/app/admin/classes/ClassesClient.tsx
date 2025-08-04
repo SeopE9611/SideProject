@@ -181,7 +181,10 @@ export default function ClassesPage() {
             </Button>
           </div>
         </CardHeader>
-
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
+          <p className="text-white text-2xl md:text-4xl font-semibold">이 기능은 사용하지 않습니다. (아카데미 클래스 관리)</p>
+          <p className="text-lg text-gray-300">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
+        </div>
         <CardContent>
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex w-full max-w-sm items-center space-x-2">

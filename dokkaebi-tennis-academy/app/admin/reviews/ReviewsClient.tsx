@@ -244,7 +244,12 @@ export default function ReviewsClient() {
       </div>
 
       {/* 리뷰 관리 카드 */}
+
       <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
+          <p className="text-white text-2xl md:text-4xl font-semibold">이 기능은 개발 중 입니다. (리뷰 관리)</p>
+          <p className="text-lg text-gray-300">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
+        </div>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
