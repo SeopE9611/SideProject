@@ -66,13 +66,13 @@ export default function Home() {
 
   // 카테고리 데이터
   const categories = [
-    {
-      name: '멀티필라멘트',
-      icon: '🧵',
-      href: '/products/multifilament',
-      description: '부드러운 타감과 편안함',
-      color: 'from-blue-500 to-cyan-500',
-    },
+    // {
+    //   name: '멀티필라멘트',
+    //   icon: '🧵',
+    //   href: '/products/multifilament',
+    //   description: '부드러운 타감과 편안함',
+    //   color: 'from-blue-500 to-cyan-500',
+    // },
     {
       name: '폴리에스터',
       icon: '🔄',
@@ -80,13 +80,13 @@ export default function Home() {
       description: '강력한 스핀과 컨트롤',
       color: 'from-purple-500 to-pink-500',
     },
-    {
-      name: '나일론',
-      icon: '🧶',
-      href: '/products/nylon',
-      description: '균형잡힌 성능',
-      color: 'from-green-500 to-emerald-500',
-    },
+    // {
+    //   name: '나일론',
+    //   icon: '🧶',
+    //   href: '/products/nylon',
+    //   description: '균형잡힌 성능',
+    //   color: 'from-green-500 to-emerald-500',
+    // },
     {
       name: '하이브리드',
       icon: '🔀',
@@ -253,13 +253,13 @@ export default function Home() {
             <p className="text-xl text-gray-600 dark:text-gray-300">다양한 스트링 타입으로 당신만의 완벽한 세팅을 찾아보세요</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 justify-center">
             {categories.map((category) => (
               <Link key={category.name} href={'/'} className="group">
                 <Card className="h-full overflow-hidden border-0 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
                   <CardContent className="p-8 text-center relative">
                     <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                    <div className="relative z-10">
+                    <div className="relative z-10 ">
                       <div className="text-4xl mb-4">{category.icon}</div>
                       <h3 className="text-xl font-bold mb-2">{category.name}</h3>
                       <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{category.description}</p>
