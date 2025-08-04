@@ -46,6 +46,17 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
     return isNaN(numQuantity) || numQuantity === null || numQuantity === undefined ? 1 : numQuantity;
   };
 
+  const populatedItems = await Promise.all(
+    (order.items || []).map(async (it: any) => {
+      const prod = await db.collection('products').findOne({ _id: new ObjectId(it.productId) }, { projection: { name: 1, price: 1 } });
+      return {
+        name: prod?.name ?? '상품명 없음',
+        price: prod?.price ?? 0,
+        quantity: it.quantity ?? 1,
+      };
+    })
+  );
+
   return (
     <>
       <BackButtonGuard />
@@ -161,37 +172,30 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
                 <Separator className="my-6" />
 
-                {/* 주문 상품 - 안전한 데이터 처리 */}
+                {/* 주문 상품 */}
                 <div className="mb-6">
-                  <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-slate-800 dark:text-slate-200">
-                    <Package className="h-5 w-5 text-purple-600" />
-                    주문 상품
+                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <Package className="h-5 w-5 text-purple-600" /> 주문 상품
                   </h3>
                   <div className="space-y-3">
-                    {order.items && Array.isArray(order.items) && order.items.length > 0 ? (
-                      order.items.map((item: any, index: number) => {
-                        const itemPrice = formatPrice(item.price);
-                        const itemQuantity = formatQuantity(item.quantity);
-                        const totalItemPrice = formatPrice(Number(item.price || 0) * itemQuantity);
+                    {populatedItems.map((item, index) => {
+                      const itemPrice = formatPrice(item.price);
+                      const itemQuantity = formatQuantity(item.quantity);
+                      const totalItemPrice = formatPrice(item.price * itemQuantity);
 
-                        return (
-                          <div key={index} className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-slate-200/50 dark:border-slate-600/50">
-                            <div className="flex-1">
-                              <p className="font-semibold text-slate-800 dark:text-slate-200">{item.name || '상품명 없음'}</p>
-                              <p className="text-sm text-slate-600 dark:text-slate-400">수량: {itemQuantity}개</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold text-lg text-blue-600">{totalItemPrice}원</p>
-                              <p className="text-sm text-slate-500">단가: {itemPrice}원</p>
-                            </div>
+                      return (
+                        <div key={index} className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 rounded-lg border">
+                          <div className="flex-1">
+                            <p className="font-semibold">{item.name}</p>
+                            <p className="text-sm text-slate-600">수량: {itemQuantity}개</p>
                           </div>
-                        );
-                      })
-                    ) : (
-                      <div className="p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-slate-200/50 dark:border-slate-600/50 text-center">
-                        <p className="text-slate-600 dark:text-slate-400">주문 상품 정보를 불러올 수 없습니다.</p>
-                      </div>
-                    )}
+                          <div className="text-right">
+                            <p className="font-bold text-lg text-blue-600">{totalItemPrice}원</p>
+                            <p className="text-sm text-slate-500">단가: {itemPrice}원</p>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
