@@ -64,12 +64,20 @@ export async function GET(req: NextRequest) {
           })
         );
 
+        // 주문에 첨부된 shippingInfo 그대로 가져오기
+        const shippingInfo = order.shippingInfo ?? {};
+
+        // 해당 주문에 대한 스트링 신청서가 이미 있는지 확인
+        const appliedCount = await db.collection('stringing_applications').countDocuments({ orderId: order._id.toString() });
+
         return {
           id: order._id.toString(),
           date: order.createdAt.toISOString(),
           status: order.status,
           totalPrice: order.totalPrice,
           items: mappedItems,
+          shippingInfo,
+          isStringServiceApplied: appliedCount > 0,
         };
       })
     );
