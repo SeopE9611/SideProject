@@ -218,6 +218,7 @@ export default function OrderList() {
                   </Link>
                 </Button>
 
+                {/* 이거 안먹음 해결해야함 */}
                 <TooltipProvider>
                   {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
                     <>
