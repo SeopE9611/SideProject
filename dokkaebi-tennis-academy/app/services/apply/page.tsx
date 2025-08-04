@@ -169,7 +169,7 @@ export default function StringServiceApplyPage() {
     e.preventDefault();
 
     // 마지막 단계(5단계)가 아니면 제출하지 않음
-    if (currentStep !== 5) {
+    if (currentStep !== steps.length) {
       return;
     }
 
@@ -656,7 +656,12 @@ export default function StringServiceApplyPage() {
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   ) : (
-                    <Button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white transition-all duration-200 disabled:opacity-50">
+                    <Button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
+                      className="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white transition-all duration-200 disabled:opacity-50"
+                    >
                       {isSubmitting ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
