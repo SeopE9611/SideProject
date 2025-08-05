@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export default function ProductsLoading() {
   return (
@@ -31,8 +31,8 @@ export default function ProductsLoading() {
             </div>
           </div>
 
-          <div className="rounded-md border">
-            <div className="h-10 border-b px-4 py-2">
+          <div className="rounded-md">
+            <div className="h-10 px-4 py-2">
               <div className="flex items-center">
                 {[...Array(8)].map((_, i) => (
                   <Skeleton key={i} className="h-4 flex-1" />
@@ -40,7 +40,7 @@ export default function ProductsLoading() {
               </div>
             </div>
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="border-b px-4 py-4 last:border-0">
+              <div key={i} className="px-4 py-4 last:border-0">
                 <div className="flex items-center">
                   {[...Array(8)].map((_, j) => (
                     <Skeleton key={j} className="h-4 flex-1" />
@@ -52,5 +52,5 @@ export default function ProductsLoading() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
