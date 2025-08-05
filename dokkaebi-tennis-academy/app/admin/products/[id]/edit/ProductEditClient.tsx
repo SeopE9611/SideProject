@@ -2,10 +2,10 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Save, ArrowLeft, Upload, Info } from 'lucide-react';
+import { Save, ArrowLeft, Upload, Info, Delete } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,9 @@ import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AuthGuard from '@/components/auth/AuthGuard';
+import useSWR from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
 
 // 브랜드 목록
 const brands = [
@@ -74,7 +76,7 @@ const colors = [
   { id: 'transparent', name: '투명' },
 ];
 
-export default function NewStringPage() {
+export default function ProductEditClient({ productId }: { productId: string }) {
   // 기본 정보
   const [basicInfo, setBasicInfo] = useState({
     name: '',
@@ -123,6 +125,12 @@ export default function NewStringPage() {
     salePrice: 0,
   });
 
+  // 재고 관리가 실제로 수정되었는지 추적할 플래그
+  const [inventoryDirty, setInventoryDirty] = useState(false);
+
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  const { data, error, isLoading } = useSWR<{ product: any }>(`/api/products/${productId}`, fetcher);
+
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState('');
 
@@ -133,6 +141,40 @@ export default function NewStringPage() {
 
   // 이미지 업로드 상태
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (!data?.product) return;
+    const p = data.product;
+    setBasicInfo({
+      name: p.name,
+      sku: p.sku,
+      shortDescription: p.shortDescription,
+      description: p.description,
+      brand: p.brand,
+      material: p.material,
+      gauge: p.gauge,
+      color: p.color,
+      length: p.length,
+      price: p.price,
+      mountingFee: p.mountingFee,
+    });
+    setFeatures(p.features);
+    setTags(p.tags);
+    setInventory({
+      stock: p.inventory.stock,
+      lowStock: p.inventory.lowStock,
+      status: p.inventory.status,
+      manageStock: p.inventory.manageStock,
+      allowBackorder: p.inventory.allowBackorder,
+      isFeatured: p.inventory.isFeatured,
+      isNew: p.inventory.isNew,
+      isSale: p.inventory.isSale,
+      salePrice: p.inventory.salePrice,
+    });
+    setAdditionalFeatures(p.additionalFeatures);
+    setImages(p.images);
+    setMainImageIndex(0);
+  }, [data]);
 
   // 이미지 추가 핸들러
   const sanitizeFileName = (file: File) => {
@@ -272,12 +314,14 @@ export default function NewStringPage() {
       return;
     }
 
-    if (inventory.lowStock < 0 || inventory.lowStock > inventory.stock) {
-      toast(`${SECTIONS.BASIC} 오류`, {
-        description: '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.',
-        icon: '⛔',
-      });
-      return;
+    if (inventoryDirty) {
+      if (inventory.lowStock < 0 || inventory.lowStock > inventory.stock) {
+        toast('재고관리 오류', {
+          description: '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.',
+          icon: '⛔',
+        });
+        return;
+      }
     }
     // specifications 영문 키로 미리 구성
     const specifications = {
@@ -314,9 +358,9 @@ export default function NewStringPage() {
     // API 전송 로직 위치
 
     try {
-      const res = await fetch('/api/products', {
+      const res = await fetch(`/api/products/${productId}`, {
         // API 겨로
-        method: 'POST', // POST 요청
+        method: 'PUT', // POST 요청
         headers: {
           // 헤더 설정
           'Content-Type': 'application/json', // JSON 형식
@@ -328,29 +372,53 @@ export default function NewStringPage() {
       if (!res.ok) {
         // 에러 발생시
         const errorData = await res.json(); // 에러 메시지
+
         showErrorToast(errorData.message || '알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요');
         return;
       }
 
       const data = await res.json(); // 성공적으로 등록된 데이터
 
-      showSuccessToast('상품이 등록되었습니다.');
+      showSuccessToast('상품이 수정되었습니다.');
 
-      // router.push('/admin/products'); // 상품 목록 페이지로 즉시 이동
-      router.push(`/products/${data.id}`); // 등록된 상품 상세 페이지로 즉시 이동
+      router.push('/admin/products'); // 등록된 상품 상세 페이지로 즉시 이동
     } catch (error) {
       // 상품 등록 중 에러 발생시
       // console.log('상품 등록 에러', error);
+
       showErrorToast('서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.');
     }
   };
+
+  // 삭제 핸들러
+  const handleDelete = async () => {
+    if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return;
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        showErrorToast(err.message || '삭제 중 오류가 발생했습니다.');
+        return;
+      }
+      showSuccessToast('상품이 삭제되었습니다.');
+      router.push('/admin/products');
+    } catch (e) {
+      showErrorToast('서버 오류가 발생했습니다.');
+    }
+  };
+
+  if (error) return <div className="p-6">상품 불러오기 실패</div>;
+  if (isLoading) return <EditProductLoading />;
 
   return (
     <AuthGuard>
       <form onSubmit={handleSubmit} className="space-y-6 p-6">
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">스트링 등록</h2>
+            <h2 className="text-2xl font-bold tracking-tight">스트링 수정</h2>
             <p className="text-muted-foreground">새로운 테니스 스트링 정보를 입력하고 등록하세요.</p>
           </div>
           <div className="flex items-center space-x-2">
@@ -360,9 +428,13 @@ export default function NewStringPage() {
                 취소
               </Link>
             </Button>
+            <Button type="button" variant="destructive" onClick={handleDelete}>
+              <Delete className="mr-2 h-4 w-4" />
+              삭제
+            </Button>
             <Button type="submit">
               <Save className="mr-2 h-4 w-4" />
-              저장
+              수정완료
             </Button>
           </div>
         </div>
@@ -538,7 +610,7 @@ export default function NewStringPage() {
                         id="string-stringing-fee"
                         type="text"
                         placeholder="0"
-                        value={basicInfo.mountingFee.toLocaleString()}
+                        value={basicInfo.mountingFee != null ? basicInfo.mountingFee.toLocaleString() : ''}
                         onChange={(e) => {
                           const raw = e.target.value.replace(/,/g, '');
                           const numeric = Number(raw);
@@ -714,6 +786,7 @@ export default function NewStringPage() {
                       placeholder="0"
                       value={inventory.stock.toLocaleString()}
                       onChange={(e) => {
+                        setInventoryDirty(true);
                         const raw = e.target.value.replace(/,/g, '');
                         const numeric = Number(raw);
                         if (!isNaN(numeric)) {
@@ -730,6 +803,7 @@ export default function NewStringPage() {
                       placeholder="0"
                       value={inventory.lowStock.toLocaleString()}
                       onChange={(e) => {
+                        setInventoryDirty(true);
                         const raw = e.target.value.replace(/,/g, '');
                         const numeric = Number(raw);
                         if (!isNaN(numeric)) {
@@ -884,9 +958,19 @@ export default function NewStringPage() {
 
         <div className="flex items-center justify-end space-x-2">
           <Button variant="outline" type="button" asChild>
-            <Link href="/admin/products">취소</Link>
+            <Link href="/admin/products">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              취소
+            </Link>
           </Button>
-          <Button type="submit">저장</Button>
+          <Button variant="destructive" onClick={handleDelete}>
+            <Delete className="mr-2 h-4 w-4" />
+            삭제
+          </Button>
+          <Button type="submit">
+            <Save className="mr-2 h-4 w-4" />
+            수정완료
+          </Button>
         </div>
       </form>
     </AuthGuard>
