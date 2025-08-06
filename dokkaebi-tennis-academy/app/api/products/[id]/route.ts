@@ -93,12 +93,12 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   try {
     const client = await clientPromise;
     const db = client.db();
-    const result = await db.collection('products').deleteOne({ _id: new ObjectId(id) });
+    // soft-delete: isDeleted 플래그만 true로 설정
+    const result = await db.collection('products').updateOne({ _id: new ObjectId(id) }, { $set: { isDeleted: true, deletedAt: new Date() } });
 
-    if (result.deletedCount === 0) {
+    if (result.matchedCount === 0) {
       return NextResponse.json({ message: '상품을 찾을 수 없습니다.' }, { status: 404 });
     }
-    // 성공 시 꼭 return
     return NextResponse.json({ message: '상품이 삭제되었습니다.' }, { status: 200 });
   } catch (err) {
     console.error('[상품 삭제 오류]', err);

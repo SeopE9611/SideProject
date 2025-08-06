@@ -50,7 +50,11 @@ export async function GET(req: NextRequest) {
       const query = params.get('query')?.trim() || '';
       const client = await clientPromise;
       const db = client.db();
-      const products = await db.collection('products').find().toArray();
+      // isDeleted 플래그가 true인 문서는 제외
+      const products = await db
+        .collection('products')
+        .find({ isDeleted: { $ne: true } })
+        .toArray();
 
       const initialsQuery = getHangulInitials(query);
       const isChosungOnly = /^[ㄱ-ㅎ]+$/.test(query); // 초성만 입력된 경우
@@ -93,7 +97,7 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(100, Number(params.get('limit') || '20'));
     const skip = (page - 1) * limit;
 
-    const filter: Record<string, any> = {};
+    const filter: Record<string, any> = { isDeleted: { $ne: true } }; // Soft-Delete된 상품은 기본적으로 제외
     if (brand) filter.brand = brand;
     if (power) filter['features.power'] = { $gte: Number(power) };
     if (control) filter['features.control'] = { $gte: Number(control) };
@@ -111,7 +115,11 @@ export async function GET(req: NextRequest) {
     if (sort === 'price-low') sortObj = { price: 1 };
     else if (sort === 'price-high') sortObj = { price: -1 };
 
-    const [total, itemsRaw] = await Promise.all([collection.countDocuments(filter), collection.find(filter).sort(sortObj).skip(skip).limit(limit).toArray()]);
+    const [total, itemsRaw] = await Promise.all([
+      collection.countDocuments(filter),
+      // 삭제된 건은 반영되지 않고 페이징
+      collection.find(filter).sort(sortObj).skip(skip).limit(limit).toArray(),
+    ]);
 
     const items = itemsRaw.map((product: any) => ({
       ...product,

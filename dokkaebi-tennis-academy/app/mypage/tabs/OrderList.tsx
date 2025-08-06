@@ -23,7 +23,7 @@ interface Order {
   date: string;
   total: number;
   status: string;
-  items: { name: string; quantity: number }[];
+  items: Array<{ name: string; quantity: number; price: number; imageUrl?: string | null }>;
   totalPrice: number;
   userSnapshot?: {
     name: string;
@@ -195,9 +195,16 @@ export default function OrderList() {
               </div>
               <div className="space-y-2">
                 {order.items.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                    <span className="text-sm text-slate-900 dark:text-slate-100">{item.name}</span>
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">x {item.quantity}</span>
+                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 space-x-4">
+                    {/* 상품 썸네일 */}
+                    {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-10 h-10 object-cover rounded" />}
+
+                    {/* 상품명 */}
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.name}</span>
+                    {/* 가격 × 수량 */}
+                    <span className="text-xs text-slate-600 dark:text-slate-400">
+                      {(item.price ?? 0).toLocaleString()} × {item.quantity}
+                    </span>
                   </div>
                 ))}
               </div>

@@ -55,7 +55,7 @@ interface OrderDetail {
   paymentMethod: string;
   paymentBank: string;
   total: number;
-  items: Array<{ name: string; quantity: number; price: number }>;
+  items: Array<{ name: string; quantity: number; price: number; imageUrl?: string | null }>;
   history: Array<any>;
   cancelReason?: string;
   cancelReasonDetail?: string;
@@ -387,11 +387,17 @@ export default function OrderDetailClient({ orderId }: Props) {
           <CardContent className="p-6">
             <div className="space-y-4">
               {orderDetail.items.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <div key={idx} className="flex items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors space-x-4">
+                  {/* 상품 썸네일 */}
+                  {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-cover rounded" />}
+
+                  {/* 상품명 + 수량 */}
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100">{item.name}</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">수량: {item.quantity}개</p>
                   </div>
+
+                  {/* 가격 및 소계 */}
                   <div className="text-right">
                     <p className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(item.price)}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">소계: {formatCurrency(item.price * item.quantity)}</p>

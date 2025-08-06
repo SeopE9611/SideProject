@@ -20,8 +20,16 @@ type ShippingInfo = {
   estimatedDate?: string;
 };
 
+export interface OrderItemSnapshot {
+  productId: ObjectId | string;
+  name: string;
+  price: number;
+  imageUrl: string | null;
+  quantity: number;
+}
+
 export type DBOrder = {
-  items: any; // 장바구니에 담긴 상품 목록
+  items: OrderItemSnapshot[]; // 장바구니에 담긴 상품 목록
   shippingInfo: ShippingInfo; // 배송지 정보 (주소, 우편번호 등)
   totalPrice: number; // 총 결제 금액
   shippingFee: number; // 배송비

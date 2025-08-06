@@ -11,9 +11,7 @@ type OrderResponseItem = {
   date: string;
   status: string;
   totalPrice: number;
-  items: { name: string; quantity: number }[];
-
-  // ↓ 여기를 추가
+  items: Array<{ name: string; quantity: number; price: number; imageUrl?: string | null }>;
   shippingInfo?: {
     deliveryMethod?: string;
     withStringService?: boolean;
@@ -63,16 +61,13 @@ export async function GET(req: NextRequest) {
     // 각 주문 매핑
     const items = await Promise.all(
       rawOrders.map(async (order) => {
-        // 상품명 매핑
-        const mappedItems = await Promise.all(
-          order.items.map(async (it: { productId: ObjectId; quantity: number }) => {
-            const prod = await db.collection('products').findOne({ _id: new ObjectId(it.productId) }, { projection: { name: 1 } });
-            return {
-              name: prod?.name || '알 수 없음',
-              quantity: it.quantity,
-            };
-          })
-        );
+        // 주문 생성 시 스냅샷된 name, price, imageUrl, quantity 사용
+        const mappedItems = order.items.map((it: { name: string; price: number; imageUrl?: string | null; quantity: number }) => ({
+          name: it.name,
+          quantity: it.quantity,
+          price: it.price ?? 0,
+          imageUrl: it.imageUrl ?? null,
+        }));
 
         // 주문에 첨부된 shippingInfo 그대로 가져오기
         const shippingInfo = order.shippingInfo ?? {};

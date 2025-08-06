@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import ProductsLoading from '@/app/admin/products/loading';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 type Product = {
   _id: string;
@@ -33,6 +34,28 @@ const statusMap = {
 export default function ProductsClient() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return;
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        showErrorToast(err.message || '삭제 중 오류가 발생했습니다.');
+        return;
+      }
+      showSuccessToast('상품이 삭제되었습니다.');
+      // ① 페이지 새로고침
+      // router.refresh();
+      // ② 로컬 상태에서 바로 제거
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+    } catch {
+      showErrorToast('서버 오류가 발생했습니다.');
+    }
+  };
 
   useEffect(() => {
     fetch('/api/products')
@@ -205,7 +228,7 @@ export default function ProductsClient() {
                 {strings.map((string) => (
                   <TableRow key={string.id} className="hover:bg-gray-50/50 transition-colors">
                     <TableCell className="font-medium">
-                      <Link href={`/admin/products/${string.id}`} className="hover:text-emerald-600 transition-colors">
+                      <Link href={`/products/${string.id}`} className="hover:text-emerald-600 transition-colors">
                         <div className="space-y-1">
                           <div className="text-gray-900">{string.name}</div>
                           <div className="text-xs text-gray-500">{string.sku}</div>
@@ -233,13 +256,15 @@ export default function ProductsClient() {
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuLabel>작업</DropdownMenuLabel>
                           <DropdownMenuItem asChild className="cursor-pointer">
-                            <Link href={`/admin/products/${string.id}`}>상세 보기</Link>
+                            <Link href={`/products/${string.id}`}>상세 보기</Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild className="cursor-pointer">
                             <Link href={`/admin/products/${string.id}/edit`}>수정</Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600 cursor-pointer">삭제</DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={() => handleDelete(string.id)}>
+                            삭제
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

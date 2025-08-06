@@ -19,15 +19,17 @@ export async function createOrder(req: Request): Promise<Response> {
 
     // 요청 바디 파싱
     const body = await req.json();
-    const { items, shippingInfo, totalPrice, shippingFee, guestInfo } = body;
+    const { items: rawItems, shippingInfo, totalPrice, shippingFee, guestInfo } = body;
 
-    for (const item of items) {
+    //  DB 커넥션 가져오기
+    const client = await clientPromise;
+    const db = client.db();
+
+    for (const item of rawItems) {
+      // 재고 검증/차감을 위해 rawItems 순회
       // console.log(' 주문 상품 ID:', item.productId);
       const productId = new ObjectId(item.productId); // 상품의 MongoDB ObjectId 생성
       const quantity = item.quantity; // 사용자가 구매한 수량
-      //  DB 커넥션 가져오기
-      const client = await clientPromise;
-      const db = client.db();
 
       //  해당 상품이 실제 존재하는지 조회
       const product = await db.collection('products').findOne({ _id: productId });
@@ -68,6 +70,21 @@ export async function createOrder(req: Request): Promise<Response> {
       );
     }
 
+    //  주문 스냅샷 생성: name, price, imageUrl 포함
+    const itemsWithSnapshot = await Promise.all(
+      rawItems.map(async (it: { productId: string; quantity: number }) => {
+        const oid = new ObjectId(it.productId);
+        const prod = await db.collection('products').findOne({ _id: oid });
+        return {
+          productId: oid,
+          name: prod?.name ?? '알 수 없는 상품',
+          price: prod?.price ?? 0,
+          imageUrl: prod?.imageUrl ?? null,
+          quantity: it.quantity,
+        };
+      })
+    );
+
     // 결제 정보 구성 (무통장 입금 + 선택된 은행)
     const paymentInfo = {
       method: '무통장입금',
@@ -81,7 +98,7 @@ export async function createOrder(req: Request): Promise<Response> {
 
     // 주문 객체 생성
     const order: DBOrder = {
-      items,
+      items: itemsWithSnapshot,
       shippingInfo,
       totalPrice,
       shippingFee,
