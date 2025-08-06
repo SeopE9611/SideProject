@@ -1,4 +1,3 @@
-// lib/toast.ts
 import React, { ReactNode } from 'react'; // React.createElement 를 쓰기 위해 필요
 import { toast } from 'sonner';
 import { CheckCircle, XCircle, Info } from 'lucide-react';

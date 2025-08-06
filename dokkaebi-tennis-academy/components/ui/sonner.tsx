@@ -13,7 +13,7 @@ export const Toaster = (props: ToasterProps) => {
       toastOptions={{
         className: ['rounded-lg shadow-lg', 'border', 'bg-white dark:bg-gray-800', 'border-gray-200 dark:border-gray-700', 'py-4 px-6'].join(' '),
         style: {
-          fontSize: '16px',
+          fontSize: '18px',
           whiteSpace: 'normal', //  줄바꿈 허용
           overflowWrap: 'anywhere', //  단어 중간이라도 줄바꿈
           maxWidth: '360px', //  최대 너비 제한

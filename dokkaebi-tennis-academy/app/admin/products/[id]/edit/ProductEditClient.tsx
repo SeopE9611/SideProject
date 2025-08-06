@@ -258,68 +258,86 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
     // 기본 유효성 검사
     if (!basicInfo.name.trim()) {
-      toast(`${SECTIONS.BASIC} 오류`, {
-        description: '상품명을 입력해주세요.',
-        icon: '⛔',
-      });
+      showErrorToast(
+        <>
+          <strong>[{SECTIONS.BASIC} 미입력]</strong>
+          <br />
+          '상품명을 입력해주세요.'
+        </>
+      );
       return;
     }
 
     if (basicInfo.price <= 0) {
-      toast(`${SECTIONS.BASIC} 오류`, {
-        description: '금액을 입력해주세요',
-        icon: '⛔',
-      });
+      showErrorToast(
+        <>
+          <strong>[{SECTIONS.BASIC} 미입력]</strong>
+          <br /> '금액을 입력해주세요.'
+        </>
+      );
       return;
     }
 
     if (!basicInfo.description.trim()) {
-      toast(`${SECTIONS.BASIC} 오류`, {
-        description: '상세 설명을 입력해주세요.',
-        icon: '⛔',
-      });
+      showErrorToast(
+        <>
+          <strong>[{SECTIONS.BASIC} 미입력]</strong>
+          <br /> '상세 설명을 입력해주세요.'
+        </>
+      );
       return;
     }
 
     // 이미 기본값으로 3이 설정되어있어서 오류가 생기지는 않겠지만 예방차원에 로직 추가
     const featureValues = Object.values(features);
     if (featureValues.some((value) => value < 1 || value > 5)) {
-      toast(`${SECTIONS.PERFORMANCE} 오류`, {
-        description: '모든 성능 항목은 1~5 사이 값으로 설정되어야 합니다.',
-      });
+      showErrorToast(
+        <>
+          <strong>[{SECTIONS.PERFORMANCE}] 미입력</strong> <br />
+          '모든 성능 항목은 1~5 사이 값으로 설정되어야 합니다.'
+        </>
+      );
       return;
     }
 
     if (images.length === 0) {
-      toast(`${SECTIONS.IMAGE} 오류`, {
-        description: '최소 1장의 이미지를 업로드해야 합니다.',
-        icon: '⛔',
-      });
+      showErrorToast(
+        <>
+          <strong>[{SECTIONS.IMAGE}] 미입력</strong> <br />
+          '최소 1장의 이미지를 업로드해야 합니다.'
+        </>
+      );
       return;
     }
 
     if (inventory.isSale && inventory.salePrice >= basicInfo.price) {
-      toast(`${SECTIONS.INVENTORY} 오류`, {
-        description: '할인가는 정가보다 낮아야 합니다.',
-        icon: '⛔',
-      });
+      showErrorToast(
+        <>
+          <strong>[{SECTIONS.INVENTORY}] 미입력</strong> <br />
+          '할인가는 정가보다 낮아야 합니다.'
+        </>
+      );
       return;
     }
 
     if (inventory.stock < 0) {
-      toast(`${SECTIONS.INVENTORY} 오류`, {
-        description: '재고 수량은 0 이상이어야 합니다.',
-        icon: '⛔',
-      });
+      showErrorToast(
+        <>
+          <strong>[{SECTIONS.INVENTORY}] 미입력</strong> <br />
+          '재고 수량은 0 이상이어야 합니다.'
+        </>
+      );
       return;
     }
 
     if (inventoryDirty) {
       if (inventory.lowStock < 0 || inventory.lowStock > inventory.stock) {
-        toast('재고관리 오류', {
-          description: '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.',
-          icon: '⛔',
-        });
+        showErrorToast(
+          <>
+            <strong>[재고관리 오류]</strong> <br />
+            '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.'
+          </>
+        );
         return;
       }
     }
