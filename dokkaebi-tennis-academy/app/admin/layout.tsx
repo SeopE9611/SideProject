@@ -29,7 +29,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+    <div className="flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
       {/* 관리자 헤더 */}
       <header className="sticky top-0 z-40 border-b border-emerald-200/50 bg-white/80 backdrop-blur-md">
         <div className="container flex h-16 items-center">
@@ -55,9 +55,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </div>
       </header>
 
-      <div className="container flex-1 items-start md:grid md:grid-cols-[240px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
+      <div className="container flex flex-1 md:grid md:grid-cols-[240px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
         {/* 사이드바 */}
-        <aside className="fixed top-16 z-30 -ml-2 hidden h-[calc(100vh-4rem)] w-full shrink-0 overflow-y-auto border-r border-emerald-200/50 bg-white/60 backdrop-blur-sm md:sticky md:block">
+        <aside className="sticky top-[4rem] z-30 hidden md:block h-full overflow-y-auto border-r border-emerald-200/50 bg-white/60 backdrop-blur-sm">
           <div className="py-6 pr-6">
             <nav className="flex flex-col space-y-1">
               {menuItems.map((item) => (
@@ -73,7 +73,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </aside>
 
         {/* 메인 콘텐츠 */}
-        <main className="flex w-full flex-col overflow-hidden">{children}</main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );
