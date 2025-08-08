@@ -8,11 +8,16 @@ import { PlusCircle, Search, Filter, ArrowUpDown, MoreHorizontal, Package, Trend
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import ProductsLoading from '@/app/admin/products/loading';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { X, Calendar } from 'lucide-react'; // X 아이콘(검색어 지우기)만 실제 사용
+import { cn } from '@/lib/utils';
+import BrandFilter from '@/app/admin/products/product-filters/BrandFilter';
+import MaterialFilter from '@/app/admin/products/product-filters/MaterialFilter';
+import StockStatusFilter from '@/app/admin/products/product-filters/StockStatusFilter';
 
 type Product = {
   _id: string;
@@ -25,12 +30,43 @@ type Product = {
   inventory?: { stock: number; lowStock?: number };
 };
 
+// 상태 매핑
 const statusMap = {
   active: { label: '판매중', color: 'bg-emerald-100 text-emerald-800' },
   out_of_stock: { label: '품절', color: 'bg-red-100 text-red-800' },
   low_stock: { label: '재고 부족', color: 'bg-yellow-100 text-yellow-800' },
   draft: { label: '임시저장', color: 'bg-gray-100 text-gray-800' },
 };
+
+// 브랜드, 재질 매핑
+const BRAND_OPTIONS = [
+  { id: 'babolat', label: '바볼랏' },
+  { id: 'wilson', label: '윌슨' },
+  { id: 'head', label: '헤드' },
+  { id: 'yonex', label: '요넥스' },
+  { id: 'luxilon', label: '루키론' },
+  { id: 'technifibre', label: '테크니파이버' },
+  { id: 'solinco', label: '솔린코' },
+  { id: 'dunlop', label: '던롭' },
+  { id: 'gamma', label: '감마' },
+  { id: 'prince', label: '프린스' },
+  { id: 'kirschbaum', label: '키르쉬바움' },
+  { id: 'gosen', label: '고센' },
+] as const;
+
+const MATERIAL_OPTIONS = [
+  { id: 'polyester', label: '폴리에스터' },
+  { id: 'multifilament', label: '멀티필라멘트' },
+  { id: 'natural_gut', label: '천연 거트' },
+  { id: 'synthetic_gut', label: '합성 거트' },
+  { id: 'hybrid', label: '하이브리드' },
+] as const;
+
+const BRAND_LABEL: Record<string, string> = Object.fromEntries(BRAND_OPTIONS.map((o) => [o.id, o.label]));
+const MATERIAL_LABEL: Record<string, string> = Object.fromEntries(MATERIAL_OPTIONS.map((o) => [o.id, o.label]));
+
+const brandLabel = (id?: string) => (id ? BRAND_LABEL[id] ?? id : '');
+const materialLabel = (id?: string) => (id ? MATERIAL_LABEL[id] ?? id : '');
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
@@ -49,6 +85,11 @@ export default function ProductsClient() {
   const { data, error, isLoading, mutate } = useSWR<{ products: Product[] }>('/api/products?preview=0', fetcher);
   const debouncedTerm = useDebounce(searchTerm, 250);
   const products = data?.products ?? [];
+
+  // 필터 옵션 상태
+  const [brandFilter, setBrandFilter] = useState<string>('all');
+  const [materialFilter, setMaterialFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return;
@@ -96,10 +137,18 @@ export default function ProductsClient() {
     };
   });
 
+  // 필터 종류
+  const brands = BRAND_OPTIONS.map((o) => o.id);
+  const materials = MATERIAL_OPTIONS.map((o) => o.id);
   // 검색 필터링
-
   const term = debouncedTerm.trim().toLowerCase();
-  const filtered = term ? strings.filter((s) => [s.name, s.brand, s.sku].some((field) => field.toLowerCase().includes(term))) : strings;
+  const filtered = (term ? strings.filter((s) => [s.name, s.brand, s.sku].some((field) => field.toLowerCase().includes(term))) : strings)
+    .filter((p) => brandFilter === 'all' || p.brand === brandFilter)
+    .filter((p) => materialFilter === 'all' || p.material === materialFilter)
+    .filter((p) => statusFilter === 'all' || p.status === statusFilter);
+
+  // 필터 적용 여부
+  const isFiltered = brandFilter !== 'all' || materialFilter !== 'all' || statusFilter !== 'all' || term.length > 0;
 
   // 전체 상품 목록 (원본 데이터)
   const totalAll = products.length;
@@ -193,7 +242,9 @@ export default function ProductsClient() {
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div>
               <CardTitle className="text-xl font-semibold text-gray-900">스트링 목록</CardTitle>
-              <CardDescription className="text-gray-600">총 {totalFiltered}개의 스트링이 검색되었습니다.</CardDescription>
+              <CardDescription className="text-gray-600">
+                {filtered.length > 0 ? `총 ${totalFiltered}개의 스트링이 검색되었습니다.` : products.length === 0 ? '등록된 스트링이 없습니다.' : '조건에 맞는 스트링이 없습니다. 필터를 초기화해 보세요.'}
+              </CardDescription>
             </div>
             <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg">
               <Link href="/admin/products/new">
@@ -206,19 +257,43 @@ export default function ProductsClient() {
 
         <CardContent className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-3 md:space-y-0">
-            <div className="relative w-full max-w-sm">
+            {/* <div className="relative w-full max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input type="search" placeholder="스트링명, 브랜드, SKU로 검색" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500" />
-            </div>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
-                <Filter className="mr-2 h-4 w-4" />
-                필터
-              </Button>
-              <Button variant="outline" size="sm">
-                <ArrowUpDown className="mr-2 h-4 w-4" />
-                정렬
-              </Button>
+            </div> */}
+            <div className="w-full space-y-3">
+              {/* 검색 인풋 (좌측 아이콘 + 우측 X 버튼) */}
+              <div className="w-full max-w-md">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input type="search" placeholder="스트링명, 브랜드, SKU로 검색" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8 h-9 text-xs" />
+                  {searchTerm && (
+                    <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => setSearchTerm('')}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* 필터 그리드  */}
+              <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                <BrandFilter value={brandFilter} onChange={setBrandFilter} options={brands} />
+                <MaterialFilter value={materialFilter} onChange={setMaterialFilter} options={materials} />
+                <StockStatusFilter value={statusFilter} onChange={setStatusFilter} />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setBrandFilter('all');
+                    setMaterialFilter('all');
+                    setStatusFilter('all');
+                    setSearchTerm('');
+                  }}
+                  className="w-full"
+                >
+                  필터 초기화
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -237,50 +312,89 @@ export default function ProductsClient() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((s) => (
-                  <TableRow key={s.id} className="hover:bg-gray-50/50 transition-colors">
-                    <TableCell className="font-medium">
-                      <Link href={`/products/${s.id}`} className="hover:text-emerald-600">
-                        <div className="space-y-1">
-                          <div className="text-gray-900">{s.name}</div>
-                          <div className="text-xs text-gray-500">{s.sku}</div>
+                {filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-48 text-center">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="text-sm font-medium text-gray-900">{products.length === 0 ? '등록된 스트링이 없습니다.' : '조건에 맞는 스트링이 없습니다.'}</div>
+                        <div className="text-xs text-muted-foreground">{products.length === 0 ? '새 스트링을 등록해 시작해 보세요.' : '필터를 초기화하거나 검색어를 수정해 보세요.'}</div>
+
+                        <div className="mt-3 flex items-center gap-2">
+                          {products.length === 0 ? (
+                            <Button asChild size="sm">
+                              <Link href="/admin/products/new">스트링 등록</Link>
+                            </Button>
+                          ) : (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setBrandFilter('all');
+                                  setMaterialFilter('all');
+                                  setStatusFilter('all');
+                                  setSearchTerm('');
+                                }}
+                              >
+                                필터 초기화
+                              </Button>
+                              {term && (
+                                <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')}>
+                                  검색어 지우기
+                                </Button>
+                              )}
+                            </>
+                          )}
                         </div>
-                      </Link>
-                    </TableCell>
-                    <TableCell>{s.brand}</TableCell>
-                    <TableCell>{s.gauge}</TableCell>
-                    <TableCell>{s.material}</TableCell>
-                    <TableCell className="text-right font-medium text-gray-900">{s.price.toLocaleString()}원</TableCell>
-                    <TableCell className="text-right">{s.stock > 0 ? <span className="font-medium text-gray-900">{s.stock}</span> : <span className="font-medium text-red-600">품절</span>}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={statusMap[s.status].color}>
-                        {statusMap[s.status].label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="p-0">
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>작업</DropdownMenuLabel>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/products/${s.id}`}>상세 보기</Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/products/${s.id}/edit`}>수정</Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(s.id)}>
-                            삭제
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filtered.map((s) => (
+                    <TableRow key={s.id} className="hover:bg-gray-50/50 transition-colors">
+                      <TableCell className="font-medium">
+                        <Link href={`/products/${s.id}`} className="hover:text-emerald-600">
+                          <div className="space-y-1">
+                            <div className="text-gray-900">{s.name}</div>
+                            <div className="text-xs text-gray-500">{s.sku}</div>
+                          </div>
+                        </Link>
+                      </TableCell>
+                      <TableCell>{brandLabel(s.brand)}</TableCell>
+                      <TableCell>{s.gauge}</TableCell>
+                      <TableCell>{materialLabel(s.material)}</TableCell>
+                      <TableCell className="text-right font-medium text-gray-900">{s.price.toLocaleString()}원</TableCell>
+                      <TableCell className="text-right">{s.stock > 0 ? <span className="font-medium text-gray-900">{s.stock}</span> : <span className="font-medium text-red-600">품절</span>}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusMap[s.status].color}>
+                          {statusMap[s.status].label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="p-0">
+                              <MoreHorizontal />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>작업</DropdownMenuLabel>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/products/${s.id}`}>상세 보기</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/products/${s.id}/edit`}>수정</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(s.id)}>
+                              삭제
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
