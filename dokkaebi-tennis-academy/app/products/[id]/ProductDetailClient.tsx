@@ -105,7 +105,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const averageRating = product.reviews.length > 0 ? product.reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / product.reviews.length : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
       {/* Hero Section with Breadcrumb */}
       <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white py-8">
         <div className="absolute inset-0 bg-black/20"></div>

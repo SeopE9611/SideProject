@@ -48,7 +48,7 @@ export default async function StringServiceSuccessPage(props: Props) {
     <>
       <BackButtonGuard />
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-teal-600 to-blue-600 py-20">
           <div className="absolute inset-0 bg-black/20"></div>
           <div className="absolute inset-0">

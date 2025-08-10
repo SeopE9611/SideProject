@@ -36,7 +36,7 @@ export default function AccountDeletedPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="grid min-h-[100svh] place-items-center bg-gray-50 px-4 py-12">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="flex flex-col items-center pt-10 pb-6">
           <CheckCircle className="h-16 w-16 text-green-500 mb-4" />

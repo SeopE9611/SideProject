@@ -99,7 +99,7 @@ export default function OrderLookupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <div className="min-h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
         <div className="absolute inset-0 bg-black/10"></div>

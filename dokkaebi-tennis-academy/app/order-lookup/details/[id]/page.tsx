@@ -117,7 +117,7 @@ export default function OrderDetailPage() {
   // 로딩 상태
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      <div className="min-h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50">
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -154,7 +154,7 @@ export default function OrderDetailPage() {
   // 에러 상태
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      <div className="min-h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50">
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-pink-600">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -197,7 +197,7 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <div className="min-h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
         <div className="absolute inset-0 bg-black/10"></div>

@@ -84,38 +84,18 @@ export default function ProductsClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const { data, error, isLoading, mutate } = useSWR<{ products: Product[] }>('/api/products?preview=0', fetcher);
   const debouncedTerm = useDebounce(searchTerm, 250);
-  const products = data?.products ?? [];
 
   // 필터 옵션 상태
   const [brandFilter, setBrandFilter] = useState<string>('all');
   const [materialFilter, setMaterialFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return;
-    try {
-      const res = await fetch(`/api/products/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        showErrorToast(err.message || '삭제 중 오류가 발생했습니다.');
-        return;
-      }
-      showSuccessToast('상품이 삭제되었습니다.');
-      await mutate();
-    } catch {
-      showErrorToast('서버 오류가 발생했습니다.');
-    }
-  };
+  // 한 페이지 당 행 수
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
 
-  if (isLoading) {
-    return <ProductsLoading />;
-  }
-  if (error) {
-    return <div className="text-center text-red-500">상품 로드 중 오류가 발생했습니다.</div>;
-  }
+  const products = data?.products ?? [];
+
   // UI 용 데이터 가공
   const strings = products.map((p) => {
     const stock = p.inventory?.stock ?? 0;
@@ -140,12 +120,54 @@ export default function ProductsClient() {
   // 필터 종류
   const brands = BRAND_OPTIONS.map((o) => o.id);
   const materials = MATERIAL_OPTIONS.map((o) => o.id);
+
   // 검색 필터링
   const term = debouncedTerm.trim().toLowerCase();
   const filtered = (term ? strings.filter((s) => [s.name, s.brand, s.sku].some((field) => field.toLowerCase().includes(term))) : strings)
     .filter((p) => brandFilter === 'all' || p.brand === brandFilter)
     .filter((p) => materialFilter === 'all' || p.material === materialFilter)
     .filter((p) => statusFilter === 'all' || p.status === statusFilter);
+
+  // 페이지네이션 계산
+  const totalFiltered = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
+  const start = (page - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+  if (isLoading) {
+    return <ProductsLoading />;
+  }
+  if (error) {
+    return <div className="text-center text-red-500">상품 로드 중 오류가 발생했습니다.</div>;
+  }
+
+  useEffect(() => {
+    setPage(1);
+  }, [brandFilter, materialFilter, statusFilter, debouncedTerm]);
+
+  // 총 페이지 변화 시 현재 페이지 보정
+  useEffect(() => {
+    setPage((p) => Math.min(p, totalPages));
+  }, [totalPages]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return;
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        showErrorToast(err.message || '삭제 중 오류가 발생했습니다.');
+        return;
+      }
+      showSuccessToast('상품이 삭제되었습니다.');
+      await mutate();
+    } catch {
+      showErrorToast('서버 오류가 발생했습니다.');
+    }
+  };
 
   // 필터 적용 여부
   const isFiltered = brandFilter !== 'all' || materialFilter !== 'all' || statusFilter !== 'all' || term.length > 0;
@@ -164,11 +186,11 @@ export default function ProductsClient() {
   const outOfStockAll = products.filter((p) => (p.inventory?.stock ?? 0) === 0).length;
 
   // 목록 제목과 하단 카운트용 (검색 후)
-  const totalFiltered = filtered.length;
+  // const totalFiltered = filtered.length;
   return (
-    <div className="p-6 space-y-8">
+    <div className="min-h-full flex flex-col p-6 space-y-8">
       {/* 페이지 제목 */}
-      <div className="mb-8">
+      <section className="mb-8 shrink-0">
         <div className="flex items-center space-x-3 mb-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
             <Package className="h-6 w-6 text-white" />
@@ -178,10 +200,10 @@ export default function ProductsClient() {
             <p className="mt-2 text-lg text-gray-600">테니스 스트링 상품을 효율적으로 관리하세요</p>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* 통계 카드 */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
         <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm hover:shadow-xl">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -234,11 +256,11 @@ export default function ProductsClient() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </section>
 
       {/* 상품 관리 카드 */}
-      <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
-        <CardHeader className="pb-4">
+      <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm flex-1 min-h-0 flex flex-col">
+        <CardHeader className="pb-4 shrink-0">
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div>
               <CardTitle className="text-xl font-semibold text-gray-900">스트링 목록</CardTitle>
@@ -255,12 +277,8 @@ export default function ProductsClient() {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 flex-1 min-h-0 flex flex-col">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-3 md:space-y-0">
-            {/* <div className="relative w-full max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input type="search" placeholder="스트링명, 브랜드, SKU로 검색" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500" />
-            </div> */}
             <div className="w-full space-y-3">
               {/* 검색 인풋 (좌측 아이콘 + 우측 X 버튼) */}
               <div className="w-full max-w-md">
@@ -296,110 +314,122 @@ export default function ProductsClient() {
               </div>
             </div>
           </div>
-
-          <div className="overflow-x-auto overflow-y-auto max-h-[65vh] rounded-lg border border-gray-200">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50/80">
-                  <TableHead className="font-semibold text-gray-900">스트링명</TableHead>
-                  <TableHead className="font-semibold text-gray-900">브랜드</TableHead>
-                  <TableHead className="font-semibold text-gray-900">게이지</TableHead>
-                  <TableHead className="font-semibold text-gray-900">재질</TableHead>
-                  <TableHead className="font-semibold text-gray-900 text-right">가격</TableHead>
-                  <TableHead className="font-semibold text-gray-900 text-right">재고</TableHead>
-                  <TableHead className="font-semibold text-gray-900">상태</TableHead>
-                  <TableHead className="font-semibold text-gray-900 text-right">관리</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-48 text-center">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <div className="text-sm font-medium text-gray-900">{products.length === 0 ? '등록된 스트링이 없습니다.' : '조건에 맞는 스트링이 없습니다.'}</div>
-                        <div className="text-xs text-muted-foreground">{products.length === 0 ? '새 스트링을 등록해 시작해 보세요.' : '필터를 초기화하거나 검색어를 수정해 보세요.'}</div>
-
-                        <div className="mt-3 flex items-center gap-2">
-                          {products.length === 0 ? (
-                            <Button asChild size="sm">
-                              <Link href="/admin/products/new">스트링 등록</Link>
-                            </Button>
-                          ) : (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setBrandFilter('all');
-                                  setMaterialFilter('all');
-                                  setStatusFilter('all');
-                                  setSearchTerm('');
-                                }}
-                              >
-                                필터 초기화
-                              </Button>
-                              {term && (
-                                <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')}>
-                                  검색어 지우기
-                                </Button>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
+          <div className="flex-1 min-h-[calc(100svh-14rem)]">
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50/80">
+                    <TableHead className="font-semibold text-gray-900">스트링명</TableHead>
+                    <TableHead className="font-semibold text-gray-900">브랜드</TableHead>
+                    <TableHead className="font-semibold text-gray-900">게이지</TableHead>
+                    <TableHead className="font-semibold text-gray-900">재질</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-right">가격</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-right">재고</TableHead>
+                    <TableHead className="font-semibold text-gray-900">상태</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-right">관리</TableHead>
                   </TableRow>
-                ) : (
-                  filtered.map((s) => (
-                    <TableRow key={s.id} className="hover:bg-gray-50/50 transition-colors">
-                      <TableCell className="font-medium">
-                        <Link href={`/products/${s.id}`} className="hover:text-emerald-600">
-                          <div className="space-y-1">
-                            <div className="text-gray-900">{s.name}</div>
-                            <div className="text-xs text-gray-500">{s.sku}</div>
+                </TableHeader>
+                <TableBody>
+                  {pageItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="h-48 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="text-sm font-medium text-gray-900">{products.length === 0 ? '등록된 스트링이 없습니다.' : '조건에 맞는 스트링이 없습니다.'}</div>
+                          <div className="text-xs text-muted-foreground">{products.length === 0 ? '새 스트링을 등록해 시작해 보세요.' : '필터를 초기화하거나 검색어를 수정해 보세요.'}</div>
+
+                          <div className="mt-3 flex items-center gap-2">
+                            {products.length === 0 ? (
+                              <Button asChild size="sm">
+                                <Link href="/admin/products/new">스트링 등록</Link>
+                              </Button>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setBrandFilter('all');
+                                    setMaterialFilter('all');
+                                    setStatusFilter('all');
+                                    setSearchTerm('');
+                                  }}
+                                >
+                                  필터 초기화
+                                </Button>
+                                {term && (
+                                  <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')}>
+                                    검색어 지우기
+                                  </Button>
+                                )}
+                              </>
+                            )}
                           </div>
-                        </Link>
-                      </TableCell>
-                      <TableCell>{brandLabel(s.brand)}</TableCell>
-                      <TableCell>{s.gauge}</TableCell>
-                      <TableCell>{materialLabel(s.material)}</TableCell>
-                      <TableCell className="text-right font-medium text-gray-900">{s.price.toLocaleString()}원</TableCell>
-                      <TableCell className="text-right">{s.stock > 0 ? <span className="font-medium text-gray-900">{s.stock}</span> : <span className="font-medium text-red-600">품절</span>}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={statusMap[s.status].color}>
-                          {statusMap[s.status].label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="p-0">
-                              <MoreHorizontal />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>작업</DropdownMenuLabel>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/products/${s.id}`}>상세 보기</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/products/${s.id}/edit`}>수정</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(s.id)}>
-                              삭제
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    pageItems.map((s) => (
+                      <TableRow key={s.id} className="hover:bg-gray-50/50 transition-colors">
+                        <TableCell className="font-medium">
+                          <Link href={`/products/${s.id}`} className="hover:text-emerald-600">
+                            <div className="space-y-1">
+                              <div className="text-gray-900">{s.name}</div>
+                              <div className="text-xs text-gray-500">{s.sku}</div>
+                            </div>
+                          </Link>
+                        </TableCell>
+                        <TableCell>{brandLabel(s.brand)}</TableCell>
+                        <TableCell>{s.gauge}</TableCell>
+                        <TableCell>{materialLabel(s.material)}</TableCell>
+                        <TableCell className="text-right font-medium text-gray-900">{s.price.toLocaleString()}원</TableCell>
+                        <TableCell className="text-right">{s.stock > 0 ? <span className="font-medium text-gray-900">{s.stock}</span> : <span className="font-medium text-red-600">품절</span>}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusMap[s.status].color}>
+                            {statusMap[s.status].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="p-0">
+                                <MoreHorizontal />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>작업</DropdownMenuLabel>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/products/${s.id}`}>상세 보기</Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/admin/products/${s.id}/edit`}>수정</Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(s.id)}>
+                                삭제
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
+      <div className="mt-4 flex items-center justify-end gap-2">
+        <span className="text-sm text-muted-foreground">
+          {page} / {totalPages}
+        </span>
+        <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+          이전
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+          다음
+        </Button>
+      </div>
     </div>
   );
 }

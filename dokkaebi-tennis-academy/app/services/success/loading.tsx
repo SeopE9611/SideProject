@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StringServiceSuccessLoading() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8 px-4">
+    <div className="grid min-h-[100svh] place-items-center bg-gray-50 py-8 px-4">
       <div className="max-w-md w-full">
         <Card>
           <CardContent className="pt-8 pb-8 text-center">

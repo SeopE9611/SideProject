@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 
 export default function AccessDenied() {
   return (
-    <div className="container flex min-h-[calc(100vh-200px)] items-center justify-center py-20">
+    <div className="container flex min-h-[calc(100svh-200px)] items-center justify-center py-20">
       <div className="mx-auto max-w-md text-center space-y-8">
         <div>
           <Lock className="w-16 h-16 text-destructive mx-auto" />

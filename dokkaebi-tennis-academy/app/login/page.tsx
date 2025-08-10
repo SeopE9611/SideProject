@@ -221,7 +221,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
+    <div className="grid min-h-[100svh] place-items-center bg-gradient-to-br from-green-50 via-white to-emerald-50 p-4">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[url('/placeholder.svg?height=100&width=100')] opacity-5"></div>
 
