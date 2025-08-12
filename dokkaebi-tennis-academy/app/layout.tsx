@@ -8,8 +8,11 @@ import Footer from '@/components/footer';
 import { Toaster } from '@/components/ui/sonner';
 import Script from 'next/script';
 import { cookies } from 'next/headers';
-import { GlobalTokenGuard } from '@/components/system/GlobalTokenGuard';
-import ClientWrapper from '@/components/system/ClientWrapper';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { getDb } from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
+import { AuthHydrator } from '@/app/providers/AuthHydrator';
+import GlobalTokenGuard from '@/components/system/GlobalTokenGuard';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,18 +21,39 @@ export const metadata: Metadata = {
   description: '테니스 스트링 및 장비 전문 쇼핑몰',
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const cookieStore = await cookies();
-  // const token = cookieStore.get('accessToken')?.value ?? null; // 서버 쿠키에서 accessToken 추출
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // 쿠키에서 토큰 읽기
+  const token = (await cookies()).get('accessToken')?.value;
+
+  // 토큰 검증 -> DB조회 -> 초기 유저 만들기
+  let initialUser: any = null;
+  if (token) {
+    try {
+      const payload = verifyAccessToken(token); // { sub, ... }
+      if (payload?.sub) {
+        const db = await getDb();
+        const doc = await db.collection('users').findOne({ _id: new ObjectId(payload.sub) });
+        if (doc) {
+          initialUser = {
+            id: doc._id.toString(),
+            name: doc.name ?? null,
+            email: doc.email,
+            role: doc.role ?? 'user',
+            image: doc.image ?? null,
+          };
+        }
+      }
+    } catch {
+      // 토큰 오류는 초기유저 null로 둠
+    }
+  }
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={`${inter.className} bg-background text-foreground`}>
         <Script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="beforeInteractive" />
-
+        {/* 초기 유저를 클라 스토어로 밀어넣기 */}
+        <AuthHydrator initialUser={initialUser} />
+        <GlobalTokenGuard />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {/* 클라이언트에게 accessToken 전달 */}
           <div className="flex min-h-screen flex-col">
@@ -38,7 +62,6 @@ export default async function RootLayout({
             <Footer />
           </div>
           <Toaster />
-          <ClientWrapper />
         </ThemeProvider>
       </body>
     </html>

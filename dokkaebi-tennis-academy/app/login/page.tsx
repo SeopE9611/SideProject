@@ -86,6 +86,7 @@ export default function LoginPage() {
 
       const meRes = await fetch('/api/users/me', {
         credentials: 'include',
+        cache: 'no-store', //  캐시 우회
       });
 
       if (!meRes.ok) {
@@ -106,6 +107,7 @@ export default function LoginPage() {
       localStorage.removeItem('cart-storage');
       const from = new URLSearchParams(window.location.search).get('from');
       router.push(from === 'cart' ? '/cart' : '/');
+      router.refresh();
     } catch (error) {
       showErrorToast('로그인 중 오류가 발생했습니다.');
     } finally {

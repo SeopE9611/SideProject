@@ -10,6 +10,7 @@ import { Star, Eye, Heart, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWishlist } from '@/app/features/wishlist/useWishlist';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useRouter } from 'next/navigation';
 
 // 제품 타입 (필요시 공통으로 뺄 수도 있음)
 export type Product = {
@@ -40,8 +41,10 @@ type Props = {
 //  React.memo로 감싸서 props가 실제로 바뀌었을 때만 재렌더링 되도록 최적화
 const ProductCard = React.memo(
   function ProductCard({ product, viewMode, brandLabel }: Props) {
+    const router = useRouter();
     const { has, toggle } = useWishlist();
     const inWish = has(product._id);
+
     if (viewMode === 'list') {
       return (
         <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-2 hover:border-blue-300">
@@ -95,20 +98,26 @@ const ProductCard = React.memo(
                 </Link>
 
                 <Button
+                  size="sm"
                   variant="outline"
-                  size="icon"
+                  className={`bg-white/90 hover:bg-white ${inWish ? 'border-red-300 text-red-600' : ''}`}
                   onClick={async (e) => {
-                    e.preventDefault(); // 링크 이동 방지
+                    e.preventDefault();
                     e.stopPropagation();
-                    // 비로그인 처리(상세와 동일 로직을 재사용해도 OK)
                     try {
                       await toggle(product._id);
                       showSuccessToast(inWish ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
-                    } catch {
-                      showErrorToast('처리 중 오류가 발생했습니다.');
+                    } catch (e: any) {
+                      if (e?.message === 'unauthorized') {
+                        showErrorToast('로그인이 필요합니다.');
+                        router.push(`/login?from=/products/${product._id}`);
+                      } else {
+                        showErrorToast('처리 중 오류가 발생했습니다.');
+                      }
                     }
                   }}
-                  className={`hover:bg-red-50 hover:border-red-300 bg-transparent ${inWish ? 'border-red-300 text-red-600' : ''}`}
+                  aria-pressed={inWish}
+                  title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
                 >
                   <Heart className={`w-4 h-4 ${inWish ? 'fill-red-500 text-red-500' : ''}`} />
                 </Button>

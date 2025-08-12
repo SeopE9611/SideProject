@@ -27,6 +27,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const { has, toggle, isValidating } = useWishlist();
   const isWishlisted = has(product._id);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
@@ -90,21 +91,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const handleWishlist = async () => {
-    if (!user) {
-      showErrorToast('로그인이 필요합니다. 위시리스트는 회원 전용 기능입니다.');
-      router.push(`/login?from=/products/${product._id}`);
-      return;
-    }
+    if (busy) return;
+    setBusy(true);
     try {
-      await toggle(product._id);
+      await toggle(product._id); // 항상 서버에 요청
       showSuccessToast(isWishlisted ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
     } catch (e: any) {
       if (e?.message === 'unauthorized') {
-        showErrorToast('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.');
+        showErrorToast('로그인이 필요합니다.');
         router.push(`/login?from=/products/${product._id}`);
-        return;
+      } else {
+        showErrorToast('처리 중 오류가 발생했습니다.');
       }
-      showErrorToast('처리 중 오류가 발생했습니다.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -290,7 +290,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </Button>
                       )}
 
-                      <Button variant="outline" onClick={handleWishlist} className={`${isWishlisted ? 'bg-red-50 border-red-200 text-red-600' : ''}`}>
+                      <Button variant="outline" disabled={busy} onClick={handleWishlist} className={`${isWishlisted ? 'bg-red-50 border-red-200 text-red-600' : ''}`}>
                         <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                         위시리스트
                       </Button>
