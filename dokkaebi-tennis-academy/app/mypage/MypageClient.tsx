@@ -285,7 +285,7 @@ export default function MypageClient({ user }: Props) {
                     </CardHeader>
                     <CardContent className="p-6">
                       <Suspense fallback={<WishlistSkeleton />}>
-                        <Wishlist wishlist={wishlist} />
+                        <Wishlist />
                       </Suspense>
                     </CardContent>
                   </Card>

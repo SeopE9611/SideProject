@@ -12,6 +12,7 @@ import { getMyInfo } from '@/lib/auth.client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { showErrorToast } from '@/lib/toast';
+import WishlistSidebar from '@/app/cart/_components/WishlistSidebar';
 
 export default function CartPageClient() {
   const router = useRouter();
@@ -73,7 +74,7 @@ export default function CartPageClient() {
         {cartItems.length > 0 ? (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* 장바구니 상품 목록 */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
               <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl">
                 <CardHeader className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 rounded-t-lg">
                   <CardTitle className="flex items-center gap-3">
@@ -238,6 +239,7 @@ export default function CartPageClient() {
                   </div>
                 </CardFooter>
               </Card>
+              <WishlistSidebar variant="inline" />
             </div>
 
             {/* 주문 요약 및 결제 */}
@@ -351,6 +353,9 @@ export default function CartPageClient() {
                 </Button>
               </CardContent>
             </Card>
+            <div className="max-w-2xl mx-auto mt-8">
+              <WishlistSidebar variant="inline" />
+            </div>
           </div>
         )}
       </div>

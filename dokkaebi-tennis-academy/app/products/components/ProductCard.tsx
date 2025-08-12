@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, Eye, Heart, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useWishlist } from '@/app/features/wishlist/useWishlist';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 // 제품 타입 (필요시 공통으로 뺄 수도 있음)
 export type Product = {
@@ -35,11 +37,11 @@ type Props = {
   brandLabel: string;
 };
 
-/**
- * React.memo로 감싸서 props가 실제로 바뀌었을 때만 재렌더링 되도록 최적화
- */
+//  React.memo로 감싸서 props가 실제로 바뀌었을 때만 재렌더링 되도록 최적화
 const ProductCard = React.memo(
   function ProductCard({ product, viewMode, brandLabel }: Props) {
+    const { has, toggle } = useWishlist();
+    const inWish = has(product._id);
     if (viewMode === 'list') {
       return (
         <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-2 hover:border-blue-300">
@@ -91,8 +93,24 @@ const ProductCard = React.memo(
                     상세보기
                   </Button>
                 </Link>
-                <Button variant="outline" size="icon" className="hover:bg-red-50 hover:border-red-300 bg-transparent">
-                  <Heart className="w-4 h-4" />
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={async (e) => {
+                    e.preventDefault(); // 링크 이동 방지
+                    e.stopPropagation();
+                    // 비로그인 처리(상세와 동일 로직을 재사용해도 OK)
+                    try {
+                      await toggle(product._id);
+                      showSuccessToast(inWish ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
+                    } catch {
+                      showErrorToast('처리 중 오류가 발생했습니다.');
+                    }
+                  }}
+                  className={`hover:bg-red-50 hover:border-red-300 bg-transparent ${inWish ? 'border-red-300 text-red-600' : ''}`}
+                >
+                  <Heart className={`w-4 h-4 ${inWish ? 'fill-red-500 text-red-500' : ''}`} />
                 </Button>
                 <Button variant="outline" size="icon" className="hover:bg-blue-50 hover:border-blue-300 bg-transparent">
                   <ShoppingCart className="w-4 h-4" />
@@ -117,19 +135,37 @@ const ProductCard = React.memo(
               className="h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
             {product.isNew && <Badge className="absolute right-3 top-3 bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg">NEW</Badge>}
-            <div className="absolute top-3 left-3">
-              <Badge variant="secondary" className="bg-white/90 text-gray-800 shadow-lg">
-                15% 할인
-              </Badge>
-            </div>
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div className="flex gap-2">
-                <Button size="sm" className="bg-white text-black hover:bg-gray-100">
+                <Button
+                  size="sm"
+                  className="bg-white text-black hover:bg-gray-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
                   <Eye className="w-4 h-4 mr-1" />
                   보기
                 </Button>
-                <Button size="sm" variant="outline" className="bg-white/90 hover:bg-white">
-                  <Heart className="w-4 h-4" />
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={`bg-white/90 hover:bg-white ${inWish ? 'border-red-300 text-red-600' : ''}`}
+                  onClick={async (e) => {
+                    e.preventDefault(); // Link 이동 방지
+                    e.stopPropagation(); // 상위 onClick 차단
+                    try {
+                      await toggle(product._id);
+                      showSuccessToast(inWish ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
+                    } catch {
+                      showErrorToast('처리 중 오류가 발생했습니다.');
+                    }
+                  }}
+                  aria-pressed={inWish}
+                  title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
+                >
+                  <Heart className={`w-4 h-4 ${inWish ? 'fill-red-500 text-red-500' : ''}`} />
                 </Button>
               </div>
             </div>
@@ -170,7 +206,6 @@ const ProductCard = React.memo(
           <CardFooter className="p-5 pt-0 flex justify-between items-center">
             <div>
               <div className="font-bold text-lg text-blue-600">{product.price.toLocaleString()}원</div>
-              <div className="text-xs text-muted-foreground line-through">{Math.round(product.price * 1.2).toLocaleString()}원</div>
             </div>
             <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg">
               <ShoppingCart className="w-4 h-4 mr-1" />

@@ -12,17 +12,21 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import type { User } from '@/app/store/authStore';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useWishlist } from '@/app/features/wishlist/useWishlist';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  // const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
   const stock = product.inventory?.stock ?? 0;
 
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { has, toggle, isValidating } = useWishlist();
+  const isWishlisted = has(product._id);
 
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
@@ -85,12 +89,22 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
   };
 
-  const handleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
-    if (!isWishlisted) {
-      showSuccessToast('위시리스트에 추가되었습니다.');
-    } else {
-      showSuccessToast('위시리스트에서 제거되었습니다.');
+  const handleWishlist = async () => {
+    if (!user) {
+      showErrorToast('로그인이 필요합니다. 위시리스트는 회원 전용 기능입니다.');
+      router.push(`/login?from=/products/${product._id}`);
+      return;
+    }
+    try {
+      await toggle(product._id);
+      showSuccessToast(isWishlisted ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
+    } catch (e: any) {
+      if (e?.message === 'unauthorized') {
+        showErrorToast('로그인 세션이 만료되었습니다. 다시 로그인해 주세요.');
+        router.push(`/login?from=/products/${product._id}`);
+        return;
+      }
+      showErrorToast('처리 중 오류가 발생했습니다.');
     }
   };
 
