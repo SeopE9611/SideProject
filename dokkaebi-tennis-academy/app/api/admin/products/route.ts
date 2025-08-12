@@ -3,18 +3,9 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { getDb } from '@/lib/mongodb';
 
-/**
- * Admin Products endpoint (서버 페이지네이션 + 전역 통계)
- * Query params:
- * - page (1-based)
- * - pageSize
- * - q (search)
- * - brand, material
- * - status: 'all' | 'active' | 'low_stock' | 'out_of_stock'
- */
 export async function GET(req: Request) {
   try {
-    // (선택) 어드민 권한 확인 — 필요 없다면 이 블록 제거 가능
+    // 인증
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
     const user = token ? verifyAccessToken(token) : null;
@@ -24,6 +15,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
 
+    // 페이지네이션/필터 파라미터
     const pageParam = parseInt(searchParams.get('page') || '1', 10);
     const pageSizeParam = parseInt(searchParams.get('pageSize') || '10', 10);
     const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
@@ -34,13 +26,42 @@ export async function GET(req: Request) {
     const material = searchParams.get('material') || 'all';
     const status = (searchParams.get('status') || 'all') as 'all' | 'active' | 'low_stock' | 'out_of_stock';
 
+    // 정렬 파라미터 파싱 ex) ?sort=price:asc
+    const sortParam = (searchParams.get('sort') || '').trim();
+    const allowMap: Record<string, string> = {
+      name: 'name',
+      brand: 'brand',
+      gauge: 'gauge',
+      material: 'material',
+      price: 'price',
+      stock: 'inventory.stock',
+      createdAt: 'createdAt',
+    };
+    let sortDoc: Record<string, 1 | -1> = {};
+    if (sortParam) {
+      const [field, dirRaw] = sortParam.split(':');
+      const key = allowMap[field];
+      if (key) {
+        const dir = dirRaw === 'asc' ? 1 : -1;
+        sortDoc[key] = dir;
+        // 안정 정렬(동일값일 때 최신 우선)
+        if (!('createdAt' in sortDoc)) sortDoc.createdAt = -1;
+        sortDoc._id = -1;
+      }
+    }
+    if (Object.keys(sortDoc).length === 0) {
+      // 기본 정렬(기존과 동일)
+      sortDoc = { createdAt: -1, _id: -1 };
+    }
+
     const db = await getDb();
     const products = db.collection('products');
 
-    // 리스트용 필터(검색/브랜드/재질/상태)는 적용
+    // 리스트용 필터
     const filter: any = { isDeleted: { $ne: true } };
 
     if (q) {
+      // 정규식
       const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
       filter.$or = [{ name: regex }, { sku: regex }, { brand: regex }, { material: regex }];
     }
@@ -67,11 +88,11 @@ export async function GET(req: Request) {
     // 총 개수(필터 적용)
     const total = await products.countDocuments(filter);
 
-    // 페이지 아이템(필터 적용)
+    // 페이지 아이템(필터 적용 + 정렬 적용)
     const skip = (page - 1) * pageSize;
     const rawItems = await products
       .find(filter, { projection: { isDeleted: 0 } })
-      .sort({ createdAt: -1, _id: -1 })
+      .sort(sortDoc)
       .skip(skip)
       .limit(pageSize)
       .toArray();
@@ -130,7 +151,7 @@ export async function GET(req: Request) {
       total, // 페이지네이션용: 필터가 적용된 총 개수
       page,
       pageSize,
-      totalsByStatus, // 전역 통계: 필터와 무관
+      totalsByStatus, // 전역 통계(필터 무시)
     });
   } catch (err) {
     console.error('[/api/admin/products] GET error', err);
