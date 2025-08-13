@@ -6,7 +6,7 @@ export async function POST() {
   //  accessToken 쿠키 제거
   response.cookies.set('accessToken', '', {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     path: '/',
     maxAge: 0, // 즉시 만료
   });
@@ -14,7 +14,7 @@ export async function POST() {
   // refreshToken 쿠키도 제거
   response.cookies.set('refreshToken', '', {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     path: '/',
     maxAge: 0,
   });

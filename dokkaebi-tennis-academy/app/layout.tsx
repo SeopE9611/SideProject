@@ -13,6 +13,8 @@ import { getDb } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { AuthHydrator } from '@/app/providers/AuthHydrator';
 import GlobalTokenGuard from '@/components/system/GlobalTokenGuard';
+import TokenRefresher from '@/components/system/TokenRefresher';
+import SessionWatcher from '@/components/system/SessionWatcher';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -54,6 +56,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         {/* 초기 유저를 클라 스토어로 밀어넣기 */}
         <AuthHydrator initialUser={initialUser} />
         <GlobalTokenGuard />
+        <TokenRefresher />
+        <SessionWatcher />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {/* 클라이언트에게 accessToken 전달 */}
           <div className="flex min-h-screen flex-col">

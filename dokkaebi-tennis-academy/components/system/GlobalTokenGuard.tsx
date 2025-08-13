@@ -16,19 +16,45 @@ export default function GlobalTokenGuard() {
     if (user) return;
 
     let alive = true;
+
     (async () => {
       try {
-        const res = await fetch('/api/users/me', {
+        // 1차: me 조회
+        let res = await fetch('/api/users/me', {
           credentials: 'include',
-          cache: 'no-store', // 캐시 사용 금지(중복 방지)
+          cache: 'no-store',
         });
         if (!alive) return;
 
         if (res.ok) {
           const me = await res.json();
-          setUser(me ?? null); // 로그인된 사용자
-        } else if (res.status === 401) {
-          setUser(null); // 비로그인
+          setUser(me ?? null);
+          return;
+        }
+
+        // 401이면: refresh 1회 → me 재시도
+        if (res.status === 401) {
+          const r = await fetch('/api/refresh', {
+            method: 'POST',
+            credentials: 'include',
+          });
+
+          if (r.ok) {
+            res = await fetch('/api/users/me', {
+              credentials: 'include',
+              cache: 'no-store',
+            });
+            if (!alive) return;
+
+            if (res.ok) {
+              const me = await res.json();
+              setUser(me ?? null);
+              return;
+            }
+          }
+
+          // refresh 실패 또는 재시도 실패 → 비로그인으로 간주
+          setUser(null);
         }
       } catch {
         // 네트워크 오류는 조용히 무시 (user는 그대로)
