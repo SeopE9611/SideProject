@@ -31,6 +31,31 @@ export default async function StringServiceSuccessPage(props: Props) {
   const db = client.db();
   const application = await db.collection('stringing_applications').findOne({ _id: new ObjectId(applicationId) });
 
+  // 여러 개 선택/커스텀 이름까지 합쳐 표시용 이름 랜더
+  const stringTypes: string[] = application?.stringDetails?.stringTypes ?? [];
+
+  const productIds = stringTypes.filter((id: string) => id && id !== 'custom' && ObjectId.isValid(id)).map((id: string) => new ObjectId(id));
+
+  let stringNames: string[] = [];
+
+  // products 컬렉션에서 name만
+  if (productIds.length) {
+    const prods = await db
+      .collection('products')
+      .find({ _id: { $in: productIds } }, { projection: { name: 1 } })
+      .toArray();
+
+    stringNames = prods.map((p: any) => p.name).filter(Boolean);
+  }
+
+  // 커스텀 이름이 포함되어 있다면 맨 앞에 붙임
+  if (stringTypes.includes('custom') && application?.stringDetails?.customStringName) {
+    stringNames.unshift(application.stringDetails.customStringName);
+  }
+
+  // 최종 표시 문자열 (여러 개면 " + "로 연결)
+  const stringDisplay = stringNames.join(' + ') || '-';
+
   if (!application) return notFound();
 
   // 로그인 여부 확인
@@ -228,7 +253,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         <Zap className="h-5 w-5 text-blue-600 mr-2" />
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">스트링</p>
                       </div>
-                      <p className="font-bold text-lg text-gray-900 dark:text-white">{application.stringDetails.stringType === 'custom' ? application.stringDetails.customStringName : application.stringDetails.stringType}</p>
+                      <p className="font-bold text-lg text-gray-900 dark:text-white">{stringDisplay}</p>
                     </div>
                   </div>
 
