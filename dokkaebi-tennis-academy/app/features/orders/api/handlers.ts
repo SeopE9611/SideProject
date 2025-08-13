@@ -9,6 +9,8 @@ import clientPromise from '@/lib/mongodb';
 // 주문 생성 핸들러
 export async function createOrder(req: Request): Promise<Response> {
   try {
+    const idemKey = req.headers.get('Idempotency-Key') || null;
+
     // 클라이언트 쿠키에서 accessToken 가져오기
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
@@ -24,6 +26,18 @@ export async function createOrder(req: Request): Promise<Response> {
     //  DB 커넥션 가져오기
     const client = await clientPromise;
     const db = client.db();
+    const ordersCol = db.collection('orders');
+
+    // 유니크 인덱스(1회성, 여러 번 호출해도 안전)
+    await ordersCol.createIndex({ idemKey: 1 }, { unique: true, sparse: true });
+
+    // 동일 키로 이미 생성된 주문이면 바로 반환
+    if (idemKey) {
+      const dup = await ordersCol.findOne({ idemKey });
+      if (dup) {
+        return NextResponse.json({ success: true, orderId: dup._id }, { status: 200 });
+      }
+    }
 
     for (const item of rawItems) {
       // 재고 검증/차감을 위해 rawItems 순회
@@ -107,6 +121,7 @@ export async function createOrder(req: Request): Promise<Response> {
       createdAt: new Date(),
       status: '대기중',
       isStringServiceApplied: false,
+      idemKey,
     };
 
     // 회원일 경우 userId, userSnapshot 추가
@@ -122,7 +137,7 @@ export async function createOrder(req: Request): Promise<Response> {
     const result = await insertOrder(order);
 
     // 성공 응답 반환
-    return NextResponse.json({ success: true, orderId: result.insertedId });
+    return NextResponse.json({ success: true, orderId: result.insertedId.toString() }, { status: 201 });
   } catch (error) {
     console.error('주문 POST 에러:', error);
     return NextResponse.json({ success: false, error: '주문 생성 중 오류 발생' }, { status: 500 });

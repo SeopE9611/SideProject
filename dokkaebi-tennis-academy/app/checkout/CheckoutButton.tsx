@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/app/store/cartStore';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
 import { showErrorToast } from '@/lib/toast';
@@ -47,6 +47,7 @@ export default function CheckoutButton({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false); // 동시 클릭 락 ref
 
   useEffect(() => {
     getMyInfo()
@@ -56,6 +57,9 @@ export default function CheckoutButton({
   }, []);
 
   const handleSubmit = async () => {
+    // 동시 클릭 즉시 차단 (상태 업데이트 지연에도 안전)
+    if (submittingRef.current || isSubmitting) return;
+    submittingRef.current = true;
     if (isSubmitting) return;
 
     setIsSubmitting(true);
@@ -89,9 +93,12 @@ export default function CheckoutButton({
         isStringServiceApplied: withStringService,
       };
 
+      //  아이도임포턴시 키 생성
+      const idemKey = crypto.randomUUID();
+
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
         body: JSON.stringify(orderData),
         credentials: 'include',
       });
@@ -114,9 +121,12 @@ export default function CheckoutButton({
       const data = await res.json();
 
       if (data?.orderId) {
-        clearCart();
         router.push(`/checkout/success?orderId=${data.orderId}`);
-      } else if (data?.error === 'INSUFFICIENT_STOCK') {
+        router.refresh();
+        return;
+      }
+
+      if (data?.error === 'INSUFFICIENT_STOCK') {
         showErrorToast(
           <div>
             <p>
@@ -129,32 +139,47 @@ export default function CheckoutButton({
       } else {
         showErrorToast(data?.error ?? '주문 실패: 서버 오류');
       }
-    } catch (error) {
-      console.error('주문 실패:', error);
-      showErrorToast('주문 중 문제가 발생했습니다.');
+    } catch (e) {
+      showErrorToast('주문 처리 중 오류가 발생했습니다.');
     } finally {
+      // 실패 시에만 락 해제 (성공 시엔 다른 페이지로 이동)
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Button
-      onClick={handleSubmit}
-      className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:from-blue-700 hover:via-purple-700 hover:to-teal-700 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-      size="lg"
-      disabled={disabled || isSubmitting}
-    >
-      {isSubmitting ? (
-        <>
-          <Loader2 className="h-5 w-5 mr-3 animate-spin" />
-          주문 처리중...
-        </>
-      ) : (
-        <>
-          <CreditCard className="h-5 w-5 mr-3" />
-          주문 완료하기
-        </>
+    <>
+      <Button
+        onClick={handleSubmit}
+        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        size="lg"
+        disabled={disabled || isSubmitting}
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="h-5 w-5 mr-3 animate-spin" />
+            주문 처리중...
+          </>
+        ) : (
+          <>
+            <CreditCard className="h-5 w-5 mr-3" />
+            주문 완료하기
+          </>
+        )}
+      </Button>
+
+      {/* 제출 중 전체 오버레이 */}
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[60] bg-black/10 backdrop-blur-[2px] cursor-wait">
+          <div className="absolute inset-0 grid place-items-center">
+            <div className="flex items-center gap-3 rounded-xl bg-white/90 px-4 py-3 shadow">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-sm">주문을 처리하고 있어요…</span>
+            </div>
+          </div>
+        </div>
       )}
-    </Button>
+    </>
   );
 }

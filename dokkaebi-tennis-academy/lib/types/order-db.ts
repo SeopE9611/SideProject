@@ -54,4 +54,5 @@ export type DBOrder = {
     email: string;
   };
   isStringServiceApplied?: boolean;
+  idemKey?: string | null;
 };
