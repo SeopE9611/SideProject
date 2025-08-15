@@ -10,6 +10,8 @@ const badgeVariants = cva('inline-flex items-center whitespace-nowrap rounded-fu
       secondary: 'border-transparent bg-secondary text-secondary-foreground bg-secondary/80',
       destructive: 'border-transparent bg-destructive text-destructive-foreground bg-destructive/80',
       outline: 'text-foreground',
+      product: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-900',
+      service: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-900',
     },
   },
   defaultVariants: {

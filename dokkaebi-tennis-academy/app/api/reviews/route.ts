@@ -59,6 +59,17 @@ async function ensureReviewIndexes(db: DbAny) {
   if (!hasKey({ productId: 1, status: 1, createdAt: -1 })) {
     await col.createIndex({ productId: 1, status: 1, createdAt: -1 }, { name: 'product_list_index' });
   }
+
+  // 목록 공용 인덱스(상태 + 정렬 키)
+  if (!hasKey({ status: 1, createdAt: -1, _id: -1 })) {
+    await col.createIndex({ status: 1, createdAt: -1, _id: -1 }, { name: 'status_created_desc' });
+  }
+  if (!hasKey({ status: 1, helpfulCount: -1, _id: -1 })) {
+    await col.createIndex({ status: 1, helpfulCount: -1, _id: -1 }, { name: 'status_helpful_desc' });
+  }
+  if (!hasKey({ status: 1, rating: -1, _id: -1 })) {
+    await col.createIndex({ status: 1, rating: -1, _id: -1 }, { name: 'status_rating_desc' });
+  }
 }
 
 // 상품 별점/리뷰수 집계 후 products 업데이트
@@ -212,4 +223,133 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ message: 'bad request' }, { status: 400 });
+}
+
+// 리뷰 리스트(상품/서비스) + 필터 + 커서 페이지네이션
+export async function GET(req: Request) {
+  const db = await getDb();
+  await ensureReviewIndexes(db);
+
+  //사용자 추출
+  const token = (await cookies()).get('accessToken')?.value;
+  let currentUserId: ObjectId | null = null;
+  if (token) {
+    const payload = verifyAccessToken(token);
+    if (payload?.sub) currentUserId = new ObjectId(String(payload.sub));
+  }
+
+  const url = new URL(req.url);
+  const type = (url.searchParams.get('type') || 'all') as 'product' | 'service' | 'all';
+  const rating = url.searchParams.get('rating');
+  const hasPhoto = url.searchParams.get('hasPhoto') === '1';
+  const sort = (url.searchParams.get('sort') || 'latest') as 'latest' | 'helpful' | 'rating';
+  const limit = Math.max(1, Math.min(50, Number(url.searchParams.get('limit') || 10)));
+  const cursorB64 = url.searchParams.get('cursor');
+
+  // match 조건 구성
+  const match: any = { status: 'visible' };
+  if (type === 'product') match.productId = { $exists: true };
+  if (type === 'service') match.service = { $exists: true };
+  if (rating) match.rating = Number(rating);
+  if (hasPhoto) match.$expr = { $gt: [{ $size: { $ifNull: ['$photos', []] } }, 0] };
+
+  // 정렬 스펙 및 커서(다중 키) 구성
+  const sortSpec: any = sort === 'helpful' ? { helpfulCount: -1, _id: -1 } : sort === 'rating' ? { rating: -1, _id: -1 } : { createdAt: -1, _id: -1 };
+
+  // 커서 decoding
+  let after: any = null;
+  if (cursorB64) {
+    try {
+      after = JSON.parse(Buffer.from(cursorB64, 'base64').toString('utf-8'));
+    } catch {}
+  }
+
+  // 커서 조건 생성: 정렬키 비교 ->  동률이면 _id 비교
+  const cursorCond: any = {};
+  if (after && after.id) {
+    if (sort === 'helpful' && typeof after.helpfulCount === 'number') {
+      cursorCond.$or = [{ helpfulCount: { $lt: after.helpfulCount } }, { helpfulCount: after.helpfulCount, _id: { $lt: new ObjectId(after.id) } }];
+    } else if (sort === 'rating' && typeof after.rating === 'number') {
+      cursorCond.$or = [{ rating: { $lt: after.rating } }, { rating: after.rating, _id: { $lt: new ObjectId(after.id) } }];
+    } else if (after.createdAt) {
+      cursorCond.$or = [{ createdAt: { $lt: new Date(after.createdAt) } }, { createdAt: new Date(after.createdAt), _id: { $lt: new ObjectId(after.id) } }];
+    } else {
+      cursorCond._id = { $lt: new ObjectId(after.id) };
+    }
+  }
+
+  // $lookup으로 상품 표시 정보 붙이기
+  const pipeline: any[] = [
+    { $match: match },
+    ...(Object.keys(cursorCond).length ? [{ $match: cursorCond }] : []),
+    { $sort: sortSpec },
+    { $limit: limit + 1 }, // nextCursor 판단 위해 1개 더
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'productId',
+        foreignField: '_id',
+        as: 'product',
+        pipeline: [{ $project: { name: 1, images: 1 } }],
+      },
+    },
+    { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        _id: 1,
+        type: { $cond: [{ $ifNull: ['$productId', false] }, 'product', 'service'] },
+        productId: 1,
+        productName: '$product.name',
+        productImage: { $arrayElemAt: ['$product.images', 0] },
+        service: 1,
+        serviceApplicationId: 1,
+        userName: 1,
+        rating: 1,
+        content: 1,
+        photos: 1,
+        helpfulCount: 1,
+        createdAt: 1,
+        votedByMe: 1,
+      },
+    },
+  ];
+
+  if (currentUserId) {
+    pipeline.push(
+      {
+        $lookup: {
+          from: 'review_votes',
+          let: { rid: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$reviewId', '$$rid'] }, { $eq: ['$userId', currentUserId] }],
+                },
+              },
+            },
+            { $limit: 1 },
+          ],
+          as: 'myVote',
+        },
+      },
+      { $addFields: { votedByMe: { $gt: [{ $size: '$myVote' }, 0] } } },
+      { $project: { myVote: 0 } }
+    );
+  } else {
+    pipeline.push({ $addFields: { votedByMe: false } });
+  }
+
+  const rows = await db.collection('reviews').aggregate(pipeline).toArray();
+
+  // nextCursor 생성
+  let nextCursor: string | null = null;
+  if (rows.length > limit) {
+    const last = rows[limit - 1];
+    rows.length = limit;
+    const payload = sort === 'helpful' ? { id: String(last._id), helpfulCount: last.helpfulCount ?? 0 } : sort === 'rating' ? { id: String(last._id), rating: last.rating ?? 0 } : { id: String(last._id), createdAt: last.createdAt };
+    nextCursor = Buffer.from(JSON.stringify(payload), 'utf-8').toString('base64');
+  }
+
+  return NextResponse.json({ items: rows, nextCursor });
 }
