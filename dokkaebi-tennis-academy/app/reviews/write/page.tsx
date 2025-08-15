@@ -47,7 +47,7 @@ export default function ReviewWritePage() {
   const [apps, setApps] = useState<AppLite[]>([]);
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
 
-  /* 1) 최초 진입 검사 (서비스는 ‘후보 있음’만 확인) */
+  /*  최초 진입 검사 (서비스는 ‘후보 있음’만 확인) */
   useEffect(() => {
     let aborted = false;
     async function run() {
@@ -93,7 +93,7 @@ export default function ReviewWritePage() {
     };
   }, [mode, productId]);
 
-  /* 2) 서비스 모드: 내 신청서 목록 + 추천값 세팅 */
+  /* 서비스 모드: 내 신청서 목록 + 추천값 세팅 */
   useEffect(() => {
     if (mode != 'service') return;
 
@@ -125,24 +125,24 @@ export default function ReviewWritePage() {
     };
   }, [mode]);
 
-  /* 3) 선택된 신청서가 바뀌면 그 대상으로 재검사 */
+  /* 선택된 신청서가 바뀌면 그 대상으로 재검사 */
   useEffect(() => {
     if (mode !== 'service' || !selectedAppId) return;
 
     let aborted = false;
     (async () => {
-      setState('loading'); // ❗ setEligibility가 아니라 setState
+      setState('loading'); // setEligibility가 아니라 setState
       const r = await fetch(`/api/reviews/eligibility?service=stringing&applicationId=${selectedAppId}`, {
         credentials: 'include',
         cache: 'no-store',
       });
       if (aborted) return;
       if (r.status === 401) {
-        setState('unauthorized'); // ❗ setEligibility -> setState
+        setState('unauthorized'); // setEligibility -> setState
         return;
       }
       const d = await r.json();
-      setState(d.eligible ? 'ok' : d.reason ?? 'error'); // ❗ setEligibility -> setState
+      setState(d.eligible ? 'ok' : d.reason ?? 'error'); // setEligibility -> setState
     })();
 
     return () => {
@@ -187,7 +187,7 @@ export default function ReviewWritePage() {
       return;
     }
     if (mode === 'service') {
-      router.replace('/services'); // 기존 /services/stringing → /services
+      router.replace('/services'); // 기존 /services/stringing -> /services
       return;
     }
     router.replace('/reviews');
@@ -203,7 +203,7 @@ export default function ReviewWritePage() {
       return;
     }
 
-    // ✅ 한 번만 보낼 payload
+    // 한 번만 보낼 payload
     const payload: any = {
       rating,
       content: content.trim(),
@@ -277,7 +277,7 @@ export default function ReviewWritePage() {
             <span className="text-xs rounded-full px-2 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 ring-1 ring-black/5">{mode === 'product' ? '상품 리뷰' : mode === 'service' ? '서비스 리뷰' : '오류'}</span>
           </div>
 
-          {/* 입력 블럭 (여기만 오버레이) */}
+          {/* 입력 블럭 (오버레이) */}
           <div className="relative">
             {state !== 'ok' && (
               <div className="absolute inset-0 z-10 rounded-xl bg-white/60 dark:bg-neutral-900/60 backdrop-blur-[1px] flex items-center justify-center">

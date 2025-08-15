@@ -1,4 +1,3 @@
-// app/api/reviews/eligibility/route.ts
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
@@ -19,7 +18,7 @@ export async function GET(req: Request) {
   const db = await getDb();
   const userId = new ObjectId(payload.sub);
 
-  // ---- 상품
+  // 상품
   if (productId) {
     if (!ObjectId.isValid(productId)) {
       return NextResponse.json({ eligible: false, reason: 'invalid' }, { status: 400 });
@@ -30,7 +29,7 @@ export async function GET(req: Request) {
     const bought = await db.collection('orders').findOne({ userId, 'items.productId': { $in: [productId, productIdObj] } }, { projection: { _id: 1 } });
     if (!bought) return NextResponse.json({ eligible: false, reason: 'notPurchased' });
 
-    // 이미 작성?
+    // 이미 작성
     const already = await db.collection('reviews').findOne({
       userId,
       $or: [{ productId: productIdObj }, { productId }],
@@ -40,7 +39,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ eligible: true, reason: null });
   }
 
-  // ---- 서비스(스트링)
+  // 서비스(스트링)
   if (service === 'stringing') {
     const apps = await db.collection('stringing_applications').find({ userId }).project({ _id: 1, desiredDateTime: 1, createdAt: 1 }).toArray();
 

@@ -1,4 +1,3 @@
-// app/api/reviews/route.ts
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
@@ -7,7 +6,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 
 type DbAny = any;
 
-// --- 인덱스: 이름이 달라도 같은 키면 생성 생략, 과거 user+service 유니크는 삭제
+// 인덱스: 이름이 달라도 같은 키면 생성 생략, 과거 user+service 유니크는 삭제
 async function ensureReviewIndexes(db: DbAny) {
   const col = db.collection('reviews');
   const idxs = await col
@@ -56,13 +55,13 @@ async function ensureReviewIndexes(db: DbAny) {
     );
   }
 
-  // 조회 최적화(선택): 상품 리뷰 집계/리스트용
+  // 조회 최적화: 상품 리뷰 집계/리스트용
   if (!hasKey({ productId: 1, status: 1, createdAt: -1 })) {
     await col.createIndex({ productId: 1, status: 1, createdAt: -1 }, { name: 'product_list_index' });
   }
 }
 
-// --- 상품 별점/리뷰수 집계 후 products 업데이트
+// 상품 별점/리뷰수 집계 후 products 업데이트
 async function updateProductRatingSummary(db: DbAny, productIdObj: ObjectId, productIdStr: string) {
   const col = db.collection('reviews');
 
@@ -131,7 +130,7 @@ export async function POST(req: Request) {
   if (!rating || rating < 1 || rating > 5) return NextResponse.json({ message: 'invalid rating' }, { status: 400 });
   if (!content) return NextResponse.json({ message: 'empty content' }, { status: 400 });
 
-  // ===== (A) 상품 리뷰 =====
+  // 상품 리뷰
   if (body.productId) {
     const productIdStr = String(body.productId);
     if (!ObjectId.isValid(productIdStr)) {
@@ -153,13 +152,13 @@ export async function POST(req: Request) {
     const now = new Date();
     await db.collection('reviews').insertOne({
       userId,
-      productId: productIdObj, // ★ 항상 ObjectId로 저장
+      productId: productIdObj, // 항상 ObjectId로 저장
       rating,
       content,
       photos,
-      status: 'visible', // ★ 기본값
-      helpfulCount: 0, // ★ 기본값
-      userName: userName, // ★ 표시용 스냅샷
+      status: 'visible', // 기본값
+      helpfulCount: 0, // 기본값
+      userName: userName, // 표시용 스냅샷
       createdAt: now,
       updatedAt: now,
     });
@@ -170,7 +169,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
-  // ===== (B) 서비스(스트링) 리뷰 =====
+  // 서비스(스트링) 리뷰
   if (body.service) {
     if (body.service !== 'stringing') return NextResponse.json({ message: 'unknown service' }, { status: 400 });
 
@@ -198,7 +197,7 @@ export async function POST(req: Request) {
     await db.collection('reviews').insertOne({
       userId,
       service: 'stringing',
-      serviceApplicationId: appIdObj, // ★ 항상 ObjectId로 저장
+      serviceApplicationId: appIdObj, // 항상 ObjectId로 저장
       rating,
       content,
       photos,

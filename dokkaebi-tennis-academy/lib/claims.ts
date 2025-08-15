@@ -1,4 +1,3 @@
-// lib/claims.ts
 import { Db, ObjectId } from 'mongodb';
 
 export function normalizeEmail(email?: string | null): string | null {
@@ -6,7 +5,7 @@ export function normalizeEmail(email?: string | null): string | null {
   return email.trim().toLowerCase();
 }
 
-/** stringing_applications 인덱스 보장 */
+/* stringing_applications 인덱스 보장 */
 export async function ensureStringingIndexes(db: Db) {
   const col = db.collection('stringing_applications');
   const idx = await col.listIndexes().toArray();
@@ -21,7 +20,7 @@ export async function ensureStringingIndexes(db: Db) {
   if (specs.length) await col.createIndexes(specs);
 }
 
-/** 게스트 스트링 신청서 자동 귀속 */
+/* 게스트 스트링 신청서 자동 귀속 */
 export async function autoLinkStringingByEmail(db: Db, userId: ObjectId, userEmail?: string | null) {
   const email = normalizeEmail(userEmail);
   if (!email) return { matched: 0, modified: 0 };
