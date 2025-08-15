@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { getUserByEmail, verifyPassword } from '@/lib/user-service';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from '@/lib/constants';
+import { getDb } from '@/lib/mongodb';
+import { autoLinkStringingByEmail } from '@/lib/claims';
 
 // // JWT 비밀 키 불러오기 (환경 변수에서 설정)
 // const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
@@ -72,6 +74,14 @@ export async function POST(req: Request) {
     maxAge: REFRESH_TOKEN_EXPIRES_IN, // 7일 유효
     sameSite: 'lax', // 기본 CSRF 보호
   });
+
+  // 토큰 쿠키 세팅 직후, 현재 계정 이메일로 게스트 신청서 자동 귀속
+  try {
+    const db = await getDb();
+    await autoLinkStringingByEmail(db as any, user._id, user.email);
+  } catch (e) {
+    console.warn('[login] autoLinkStringingByEmail fail:', e);
+  }
 
   return response;
 }

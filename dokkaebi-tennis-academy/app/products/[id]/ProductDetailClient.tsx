@@ -378,7 +378,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xl font-semibold">고객 리뷰</h3>
-                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">리뷰 작성하기</Button>
+                    <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                      <Link href={`/reviews/write?productId=${product._id}`}>리뷰 작성하기</Link>
+                    </Button>
                   </div>
 
                   <div className="space-y-4">

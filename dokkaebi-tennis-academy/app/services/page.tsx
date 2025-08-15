@@ -600,9 +600,9 @@ export default function ServicesPage() {
 
           <div className="text-center">
             <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
-              <Link href="/reviews/write?type=service">
+              <Link href="/reviews/write?service=stringing">
                 <Star className="w-5 h-5 mr-2" />
-                리뷰 작성하기
+                서비스 후기 작성
               </Link>
             </Button>
           </div>

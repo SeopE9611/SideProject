@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { OrderItem } from '@/lib/types/order';
+import { normalizeEmail } from '@/lib/claims';
 
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
@@ -520,6 +521,9 @@ export async function handleSubmitStringingApplication(req: Request) {
   try {
     // body에서 필요한 값들 추출
     const { name, phone, email, shippingInfo, racketType, stringTypes, customStringName, preferredDate, preferredTime, requirements, orderId } = await req.json();
+    //  자동 귀속용 이메일 , 전하번호 정규화(소문자 트림)
+    const contactEmail = normalizeEmail(email);
+    const contactPhone = (phone ?? '').replace(/\D/g, '') || null;
 
     // 필수 필드 검증
     if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0 || !preferredDate) {
@@ -584,6 +588,8 @@ export async function handleSubmitStringingApplication(req: Request) {
       name,
       phone,
       email,
+      contactEmail, //  자동 귀속용 정규화 이메일
+      contactPhone, // 숫자만 저장한 전화번호
       shippingInfo,
       stringDetails,
       totalPrice,
