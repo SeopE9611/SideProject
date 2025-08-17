@@ -22,16 +22,21 @@ export default function CartPageClient() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getMyInfo()
-      .then(({ user }) => {
-        setUser(user);
-      })
-      .catch(() => {
-        logout();
-      })
-      .finally(() => setLoading(false));
-  }, [logout]);
+    let cancelled = false;
 
+    getMyInfo({ quiet: true })
+      .then(({ user }) => {
+        if (!cancelled) setUser(user);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   if (loading) return <p>null</p>;
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);

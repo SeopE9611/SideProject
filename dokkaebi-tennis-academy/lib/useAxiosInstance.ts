@@ -14,16 +14,27 @@ let refreshPromise: Promise<void> | null = null;
 instance.interceptors.response.use(
   (res) => res,
   async (error) => {
+    const status = error?.response?.status;
+    const cfg = error?.config || {};
+
+    // 401이어도 전역 만료 이벤트를 쏘지 않게 설정
+    const suppressed = cfg?.headers?.['x-suppress-auth-expired'] === '1' || (cfg as any)?.__suppressAuthExpired === true;
+
+    if (status === 401 && suppressed) {
+      // quiet 요청: 전역 만료 이벤트/토큰 재발급 로직 진입 금지
+      return Promise.reject(error);
+    }
+
     const { config, response } = error || {};
     if (!response) return Promise.reject(error);
 
-    // 1) 403: 권한 없음 → 즉시 알림
+    // 403: 권한 없음 -> 즉시 알림
     if (response.status === 403) {
       emitAuthForbidden();
       return Promise.reject(error);
     }
 
-    // 2) 401: 만료 흐름
+    // 401: 만료 흐름
     if (response.status === 401) {
       // 이미 한 번 재시도한 요청인데도 401이면 완전 만료로 간주
       if ((config as any)?._retry) {
