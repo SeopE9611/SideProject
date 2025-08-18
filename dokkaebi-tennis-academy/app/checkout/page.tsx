@@ -78,15 +78,23 @@ export default function CheckoutPage() {
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
 
+  // 비회원 체크아웃 허용: quiet 조회 사용 (401이어도 전역 만료 금지)
   useEffect(() => {
-    getMyInfo()
-      .then(({ user }) => setUser(user))
-      .catch(() => {
-        logout();
+    let cancelled = false;
+    getMyInfo({ quiet: true })
+      .then(({ user }) => {
+        if (!cancelled) setUser(user);
       })
-      .finally(() => setLoading(false));
-  }, [logout]);
-
+      .catch(() => {
+        /* quiet: 401은 정상. 아무 것도 하지 않음 */
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   useEffect(() => {
     if (!user) return;
 
