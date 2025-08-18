@@ -36,6 +36,11 @@ instance.interceptors.response.use(
 
     // 401: 만료 흐름
     if (response.status === 401) {
+      // (quiet) 억제 플래그: 전역 만료 로직에 진입하지 않음
+      const suppressed = (config?.headers && config.headers['x-suppress-auth-expired'] === '1') || (config as any)?.__suppressAuthExpired === true;
+      if (suppressed) {
+        return Promise.reject(error);
+      }
       // 이미 한 번 재시도한 요청인데도 401이면 완전 만료로 간주
       if ((config as any)?._retry) {
         emitAuthExpired();

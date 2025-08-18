@@ -50,7 +50,7 @@ export default function CheckoutButton({
   const submittingRef = useRef(false); // 동시 클릭 락 ref
 
   useEffect(() => {
-    getMyInfo()
+    getMyInfo({ quiet: true })
       .then(({ user }) => setUser(user))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
