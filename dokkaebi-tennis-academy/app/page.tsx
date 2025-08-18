@@ -422,11 +422,13 @@ export default function Home() {
       {/* 고객 후기 섹션 */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
+          {/* 섹션 헤더 */}
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">고객 후기</h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">실제 고객들이 경험한 도깨비 테니스의 서비스</p>
           </div>
 
+          {/* 후기 카드 리스트 */}
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="border-0 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 shadow-xl">
@@ -451,6 +453,23 @@ export default function Home() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          {/* ✅ 버튼을 container 안쪽, 카드 바로 밑에 붙이기 */}
+          <div className="mt-8 flex justify-center">
+            <Button
+              size="sm"
+              variant="outline"
+              asChild
+              className="border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 
+                   dark:border-slate-700 dark:hover:border-indigo-600 
+                   dark:hover:bg-indigo-950 transition-colors bg-transparent"
+            >
+              <Link href={`/reviews`} className="inline-flex items-center gap-1">
+                리뷰 더보기
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
