@@ -5,9 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Phone, User, RatIcon as Racquet, Zap, GraduationCap, ArrowRight, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
-import { useState } from 'react';
+import { useMemo } from 'react';
 
 export interface Application {
   id: string;
@@ -23,6 +23,8 @@ export interface Application {
   course?: string;
   schedule?: string;
 }
+
+type AppResponse = { items: Application[]; total: number };
 
 const formatDateTime = (iso: string) => {
   const date = new Date(iso);
@@ -41,37 +43,52 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
+const LIMIT = 5;
+
 export default function ApplicationsClient() {
   const router = useRouter();
 
-  // 페이지 상태
-  const [page, setPage] = useState(1);
-  const limit = 5;
-  // 페이징 API 호출
-  type AppResponse = { items: Application[]; total: number };
-  const { data, error } = useSWR<AppResponse>(`/api/applications/me?page=${page}&limit=${limit}`, fetcher);
-  const applications = data?.items ?? [];
-  const totalPages = data ? Math.ceil(data.total / limit) : 0;
+  // SWR Infinite 키 생성
+  const getKey = (pageIndex: number, previousPageData: AppResponse | null) => {
+    // 직전 페이지가 LIMIT 미만이면 다음 페이지 없음
+    if (previousPageData && previousPageData.items && previousPageData.items.length < LIMIT) return null;
 
-  // 제한형 페이지 네이션
-  const getPaginationRange = () => {
-    const delta = 2;
-    const range = [];
+    const page = pageIndex + 1;
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('limit', String(LIMIT));
 
-    const start = Math.max(2, page - delta);
-    const end = Math.min(totalPages - 1, page + delta);
+    // 필터/검색 대비용
+    // if (statusFilter) params.set('status', statusFilter);
+    // if (keyword) params.set('q', keyword);
+    // if (dateFrom) params.set('dateFrom', dateFrom);
 
-    if (start > 2) range.push('...');
-    for (let i = start; i <= end; i++) {
-      range.push(i);
-    }
-    if (end < totalPages - 1) range.push('...');
-
-    return [1, ...range, totalPages];
+    return `/api/applications/me?${params.toString()}`;
   };
 
-  if (error) return <p className="text-center py-4 text-red-500">에러: {error.message}</p>;
-  if (!data) return <div className="text-center py-8 text-muted-foreground">신청 내역을 불러오는 중입니다...</div>;
+  const { data, size, setSize, isValidating, error } = useSWRInfinite<AppResponse>(getKey, fetcher, {
+    revalidateFirstPage: true,
+  });
+
+  // 누적 리스트
+  const applications = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
+
+  // 더 보기 여부
+  const hasMore = useMemo(() => {
+    if (!data || data.length === 0) return false;
+    const last = data[data.length - 1];
+    return (last?.items?.length ?? 0) === LIMIT;
+  }, [data]);
+
+  // 에러
+  if (error) {
+    return <p className="text-center py-4 text-red-500">에러: {error.message}</p>;
+  }
+
+  // 첫 로딩
+  if (!data && isValidating) {
+    return <div className="text-center py-8 text-muted-foreground">신청 내역을 불러오는 중입니다...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -192,26 +209,16 @@ export default function ApplicationsClient() {
           );
         })
       )}
-      <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
-        <Button size="sm" variant="outline" onClick={() => setPage(page - 1)} disabled={page === 1}>
-          이전
-        </Button>
 
-        {getPaginationRange().map((p, idx) =>
-          p === '...' ? (
-            <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
-              ...
-            </span>
-          ) : (
-            <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => setPage(Number(p))}>
-              {p}
-            </Button>
-          )
-        )}
-
-        <Button size="sm" variant="outline" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
-          다음
-        </Button>
+      {/* '더 보기' 버튼 */}
+      <div className="mt-6 flex justify-center items-center">
+        {hasMore ? (
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
+            {isValidating ? '불러오는 중…' : '더 보기'}
+          </Button>
+        ) : applications.length ? (
+          <span className="text-sm text-slate-500">마지막 페이지입니다</span>
+        ) : null}
       </div>
     </div>
   );

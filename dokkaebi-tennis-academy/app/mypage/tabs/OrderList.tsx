@@ -1,6 +1,7 @@
 'use client';
 
-import useSWR from 'swr';
+import { useMemo } from 'react';
+import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,8 +9,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { orderStatusColors } from '@/lib/badge-style';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck } from 'lucide-react';
-import { ApiResponse } from '@/lib/types/order';
-import { useState } from 'react';
 
 //  주문 데이터 타입 정의
 
@@ -25,21 +24,13 @@ interface Order {
   status: string;
   items: Array<{ name: string; quantity: number; price: number; imageUrl?: string | null }>;
   totalPrice: number;
-  userSnapshot?: {
-    name: string;
-    email: string;
-  };
-  shippingInfo?: {
-    deliveryMethod?: string;
-    withStringService?: boolean;
-  };
+  userSnapshot?: { name: string; email: string };
+  shippingInfo?: { deliveryMethod?: string; withStringService?: boolean };
   isStringServiceApplied?: boolean;
 }
 
 const fetcher = async (url: string): Promise<any> => {
-  const res = await fetch(url, {
-    credentials: 'include',
-  });
+  const res = await fetch(url, { credentials: 'include' });
   if (!res.ok) throw new Error('Unauthorized');
   return res.json();
 };
@@ -69,35 +60,43 @@ const formatDate = (dateString: string) => {
   }).format(date);
 };
 
+const LIMIT = 5;
+
 export default function OrderList() {
-  // 페이지 상태 선언
-  const [page, setPage] = useState(1);
-  const limit = 5;
+  // 🔑 SWR Infinite 키 생성 (필터/검색 파라미터 만들게된다면 여기에 반드시 포함하기)
+  const getKey = (pageIndex: number, prev: OrderResponse | null) => {
+    // 직전 페이지 아이템 길이가 LIMIT 미만이면 다음 페이지 없음
+    if (prev && prev.items && prev.items.length < LIMIT) return null;
+    const page = pageIndex + 1;
 
-  // 제한형 페이지 네이션
-  const getPaginationRange = () => {
-    const delta = 2;
-    const range = [];
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('limit', String(LIMIT));
+    // 필터 대비용 주석
+    // if (statusFilter) params.set('status', statusFilter);
+    // if (keyword) params.set('q', keyword);
+    // if (dateFrom) params.set('dateFrom', dateFrom);
+    // if (dateTo) params.set('dateTo', dateTo);
+    // if (sort) params.set('sort', sort);
 
-    const start = Math.max(2, page - delta);
-    const end = Math.min(totalPages - 1, page + delta);
-
-    if (start > 2) range.push('...');
-    for (let i = start; i <= end; i++) {
-      range.push(i);
-    }
-    if (end < totalPages - 1) range.push('...');
-
-    return [1, ...range, totalPages];
+    return `/api/users/me/orders?${params.toString()}`;
   };
 
-  // 페이징 API 호출
-  const { data, error, isLoading } = useSWR<OrderResponse>(`/api/users/me/orders?page=${page}&limit=${limit}`, fetcher);
+  const { data, size, setSize, isValidating, error } = useSWRInfinite<OrderResponse>(getKey, fetcher, {
+    revalidateFirstPage: true,
+  });
 
-  const orders = data?.items ?? [];
-  const totalPages = data ? Math.ceil(data.total / limit) : 0;
+  // 누적 아이템
+  const items = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
 
-  //  에러 처리
+  // 더 보기 여부: 마지막 페이지의 items 길이가 LIMIT와 같으면 더 있음
+  const hasMore = useMemo(() => {
+    if (!data || data.length === 0) return false;
+    const last = data[data.length - 1];
+    return (last?.items?.length ?? 0) === LIMIT;
+  }, [data]);
+
+  // 에러 처리
   if (error) {
     return (
       <Card className="border-0 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950">
@@ -111,9 +110,8 @@ export default function OrderList() {
     );
   }
 
-  //  로딩 처리 (부모 Suspense에서 fallback으로도 처리되지만 이중 보호)
-  if (isLoading || !Array.isArray(orders)) {
-    // SWR이 `undefined`를 리턴하는 동안 isLoading 또는 !orders 체크
+  // 로딩 (첫 페이지)
+  if (!data && isValidating) {
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
@@ -130,7 +128,7 @@ export default function OrderList() {
   }
 
   //  주문이 없을 경우
-  if (orders.length === 0) {
+  if (!isValidating && items.length === 0) {
     return (
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <CardContent className="p-12 text-center">
@@ -147,7 +145,7 @@ export default function OrderList() {
   //  주문 내역 렌더링
   return (
     <div className="space-y-6">
-      {orders.map((order) => (
+      {items.map((order) => (
         <Card key={order.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           {/* Gradient border effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
@@ -198,7 +196,6 @@ export default function OrderList() {
                   <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 space-x-4">
                     {/* 상품 썸네일 */}
                     {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-10 h-10 object-cover rounded" />}
-
                     {/* 상품명 */}
                     <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.name}</span>
                     {/* 가격 × 수량 */}
@@ -255,26 +252,15 @@ export default function OrderList() {
         </Card>
       ))}
 
-      <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
-        <Button size="sm" variant="outline" onClick={() => setPage(page - 1)} disabled={page === 1}>
-          이전
-        </Button>
-
-        {getPaginationRange().map((p, idx) =>
-          p === '...' ? (
-            <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
-              ...
-            </span>
-          ) : (
-            <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => setPage(Number(p))}>
-              {p}
-            </Button>
-          )
-        )}
-
-        <Button size="sm" variant="outline" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
-          다음
-        </Button>
+      {/* '더 보기' 버튼 */}
+      <div className="flex justify-center pt-4">
+        {hasMore ? (
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
+            {isValidating ? '불러오는 중…' : '더 보기'}
+          </Button>
+        ) : items.length ? (
+          <span className="text-sm text-slate-500">마지막 페이지입니다</span>
+        ) : null}
       </div>
     </div>
   );

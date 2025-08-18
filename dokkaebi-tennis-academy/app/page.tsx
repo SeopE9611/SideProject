@@ -455,7 +455,6 @@ export default function Home() {
             ))}
           </div>
 
-          {/* ✅ 버튼을 container 안쪽, 카드 바로 밑에 붙이기 */}
           <div className="mt-8 flex justify-center">
             <Button
               size="sm"
