@@ -10,7 +10,7 @@ type DbAny = any;
 // 상품 별점/리뷰수 집계 보정 (status:'visible'만 집계)
 async function updateProductRatingSummary(db: DbAny, productId: ObjectId) {
   const col = db.collection('reviews');
-  const cursor = col.aggregate([{ $match: { status: 'visible', productId } }, { $group: { _id: null, avg: { $avg: '$rating' }, cnt: { $sum: 1 } } }]);
+  const cursor = col.aggregate([{ $match: { status: 'visible', isDeleted: { $ne: true }, productId } }, { $group: { _id: null, avg: { $avg: '$rating' }, cnt: { $sum: 1 } } }]);
   const agg = await cursor.next();
   const products = db.collection('products');
   if (agg) {
@@ -21,7 +21,7 @@ async function updateProductRatingSummary(db: DbAny, productId: ObjectId) {
 }
 
 // 수정: 내용/별점/공개여부
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
@@ -35,17 +35,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const me = new ObjectId(String(payload.sub));
   const role = payload?.role; // 'admin' 가능
 
-  const doc = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
+  const doc = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, status: 1 } });
   if (!doc) return NextResponse.json({ message: 'not found' }, { status: 404 });
 
   const isOwner = String(doc.userId) === String(me);
   const isAdmin = role === 'admin';
 
   if (!isOwner && !isAdmin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-  await db.collection('reviews').updateOne({ _id }, { $set: { isDeleted: true, deletedAt: new Date(), status: 'hidden' } });
-  if (!isOwner && !isAdmin) {
-    return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-  }
 
   // zod로 바디 스키마 강제 (엣지케이스·XSS·스팸 길이 방지)
   const PatchSchema = z.object({
