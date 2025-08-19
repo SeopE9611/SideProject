@@ -18,11 +18,37 @@ export async function GET() {
       { $match: { isDeleted: { $ne: true } } },
       {
         $addFields: {
+          // 문자열/객체형/레거시 키까지 폭넓게 인식
+          _pidStr: { $toString: { $ifNull: ['$productId', '$product_id'] } },
           hasProductId: {
-            $or: [{ $ne: [{ $ifNull: ['$productId', null] }, null] }, { $ne: [{ $ifNull: ['$product_id', null] }, null] }],
+            $or: [
+              { $ne: [{ $ifNull: ['$productId', null] }, null] },
+              { $ne: [{ $ifNull: ['$product_id', null] }, null] },
+              // 24자 헥사 문자열도 유효한 productId로 간주
+              { $regexMatch: { input: { $toString: { $ifNull: ['$productId', '$product_id'] } }, regex: /^[a-fA-F0-9]{24}$/ } },
+            ],
           },
+          hasServiceMarker: {
+            $or: [{ $ne: [{ $ifNull: ['$serviceApplicationId', null] }, null] }, { $in: ['$service', ['stringing']] }],
+          },
+          // type이 명시되고 값이 정상일 때만 우선
+          typeValid: { $in: ['$type', ['product', 'service']] },
+        },
+      },
+      {
+        $addFields: {
           resolvedType: {
-            $cond: [{ $in: ['$type', ['product', 'service']] }, '$type', { $cond: ['$hasProductId', 'product', 'service'] }],
+            $cond: [
+              '$typeValid',
+              '$type',
+              {
+                $cond: [
+                  '$hasProductId',
+                  'product',
+                  { $cond: ['$hasServiceMarker', 'service', 'service'] }, // 기본값은 service
+                ],
+              },
+            ],
           },
         },
       },
