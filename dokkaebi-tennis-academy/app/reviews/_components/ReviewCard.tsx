@@ -121,7 +121,11 @@ export default function ReviewCard({ item }: { item: any }) {
         </div>
 
         {/* 내용 */}
-        <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{item.content}</p>
+        {item.status === 'hidden' ? (
+          <div className="italic text-gray-500 bg-gray-50 border rounded-md p-3">비공개된 리뷰입니다. 관리자와 작성자만 확인할 수 있어요.</div>
+        ) : (
+          <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{item.content}</p>
+        )}
 
         {/* 사진 썸네일(있을 때만) */}
         {Array.isArray(item.photos) && item.photos.length > 0 ? (

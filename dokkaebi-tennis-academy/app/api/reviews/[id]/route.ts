@@ -33,8 +33,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const _id = new ObjectId(id);
 
   const me = new ObjectId(String(payload.sub));
+  const role = payload?.role; // 'admin' 가능
   const doc = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
   if (!doc || String(doc.userId) !== String(me)) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+
+  const isOwner = String(doc.userId) === String(me);
+  const isAdmin = role === 'admin';
+  if (!isOwner && !isAdmin) {
+    return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+  }
 
   // zod로 바디 스키마 강제 (엣지케이스·XSS·스팸 길이 방지)
   const PatchSchema = z.object({
