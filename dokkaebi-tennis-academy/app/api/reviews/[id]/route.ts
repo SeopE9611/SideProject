@@ -22,7 +22,7 @@ async function updateProductRatingSummary(db: DbAny, productId: ObjectId) {
 
 // 수정: 내용/별점/공개여부
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
   const token = (await cookies()).get('accessToken')?.value;
@@ -75,7 +75,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
 // 삭제: 소프트 삭제 + 집계 보정
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
   const token = (await cookies()).get('accessToken')?.value;
