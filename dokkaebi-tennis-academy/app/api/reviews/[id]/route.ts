@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { z } from 'zod';
 
 type DbAny = any;
 
@@ -35,7 +36,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const doc = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
   if (!doc || String(doc.userId) !== String(me)) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
 
-  const body = await req.json();
+  // zod로 바디 스키마 강제 (엣지케이스·XSS·스팸 길이 방지)
+  const PatchSchema = z.object({
+    content: z.string().trim().min(5, '내용은 5자 이상').max(2000, '2000자 이내').optional(),
+    rating: z.number().int().min(1).max(5).optional(),
+    status: z.enum(['visible', 'hidden']).optional(),
+  });
+
+  const body = PatchSchema.parse(await req.json());
+  if (!('content' in body) && !('rating' in body) && !('status' in body)) {
+    return NextResponse.json({ message: 'no changes' }, { status: 400 });
+  }
+
   const $set: any = { updatedAt: new Date() };
 
   if (typeof body.content === 'string') $set.content = body.content.trim();

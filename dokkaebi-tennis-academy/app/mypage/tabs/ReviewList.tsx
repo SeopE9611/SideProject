@@ -1,20 +1,5 @@
 'use client';
 
-/**
- * 마이페이지 > 내 리뷰 관리 탭
- * - API: GET /api/reviews/mine (커서 페이지네이션)
- * - API: PATCH /api/reviews/[id]  (content/rating/status 수정)
- * - API: DELETE /api/reviews/[id]  (소프트 삭제)
- *
- * 설계 포인트
- * 1) 최초 로딩은 SWR Infinite로 내 리뷰를 불러와 표시합니다.
- * 2) 수정 다이얼로그에서 내용/별점 저장 → PATCH 후 mutate로 목록 새로고침.
- * 3) 공개/비공개 토글 → PATCH status ('visible' | 'hidden').
- * 4) 삭제 → DELETE 후 mutate.
- * 5) 기존 컴포넌트가 props.reviews를 받던 구조를 유지하되, SWR 데이터가 없으면
- *    props.reviews로 초기 표시할 수 있게 "옵션"으로 둡니다.
- */
-
 import { useCallback, useMemo, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
@@ -24,13 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-// Textarea 컴포넌트가 없다면, 아래 import 대신 <textarea> 사용해도 됩니다.
 import { Textarea } from '@/components/ui/textarea';
 
 import { Star, Calendar, Edit3, Trash2, ArrowRight, Award, Eye, EyeOff, Loader2, Package, Wrench } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/lib/toast';
 
-// ===== 타입 정의 =====
+// 타입 정의
 type MineItem = {
   _id: string;
   type: 'product' | 'service';
@@ -46,16 +30,15 @@ type SSRReview = {
   id: number;
   productName: string;
   rating: number;
-  date: string; // yyyy-mm-dd
+  date: string;
   content: string;
 };
 
 interface ReviewListProps {
-  // SSR 등으로 부모에서 넣을 수도 있는 초기 표시용(선택)
+  // SSR 등으로 부모에서 넣을 수도 있는 초기 표시용
   reviews?: SSRReview[];
 }
 
-// ===== 공용 유틸 =====
 const fetcher = (url: string) =>
   fetch(url, { credentials: 'include' }).then((r) => {
     if (!r.ok) throw new Error('리뷰 목록을 불러오지 못했습니다.');
@@ -71,9 +54,9 @@ const Stars = ({ rating }: { rating: number }) => (
   </div>
 );
 
-// ===== 메인 컴포넌트 =====
+// 메인 컴포넌트
 export default function ReviewList({ reviews = [] }: ReviewListProps) {
-  // 1) 내 리뷰 목록 불러오기 (커서 방식)
+  // 내 리뷰 목록 불러오기 (커서 방식)
   const getKey = useCallback((pageIdx: number, prev: any) => {
     if (prev && !prev.nextCursor) return null; // 더 없음
     const cursor = pageIdx ? `&cursor=${encodeURIComponent(prev.nextCursor)}` : '';
@@ -84,7 +67,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   const swrItems: MineItem[] = useMemo(() => (data?.flatMap((d: any) => d.items) ?? []) as MineItem[], [data]);
   const hasMore = Boolean(data?.[data.length - 1]?.nextCursor);
 
-  // 2) 수정 다이얼로그 상태
+  // 수정 다이얼로그 상태
   const [editing, setEditing] = useState<MineItem | null>(null);
   const [editContent, setEditContent] = useState('');
   const [editRating, setEditRating] = useState<number>(5);
@@ -101,32 +84,56 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     setEditRating(5);
   }, []);
 
-  // 3) 수정 저장(PATCH)
+  // 수정 저장(PATCH)
   const submitEdit = useCallback(async () => {
     if (!editing) return;
+    // 스냅샷(롤백용)
+    const snapshot = data;
+
+    // 낙관적 변경: UI 즉시 반영 (revalidate:false)
+    await mutate((pages?: any[]) => {
+      if (!pages) return pages;
+      return pages.map((p: any) => ({
+        ...p,
+        items: p.items.map((r: MineItem) => (r._id === editing._id ? { ...r, content: editContent, rating: editRating } : r)),
+      }));
+    }, false);
+
     try {
-      setSaving(true);
       const res = await fetch(`/api/reviews/${editing._id}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: editContent, rating: editRating }),
       });
-      if (!res.ok) throw new Error('리뷰를 수정하지 못했습니다.');
+      if (!res.ok) throw new Error('리뷰 수정 실패');
+
       showSuccessToast('리뷰가 수정되었습니다.');
       closeEdit();
-      await mutate(); // 최신 목록으로 갱신
+      // 필요 시 재검증:
+      // await mutate();
     } catch (e: any) {
+      await mutate(() => snapshot, false);
       showErrorToast(e.message || '수정 중 오류가 발생했습니다.');
-    } finally {
-      setSaving(false);
     }
-  }, [editing, editContent, editRating, mutate, closeEdit]);
+  }, [data, editing, editContent, editRating, mutate, closeEdit]);
 
-  // 4) 공개/비공개 토글(PATCH status)
+  // 공개/비공개 토글(PATCH status)
   const toggleVisibility = useCallback(
     async (it: MineItem) => {
       const next = it.status === 'visible' ? 'hidden' : 'visible';
+
+      // 스냅샷(롤백용)
+      const snapshot = data;
+
+      // 낙관적 변경: UI 즉시 반영 (revalidate:false)
+      await mutate((pages?: any[]) => {
+        if (!pages) return pages;
+        return pages.map((p: any) => ({
+          ...p,
+          items: p.items.map((r: MineItem) => (r._id === it._id ? { ...r, status: next } : r)),
+        }));
+      }, false);
       try {
         const res = await fetch(`/api/reviews/${it._id}`, {
           method: 'PATCH',
@@ -138,29 +145,49 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         showSuccessToast(next === 'visible' ? '리뷰가 공개되었습니다.' : '리뷰가 비공개로 전환되었습니다.');
         await mutate();
       } catch (e: any) {
+        await mutate(() => snapshot, false);
         showErrorToast(e.message || '상태 변경 중 오류가 발생했습니다.');
       }
     },
-    [mutate]
+    [data, mutate]
   );
 
-  // 5) 삭제(DELETE)
+  // 삭제
   const removeReview = useCallback(
     async (it: MineItem) => {
       if (!confirm('정말 삭제하시겠어요? 삭제 후에는 복구할 수 없습니다.')) return;
+
+      const snapshot = data;
+
+      // 낙관적
+      await mutate((pages?: any[]) => {
+        if (!pages) return pages;
+        return pages.map((p: any) => ({
+          ...p,
+          items: p.items.filter((r: MineItem) => r._id !== it._id),
+        }));
+      }, false);
+
+      // 서버 요청
       try {
-        const res = await fetch(`/api/reviews/${it._id}`, { method: 'DELETE', credentials: 'include' });
-        if (!res.ok) throw new Error('리뷰 삭제에 실패했습니다.');
+        const res = await fetch(`/api/reviews/${it._id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error('삭제 실패');
         showSuccessToast('리뷰가 삭제되었습니다.');
-        await mutate();
+        // 성공 후 재검증이 필요하면
+        // await mutate();
       } catch (e: any) {
+        // 실패 시 롤백
+        await mutate(() => snapshot, false);
         showErrorToast(e.message || '삭제 중 오류가 발생했습니다.');
       }
     },
-    [mutate]
+    [data, mutate]
   );
 
-  // 6) 렌더 데이터: SWR 성공 시 swrItems, 아니면 props.reviews(초기 표시)
+  // 렌더 데이터: SWR 성공 시 swrItems, 아니면 props.reviews(초기 표시)
   const itemsToRender: MineItem[] = useMemo(() => {
     if (swrItems.length) return swrItems;
     // props.reviews를 MineItem 형태로 변환(초기 표시용)
@@ -178,7 +205,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     return [];
   }, [swrItems, reviews]);
 
-  // 7) 빈 상태
+  // 빈 상태
   if (!itemsToRender.length && !isValidating && !error) {
     return (
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -199,12 +226,11 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     );
   }
 
-  // 8) 목록 렌더
+  // 목록 렌더
   return (
     <div className="space-y-6">
       {itemsToRender.map((it) => (
         <Card key={it._id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          {/* hover 그라디언트 보더 */}
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
           </div>
@@ -316,7 +342,6 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
             <div>
               <label className="text-sm block mb-1">내용</label>
-              {/* shadcn Textarea가 없다면 <textarea rows={6} className="w-full border rounded-md p-2" ... />로 대체 */}
               <Textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} rows={6} />
             </div>
           </div>
