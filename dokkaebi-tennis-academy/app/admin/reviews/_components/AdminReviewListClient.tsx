@@ -130,6 +130,7 @@ export default function AdminReviewListClient() {
         body: JSON.stringify({ status: next }),
       });
       if (!res.ok) throw new Error();
+      showSuccessToast(next === 'hidden' ? '리뷰를 비공개로 변경했습니다.' : '리뷰를 공개로 변경했습니다.');
     } catch {
       await mutate(() => snapshot, false);
       showErrorToast('상태 변경 실패');
@@ -305,99 +306,114 @@ export default function AdminReviewListClient() {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((r) => (
-                <TableRow key={r._id} className={`transition-colors even:bg-gray-50/40 hover:bg-gray-50/70 ${r.status === 'hidden' ? 'opacity-60' : ''}`}>
-                  <TableCell>
-                    <Checkbox checked={selected.includes(r._id)} onCheckedChange={(v) => toggleSelectOne(r._id, !!v)} aria-label={`${r.userEmail || '-'} 리뷰 선택`} />
-                  </TableCell>
-
-                  {/* 작성자 + subject + 상태 */}
-                  <TableCell className="font-medium">
-                    <div className="space-y-1">
-                      <div className="text-gray-900">{r.userName ? `${r.userName} (${r.userEmail})` : r.userEmail || '-'}</div>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <span>{r.subject}</span>
-                        {r.status === 'hidden' && <Badge variant="secondary">비공개</Badge>}
+              rows.map((r: Row) => {
+                const dimCls = r.status === 'hidden' ? 'opacity-60' : '';
+                return (
+                  <TableRow key={r._id} className="transition-colors even:bg-gray-50/40 hover:bg-gray-50/70">
+                    <TableCell>
+                      <div className={dimCls}>
+                        <Checkbox checked={selected.includes(r._id)} onCheckedChange={(v) => toggleSelectOne(r._id, !!v)} aria-label={`${r.userEmail || '-'} 리뷰 선택`} />
                       </div>
-                    </div>
-                  </TableCell>
+                    </TableCell>
 
-                  {/* 본문 */}
-                  <TableCell className="hidden md:table-cell align-top">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="cursor-help text-gray-700 line-clamp-2">{r.content}</div>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="bottom"
-                          className="max-w-md bg-white text-gray-900 border shadow-md rounded-md p-3
+                    {/* 작성자 + subject + 상태 */}
+                    <TableCell className="font-medium">
+                      <div className={dimCls}>
+                        <div className="space-y-1">
+                          <div className="text-gray-900">{r.userName ? `${r.userName} (${r.userEmail})` : r.userEmail || '-'}</div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span>{r.subject}</span>
+                            {r.status === 'hidden' && <Badge variant="secondary">비공개</Badge>}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* 본문 */}
+                    <TableCell className="hidden md:table-cell align-top">
+                      <div className={dimCls}>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="cursor-help text-gray-700 line-clamp-2">{r.content}</div>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="bottom"
+                              className="max-w-md bg-white text-gray-900 border shadow-md rounded-md p-3
                           dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700"
-                        >
-                          <p className="whitespace-pre-wrap leading-relaxed">{r.content}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </TableCell>
+                            >
+                              <p className="whitespace-pre-wrap leading-relaxed">{r.content}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
 
-                  {/* 평점 + 도움돼요 */}
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      {renderStars(r.rating)}
-                      <span
-                        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs
+                    {/* 평점 + 도움돼요 */}
+                    <TableCell>
+                      <div className={dimCls}>
+                        <div className="flex items-center gap-3">
+                          {renderStars(r.rating)}
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs
                         bg-white text-slate-700 border-slate-200
                         dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700"
-                      >
-                        <ThumbsUp className="h-3.5 w-3.5" />
-                        {r.helpfulCount ?? 0}
-                      </span>
-                    </div>
-                  </TableCell>
+                          >
+                            <ThumbsUp className="h-3.5 w-3.5" />
+                            {r.helpfulCount ?? 0}
+                          </span>
+                        </div>
+                      </div>
+                    </TableCell>
 
-                  <TableCell className="hidden md:table-cell text-gray-600">{formatDate(r.createdAt)}</TableCell>
+                    <TableCell className="hidden md:table-cell text-gray-600">
+                      <div className={dimCls}>{formatDate(r.createdAt)}</div>
+                    </TableCell>
 
-                  <TableCell>
-                    <Badge variant="outline" className={typeBadgeClass(r.type)}>
-                      {typeLabel(r.type)}
-                    </Badge>
-                  </TableCell>
+                    <TableCell>
+                      <div className={dimCls}>
+                        <Badge variant="outline" className={typeBadgeClass(r.type)}>
+                          {typeLabel(r.type)}
+                        </Badge>
+                      </div>
+                    </TableCell>
 
-                  <TableCell className="text-right pr-6">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">메뉴 열기</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem onClick={() => openDetail(r)} className="cursor-pointer">
-                          <Eye className="mr-2 h-4 w-4" />
-                          <span>상세 보기</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toggleVisible(r)} className="cursor-pointer">
-                          {r.status === 'visible' ? (
-                            <>
-                              <EyeOff className="mr-2 h-4 w-4" />
-                              <span>비공개</span>
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="mr-2 h-4 w-4" />
-                              <span>공개</span>
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onClick={() => doDelete(r._id)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          <span>삭제</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
+                    <TableCell className="text-right pr-6">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">메뉴 열기</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem onClick={() => openDetail(r)} className="cursor-pointer">
+                            <Eye className="mr-2 h-4 w-4" />
+                            <span>상세 보기</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => toggleVisible(r)} className="cursor-pointer">
+                            {r.status === 'visible' ? (
+                              <>
+                                <EyeOff className="mr-2 h-4 w-4" />
+                                <span>비공개</span>
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="mr-2 h-4 w-4" />
+                                <span>공개</span>
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onClick={() => doDelete(r._id)}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>삭제</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
