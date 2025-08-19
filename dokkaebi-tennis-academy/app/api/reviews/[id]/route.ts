@@ -34,11 +34,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   const me = new ObjectId(String(payload.sub));
   const role = payload?.role; // 'admin' 가능
+
   const doc = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
-  if (!doc || String(doc.userId) !== String(me)) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+  if (!doc) return NextResponse.json({ message: 'not found' }, { status: 404 });
 
   const isOwner = String(doc.userId) === String(me);
   const isAdmin = role === 'admin';
+
+  if (!isOwner && !isAdmin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+  await db.collection('reviews').updateOne({ _id }, { $set: { isDeleted: true, deletedAt: new Date(), status: 'hidden' } });
   if (!isOwner && !isAdmin) {
     return NextResponse.json({ message: 'forbidden' }, { status: 403 });
   }
@@ -87,7 +91,12 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   const me = new ObjectId(String(payload.sub));
 
   const doc = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
-  if (!doc || String(doc.userId) !== String(me)) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+  if (!doc) return NextResponse.json({ message: 'not found' }, { status: 404 });
+
+  const isOwner = String(doc.userId) === String(me);
+  const isAdmin = payload?.role === 'admin';
+
+  if (!isOwner && !isAdmin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
 
   await db.collection('reviews').updateOne({ _id }, { $set: { isDeleted: true, deletedAt: new Date(), status: 'hidden' } });
 
