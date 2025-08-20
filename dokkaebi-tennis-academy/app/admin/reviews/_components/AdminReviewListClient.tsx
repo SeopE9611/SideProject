@@ -29,6 +29,7 @@ type Row = {
   userName?: string;
   helpfulCount?: number;
 };
+
 type Page = { items: Row[]; total: number };
 
 const LIMIT = 10;
@@ -38,11 +39,26 @@ const fetcher = (url: string) =>
     return r.json();
   });
 
+// 검색 디바운스
+function useDebounced<T>(value: T, delay = 350) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
 export default function AdminReviewListClient() {
   // ---- 검색/필터 ----
-  const [q, setQ] = useState('');
+  const [qRaw, setQRaw] = useState('');
+  const qDebounced = useDebounced(qRaw, 350);
   const [status, setStatus] = useState<'all' | 'visible' | 'hidden'>('all');
   const [type, setType] = useState<'all' | 'product' | 'service'>('all');
+
+  useEffect(() => {
+    setSize(1);
+  }, [qDebounced, status, type]);
 
   // ---- KPI ----
   const { data: metrics } = useSWR<{ total: number; avg: number; five: number; byType: { product: number; service: number } }>('/api/admin/reviews/metrics', fetcher);
@@ -53,15 +69,15 @@ export default function AdminReviewListClient() {
       if (prev && prev.items.length < LIMIT) return null;
       const page = idx + 1;
       const p = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
-      if (q.trim()) p.set('q', q.trim());
+      if (qDebounced.trim()) p.set('q', qDebounced.trim());
       if (status !== 'all') p.set('status', status);
       if (type !== 'all') p.set('type', type);
       return `/api/admin/reviews?${p.toString()}`;
     },
-    [q, status, type]
+    [qDebounced, status, type]
   );
 
-  const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite<Page>(getKey, fetcher, { revalidateFirstPage: true });
+  const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite<Page>(getKey, fetcher, { revalidateFirstPage: true, revalidateOnFocus: false });
   const rows = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
   const hasMore = useMemo(() => (data?.length ? data[data.length - 1].items.length === LIMIT : false), [data]);
 
@@ -93,7 +109,7 @@ export default function AdminReviewListClient() {
   const toggleSelectAll = (checked: boolean) => setSelected(checked ? rows.map((r) => r._id) : []);
   const toggleSelectOne = (id: string, checked: boolean) => setSelected((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
 
-  // rows 바뀔 때 화면에 없는 선택 해제(레이아웃 안정)
+  // rows 변경 시 화면에 없는 선택 해제
   useEffect(() => {
     setSelected((prev) => prev.filter((id) => rows.some((r) => r._id === id)));
   }, [rows]);
@@ -168,8 +184,7 @@ export default function AdminReviewListClient() {
   const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200');
   const typeLabel = (t: Row['type']) => (t === 'product' ? '상품 리뷰' : '서비스 리뷰');
 
-  // 공통 grid 트랙 (md 이상에서 7열 고정, 모바일은 1열 카드)
-  const GRID = 'md:grid-cols-[48px_220px_minmax(0,1fr)_170px_160px_120px_56px]';
+  const GRID = 'lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]';
 
   return (
     <div className="space-y-6">
@@ -256,18 +271,15 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 검색/필터 + 전체선택 */}
-      <div
-        className="sticky top-0 z-10 -mt-2 mb-2 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60
-                 border border-slate-200 rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-3"
-      >
+      <div className="sticky top-0 z-10 -mt-2 mb-2 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 border border-slate-200 rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             type="search"
             placeholder="리뷰 검색…"
             className="pl-10 h-9 text-sm border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
+            value={qRaw}
+            onChange={(e) => setQRaw(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setSize(1)}
           />
         </div>
@@ -296,21 +308,25 @@ export default function AdminReviewListClient() {
         </div>
       </div>
 
-      {/* 리스트 카드(스크롤 컨테이너 포함) */}
+      {/* 리스트 카드 */}
       <div className="rounded-lg ring-1 ring-gray-200 bg-white/95 shadow-sm">
-        {/* 헤더 라벨 (그리드 트랙 동일) */}
-        <div className={`sticky top-0 z-[1] hidden md:grid ${GRID} items-center gap-x-4 bg-white border-b border-slate-200 px-4 py-3 text-[13px] text-slate-600`}>
-          <div className="opacity-70">선택</div>
-          <div>작성자</div>
-          <div>리뷰 내용</div>
-          <div>평점 / 도움돼요</div>
-          <div>작성일</div>
-          <div>타입</div>
-          <div className="text-right">관리</div>
-        </div>
+        <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden">
+          {/* 헤더 라벨 */}
+          <div
+            className={`sticky top-0 z-[1] hidden lg:grid ${GRID}
+                 items-center gap-x-3 bg-white
+                 border-b border-slate-200 px-3 py-3 text-[13px] text-slate-600`}
+          >
+            <div className="opacity-70">선택</div>
+            <div>작성자</div>
+            <div className="whitespace-nowrap">리뷰 내용</div>
+            <div>평점 / 도움돼요</div>
+            <div>작성일</div>
+            <div>타입</div>
+            <div className="text-center">공개 / 비공개</div>
+            <div className="text-right">관리</div>
+          </div>
 
-        {/* 아이템 스크롤 영역 */}
-        <div className="max-h-[70vh] overflow-y-auto">
           {error ? (
             <div className="p-8 text-center text-red-500">목록을 불러오지 못했습니다.</div>
           ) : !data && isValidating ? (
@@ -328,10 +344,11 @@ export default function AdminReviewListClient() {
                   key={r._id}
                   onClick={() => setDetail(r)}
                   className={[
-                    'grid grid-cols-1',
+                    'grid grid-cols-1 lg:grid',
                     GRID,
-                    `items-center gap-y-2 gap-x-4 px-4 ${compact ? 'py-2' : 'py-3'} transition-colors`,
-                    'even:bg-gray-50/40 hover:bg-emerald-50/30 cursor-pointer',
+                    'items-center gap-y-2 gap-x-3  px-3',
+                    compact ? 'py-2' : 'py-3',
+                    'transition-colors even:bg-gray-50/40 hover:bg-emerald-50/30 cursor-pointer',
                     isSel ? 'shadow-[inset_2px_0_0_0_theme(colors.emerald.500)] bg-emerald-50/40' : '',
                   ].join(' ')}
                 >
@@ -357,21 +374,20 @@ export default function AdminReviewListClient() {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <p className={`text-[13px] leading-[1.35] break-words ${expanded[r._id] ? 'whitespace-pre-wrap' : 'line-clamp-2'}`}>{r.content}</p>
+                          <p className={['text-sm leading-5', expanded[r._id] ? 'whitespace-pre-wrap' : 'line-clamp-2', 'break-words', '[overflow-wrap:anywhere]'].join(' ')}>{r.content}</p>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-md bg-white text-gray-900 border shadow-md rounded-md p-3">
-                          <p className="whitespace-pre-wrap leading-relaxed">{r.content}</p>
+                          <p className="whitespace-pre-wrap leading-relaxed [overflow-wrap:anywhere]">{r.content}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
 
-                    {/* 길 때만 토글 노출 */}
                     {r.content && r.content.length > 80 && (
                       <button
                         type="button"
                         className="mt-1 text-xs text-emerald-700 hover:underline"
                         onClick={(e) => {
-                          e.stopPropagation(); // 행 클릭으로 전파 막기
+                          e.stopPropagation();
                           setExpanded((s) => ({ ...s, [r._id]: !s[r._id] }));
                         }}
                         aria-expanded={!!expanded[r._id]}
@@ -382,7 +398,7 @@ export default function AdminReviewListClient() {
                   </div>
 
                   {/* 평점 / 도움돼요 */}
-                  <div className={`${dim}`}>
+                  <div className={`min-w-0 ${dim}`}>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       {renderStars(r.rating)}
                       <span className="text-[13px] text-gray-700">{r.rating}/5</span>
@@ -394,24 +410,28 @@ export default function AdminReviewListClient() {
                   </div>
 
                   {/* 작성일 */}
-                  <div className={`${dim}`}>
+                  <div className={`min-w-0 ${dim}`}>
                     <div className="text-gray-900 text-[13px]">{date}</div>
                     <div className="text-[12px] text-gray-500">{time}</div>
                   </div>
 
                   {/* 타입 */}
-                  <div className={`${dim} flex items-center gap-3`}>
-                    <Badge variant="outline" className={typeBadgeClass(r.type) + ' ring-1 ring-inset ring-slate-200/80'}>
+                  <div className={`min-w-0 ${dim} flex items-center gap-3 whitespace-nowrap`}>
+                    <Badge variant="outline" className={typeBadgeClass(r.type) + ' ring-1 ring-inset ring-slate-200/80 shrink-0'}>
                       {typeLabel(r.type)}
                     </Badge>
-                    <div className="flex items-center gap-1 text-[12px] text-slate-500">
-                      <span>{r.status === 'visible' ? '공개' : '비공개'}</span>
+                  </div>
+
+                  {/* 공개 / 비공개*/}
+                  <div className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`} onClick={(e) => e.stopPropagation()}>
+                    <span className="hidden xl:inline text-[12px] text-slate-600">{r.status === 'visible' ? '공개' : '비공개'}</span>
+                    <div className="h-6 flex items-center">
                       <Switch checked={r.status === 'visible'} onCheckedChange={() => toggleVisible(r)} />
                     </div>
                   </div>
 
                   {/* 액션 */}
-                  <div className="justify-self-end">
+                  <div className="justify-self-end pl-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
@@ -450,7 +470,7 @@ export default function AdminReviewListClient() {
           )}
         </div>
 
-        {/* 선택 액션 바 (카드 하단, 레이아웃 영향 최소) */}
+        {/* 선택 액션 바 */}
         <div className={`transition-all duration-200 ${selected.length ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
           <div className="w-full border-t border-emerald-200/70 bg-emerald-50/80 backdrop-blur-sm px-4 py-2 flex items-center justify-between rounded-b-lg">
             <span className="inline-flex items-center gap-2 text-emerald-900">
@@ -518,7 +538,7 @@ export default function AdminReviewListClient() {
                 </div>
               </div>
 
-              <div className="rounded-md bg-gray-50 p-4 whitespace-pre-wrap leading-relaxed text-gray-800">{detail.content || ''}</div>
+              <div className="rounded-md bg-gray-50 p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-gray-800">{detail.content || ''}</div>
             </div>
           )}
           <DialogFooter className="justify-between">
