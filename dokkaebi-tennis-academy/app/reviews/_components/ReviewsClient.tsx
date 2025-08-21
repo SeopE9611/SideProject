@@ -47,7 +47,7 @@ export default function ReviewsClient() {
     (pageIndex: number, prev: any) => {
       if (prev && !prev.nextCursor) return null;
       const cursor = pageIndex === 0 ? '' : `&cursor=${encodeURIComponent(prev.nextCursor)}`;
-      const q = [`type=${tab}`, `sort=${sort}`, rating !== 'all' ? `rating=${rating}` : '', hasPhoto ? `hasPhoto=1` : '', 'limit=10', cursor].filter(Boolean).join('&');
+      const q = [`type=${tab}`, 'withHidden=mask', `sort=${sort}`, rating !== 'all' ? `rating=${rating}` : '', hasPhoto ? `hasPhoto=1` : '', 'limit=10', cursor].filter(Boolean).join('&');
       return `/api/reviews?${q}`;
     },
     [tab, sort, rating, hasPhoto]
@@ -162,7 +162,7 @@ export default function ReviewsClient() {
           {items.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {items.map((it) => (
-                <ReviewCard key={it._id} item={it} />
+                <ReviewCard key={it._id} item={it} onMutate={() => mutate()} />
               ))}
             </div>
           ) : (

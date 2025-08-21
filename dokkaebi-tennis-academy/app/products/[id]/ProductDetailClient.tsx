@@ -13,6 +13,9 @@ import { useRouter } from 'next/navigation';
 import type { User } from '@/app/store/authStore';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useWishlist } from '@/app/features/wishlist/useWishlist';
+import MaskedBlock from '@/components/reviews/MaskedBlock';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Eye, EyeOff, Trash2, Pencil } from 'lucide-react';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
@@ -392,7 +395,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">{review.user?.charAt(0) || 'U'}</div>
                                 <div>
-                                  <div className="font-medium">{review.user || '익명'}</div>
+                                  <div className="font-medium">{review.status === 'hidden' ? '비공개 리뷰' : review.user ?? '익명'}</div>
                                   <div className="flex items-center gap-1">
                                     {[...Array(5)].map((_, i) => (
                                       <Star key={i} className={`h-4 w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
@@ -400,9 +403,92 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   </div>
                                 </div>
                               </div>
-                              <div className="text-sm text-muted-foreground">{review.date || '2024-01-01'}</div>
+
+                              <div className="flex items-center gap-2">
+                                <div className="text-sm text-muted-foreground">{review.date || '2099-01-01'}</div>
+
+                                {review.ownedByMe && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100" aria-label="내 리뷰 관리">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-44">
+                                      {/* 공개/비공개 토글 */}
+                                      <DropdownMenuItem
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          try {
+                                            const next = review.status === 'visible' ? 'hidden' : 'visible';
+                                            const res = await fetch(`/api/reviews/${review._id}`, {
+                                              method: 'PATCH',
+                                              credentials: 'include',
+                                              headers: { 'Content-Type': 'application/json' },
+                                              body: JSON.stringify({ status: next }),
+                                            });
+                                            if (!res.ok) throw new Error('상태 변경 실패');
+                                            showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
+                                            window.location.reload();
+                                          } catch (err: any) {
+                                            showErrorToast(err?.message || '상태 변경 중 오류');
+                                          }
+                                        }}
+                                        className="cursor-pointer"
+                                      >
+                                        {review.status === 'visible' ? (
+                                          <>
+                                            <EyeOff className="mr-2 h-4 w-4" />
+                                            비공개로 전환
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            공개로 전환
+                                          </>
+                                        )}
+                                      </DropdownMenuItem>
+
+                                      {/* 수정(마이페이지 진입) */}
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          window.location.href = `/mypage?tab=reviews&edit=${review._id}`;
+                                        }}
+                                        className="cursor-pointer"
+                                      >
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        수정
+                                      </DropdownMenuItem>
+
+                                      {/* 삭제 */}
+                                      <DropdownMenuItem
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
+                                          try {
+                                            const res = await fetch(`/api/reviews/${review._id}`, { method: 'DELETE', credentials: 'include' });
+                                            if (!res.ok) throw new Error('삭제 실패');
+                                            showSuccessToast('삭제했습니다.');
+                                            window.location.reload();
+                                          } catch (err: any) {
+                                            showErrorToast(err?.message || '삭제 중 오류');
+                                          }
+                                        }}
+                                        className="cursor-pointer text-red-600 focus:text-red-600"
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        삭제
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
+                              </div>
                             </div>
-                            <p className="text-muted-foreground leading-relaxed">{review.content || '좋은 제품입니다. 추천합니다!'}</p>
+
+                            {/* {review.status === 'hidden' ? null : review.photos?.length ? <PhotosGrid photos={review.photos} /> : null} */}
+                            {/* <p className="text-muted-foreground leading-relaxed">{review.content || '좋은 제품입니다. 추천합니다!'}</p> */}
+                            {review.status === 'hidden' ? <MaskedBlock className="mt-1">{review.content ? <p className="text-sm leading-relaxed">{review.content}</p> : null}</MaskedBlock> : <p className="text-sm leading-relaxed">{review.content}</p>}
                           </CardContent>
                         </Card>
                       ))

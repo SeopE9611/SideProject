@@ -245,14 +245,17 @@ export async function GET(req: Request) {
   const sort = (url.searchParams.get('sort') || 'latest') as 'latest' | 'helpful' | 'rating';
   const limit = Math.max(1, Math.min(50, Number(url.searchParams.get('limit') || 10)));
   const cursorB64 = url.searchParams.get('cursor');
+  const withHidden = url.searchParams.get('withHidden'); // 'mask' | 'all' | null
 
   // match 조건 구성
-  const match: any = { status: 'visible' };
+  const match: any = {};
+  if (withHidden !== 'mask' && withHidden !== 'all') {
+    match.status = 'visible';
+  }
   if (type === 'product') match.productId = { $exists: true };
   if (type === 'service') match.service = { $exists: true };
   if (rating) match.rating = Number(rating);
   if (hasPhoto) match.$expr = { $gt: [{ $size: { $ifNull: ['$photos', []] } }, 0] };
-
   // 정렬 스펙 및 커서(다중 키) 구성
   const sortSpec: any = sort === 'helpful' ? { helpfulCount: -1, _id: -1 } : sort === 'rating' ? { rating: -1, _id: -1 } : { createdAt: -1, _id: -1 };
 
@@ -279,11 +282,42 @@ export async function GET(req: Request) {
   }
 
   // $lookup으로 상품 표시 정보 붙이기
+  const project: any = {
+    _id: 1,
+    type: { $cond: [{ $ifNull: ['$productId', false] }, 'product', 'service'] },
+    productId: 1,
+    productName: '$product.name',
+    productImage: { $arrayElemAt: ['$product.images', 0] },
+    service: 1,
+    serviceApplicationId: 1,
+    rating: 1,
+    helpfulCount: 1,
+    createdAt: 1,
+    votedByMe: 1,
+    status: 1,
+    isMine: 1,
+  };
+
+  // withHidden=mask 인 경우에만 “비공개” 마스킹 처리
+  project.status = 1; // 프런트 분기용
+  project.ownedByMe = 1; // 내 리뷰만 메뉴를 노출
+  if (withHidden === 'mask') {
+    project.userName = { $cond: [{ $eq: ['$status', 'hidden'] }, null, '$userName'] };
+    project.content = { $cond: [{ $eq: ['$status', 'hidden'] }, null, '$content'] };
+    project.photos = { $cond: [{ $eq: ['$status', 'hidden'] }, [], { $ifNull: ['$photos', []] }] };
+    project.masked = { $eq: ['$status', 'hidden'] }; // 프런트에서 오버레이 표시 용도
+  } else {
+    project.userName = 1;
+    project.content = 1;
+    project.photos = 1;
+  }
+
+  // 파이프라인에서 기존 $project 블록을 아래로 교체
   const pipeline: any[] = [
     { $match: match },
     ...(Object.keys(cursorCond).length ? [{ $match: cursorCond }] : []),
     { $sort: sortSpec },
-    { $limit: limit + 1 }, // nextCursor 판단 위해 1개 더
+    { $limit: limit + 1 },
     {
       $lookup: {
         from: 'products',
@@ -293,25 +327,11 @@ export async function GET(req: Request) {
         pipeline: [{ $project: { name: 1, images: 1 } }],
       },
     },
+
     { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
-    {
-      $project: {
-        _id: 1,
-        type: { $cond: [{ $ifNull: ['$productId', false] }, 'product', 'service'] },
-        productId: 1,
-        productName: '$product.name',
-        productImage: { $arrayElemAt: ['$product.images', 0] },
-        service: 1,
-        serviceApplicationId: 1,
-        userName: 1,
-        rating: 1,
-        content: 1,
-        photos: 1,
-        helpfulCount: 1,
-        createdAt: 1,
-        votedByMe: 1,
-      },
-    },
+    //  현재 로그인 사용자가 쓴 리뷰인지 여부를 서버에서 계산
+    ...(currentUserId ? [{ $addFields: { isMine: { $eq: ['$userId', currentUserId] } } }] : [{ $addFields: { isMine: false } }]),
+    { $project: project },
   ];
 
   if (currentUserId) {

@@ -7,6 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, ThumbsUp, Image as ImageIcon, Package, Wrench, Loader2 } from 'lucide-react';
 import ReviewPhotoDialog from '@/app/reviews/_components/ReviewPhotoDialog';
+import MaskedBlock from '@/components/reviews/MaskedBlock';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Eye, EyeOff, Trash2, Pencil } from 'lucide-react';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 /* 날짜 YYYY-MM-DD 포맷 */
 function fmt(dateStr?: string) {
@@ -15,7 +19,7 @@ function fmt(dateStr?: string) {
 }
 
 /* 개별 리뷰 카드: 상품/서비스 공용 */
-export default function ReviewCard({ item }: { item: any }) {
+export default function ReviewCard({ item, onMutate }: { item: any; onMutate?: () => any }) {
   const [voted, setVoted] = useState<boolean>(Boolean(item.votedByMe));
   const [count, setCount] = useState<number>(item.helpfulCount ?? 0);
   const [open, setOpen] = useState(false); // 사진 Dialog
@@ -102,6 +106,85 @@ export default function ReviewCard({ item }: { item: any }) {
       <CardContent className="p-4 md:p-5 space-y-3">
         {/* 상단 메타: 뱃지 + 제목(상품명) / 날짜 */}
         <div className="flex items-center justify-between">
+          {item.ownedByMe && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100" aria-label="내 리뷰 관리">
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                {/* 공개/비공개 토글 */}
+                <DropdownMenuItem
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    try {
+                      const next = item.status === 'visible' ? 'hidden' : 'visible';
+                      const res = await fetch(`/api/reviews/${item._id}`, {
+                        method: 'PATCH',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: next }),
+                      });
+                      if (!res.ok) throw new Error('상태 변경 실패');
+                      showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
+                      onMutate?.(); // 리스트 재검증
+                    } catch (err: any) {
+                      showErrorToast(err?.message || '상태 변경 중 오류');
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  {item.status === 'visible' ? (
+                    <>
+                      <EyeOff className="mr-2 h-4 w-4" />
+                      비공개로 전환
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="mr-2 h-4 w-4" />
+                      공개로 전환
+                    </>
+                  )}
+                </DropdownMenuItem>
+
+                {/* 수정 → 마이페이지로 이동(편집 화면) */}
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/mypage?tab=reviews&edit=${item._id}`;
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  수정
+                </DropdownMenuItem>
+
+                {/* 삭제 */}
+                <DropdownMenuItem
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
+                    try {
+                      const res = await fetch(`/api/reviews/${item._id}`, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                      });
+                      if (!res.ok) throw new Error('삭제 실패');
+                      showSuccessToast('삭제했습니다.');
+                      onMutate?.(); // 리스트 재검증
+                    } catch (err: any) {
+                      showErrorToast(err?.message || '삭제 중 오류');
+                    }
+                  }}
+                  className="cursor-pointer text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  삭제
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <div className="flex items-center gap-2">
             <Badge variant={item.type === 'product' ? 'product' : 'service'} className="gap-1">
               {item.type === 'product' ? <Package className="h-3.5 w-3.5" /> : <Wrench className="h-3.5 w-3.5" />}
@@ -122,11 +205,10 @@ export default function ReviewCard({ item }: { item: any }) {
 
         {/* 내용 */}
         {item.status === 'hidden' ? (
-          <div className="italic text-gray-500 bg-gray-50 border rounded-md p-3">비공개된 리뷰입니다. 관리자와 작성자만 확인할 수 있어요.</div>
+          <MaskedBlock className="mt-1">{item.content ? <p className="whitespace-pre-wrap text-sm leading-relaxed">{item.content}</p> : null}</MaskedBlock>
         ) : (
-          <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{item.content}</p>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed">{item.content}</p>
         )}
-
         {/* 사진 썸네일(있을 때만) */}
         {Array.isArray(item.photos) && item.photos.length > 0 ? (
           <div className="flex items-center gap-2">
