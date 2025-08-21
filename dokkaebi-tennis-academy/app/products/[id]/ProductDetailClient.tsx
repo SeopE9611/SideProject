@@ -74,7 +74,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   }, []);
 
   // 로그인한 경우에만 내 리뷰 원문을 추가 조회 (비공개라도 원문 반환)
-  const { data: myReview } = useSWR(user ? `/api/reviews/self?productId=${product._id}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: myReview, mutate: mutateMyReview } = useSWR(user ? `/api/reviews/self?productId=${product._id}` : null, fetcher, { revalidateOnFocus: false });
 
   // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹함
   // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
@@ -465,6 +465,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           e.stopPropagation();
                                           try {
                                             const next = review.status === 'visible' ? 'hidden' : 'visible';
+
+                                            // 낙관적 반영: 내 리뷰 캐시(myReview)를 즉시 바꿔서
+                                            //    (비공개) 라벨·메뉴 문구가 즉시 반영되도록 한다.
+                                            mutateMyReview((prev: any) => {
+                                              if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+                                              return { ...prev, status: next, ownedByMe: true, masked: false };
+                                            }, false);
+
+                                            // 서버
                                             const res = await fetch(`/api/reviews/${review._id}`, {
                                               method: 'PATCH',
                                               credentials: 'include',
@@ -472,15 +481,23 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                               body: JSON.stringify({ status: next }),
                                             });
                                             if (!res.ok) throw new Error('상태 변경 실패');
+
+                                            // 서버 진실로 재검증 -> 캐시 확정
+                                            await mutateMyReview();
+
+                                            // 서버 컴포넌트 쪽 리스트/집계 최신화
+                                            const params = new URLSearchParams(searchParams.toString());
+                                            params.set('tab', 'reviews');
+                                            router.replace(`?${params.toString()}`, { scroll: false });
+                                            router.refresh();
+
                                             showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
-                                            // 리뷰 탭을 유지한 채 서버데이터만 리프레시
-                                            {
-                                              const params = new URLSearchParams(searchParams.toString());
-                                              params.set('tab', 'reviews');
-                                              router.replace(`?${params.toString()}`, { scroll: false });
-                                              router.refresh();
-                                            }
                                           } catch (err: any) {
+                                            // 실패 시 원복
+                                            mutateMyReview((prev: any) => {
+                                              if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+                                              return { ...prev, status: review.status, ownedByMe: true, masked: false };
+                                            }, false);
                                             showErrorToast(err?.message || '상태 변경 중 오류');
                                           }
                                         }}

@@ -75,7 +75,7 @@ export default function ReviewCard({ item, onMutate }: { item: any; onMutate?: (
       if (mySeq === reqSeqRef.current) {
         setPending(false);
 
-        // ⬇️ 큐에 "마지막 의도"가 남아 있고, 현재 상태와 다르면 한 번 더 보냄
+        // ⬇큐에 "마지막 의도"가 남아 있고, 현재 상태와 다르면 한 번 더 보냄
         const queued = nextIntentRef.current;
         nextIntentRef.current = null;
         if (queued !== null && queued !== voted) {
