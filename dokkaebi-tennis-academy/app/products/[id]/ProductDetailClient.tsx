@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/app/store/cartStore';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { User } from '@/app/store/authStore';
@@ -16,6 +16,7 @@ import { useWishlist } from '@/app/features/wishlist/useWishlist';
 import MaskedBlock from '@/components/reviews/MaskedBlock';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Eye, EyeOff, Trash2, Pencil } from 'lucide-react';
+import useSWR from 'swr';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
@@ -28,6 +29,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then(async (r) => (r.status === 200 ? r.json() : null));
 
   // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
   const initialTab = (searchParams.get('tab') as 'description' | 'specifications' | 'reviews') ?? 'description';
@@ -70,6 +72,29 @@ export default function ProductDetailClient({ product }: { product: any }) {
         // console.log('로딩 완료');
       });
   }, []);
+
+  // 로그인한 경우에만 내 리뷰 원문을 추가 조회 (비공개라도 원문 반환)
+  const { data: myReview } = useSWR(user ? `/api/reviews/self?productId=${product._id}` : null, fetcher, { revalidateOnFocus: false });
+
+  // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹함
+  // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
+  const mergedReviews = useMemo(() => {
+    const base = Array.isArray(product.reviews) ? product.reviews : [];
+    if (!myReview || !myReview._id) return base;
+    const idx = base.findIndex((r: any) => String(r._id) === String(myReview._id));
+    if (idx === -1) return base; // 리스트 10개에 내 리뷰가 없으면 그대로 사용
+    const next = [...base];
+    next[idx] = {
+      ...next[idx],
+      user: myReview.userName ?? next[idx].user,
+      content: myReview.content,
+      photos: myReview.photos ?? [],
+      masked: false,
+      ownedByMe: true,
+      status: myReview.status, // 'hidden' 상태 유지 (표시는 아래에서 분기)
+    };
+    return next;
+  }, [product.reviews, myReview]);
 
   const handleAddToCart = () => {
     if (loading) return;
@@ -406,15 +431,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </div>
 
                   <div className="space-y-4">
-                    {product.reviews.length > 0 ? (
-                      product.reviews.map((review: any, index: number) => (
+                    {mergedReviews.length > 0 ? (
+                      mergedReviews.map((review: any, index: number) => (
                         <Card key={index} className="border border-gray-200">
                           <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">{review.user?.charAt(0) || 'U'}</div>
                                 <div>
-                                  <div className="font-medium">{review.status === 'hidden' ? '비공개 리뷰' : review.user ?? '익명'}</div>
+                                  <div className="font-medium">{review.status === 'hidden' ? (review.ownedByMe ? `${review.user ?? '내 리뷰'} (비공개)` : '비공개 리뷰') : review.user ?? '익명'}</div>
                                   <div className="flex items-center gap-1">
                                     {[...Array(5)].map((_, i) => (
                                       <Star key={i} className={`h-4 w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
@@ -518,7 +543,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             {/* {review.status === 'hidden' ? null : review.photos?.length ? <PhotosGrid photos={review.photos} /> : null} */}
                             {/* <p className="text-muted-foreground leading-relaxed">{review.content || '좋은 제품입니다. 추천합니다!'}</p> */}
-                            {review.status === 'hidden' ? <MaskedBlock className="mt-1">{review.content ? <p className="text-sm leading-relaxed">{review.content}</p> : null}</MaskedBlock> : <p className="text-sm leading-relaxed">{review.content}</p>}
+                            {review.status === 'hidden' && !review.ownedByMe ? <MaskedBlock /> : <p className="text-sm leading-relaxed">{review.content}</p>}
                           </CardContent>
                         </Card>
                       ))

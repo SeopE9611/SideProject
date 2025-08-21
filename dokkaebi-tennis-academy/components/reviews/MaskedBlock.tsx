@@ -5,7 +5,7 @@ import { Shield } from 'lucide-react';
 import clsx from 'clsx';
 
 type Props = {
-  children: React.ReactNode; // 뒤에서 흐리게 보일 내용(없어도 됨)
+  children?: React.ReactNode; // 뒤에서 흐리게 보일 내용(없어도 됨)
   label?: string; // 오버레이 문구
   className?: string; // 바깥 래퍼 커스텀
   blurStrength?: number; // px
