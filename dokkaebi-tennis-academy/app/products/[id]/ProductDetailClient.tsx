@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/app/store/cartStore';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { User } from '@/app/store/authStore';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useWishlist } from '@/app/features/wishlist/useWishlist';
@@ -25,8 +25,27 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const stock = product.inventory?.stock ?? 0;
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
+  const initialTab = (searchParams.get('tab') as 'description' | 'specifications' | 'reviews') ?? 'description';
+  const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>(initialTab);
+
+  useEffect(() => {
+    // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
+    const current = (searchParams.get('tab') as 'description' | 'specifications' | 'reviews') ?? 'description';
+    setActiveTab(current);
+  }, [searchParams]);
+
+  const updateTabInUrl = (tab: 'description' | 'specifications' | 'reviews') => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    // 스크롤 점프 방지
+    router.replace(`?${params.toString()}`, { scroll: false });
+    setActiveTab(tab);
+  };
 
   const { has, toggle, isValidating } = useWishlist();
   const isWishlisted = has(product._id);
@@ -331,7 +350,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         {/* 상품 상세 정보 탭 */}
         <Card className="mt-12 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardContent className="p-0">
-            <Tabs defaultValue="description" className="w-full">
+            <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
               <TabsList className="w-full grid grid-cols-3 h-14 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
                 <TabsTrigger value="description" className="text-base font-medium">
                   상품 설명
@@ -429,7 +448,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             });
                                             if (!res.ok) throw new Error('상태 변경 실패');
                                             showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
-                                            window.location.reload();
+                                            // 리뷰 탭을 유지한 채 서버데이터만 리프레시
+                                            {
+                                              const params = new URLSearchParams(searchParams.toString());
+                                              params.set('tab', 'reviews');
+                                              router.replace(`?${params.toString()}`, { scroll: false });
+                                              router.refresh();
+                                            }
                                           } catch (err: any) {
                                             showErrorToast(err?.message || '상태 변경 중 오류');
                                           }
@@ -470,7 +495,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             const res = await fetch(`/api/reviews/${review._id}`, { method: 'DELETE', credentials: 'include' });
                                             if (!res.ok) throw new Error('삭제 실패');
                                             showSuccessToast('삭제했습니다.');
-                                            window.location.reload();
+                                            {
+                                              const params = new URLSearchParams(searchParams.toString());
+                                              params.set('tab', 'reviews');
+                                              router.replace(`?${params.toString()}`, { scroll: false });
+                                              router.refresh();
+                                            }
                                           } catch (err: any) {
                                             showErrorToast(err?.message || '삭제 중 오류');
                                           }
