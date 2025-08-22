@@ -53,6 +53,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setActiveTab(tab);
   };
 
+  // 로그인 정보 로드가 끝난 후 계산
+  const isAdmin = !!user && ((user as any).role === 'admin' || (user as any).role === 'ADMIN' || (user as any).isAdmin === true || (Array.isArray((user as any).roles) && (user as any).roles.includes('admin')));
+
+  // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
+  const reviewsCount = Array.isArray(product.reviews) ? product.reviews.length : 10;
+
+  const { data: adminReviews } = useSWR(isAdmin ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
+
   const { has, toggle, isValidating } = useWishlist();
   const isWishlisted = has(product._id);
   const [busy, setBusy] = useState(false);
@@ -80,25 +88,51 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // 로그인한 경우에만 내 리뷰 원문을 추가 조회 (비공개라도 원문 반환)
   const { data: myReview, mutate: mutateMyReview } = useSWR(user ? `/api/reviews/self?productId=${product._id}` : null, fetcher, { revalidateOnFocus: false });
 
-  // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹함
-  // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
+  // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹
+  // 1) myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
+  // 2) isAdmin이면 adminReviews로 표시 범위 내 항목을 원문으로 덮어쓰기 + 마스킹 해제
   const mergedReviews = useMemo(() => {
     const base = Array.isArray(product.reviews) ? product.reviews : [];
-    if (!myReview || !myReview._id) return base;
-    const idx = base.findIndex((r: any) => String(r._id) === String(myReview._id));
-    if (idx === -1) return base; // 리스트 10개에 내 리뷰가 없으면 그대로 사용
-    const next = [...base];
-    next[idx] = {
-      ...next[idx],
-      user: myReview.userName ?? next[idx].user,
-      content: myReview.content,
-      photos: myReview.photos ?? [],
-      masked: false,
-      ownedByMe: true,
-      status: myReview.status, // 'hidden' 상태 유지 (표시는 아래에서 분기)
-    };
+    let next = base;
+
+    // 내 리뷰 덮어쓰기 (있을 때만)
+    if (myReview && myReview._id) {
+      const i = next.findIndex((r: any) => String(r._id) === String(myReview._id));
+      if (i !== -1) {
+        next = [...next];
+        next[i] = {
+          ...next[i],
+          user: myReview.userName ?? next[i].user, // UI에서 쓰는 user 필드 보강
+          content: myReview.content,
+          photos: myReview.photos ?? [],
+          masked: false, // 본인 뷰는 언마스크
+          ownedByMe: true,
+          status: myReview.status, // hidden/visible 그대로 유지
+        };
+      }
+    }
+
+    // 관리자면 표시 중인 항목 범위에서 원문으로 덮어쓰기
+    if (isAdmin && Array.isArray(adminReviews) && adminReviews.length > 0) {
+      const map = new Map(adminReviews.map((r: any) => [String(r._id), r]));
+      next = next.map((r: any) => {
+        const raw = map.get(String(r._id));
+        if (!raw) return r;
+        return {
+          ...r,
+          // admin API의 필드를 화면 필드로 매핑
+          user: raw.userName ?? r.user,
+          content: raw.content,
+          photos: raw.photos ?? [],
+          status: raw.status,
+          masked: false, // 관리자 뷰는 언마스크
+          adminView: true,
+        };
+      });
+    }
+
     return next;
-  }, [product.reviews, myReview]);
+  }, [product.reviews, myReview, isAdmin, adminReviews]);
 
   // 인라인 수정 다이얼로그 상태/핸들러
   const [editOpen, setEditOpen] = useState(false);
@@ -510,7 +544,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">{review.user?.charAt(0) || 'U'}</div>
                                 <div>
-                                  <div className="font-medium">{review.status === 'hidden' ? (review.ownedByMe ? `${review.user ?? '내 리뷰'} (비공개)` : '비공개 리뷰') : review.user ?? '익명'}</div>
+                                  <div className="font-medium">
+                                    {review.status === 'hidden' ? (review.ownedByMe ? `${review.user ?? '내 리뷰'} (비공개)` : review.adminView ? `${review.user ?? '사용자'} (비공개)` : '비공개 리뷰') : review.user ?? '익명'}
+                                  </div>
                                   <div className="flex items-center gap-1">
                                     {[...Array(5)].map((_, i) => (
                                       <Star key={i} className={`h-4 w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
@@ -631,7 +667,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             {/* {review.status === 'hidden' ? null : review.photos?.length ? <PhotosGrid photos={review.photos} /> : null} */}
                             {/* <p className="text-muted-foreground leading-relaxed">{review.content || '좋은 제품입니다. 추천합니다!'}</p> */}
-                            {review.status === 'hidden' && !review.ownedByMe ? <MaskedBlock /> : <p className="text-sm leading-relaxed">{review.content}</p>}
+                            {review.masked ?? (review.status === 'hidden' && !review.ownedByMe && !review.adminView) ? <MaskedBlock /> : <p className="text-sm leading-relaxed">{review.content}</p>}
                           </CardContent>
                         </Card>
                       ))
