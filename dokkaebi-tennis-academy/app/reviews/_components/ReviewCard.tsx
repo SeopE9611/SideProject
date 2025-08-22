@@ -11,6 +11,9 @@ import MaskedBlock from '@/components/reviews/MaskedBlock';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Eye, EyeOff, Trash2, Pencil } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 /* 날짜 YYYY-MM-DD 포맷 */
 function fmt(dateStr?: string) {
@@ -19,12 +22,50 @@ function fmt(dateStr?: string) {
 }
 
 /* 개별 리뷰 카드: 상품/서비스 공용 */
-export default function ReviewCard({ item, onMutate }: { item: any; onMutate?: () => any }) {
+export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: any; onMutate?: () => any; isAdmin?: boolean }) {
   const [voted, setVoted] = useState<boolean>(Boolean(item.votedByMe));
   const [count, setCount] = useState<number>(item.helpfulCount ?? 0);
   const [open, setOpen] = useState(false); // 사진 Dialog
 
-  // === 연타/경합 제어용 ===
+  // 수정
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string }>({
+    rating: typeof item.rating === 'number' ? item.rating : '',
+    content: item.content ?? '',
+  });
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+
+  const openEdit = () => setEditOpen(true);
+  const closeEdit = () => setEditOpen(false);
+
+  const submitEdit = async () => {
+    const { rating, content } = editForm;
+    try {
+      const res = await fetch(`/api/reviews/${item._id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rating: rating === '' ? undefined : Number(rating),
+          content,
+        }),
+      });
+      if (!res.ok) throw new Error('수정 실패');
+      showSuccessToast('리뷰를 수정했어요.');
+      onMutate?.(); // 리스트 재검증
+      closeEdit();
+    } catch (e: any) {
+      showErrorToast(e?.message || '리뷰 수정에 실패했습니다.');
+    }
+  };
+
+  // 공개/비공개에 따른 표시 이름
+  const displayName = item.status === 'hidden' ? (item.ownedByMe ? `${item.userName ?? '내 리뷰'} (비공개)` : isAdmin ? `${item.userName ?? '사용자'} (비공개)` : '비공개 리뷰') : item.userName ?? '익명';
+
+  // 마스킹 여부(서버가 내려준 masked를 우선 사용, 없으면 폴백)
+  const isMasked = item.masked ?? (item.status === 'hidden' && !(item.ownedByMe || isAdmin));
+
+  // 연타/경합 제어용
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금
   const reqSeqRef = useRef(0); // 보낸 요청 시퀀스
   const abortRef = useRef<AbortController | null>(null); // 이전 요청 취소용
@@ -105,86 +146,8 @@ export default function ReviewCard({ item, onMutate }: { item: any; onMutate?: (
     <Card className="overflow-hidden rounded-2xl border border-slate-200/70 dark:border-slate-800/70 transition-shadow hover:shadow-sm">
       <CardContent className="p-4 md:p-5 space-y-3">
         {/* 상단 메타: 뱃지 + 제목(상품명) / 날짜 */}
-        <div className="flex items-center justify-between">
-          {item.ownedByMe && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100" aria-label="내 리뷰 관리">
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-                {/* 공개/비공개 토글 */}
-                <DropdownMenuItem
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    try {
-                      const next = item.status === 'visible' ? 'hidden' : 'visible';
-                      const res = await fetch(`/api/reviews/${item._id}`, {
-                        method: 'PATCH',
-                        credentials: 'include',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: next }),
-                      });
-                      if (!res.ok) throw new Error('상태 변경 실패');
-                      showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
-                      onMutate?.(); // 리스트 재검증
-                    } catch (err: any) {
-                      showErrorToast(err?.message || '상태 변경 중 오류');
-                    }
-                  }}
-                  className="cursor-pointer"
-                >
-                  {item.status === 'visible' ? (
-                    <>
-                      <EyeOff className="mr-2 h-4 w-4" />
-                      비공개로 전환
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="mr-2 h-4 w-4" />
-                      공개로 전환
-                    </>
-                  )}
-                </DropdownMenuItem>
-
-                {/* 수정 → 마이페이지로 이동(편집 화면) */}
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.location.href = `/mypage?tab=reviews&edit=${item._id}`;
-                  }}
-                  className="cursor-pointer"
-                >
-                  <Pencil className="mr-2 h-4 w-4" />
-                  수정
-                </DropdownMenuItem>
-
-                {/* 삭제 */}
-                <DropdownMenuItem
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
-                    try {
-                      const res = await fetch(`/api/reviews/${item._id}`, {
-                        method: 'DELETE',
-                        credentials: 'include',
-                      });
-                      if (!res.ok) throw new Error('삭제 실패');
-                      showSuccessToast('삭제했습니다.');
-                      onMutate?.(); // 리스트 재검증
-                    } catch (err: any) {
-                      showErrorToast(err?.message || '삭제 중 오류');
-                    }
-                  }}
-                  className="cursor-pointer text-red-600 focus:text-red-600"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  삭제
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+        <div className="flex items-start justify-between">
+          {/* 왼쪽: 배지 + 제목 */}
           <div className="flex items-center gap-2">
             <Badge variant={item.type === 'product' ? 'product' : 'service'} className="gap-1">
               {item.type === 'product' ? <Package className="h-3.5 w-3.5" /> : <Wrench className="h-3.5 w-3.5" />}
@@ -192,9 +155,92 @@ export default function ReviewCard({ item, onMutate }: { item: any; onMutate?: (
             </Badge>
             {item.productName ? <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.productName}</span> : null}
           </div>
-          <time className="text-xs text-sky-600 dark:text-sky-300">{fmt(item.createdAt)}</time>
-        </div>
 
+          {/* 오른쪽: 날짜 + 메뉴(… 버튼) */}
+          <div className="flex items-center gap-2">
+            <time className="text-xs text-sky-600 dark:text-sky-300">{fmt(item.createdAt)}</time>
+
+            {(item.ownedByMe || isAdmin) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100" aria-label="리뷰 관리">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  {/* 공개/비공개 토글 */}
+                  <DropdownMenuItem
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const next = item.status === 'visible' ? 'hidden' : 'visible';
+                        const res = await fetch(`/api/reviews/${item._id}`, {
+                          method: 'PATCH',
+                          credentials: 'include',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: next }),
+                        });
+                        if (!res.ok) throw new Error('상태 변경 실패');
+                        showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
+                        onMutate?.(); // 리스트 재검증
+                      } catch (err: any) {
+                        showErrorToast(err?.message || '상태 변경 중 오류');
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    {item.status === 'visible' ? (
+                      <>
+                        <EyeOff className="mr-2 h-4 w-4" />
+                        비공개로 전환
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="mr-2 h-4 w-4" />
+                        공개로 전환
+                      </>
+                    )}
+                  </DropdownMenuItem>
+
+                  {/* 수정 */}
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit();
+                    }}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    수정
+                  </DropdownMenuItem>
+
+                  {/* 삭제 */}
+                  <DropdownMenuItem
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
+                      try {
+                        const res = await fetch(`/api/reviews/${item._id}`, { method: 'DELETE', credentials: 'include' });
+                        if (!res.ok) throw new Error('삭제 실패');
+                        showSuccessToast('삭제했습니다.');
+                        onMutate?.(); // 리스트 재검증
+                      } catch (err: any) {
+                        showErrorToast(err?.message || '삭제 중 오류');
+                      }
+                    }}
+                    className="cursor-pointer text-red-600 focus:text-red-600"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    삭제
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+        </div>
+        {/* 작성자 라벨 */}
+        <div className="text-xs text-muted-foreground -mt-1 mb-2">
+          <span className="font-medium">작성자</span> : {displayName}
+        </div>
         {/* 별점 */}
         <div className="flex items-center gap-1">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -204,11 +250,7 @@ export default function ReviewCard({ item, onMutate }: { item: any; onMutate?: (
         </div>
 
         {/* 내용 */}
-        {item.status === 'hidden' ? (
-          <MaskedBlock className="mt-1">{item.content ? <p className="whitespace-pre-wrap text-sm leading-relaxed">{item.content}</p> : null}</MaskedBlock>
-        ) : (
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">{item.content}</p>
-        )}
+        {isMasked ? <MaskedBlock className="mt-1" /> : <p className="whitespace-pre-wrap text-sm leading-relaxed">{item.content}</p>}
         {/* 사진 썸네일(있을 때만) */}
         {Array.isArray(item.photos) && item.photos.length > 0 ? (
           <div className="flex items-center gap-2">
@@ -235,6 +277,72 @@ export default function ReviewCard({ item, onMutate }: { item: any; onMutate?: (
       </CardContent>
       {/* 사진 Dialog */}
       {Array.isArray(item.photos) && item.photos.length > 0 ? <ReviewPhotoDialog open={open} onOpenChange={setOpen} photos={item.photos} /> : null}
+      <Dialog open={editOpen} onOpenChange={(v) => (v ? setEditOpen(true) : closeEdit())}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>리뷰 수정</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <Label>평점</Label>
+              <div
+                role="radiogroup"
+                aria-label="평점 선택"
+                className="flex items-center gap-1"
+                onKeyDown={(e) => {
+                  const curr = typeof editForm.rating === 'number' ? editForm.rating : 0;
+                  if (e.key === 'ArrowRight') {
+                    const next = Math.min(5, curr + 1 || 1);
+                    setEditForm((s) => ({ ...s, rating: next }));
+                    e.preventDefault();
+                  }
+                  if (e.key === 'ArrowLeft') {
+                    const next = Math.max(1, (curr || 1) - 1);
+                    setEditForm((s) => ({ ...s, rating: next }));
+                    e.preventDefault();
+                  }
+                }}
+              >
+                {[1, 2, 3, 4, 5].map((i) => {
+                  const current = typeof editForm.rating === 'number' ? editForm.rating : 0;
+                  const filled = (hoverRating ?? current) >= i;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      role="radio"
+                      aria-checked={current === i}
+                      aria-label={`${i}점`}
+                      className="p-1"
+                      onMouseEnter={() => setHoverRating(i)}
+                      onMouseLeave={() => setHoverRating(null)}
+                      onClick={() => setEditForm((s) => ({ ...s, rating: i }))}
+                    >
+                      <Star className={`h-6 w-6 ${filled ? 'fill-yellow-500 stroke-yellow-500' : 'stroke-muted-foreground'}`} />
+                    </button>
+                  );
+                })}
+                <span className="ml-2 text-sm text-muted-foreground">{typeof editForm.rating === 'number' ? editForm.rating : 0}/5</span>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="content">내용</Label>
+              <Textarea id="content" rows={6} value={editForm.content} onChange={(e) => setEditForm((s) => ({ ...s, content: e.target.value }))} placeholder="리뷰 내용을 입력하세요." />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <button type="button" className="px-4 py-2 rounded-md border text-sm" onClick={closeEdit}>
+              취소
+            </button>
+            <button type="button" className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm" onClick={submitEdit}>
+              저장
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

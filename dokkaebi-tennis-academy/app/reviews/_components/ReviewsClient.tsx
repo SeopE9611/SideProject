@@ -1,7 +1,7 @@
 'use client';
 
 import useSWRInfinite from 'swr/infinite';
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -52,6 +52,17 @@ export default function ReviewsClient() {
     },
     [tab, sort, rating, hasPhoto]
   );
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    fetch('/api/users/me', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((u) => {
+        const flag = u?.role === 'admin' || u?.role === 'ADMIN' || u?.isAdmin === true || (Array.isArray(u?.roles) && u.roles.includes('admin'));
+        setIsAdmin(Boolean(flag));
+      })
+      .catch(() => setIsAdmin(false));
+  }, []);
 
   const { data, size, setSize, isValidating, mutate } = useSWRInfinite(getKey, fetcher, {
     revalidateFirstPage: false,
@@ -162,7 +173,7 @@ export default function ReviewsClient() {
           {items.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {items.map((it) => (
-                <ReviewCard key={it._id} item={it} onMutate={() => mutate()} />
+                <ReviewCard key={it._id} item={it} isAdmin={isAdmin} onMutate={() => mutate()} />
               ))}
             </div>
           ) : (

@@ -230,12 +230,14 @@ export async function GET(req: Request) {
   const db = await getDb();
   await ensureReviewIndexes(db);
 
-  //사용자 추출
+  // 사용자/권한 추출
   const token = (await cookies()).get('accessToken')?.value;
   let currentUserId: ObjectId | null = null;
+  let isAdmin = false;
   if (token) {
     const payload = verifyAccessToken(token);
     if (payload?.sub) currentUserId = new ObjectId(String(payload.sub));
+    isAdmin = (payload as any)?.role === 'admin' || (payload as any)?.role === 'ADMIN' || (payload as any)?.isAdmin === true || (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes('admin'));
   }
 
   const url = new URL(req.url);
@@ -302,16 +304,21 @@ export async function GET(req: Request) {
   project.status = 1; // 프런트 분기용
   project.ownedByMe = 1; // 내 리뷰만 메뉴를 노출
   if (withHidden === 'mask') {
-    project.userName = { $cond: [{ $eq: ['$status', 'hidden'] }, null, '$userName'] };
-    project.content = { $cond: [{ $eq: ['$status', 'hidden'] }, null, '$content'] };
-    project.photos = { $cond: [{ $eq: ['$status', 'hidden'] }, [], { $ifNull: ['$photos', []] }] };
-    project.masked = { $eq: ['$status', 'hidden'] }; // 프런트에서 오버레이 표시 용도
-  } else {
-    project.userName = 1;
-    project.content = 1;
-    project.photos = 1;
-  }
+    // status === 'hidden' 이면서 (본인X & 관리자X)인 경우만 마스킹
+    const hiddenCond = {
+      $and: [{ $eq: ['$status', 'hidden'] }, { $not: [{ $or: ['$ownedByMe', '$adminView'] }] }],
+    };
 
+    project.userName = { $cond: [hiddenCond, null, '$userName'] };
+    project.content = { $cond: [hiddenCond, null, '$content'] };
+    project.photos = { $cond: [hiddenCond, [], { $ifNull: ['$photos', []] }] };
+    project.masked = hiddenCond; // 프런트 오버레이 분기
+  } else {
+    project.userName = '$userName';
+    project.content = '$content';
+    project.photos = { $ifNull: ['$photos', []] };
+    project.masked = false;
+  }
   // 파이프라인에서 기존 $project 블록을 아래로 교체
   const pipeline: any[] = [
     { $match: match },
@@ -331,6 +338,8 @@ export async function GET(req: Request) {
     { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
     //  현재 로그인 사용자가 쓴 리뷰인지 여부를 서버에서 계산
     ...(currentUserId ? [{ $addFields: { isMine: { $eq: ['$userId', currentUserId] } } }] : [{ $addFields: { isMine: false } }]),
+    //  alias + 관리자 뷰 플래그
+    { $addFields: { ownedByMe: '$isMine', adminView: isAdmin } },
     { $project: project },
   ];
 
