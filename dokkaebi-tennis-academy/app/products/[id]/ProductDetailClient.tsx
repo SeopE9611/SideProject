@@ -17,6 +17,10 @@ import MaskedBlock from '@/components/reviews/MaskedBlock';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Eye, EyeOff, Trash2, Pencil } from 'lucide-react';
 import useSWR from 'swr';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
@@ -95,6 +99,73 @@ export default function ProductDetailClient({ product }: { product: any }) {
     };
     return next;
   }, [product.reviews, myReview]);
+
+  // 인라인 수정 다이얼로그 상태/핸들러
+  const [editOpen, setEditOpen] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string }>({ rating: '', content: '' });
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+
+  const openEdit = (review: any) => {
+    setEditing(review);
+    setEditForm({
+      rating: typeof review.rating === 'number' ? review.rating : '',
+      content: review.content ?? '',
+    });
+    setEditOpen(true);
+  };
+
+  const closeEdit = () => {
+    setEditOpen(false);
+    setEditing(null);
+  };
+
+  const submitEdit = async () => {
+    if (!editing?._id) return;
+    const { rating, content } = editForm;
+
+    // 낙관적 업데이트: 내 리뷰 캐시(myReview) 즉시 반영
+    mutateMyReview((prev: any) => {
+      if (!prev?._id || String(prev._id) !== String(editing._id)) return prev;
+      return {
+        ...prev,
+        rating: rating === '' ? prev.rating : Number(rating),
+        content,
+        ownedByMe: true,
+        masked: false,
+      };
+    }, false);
+
+    try {
+      // 서버 반영
+      const res = await fetch(`/api/reviews/${editing._id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rating: rating === '' ? undefined : Number(rating),
+          content,
+        }),
+      });
+      if (!res.ok) throw new Error('수정 실패');
+
+      // 서버 진실로 재검증
+      await mutateMyReview();
+
+      // 서버컴포넌트 영역 리프레시 + 탭 유지
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('tab', 'reviews');
+      router.replace(`?${params.toString()}`, { scroll: false });
+      router.refresh();
+
+      showSuccessToast('리뷰를 수정했어요.');
+      closeEdit();
+    } catch (err: any) {
+      // 실패 시 서버값으로 원복
+      await mutateMyReview();
+      showErrorToast(err?.message || '리뷰 수정에 실패했습니다.');
+    }
+  };
 
   const handleAddToCart = () => {
     if (loading) return;
@@ -516,11 +587,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                         )}
                                       </DropdownMenuItem>
 
-                                      {/* 수정(마이페이지 진입) */}
+                                      {/* 수정 */}
                                       <DropdownMenuItem
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          window.location.href = `/mypage?tab=reviews&edit=${review._id}`;
+                                          openEdit(review);
                                         }}
                                         className="cursor-pointer"
                                       >
@@ -632,6 +703,75 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </div>
             </CardContent>
           </Card>
+          {/* 리뷰 수정 다이얼로그 */}
+          <Dialog open={editOpen} onOpenChange={(v) => (v ? setEditOpen(true) : closeEdit())}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>리뷰 수정</DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label>평점</Label>
+
+                  <div
+                    role="radiogroup"
+                    aria-label="평점 선택"
+                    className="flex items-center gap-1"
+                    onKeyDown={(e) => {
+                      // 키보드 접근성(←/→로 증감)
+                      const curr = typeof editForm.rating === 'number' ? editForm.rating : 0;
+                      if (e.key === 'ArrowRight') {
+                        const next = Math.min(5, curr + 1 || 1);
+                        setEditForm((s) => ({ ...s, rating: next }));
+                        e.preventDefault();
+                      }
+                      if (e.key === 'ArrowLeft') {
+                        const next = Math.max(1, (curr || 1) - 1);
+                        setEditForm((s) => ({ ...s, rating: next }));
+                        e.preventDefault();
+                      }
+                    }}
+                  >
+                    {[1, 2, 3, 4, 5].map((i) => {
+                      const current = typeof editForm.rating === 'number' ? editForm.rating : 0;
+                      const filled = (hoverRating ?? current) >= i;
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          role="radio"
+                          aria-checked={current === i}
+                          aria-label={`${i}점`}
+                          className="p-1"
+                          onMouseEnter={() => setHoverRating(i)}
+                          onMouseLeave={() => setHoverRating(null)}
+                          onClick={() => setEditForm((s) => ({ ...s, rating: i }))}
+                        >
+                          <Star className={`h-6 w-6 ${filled ? 'fill-yellow-500 stroke-yellow-500' : 'stroke-muted-foreground'}`} />
+                        </button>
+                      );
+                    })}
+                    <span className="ml-2 text-sm text-muted-foreground">{typeof editForm.rating === 'number' ? editForm.rating : 0}/5</span>
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="content">내용</Label>
+                  <Textarea id="content" rows={6} value={editForm.content} onChange={(e) => setEditForm((s) => ({ ...s, content: e.target.value }))} placeholder="리뷰 내용을 입력하세요." />
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2">
+                <button type="button" className="px-4 py-2 rounded-md border text-sm" onClick={closeEdit}>
+                  취소
+                </button>
+                <button type="button" className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm" onClick={submitEdit}>
+                  저장
+                </button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>
