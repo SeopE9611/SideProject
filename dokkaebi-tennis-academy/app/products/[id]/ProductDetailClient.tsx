@@ -59,7 +59,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
   const reviewsCount = Array.isArray(product.reviews) ? product.reviews.length : 10;
 
-  const { data: adminReviews } = useSWR(isAdmin ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(isAdmin ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
 
   const { has, toggle, isValidating } = useWishlist();
   const isWishlisted = has(product._id);
@@ -87,6 +87,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   // 로그인한 경우에만 내 리뷰 원문을 추가 조회 (비공개라도 원문 반환)
   const { data: myReview, mutate: mutateMyReview } = useSWR(user ? `/api/reviews/self?productId=${product._id}` : null, fetcher, { revalidateOnFocus: false });
+
+  // 내 리뷰 여부 판별(merged에서 ownedByMe 세팅 + id 비교)
+  const isMine = (rv: any) => !!rv?.ownedByMe || (myReview && rv && String(myReview._id) === String(rv._id));
 
   // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹
   // 1) myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
@@ -158,20 +161,35 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (!editing?._id) return;
     const { rating, content } = editForm;
 
-    // 낙관적 업데이트: 내 리뷰 캐시(myReview) 즉시 반영
-    mutateMyReview((prev: any) => {
-      if (!prev?._id || String(prev._id) !== String(editing._id)) return prev;
-      return {
-        ...prev,
-        rating: rating === '' ? prev.rating : Number(rating),
-        content,
-        ownedByMe: true,
-        masked: false,
-      };
-    }, false);
+    // 낙관적 업데이트 (내 리뷰 vs 관리자-타인 구분)
+    if (isMine(editing)) {
+      mutateMyReview((prev: any) => {
+        if (!prev?._id || String(prev._id) !== String(editing._id)) return prev;
+        return {
+          ...prev,
+          rating: rating === '' ? prev.rating : Number(rating),
+          content,
+          ownedByMe: true,
+          masked: false,
+        };
+      }, false);
+    } else if (isAdmin) {
+      mutateAdminReviews((prev: any[] | undefined) => {
+        if (!Array.isArray(prev)) return prev;
+        return prev.map((r) =>
+          String(r._id) === String(editing._id)
+            ? {
+                ...r,
+                rating: rating === '' ? r.rating : Number(rating),
+                content,
+                masked: false,
+              }
+            : r
+        );
+      }, false);
+    }
 
     try {
-      // 서버 반영
       const res = await fetch(`/api/reviews/${editing._id}`, {
         method: 'PATCH',
         credentials: 'include',
@@ -184,9 +202,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
       if (!res.ok) throw new Error('수정 실패');
 
       // 서버 진실로 재검증
-      await mutateMyReview();
+      if (isMine(editing)) await mutateMyReview();
+      else if (isAdmin) await mutateAdminReviews();
 
-      // 서버컴포넌트 영역 리프레시 + 탭 유지
+      // 서버컴포넌트 리프레시 + 탭 유지
       const params = new URLSearchParams(searchParams.toString());
       params.set('tab', 'reviews');
       router.replace(`?${params.toString()}`, { scroll: false });
@@ -195,12 +214,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
       showSuccessToast('리뷰를 수정했어요.');
       closeEdit();
     } catch (err: any) {
-      // 실패 시 서버값으로 원복
-      await mutateMyReview();
+      // 실패 시 원복(간단히 재검증)
+      if (isMine(editing)) await mutateMyReview();
+      else if (isAdmin) await mutateAdminReviews();
       showErrorToast(err?.message || '리뷰 수정에 실패했습니다.');
     }
   };
-
   const handleAddToCart = () => {
     if (loading) return;
     // 재고 검증 (기존 장바구니에 담긴 수량 + 지금 선택 수량이 stock 초과인지)
@@ -558,7 +577,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               <div className="flex items-center gap-2">
                                 <div className="text-sm text-muted-foreground">{review.date || '2099-01-01'}</div>
 
-                                {review.ownedByMe && (
+                                {(review.ownedByMe || isAdmin) && (
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100" aria-label="내 리뷰 관리">
@@ -573,14 +592,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           try {
                                             const next = review.status === 'visible' ? 'hidden' : 'visible';
 
-                                            // 낙관적 반영: 내 리뷰 캐시(myReview)를 즉시 바꿔서
-                                            //    (비공개) 라벨·메뉴 문구가 즉시 반영되도록 한다.
-                                            mutateMyReview((prev: any) => {
-                                              if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
-                                              return { ...prev, status: next, ownedByMe: true, masked: false };
-                                            }, false);
+                                            // 1) 낙관적 업데이트
+                                            if (isMine(review)) {
+                                              mutateMyReview((prev: any) => {
+                                                if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+                                                return { ...prev, status: next, ownedByMe: true, masked: false };
+                                              }, false);
+                                            } else if (isAdmin) {
+                                              mutateAdminReviews((prev: any[] | undefined) => {
+                                                if (!Array.isArray(prev)) return prev;
+                                                return prev.map((r) => (String(r._id) === String(review._id) ? { ...r, status: next, masked: false } : r));
+                                              }, false);
+                                            }
 
-                                            // 서버
+                                            // 2) 서버 반영
                                             const res = await fetch(`/api/reviews/${review._id}`, {
                                               method: 'PATCH',
                                               credentials: 'include',
@@ -589,10 +614,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             });
                                             if (!res.ok) throw new Error('상태 변경 실패');
 
-                                            // 서버 진실로 재검증 -> 캐시 확정
-                                            await mutateMyReview();
+                                            // 3) 재검증
+                                            if (isMine(review)) await mutateMyReview();
+                                            else if (isAdmin) await mutateAdminReviews();
 
-                                            // 서버 컴포넌트 쪽 리스트/집계 최신화
+                                            // 4) 탭 유지 + 서버컴포넌트 리프레시
                                             const params = new URLSearchParams(searchParams.toString());
                                             params.set('tab', 'reviews');
                                             router.replace(`?${params.toString()}`, { scroll: false });
@@ -600,11 +626,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                                             showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
                                           } catch (err: any) {
-                                            // 실패 시 원복
-                                            mutateMyReview((prev: any) => {
-                                              if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
-                                              return { ...prev, status: review.status, ownedByMe: true, masked: false };
-                                            }, false);
+                                            // 실패 시 되돌리기(재검증)
+                                            if (isMine(review)) await mutateMyReview();
+                                            else if (isAdmin) await mutateAdminReviews();
                                             showErrorToast(err?.message || '상태 변경 중 오류');
                                           }
                                         }}
@@ -640,17 +664,39 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                         onClick={async (e) => {
                                           e.stopPropagation();
                                           if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
+
+                                          // 1) 낙관적 제거
+                                          if (isMine(review)) {
+                                            mutateMyReview(() => null, false);
+                                          } else if (isAdmin) {
+                                            mutateAdminReviews((prev: any[] | undefined) => {
+                                              if (!Array.isArray(prev)) return prev;
+                                              return prev.filter((r) => String(r._id) !== String(review._id));
+                                            }, false);
+                                          }
+
                                           try {
-                                            const res = await fetch(`/api/reviews/${review._id}`, { method: 'DELETE', credentials: 'include' });
+                                            const res = await fetch(`/api/reviews/${review._id}`, {
+                                              method: 'DELETE',
+                                              credentials: 'include',
+                                            });
                                             if (!res.ok) throw new Error('삭제 실패');
+
+                                            // 2) 재검증
+                                            if (isMine(review)) await mutateMyReview();
+                                            else if (isAdmin) await mutateAdminReviews();
+
+                                            // 3) 탭 유지 + 서버컴포넌트 리프레시
+                                            const params = new URLSearchParams(searchParams.toString());
+                                            params.set('tab', 'reviews');
+                                            router.replace(`?${params.toString()}`, { scroll: false });
+                                            router.refresh();
+
                                             showSuccessToast('삭제했습니다.');
-                                            {
-                                              const params = new URLSearchParams(searchParams.toString());
-                                              params.set('tab', 'reviews');
-                                              router.replace(`?${params.toString()}`, { scroll: false });
-                                              router.refresh();
-                                            }
                                           } catch (err: any) {
+                                            // 실패 시 복구(재검증으로 복원)
+                                            if (isMine(review)) await mutateMyReview();
+                                            else if (isAdmin) await mutateAdminReviews();
                                             showErrorToast(err?.message || '삭제 중 오류');
                                           }
                                         }}

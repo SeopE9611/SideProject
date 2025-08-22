@@ -39,7 +39,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!doc) return NextResponse.json({ message: 'not found' }, { status: 404 });
 
   const isOwner = String(doc.userId) === String(me);
-  const isAdmin = role === 'admin';
+  const isAdmin = role === 'admin' || role === 'ADMIN' || (payload as any)?.isAdmin === true || (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes('admin'));
 
   if (!isOwner && !isAdmin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
 
