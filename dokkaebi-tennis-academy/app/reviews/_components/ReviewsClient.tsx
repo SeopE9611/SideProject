@@ -54,16 +54,21 @@ export default function ReviewsClient() {
   );
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
       .then((r) => r.json())
       .then((u) => {
         const flag = u?.role === 'admin' || u?.role === 'ADMIN' || u?.isAdmin === true || (Array.isArray(u?.roles) && u.roles.includes('admin'));
         setIsAdmin(Boolean(flag));
+        setIsLoggedIn(!!u && !u?.error); // 로그인 여부
       })
-      .catch(() => setIsAdmin(false));
+      .catch(() => {
+        setIsAdmin(false);
+        setIsLoggedIn(false);
+      });
   }, []);
-
   const { data, size, setSize, isValidating, mutate } = useSWRInfinite(getKey, fetcher, {
     revalidateFirstPage: false,
     persistSize: true,
@@ -173,7 +178,7 @@ export default function ReviewsClient() {
           {items.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {items.map((it) => (
-                <ReviewCard key={it._id} item={it} isAdmin={isAdmin} onMutate={() => mutate()} />
+                <ReviewCard key={it._id} item={it} isAdmin={isAdmin} isLoggedIn={isLoggedIn} onMutate={() => mutate()} />
               ))}
             </div>
           ) : (

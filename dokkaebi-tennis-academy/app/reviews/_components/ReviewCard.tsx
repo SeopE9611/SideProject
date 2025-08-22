@@ -22,10 +22,11 @@ function fmt(dateStr?: string) {
 }
 
 /* 개별 리뷰 카드: 상품/서비스 공용 */
-export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: any; onMutate?: () => any; isAdmin?: boolean }) {
+export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn = false }: { item: any; onMutate?: () => any; isAdmin?: boolean; isLoggedIn?: boolean }) {
   const [voted, setVoted] = useState<boolean>(Boolean(item.votedByMe));
   const [count, setCount] = useState<number>(item.helpfulCount ?? 0);
   const [open, setOpen] = useState(false); // 사진 Dialog
+  const [busy, setBusy] = useState(false); // 카드 액션 로딩(토글/수정/삭제)
 
   // 수정
   const [editOpen, setEditOpen] = useState(false);
@@ -41,6 +42,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: 
   const submitEdit = async () => {
     const { rating, content } = editForm;
     try {
+      setBusy(true);
       const res = await fetch(`/api/reviews/${item._id}`, {
         method: 'PATCH',
         credentials: 'include',
@@ -54,7 +56,9 @@ export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: 
       showSuccessToast('리뷰를 수정했어요.');
       onMutate?.(); // 리스트 재검증
       closeEdit();
+      setBusy(false);
     } catch (e: any) {
+      setBusy(false);
       showErrorToast(e?.message || '리뷰 수정에 실패했습니다.');
     }
   };
@@ -116,7 +120,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: 
       if (mySeq === reqSeqRef.current) {
         setPending(false);
 
-        // ⬇큐에 "마지막 의도"가 남아 있고, 현재 상태와 다르면 한 번 더 보냄
+        // 큐에 "마지막 의도"가 남아 있고, 현재 상태와 다르면 한 번 더 보냄
         const queued = nextIntentRef.current;
         nextIntentRef.current = null;
         if (queued !== null && queued !== voted) {
@@ -130,8 +134,12 @@ export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: 
 
   // 클릭 핸들러: 마지막 의도 큐잉 + 낙관적 반영
   const onHelpful = () => {
-    const desired = !voted;
+    if (!isLoggedIn) {
+      showErrorToast('로그인이 필요합니다. 로그인 후 이용해주세요.');
+      return;
+    }
 
+    const desired = !voted;
     // 이미 요청 중이면 "마지막 의도"만 갈아치우고 return
     if (pending) {
       nextIntentRef.current = desired;
@@ -142,9 +150,16 @@ export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: 
     applyOptimistic(desired);
     void sendIntent(desired);
   };
+
   return (
     <Card className="overflow-hidden rounded-2xl border border-slate-200/70 dark:border-slate-800/70 transition-shadow hover:shadow-sm">
-      <CardContent className="p-4 md:p-5 space-y-3">
+      <CardContent className="p-4 md:p-5 space-y-3 relative">
+        {busy && (
+          <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-10">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="ml-2 text-sm">변경 중...</span>
+          </div>
+        )}
         {/* 상단 메타: 뱃지 + 제목(상품명) / 날짜 */}
         <div className="flex items-start justify-between">
           {/* 왼쪽: 배지 + 제목 */}
@@ -173,6 +188,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: 
                     onClick={async (e) => {
                       e.stopPropagation();
                       try {
+                        setBusy(true);
                         const next = item.status === 'visible' ? 'hidden' : 'visible';
                         const res = await fetch(`/api/reviews/${item._id}`, {
                           method: 'PATCH',
@@ -185,6 +201,8 @@ export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: 
                         onMutate?.(); // 리스트 재검증
                       } catch (err: any) {
                         showErrorToast(err?.message || '상태 변경 중 오류');
+                      } finally {
+                        setBusy(false);
                       }
                     }}
                     className="cursor-pointer"
@@ -219,11 +237,14 @@ export default function ReviewCard({ item, onMutate, isAdmin = false }: { item: 
                       e.stopPropagation();
                       if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
                       try {
+                        setBusy(true);
                         const res = await fetch(`/api/reviews/${item._id}`, { method: 'DELETE', credentials: 'include' });
                         if (!res.ok) throw new Error('삭제 실패');
                         showSuccessToast('삭제했습니다.');
                         onMutate?.(); // 리스트 재검증
+                        setBusy(false);
                       } catch (err: any) {
+                        setBusy(false);
                         showErrorToast(err?.message || '삭제 중 오류');
                       }
                     }}

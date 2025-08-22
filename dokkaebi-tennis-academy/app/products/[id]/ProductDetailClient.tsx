@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X } from 'lucide-react';
+import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,7 +19,6 @@ import { MoreHorizontal, Eye, EyeOff, Trash2, Pencil } from 'lucide-react';
 import useSWR from 'swr';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 export default function ProductDetailClient({ product }: { product: any }) {
@@ -142,6 +141,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [editing, setEditing] = useState<any | null>(null);
   const [editForm, setEditForm] = useState<{ rating: number | ''; content: string }>({ rating: '', content: '' });
   const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [busyReviewId, setBusyReviewId] = useState<string | null>(null);
 
   const openEdit = (review: any) => {
     setEditing(review);
@@ -159,6 +159,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const submitEdit = async () => {
     if (!editing?._id) return;
+    setBusyReviewId(String(editing._id));
     const { rating, content } = editForm;
 
     // 낙관적 업데이트 (내 리뷰 vs 관리자-타인 구분)
@@ -176,16 +177,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     } else if (isAdmin) {
       mutateAdminReviews((prev: any[] | undefined) => {
         if (!Array.isArray(prev)) return prev;
-        return prev.map((r) =>
-          String(r._id) === String(editing._id)
-            ? {
-                ...r,
-                rating: rating === '' ? r.rating : Number(rating),
-                content,
-                masked: false,
-              }
-            : r
-        );
+        return prev.map((r) => (String(r._id) === String(editing._id) ? { ...r, rating: rating === '' ? r.rating : Number(rating), content, masked: false } : r));
       }, false);
     }
 
@@ -218,8 +210,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
       if (isMine(editing)) await mutateMyReview();
       else if (isAdmin) await mutateAdminReviews();
       showErrorToast(err?.message || '리뷰 수정에 실패했습니다.');
+    } finally {
+      setBusyReviewId(null);
     }
   };
+
   const handleAddToCart = () => {
     if (loading) return;
     // 재고 검증 (기존 장바구니에 담긴 수량 + 지금 선택 수량이 stock 초과인지)
@@ -558,7 +553,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     {mergedReviews.length > 0 ? (
                       mergedReviews.map((review: any, index: number) => (
                         <Card key={index} className="border border-gray-200">
-                          <CardContent className="p-6">
+                          <CardContent className="p-6 relative">
+                            {busyReviewId === String(review._id) && (
+                              <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-10">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span className="ml-2 text-sm">변경 중...</span>
+                              </div>
+                            )}
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">{review.user?.charAt(0) || 'U'}</div>
@@ -587,25 +588,27 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                     <DropdownMenuContent align="end" className="w-44">
                                       {/* 공개/비공개 토글 */}
                                       <DropdownMenuItem
+                                        disabled={busyReviewId === String(review._id)}
                                         onClick={async (e) => {
                                           e.stopPropagation();
+                                          setBusyReviewId(String(review._id));
+                                          const next = review.status === 'visible' ? 'hidden' : 'visible';
+
+                                          // 낙관적 업데이트
+                                          if (isMine(review)) {
+                                            mutateMyReview((prev: any) => {
+                                              if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+                                              return { ...prev, status: next, ownedByMe: true, masked: false };
+                                            }, false);
+                                          } else if (isAdmin) {
+                                            mutateAdminReviews((prev: any[] | undefined) => {
+                                              if (!Array.isArray(prev)) return prev;
+                                              return prev.map((r) => (String(r._id) === String(review._id) ? { ...r, status: next, masked: false } : r));
+                                            }, false);
+                                          }
+
+                                          // 서버 반영
                                           try {
-                                            const next = review.status === 'visible' ? 'hidden' : 'visible';
-
-                                            // 1) 낙관적 업데이트
-                                            if (isMine(review)) {
-                                              mutateMyReview((prev: any) => {
-                                                if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
-                                                return { ...prev, status: next, ownedByMe: true, masked: false };
-                                              }, false);
-                                            } else if (isAdmin) {
-                                              mutateAdminReviews((prev: any[] | undefined) => {
-                                                if (!Array.isArray(prev)) return prev;
-                                                return prev.map((r) => (String(r._id) === String(review._id) ? { ...r, status: next, masked: false } : r));
-                                              }, false);
-                                            }
-
-                                            // 2) 서버 반영
                                             const res = await fetch(`/api/reviews/${review._id}`, {
                                               method: 'PATCH',
                                               credentials: 'include',
@@ -614,11 +617,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             });
                                             if (!res.ok) throw new Error('상태 변경 실패');
 
-                                            // 3) 재검증
+                                            // 재검증
                                             if (isMine(review)) await mutateMyReview();
                                             else if (isAdmin) await mutateAdminReviews();
 
-                                            // 4) 탭 유지 + 서버컴포넌트 리프레시
+                                            // 탭 유지 + 서버컴포넌트 리프레시
                                             const params = new URLSearchParams(searchParams.toString());
                                             params.set('tab', 'reviews');
                                             router.replace(`?${params.toString()}`, { scroll: false });
@@ -630,6 +633,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             if (isMine(review)) await mutateMyReview();
                                             else if (isAdmin) await mutateAdminReviews();
                                             showErrorToast(err?.message || '상태 변경 중 오류');
+                                          } finally {
+                                            setBusyReviewId(null);
                                           }
                                         }}
                                         className="cursor-pointer"
@@ -649,6 +654,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                                       {/* 수정 */}
                                       <DropdownMenuItem
+                                        disabled={busyReviewId === String(review._id)}
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           openEdit(review);
@@ -661,20 +667,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                                       {/* 삭제 */}
                                       <DropdownMenuItem
+                                        disabled={busyReviewId === String(review._id)}
                                         onClick={async (e) => {
                                           e.stopPropagation();
                                           if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
 
-                                          // 1) 낙관적 제거
-                                          if (isMine(review)) {
-                                            mutateMyReview(() => null, false);
-                                          } else if (isAdmin) {
-                                            mutateAdminReviews((prev: any[] | undefined) => {
-                                              if (!Array.isArray(prev)) return prev;
-                                              return prev.filter((r) => String(r._id) !== String(review._id));
-                                            }, false);
-                                          }
-
+                                          setBusyReviewId(String(review._id));
                                           try {
                                             const res = await fetch(`/api/reviews/${review._id}`, {
                                               method: 'DELETE',
@@ -682,11 +680,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             });
                                             if (!res.ok) throw new Error('삭제 실패');
 
-                                            // 2) 재검증
+                                            // 재검증
                                             if (isMine(review)) await mutateMyReview();
                                             else if (isAdmin) await mutateAdminReviews();
 
-                                            // 3) 탭 유지 + 서버컴포넌트 리프레시
+                                            // 탭 유지 + 서버컴포넌트 리프레시
                                             const params = new URLSearchParams(searchParams.toString());
                                             params.set('tab', 'reviews');
                                             router.replace(`?${params.toString()}`, { scroll: false });
@@ -698,6 +696,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             if (isMine(review)) await mutateMyReview();
                                             else if (isAdmin) await mutateAdminReviews();
                                             showErrorToast(err?.message || '삭제 중 오류');
+                                          } finally {
+                                            setBusyReviewId(null);
                                           }
                                         }}
                                         className="cursor-pointer text-red-600 focus:text-red-600"
