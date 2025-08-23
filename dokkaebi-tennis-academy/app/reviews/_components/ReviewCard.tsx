@@ -14,6 +14,8 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import PhotosUploader from '@/components/reviews/PhotosUploader';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 /* 날짜 YYYY-MM-DD 포맷 */
 function fmt(dateStr?: string) {
@@ -30,14 +32,23 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
 
   // 수정
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string }>({
+  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string; photos: string[] }>({
     rating: typeof item.rating === 'number' ? item.rating : '',
     content: item.content ?? '',
+    photos: Array.isArray(item.photos) ? item.photos : [],
   });
   const [hoverRating, setHoverRating] = useState<number | null>(null);
 
   const openEdit = () => setEditOpen(true);
   const closeEdit = () => setEditOpen(false);
+
+  // 확대 뷰어
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const openViewer = (idx: number) => {
+    setViewerIndex(idx);
+    setViewerOpen(true);
+  };
 
   const submitEdit = async () => {
     const { rating, content } = editForm;
@@ -50,6 +61,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         body: JSON.stringify({
           rating: rating === '' ? undefined : Number(rating),
           content,
+          photos: editForm.photos,
         }),
       });
       if (!res.ok) throw new Error('수정 실패');
@@ -273,20 +285,31 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         {/* 내용 */}
         {isMasked ? <MaskedBlock className="mt-1" /> : <p className="whitespace-pre-wrap text-sm leading-relaxed">{item.content}</p>}
         {/* 사진 썸네일(있을 때만) */}
-        {Array.isArray(item.photos) && item.photos.length > 0 ? (
+        {Array.isArray(item.photos) && item.photos.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
               <ImageIcon className="h-4 w-4" /> 사진 {item.photos.length}장
             </span>
+
             <div className="flex gap-2 ml-auto">
-              {item.photos.slice(0, 3).map((src: string, idx: number) => (
-                <div key={idx} className="relative w-12 h-12 rounded-md overflow-hidden bg-slate-100">
+              {item.photos.slice(0, 4).map((src: string, idx: number) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setViewerIndex(idx); // 클릭한 썸네일부터
+                    setOpen(true); // 다이얼로그 열기
+                  }}
+                  className="relative w-12 h-12 rounded-md overflow-hidden bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label={`리뷰 사진 ${idx + 1} 크게 보기`}
+                >
                   <Image src={src} alt={`photo-${idx}`} fill className="object-cover" />
-                </div>
+                  {idx === 3 && item.photos.length > 4 && <div className="absolute inset-0 bg-black/50 text-white text-[11px] font-medium flex items-center justify-center">+{item.photos.length - 3}</div>}
+                </button>
               ))}
             </div>
           </div>
-        ) : null}
+        )}
 
         {/* 도움돼요 */}
         <div className="pt-1">
@@ -297,7 +320,8 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         </div>
       </CardContent>
       {/* 사진 Dialog */}
-      {Array.isArray(item.photos) && item.photos.length > 0 ? <ReviewPhotoDialog open={open} onOpenChange={setOpen} photos={item.photos} /> : null}
+      {Array.isArray(item.photos) && item.photos.length > 0 && <ReviewPhotoDialog open={open} onOpenChange={setOpen} photos={item.photos} initialIndex={viewerIndex} />}
+
       <Dialog open={editOpen} onOpenChange={(v) => (v ? setEditOpen(true) : closeEdit())}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -351,6 +375,10 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
             <div className="grid gap-2">
               <Label htmlFor="content">내용</Label>
               <Textarea id="content" rows={6} value={editForm.content} onChange={(e) => setEditForm((s) => ({ ...s, content: e.target.value }))} placeholder="리뷰 내용을 입력하세요." />
+              <div className="mt-3">
+                <Label>사진 (선택, 최대 5장)</Label>
+                <PhotosUploader value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} max={5} />
+              </div>
             </div>
           </div>
 

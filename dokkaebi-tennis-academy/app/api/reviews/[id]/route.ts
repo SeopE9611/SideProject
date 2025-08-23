@@ -48,10 +48,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     content: z.string().trim().min(5, '내용은 5자 이상').max(2000, '2000자 이내').optional(),
     rating: z.number().int().min(1).max(5).optional(),
     status: z.enum(['visible', 'hidden']).optional(),
+    photos: z.array(z.string()).max(5).optional(),
   });
 
   const body = PatchSchema.parse(await req.json());
-  if (!('content' in body) && !('rating' in body) && !('status' in body)) {
+  if (!('content' in body) && !('rating' in body) && !('status' in body) && !('photos' in body)) {
     return NextResponse.json({ message: 'no changes' }, { status: 400 });
   }
 
@@ -60,6 +61,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (typeof body.content === 'string') $set.content = body.content.trim();
   if (typeof body.rating === 'number') $set.rating = Math.max(1, Math.min(5, body.rating));
   if (body.status === 'visible' || body.status === 'hidden') $set.status = body.status;
+  if (Array.isArray(body.photos)) $set.photos = body.photos.slice(0, 5);
 
   if (Object.keys($set).length === 1) return NextResponse.json({ message: 'no changes' }, { status: 400 });
 

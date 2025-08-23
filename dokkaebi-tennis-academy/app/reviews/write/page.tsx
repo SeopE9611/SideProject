@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import { Label } from '@/components/ui/label';
+import PhotosUploader from '@/components/reviews/PhotosUploader';
 
 /* ---- 별점 ---- */
 function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: number) => void; disabled?: boolean }) {
@@ -40,6 +41,7 @@ export default function ReviewWritePage() {
 
   const [rating, setRating] = useState(5);
   const [content, setContent] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
 
   const [state, setState] = useState<EligState>('loading');
   const toastLocked = useRef(false);
@@ -207,7 +209,7 @@ export default function ReviewWritePage() {
     const payload: any = {
       rating,
       content: content.trim(),
-      photos: [],
+      photos,
     };
 
     if (mode === 'product') {
@@ -309,6 +311,10 @@ export default function ReviewWritePage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-neutral-800 dark:text-neutral-200">후기</label>
                 <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="제품/장착 만족도, 타구감, 서비스 경험 등을 자유롭게 남겨주세요 (5자 이상)" className="min-h-[160px] resize-y" disabled={state !== 'ok'} />
+                <div className="mt-3">
+                  <Label>사진 (선택, 최대 5장)</Label>
+                  <PhotosUploader value={photos} onChange={setPhotos} max={5} />
+                </div>
               </div>
             </div>
           </div>

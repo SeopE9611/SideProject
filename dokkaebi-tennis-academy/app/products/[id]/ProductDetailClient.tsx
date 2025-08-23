@@ -20,6 +20,7 @@ import useSWR from 'swr';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import PhotosUploader from '@/components/reviews/PhotosUploader';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
@@ -91,8 +92,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const isMine = (rv: any) => !!rv?.ownedByMe || (myReview && rv && String(myReview._id) === String(rv._id));
 
   // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹
-  // 1) myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
-  // 2) isAdmin이면 adminReviews로 표시 범위 내 항목을 원문으로 덮어쓰기 + 마스킹 해제
+  // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
+  // isAdmin이면 adminReviews로 표시 범위 내 항목을 원문으로 덮어쓰기 + 마스킹 해제
   const mergedReviews = useMemo(() => {
     const base = Array.isArray(product.reviews) ? product.reviews : [];
     let next = base;
@@ -139,15 +140,32 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // 인라인 수정 다이얼로그 상태/핸들러
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string }>({ rating: '', content: '' });
+  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string; photos: string[] }>({ rating: '', content: '', photos: [] });
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [busyReviewId, setBusyReviewId] = useState<string | null>(null);
+
+  // 이미지 뷰어(확대) 전용 상태
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState(0);
+
+  // 썸네일 클릭 → 뷰어 열기
+  const openViewer = (images: string[], index = 0) => {
+    if (!Array.isArray(images) || images.length === 0) return;
+    setViewerImages(images);
+    setViewerIndex(index);
+    setViewerOpen(true);
+  };
+  const closeViewer = () => setViewerOpen(false);
+  const nextViewer = () => setViewerIndex((i) => (i + 1) % viewerImages.length);
+  const prevViewer = () => setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const openEdit = (review: any) => {
     setEditing(review);
     setEditForm({
       rating: typeof review.rating === 'number' ? review.rating : '',
       content: review.content ?? '',
+      photos: Array.isArray(review.photos) ? review.photos : [],
     });
     setEditOpen(true);
   };
@@ -189,6 +207,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         body: JSON.stringify({
           rating: rating === '' ? undefined : Number(rating),
           content,
+          photos: editForm.photos,
         }),
       });
       if (!res.ok) throw new Error('수정 실패');
@@ -713,7 +732,33 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             {/* {review.status === 'hidden' ? null : review.photos?.length ? <PhotosGrid photos={review.photos} /> : null} */}
                             {/* <p className="text-muted-foreground leading-relaxed">{review.content || '좋은 제품입니다. 추천합니다!'}</p> */}
-                            {review.masked ?? (review.status === 'hidden' && !review.ownedByMe && !review.adminView) ? <MaskedBlock /> : <p className="text-sm leading-relaxed">{review.content}</p>}
+                            {(() => {
+                              const isMasked = review.masked ?? (review.status === 'hidden' && !review.ownedByMe && !review.adminView);
+                              if (isMasked) return <MaskedBlock />;
+
+                              return (
+                                <>
+                                  <p className="text-sm leading-relaxed">{review.content}</p>
+
+                                  {Array.isArray(review.photos) && review.photos.length > 0 && (
+                                    <div className="mt-3 flex gap-2">
+                                      {review.photos.slice(0, 4).map((src: string, i: number) => (
+                                        <button
+                                          key={i}
+                                          type="button"
+                                          onClick={() => openViewer(review.photos, i)}
+                                          className="relative w-16 h-16 rounded-md overflow-hidden border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
+                                        >
+                                          <Image src={src} alt={`리뷰 사진 ${i + 1}`} fill className="object-cover" />
+                                          {i === 3 && review.photos.length > 4 && <div className="absolute inset-0 bg-black/50 text-white text-xs font-medium flex items-center justify-center">+{review.photos.length - 3}</div>}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </CardContent>
                         </Card>
                       ))
@@ -733,7 +778,40 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </Tabs>
           </CardContent>
         </Card>
+        {/* 리뷰 사진 확대 보기 */}
+        <Dialog open={viewerOpen} onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}>
+          <DialogContent className="sm:max-w-4xl p-0 bg-black/90 text-white border-0">
+            {/* 접근성용 제목(시각적으로 숨김) */}
+            <DialogHeader className="sr-only">
+              <DialogTitle>리뷰 사진 확대 보기</DialogTitle>
+            </DialogHeader>
+            <div className="relative w-full aspect-video">
+              {viewerImages[viewerIndex] && <Image src={viewerImages[viewerIndex]} alt={`리뷰 사진 확대 ${viewerIndex + 1}`} fill className="object-contain" priority />}
 
+              {/* 좌우 이동 */}
+              {viewerImages.length > 1 && (
+                <>
+                  <button type="button" onClick={prevViewer} className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 hover:bg-white/30" aria-label="이전 사진">
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button type="button" onClick={nextViewer} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 hover:bg-white/30" aria-label="다음 사진">
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+            </div>
+            {/* 썸네일 네비게이션 */}
+            {viewerImages.length > 1 && (
+              <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
+                {viewerImages.map((thumb, i) => (
+                  <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-blue-400' : ''}`} aria-label={`썸네일 ${i + 1}`}>
+                    <Image src={thumb} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
         <div className="mt-12">
           <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
             <CardHeader>
@@ -841,6 +919,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="grid gap-2">
                   <Label htmlFor="content">내용</Label>
                   <Textarea id="content" rows={6} value={editForm.content} onChange={(e) => setEditForm((s) => ({ ...s, content: e.target.value }))} placeholder="리뷰 내용을 입력하세요." />
+                  <div className="mt-3">
+                    <Label>사진 (선택, 최대 5장)</Label>
+                    <PhotosUploader value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} max={5} />
+                  </div>
                 </div>
               </div>
 
