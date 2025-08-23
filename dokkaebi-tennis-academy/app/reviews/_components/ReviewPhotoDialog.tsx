@@ -9,15 +9,10 @@ type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   photos: string[];
-  initialIndex?: number; // ✅ 추가
+  initialIndex?: number;
 };
 
-export default function ReviewPhotoDialog({
-  open,
-  onOpenChange,
-  photos,
-  initialIndex = 0, // ✅ 기본값
-}: Props) {
+export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialIndex = 0 }: Props) {
   const [idx, setIdx] = useState(initialIndex);
 
   // 다이얼로그 열릴 때마다 시작 인덱스 맞춰줌
@@ -33,7 +28,6 @@ export default function ReviewPhotoDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl p-0 bg-black/90 text-white border-0">
-        {/* ✅ a11y 만족용 제목(시각적으로 숨김) */}
         <DialogHeader>
           <DialogTitle className="sr-only">리뷰 사진 보기</DialogTitle>
         </DialogHeader>

@@ -102,3 +102,40 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
 
   return NextResponse.json({ ok: true });
 }
+
+// 단건 상세(관리자/작성자 허용)
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
+
+  const token = (await cookies()).get('accessToken')?.value;
+  const payload = token ? verifyAccessToken(token) : null;
+  if (!payload?.sub) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+
+  const db = await getDb();
+  const _id = new ObjectId(id);
+
+  const review = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, rating: 1, status: 1, content: 1, createdAt: 1, helpfulCount: 1, photos: 1 } });
+  if (!review) return NextResponse.json({ message: 'not found' }, { status: 404 });
+
+  // 권한: 작성자 or 관리자
+  const me = String(payload.sub);
+  const isOwner = String(review.userId) === me;
+  const isAdmin = payload?.role === 'admin' || payload?.role === 'ADMIN' || (payload as any)?.isAdmin === true || (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes('admin'));
+  if (!isOwner && !isAdmin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+
+  // 사용자 이름(선택)
+  const user = await db.collection('users').findOne({ _id: review.userId }, { projection: { name: 1, email: 1 } });
+
+  return NextResponse.json({
+    _id: String(review._id),
+    rating: review.rating ?? 0,
+    status: review.status === 'hidden' ? 'hidden' : 'visible',
+    content: review.content ?? '',
+    createdAt: review.createdAt ?? new Date(),
+    helpfulCount: review.helpfulCount ?? 0,
+    photos: Array.isArray(review.photos) ? review.photos : [],
+    userName: user?.name ?? '',
+    userEmail: user?.email ?? '',
+  });
+}

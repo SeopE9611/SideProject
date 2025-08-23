@@ -16,7 +16,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { MoreHorizontal, Search, Star, Trash2, Eye, EyeOff, Calendar, MessageSquare, TrendingUp, Award, Loader2, ThumbsUp } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Switch } from '@/components/ui/switch';
-
+import Image from 'next/image';
+import ReviewPhotoDialog from '@/app/reviews/_components/ReviewPhotoDialog';
 type Row = {
   _id: string;
   type: 'product' | 'service';
@@ -28,6 +29,7 @@ type Row = {
   userEmail?: string;
   userName?: string;
   helpfulCount?: number;
+  photos?: string[];
 };
 
 type Page = { items: Row[]; total: number };
@@ -83,6 +85,26 @@ export default function AdminReviewListClient() {
 
   // ---- 상세 모달 ----
   const [detail, setDetail] = useState<Row | null>(null);
+
+  // 상세 조회(단건) + 사진 뷰어 상태
+  const [fullDetail, setFullDetail] = useState<any | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+
+  useEffect(() => {
+    if (!detail?._id) {
+      setFullDetail(null);
+      return;
+    }
+    (async () => {
+      try {
+        const res = await fetch(`/api/reviews/${detail._id}`, { credentials: 'include' });
+        if (!res.ok) return;
+        const j = await res.json();
+        setFullDetail(j); // j.photos 기대
+      } catch {}
+    })();
+  }, [detail]);
 
   // ---- 정렬 ----
   const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'rating' | 'helpful'>('latest');
@@ -517,6 +539,28 @@ export default function AdminReviewListClient() {
                   <ThumbsUp className="h-4 w-4" />
                   도움돼요 {detail?.helpfulCount ?? 0}
                 </span>
+                {/* 사진 섹션: fullDetail.photos 우선, 없으면 detail.photos 폴백 */}
+                {Array.isArray(fullDetail?.photos ?? detail?.photos) && (fullDetail?.photos ?? detail?.photos)?.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium mb-2">사진</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {(fullDetail?.photos ?? detail?.photos)?.map((src: string, i: number) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => {
+                            setViewerIndex(i);
+                            setViewerOpen(true);
+                          }}
+                          className="relative w-16 h-16 rounded-md overflow-hidden border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
+                        >
+                          <Image src={src} alt={`review-photo-${i}`} fill className="object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -576,7 +620,7 @@ export default function AdminReviewListClient() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
+      <ReviewPhotoDialog open={viewerOpen} onOpenChange={setViewerOpen} photos={fullDetail?.photos ?? detail?.photos ?? []} initialIndex={viewerIndex} />
       {/* 더 보기 */}
       <div className="flex justify-center">
         {rows.length > 0 &&
