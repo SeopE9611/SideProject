@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
     const items: OrderResponseItem[] = await Promise.all(
       rawOrders.map(async (order) => {
         // 스트링 신청 여부
-        const appliedCount = await db.collection('stringing_applications').countDocuments({ orderId: order._id }); // ✅ 이미 ObjectId
+        const appliedCount = await db.collection('stringing_applications').countDocuments({ orderId: order._id });
 
         // 리뷰 완료 여부 계산(상품 기준)
         const productIdsRaw = (order.items ?? []).map((it) => it.productId).filter(Boolean);

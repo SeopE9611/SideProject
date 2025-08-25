@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const productId = url.searchParams.get('productId');
-    const orderId = url.searchParams.get('orderId'); // ✅ 추가
+    const orderId = url.searchParams.get('orderId');
     if (!productId) {
       return NextResponse.json({ error: 'productId required' }, { status: 400 });
     }
