@@ -94,7 +94,11 @@ export default function AdminReviewListClient() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [detailLoading, setDetailLoading] = useState(false);
-  const loadingPhotos = !!detail && !fullDetail;
+
+  // fullDetail가 오기 전에도 detail.photos가 있으면 그걸 먼저 사용
+  const photos: string[] = useMemo(() => (fullDetail?.photos ?? detail?.photos ?? []) as string[], [fullDetail, detail]);
+  // "보여줄 사진이 전혀 없을 때"만 스켈레톤 표시
+  const loadingPhotos = !!detail && !fullDetail && photos.length === 0;
 
   useEffect(() => {
     if (!detail?._id) {
@@ -578,13 +582,12 @@ export default function AdminReviewListClient() {
                     ))}
                   </div>
                 )}
-
-                {/* 실제 이미지: fullDetail.photos 우선, 없으면 detail.photos 폴백 */}
-                {Array.isArray(fullDetail?.photos ?? detail?.photos) && (fullDetail?.photos ?? detail?.photos)?.length > 0 && (
+                {/* 실제 이미지: fullDetail.photos 우선, 없으면 detail.photos */}
+                {photos.length > 0 && (
                   <>
                     <h4 className="text-sm font-medium mb-2">사진</h4>
                     <div className="flex flex-wrap gap-2">
-                      {(fullDetail?.photos ?? detail?.photos)!.map((src: string, i: number) => (
+                      {photos.map((src: string, i: number) => (
                         <button
                           key={i}
                           type="button"
