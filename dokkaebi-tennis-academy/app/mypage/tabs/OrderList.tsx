@@ -27,6 +27,9 @@ interface Order {
   userSnapshot?: { name: string; email: string };
   shippingInfo?: { deliveryMethod?: string; withStringService?: boolean };
   isStringServiceApplied?: boolean;
+  reviewAllDone?: boolean;
+  unreviewedCount?: number;
+  reviewNextTargetProductId?: string | null;
 }
 
 const fetcher = async (url: string): Promise<any> => {
@@ -222,6 +225,24 @@ export default function OrderList() {
                   </Link>
                 </Button>
 
+                {order.reviewAllDone ? (
+                  <Button size="sm" variant="secondary" disabled>
+                    리뷰 작성완료
+                  </Button>
+                ) : order.reviewNextTargetProductId ? (
+                  // 미작성 1개라면 바로 리뷰 작성 페이지로
+                  <Button size="sm" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                    <Link href={`/reviews/write?productId=${order.reviewNextTargetProductId}&orderId=${order.id}`}>리뷰 작성하기</Link>
+                  </Button>
+                ) : (
+                  // 그 외에는 상세(#reviews-cta)로
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href={`/mypage?tab=orders&orderId=${order.id}#reviews-cta`}>리뷰 작성하기</Link>
+                  </Button>
+                )}
+                {!order.reviewAllDone && (order.unreviewedCount ?? 0) > 0 && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-white/70 ring-1 ring-slate-200 text-slate-700 text-[11px] px-2 py-0.5">미작성 {order.unreviewedCount}개</span>
+                )}
                 <TooltipProvider>
                   {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' &&
                     order.shippingInfo?.withStringService &&

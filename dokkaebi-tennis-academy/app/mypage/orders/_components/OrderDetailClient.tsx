@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, CheckCircle, CreditCard, Mail, MapPin, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, Mail, MapPin, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,7 +55,7 @@ interface OrderDetail {
   paymentMethod: string;
   paymentBank: string;
   total: number;
-  items: Array<{ name: string; quantity: number; price: number; imageUrl?: string | null }>;
+  items: Array<{ id: string; name: string; quantity: number; price: number; imageUrl?: string | null }>;
   history: Array<any>;
   cancelReason?: string;
   cancelReasonDetail?: string;
@@ -83,18 +83,34 @@ export default function OrderDetailClient({ orderId }: Props) {
   // 처리 이력 데이터를 SWRInfinite로 가져오기
   const { data: historyPages, error: historyError, mutate: mutateHistory } = useSWRInfinite(getOrderHistoryKey(orderId), fetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
 
-  // 에러/로딩 처리
-  if (orderError) {
-    return <div className="text-center text-destructive">주문을 불러오는 중 오류가 발생했습니다.</div>;
-  }
-  if (!orderDetail) {
-    return <OrderDetailSkeleton />;
-  }
+  // 상품 리뷰 작성 여부 맵: { [productId]: boolean }
+  const [reviewedMap, setReviewedMap] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    const ids = (orderDetail?.items ?? []).map((it) => it.id).filter(Boolean);
+    if (!ids.length) return;
+    let aborted = false;
+    (async () => {
+      const order = orderDetail?._id;
+      const results = await Promise.allSettled(ids.map((id) => fetch(`/api/reviews/self?productId=${id}&orderId=${order}`, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null))));
+      if (aborted) return;
+      const next: Record<string, boolean> = {};
+      results.forEach((res, i) => {
+        next[ids[i]] = res.status === 'fulfilled' && !!res.value; // 존재하면 true
+      });
+      setReviewedMap(next);
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, [orderDetail?._id]);
+
+  const items = orderDetail?.items ?? [];
+  const allReviewed = items.length > 0 && items.every((it) => reviewedMap[it.id]);
+  const firstUnreviewed = items.find((it) => !reviewedMap[it.id]);
   // 편집 가능 상태: 배송 중/완료/환불/취소가 아니어야 함
   const nonEditableStatuses = ['배송중', '배송완료', '환불', '취소'];
-  const canUserEdit = !nonEditableStatuses.includes(orderDetail.status);
-
+  const canUserEdit = !nonEditableStatuses.includes(orderDetail?.status ?? '');
   // 이력 페이지를 합쳐서 하나의 배열로
   const allHistory: any[] = historyPages ? historyPages.flatMap((page) => page.history) : [];
 
@@ -108,6 +124,41 @@ export default function OrderDetailClient({ orderId }: Props) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
   };
+
+  const [serviceReview, setServiceReview] = useState<'none' | 'canWrite' | 'done' | 'unknown'>('none');
+
+  useEffect(() => {
+    const appId = orderDetail?.stringingApplicationId;
+    if (!appId) {
+      setServiceReview('none');
+      return;
+    }
+    let aborted = false;
+    (async () => {
+      try {
+        const r = await fetch(`/api/reviews/eligibility?service=stringing&applicationId=${appId}`, { credentials: 'include' });
+        if (!r.ok) {
+          setServiceReview('unknown');
+          return;
+        }
+        const j = await r.json();
+        setServiceReview(j.eligible ? 'canWrite' : j.reason === 'already' ? 'done' : 'unknown');
+      } catch {
+        setServiceReview('unknown');
+      }
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, [orderDetail?.stringingApplicationId]);
+
+  // 에러/로딩 처리
+  if (orderError) {
+    return <div className="text-center text-destructive">주문을 불러오는 중 오류가 발생했습니다.</div>;
+  }
+  if (!orderDetail) {
+    return <OrderDetailSkeleton />;
+  }
 
   return (
     <main className="container mx-auto p-6 space-y-8">
@@ -201,9 +252,52 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </Button>
                   </Link>
                 )}
+                {serviceReview === 'canWrite' && orderDetail.stringingApplicationId && (
+                  <Link href={`/reviews/write?service=stringing&applicationId=${orderDetail.stringingApplicationId}`}>
+                    <Button className="ml-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white">서비스 리뷰 작성하기</Button>
+                  </Link>
+                )}
+                {serviceReview === 'done' && (
+                  <Button variant="secondary" disabled className="ml-2">
+                    서비스 리뷰 작성완료
+                  </Button>
+                )}
               </div>
             </div>
           )}
+          <div id="reviews-cta" className="mt-4">
+            {allReviewed ? (
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 rounded-xl p-6 shadow-sm flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-6 w-6 text-emerald-600" />
+                  <div>
+                    <p className="font-semibold text-emerald-900 dark:text-emerald-100">이 주문은 리뷰를 작성하였습니다.</p>
+                    <p className="text-sm text-emerald-700 dark:text-emerald-300">내가 작성한 리뷰를 확인할 수 있어요.</p>
+                  </div>
+                </div>
+                <Link href="/mypage?tab=reviews">
+                  <Button variant="outline" className="border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20">
+                    리뷰 관리로 이동
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/30 rounded-xl p-6 shadow-sm flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Clock className="h-6 w-6 text-yellow-600" />
+                  <div>
+                    <p className="font-semibold text-yellow-900 dark:text-yellow-100">이 주문은 리뷰를 작성하지 않았습니다.</p>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.</p>
+                  </div>
+                </div>
+                {firstUnreviewed && (
+                  <Link href={`/reviews/write?productId=${firstUnreviewed.id}&orderId=${orderDetail._id}`}>
+                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">리뷰 작성하기</Button>
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
         </>
       )}
 
@@ -401,6 +495,21 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <div className="text-right">
                     <p className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(item.price)}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">소계: {formatCurrency(item.price * item.quantity)}</p>
+                    <div className="mt-2">
+                      {reviewedMap[item.id] ? (
+                        <Link href={`/products/${item.id}?tab=reviews`}>
+                          <Button size="sm" variant="secondary">
+                            리뷰 상세보기
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}>
+                          <Button size="sm" variant="outline">
+                            리뷰 작성하기
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

@@ -52,9 +52,26 @@ async function ensureReviewIndexes(db: DbAny) {
     }
   }
 
-  // 상품: user+product 유니크
-  if (!hasKey({ userId: 1, productId: 1 })) {
-    await col.createIndex({ userId: 1, productId: 1 }, { name: 'user_product_unique', unique: true, partialFilterExpression: { productId: { $exists: true } } });
+  //  기존 user+product 유니크가 있으면 제거 (주문 단위 유니크로 대체)
+  for (const i of idxs) {
+    if (i.unique && keyEq(i.key, { userId: 1, productId: 1 })) {
+      try {
+        await col.dropIndex(i.name);
+      } catch {}
+    }
+  }
+
+  // 상품: user + product + orderId 유니크 (주문 단위)
+  if (!hasKey({ userId: 1, productId: 1, orderId: 1 })) {
+    await col.createIndex(
+      { userId: 1, productId: 1, orderId: 1 },
+      {
+        name: 'user_product_order_unique',
+        unique: true,
+        // 과거 문서(orderId 없음)는 인덱싱에서 제외 → 새 정책과 충돌 안 함
+        partialFilterExpression: { productId: { $exists: true }, orderId: { $exists: true }, isDeleted: { $ne: true } },
+      }
+    );
   }
 
   // 서비스: user+service+serviceApplicationId 유니크
@@ -111,6 +128,12 @@ export async function POST(req: Request) {
   await ensureReviewIndexes(db);
 
   const body = await req.json();
+  // orderId는 쿼리나 바디 어느 쪽으로 와도 받게 처리
+  const url = new URL(req.url);
+  const queryOrderId = url.searchParams.get('orderId');
+  const orderIdRaw = body.orderId ?? queryOrderId ?? null;
+  const orderIdObj = orderIdRaw && ObjectId.isValid(orderIdRaw) ? new ObjectId(orderIdRaw) : null;
+
   const userId = new ObjectId(payload.sub);
 
   // 유저 이름 스냅샷
@@ -139,19 +162,32 @@ export async function POST(req: Request) {
     }
     const productIdObj = new ObjectId(productIdStr);
 
-    // 구매 이력(문자열/객체형 둘 다 커버)
-    const bought = await db.collection('orders').findOne({ userId, 'items.productId': { $in: [productIdStr, productIdObj] } }, { projection: { _id: 1 } });
+    // 구매 이력 검증: orderId가 넘어오면 해당 주문에 그 상품이 포함되어야 함
+    let bought: any;
+    if (orderIdObj) {
+      bought = await db.collection('orders').findOne({ _id: orderIdObj, userId, 'items.productId': { $in: [productIdStr, productIdObj] } }, { projection: { _id: 1 } });
+    } else {
+      // orderId가 없으면 기존 로직(해당 상품을 구매한 주문이 하나라도 있으면 OK)
+      bought = await db.collection('orders').findOne({ userId, 'items.productId': { $in: [productIdStr, productIdObj] } }, { projection: { _id: 1 } });
+    }
     if (!bought) return NextResponse.json({ message: 'notPurchased' }, { status: 403 });
 
-    // 중복 작성 방지
-    const already = await db.collection('reviews').findOne({
+    // 중복 작성 방지 (주문 단위): 같은 주문 + 같은 상품 + 같은 유저
+    const productCandidates = [productIdObj, productIdStr];
+    const dupFilter: any = {
       userId,
-      $or: [{ productId: productIdObj }, { productId: productIdStr }],
-    });
+      isDeleted: { $ne: true },
+      productId: { $in: productCandidates },
+    };
+    // orderId가 있을 때만 주문 단위로 막기 (과거 orderId 없이 쓴 리뷰는 새 주문을 막지 않도록)
+    if (orderIdObj) {
+      dupFilter.orderId = { $in: [orderIdObj, orderIdRaw] };
+    }
+    const already = await db.collection('reviews').findOne(dupFilter);
     if (already) return NextResponse.json({ message: 'already' }, { status: 409 });
 
     const now = new Date();
-    await db.collection('reviews').insertOne({
+    const doc: any = {
       userId,
       productId: productIdObj,
       rating,
@@ -162,7 +198,9 @@ export async function POST(req: Request) {
       userName,
       createdAt: now,
       updatedAt: now,
-    });
+    };
+    if (orderIdObj) doc.orderId = orderIdObj;
+    await db.collection('reviews').insertOne(doc);
 
     await updateProductRatingSummary(db, productIdObj, productIdStr);
     return NextResponse.json({ ok: true }, { status: 201 });
