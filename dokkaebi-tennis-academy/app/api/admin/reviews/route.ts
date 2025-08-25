@@ -16,11 +16,16 @@ export async function GET(req: Request) {
   const status = url.searchParams.get('status'); // visible|hidden
   const type = url.searchParams.get('type'); // product|service
   const q = (url.searchParams.get('q') || '').trim();
+  const withDeleted = url.searchParams.get('withDeleted'); // '1' | 'true'
 
   const db = await getDb();
   const col = db.collection('reviews');
 
   const match: any = { isDeleted: { $ne: true } };
+  // 관리자: withDeleted=1 이면 삭제 포함
+  if (withDeleted === '1' || withDeleted === 'true') {
+    delete match.isDeleted;
+  }
   if (status === 'visible' || status === 'hidden') match.status = status;
   if (q) match.content = { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
 
@@ -94,6 +99,7 @@ export async function GET(req: Request) {
         userName: '$resolvedUserName',
         helpfulCount: 1,
         photosPreview: { $slice: [{ $ifNull: ['$photos', []] }, 4] },
+        isDeleted: { $toBool: { $ifNull: ['$isDeleted', false] } },
       },
     },
   ];
@@ -112,6 +118,7 @@ export async function GET(req: Request) {
     userName: d.userName,
     helpfulCount: d.helpfulCount ?? 0,
     photos: d.photosPreview ?? [],
+    isDeleted: !!d.isDeleted,
   }));
 
   return NextResponse.json({ items: shaped, total });

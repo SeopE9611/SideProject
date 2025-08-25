@@ -26,6 +26,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         $match: {
           productId: new ObjectId(id),
           status: { $in: ['visible', 'hidden'] },
+          isDeleted: { $ne: true },
         },
       },
       { $sort: { createdAt: -1, _id: -1 } },
@@ -52,7 +53,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
 
   const agg = await db
     .collection('reviews')
-    .aggregate([{ $match: { productId: new ObjectId(id), status: 'visible' } }, { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } }])
+    .aggregate([{ $match: { productId: new ObjectId(id), status: 'visible', isDeleted: { $ne: true } } }, { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } }])
     .toArray();
 
   (product as any).reviews = reviews.map((r: any) => ({

@@ -30,6 +30,7 @@ type Row = {
   userName?: string;
   helpfulCount?: number;
   photos?: string[];
+  isDeleted?: boolean;
 };
 
 type Page = { items: Row[]; total: number };
@@ -57,6 +58,7 @@ export default function AdminReviewListClient() {
   const qDebounced = useDebounced(qRaw, 350);
   const [status, setStatus] = useState<'all' | 'visible' | 'hidden'>('all');
   const [type, setType] = useState<'all' | 'product' | 'service'>('all');
+  const [showDeleted, setShowDeleted] = useState(false);
 
   useEffect(() => {
     setSize(1);
@@ -74,9 +76,10 @@ export default function AdminReviewListClient() {
       if (qDebounced.trim()) p.set('q', qDebounced.trim());
       if (status !== 'all') p.set('status', status);
       if (type !== 'all') p.set('type', type);
+      if (showDeleted) p.set('withDeleted', '1');
       return `/api/admin/reviews?${p.toString()}`;
     },
-    [qDebounced, status, type]
+    [qDebounced, status, type, showDeleted]
   );
 
   const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite<Page>(getKey, fetcher, { revalidateFirstPage: true, revalidateOnFocus: false });
@@ -321,6 +324,12 @@ export default function AdminReviewListClient() {
             <Checkbox checked={rows.length > 0 && selected.length === rows.length} onCheckedChange={(val) => toggleSelectAll(!!val)} aria-label="전체 선택" className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
             <span className="text-xs text-slate-600">전체 선택</span>
           </div>
+          <div className="flex items-center gap-2 rounded-md border px-2 py-1.5">
+            <Checkbox id="show-deleted" checked={showDeleted} onCheckedChange={(v) => setShowDeleted(!!v)} className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
+            <label htmlFor="show-deleted" className="text-xs text-slate-600">
+              삭제 포함 보기
+            </label>
+          </div>
           <Button size="sm" variant="outline" onClick={() => setCompact((v) => !v)}>
             {compact ? '코지' : '컴팩트'}
           </Button>
@@ -399,6 +408,13 @@ export default function AdminReviewListClient() {
                   <div className={`min-w-0 ${dim}`}>
                     <div className="text-gray-900 font-medium truncate">{r.userName || r.userEmail || '-'}</div>
                     {r.userEmail && r.userName && <div className="text-[12px] text-slate-400 break-all">{r.userEmail}</div>}
+                    {r.isDeleted && (
+                      <div className="mt-0.5">
+                        <Badge variant="secondary" className="h-5">
+                          삭제됨
+                        </Badge>
+                      </div>
+                    )}
                   </div>
 
                   {/* 리뷰 내용 */}
@@ -457,6 +473,7 @@ export default function AdminReviewListClient() {
                   {/* 공개 / 비공개*/}
                   <div className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`} onClick={(e) => e.stopPropagation()}>
                     <span className="hidden xl:inline text-[12px] text-slate-600">{r.status === 'visible' ? '공개' : '비공개'}</span>
+                    {detail?.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
                     <div className="h-6 flex items-center">
                       <Switch checked={r.status === 'visible'} onCheckedChange={() => toggleVisible(r)} />
                     </div>

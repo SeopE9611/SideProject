@@ -236,9 +236,16 @@ export async function GET(req: Request) {
   const limit = Math.max(1, Math.min(50, Number(url.searchParams.get('limit') || 10)));
   const cursorB64 = url.searchParams.get('cursor');
   const withHidden = url.searchParams.get('withHidden'); // 'mask' | 'all' | null
+  const withDeleted = url.searchParams.get('withDeleted'); //  ('1' | 'true')
 
   // match 조건 구성
   const match: any = {};
+  // 공개 기본: 소프트 삭제 제외
+  match.isDeleted = { $ne: true };
+  // 관리자 + withDeleted=1 이면 삭제 포함
+  if (isAdmin && (withDeleted === '1' || withDeleted === 'true')) {
+    delete match.isDeleted;
+  }
   if (withHidden !== 'mask' && withHidden !== 'all') match.status = 'visible';
   if (type === 'product') match.productId = { $exists: true };
   if (type === 'service') match.service = { $exists: true };
