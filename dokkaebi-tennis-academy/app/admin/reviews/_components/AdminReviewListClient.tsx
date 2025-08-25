@@ -339,7 +339,7 @@ export default function AdminReviewListClient() {
                 정렬
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuContent align="end" className="w-44" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
               <DropdownMenuItem onClick={() => setSortBy('latest')}>최신순</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('rating')}>평점 높은순</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('helpful')}>도움돼요 많은순</DropdownMenuItem>
@@ -473,7 +473,7 @@ export default function AdminReviewListClient() {
                   {/* 공개 / 비공개*/}
                   <div className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`} onClick={(e) => e.stopPropagation()}>
                     <span className="hidden xl:inline text-[12px] text-slate-600">{r.status === 'visible' ? '공개' : '비공개'}</span>
-                    {detail?.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
+                    {r.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
                     <div className="h-6 flex items-center">
                       <Switch checked={r.status === 'visible'} onCheckedChange={() => toggleVisible(r)} />
                     </div>
@@ -488,12 +488,12 @@ export default function AdminReviewListClient() {
                           <span className="sr-only">메뉴 열기</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem onClick={() => setDetail(r)} className="cursor-pointer">
+                      <DropdownMenuContent align="end" className="w-44" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onPointerDown={(e) => e.stopPropagation()} onSelect={() => setDetail(r)} className="cursor-pointer">
                           <Eye className="mr-2 h-4 w-4" />
                           <span>상세 보기</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toggleVisible(r)} className="cursor-pointer">
+                        <DropdownMenuItem onPointerDown={(e) => e.stopPropagation()} onSelect={() => toggleVisible(r)} className="cursor-pointer">
                           {r.status === 'visible' ? (
                             <>
                               <EyeOff className="mr-2 h-4 w-4" />
@@ -506,7 +506,7 @@ export default function AdminReviewListClient() {
                             </>
                           )}
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onClick={() => doDelete(r._id)}>
+                        <DropdownMenuItem onPointerDown={(e) => e.stopPropagation()} className="text-red-600 focus:text-red-600 cursor-pointer" onSelect={() => doDelete(r._id)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           <span>삭제</span>
                         </DropdownMenuItem>
