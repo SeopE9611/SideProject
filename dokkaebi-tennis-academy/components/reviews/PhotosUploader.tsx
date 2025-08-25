@@ -4,8 +4,12 @@ import { useRef } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { X, ImagePlus } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
-type Photo = string; // data: URL 또는 http URL
+type Photo = string; // http URL
+
+const BUCKET = 'tennis-images'; // 상품과 동일 버킷 사용
+const FOLDER = 'reviews'; // 리뷰 전용 하위 폴더
 
 export default function PhotosUploader({ value, onChange, max = 5 }: { value: Photo[]; onChange: (next: Photo[]) => void; max?: number }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -16,23 +20,31 @@ export default function PhotosUploader({ value, onChange, max = 5 }: { value: Ph
     const remain = Math.max(0, max - (value?.length ?? 0));
     const list = Array.from(files).slice(0, remain);
 
-    const toDataUrl = (f: File) =>
-      new Promise<string>((resolve, reject) => {
-        const fr = new FileReader();
-        fr.onload = () => resolve(String(fr.result));
-        fr.onerror = reject;
-        fr.readAsDataURL(f);
-      });
-
     const results: string[] = [];
+
     for (const f of list) {
       if (!f.type.startsWith('image/')) continue;
-      if (f.size > 10 * 1024 * 1024) continue; // 10MB
-      try {
-        results.push(await toDataUrl(f));
-      } catch {}
+      if (f.size > 10 * 1024 * 1024) continue; // 10MB 제한
+
+      const ext = f.name.split('.').pop() || 'jpg';
+      const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, f, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: f.type,
+      });
+      if (upErr) {
+        // 필요시 토스트 바인딩
+        console.error('upload failed:', upErr.message);
+        continue;
+      }
+
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      if (data?.publicUrl) results.push(data.publicUrl);
     }
-    onChange([...(value || []), ...results]);
+
+    if (results.length) onChange([...(value || []), ...results]);
   };
 
   const removeAt = (idx: number) => {
@@ -57,7 +69,7 @@ export default function PhotosUploader({ value, onChange, max = 5 }: { value: Ph
         <div className="grid grid-cols-3 gap-2">
           {value.map((src, i) => (
             <div key={i} className="relative group rounded-md overflow-hidden border">
-              <Image src={src} alt={`photo-${i}`} width={160} height={160} className="object-cover w-full h-24" />
+              <Image src={src} alt={`photo-${i}`} width={160} height={160} className="object-cover w-full h-24" loading="lazy" />
               <button type="button" onClick={() => removeAt(i)} className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity" aria-label="삭제">
                 <X className="h-3 w-3" />
               </button>

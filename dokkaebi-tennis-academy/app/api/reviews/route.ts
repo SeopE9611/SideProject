@@ -6,6 +6,27 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 
 type DbAny = any;
 
+/** ---- 이미지 화이트리스트 ----
+ * 호스트/경로를 여기에 등록합니다.
+ * 필요 시 여러 항목 추가 가능.
+ */
+const ALLOWED_HOSTS = new Set<string>(['cwzpxxahtayoyqqskmnt.supabase.co']);
+const ALLOWED_PATH_PREFIXES = ['/storage/v1/object/public/tennis-images/'];
+
+/** http/https + 화이트리스트(host, path) 체크 */
+const isAllowedHttpUrl = (v: unknown): v is string => {
+  if (typeof v !== 'string') return false;
+  try {
+    const { protocol, hostname, pathname } = new URL(v);
+    const okProto = protocol === 'https:' || protocol === 'http:';
+    const okHost = ALLOWED_HOSTS.size ? ALLOWED_HOSTS.has(hostname) : true;
+    const okPath = ALLOWED_PATH_PREFIXES.length ? ALLOWED_PATH_PREFIXES.some((p) => pathname.startsWith(p)) : true;
+    return okProto && okHost && okPath;
+  } catch {
+    return false;
+  }
+};
+
 // 인덱스: 이름이 달라도 같은 키면 생성 생략, 과거 user+service 유니크는 삭제
 async function ensureReviewIndexes(db: DbAny) {
   const col = db.collection('reviews');
@@ -33,34 +54,18 @@ async function ensureReviewIndexes(db: DbAny) {
 
   // 상품: user+product 유니크
   if (!hasKey({ userId: 1, productId: 1 })) {
-    await col.createIndex(
-      { userId: 1, productId: 1 },
-      {
-        name: 'user_product_unique',
-        unique: true,
-        partialFilterExpression: { productId: { $exists: true } },
-      }
-    );
+    await col.createIndex({ userId: 1, productId: 1 }, { name: 'user_product_unique', unique: true, partialFilterExpression: { productId: { $exists: true } } });
   }
 
   // 서비스: user+service+serviceApplicationId 유니크
   if (!hasKey({ userId: 1, service: 1, serviceApplicationId: 1 })) {
-    await col.createIndex(
-      { userId: 1, service: 1, serviceApplicationId: 1 },
-      {
-        name: 'user_service_application_unique',
-        unique: true,
-        partialFilterExpression: { serviceApplicationId: { $exists: true } },
-      }
-    );
+    await col.createIndex({ userId: 1, service: 1, serviceApplicationId: 1 }, { name: 'user_service_application_unique', unique: true, partialFilterExpression: { serviceApplicationId: { $exists: true } } });
   }
 
-  // 조회 최적화: 상품 리뷰 집계/리스트용
+  // 조회 최적화
   if (!hasKey({ productId: 1, status: 1, createdAt: -1 })) {
     await col.createIndex({ productId: 1, status: 1, createdAt: -1 }, { name: 'product_list_index' });
   }
-
-  // 목록 공용 인덱스(상태 + 정렬 키)
   if (!hasKey({ status: 1, createdAt: -1, _id: -1 })) {
     await col.createIndex({ status: 1, createdAt: -1, _id: -1 }, { name: 'status_created_desc' });
   }
@@ -80,38 +85,18 @@ async function updateProductRatingSummary(db: DbAny, productIdObj: ObjectId, pro
     {
       $match: {
         status: 'visible',
-        $or: [
-          { productId: productIdObj },
-          { productId: productIdStr }, // 과거 문자열 레코드도 집계 포함 (이행기간)
-        ],
+        $or: [{ productId: productIdObj }, { productId: productIdStr }],
       },
     },
-    {
-      $group: {
-        _id: null,
-        avg: { $avg: '$rating' },
-        cnt: { $sum: 1 },
-        last: { $max: '$createdAt' },
-      },
-    },
+    { $group: { _id: null, avg: { $avg: '$rating' }, cnt: { $sum: 1 }, last: { $max: '$createdAt' } } },
   ]);
 
   const agg = await cursor.next();
   const products = db.collection('products');
 
   if (agg) {
-    await products.updateOne(
-      { _id: productIdObj },
-      {
-        $set: {
-          ratingAvg: Math.round(agg.avg * 10) / 10,
-          ratingCount: agg.cnt,
-          lastReviewAt: agg.last,
-        },
-      }
-    );
+    await products.updateOne({ _id: productIdObj }, { $set: { ratingAvg: Math.round(agg.avg * 10) / 10, ratingCount: agg.cnt, lastReviewAt: agg.last } });
   } else {
-    // 리뷰가 0개면 0으로 초기화
     await products.updateOne({ _id: productIdObj }, { $set: { ratingAvg: 0, ratingCount: 0 }, $unset: { lastReviewAt: '' } });
   }
 }
@@ -128,7 +113,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const userId = new ObjectId(payload.sub);
 
-  // 유저 이름 스냅샷 (표시에 쓰는 값)
+  // 유저 이름 스냅샷
   let userName: string | null = null;
   try {
     const user = await db.collection('users').findOne({ _id: userId }, { projection: { name: 1 } });
@@ -137,7 +122,12 @@ export async function POST(req: Request) {
 
   const rating = Number(body.rating);
   const content = String(body.content ?? '').trim();
-  const photos = Array.isArray(body.photos) ? body.photos : [];
+
+  // 사진 정제 (화이트리스트)
+  const photosInput = Array.isArray(body.photos) ? body.photos : [];
+  const cleanedList = photosInput.filter(isAllowedHttpUrl).map((s: string) => s.trim());
+  const photosClean = Array.from(new Set<string>(cleanedList)).slice(0, 5);
+
   if (!rating || rating < 1 || rating > 5) return NextResponse.json({ message: 'invalid rating' }, { status: 400 });
   if (!content) return NextResponse.json({ message: 'empty content' }, { status: 400 });
 
@@ -153,7 +143,7 @@ export async function POST(req: Request) {
     const bought = await db.collection('orders').findOne({ userId, 'items.productId': { $in: [productIdStr, productIdObj] } }, { projection: { _id: 1 } });
     if (!bought) return NextResponse.json({ message: 'notPurchased' }, { status: 403 });
 
-    // 이미 작성했는지(혼종 방지)
+    // 중복 작성 방지
     const already = await db.collection('reviews').findOne({
       userId,
       $or: [{ productId: productIdObj }, { productId: productIdStr }],
@@ -163,20 +153,18 @@ export async function POST(req: Request) {
     const now = new Date();
     await db.collection('reviews').insertOne({
       userId,
-      productId: productIdObj, // 항상 ObjectId로 저장
+      productId: productIdObj,
       rating,
       content,
-      photos,
-      status: 'visible', // 기본값
-      helpfulCount: 0, // 기본값
-      userName: userName, // 표시용 스냅샷
+      photos: photosClean,
+      status: 'visible',
+      helpfulCount: 0,
+      userName,
       createdAt: now,
       updatedAt: now,
     });
 
-    // 집계 반영
     await updateProductRatingSummary(db, productIdObj, productIdStr);
-
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 
@@ -196,7 +184,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'forbidden' }, { status: 403 });
     }
 
-    // 신청서 단위 중복 작성 방지(혼종 대비)
+    // 신청서 단위 중복 작성 방지
     const already = await db.collection('reviews').findOne({
       userId,
       service: 'stringing',
@@ -208,13 +196,13 @@ export async function POST(req: Request) {
     await db.collection('reviews').insertOne({
       userId,
       service: 'stringing',
-      serviceApplicationId: appIdObj, // 항상 ObjectId로 저장
+      serviceApplicationId: appIdObj,
       rating,
       content,
-      photos,
+      photos: photosClean,
       status: 'visible',
       helpfulCount: 0,
-      userName: userName,
+      userName,
       createdAt: now,
       updatedAt: now,
     });
@@ -251,17 +239,15 @@ export async function GET(req: Request) {
 
   // match 조건 구성
   const match: any = {};
-  if (withHidden !== 'mask' && withHidden !== 'all') {
-    match.status = 'visible';
-  }
+  if (withHidden !== 'mask' && withHidden !== 'all') match.status = 'visible';
   if (type === 'product') match.productId = { $exists: true };
   if (type === 'service') match.service = { $exists: true };
   if (rating) match.rating = Number(rating);
   if (hasPhoto) match.$expr = { $gt: [{ $size: { $ifNull: ['$photos', []] } }, 0] };
-  // 정렬 스펙 및 커서(다중 키) 구성
+
+  // 정렬/커서
   const sortSpec: any = sort === 'helpful' ? { helpfulCount: -1, _id: -1 } : sort === 'rating' ? { rating: -1, _id: -1 } : { createdAt: -1, _id: -1 };
 
-  // 커서 decoding
   let after: any = null;
   if (cursorB64) {
     try {
@@ -269,7 +255,6 @@ export async function GET(req: Request) {
     } catch {}
   }
 
-  // 커서 조건 생성: 정렬키 비교 ->  동률이면 _id 비교
   const cursorCond: any = {};
   if (after && after.id) {
     if (sort === 'helpful' && typeof after.helpfulCount === 'number') {
@@ -300,26 +285,21 @@ export async function GET(req: Request) {
     isMine: 1,
   };
 
-  // withHidden=mask 인 경우에만 “비공개” 마스킹 처리
-  project.status = 1; // 프런트 분기용
-  project.ownedByMe = 1; // 내 리뷰만 메뉴를 노출
+  project.status = 1;
+  project.ownedByMe = 1;
   if (withHidden === 'mask') {
-    // status === 'hidden' 이면서 (본인X & 관리자X)인 경우만 마스킹
-    const hiddenCond = {
-      $and: [{ $eq: ['$status', 'hidden'] }, { $not: [{ $or: ['$ownedByMe', '$adminView'] }] }],
-    };
-
+    const hiddenCond = { $and: [{ $eq: ['$status', 'hidden'] }, { $not: [{ $or: ['$ownedByMe', '$adminView'] }] }] };
     project.userName = { $cond: [hiddenCond, null, '$userName'] };
     project.content = { $cond: [hiddenCond, null, '$content'] };
     project.photos = { $cond: [hiddenCond, [], { $ifNull: ['$photos', []] }] };
-    project.masked = hiddenCond; // 프런트 오버레이 분기
+    project.masked = hiddenCond;
   } else {
     project.userName = '$userName';
     project.content = '$content';
     project.photos = { $ifNull: ['$photos', []] };
     project.masked = false;
   }
-  // 파이프라인에서 기존 $project 블록을 아래로 교체
+
   const pipeline: any[] = [
     { $match: match },
     ...(Object.keys(cursorCond).length ? [{ $match: cursorCond }] : []),
@@ -334,11 +314,8 @@ export async function GET(req: Request) {
         pipeline: [{ $project: { name: 1, images: 1 } }],
       },
     },
-
     { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
-    //  현재 로그인 사용자가 쓴 리뷰인지 여부를 서버에서 계산
     ...(currentUserId ? [{ $addFields: { isMine: { $eq: ['$userId', currentUserId] } } }] : [{ $addFields: { isMine: false } }]),
-    //  alias + 관리자 뷰 플래그
     { $addFields: { ownedByMe: '$isMine', adminView: isAdmin } },
     { $project: project },
   ];
@@ -349,16 +326,7 @@ export async function GET(req: Request) {
         $lookup: {
           from: 'review_votes',
           let: { rid: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [{ $eq: ['$reviewId', '$$rid'] }, { $eq: ['$userId', currentUserId] }],
-                },
-              },
-            },
-            { $limit: 1 },
-          ],
+          pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$reviewId', '$$rid'] }, { $eq: ['$userId', currentUserId] }] } } }, { $limit: 1 }],
           as: 'myVote',
         },
       },
