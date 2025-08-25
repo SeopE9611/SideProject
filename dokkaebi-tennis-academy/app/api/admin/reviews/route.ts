@@ -68,7 +68,7 @@ export async function GET(req: Request) {
       },
     },
 
-    // 제품명/리뷰 대상 
+    // 제품명/리뷰 대상
     {
       $addFields: {
         productNameResolved: {
@@ -93,6 +93,7 @@ export async function GET(req: Request) {
         userEmail: '$resolvedUserEmail',
         userName: '$resolvedUserName',
         helpfulCount: 1,
+        photosPreview: { $slice: [{ $ifNull: ['$photos', []] }, 4] },
       },
     },
   ];
@@ -110,6 +111,7 @@ export async function GET(req: Request) {
     userEmail: d.userEmail,
     userName: d.userName,
     helpfulCount: d.helpfulCount ?? 0,
+    photos: d.photosPreview ?? [],
   }));
 
   return NextResponse.json({ items: shaped, total });

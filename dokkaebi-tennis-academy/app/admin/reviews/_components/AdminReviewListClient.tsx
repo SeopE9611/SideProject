@@ -90,20 +90,29 @@ export default function AdminReviewListClient() {
   const [fullDetail, setFullDetail] = useState<any | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
     if (!detail?._id) {
       setFullDetail(null);
+      setDetailLoading(false);
       return;
     }
+    let aborted = false;
     (async () => {
       try {
+        setDetailLoading(true);
         const res = await fetch(`/api/reviews/${detail._id}`, { credentials: 'include' });
         if (!res.ok) return;
         const j = await res.json();
-        setFullDetail(j); // j.photos 기대
-      } catch {}
+        if (!aborted) setFullDetail(j);
+      } finally {
+        if (!aborted) setDetailLoading(false);
+      }
     })();
+    return () => {
+      aborted = true;
+    };
   }, [detail]);
 
   // ---- 정렬 ----
@@ -539,29 +548,51 @@ export default function AdminReviewListClient() {
                   <ThumbsUp className="h-4 w-4" />
                   도움돼요 {detail?.helpfulCount ?? 0}
                 </span>
-                {/* 사진 섹션: fullDetail.photos 우선, 없으면 detail.photos 폴백 */}
-                {Array.isArray(fullDetail?.photos ?? detail?.photos) && (fullDetail?.photos ?? detail?.photos)?.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="text-sm font-medium mb-2">사진</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {(fullDetail?.photos ?? detail?.photos)?.map((src: string, i: number) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => {
-                            setViewerIndex(i);
-                            setViewerOpen(true);
-                          }}
-                          className="relative w-16 h-16 rounded-md overflow-hidden border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
-                        >
-                          <Image src={src} alt={`review-photo-${i}`} fill className="object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
+
+              {/* 사진 섹션 - 레이아웃 고정 + 스켈레톤 */}
+              {(() => {
+                const photos = fullDetail?.photos ?? detail?.photos ?? [];
+                if (detailLoading && photos.length === 0) {
+                  // 로딩 스켈레톤
+                  return (
+                    <div className="pt-2">
+                      <h4 className="text-sm font-medium mb-2">사진</h4>
+                      <div className="flex flex-wrap gap-2 min-h-[72px]">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="w-16 h-16 rounded-md bg-slate-200/70 animate-pulse" />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                // 사진 있음
+                if (photos.length > 0) {
+                  return (
+                    <div className="pt-2">
+                      <h4 className="text-sm font-medium mb-2">사진</h4>
+                      <div className="flex flex-wrap gap-2 min-h-[72px]">
+                        {photos.map((src: string, i: number) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setViewerIndex(i);
+                              setViewerOpen(true);
+                            }}
+                            className="relative w-16 h-16 rounded-md overflow-hidden border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
+                          >
+                            <Image src={src} alt={`review-photo-${i}`} fill className="object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                // 사진 없음
+                return null;
+              })()}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
