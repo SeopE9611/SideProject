@@ -48,6 +48,9 @@ async function ensureIndex(db: Db, collectionName: string, keys: Keys, options: 
 }
 
 export async function ensureReviewIndexes(db: Db) {
+  // reviews 컬렉션 문서에 isDeleted가 없거나 null이면 false로 정규화
+  await db.collection('reviews').updateMany({ $or: [{ isDeleted: { $exists: false } }, { isDeleted: null }] }, { $set: { isDeleted: false } });
+
   // 레거시 유니크 인덱스 제거: (userId, productId) — 구형 정책
   try {
     await db.collection('reviews').dropIndex('uniq_user_product_active_review');
@@ -63,11 +66,11 @@ export async function ensureReviewIndexes(db: Db) {
     {
       name: 'user_product_order_unique',
       unique: true,
-      // 과거 문서(orderId 없음)는 제외 → 새 정책과 충돌 방지
+      // 과거 문서(orderId 없음) 제외 + 삭제 아님만 포함 (partial index는 $or 로)
       partialFilterExpression: {
-        isDeleted: { $ne: true },
         productId: { $exists: true },
         orderId: { $exists: true },
+        isDeleted: false,
       },
     }
   );
@@ -81,8 +84,8 @@ export async function ensureReviewIndexes(db: Db) {
       name: 'user_service_app_unique',
       unique: true,
       partialFilterExpression: {
-        isDeleted: { $ne: true },
         serviceApplicationId: { $exists: true },
+        isDeleted: false,
       },
     }
   );
@@ -107,7 +110,7 @@ export async function dedupActiveReviews(db: Db) {
     .aggregate([
       {
         $match: {
-          isDeleted: { $ne: true },
+          isDeleted: false,
           productId: { $exists: true },
           orderId: { $exists: true },
         },
@@ -137,4 +140,43 @@ export async function dedupActiveReviews(db: Db) {
   // orderId 없는 과거(레거시) 리뷰는 건드리지 않음
   // (구매 이력 매칭 불명확 -> 안전하게 보존)
   return { duplicatedGroups: dups.length, softDeleted: affected };
+}
+
+export async function rebuildProductRatingSummary(db: any) {
+  const reviews = db.collection('reviews');
+  const products = db.collection('products');
+
+  // 집계 대상: productId가 있는 리뷰가 존재하는 모든 상품
+  const pids: string[] = await reviews.distinct('productId', { productId: { $exists: true } });
+  let updated = 0;
+
+  for (const pid of pids) {
+    // 공개 리뷰만 + 소프트 삭제 제외
+    const agg = await reviews
+      .aggregate([
+        {
+          $match: {
+            productId: new ObjectId(pid),
+            isDeleted: false,
+            status: 'visible', // 공개 리뷰만 반영
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            avg: { $avg: '$rating' },
+            cnt: { $sum: 1 },
+          },
+        },
+      ])
+      .next();
+
+    const avg = agg?.avg ? Math.round(agg.avg * 10) / 10 : 0;
+    const cnt = agg?.cnt ?? 0;
+
+    // products 컬렉션의 평점 요약 필드 업데이트
+    const r = await products.updateOne({ _id: new ObjectId(String(pid)) }, { $set: { ratingAverage: avg, ratingCount: cnt } });
+    updated += r.modifiedCount;
+  }
+  return { productsUpdated: updated, totalProducts: pids.length };
 }
