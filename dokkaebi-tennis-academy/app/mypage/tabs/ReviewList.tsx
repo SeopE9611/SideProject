@@ -49,7 +49,7 @@ const fetcher = (url: string) =>
 const Stars = ({ rating }: { rating: number }) => (
   <div className="flex items-center gap-1">
     {Array.from({ length: 5 }, (_, i) => (
-      <Star key={i} className={`h-4 w-4 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} />
+      <Star key={i} className={`h-4 w-4 ${i < rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} fill="currentColor" />
     ))}
   </div>
 );
@@ -65,7 +65,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
   const { data, size, setSize, isValidating, mutate, error } = useSWRInfinite(getKey, fetcher);
   const swrItems: MineItem[] = useMemo(() => (data?.flatMap((d: any) => d.items) ?? []) as MineItem[], [data]);
-  const hasMore = Boolean(data?.[data.length - 1]?.nextCursor);
+  const lastPage = data && data.length ? data[data.length - 1] : undefined;
+  const hasMore = Boolean(lastPage?.nextCursor);
 
   // 수정 다이얼로그 상태
   const [editing, setEditing] = useState<MineItem | null>(null);
@@ -89,6 +90,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     if (!editing) return;
     // 스냅샷(롤백용)
     const snapshot = data;
+    setSaving(true);
 
     // 낙관적 변경: UI 즉시 반영 (revalidate:false)
     await mutate((pages?: any[]) => {
@@ -115,6 +117,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     } catch (e: any) {
       await mutate(() => snapshot, false);
       showErrorToast(e.message || '수정 중 오류가 발생했습니다.');
+    } finally {
+      setSaving(false);
     }
   }, [data, editing, editContent, editRating, mutate, closeEdit]);
 
@@ -187,121 +191,169 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     [data, mutate]
   );
 
-  // 렌더 데이터: SWR 성공 시 swrItems, 아니면 props.reviews(초기 표시)
-  const itemsToRender: MineItem[] = useMemo(() => {
-    if (swrItems.length) return swrItems;
-    // props.reviews를 MineItem 형태로 변환(초기 표시용)
-    if (reviews.length) {
-      return reviews.map((r) => ({
-        _id: String(r.id),
-        type: 'product',
-        productName: r.productName,
-        rating: r.rating,
-        content: r.content,
-        status: 'visible',
-        createdAt: r.date,
-      }));
-    }
-    return [];
-  }, [swrItems, reviews]);
+  // 토글/삭제 시작 시 setBusyId(it._id), finally에서 null
+  // 버튼 disabled={busyId===it._id}
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  // 빈 상태
-  if (!itemsToRender.length && !isValidating && !error) {
-    return (
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-        <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
-            <Star className="h-10 w-10 text-yellow-600 dark:text-yellow-400" />
-          </div>
-          <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">작성한 리뷰가 없습니다</h3>
-          <p className="mb-6 text-slate-600 dark:text-slate-400">구매하신 상품이나 서비스에 대한 후기를 남겨주세요!</p>
-          <Button asChild className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-            <Link href="/reviews/write" className="inline-flex items-center gap-2">
-              리뷰 작성하기
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
+  const [statusFilter, setStatusFilter] = useState<'all' | 'visible' | 'hidden'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'product' | 'service'>('all');
+
+  const itemsToRender: MineItem[] = useMemo(() => {
+    const base: MineItem[] = swrItems.length
+      ? swrItems
+      : reviews.length
+      ? reviews.map((r) => ({
+          _id: String(r.id),
+          type: 'product' as const,
+          productName: r.productName,
+          rating: r.rating,
+          content: r.content,
+          status: 'visible' as const,
+          createdAt: r.date,
+        }))
+      : [];
+    return base.filter((it) => (statusFilter === 'all' ? true : it.status === statusFilter)).filter((it) => (typeFilter === 'all' ? true : it.type === typeFilter));
+  }, [swrItems, reviews, statusFilter, typeFilter]);
 
   // 목록 렌더
   return (
     <div className="space-y-6">
-      {itemsToRender.map((it) => (
-        <Card key={it._id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
-            <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
-          </div>
+      <div className="flex justify-end gap-2">
+        {/* 상태 필터 */}
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="상태" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체 상태</SelectItem>
+            <SelectItem value="visible">공개</SelectItem>
+            <SelectItem value="hidden">비공개</SelectItem>
+          </SelectContent>
+        </Select>
+        {/* 유형 필터 */}
+        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as any)}>
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="유형" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체 유형</SelectItem>
+            <SelectItem value="product">상품</SelectItem>
+            <SelectItem value="service">서비스</SelectItem>
+          </SelectContent>
+        </Select>
+        {/* 필터 초기화 */}
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setStatusFilter('all');
+            setTypeFilter('all');
+          }}
+        >
+          필터 초기화
+        </Button>
+      </div>
 
-          <CardContent className="relative p-6 space-y-3">
-            {/* 헤더 영역 */}
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
-                  <Award className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">{it.productName ?? (it.type === 'service' ? '서비스 리뷰' : '상품 리뷰')}</h3>
-                  <div className="flex items-center gap-2">
-                    <Stars rating={it.rating} />
-                    <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">{it.rating}.0</span>
-                    {it.status === 'hidden' && (
-                      <Badge variant="secondary" className="ml-2">
-                        비공개
-                      </Badge>
-                    )}
+      {itemsToRender.length ? (
+        itemsToRender.map((it) => (
+          <Card key={it._id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+              <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
+            </div>
+
+            <CardContent className="relative p-6 space-y-3">
+              {/* 헤더 영역 */}
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
+                    <Award className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">{it.productName ?? (it.type === 'service' ? '서비스 리뷰' : '상품 리뷰')}</h3>
+                    <div className="flex items-center gap-2">
+                      <Stars rating={it.rating} />
+                      <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">{Number(it.rating).toFixed(1)}</span>
+                      {it.status === 'hidden' && (
+                        <Badge variant="secondary" className="ml-2">
+                          비공개
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      setBusyId(it._id);
+                      await toggleVisibility(it).finally(() => setBusyId(null));
+                    }}
+                    disabled={busyId === it._id}
+                  >
+                    {it.status === 'visible' ? (
+                      <>
+                        <EyeOff className="h-3.5 w-3.5 mr-1" /> 비공개
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-3.5 w-3.5 mr-1" /> 공개
+                      </>
+                    )}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => openEdit(it)}>
+                    <Edit3 className="h-3.5 w-3.5 mr-1" />
+                    수정
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={async () => {
+                      setBusyId(it._id);
+                      await removeReview(it).finally(() => setBusyId(null));
+                    }}
+                    disabled={busyId === it._id}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    삭제
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => toggleVisibility(it)}>
-                  {it.status === 'visible' ? (
-                    <>
-                      <EyeOff className="h-3.5 w-3.5 mr-1" /> 비공개
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="h-3.5 w-3.5 mr-1" /> 공개
-                    </>
-                  )}
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => openEdit(it)}>
-                  <Edit3 className="h-3.5 w-3.5 mr-1" />
-                  수정
-                </Button>
-                <Button size="sm" variant="destructive" onClick={() => removeReview(it)}>
-                  <Trash2 className="h-3.5 w-3.5 mr-1" />
-                  삭제
-                </Button>
+              {/* 본문 */}
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words">{it.content}</p>
               </div>
-            </div>
 
-            {/* 본문 */}
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-              <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words">{it.content}</p>
-            </div>
-
-            {/* 푸터 */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                <Calendar className="h-4 w-4" />
-                <span>{(it.createdAt || '').slice(0, 10)}</span>
+              {/* 푸터 */}
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                  <Calendar className="h-4 w-4" />
+                  <span>{(it.createdAt || '').slice(0, 10)}</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                  <Package className="h-3.5 w-3.5" />
+                  <span>{it.type === 'product' ? '상품 리뷰' : '서비스 리뷰'}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                <Package className="h-3.5 w-3.5" />
-                <span>{it.type === 'product' ? '상품 리뷰' : '서비스 리뷰'}</span>
-              </div>
+            </CardContent>
+          </Card>
+        ))
+      ) : (
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+          <CardContent className="p-12 text-center">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
+              <Star className="h-10 w-10 text-yellow-600 dark:text-yellow-400" />
             </div>
+            <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">작성한 리뷰가 없습니다</h3>
+            <p className="mb-6 text-slate-600 dark:text-slate-400">구매하신 상품이나 서비스에 대한 후기를 남겨주세요!</p>
           </CardContent>
         </Card>
-      ))}
+      )}
 
       {/* 더 보기 */}
       <div className="flex justify-center pt-2">
-        {hasMore ? (
+        {itemsToRender.length && hasMore ? (
           <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
             {isValidating ? (
               <>
