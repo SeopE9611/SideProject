@@ -4,19 +4,6 @@ import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
-/**
- * 복기 메모
- * - 상품: ?productId=... [&orderId=...]
- *   - orderId 있으면: 해당 주문이 내 것인지 + 해당 상품을 포함하는지 검증 후
- *     이미 리뷰 쓴 경우 => { eligible:false, reason:'already' }
- *     아니면 => { eligible:true }
- *   - orderId 없으면: 내 주문 중 해당 상품 포함 + 아직 리뷰 안 쓴 주문을 찾아
- *     => { eligible:true, suggestedOrderId:'...' }
- *     없으면 => { eligible:false, reason:'already' | 'noPurchase' }
- *
- * - 서비스: ?service=stringing [&applicationId=...]
- *   (기존 로직 유지. 아직 리뷰 안 쓴 신청서 있으면 추천)
- */
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const productId = url.searchParams.get('productId');
@@ -33,28 +20,24 @@ export async function GET(req: Request) {
   const db = await getDb();
   const userId = new ObjectId(payload.sub);
 
-  // ===== 상품 리뷰 =====
+  // 상품 모드: productId (+ 선택적으로 orderId) 가 있을 때
   if (productId) {
     if (!ObjectId.isValid(productId)) {
       return NextResponse.json({ eligible: false, reason: 'invalid' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
     }
     const productIdObj = new ObjectId(productId);
 
-    // orderId가 있으면: 그 주문이 내 것인지 + 상품 포함 여부 확인
+    // orderId가 같이 온 경우: 소유/포함/중복 체크
     if (orderId) {
       if (!ObjectId.isValid(orderId)) {
         return NextResponse.json({ eligible: false, reason: 'invalid' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
       }
       const orderIdObj = new ObjectId(orderId);
+
       const order = await db.collection('orders').findOne({ _id: orderIdObj, userId });
       if (!order) return NextResponse.json({ eligible: false, reason: 'orderNotFound' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
 
-      const hasProduct =
-        Array.isArray(order.items) &&
-        order.items.some((it: any) => {
-          const pid = it.productId ? String(it.productId) : null;
-          return pid === productId;
-        });
+      const hasProduct = Array.isArray(order.items) && order.items.some((it: any) => String(it.productId || '') === String(productId));
       if (!hasProduct) {
         return NextResponse.json({ eligible: false, reason: 'productNotInOrder' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
       }
@@ -66,18 +49,16 @@ export async function GET(req: Request) {
         orderId: orderIdObj,
         isDeleted: { $ne: true },
       });
+      if (already) return NextResponse.json({ eligible: false, reason: 'already' }, { headers: { 'Cache-Control': 'no-store' } });
 
-      if (already) {
-        return NextResponse.json({ eligible: false, reason: 'already' }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
-      }
       return NextResponse.json({ eligible: true, reason: null }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
-    // orderId 없으면: 내 주문 중 해당 상품 포함 + 아직 리뷰 안 쓴 주문 추천
+    // orderId가 없으면: 내 주문 중 아직 리뷰 안 쓴 주문을 추천
     const myOrders = await db.collection('orders').find({ userId, 'items.productId': productIdObj }).project({ _id: 1, createdAt: 1 }).sort({ createdAt: -1 }).toArray();
 
-    if (myOrders.length === 0) {
-      return NextResponse.json({ eligible: false, reason: 'noPurchase' }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+    if (!myOrders.length) {
+      return NextResponse.json({ eligible: false, reason: 'noPurchase' }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
     // 해당 상품으로 이미 리뷰한 주문 목록
@@ -90,11 +71,45 @@ export async function GET(req: Request) {
 
     // 아직 리뷰 안 쓴 최신 주문 pick
     const candidate = myOrders.find((o) => !reviewedSet.has(String(o._id)));
-    if (!candidate) {
-      return NextResponse.json({ eligible: false, reason: 'already' }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
-    }
+    if (!candidate) return NextResponse.json({ eligible: false, reason: 'already' }, { headers: { 'Cache-Control': 'no-store' } });
 
     return NextResponse.json({ eligible: true, reason: null, suggestedOrderId: String(candidate._id) }, { headers: { 'Cache-Control': 'no-store' } });
+  }
+
+  // productId 없이 orderId만 있을 때 → 주문 내 “다음 미작성 상품” 추천
+  if (orderId && !productId && !service) {
+    if (!ObjectId.isValid(orderId)) {
+      return NextResponse.json({ eligible: false, reason: 'invalid' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+    }
+    const orderIdObj = new ObjectId(orderId);
+
+    const order = await db.collection('orders').findOne({ _id: orderIdObj, userId });
+    if (!order) return NextResponse.json({ eligible: false, reason: 'orderNotFound' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+
+    const productIds: string[] = (Array.isArray(order.items) ? order.items : []).map((it: any) => (it.productId ? String(it.productId) : null)).filter((v: any): v is string => !!v);
+
+    if (!productIds.length) {
+      return NextResponse.json({ eligible: false, reason: 'noPurchase' }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    const reviewed = await db
+      .collection('reviews')
+      .find({
+        userId,
+        orderId: orderIdObj,
+        productId: { $in: productIds.map((pid) => new ObjectId(pid)) },
+        isDeleted: { $ne: true },
+      })
+      .project({ productId: 1 })
+      .toArray();
+    const reviewedSet = new Set(reviewed.map((r) => String(r.productId)));
+
+    const candidatePid = productIds.find((pid) => !reviewedSet.has(pid));
+    if (!candidatePid) {
+      return NextResponse.json({ eligible: false, reason: 'already' }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    return NextResponse.json({ eligible: true, reason: null, suggestedProductId: candidatePid, suggestedOrderId: String(orderIdObj) }, { headers: { 'Cache-Control': 'no-store' } });
   }
 
   // ===== 서비스(스트링) =====
@@ -122,7 +137,7 @@ export async function GET(req: Request) {
     // 추천 모드: 아직 리뷰 안 쓴 신청서 하나 추천
     const myApps = await db.collection('applications').find({ userId }).project({ _id: 1, createdAt: 1, desiredDateTime: 1 }).sort({ createdAt: -1 }).toArray();
 
-    if (myApps.length === 0) {
+    if (!myApps.length) {
       return NextResponse.json({ eligible: false, reason: 'notPurchased' }, { headers: { 'Cache-Control': 'no-store' } });
     }
 

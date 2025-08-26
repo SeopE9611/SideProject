@@ -30,16 +30,21 @@ export default function ReviewWritePage() {
   const sp = useSearchParams();
   const router = useRouter();
 
-  const productId = sp.get('productId');
+  // URL 파라미터 원본
+  const productIdParam = sp.get('productId');
   const orderIdParam = sp.get('orderId'); // URL에서 orderId 읽기
   const service = sp.get('service'); // 'stringing' 기대
 
-  // 모드 결정
+  // 보정된 productId / orderId (URL이 비어있어도 서버 추천으로 채움)
+  const [resolvedProductId, setResolvedProductId] = useState<string | null>(productIdParam);
+  const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(orderIdParam);
+
+  // 모드 결정: productId가 “보정된 값”으로 존재할 때 product 모드
   const mode: 'product' | 'service' | 'invalid' = useMemo(() => {
-    if (productId) return 'product';
+    if (resolvedProductId) return 'product';
     if (service === 'stringing') return 'service';
     return 'invalid';
-  }, [productId, service]);
+  }, [resolvedProductId, service]);
 
   // 폼 상태
   const [rating, setRating] = useState(5);
@@ -54,14 +59,72 @@ export default function ReviewWritePage() {
   const [apps, setApps] = useState<AppLite[]>([]);
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
 
-  // 상품 모드에서 사용할 "실제 사용할 orderId"
-  const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(orderIdParam);
+  /* -----------------------------------------------------------
+   * orderId-only 진입을 위한 선행 보정:
+   * productId가 없고 orderId만 있으면 서버에 추천을 요청하여
+   * suggestedProductId를 받아 resolvedProductId로 세팅
+   * ----------------------------------------------------------- */
+  useEffect(() => {
+    if (productIdParam || !orderIdParam || resolvedProductId) return;
 
-  /*  최초 진입 검사 (서비스는 ‘후보 있음’만 확인) */
+    let aborted = false;
+    (async () => {
+      try {
+        setState('loading');
+        const r = await fetch(`/api/reviews/eligibility?orderId=${encodeURIComponent(orderIdParam)}`, {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        if (aborted) return;
+
+        if (r.status === 401) {
+          setState('unauthorized');
+          return;
+        }
+        const d = await r.json();
+
+        if (d.eligible && d.suggestedProductId) {
+          setResolvedProductId(String(d.suggestedProductId));
+          if (d.suggestedOrderId && !resolvedOrderId) setResolvedOrderId(String(d.suggestedOrderId));
+          // 이후 (1) 일반 검사에서 ok 판정으로 이어짐
+        } else {
+          // 추천 실패(이미 작성 등)
+          setState(d.reason ?? 'invalid');
+          if (!toastLocked.current) {
+            toastLocked.current = true;
+            showErrorToast('잘못된 접근입니다.');
+          }
+        }
+      } catch {
+        setState('error');
+        if (!toastLocked.current) {
+          toastLocked.current = true;
+          showErrorToast('접근 확인 중 문제가 발생했어요.');
+        }
+      }
+    })();
+
+    return () => {
+      aborted = true;
+    };
+  }, [productIdParam, orderIdParam, resolvedProductId, resolvedOrderId]);
+
+  /* -----------------------------------------------------------
+   * 일반 eligibility 검사
+   *  - product 모드: productId(+orderId)로 검사
+   *  - service 모드: service=stringing
+   *  - invalid: orderId-only 보정 시도 중이면 기다리고, 그 외엔 오류 처리
+   * ----------------------------------------------------------- */
   useEffect(() => {
     let aborted = false;
+
     async function run() {
       setState('loading');
+
+      // invalid인데 orderId-only 보정 대기 중이라면 잠시 보류
+      if (mode === 'invalid' && orderIdParam && !resolvedProductId) {
+        return;
+      }
 
       if (mode === 'invalid') {
         setState('invalid');
@@ -72,8 +135,7 @@ export default function ReviewWritePage() {
         return;
       }
 
-      // product 모드에서는 orderId가 있으면 같이 보냄
-      const qs = mode === 'product' ? `productId=${encodeURIComponent(productId!)}${resolvedOrderId ? `&orderId=${encodeURIComponent(resolvedOrderId)}` : ''}` : `service=stringing`;
+      const qs = mode === 'product' ? `productId=${encodeURIComponent(resolvedProductId!)}${resolvedOrderId ? `&orderId=${encodeURIComponent(resolvedOrderId)}` : ''}` : `service=stringing`;
 
       try {
         const r = await fetch(`/api/reviews/eligibility?${qs}`, { credentials: 'include', cache: 'no-store' });
@@ -100,15 +162,16 @@ export default function ReviewWritePage() {
         }
       }
     }
+
     run();
     return () => {
       aborted = true;
     };
-  }, [mode, productId, resolvedOrderId]);
+  }, [mode, resolvedProductId, resolvedOrderId, orderIdParam]);
 
   /* 서비스 모드: 내 신청서 목록 + 추천값 세팅 */
   useEffect(() => {
-    if (mode != 'service') return;
+    if (mode !== 'service') return;
 
     let aborted = false;
     (async () => {
@@ -123,7 +186,7 @@ export default function ReviewWritePage() {
       setApps(formatted);
 
       try {
-        const elig = await fetch('/api/reviews/eligibility?service=stringing', { credentials: 'include' });
+        const elig = await fetch('/api/reviews/eligibility?service=stringing', { credentials: 'include', cache: 'no-store' });
         const ej = await elig.json();
         if (ej.suggestedApplicationId) {
           setSelectedAppId(ej.suggestedApplicationId);
@@ -138,7 +201,7 @@ export default function ReviewWritePage() {
     };
   }, [mode]);
 
-  /*서비스 모드: 신청서 선택 시 그 대상으로 재검사 */
+  /* 서비스 모드: 신청서 선택 시 그 대상으로 재검사 */
   useEffect(() => {
     if (mode !== 'service' || !selectedAppId) return;
 
@@ -168,7 +231,6 @@ export default function ReviewWritePage() {
 
   /* 헤더 텍스트 */
   const title = mode === 'product' ? '스트링 상품 리뷰 작성' : mode === 'service' ? '서비스 리뷰 작성' : '잘못된 접근';
-
   const subtitle = mode === 'product' ? '구매하신 스트링 상품에 대한 솔직한 후기를 남겨주세요.' : mode === 'service' ? '스트링 교체 서비스 이용 후기를 남겨주세요.' : '리뷰 작성 경로가 올바르지 않습니다.';
 
   const badge =
@@ -189,40 +251,35 @@ export default function ReviewWritePage() {
   /* 뒤로가기: replace로 히스토리 정리 */
   const goBackSmart = () => {
     const ref = typeof document !== 'undefined' ? document.referrer : '';
-    const PRODUCT_DETAIL_PATH = (id: string) => `/products/${id}`; // 필요 시 프로젝트 경로에 맞게 수정
+    const PRODUCT_DETAIL_PATH = (id: string) => `/products/${id}`;
 
     if (ref && /\/products\//.test(ref)) {
       router.replace(ref);
       return;
     }
-    if (mode === 'product' && productId) {
-      router.replace(PRODUCT_DETAIL_PATH(productId));
+    if (mode === 'product' && resolvedProductId) {
+      router.replace(PRODUCT_DETAIL_PATH(resolvedProductId));
       return;
     }
     if (mode === 'service') {
-      router.replace('/services'); // 기존 /services/stringing -> /services
+      router.replace('/services');
       return;
     }
     router.replace('/reviews');
   };
 
   /* 제출 */
-  const onSubmit = async () => {
+  const onSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault?.();
     if (locked) return;
 
-    const payload: any = {
-      rating,
-      content,
-      photos,
-    };
+    const payload: any = { rating, content, photos };
 
     if (mode === 'product') {
-      if (!productId) return;
-      payload.productId = productId;
-      // orderId를 반드시 실어 보냄 (URL 또는 추천ID)
-      if (resolvedOrderId) {
-        payload.orderId = resolvedOrderId;
-      }
+      if (!resolvedProductId) return;
+      payload.productId = resolvedProductId;
+      // 주문 단위 정책 준수: 가능하면 orderId도 함께 전송
+      if (resolvedOrderId) payload.orderId = resolvedOrderId;
     } else if (mode === 'service') {
       if (!selectedAppId) {
         showInfoToast('대상 신청서를 선택해 주세요.');
@@ -242,9 +299,8 @@ export default function ReviewWritePage() {
 
       if (r.ok) {
         showSuccessToast('후기가 등록되었습니다.');
-        if (mode === 'product' && productId) {
-          // 상품 상세의 리뷰 탭으로 이동
-          router.replace(`/products/${productId}#reviews`);
+        if (mode === 'product' && resolvedProductId) {
+          router.replace(`/products/${resolvedProductId}#reviews`);
         } else {
           router.replace('/reviews?tab=service');
         }
@@ -335,7 +391,7 @@ export default function ReviewWritePage() {
               {state === 'notPurchased' && (
                 <div>
                   구매/이용 이력이 확인되어야 작성할 수 있어요.{` `}
-                  <button type="button" onClick={() => (mode === 'product' && productId ? router.replace(`/products/${productId}`) : router.replace('/services'))} className="underline underline-offset-4 hover:opacity-80">
+                  <button type="button" onClick={() => (mode === 'product' && resolvedProductId ? router.replace(`/products/${resolvedProductId}`) : router.replace('/services'))} className="underline underline-offset-4 hover:opacity-80">
                     관련 페이지로 이동
                   </button>
                 </div>
