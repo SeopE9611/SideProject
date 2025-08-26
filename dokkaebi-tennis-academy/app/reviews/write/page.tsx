@@ -31,23 +31,31 @@ export default function ReviewWritePage() {
   const router = useRouter();
 
   const productId = sp.get('productId');
+  const orderIdParam = sp.get('orderId'); // URL에서 orderId 읽기
   const service = sp.get('service'); // 'stringing' 기대
 
+  // 모드 결정
   const mode: 'product' | 'service' | 'invalid' = useMemo(() => {
     if (productId) return 'product';
     if (service === 'stringing') return 'service';
     return 'invalid';
   }, [productId, service]);
 
+  // 폼 상태
   const [rating, setRating] = useState(5);
   const [content, setContent] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
 
+  // 접근 상태
   const [state, setState] = useState<EligState>('loading');
   const toastLocked = useRef(false);
 
+  // 서비스 모드에서 사용할 신청서 목록/ 선택
   const [apps, setApps] = useState<AppLite[]>([]);
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+
+  // 상품 모드에서 사용할 "실제 사용할 orderId"
+  const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(orderIdParam);
 
   /*  최초 진입 검사 (서비스는 ‘후보 있음’만 확인) */
   useEffect(() => {
@@ -64,7 +72,8 @@ export default function ReviewWritePage() {
         return;
       }
 
-      const qs = mode === 'product' ? `productId=${encodeURIComponent(productId!)}` : `service=stringing`;
+      // product 모드에서는 orderId가 있으면 같이 보냄
+      const qs = mode === 'product' ? `productId=${encodeURIComponent(productId!)}${resolvedOrderId ? `&orderId=${encodeURIComponent(resolvedOrderId)}` : ''}` : `service=stringing`;
 
       try {
         const r = await fetch(`/api/reviews/eligibility?${qs}`, { credentials: 'include', cache: 'no-store' });
@@ -75,12 +84,14 @@ export default function ReviewWritePage() {
           return;
         }
 
-        const data = (await r.json()) as { eligible?: boolean; reason?: string | null };
-        if (data.eligible) {
-          setState('ok');
-        } else {
-          setState((data.reason as EligState) || 'error');
+        const data = await r.json();
+
+        // 서버가 추천해준 주문ID가 있으면 저장
+        if (data.suggestedOrderId && !resolvedOrderId) {
+          setResolvedOrderId(String(data.suggestedOrderId));
         }
+
+        setState(data.eligible ? 'ok' : (data.reason as EligState) || 'error');
       } catch {
         setState('error');
         if (!toastLocked.current) {
@@ -93,7 +104,7 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [mode, productId]);
+  }, [mode, productId, resolvedOrderId]);
 
   /* 서비스 모드: 내 신청서 목록 + 추천값 세팅 */
   useEffect(() => {
@@ -127,24 +138,24 @@ export default function ReviewWritePage() {
     };
   }, [mode]);
 
-  /* 선택된 신청서가 바뀌면 그 대상으로 재검사 */
+  /*서비스 모드: 신청서 선택 시 그 대상으로 재검사 */
   useEffect(() => {
     if (mode !== 'service' || !selectedAppId) return;
 
     let aborted = false;
     (async () => {
-      setState('loading'); // setEligibility가 아니라 setState
+      setState('loading');
       const r = await fetch(`/api/reviews/eligibility?service=stringing&applicationId=${selectedAppId}`, {
         credentials: 'include',
         cache: 'no-store',
       });
       if (aborted) return;
       if (r.status === 401) {
-        setState('unauthorized'); // setEligibility -> setState
+        setState('unauthorized');
         return;
       }
       const d = await r.json();
-      setState(d.eligible ? 'ok' : d.reason ?? 'error'); // setEligibility -> setState
+      setState(d.eligible ? 'ok' : d.reason ?? 'error');
     })();
 
     return () => {
@@ -196,31 +207,29 @@ export default function ReviewWritePage() {
   };
 
   /* 제출 */
-  const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
+  const onSubmit = async () => {
     if (locked) return;
 
-    if (content.trim().length < 5) {
-      showInfoToast('후기는 5자 이상 입력해 주세요.');
-      return;
-    }
-
-    // 한 번만 보낼 payload
     const payload: any = {
       rating,
-      content: content.trim(),
+      content,
       photos,
     };
 
     if (mode === 'product') {
+      if (!productId) return;
       payload.productId = productId;
+      // orderId를 반드시 실어 보냄 (URL 또는 추천ID)
+      if (resolvedOrderId) {
+        payload.orderId = resolvedOrderId;
+      }
     } else if (mode === 'service') {
       if (!selectedAppId) {
         showInfoToast('대상 신청서를 선택해 주세요.');
         return;
       }
       payload.service = 'stringing';
-      payload.serviceApplicationId = selectedAppId; // 핵심
+      payload.serviceApplicationId = selectedAppId;
     }
 
     try {
@@ -234,9 +243,10 @@ export default function ReviewWritePage() {
       if (r.ok) {
         showSuccessToast('후기가 등록되었습니다.');
         if (mode === 'product' && productId) {
+          // 상품 상세의 리뷰 탭으로 이동
           router.replace(`/products/${productId}#reviews`);
         } else {
-          router.replace('/reviews?tab=service'); // 404 방지
+          router.replace('/reviews?tab=service');
         }
         return;
       }
@@ -246,7 +256,7 @@ export default function ReviewWritePage() {
         showInfoToast('이미 이 대상에 대한 리뷰를 작성하셨습니다.');
         return;
       }
-      if (r.status === 403) {
+      if (r.status === 404) {
         setState('notPurchased');
         showInfoToast('구매/이용 이력이 있어야 리뷰를 작성할 수 있어요.');
         return;

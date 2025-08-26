@@ -4,7 +4,6 @@ import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
-// DB 문서 타입 (Mongo 표현)
 type OrderDoc = {
   _id: ObjectId;
   userId: ObjectId;
@@ -15,132 +14,109 @@ type OrderDoc = {
     productId?: ObjectId | string;
     name: string;
     price: number;
-    imageUrl?: string | null;
     quantity: number;
+    imageUrl?: string | null;
   }>;
-  shippingInfo?: {
-    deliveryMethod?: string;
-    withStringService?: boolean;
-  };
+  shippingInfo?: any;
+  paymentStatus?: string;
+  history?: any[];
 };
 
-// API 응답 타입 (클라이언트 표현)
-type OrderResponseItem = {
-  id: string; // _id(ObjectId) -> string
-  date: string; // createdAt(Date) ->  ISO string
+/** 클라이언트로 내려줄 형태 */
+type OrderListItem = {
+  id: string;
+  date: string;
   status: string;
-  totalPrice: number;
-  items: Array<{ name: string; quantity: number; price: number; imageUrl?: string | null }>;
-  shippingInfo?: { deliveryMethod?: string; withStringService?: boolean };
-  isStringServiceApplied: boolean;
-  reviewAllDone?: boolean;
-  unreviewedCount?: number;
-  reviewNextTargetProductId?: string | null;
+  total: number;
+  items: Array<{ name: string; price: number; quantity: number; imageUrl?: string | null }>;
+  shippingInfo: any;
+  paymentStatus: string;
+  // 리뷰 관련
+  reviewAllDone: boolean;
+  unreviewedCount: number;
+  reviewNextTargetProductId: string | null;
 };
 
+/** 전체 응답 */
 type OrderResponse = {
-  items: OrderResponseItem[];
+  items: OrderListItem[];
   total: number;
 };
 
-// DB -> 응답 매핑
-function mapOrderDocToResponse(order: OrderDoc, appliedCount: number, reviewAllDone: boolean, extras?: { unreviewedCount?: number; reviewNextTargetProductId?: string | null }): OrderResponseItem {
-  return {
-    id: order._id.toHexString(),
-    date: order.createdAt.toISOString(),
-    status: order.status,
-    totalPrice: order.totalPrice ?? 0,
-    items: order.items.map((it) => ({
-      name: it.name,
-      quantity: it.quantity,
-      price: it.price ?? 0,
-      imageUrl: it.imageUrl ?? null,
-    })),
-    shippingInfo: order.shippingInfo ?? {},
-    isStringServiceApplied: appliedCount > 0,
-    reviewAllDone,
-    unreviewedCount: extras?.unreviewedCount ?? 0,
-    reviewNextTargetProductId: extras?.reviewNextTargetProductId ?? null,
-  };
-}
-
-//  GET 요청 처리 함수 (로그인된 유저의 주문 내역 조회)
 export async function GET(req: NextRequest) {
-  // 인증
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const payload = verifyAccessToken(token);
-  if (!payload?.sub) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-  const userId = payload.sub;
-
-  // 페이징
-  const url = new URL(req.url);
-  const page = parseInt(url.searchParams.get('page') || '1', 10);
-  const limit = parseInt(url.searchParams.get('limit') || '10', 10);
-  const skip = (page - 1) * limit;
-
   try {
+    // 인증
+    const token = (await cookies()).get('accessToken')?.value;
+    if (!token) return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+    const payload = verifyAccessToken(token);
+    if (!payload) return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+
+    const url = new URL(req.url);
+    const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
+    const limit = Math.min(20, Math.max(1, Number(url.searchParams.get('limit') || '10')));
+    const skip = (page - 1) * limit;
+
     const client = await clientPromise;
     const db = client.db();
+    const userId = new ObjectId(payload.sub);
 
-    // 총합
-    const total = await db.collection<OrderDoc>('orders').countDocuments({ userId: new ObjectId(userId) });
+    // 내 주문 조회 (최신순)
+    const [orders, total] = await Promise.all([db.collection<OrderDoc>('orders').find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(), db.collection('orders').countDocuments({ userId })]);
 
-    // 목록 조회
-    const rawOrders = await db
-      .collection<OrderDoc>('orders')
-      .find({ userId: new ObjectId(userId) })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .toArray();
+    // 각 주문별 리뷰 진행상태 계산
+    const list: OrderListItem[] = [];
+    for (const order of orders) {
+      const items = Array.isArray(order.items) ? order.items : [];
 
-    // 항목별 계산/매핑
-    const items: OrderResponseItem[] = await Promise.all(
-      rawOrders.map(async (order) => {
-        // 스트링 신청 여부
-        const appliedCount = await db.collection('stringing_applications').countDocuments({ orderId: order._id });
+      // 이 주문에서 리뷰 대상이 될 상품 ID 목록 (문자열로 정규화)
+      const productIds = items.map((it) => (it.productId ? String(it.productId) : null)).filter((v): v is string => !!v);
 
-        // 리뷰 완료 여부 계산(상품 기준)
-        const productIdsRaw = (order.items ?? []).map((it) => it.productId).filter(Boolean);
-        const productIds = [...new Set(productIdsRaw.map((x) => String(x!)))]; // 문자열로 통일
+      // 이미 작성한 리뷰 (user+order + 해당 productIds)
+      let reviewedSet = new Set<string>();
+      if (productIds.length) {
+        const reviewed = await db
+          .collection('reviews')
+          .find({
+            userId,
+            orderId: order._id,
+            productId: { $in: productIds.map((s) => new ObjectId(s)) },
+            isDeleted: { $ne: true },
+          })
+          .project({ productId: 1 })
+          .toArray();
+        reviewedSet = new Set(reviewed.map((r: any) => String(r.productId)));
+      }
 
-        let reviewAllDone = false;
-        let unreviewedCount = 0;
-        let reviewNextTargetProductId: string | null = null;
-        if (productIds.length > 0) {
-          const reviewed = await db
-            .collection('reviews')
-            .find({
-              userId: new ObjectId(userId),
-              orderId: new ObjectId(order._id),
-              productId: { $in: productIds.map((id) => new ObjectId(id)) },
-              isDeleted: { $ne: true },
-            })
-            .project({ productId: 1 })
-            .toArray();
+      const unreviewedIds = productIds.filter((pid) => !reviewedSet.has(pid));
+      const unreviewedCount = unreviewedIds.length;
+      const reviewNextTargetProductId = unreviewedIds.length ? unreviewedIds[0] : null;
+      const reviewAllDone = productIds.length > 0 && unreviewedCount === 0;
 
-          const reviewedSet = new Set(reviewed.map((r: any) => String(r.productId)));
-          reviewAllDone = productIds.every((id) => reviewedSet.has(id));
-          const unreviewedIds = productIds.filter((id) => !reviewedSet.has(id));
-          unreviewedCount = unreviewedIds.length;
-          reviewNextTargetProductId = unreviewedIds[0] ?? null;
-        }
+      list.push({
+        id: String(order._id),
+        date: order.createdAt ? new Date(order.createdAt).toISOString() : '',
+        status: order.status || '',
+        total: order.totalPrice || 0,
+        items: items.map((it) => ({
+          name: it.name,
+          price: it.price,
+          quantity: it.quantity,
+          imageUrl: it.imageUrl ?? null,
+        })),
+        shippingInfo: order.shippingInfo ?? {},
+        paymentStatus: order.paymentStatus || '결제대기',
+        reviewAllDone,
+        unreviewedCount,
+        reviewNextTargetProductId,
+      });
+    }
 
-        // 최종 매핑
-        return mapOrderDocToResponse(order, appliedCount, reviewAllDone, {
-          unreviewedCount,
-          reviewNextTargetProductId,
-        });
-      })
+    return NextResponse.json(
+      { items: list, total } satisfies OrderResponse,
+      { headers: { 'Cache-Control': 'no-store' } } // 캐시 금지 (바로 갱신 반영)
     );
-
-    // 응답
-    return NextResponse.json({ items, total } satisfies OrderResponse);
   } catch (err) {
     console.error('ORDER_LIST_ERR', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store' } });
   }
 }
