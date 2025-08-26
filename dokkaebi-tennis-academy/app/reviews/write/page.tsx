@@ -298,23 +298,15 @@ export default function ReviewWritePage() {
   // 남은 미작성 개수
   const remainingCount = useMemo(() => orderItems?.filter((x) => !x.reviewed && x.productId !== resolvedProductId).length ?? 0, [orderItems, resolvedProductId]);
 
-  //뒤로가기: replace로 히스토리 정리
-  const goBackSmart = () => {
-    const ref = typeof document !== 'undefined' ? document.referrer : '';
-    const PRODUCT_DETAIL_PATH = (id: string) => `/products/${id}`;
-    if (ref && /\/products\//.test(ref)) {
-      router.replace(ref);
-      return;
-    }
+  // 제품 상세/서비스 소개로 이동 (라벨 명확화)
+  const goPrimary = () => {
     if (mode === 'product' && resolvedProductId) {
-      router.replace(PRODUCT_DETAIL_PATH(resolvedProductId));
-      return;
-    }
-    if (mode === 'service') {
+      router.replace(`/products/${resolvedProductId}`);
+    } else if (mode === 'service') {
       router.replace('/services');
-      return;
+    } else {
+      router.replace('/reviews');
     }
-    router.replace('/reviews');
   };
 
   // 제출
@@ -494,17 +486,14 @@ export default function ReviewWritePage() {
 
           {/* 액션 바 */}
           <div className="flex items-center justify-end gap-2">
-            <Button type="button" variant="outline" onClick={goBackSmart} className="rounded-xl shadow-sm">
-              취소
+            <Button type="button" variant="outline" onClick={goPrimary} className="rounded-xl shadow-sm">
+              {mode === 'product' ? '제품 상세 이동' : mode === 'service' ? '서비스 소개' : '리뷰 홈'}
             </Button>
-
+            <Button type="button" variant="secondary" onClick={() => router.replace('/mypage?tab=orders')} className="rounded-xl shadow-sm">
+              주문 목록으로
+            </Button>
             <Button type="submit" disabled={locked} aria-disabled={locked} className="rounded-xl shadow-sm">
               후기 등록하기
-            </Button>
-
-            {/* 다음/목록 버튼 - 스크롤 없이 자연 이동 */}
-            <Button type="button" variant="secondary" onClick={() => (nextUnreviewed ? switchProduct(nextUnreviewed.productId) : router.replace('/mypage?tab=orders'))} className="rounded-xl shadow-sm">
-              {nextUnreviewed ? '다음 상품' : '주문 목록으로'}
             </Button>
           </div>
 
