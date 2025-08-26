@@ -7,6 +7,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const productId = url.searchParams.get('productId');
+  const orderId = url.searchParams.get('orderId');
   const service = url.searchParams.get('service');
   const applicationId = url.searchParams.get('applicationId');
 
@@ -18,25 +19,57 @@ export async function GET(req: Request) {
   const db = await getDb();
   const userId = new ObjectId(payload.sub);
 
-  // 상품
+  // 상품 리뷰 eligibility (주문 단위 정책 반영)
   if (productId) {
-    if (!ObjectId.isValid(productId)) {
-      return NextResponse.json({ eligible: false, reason: 'invalid' }, { status: 400 });
+    // 주문 유효성: orderId가 있으면 해당 주문이 내 것인지/해당 상품을 포함하는지 검증
+    if (orderId) {
+      const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId), userId });
+      if (!order) return NextResponse.json({ eligible: false, reason: 'orderNotFound' }, { status: 404 });
+
+      // 주문 내 상품 스냅샷에서 productId 포함 여부 확인
+      const hasProduct = Array.isArray(order.items) && order.items.some((it: any) => String(it.productId) === productId);
+      if (!hasProduct) return NextResponse.json({ eligible: false, reason: 'productNotInOrder' }, { status: 400 });
+
+      // 동일 (userId, productId, orderId) 리뷰 존재 여부 -> 있으면 불가
+      const already = await db.collection('reviews').findOne({
+        isDeleted: { $ne: true },
+        userId,
+        productId: new ObjectId(productId),
+        orderId: new ObjectId(orderId),
+      });
+      if (already) return NextResponse.json({ eligible: false, reason: 'already' });
+
+      return NextResponse.json({ eligible: true, reason: null, suggestedOrderId: orderId });
     }
-    const productIdObj = new ObjectId(productId);
 
-    // 구매 이력
-    const bought = await db.collection('orders').findOne({ userId, 'items.productId': { $in: [productId, productIdObj] } }, { projection: { _id: 1 } });
-    if (!bought) return NextResponse.json({ eligible: false, reason: 'notPurchased' });
+    // orderId가 없는 경우(상품 화면 등): “내 주문 중 아직 리뷰하지 않은 주문 하나”를 제안
+    // 정책상 주문 단위 리뷰이므로, 사용자가 선택할 수 있도록 가장 최근 미작성 주문 추천
+    const myOrdersWithProduct = await db
+      .collection('orders')
+      .find({ userId, 'items.productId': new ObjectId(productId) })
+      .project({ _id: 1, createdAt: 1 })
+      .sort({ createdAt: -1 })
+      .toArray();
 
-    // 이미 작성
-    const already = await db.collection('reviews').findOne({
-      userId,
-      $or: [{ productId: productIdObj }, { productId }],
+    if (myOrdersWithProduct.length === 0) {
+      return NextResponse.json({ eligible: false, reason: 'noPurchase' });
+    }
+
+    const reviewed = await db
+      .collection('reviews')
+      .find({ isDeleted: { $ne: true }, userId, productId: new ObjectId(productId), orderId: { $exists: true } })
+      .project({ orderId: 1 })
+      .toArray();
+    const reviewedSet = new Set(reviewed.map((r) => String(r.orderId)));
+
+    const candidate = myOrdersWithProduct.find((o: any) => !reviewedSet.has(String(o._id)));
+    if (!candidate) return NextResponse.json({ eligible: false, reason: 'already' });
+
+    return NextResponse.json({
+      eligible: true,
+      reason: null,
+      suggestedOrderId: String(candidate._id), //  프론트에서 이 orderId로 self API 호출/작성 유도 가능
     });
-    if (already) return NextResponse.json({ eligible: false, reason: 'already' });
-
-    return NextResponse.json({ eligible: true, reason: null });
   }
 
   // 서비스(스트링)
