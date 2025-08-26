@@ -70,56 +70,6 @@ export default function MypageClient({ user }: Props) {
   const orderId = searchParams.get('orderId');
   const selectedApplicationId = searchParams.get('id');
 
-  // 임시 리뷰 데이터
-  const reviews = [
-    {
-      id: 1,
-      productName: '루키론 프로 스트링',
-      rating: 5,
-      date: '2023-04-20',
-      content: '정말 좋은 스트링입니다. 내구성이 뛰어나고 타구감도 좋습니다.',
-    },
-    {
-      id: 2,
-      productName: '바볼랏 RPM 블라스트',
-      rating: 4,
-      date: '2023-03-15',
-      content: '스핀이 잘 걸리고 컨트롤이 좋습니다. 다만 내구성이 조금 아쉽습니다.',
-    },
-  ];
-
-  // 임시 Q&A 데이터
-  const qnas = [
-    {
-      id: 1,
-      title: '스트링 장착 서비스 문의',
-      date: '2023-05-05',
-      status: '답변 완료',
-      category: '서비스',
-    },
-    {
-      id: 2,
-      title: '주문 취소 가능한가요?',
-      date: '2023-04-28',
-      status: '답변 대기',
-      category: '주문/결제',
-    },
-  ];
-
-  // 임시 위시리스트 데이터
-  const wishlist = [
-    {
-      id: 3,
-      name: '윌슨 NXT 파워',
-      price: 28000,
-    },
-    {
-      id: 5,
-      name: '헤드 링키 스트링',
-      price: 22000,
-    },
-  ];
-
   return (
     <AuthGuard>
       <div className="min-h-full bg-gradient-to-br from-blue-50 via-purple-50 to-teal-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-950">
@@ -307,7 +257,7 @@ export default function MypageClient({ user }: Props) {
                     </CardHeader>
                     <CardContent className="p-6">
                       <Suspense fallback={<ReviewListSkeleton />}>
-                        <ReviewList reviews={reviews} />
+                        <ReviewList />
                       </Suspense>
                     </CardContent>
                   </Card>
@@ -329,7 +279,7 @@ export default function MypageClient({ user }: Props) {
                     </CardHeader>
                     <CardContent className="p-6">
                       <Suspense fallback={<QnAListSkeleton />}>
-                        <QnAList qnas={qnas} />
+                        <QnAList />
                       </Suspense>
                     </CardContent>
                   </Card>
