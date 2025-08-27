@@ -180,6 +180,49 @@ export default function AdminReviewListClient() {
     }
   };
 
+  // 선택 공개/비공개 (일괄) — 낙관적 업데이트 + 실패 시 롤백
+  const doBulkUpdateStatus = async (next: 'visible' | 'hidden') => {
+    if (!selected.length) return;
+
+    // 낙관적 업데이트: 현재 페이지들에서 선택된 항목들의 status만 먼저 바꿔 그림
+    const snapshot = data;
+    await mutate(
+      (pages?: Page[]) =>
+        pages
+          ? pages.map((p) => ({
+              ...p,
+              items: p.items.map((r) => (selected.includes(r._id) ? { ...r, status: next } : r)),
+            }))
+          : pages,
+      false
+    );
+
+    // 실제 서버 PATCH — 5개씩 동시 처리(서버 부하 방지)
+    const CHUNK = 5;
+    try {
+      for (let i = 0; i < selected.length; i += CHUNK) {
+        const part = selected.slice(i, i + CHUNK);
+        await Promise.all(
+          part.map(async (id) => {
+            const res = await fetch(`/api/reviews/${id}`, {
+              method: 'PATCH',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: next }),
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          })
+        );
+      }
+      setSelected([]);
+      showSuccessToast(next === 'hidden' ? '선택 항목을 비공개로 변경했습니다.' : '선택 항목을 공개로 변경했습니다.');
+    } catch (e) {
+      // 3) 실패 시 롤백
+      await mutate(() => snapshot, false);
+      showErrorToast('일부 항목 상태 변경에 실패했습니다.');
+    }
+  };
+
   // ---- 공개/비공개 토글(낙관적) ----
   const toggleVisible = async (it: Row) => {
     const next = it.status === 'visible' ? 'hidden' : 'visible';
@@ -535,6 +578,18 @@ export default function AdminReviewListClient() {
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => setSelected([])} className="h-8 px-3 text-emerald-900 hover:bg-white/70">
                 해제
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => doBulkUpdateStatus('visible')} className="h-8 px-3" aria-label="선택 공개로 변경" title="선택한 리뷰를 공개로 변경">
+                <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 11a4 4 0 110-8 4 4 0 010 8z" />
+                </svg>
+                선택 공개
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => doBulkUpdateStatus('hidden')} className="h-8 px-3" aria-label="선택 비공개로 변경" title="선택한 리뷰를 비공개로 변경">
+                <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M2 12s3-7 10-7a9.9 9.9 0 018.06 4.09l1.41-1.41 1.41 1.41-19 19-1.41-1.41L4.1 19.94A12.14 12.14 0 012 12zm10 5a5 5 0 005-5 4.93 4.93 0 00-.79-2.69l-6.9 6.9A4.93 4.93 0 0012 17z" />
+                </svg>
+                선택 비공개
               </Button>
               <Button variant="destructive" size="sm" onClick={doBulkDelete} className="h-8 px-3">
                 선택 삭제
