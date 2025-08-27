@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 
 /* 날짜 YYYY-MM-DD 포맷 */
 function fmt(dateStr?: string) {
@@ -378,6 +379,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
               <div className="mt-3">
                 <Label>사진 (선택, 최대 5장)</Label>
                 <PhotosUploader value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} max={5} />
+                <PhotosReorderGrid value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} />
               </div>
             </div>
           </div>

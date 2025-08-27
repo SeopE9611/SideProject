@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Star, Calendar, Edit3, Trash2, Eye, EyeOff, Loader2, Package, Award } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/lib/toast';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
+import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 
 /*  API 타입 */
 type ApiMineItem = {
@@ -515,6 +516,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             <div>
               <div className="text-sm mb-2">사진 (선택, 최대 5장)</div>
               <PhotosUploader key={editing?._id ?? 'new'} value={editPhotos} onChange={setEditPhotos} max={5} />
+              <PhotosReorderGrid value={editPhotos} onChange={setEditPhotos} />
             </div>
           </div>
 

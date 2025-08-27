@@ -8,6 +8,7 @@ import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import { Label } from '@/components/ui/label';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
 import NextImage from 'next/image';
+import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 
 /* ---- 별점 ---- */
 function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: number) => void; disabled?: boolean }) {
@@ -464,6 +465,7 @@ export default function ReviewWritePage() {
                 <div className="mt-3">
                   <Label>사진 (선택, 최대 5장)</Label>
                   <PhotosUploader value={photos} onChange={setPhotos} max={5} />
+                  <PhotosReorderGrid value={photos} onChange={setPhotos} disabled={state !== 'ok'} />
                 </div>
               </div>
             </div>

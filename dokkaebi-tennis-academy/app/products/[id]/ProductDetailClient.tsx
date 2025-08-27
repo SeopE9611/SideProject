@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
+import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   const [quantity, setQuantity] = useState(1);
@@ -922,6 +923,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="mt-3">
                     <Label>사진 (선택, 최대 5장)</Label>
                     <PhotosUploader value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} max={5} />
+                    <PhotosReorderGrid value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} />
                   </div>
                 </div>
               </div>
