@@ -64,6 +64,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     content: z.string().trim().min(5, '내용은 5자 이상').max(2000, '2000자 이내').optional(),
     rating: z.number().int().min(1).max(5).optional(),
     status: z.enum(['visible', 'hidden']).optional(),
+    visibility: z.enum(['public', 'private']).optional(),
     photos: z.array(z.string()).max(5).optional(),
   });
 
@@ -77,7 +78,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (typeof body.content === 'string') $set.content = body.content.trim();
   if (typeof body.rating === 'number') $set.rating = Math.max(1, Math.min(5, body.rating));
   if (body.status === 'visible' || body.status === 'hidden') $set.status = body.status;
-
+  if (body.visibility) {
+    $set.status = body.visibility === 'public' ? 'visible' : 'hidden';
+  }
   if (Array.isArray(body.photos)) {
     const cleanedList = body.photos.filter(isAllowedHttpUrl).map((s: string) => s.trim());
     $set.photos = Array.from(new Set<string>(cleanedList)).slice(0, 5);
@@ -96,8 +99,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 }
 
 // 삭제: 소프트 삭제 + 집계 보정
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  const { id } = await params;
+export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
   const token = (await cookies()).get('accessToken')?.value;
