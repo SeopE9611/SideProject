@@ -257,12 +257,20 @@ export default function AdminReviewListClient() {
       ))}
     </div>
   );
-  const splitDate = (iso: string) => {
-    const d = new Date(iso);
-    const date = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
-    const time = new Intl.DateTimeFormat('ko-KR', { hour: '2-digit', minute: '2-digit' }).format(d);
-    return { date, time };
-  };
+  function safeSplitDate(input?: string | number | Date) {
+    try {
+      const d = new Date(input as any);
+      if (Number.isNaN(d.getTime())) return { date: '-', time: '-' };
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mi = String(d.getMinutes()).padStart(2, '0');
+      return { date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${mi}` };
+    } catch {
+      return { date: '-', time: '-' };
+    }
+  }
   const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200');
   const typeLabel = (t: Row['type']) => (t === 'product' ? '상품 리뷰' : '서비스 리뷰');
 
@@ -425,7 +433,7 @@ export default function AdminReviewListClient() {
             sortedRows.map((r) => {
               const isSel = selected.includes(r._id);
               const dim = r.status === 'hidden' ? 'opacity-60' : '';
-              const { date, time } = splitDate(r.createdAt);
+              const { date, time } = safeSplitDate(r.createdAt);
 
               return (
                 <div
@@ -443,6 +451,7 @@ export default function AdminReviewListClient() {
                   {/* 체크박스 */}
                   <div className={`self-start md:self-center ${dim}`}>
                     <Checkbox
+                      data-cy="row-checkbox"
                       checked={isSel}
                       onClick={(e) => e.stopPropagation()}
                       onCheckedChange={(v) => toggleSelectOne(r._id, !!v)}
@@ -579,13 +588,13 @@ export default function AdminReviewListClient() {
               <Button variant="ghost" size="sm" onClick={() => setSelected([])} className="h-8 px-3 text-emerald-900 hover:bg-white/70">
                 해제
               </Button>
-              <Button variant="secondary" size="sm" onClick={() => doBulkUpdateStatus('visible')} className="h-8 px-3" aria-label="선택 공개로 변경" title="선택한 리뷰를 공개로 변경">
+              <Button data-cy="bulk-visible" variant="secondary" size="sm" onClick={() => doBulkUpdateStatus('visible')} className="h-8 px-3" aria-label="선택 공개로 변경" title="선택한 리뷰를 공개로 변경">
                 <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 11a4 4 0 110-8 4 4 0 010 8z" />
                 </svg>
                 선택 공개
               </Button>
-              <Button variant="outline" size="sm" onClick={() => doBulkUpdateStatus('hidden')} className="h-8 px-3" aria-label="선택 비공개로 변경" title="선택한 리뷰를 비공개로 변경">
+              <Button data-cy="bulk-hidden" variant="outline" size="sm" onClick={() => doBulkUpdateStatus('hidden')} className="h-8 px-3" aria-label="선택 비공개로 변경" title="선택한 리뷰를 비공개로 변경">
                 <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d="M2 12s3-7 10-7a9.9 9.9 0 018.06 4.09l1.41-1.41 1.41 1.41-19 19-1.41-1.41L4.1 19.94A12.14 12.14 0 012 12zm10 5a5 5 0 005-5 4.93 4.93 0 00-.79-2.69l-6.9 6.9A4.93 4.93 0 0012 17z" />
                 </svg>
@@ -613,7 +622,7 @@ export default function AdminReviewListClient() {
                 </Badge>
                 <Badge variant={detail.status === 'visible' ? 'default' : 'secondary'}>{detail.status === 'visible' ? '공개' : '비공개'}</Badge>
                 {(() => {
-                  const dt = splitDate(detail.createdAt);
+                  const dt = safeSplitDate(detail.createdAt);
                   return (
                     <span className="text-sm text-gray-500 inline-flex items-center gap-1">
                       <Calendar className="h-3.5 w-3.5" />
