@@ -60,6 +60,13 @@ export default function ReviewWritePage() {
   const [content, setContent] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
 
+  // E2E에서만(쿠키 __e2e=1) 최초 진입 시 샘플 이미지 3장 시드
+  useEffect(() => {
+    if (typeof document !== 'undefined' && document.cookie.includes('__e2e=1') && photos.length === 0) {
+      setPhotos(['https://picsum.photos/id/10/200/200', 'https://picsum.photos/id/11/200/200', 'https://picsum.photos/id/12/200/200']);
+    }
+  }, [photos.length, setPhotos]);
+
   // 접근 상태
   const [state, setState] = useState<EligState>('loading');
   const toastLocked = useRef(false);
@@ -494,7 +501,7 @@ export default function ReviewWritePage() {
             <Button type="button" variant="secondary" onClick={() => router.replace('/mypage?tab=orders')} className="rounded-xl shadow-sm">
               주문 목록으로
             </Button>
-            <Button type="submit" disabled={locked} aria-disabled={locked} className="rounded-xl shadow-sm">
+            <Button data-cy="submit-review" type="submit" disabled={locked} aria-disabled={locked} className="rounded-xl shadow-sm">
               후기 등록하기
             </Button>
           </div>

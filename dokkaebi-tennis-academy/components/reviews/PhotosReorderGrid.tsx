@@ -21,9 +21,10 @@ export default function PhotosReorderGrid({ value, onChange, disabled, className
   const colsClass = columns === 4 ? 'grid-cols-4' : 'grid-cols-5';
 
   return (
-    <ul className={`grid ${colsClass} gap-2 mt-2 ${className ?? ''}`}>
+    <ul className={`grid ${colsClass} gap-2 mt-2 ${className ?? ''}`} data-cy="photos-grid">
       {value.map((src, idx) => (
         <li
+          data-cy="photo-card"
           key={`${src}-${idx}`}
           draggable={!disabled}
           onDragStart={() => {
