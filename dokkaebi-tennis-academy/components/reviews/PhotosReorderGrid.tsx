@@ -27,6 +27,9 @@ export default function PhotosReorderGrid({ value, onChange, disabled, className
           data-cy="photo-card"
           key={`${src}-${idx}`}
           draggable={!disabled}
+          onDragEnd={() => {
+            dragFrom.current = null;
+          }}
           onDragStart={() => {
             if (!disabled) dragFrom.current = idx;
           }}
