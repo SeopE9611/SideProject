@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2 } from 'lucide-react';
+import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Feather, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,6 +24,113 @@ import PhotosUploader from '@/components/reviews/PhotosUploader';
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 
 export default function ProductDetailClient({ product }: { product: any }) {
+  // ====== 사양/브랜드/색상/게이지 매핑 ======
+  const BRAND_MAP: Record<string, string> = {
+    luxilon: '루키론',
+    technifibre: '테크니파이버',
+    wilson: '윌슨',
+    babolat: '바볼랏',
+    head: '헤드',
+    yonex: '요넥스',
+    solinco: '소링크',
+    dunlop: '던롭',
+    gamma: '감마',
+    prince: '프린스',
+    kirschbaum: '키르쉬바움',
+    gosen: '고센',
+  };
+
+  const MATERIAL_MAP: Record<string, string> = {
+    polyester: '폴리에스터',
+    multifilament: '멀티필라멘트',
+    natural_gut: '천연 거트',
+    synthetic_gut: '합성 거트',
+    hybrid: '하이브리드',
+  };
+
+  const COLOR_MAP: Record<string, string> = {
+    black: '블랙',
+    white: '화이트',
+    red: '레드',
+    blue: '블루',
+    yellow: '옐로우',
+    green: '그린',
+    orange: '오렌지',
+    silver: '실버',
+    gold: '골드',
+    transparent: '투명',
+  };
+
+  const GAUGE_MAP: Record<string, string> = {
+    '15L': '1.35mm (15L)',
+    '16': '1.30mm (16)',
+    '16L': '1.28mm (16L)',
+    '17': '1.25mm (17)',
+    '17L': '1.20mm (17L)',
+    '18': '1.15mm (18)',
+  };
+
+  // ====== 태그(추천) 매핑 ======
+  const PLAYER_TYPE_MAP: Record<string, string> = {
+    beginner: '초보자',
+    intermediate: '중급자',
+    advanced: '상급자',
+  };
+  const PLAY_STYLE_MAP: Record<string, string> = {
+    baseline: '베이스라인 플레이어',
+    serveVolley: '서브 앤 발리 플레이어',
+    allCourt: '올코트 플레이어',
+    power: '파워 히터', // 신형 필드
+    powerHitter: '파워 히터', // 과거 호환
+  };
+
+  // ====== 성능(영문/한글) 혼용 저장 호환 헬퍼 ======
+  const featureValue = (enKey: string, koKey: string, fallback = 3) => {
+    const v = product?.features?.[enKey] ?? product?.features?.[koKey];
+    const n = typeof v === 'number' ? v : Number(v);
+    if (!n || Number.isNaN(n)) return fallback;
+    return Math.min(5, Math.max(1, n));
+  };
+
+  // ====== 스펙 표 렌더링용 변환 ======
+  const toDisplaySpec = () => {
+    const spec = product?.specifications || {};
+    const origin = spec.origin ?? spec.madeIn ?? spec.제조국 ?? product?.origin ?? product?.madeIn;
+    const brand = BRAND_MAP[product?.brand] ?? BRAND_MAP[spec.brand] ?? product?.brand ?? spec.brand;
+    const material = MATERIAL_MAP[product?.material] ?? MATERIAL_MAP[spec.material] ?? spec.소재 ?? product?.material ?? spec.material;
+    const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
+    const gauge = GAUGE_MAP[gaugeRaw] ?? gaugeRaw;
+    const color = COLOR_MAP[product?.color] ?? COLOR_MAP[spec.color] ?? spec.색상 ?? product?.color ?? spec.color;
+    const lengthRaw = product?.length ?? spec.length ?? spec.길이;
+    const length = typeof lengthRaw === 'string' && /^\d+(\.\d+)?$/.test(lengthRaw) ? `${lengthRaw}m` : lengthRaw;
+
+    const display: Record<string, any> = {
+      브랜드: brand,
+      재질: material,
+      게이지: gauge,
+      색상: color,
+      길이: length,
+    };
+    if (origin) display['제조국'] = origin;
+
+    if (product?.mountingFee && Number(product.mountingFee) > 0) {
+      display['장착 서비스 비용'] = `${Number(product.mountingFee).toLocaleString()}원`;
+    }
+
+    return display;
+  };
+
+  // ====== 추천 태그 추출 ======
+  const selectedPlayerTypes = Object.entries(PLAYER_TYPE_MAP)
+    .filter(([k]) => product?.tags?.[k])
+    .map(([, label]) => label);
+
+  const selectedPlayStyles = Object.entries(PLAY_STYLE_MAP)
+    .filter(([k]) => product?.tags?.[k])
+    .map(([, label]) => label);
+
+  const additionalFeaturesText = (product?.additionalFeatures || '').trim();
+
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   // const [isWishlisted, setIsWishlisted] = useState(false);
@@ -397,38 +504,145 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white">{Math.round((1 - product.price / product.originalPrice) * 100)}% 할인</Badge>
                         </>
                       )}
+                      {typeof product?.mountingFee === 'number' ? (
+                        <div className="mt-1 text-sm text-muted-foreground flex items-center gap-2">
+                          <span className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs">장착 서비스 비용 {product.mountingFee > 0 ? `${product.mountingFee.toLocaleString()}원` : '별도 과금'}</span>
+                          <span className="hidden sm:inline">— 장착 서비스 신청 시에만 발생</span>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-lg">성능 특성</h3>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
+                    {/* 성능 특성 */}
+                    <h3 className="font-semibold text-lg flex items-center gap-2">
+                      성능 특성
+                      <span className="inline-flex" aria-label="1~5 단계 (낮음 → 높음)" title="1~5 단계 (낮음 → 높음)">
+                        <Info className="h-4 w-4 text-muted-foreground" />
+                        <span className="sr-only">1~5 단계 (낮음 → 높음)</span>
+                      </span>
+                    </h3>
+
+                    {/* ✅ 컨테이너는 모바일: 가로 스크롤 flex, md 이상: 5열 그리드 */}
+                    <div className="flex flex-row gap-3 overflow-x-auto scroll-px-4 md:overflow-visible md:grid md:grid-cols-5 md:gap-4">
+                      {/* 반발력 (power) */}
+                      <div
+                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20"
+                        title={`${featureValue('power', '반발력')}/5 (낮음→높음)`}
+                        aria-label={`반발력 ${featureValue('power', '반발력')}점, 5점 만점`}
+                      >
                         <Zap className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                         <div className="text-sm font-medium">반발력</div>
                         <div className="text-xs mt-1">
-                          {'★'.repeat(product.features?.반발력 || 3)}
-                          {'☆'.repeat(5 - (product.features?.반발력 || 3))}
+                          {'★'.repeat(featureValue('power', '반발력'))}
+                          {'☆'.repeat(5 - featureValue('power', '반발력'))}
                         </div>
                       </div>
-                      <div className="text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
-                        <Shield className="h-6 w-6 mx-auto mb-2 text-green-600" />
-                        <div className="text-sm font-medium">내구성</div>
+
+                      {/* 컨트롤 (control) */}
+                      <div
+                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20"
+                        title={`${featureValue('control', '컨트롤')}/5 (낮음→높음)`}
+                        aria-label={`컨트롤 ${featureValue('control', '컨트롤')}점, 5점 만점`}
+                      >
+                        <Target className="h-6 w-6 mx-auto mb-2 text-orange-600" />
+                        <div className="text-sm font-medium">컨트롤</div>
                         <div className="text-xs mt-1">
-                          {'★'.repeat(product.features?.내구성 || 4)}
-                          {'☆'.repeat(5 - (product.features?.내구성 || 4))}
+                          {'★'.repeat(featureValue('control', '컨트롤'))}
+                          {'☆'.repeat(5 - featureValue('control', '컨트롤'))}
                         </div>
                       </div>
-                      <div className="text-center p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
+
+                      {/* 스핀 (spin) */}
+                      <div
+                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20"
+                        title={`${featureValue('spin', '스핀')}/5 (낮음→높음)`}
+                        aria-label={`스핀 ${featureValue('spin', '스핀')}점, 5점 만점`}
+                      >
                         <RotateCcw className="h-6 w-6 mx-auto mb-2 text-purple-600" />
                         <div className="text-sm font-medium">스핀</div>
                         <div className="text-xs mt-1">
-                          {'★'.repeat(product.features?.스핀 || 3)}
-                          {'☆'.repeat(5 - (product.features?.스핀 || 3))}
+                          {'★'.repeat(featureValue('spin', '스핀'))}
+                          {'☆'.repeat(5 - featureValue('spin', '스핀'))}
+                        </div>
+                      </div>
+
+                      {/* 내구성 (durability) */}
+                      <div
+                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20"
+                        title={`${featureValue('durability', '내구성')}/5 (낮음→높음)`}
+                        aria-label={`내구성 ${featureValue('durability', '내구성')}점, 5점 만점`}
+                      >
+                        <Shield className="h-6 w-6 mx-auto mb-2 text-green-600" />
+                        <div className="text-sm font-medium">내구성</div>
+                        <div className="text-xs mt-1">
+                          {'★'.repeat(featureValue('durability', '내구성'))}
+                          {'☆'.repeat(5 - featureValue('durability', '내구성'))}
+                        </div>
+                      </div>
+
+                      {/* 편안함 (comfort) */}
+                      <div
+                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20"
+                        title={`${featureValue('comfort', '편안함')}/5 (낮음→높음)`}
+                        aria-label={`편안함 ${featureValue('comfort', '편안함')}점, 5점 만점`}
+                      >
+                        <Feather className="h-6 w-6 mx-auto mb-2 text-pink-600" />
+                        <div className="text-sm font-medium">편안함</div>
+                        <div className="text-xs mt-1">
+                          {'★'.repeat(featureValue('comfort', '편안함'))}
+                          {'☆'.repeat(5 - featureValue('comfort', '편안함'))}
                         </div>
                       </div>
                     </div>
                   </div>
+                  {/* 추천 플레이어 & 스타일 */}
+                  {(selectedPlayerTypes.length > 0 || selectedPlayStyles.length > 0) && (
+                    <div className="space-y-3">
+                      <h4 className="font-medium">추천</h4>
+                      {selectedPlayerTypes.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm text-muted-foreground">플레이어 타입:</span>
+                          {selectedPlayerTypes.map((label) => (
+                            <Badge key={label} variant="secondary">
+                              {label}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      {selectedPlayStyles.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm text-muted-foreground">플레이 스타일:</span>
+                          {selectedPlayStyles.map((label) => (
+                            <Badge key={label} variant="outline">
+                              {label}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 추가 특성 */}
+                  {additionalFeaturesText && (
+                    <div className="space-y-2">
+                      <h4 className="font-medium">추가 특성</h4>
+                      {/* 쉼표/줄바꿈 구분 시 목록화, 아니면 한 문단 */}
+                      {/[,\n]/.test(additionalFeaturesText) ? (
+                        <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                          {additionalFeaturesText
+                            .split(/[,\n]/)
+                            .map((s: string) => s.trim())
+                            .filter((s: string) => Boolean(s))
+                            .map((s: string, i: number) => (
+                              <li key={i}>{s}</li>
+                            ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">{additionalFeaturesText}</p>
+                      )}
+                    </div>
+                  )}
 
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
@@ -540,20 +754,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="overflow-hidden rounded-lg border">
                     <table className="w-full text-sm">
                       <tbody>
-                        {Object.entries(
-                          product.specifications || {
-                            게이지: '1.25mm',
-                            길이: '12m',
-                            소재: '폴리에스터',
-                            색상: '내추럴',
-                            제조국: '독일',
-                          }
-                        ).map(([key, value]) => (
-                          <tr key={key} className="border-b last:border-b-0">
-                            <th className="bg-muted px-6 py-4 text-left font-medium w-1/4">{key}</th>
-                            <td className="px-6 py-4">{value as string}</td>
-                          </tr>
-                        ))}
+                        {Object.entries(toDisplaySpec())
+                          .filter(([, value]) => value) // 값 있는 항목만
+                          .map(([key, value]) => (
+                            <tr key={key} className="border-b last:border-b-0">
+                              <th className="bg-muted px-6 py-4 text-left font-medium w-1/4">{key}</th>
+                              <td className="px-6 py-4">{String(value)}</td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
