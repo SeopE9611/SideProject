@@ -41,7 +41,7 @@ const fetcher = async (url: string): Promise<any> => {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case '완료':
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
+      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
     case '배송중':
       return <Truck className="h-4 w-4 text-blue-500" />;
     case '대기중':
@@ -133,10 +133,10 @@ export default function OrderList() {
   //  주문이 없을 경우
   if (!isValidating && items.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900">
-            <ShoppingBag className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 shadow-lg">
+            <ShoppingBag className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">주문 내역이 없습니다</h3>
           <p className="text-slate-600 dark:text-slate-400">아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!</p>
@@ -150,8 +150,7 @@ export default function OrderList() {
     <div className="space-y-6">
       {items.map((order) => (
         <Card key={order.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          {/* Gradient border effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
           </div>
 
@@ -159,8 +158,8 @@ export default function OrderList() {
             {/* Header */}
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900">
-                  <ShoppingBag className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 shadow-lg">
+                  <ShoppingBag className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 dark:text-slate-100">주문 #{order.id}</h3>
@@ -198,7 +197,7 @@ export default function OrderList() {
                 {order.items.map((item, index) => (
                   <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 space-x-4">
                     {/* 상품 썸네일 */}
-                    {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-10 h-10 object-cover rounded" />}
+                    {item.imageUrl && <img src={item.imageUrl || '/placeholder.svg'} alt={item.name} className="w-10 h-10 object-cover rounded" />}
                     {/* 상품명 */}
                     <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.name}</span>
                     {/* 가격 × 수량 */}
@@ -218,7 +217,7 @@ export default function OrderList() {
               </div>
 
               <div className="flex items-center gap-3">
-                <Button size="sm" variant="outline" asChild className="border-slate-200 hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:hover:border-blue-600 dark:hover:bg-blue-950 bg-transparent">
+                <Button size="sm" variant="outline" asChild className="border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 dark:border-slate-700 dark:hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
                   <Link href={`/mypage?tab=orders&orderId=${order.id}`} className="inline-flex items-center gap-1">
                     상세보기
                     <ArrowRight className="h-3 w-3" />
@@ -231,7 +230,7 @@ export default function OrderList() {
                   </Button>
                 ) : order.reviewNextTargetProductId ? (
                   // 미작성 1개라면 바로 리뷰 작성 페이지로
-                  <Button size="sm" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                  <Button size="sm" asChild className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg">
                     <Link href={`/reviews/write?productId=${order.reviewNextTargetProductId}&orderId=${order.id}`}>리뷰 작성하기</Link>
                   </Button>
                 ) : (
@@ -247,7 +246,7 @@ export default function OrderList() {
                   {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' &&
                     order.shippingInfo?.withStringService &&
                     (!order.isStringServiceApplied ? (
-                      <Button size="sm" className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                      <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
                         <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">
                           스트링 장착 신청
                           <ArrowRight className="h-3 w-3" />
@@ -256,7 +255,7 @@ export default function OrderList() {
                     ) : (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className="inline-flex h-9 items-center justify-center rounded-md border border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 text-sm font-semibold text-green-700 dark:border-green-600 dark:from-green-950 dark:to-emerald-950 dark:text-green-300">
+                          <div className="inline-flex h-9 items-center justify-center rounded-md border border-emerald-300 bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-2 text-sm font-semibold text-emerald-700 dark:border-emerald-600 dark:from-emerald-950 dark:to-green-950 dark:text-emerald-300">
                             <CheckCircle className="mr-1 h-3 w-3" />
                             스트링 신청 완료
                           </div>
@@ -276,7 +275,7 @@ export default function OrderList() {
       {/* '더 보기' 버튼 */}
       <div className="flex justify-center pt-4">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-emerald-200 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent">
             {isValidating ? '불러오는 중…' : '더 보기'}
           </Button>
         ) : items.length ? (

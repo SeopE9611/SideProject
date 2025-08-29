@@ -24,14 +24,14 @@ export default function Wishlist() {
 
   if (items.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-pink-100 dark:bg-pink-900/30">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-pink-100 to-rose-100 dark:from-pink-900/30 dark:to-rose-900/30 shadow-lg">
             <Heart className="h-10 w-10 text-pink-600 dark:text-pink-400" />
           </div>
           <h3 className="mb-2 text-xl font-semibold">위시리스트가 비어있습니다</h3>
           <p className="mb-6 text-muted-foreground">마음에 드는 상품을 위시리스트에 추가해보세요!</p>
-          <Button asChild>
+          <Button asChild className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <Link href="/products">상품 둘러보기</Link>
           </Button>
         </CardContent>
@@ -43,14 +43,14 @@ export default function Wishlist() {
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {visibleItems.map((it) => (
-          <Card key={it.id} className="overflow-hidden border">
+          <Card key={it.id} className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-4">
               <Link href={`/products/${it.id}`} className="block">
                 <div className="relative w-full h-40">
-                  <Image src={it.image} alt={it.name} fill sizes="(max-width:768px) 50vw, (max-width:1024px) 33vw, 25vw" className="object-cover rounded-md border" />
+                  <Image src={it.image || '/placeholder.svg'} alt={it.name} fill sizes="(max-width:768px) 50vw, (max-width:1024px) 33vw, 25vw" className="object-cover rounded-xl border shadow-sm" />
                 </div>
                 <div className="mt-3">
-                  <div className="font-medium line-clamp-2 hover:underline">{it.name}</div>
+                  <div className="font-medium line-clamp-2 hover:underline hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{it.name}</div>
                   <div className="text-sm text-muted-foreground">{it.price.toLocaleString()}원</div>
                 </div>
               </Link>
@@ -58,8 +58,16 @@ export default function Wishlist() {
               <div className="mt-3 flex gap-2">
                 <Button
                   size="sm"
+                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-sm"
                   onClick={() => {
-                    addItem({ id: it.id, name: it.name, price: it.price, quantity: 1, image: it.image, stock: it.stock });
+                    addItem({
+                      id: it.id,
+                      name: it.name,
+                      price: it.price,
+                      quantity: 1,
+                      image: it.image,
+                      stock: it.stock,
+                    });
                     showSuccessToast('장바구니에 담았습니다.');
                   }}
                 >
@@ -68,6 +76,7 @@ export default function Wishlist() {
                 <Button
                   size="sm"
                   variant="outline"
+                  className="border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 bg-transparent"
                   onClick={() => {
                     remove(it.id);
                     // 현재 페이지에서 바로 사라지도록, 노출 개수 보정
@@ -85,7 +94,7 @@ export default function Wishlist() {
       {/* 더 보기 */}
       <div className="flex justify-center pt-2">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setVisible((v) => v + LIMIT)}>
+          <Button variant="outline" onClick={() => setVisible((v) => v + LIMIT)} className="border-emerald-200 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent">
             더 보기
           </Button>
         ) : (

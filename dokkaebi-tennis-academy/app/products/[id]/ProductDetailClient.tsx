@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Feather, Info } from 'lucide-react';
+import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Activity, FileText, Settings, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,7 +15,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useWishlist } from '@/app/features/wishlist/useWishlist';
 import MaskedBlock from '@/components/reviews/MaskedBlock';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, EyeOff, Trash2, Pencil } from 'lucide-react';
+import { MoreHorizontal, Eye, EyeOff, Trash2 } from 'lucide-react';
 import useSWR from 'swr';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -248,7 +248,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // 인라인 수정 다이얼로그 상태/핸들러
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string; photos: string[] }>({ rating: '', content: '', photos: [] });
+  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string; photos: string[] }>({
+    rating: '',
+    content: '',
+    photos: [],
+  });
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [busyReviewId, setBusyReviewId] = useState<string | null>(null);
 
@@ -412,21 +416,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const averageRating = product.reviews.length > 0 ? product.reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / product.reviews.length : 0;
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-emerald-50/30 to-green-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
       {/* Hero Section with Breadcrumb */}
-      <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white py-8">
+      <div className="relative bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white py-8">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container relative z-10">
           <div className="flex items-center gap-2 text-sm mb-4 opacity-90">
-            <Link href="/" className="hover:text-blue-200 transition-colors">
+            <Link href="/" className="hover:text-emerald-200 transition-colors">
               홈
             </Link>
             <span>/</span>
-            <Link href="/products" className="hover:text-blue-200 transition-colors">
+            <Link href="/products" className="hover:text-emerald-200 transition-colors">
               상품
             </Link>
             <span>/</span>
-            <span className="text-blue-200">{product.name}</span>
+            <span className="text-emerald-200">{product.name}</span>
           </div>
           <Button variant="ghost" className="text-white hover:bg-white/10 mb-4 p-0" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -436,12 +440,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
       </div>
 
       <div className="container py-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* 상품 이미지 */}
-          <div className="space-y-4">
-            <Card className="overflow-hidden border-0 shadow-2xl bg-white/80 backdrop-blur-sm">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+          {/* 상품 이미지 - 더 큰 공간 할당 */}
+          <div className="lg:col-span-3 space-y-4">
+            <Card className="overflow-hidden border-0 shadow-2xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
               <div className="relative aspect-square">
-                <Image src={product.images[selectedImageIndex] || '/placeholder.svg?height=600&width=600&query=tennis string product'} alt={product.name} fill className="object-cover transition-transform duration-300 hover:scale-105" />
+                <Image
+                  src={product.images[selectedImageIndex] || '/placeholder.svg?height=600&width=600&query=tennis string product' || '/placeholder.svg' || '/placeholder.svg' || '/placeholder.svg' || '/placeholder.svg'}
+                  alt={product.name}
+                  fill
+                  className="object-cover transition-transform duration-300 hover:scale-105"
+                />
                 {product.images.length > 1 && (
                   <>
                     <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white hover:bg-black/70" onClick={prevImage}>
@@ -454,7 +463,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 )}
                 <div className="absolute top-4 left-4 flex gap-2">
                   <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white">NEW</Badge>
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">정품</Badge>
+                  <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white">정품</Badge>
                 </div>
               </div>
             </Card>
@@ -462,7 +471,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             {product.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {product.images.map((image: string, index: number) => (
-                  <Card key={index} className={`overflow-hidden cursor-pointer transition-all duration-200 ${selectedImageIndex === index ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'}`} onClick={() => setSelectedImageIndex(index)}>
+                  <Card key={index} className={`overflow-hidden cursor-pointer transition-all duration-200 ${selectedImageIndex === index ? 'ring-2 ring-emerald-500 shadow-lg' : 'hover:shadow-md'}`} onClick={() => setSelectedImageIndex(index)}>
                     <div className="aspect-square relative">
                       <Image src={image || '/placeholder.svg?height=100&width=100&query=tennis string thumbnail'} alt={`${product.name} ${index + 1}`} fill className="object-cover" />
                     </div>
@@ -472,21 +481,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
             )}
           </div>
 
-          {/* 상품 정보 */}
-          <div className="space-y-6">
-            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-8">
-                <div className="space-y-6">
-                  {/* Brand and Title */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* 기본 정보 카드 */}
+            <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {/* 브랜드와 제품명 */}
                   <div>
-                    <Badge variant="outline" className="mb-2 text-blue-600 border-blue-200">
+                    <Badge variant="outline" className="mb-2 text-emerald-600 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800">
                       {product.brand}
                     </Badge>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{product.name}</h1>
-                    <div className="mt-3 flex items-center gap-3">
+                    <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">{product.name}</h1>
+                    <div className="mt-2 flex items-center gap-3">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`h-5 w-5 ${i < Math.floor(averageRating) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
+                          <Star key={i} className={`h-4 w-4 ${i < Math.floor(averageRating) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
                         ))}
                       </div>
                       <span className="text-sm text-muted-foreground">
@@ -495,158 +504,30 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                   </div>
 
+                  {/* 가격 정보 */}
                   <div className="space-y-2">
                     <div className="flex items-baseline gap-3">
-                      <span className="text-4xl font-bold text-blue-600">{product.price.toLocaleString()}원</span>
+                      <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{product.price.toLocaleString()}원</span>
                       {product.originalPrice && product.originalPrice > product.price && (
                         <>
                           <span className="text-lg text-muted-foreground line-through">{product.originalPrice.toLocaleString()}원</span>
                           <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white">{Math.round((1 - product.price / product.originalPrice) * 100)}% 할인</Badge>
                         </>
                       )}
-                      {typeof product?.mountingFee === 'number' ? (
-                        <div className="mt-1 text-sm text-muted-foreground flex items-center gap-2">
-                          <span className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs">장착 서비스 비용 {product.mountingFee > 0 ? `${product.mountingFee.toLocaleString()}원` : '별도 과금'}</span>
-                          <span className="hidden sm:inline">— 장착 서비스 신청 시에만 발생</span>
-                        </div>
-                      ) : null}
                     </div>
+                    {typeof product?.mountingFee === 'number' && (
+                      <div className="text-sm text-muted-foreground">
+                        <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-2 py-1 text-xs">
+                          장착 서비스: {product.mountingFee > 0 ? `+${product.mountingFee.toLocaleString()}원` : '무료'}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="space-y-4">
-                    {/* 성능 특성 */}
-                    <h3 className="font-semibold text-lg flex items-center gap-2">
-                      성능 특성
-                      <span className="inline-flex" aria-label="1~5 단계 (낮음 → 높음)" title="1~5 단계 (낮음 → 높음)">
-                        <Info className="h-4 w-4 text-muted-foreground" />
-                        <span className="sr-only">1~5 단계 (낮음 → 높음)</span>
-                      </span>
-                    </h3>
-
-                    {/* ✅ 컨테이너는 모바일: 가로 스크롤 flex, md 이상: 5열 그리드 */}
-                    <div className="flex flex-row gap-3 overflow-x-auto scroll-px-4 md:overflow-visible md:grid md:grid-cols-5 md:gap-4">
-                      {/* 반발력 (power) */}
-                      <div
-                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20"
-                        title={`${featureValue('power', '반발력')}/5 (낮음→높음)`}
-                        aria-label={`반발력 ${featureValue('power', '반발력')}점, 5점 만점`}
-                      >
-                        <Zap className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-                        <div className="text-sm font-medium">반발력</div>
-                        <div className="text-xs mt-1">
-                          {'★'.repeat(featureValue('power', '반발력'))}
-                          {'☆'.repeat(5 - featureValue('power', '반발력'))}
-                        </div>
-                      </div>
-
-                      {/* 컨트롤 (control) */}
-                      <div
-                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20"
-                        title={`${featureValue('control', '컨트롤')}/5 (낮음→높음)`}
-                        aria-label={`컨트롤 ${featureValue('control', '컨트롤')}점, 5점 만점`}
-                      >
-                        <Target className="h-6 w-6 mx-auto mb-2 text-orange-600" />
-                        <div className="text-sm font-medium">컨트롤</div>
-                        <div className="text-xs mt-1">
-                          {'★'.repeat(featureValue('control', '컨트롤'))}
-                          {'☆'.repeat(5 - featureValue('control', '컨트롤'))}
-                        </div>
-                      </div>
-
-                      {/* 스핀 (spin) */}
-                      <div
-                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20"
-                        title={`${featureValue('spin', '스핀')}/5 (낮음→높음)`}
-                        aria-label={`스핀 ${featureValue('spin', '스핀')}점, 5점 만점`}
-                      >
-                        <RotateCcw className="h-6 w-6 mx-auto mb-2 text-purple-600" />
-                        <div className="text-sm font-medium">스핀</div>
-                        <div className="text-xs mt-1">
-                          {'★'.repeat(featureValue('spin', '스핀'))}
-                          {'☆'.repeat(5 - featureValue('spin', '스핀'))}
-                        </div>
-                      </div>
-
-                      {/* 내구성 (durability) */}
-                      <div
-                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20"
-                        title={`${featureValue('durability', '내구성')}/5 (낮음→높음)`}
-                        aria-label={`내구성 ${featureValue('durability', '내구성')}점, 5점 만점`}
-                      >
-                        <Shield className="h-6 w-6 mx-auto mb-2 text-green-600" />
-                        <div className="text-sm font-medium">내구성</div>
-                        <div className="text-xs mt-1">
-                          {'★'.repeat(featureValue('durability', '내구성'))}
-                          {'☆'.repeat(5 - featureValue('durability', '내구성'))}
-                        </div>
-                      </div>
-
-                      {/* 편안함 (comfort) */}
-                      <div
-                        className="flex-none min-w-[140px] md:min-w-0 md:w-auto text-center p-4 rounded-lg bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20"
-                        title={`${featureValue('comfort', '편안함')}/5 (낮음→높음)`}
-                        aria-label={`편안함 ${featureValue('comfort', '편안함')}점, 5점 만점`}
-                      >
-                        <Feather className="h-6 w-6 mx-auto mb-2 text-pink-600" />
-                        <div className="text-sm font-medium">편안함</div>
-                        <div className="text-xs mt-1">
-                          {'★'.repeat(featureValue('comfort', '편안함'))}
-                          {'☆'.repeat(5 - featureValue('comfort', '편안함'))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {/* 추천 플레이어 & 스타일 */}
-                  {(selectedPlayerTypes.length > 0 || selectedPlayStyles.length > 0) && (
-                    <div className="space-y-3">
-                      <h4 className="font-medium">추천</h4>
-                      {selectedPlayerTypes.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm text-muted-foreground">플레이어 타입:</span>
-                          {selectedPlayerTypes.map((label) => (
-                            <Badge key={label} variant="secondary">
-                              {label}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      {selectedPlayStyles.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm text-muted-foreground">플레이 스타일:</span>
-                          {selectedPlayStyles.map((label) => (
-                            <Badge key={label} variant="outline">
-                              {label}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* 추가 특성 */}
-                  {additionalFeaturesText && (
-                    <div className="space-y-2">
-                      <h4 className="font-medium">추가 특성</h4>
-                      {/* 쉼표/줄바꿈 구분 시 목록화, 아니면 한 문단 */}
-                      {/[,\n]/.test(additionalFeaturesText) ? (
-                        <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                          {additionalFeaturesText
-                            .split(/[,\n]/)
-                            .map((s: string) => s.trim())
-                            .filter((s: string) => Boolean(s))
-                            .map((s: string, i: number) => (
-                              <li key={i}>{s}</li>
-                            ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">{additionalFeaturesText}</p>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <span className="font-medium">수량:</span>
+                  {/* 구매 옵션 */}
+                  <div className="space-y-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">수량</span>
                       <div className="flex items-center border rounded-lg">
                         <Button variant="ghost" size="sm" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="h-10 w-10">
                           <Minus className="h-4 w-4" />
@@ -663,7 +544,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             setQuantity(quantity + 1);
                           }}
                           className="h-10 w-10"
-                          disabled={quantity >= stock} // 버튼 비활성화
+                          disabled={quantity >= stock}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -677,93 +558,186 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     )}
 
-                    <div className="flex flex-col gap-3 sm:flex-row">
+                    <div className="flex flex-col gap-3">
                       {product.inventory?.manageStock && product.inventory.stock <= 0 ? (
-                        <Button disabled className="flex-1 bg-red-100 text-red-600 border border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-600 cursor-not-allowed hover:bg-red-100 dark:hover:bg-red-900">
+                        <Button disabled className="w-full bg-red-100 text-red-600 border border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-600 cursor-not-allowed hover:bg-red-100 dark:hover:bg-red-900">
                           <X className="mr-2 h-4 w-4" />
                           재고가 소진되었습니다
                         </Button>
                       ) : (
-                        <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg" onClick={handleAddToCart} disabled={loading || quantity > stock}>
+                        <Button className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg" onClick={handleAddToCart} disabled={loading || quantity > stock}>
                           <ShoppingCart className="mr-2 h-4 w-4" />
                           장바구니에 담기
                         </Button>
                       )}
 
-                      <Button variant="outline" disabled={busy} onClick={handleWishlist} className={`${isWishlisted ? 'bg-red-50 border-red-200 text-red-600' : ''}`}>
+                      <Button variant="outline" disabled={busy} onClick={handleWishlist} className={`w-full ${isWishlisted ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400' : ''}`}>
                         <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                         위시리스트
                       </Button>
                     </div>
                   </div>
 
-                  <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:from-blue-900/20 dark:to-purple-900/20 dark:border-blue-800">
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-3 flex items-center">
-                        <Truck className="mr-2 h-5 w-5 text-blue-600" />
-                        배송 정보
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Check className="h-4 w-4 text-green-600" />
-                          <span>3,000원 (30,000원 이상 구매 시 무료배송)</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Check className="h-4 w-4 text-green-600" />
-                          <span>오후 2시 이전 주문 시 당일 출고</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Check className="h-4 w-4 text-green-600" />
-                          <span>스트링 장착 서비스 신청 시 1-2일 추가 소요</span>
-                        </div>
+                  {/* 배송 정보 */}
+                  <div className="pt-4 border-t">
+                    <h3 className="font-semibold mb-3 flex items-center">
+                      <Truck className="mr-2 h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      배송 정보
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-600" />
+                        <span>3,000원 (30,000원 이상 무료)</span>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-600" />
+                        <span>오후 2시 이전 주문 시 당일 출고</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-600" />
+                        <span>장착 서비스 신청 시 1-2일 추가</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* 상품 상세 정보 탭 */}
-        <Card className="mt-12 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+          {/* 추천 정보 & 추가 특성 통합 카드 */}
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                추천 정보 & 특성
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h4 className="font-medium text-slate-700 dark:text-slate-300 mb-3">추천 대상</h4>
+                <div className="space-y-2">
+                  {selectedPlayerTypes.length > 0 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      <span className="text-slate-600 dark:text-slate-400">플레이어 타입:</span>
+                      <span className="font-medium">{selectedPlayerTypes.join(', ')}</span>
+                    </div>
+                  )}
+                  {selectedPlayStyles.length > 0 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      <span className="text-slate-600 dark:text-slate-400">플레이 스타일:</span>
+                      <span className="font-medium">{selectedPlayStyles.join(', ')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-slate-700 dark:text-slate-300 mb-3">추가 특성</h4>
+                {additionalFeaturesText ? <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{additionalFeaturesText}</p> : <p className="text-sm text-slate-500 dark:text-slate-500 italic">추가 특성 정보가 없습니다.</p>}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                성능 특성
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { name: '반발력', icon: Zap, key: 'power', koKey: '반발력' },
+                  { name: '컨트롤', icon: Target, key: 'control', koKey: '컨트롤' },
+                  { name: '스핀', icon: RotateCcw, key: 'spin', koKey: '스핀' },
+                  { name: '내구성', icon: Shield, key: 'durability', koKey: '내구성' },
+                  { name: '편안함', icon: Heart, key: 'comfort', koKey: '편안함' },
+                ].map((spec, index) => (
+                  <div key={index} className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <spec.icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{spec.name}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className={`w-2 h-2 rounded-full ${i < featureValue(spec.key, spec.koKey) ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-slate-200 dark:bg-slate-600'}`} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mt-12 border-0 shadow-xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
-              <TabsList className="w-full grid grid-cols-3 h-14 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-                <TabsTrigger value="description" className="text-base font-medium">
+              <TabsList className="w-full grid grid-cols-3 h-16 bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-900/20 dark:via-green-900/20 dark:to-teal-900/20 rounded-t-lg">
+                <TabsTrigger
+                  value="description"
+                  className="text-base font-medium h-full data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-emerald-400"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
                   상품 설명
                 </TabsTrigger>
-                <TabsTrigger value="specifications" className="text-base font-medium">
+                <TabsTrigger
+                  value="specifications"
+                  className="text-base font-medium h-full data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-emerald-400"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
                   상세 스펙
                 </TabsTrigger>
-                <TabsTrigger value="reviews" className="text-base font-medium">
+                <TabsTrigger
+                  value="reviews"
+                  className="text-base font-medium h-full data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-emerald-400"
+                >
+                  <Star className="h-4 w-4 mr-2" />
                   리뷰 ({product.reviews.length})
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="description" className="p-8">
                 <div className="prose max-w-none">
-                  <h3 className="text-xl font-semibold mb-4">상품 설명</h3>
-                  <p className="text-muted-foreground leading-relaxed">{product.description || '이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다.'}</p>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
+                      <FileText className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200">상품 설명</h3>
+                  </div>
+                  <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-6 rounded-lg">
+                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+                      {product.description || '이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다.'}
+                    </p>
+                  </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="specifications" className="p-8">
                 <div className="space-y-6">
-                  <h3 className="text-xl font-semibold">상세 스펙</h3>
-                  <div className="overflow-hidden rounded-lg border">
-                    <table className="w-full text-sm">
-                      <tbody>
-                        {Object.entries(toDisplaySpec())
-                          .filter(([, value]) => value) // 값 있는 항목만
-                          .map(([key, value]) => (
-                            <tr key={key} className="border-b last:border-b-0">
-                              <th className="bg-muted px-6 py-4 text-left font-medium w-1/4">{key}</th>
-                              <td className="px-6 py-4">{String(value)}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
+                      <Settings className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200">상세 스펙</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(toDisplaySpec())
+                      .filter(([, value]) => value)
+                      .map(([key, value]) => (
+                        <div key={key} className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-4 rounded-lg border border-emerald-100 dark:border-emerald-800">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-emerald-700 dark:text-emerald-400">{key}</span>
+                            <span className="text-slate-700 dark:text-slate-300 font-medium">{String(value)}</span>
+                          </div>
+                        </div>
+                      ))}
                   </div>
                 </div>
               </TabsContent>
@@ -771,214 +745,225 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="reviews" className="p-8">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold">고객 리뷰</h3>
-                    <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                      <Link href={`/reviews/write?productId=${product._id}`}>리뷰 작성하기</Link>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
+                        <Star className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200">고객 리뷰</h3>
+                    </div>
+                    <Button asChild className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg">
+                      <Link href={`/reviews/write?productId=${product._id}`}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        리뷰 작성하기
+                      </Link>
                     </Button>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {mergedReviews.length > 0 ? (
                       mergedReviews.map((review: any, index: number) => (
-                        <Card key={index} className="border border-gray-200">
+                        <Card key={index} className="border-0 shadow-lg bg-gradient-to-r from-white to-emerald-50/30 dark:from-slate-800 dark:to-emerald-900/10">
                           <CardContent className="p-6 relative">
                             {busyReviewId === String(review._id) && (
-                              <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-10">
+                              <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
                                 <Loader2 className="h-4 w-4 animate-spin" />
                                 <span className="ml-2 text-sm">변경 중...</span>
                               </div>
                             )}
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">{review.user?.charAt(0) || 'U'}</div>
+
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">{review.user?.charAt(0) || 'U'}</div>
                                 <div>
-                                  <div className="font-medium">
+                                  <div className="font-bold text-slate-800 dark:text-slate-200">
                                     {review.status === 'hidden' ? (review.ownedByMe ? `${review.user ?? '내 리뷰'} (비공개)` : review.adminView ? `${review.user ?? '사용자'} (비공개)` : '비공개 리뷰') : review.user ?? '익명'}
                                   </div>
-                                  <div className="flex items-center gap-1">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star key={i} className={`h-4 w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
-                                    ))}
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <div className="flex items-center gap-1">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star key={i} className={`h-4 w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
+                                      ))}
+                                    </div>
+                                    <span className="text-sm text-slate-500 dark:text-slate-400">{review.date || '2099-01-01'}</span>
                                   </div>
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2">
-                                <div className="text-sm text-muted-foreground">{review.date || '2099-01-01'}</div>
+                              {(review.ownedByMe || isAdmin) && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/20 transition-colors" aria-label="내 리뷰 관리">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-44">
+                                    {/* 공개/비공개 토글 */}
+                                    <DropdownMenuItem
+                                      disabled={busyReviewId === String(review._id)}
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        setBusyReviewId(String(review._id));
+                                        const next = review.status === 'visible' ? 'hidden' : 'visible';
 
-                                {(review.ownedByMe || isAdmin) && (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100" aria-label="내 리뷰 관리">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-44">
-                                      {/* 공개/비공개 토글 */}
-                                      <DropdownMenuItem
-                                        disabled={busyReviewId === String(review._id)}
-                                        onClick={async (e) => {
-                                          e.stopPropagation();
-                                          setBusyReviewId(String(review._id));
-                                          const next = review.status === 'visible' ? 'hidden' : 'visible';
+                                        // 낙관적 업데이트
+                                        if (isMine(review)) {
+                                          mutateMyReview((prev: any) => {
+                                            if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+                                            return { ...prev, status: next, ownedByMe: true, masked: false };
+                                          }, false);
+                                        } else if (isAdmin) {
+                                          mutateAdminReviews((prev: any[] | undefined) => {
+                                            if (!Array.isArray(prev)) return prev;
+                                            return prev.map((r) => (String(r._id) === String(review._id) ? { ...r, status: next, masked: false } : r));
+                                          }, false);
+                                        }
 
-                                          // 낙관적 업데이트
-                                          if (isMine(review)) {
-                                            mutateMyReview((prev: any) => {
-                                              if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
-                                              return { ...prev, status: next, ownedByMe: true, masked: false };
-                                            }, false);
-                                          } else if (isAdmin) {
-                                            mutateAdminReviews((prev: any[] | undefined) => {
-                                              if (!Array.isArray(prev)) return prev;
-                                              return prev.map((r) => (String(r._id) === String(review._id) ? { ...r, status: next, masked: false } : r));
-                                            }, false);
-                                          }
+                                        // 서버 반영
+                                        try {
+                                          const res = await fetch(`/api/reviews/${review._id}`, {
+                                            method: 'PATCH',
+                                            credentials: 'include',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ status: next }),
+                                          });
+                                          if (!res.ok) throw new Error('상태 변경 실패');
 
-                                          // 서버 반영
-                                          try {
-                                            const res = await fetch(`/api/reviews/${review._id}`, {
-                                              method: 'PATCH',
-                                              credentials: 'include',
-                                              headers: { 'Content-Type': 'application/json' },
-                                              body: JSON.stringify({ status: next }),
-                                            });
-                                            if (!res.ok) throw new Error('상태 변경 실패');
+                                          // 재검증
+                                          if (isMine(review)) await mutateMyReview();
+                                          else if (isAdmin) await mutateAdminReviews();
 
-                                            // 재검증
-                                            if (isMine(review)) await mutateMyReview();
-                                            else if (isAdmin) await mutateAdminReviews();
+                                          // 탭 유지 + 서버컴포넌트 리프레시
+                                          const params = new URLSearchParams(searchParams.toString());
+                                          params.set('tab', 'reviews');
+                                          router.replace(`?${params.toString()}`, { scroll: false });
+                                          router.refresh();
 
-                                            // 탭 유지 + 서버컴포넌트 리프레시
-                                            const params = new URLSearchParams(searchParams.toString());
-                                            params.set('tab', 'reviews');
-                                            router.replace(`?${params.toString()}`, { scroll: false });
-                                            router.refresh();
+                                          showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
+                                        } catch (err: any) {
+                                          // 실패 시 되돌리기(재검증)
+                                          if (isMine(review)) await mutateMyReview();
+                                          else if (isAdmin) await mutateAdminReviews();
+                                          showErrorToast(err?.message || '상태 변경 중 오류');
+                                        } finally {
+                                          setBusyReviewId(null);
+                                        }
+                                      }}
+                                      className="cursor-pointer"
+                                    >
+                                      {review.status === 'visible' ? (
+                                        <>
+                                          <EyeOff className="mr-2 h-4 w-4" />
+                                          비공개로 전환
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Eye className="mr-2 h-4 w-4" />
+                                          공개로 전환
+                                        </>
+                                      )}
+                                    </DropdownMenuItem>
 
-                                            showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
-                                          } catch (err: any) {
-                                            // 실패 시 되돌리기(재검증)
-                                            if (isMine(review)) await mutateMyReview();
-                                            else if (isAdmin) await mutateAdminReviews();
-                                            showErrorToast(err?.message || '상태 변경 중 오류');
-                                          } finally {
-                                            setBusyReviewId(null);
-                                          }
-                                        }}
-                                        className="cursor-pointer"
-                                      >
-                                        {review.status === 'visible' ? (
-                                          <>
-                                            <EyeOff className="mr-2 h-4 w-4" />
-                                            비공개로 전환
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Eye className="mr-2 h-4 w-4" />
-                                            공개로 전환
-                                          </>
-                                        )}
-                                      </DropdownMenuItem>
+                                    {/* 수정 */}
+                                    <DropdownMenuItem
+                                      disabled={busyReviewId === String(review._id)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openEdit(review);
+                                      }}
+                                      className="cursor-pointer"
+                                    >
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      수정
+                                    </DropdownMenuItem>
 
-                                      {/* 수정 */}
-                                      <DropdownMenuItem
-                                        disabled={busyReviewId === String(review._id)}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          openEdit(review);
-                                        }}
-                                        className="cursor-pointer"
-                                      >
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        수정
-                                      </DropdownMenuItem>
+                                    {/* 삭제 */}
+                                    <DropdownMenuItem
+                                      disabled={busyReviewId === String(review._id)}
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
 
-                                      {/* 삭제 */}
-                                      <DropdownMenuItem
-                                        disabled={busyReviewId === String(review._id)}
-                                        onClick={async (e) => {
-                                          e.stopPropagation();
-                                          if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
+                                        setBusyReviewId(String(review._id));
+                                        try {
+                                          const res = await fetch(`/api/reviews/${review._id}`, {
+                                            method: 'DELETE',
+                                            credentials: 'include',
+                                          });
+                                          if (!res.ok) throw new Error('삭제 실패');
 
-                                          setBusyReviewId(String(review._id));
-                                          try {
-                                            const res = await fetch(`/api/reviews/${review._id}`, {
-                                              method: 'DELETE',
-                                              credentials: 'include',
-                                            });
-                                            if (!res.ok) throw new Error('삭제 실패');
+                                          // 재검증
+                                          if (isMine(review)) await mutateMyReview();
+                                          else if (isAdmin) await mutateAdminReviews();
 
-                                            // 재검증
-                                            if (isMine(review)) await mutateMyReview();
-                                            else if (isAdmin) await mutateAdminReviews();
+                                          // 탭 유지 + 서버컴포넌트 리프레시
+                                          const params = new URLSearchParams(searchParams.toString());
+                                          params.set('tab', 'reviews');
+                                          router.replace(`?${params.toString()}`, { scroll: false });
+                                          router.refresh();
 
-                                            // 탭 유지 + 서버컴포넌트 리프레시
-                                            const params = new URLSearchParams(searchParams.toString());
-                                            params.set('tab', 'reviews');
-                                            router.replace(`?${params.toString()}`, { scroll: false });
-                                            router.refresh();
-
-                                            showSuccessToast('삭제했습니다.');
-                                          } catch (err: any) {
-                                            // 실패 시 복구(재검증으로 복원)
-                                            if (isMine(review)) await mutateMyReview();
-                                            else if (isAdmin) await mutateAdminReviews();
-                                            showErrorToast(err?.message || '삭제 중 오류');
-                                          } finally {
-                                            setBusyReviewId(null);
-                                          }
-                                        }}
-                                        className="cursor-pointer text-red-600 focus:text-red-600"
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        삭제
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                )}
-                              </div>
+                                          showSuccessToast('삭제했습니다.');
+                                        } catch (err: any) {
+                                          // 실패 시 복구(재검증으로 복원)
+                                          if (isMine(review)) await mutateMyReview();
+                                          else if (isAdmin) await mutateAdminReviews();
+                                          showErrorToast(err?.message || '삭제 중 오류');
+                                        } finally {
+                                          setBusyReviewId(null);
+                                        }
+                                      }}
+                                      className="cursor-pointer text-red-600 focus:text-red-600"
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      삭제
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
                             </div>
 
-                            {/* {review.status === 'hidden' ? null : review.photos?.length ? <PhotosGrid photos={review.photos} /> : null} */}
-                            {/* <p className="text-muted-foreground leading-relaxed">{review.content || '좋은 제품입니다. 추천합니다!'}</p> */}
                             {(() => {
                               const isMasked = review.masked ?? (review.status === 'hidden' && !review.ownedByMe && !review.adminView);
                               if (isMasked) return <MaskedBlock />;
 
                               return (
-                                <>
-                                  <p className="text-sm leading-relaxed">{review.content}</p>
+                                <div className="space-y-4">
+                                  <div className="bg-white dark:bg-slate-700/50 p-4 rounded-lg border border-emerald-100 dark:border-emerald-800">
+                                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{review.content}</p>
+                                  </div>
 
                                   {Array.isArray(review.photos) && review.photos.length > 0 && (
-                                    <div className="mt-3 flex gap-2">
+                                    <div className="flex gap-3">
                                       {review.photos.slice(0, 4).map((src: string, i: number) => (
                                         <button
                                           key={i}
                                           type="button"
                                           onClick={() => openViewer(review.photos, i)}
-                                          className="relative w-16 h-16 rounded-md overflow-hidden border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-emerald-200 dark:border-emerald-700 hover:border-emerald-400 dark:hover:border-emerald-500 transition-colors shadow-md"
                                           aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
                                         >
-                                          <Image src={src} alt={`리뷰 사진 ${i + 1}`} fill className="object-cover" />
-                                          {i === 3 && review.photos.length > 4 && <div className="absolute inset-0 bg-black/50 text-white text-xs font-medium flex items-center justify-center">+{review.photos.length - 3}</div>}
+                                          <Image src={src || '/placeholder.svg'} alt={`리뷰 사진 ${i + 1}`} fill className="object-cover" />
+                                          {i === 3 && review.photos.length > 4 && <div className="absolute inset-0 bg-black/60 text-white text-xs font-bold flex items-center justify-center">+{review.photos.length - 3}</div>}
                                         </button>
                                       ))}
                                     </div>
                                   )}
-                                </>
+                                </div>
                               );
                             })()}
                           </CardContent>
                         </Card>
                       ))
                     ) : (
-                      <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Star className="h-8 w-8 text-blue-500" />
+                      <div className="text-center py-16">
+                        <div className="w-20 h-20 bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900/20 dark:to-green-900/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                          <Star className="h-10 w-10 text-emerald-500 dark:text-emerald-400" />
                         </div>
-                        <h3 className="text-lg font-medium mb-2">아직 리뷰가 없습니다</h3>
-                        <p className="text-muted-foreground mb-4">첫 번째 리뷰를 작성해보세요!</p>
-                        <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">리뷰 작성하기</Button>
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-3">아직 리뷰가 없습니다</h3>
+                        <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg">첫 번째 리뷰를 작성해보세요!</p>
+                        <Button className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg px-8 py-3">
+                          <Pencil className="h-4 w-4 mr-2" />
+                          리뷰 작성하기
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -987,6 +972,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </Tabs>
           </CardContent>
         </Card>
+
         {/* 리뷰 사진 확대 보기 */}
         <Dialog open={viewerOpen} onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}>
           <DialogContent className="sm:max-w-4xl p-0 bg-black/90 text-white border-0">
@@ -995,7 +981,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <DialogTitle>리뷰 사진 확대 보기</DialogTitle>
             </DialogHeader>
             <div className="relative w-full aspect-video">
-              {viewerImages[viewerIndex] && <Image src={viewerImages[viewerIndex]} alt={`리뷰 사진 확대 ${viewerIndex + 1}`} fill className="object-contain" priority />}
+              {viewerImages[viewerIndex] && <Image src={viewerImages[viewerIndex] || '/placeholder.svg'} alt={`리뷰 사진 확대 ${viewerIndex + 1}`} fill className="object-contain" priority />}
 
               {/* 좌우 이동 */}
               {viewerImages.length > 1 && (
@@ -1014,17 +1000,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
                 {viewerImages.map((thumb, i) => (
                   <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-blue-400' : ''}`} aria-label={`썸네일 ${i + 1}`}>
-                    <Image src={thumb} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
+                    <Image src={thumb || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
                   </button>
                 ))}
               </div>
             )}
           </DialogContent>
         </Dialog>
+
         <div className="mt-12">
-          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">관련 상품</CardTitle>
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">관련 상품</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
@@ -1063,8 +1050,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <Image src={relatedProduct.image || '/placeholder.svg?height=200&width=200&query=tennis string product'} alt={relatedProduct.name} fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
                       </div>
                       <CardContent className="p-4">
-                        <div className="font-medium line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">{relatedProduct.name}</div>
-                        <div className="font-bold text-blue-600">{relatedProduct.price.toLocaleString()}원</div>
+                        <div className="font-medium line-clamp-2 mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{relatedProduct.name}</div>
+                        <div className="font-bold text-emerald-600 dark:text-emerald-400">{relatedProduct.price.toLocaleString()}원</div>
                       </CardContent>
                     </Card>
                   </Link>
@@ -1072,6 +1059,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </div>
             </CardContent>
           </Card>
+
           {/* 리뷰 수정 다이얼로그 */}
           <Dialog open={editOpen} onOpenChange={(v) => (v ? setEditOpen(true) : closeEdit())}>
             <DialogContent className="sm:max-w-lg">

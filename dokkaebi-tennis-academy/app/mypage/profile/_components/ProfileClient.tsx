@@ -178,10 +178,10 @@ export default function ProfileClient({ user }: Props) {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-blue-50 via-purple-50 to-teal-50 dark:from-gray-900 dark:via-blue-950 dark:to-purple-950">
+    <div className="min-h-full bg-gradient-to-br from-emerald-50 via-white to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900/20">
       {/* 히어로 섹션 */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white">
-        <div className="absolute inset-0 bg-black/20" />
+      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white">
+        <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute inset-0">
           <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full animate-pulse" />
           <div className="absolute top-32 right-20 w-16 h-16 bg-white/5 rounded-full animate-bounce" />
@@ -191,19 +191,19 @@ export default function ProfileClient({ user }: Props) {
         <div className="relative container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-6 mb-8">
-              <Link href="/mypage" className="inline-flex items-center text-white/80 hover:text-white transition-colors">
+              <Link href="/mypage" className="inline-flex items-center text-white/80 hover:text-white transition-colors font-medium">
                 <ArrowLeft className="mr-2 h-5 w-5" />
                 마이페이지로 돌아가기
               </Link>
             </div>
 
             <div className="flex items-center gap-6">
-              <div className="bg-white/20 backdrop-blur-sm rounded-full p-6">
+              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
                 <Settings className="h-12 w-12" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">회원정보 수정</h1>
-                <p className="text-xl text-blue-100">개인정보를 안전하게 관리하세요</p>
+                <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">회원정보 수정</h1>
+                <p className="text-xl text-emerald-100">개인정보를 안전하게 관리하세요</p>
               </div>
             </div>
           </div>
@@ -214,22 +214,22 @@ export default function ProfileClient({ user }: Props) {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <Tabs defaultValue="profile" className="space-y-8">
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
               <CardContent className="p-6">
-                <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-gray-100 dark:bg-gray-800">
-                  <TabsTrigger value="profile" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-slate-100 dark:bg-slate-700">
+                  <TabsTrigger value="profile" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                     <User className="h-5 w-5" />
                     <span className="text-xs font-medium">기본정보</span>
                   </TabsTrigger>
-                  <TabsTrigger value="password" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                  <TabsTrigger value="password" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                     <Shield className="h-5 w-5" />
                     <span className="text-xs font-medium">비밀번호</span>
                   </TabsTrigger>
-                  <TabsTrigger value="address" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                  <TabsTrigger value="address" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                     <MapPin className="h-5 w-5" />
                     <span className="text-xs font-medium">배송지</span>
                   </TabsTrigger>
-                  <TabsTrigger value="preferences" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                  <TabsTrigger value="preferences" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                     <Bell className="h-5 w-5" />
                     <span className="text-xs font-medium">설정</span>
                   </TabsTrigger>
@@ -239,11 +239,11 @@ export default function ProfileClient({ user }: Props) {
 
             {/* 기본정보 탭 */}
             <TabsContent value="profile">
-              <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-b">
+              <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20 border-b">
                   <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-full p-3">
-                      <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    <div className="bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 rounded-2xl p-3 shadow-lg">
+                      <User className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
                       <CardTitle className="text-xl">기본정보</CardTitle>
@@ -254,45 +254,62 @@ export default function ProfileClient({ user }: Props) {
                 <CardContent className="p-8 space-y-8">
                   {/* 프로필 이미지 */}
                   <div className="flex items-center gap-6">
-                    <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
+                    <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
                       <AvatarImage src="/placeholder.svg?height=96&width=96" alt="프로필 이미지" />
-                      <AvatarFallback className="text-2xl bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900">{profileData.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-2xl bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 text-emerald-600 dark:text-emerald-400">{profileData.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2">
+                      <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-emerald-200 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
                         <Camera className="mr-2 h-4 w-4" />
                         이미지 변경
                       </Button>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">JPG, PNG 파일만 업로드 가능합니다</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">JPG, PNG 파일만 업로드 가능합니다</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="flex items-center gap-2">
+                      <Label htmlFor="name" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                         <User className="h-4 w-4" />
                         이름 *
                       </Label>
-                      <Input id="name" value={profileData.name ?? '이름 없음'} onChange={(e) => setProfileData({ ...profileData, name: e.target.value })} className="h-12" />
+                      <Input
+                        id="name"
+                        value={profileData.name ?? '이름 없음'}
+                        onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="flex items-center gap-2">
+                      <Label htmlFor="email" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                         <Mail className="h-4 w-4" />
                         이메일 *
                       </Label>
-                      <Input id="email" type="email" value={profileData.email ?? '이메일 없음'} onChange={(e) => setProfileData({ ...profileData, email: e.target.value })} className="h-12" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={profileData.email ?? '이메일 없음'}
+                        onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                      />
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="phone" className="flex items-center gap-2">
+                      <Label htmlFor="phone" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                         <Phone className="h-4 w-4" />
                         전화번호
                       </Label>
-                      <Input id="phone" value={profileData.phone ?? '전화번호 없음'} onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })} className="h-12" placeholder="01012345678" />
+                      <Input
+                        id="phone"
+                        value={profileData.phone ?? '전화번호 없음'}
+                        onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                        placeholder="01012345678"
+                      />
                     </div>
                   </div>
 
                   <div className="flex justify-end">
-                    <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+                    <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? '저장 중...' : '저장'}
                     </Button>
@@ -303,10 +320,10 @@ export default function ProfileClient({ user }: Props) {
 
             {/* 비밀번호 탭 */}
             <TabsContent value="password">
-              <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
                 <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-b">
                   <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-full p-3">
+                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-2xl p-3 shadow-lg">
                       <Shield className="h-6 w-6 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
@@ -317,21 +334,45 @@ export default function ProfileClient({ user }: Props) {
                 </CardHeader>
                 <CardContent className="p-8 space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="currentPassword">현재 비밀번호 *</Label>
-                    <Input id="currentPassword" type="password" value={passwordData.currentPassword} onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })} className="h-12" />
+                    <Label htmlFor="currentPassword" className="text-slate-700 dark:text-slate-300">
+                      현재 비밀번호 *
+                    </Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="newPassword">새 비밀번호 *</Label>
-                    <Input id="newPassword" type="password" value={passwordData.newPassword} onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })} className="h-12" />
-                    <p className="text-sm text-muted-foreground">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
+                    <Label htmlFor="newPassword" className="text-slate-700 dark:text-slate-300">
+                      새 비밀번호 *
+                    </Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                    />
+                    <p className="text-sm text-slate-500 dark:text-slate-400">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">새 비밀번호 확인 *</Label>
-                    <Input id="confirmPassword" type="password" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })} className="h-12" />
+                    <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300">
+                      새 비밀번호 확인 *
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                    />
                   </div>
 
                   <div className="flex justify-end">
-                    <Button onClick={handlePasswordChange} disabled={isLoading} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+                    <Button onClick={handlePasswordChange} disabled={isLoading} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? '변경 중...' : '비밀번호 변경'}
                     </Button>
@@ -342,10 +383,10 @@ export default function ProfileClient({ user }: Props) {
 
             {/* 배송지 탭 */}
             <TabsContent value="address">
-              <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+              <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
                 <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-b">
                   <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-full p-3">
+                    <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-2xl p-3 shadow-lg">
                       <MapPin className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div>
@@ -357,21 +398,32 @@ export default function ProfileClient({ user }: Props) {
                 <CardContent className="p-8 space-y-6">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div className="space-y-2">
-                      <Label htmlFor="zipCode">우편번호</Label>
+                      <Label htmlFor="zipCode" className="text-slate-700 dark:text-slate-300">
+                        우편번호
+                      </Label>
                       <div className="flex gap-2">
-                        <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 cursor-default" placeholder="12345" />
-                        <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent" variant="outline">
+                        <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default" placeholder="12345" />
+                        <Button
+                          type="button"
+                          onClick={handleAddressSearch}
+                          className="h-12 px-6 bg-transparent border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                          variant="outline"
+                        >
                           검색
                         </Button>
                       </div>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="address1">주소</Label>
-                    <Input id="address1" value={profileData.address.address1} readOnly className="h-12 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 cursor-default" placeholder="주소 검색 버튼을 클릭해주세요" />
+                    <Label htmlFor="address1" className="text-slate-700 dark:text-slate-300">
+                      주소
+                    </Label>
+                    <Input id="address1" value={profileData.address.address1} readOnly className="h-12 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default" placeholder="주소 검색 버튼을 클릭해주세요" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="address2">상세주소</Label>
+                    <Label htmlFor="address2" className="text-slate-700 dark:text-slate-300">
+                      상세주소
+                    </Label>
                     <Input
                       id="address2"
                       value={profileData.address.address2}
@@ -381,13 +433,13 @@ export default function ProfileClient({ user }: Props) {
                           address: { ...profileData.address, address2: e.target.value },
                         })
                       }
-                      className="h-12"
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
                       placeholder="동, 호수 등 상세주소"
                     />
                   </div>
 
                   <div className="flex justify-end">
-                    <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+                    <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? '저장 중...' : '저장'}
                     </Button>
@@ -399,10 +451,10 @@ export default function ProfileClient({ user }: Props) {
             {/* 설정 탭 */}
             <TabsContent value="preferences">
               <div className="space-y-8">
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+                <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
                   <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-b">
                     <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-full p-3">
+                      <div className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-2xl p-3 shadow-lg">
                         <Bell className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                       </div>
                       <div>
@@ -412,12 +464,12 @@ export default function ProfileClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-8 space-y-6">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                       <div>
-                        <Label htmlFor="email-marketing" className="font-medium">
+                        <Label htmlFor="email-marketing" className="font-medium text-slate-700 dark:text-slate-300">
                           이메일 수신
                         </Label>
-                        <p className="text-sm text-muted-foreground">할인 쿠폰, 신상품 소식을 이메일로 받아보세요.</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">할인 쿠폰, 신상품 소식을 이메일로 받아보세요.</p>
                       </div>
                       <Switch
                         id="email-marketing"
@@ -431,12 +483,12 @@ export default function ProfileClient({ user }: Props) {
                       />
                     </div>
                     <Separator />
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                       <div>
-                        <Label htmlFor="sms-marketing" className="font-medium">
+                        <Label htmlFor="sms-marketing" className="font-medium text-slate-700 dark:text-slate-300">
                           SMS 수신
                         </Label>
-                        <p className="text-sm text-muted-foreground">주문 상태, 배송 정보를 SMS로 받아보세요.</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">주문 상태, 배송 정보를 SMS로 받아보세요.</p>
                       </div>
                       <Switch
                         id="sms-marketing"
@@ -450,12 +502,12 @@ export default function ProfileClient({ user }: Props) {
                       />
                     </div>
                     <Separator />
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
                       <div>
-                        <Label htmlFor="push-marketing" className="font-medium">
+                        <Label htmlFor="push-marketing" className="font-medium text-slate-700 dark:text-slate-300">
                           앱 푸시 알림
                         </Label>
-                        <p className="text-sm text-muted-foreground">앱을 통해 실시간 알림을 받아보세요.</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">앱을 통해 실시간 알림을 받아보세요.</p>
                       </div>
                       <Switch
                         id="push-marketing"
@@ -470,7 +522,7 @@ export default function ProfileClient({ user }: Props) {
                     </div>
 
                     <div className="flex justify-end">
-                      <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+                      <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
                         <Save className="mr-2 h-4 w-4" />
                         {isLoading ? '저장 중...' : '저장'}
                       </Button>
@@ -478,10 +530,10 @@ export default function ProfileClient({ user }: Props) {
                   </CardContent>
                 </Card>
 
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-red-200 dark:border-red-800">
+                <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-red-200 dark:border-red-800">
                   <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 border-b border-red-200 dark:border-red-800">
                     <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900 dark:to-pink-900 rounded-full p-3">
+                      <div className="bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900 dark:to-pink-900 rounded-2xl p-3 shadow-lg">
                         <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
                       </div>
                       <div>
@@ -520,12 +572,17 @@ export default function ProfileClient({ user }: Props) {
                       />
                     ) : (
                       <div className="text-center">
-                        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-6 mb-6">
+                        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mb-6">
                           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
                           <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">정말로 탈퇴하시겠습니까?</h3>
                           <p className="text-sm text-red-600 dark:text-red-400">탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.</p>
                         </div>
-                        <Button variant="destructive" type="button" onClick={() => setShowWithdrawalForm(true)} className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700">
+                        <Button
+                          variant="destructive"
+                          type="button"
+                          onClick={() => setShowWithdrawalForm(true)}
+                          className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                        >
                           <AlertTriangle className="mr-2 h-4 w-4" />
                           회원 탈퇴
                         </Button>

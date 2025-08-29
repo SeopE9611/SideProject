@@ -16,8 +16,8 @@ export function UserSidebar() {
       label: '주문 내역',
       value: 'orders',
       icon: ClipboardList,
-      gradient: 'from-blue-500 to-purple-500',
-      bgGradient: 'from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20',
+      gradient: 'from-emerald-500 to-green-500',
+      bgGradient: 'from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20',
     },
     {
       label: '신청 내역',
@@ -51,8 +51,8 @@ export function UserSidebar() {
       label: '회원 정보 수정',
       value: 'profile',
       icon: UserCog,
-      gradient: 'from-gray-500 to-slate-500',
-      bgGradient: 'from-gray-50 to-slate-50 dark:from-gray-950/20 dark:to-slate-950/20',
+      gradient: 'from-slate-500 to-gray-500',
+      bgGradient: 'from-slate-50 to-gray-50 dark:from-slate-950/20 dark:to-gray-950/20',
     },
   ];
 
@@ -68,23 +68,23 @@ export function UserSidebar() {
             key={value}
             variant="ghost"
             className={cn(
-              'w-full justify-start gap-3 h-12 px-4 transition-all duration-200 group relative overflow-hidden',
-              isActive ? `bg-gradient-to-r ${bgGradient} border border-gray-200 dark:border-gray-700 shadow-sm` : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
+              'w-full justify-start gap-3 h-12 px-4 transition-all duration-300 group relative overflow-hidden rounded-xl',
+              isActive ? `bg-gradient-to-r ${bgGradient} border border-emerald-200 dark:border-emerald-700 shadow-md` : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
             )}
             asChild
           >
             <Link href={href} replace={!isProfile}>
               <div
                 className={cn(
-                  'flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200',
-                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 group-hover:bg-gray-200 dark:group-hover:bg-gray-700'
+                  'flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 shadow-sm',
+                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600'
                 )}
               >
                 <Icon className="w-4 h-4" />
               </div>
-              <span className={cn('font-medium transition-colors duration-200', isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100')}>{label}</span>
+              <span className={cn('font-medium transition-colors duration-300', isActive ? 'text-slate-900 dark:text-slate-100' : 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100')}>{label}</span>
               <ChevronRight
-                className={cn('w-4 h-4 ml-auto transition-all duration-200', isActive ? 'text-gray-600 dark:text-gray-400 transform translate-x-1' : 'text-gray-400 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-400')}
+                className={cn('w-4 h-4 ml-auto transition-all duration-300', isActive ? 'text-slate-600 dark:text-slate-400 transform translate-x-1' : 'text-slate-400 dark:text-slate-600 group-hover:text-slate-600 dark:group-hover:text-slate-400')}
               />
             </Link>
           </Button>

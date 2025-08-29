@@ -33,7 +33,7 @@ export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialI
         </DialogHeader>
 
         <div className="relative w-full aspect-video">
-          {photos[idx] && <Image src={photos[idx]} alt={`리뷰 사진 ${idx + 1}`} fill className="object-contain" priority />}
+          {photos[idx] && <Image src={photos[idx] || '/placeholder.svg'} alt={`리뷰 사진 ${idx + 1}`} fill className="object-contain" priority />}
 
           {photos.length > 1 && (
             <>
@@ -50,8 +50,8 @@ export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialI
         {photos.length > 1 && (
           <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
             {photos.map((src, i) => (
-              <button key={i} type="button" onClick={() => setIdx(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === idx ? 'ring-2 ring-blue-400' : ''}`} aria-label={`썸네일 ${i + 1}`}>
-                <Image src={src} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
+              <button key={i} type="button" onClick={() => setIdx(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === idx ? 'ring-2 ring-emerald-400' : ''}`} aria-label={`썸네일 ${i + 1}`}>
+                <Image src={src || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
               </button>
             ))}
           </div>

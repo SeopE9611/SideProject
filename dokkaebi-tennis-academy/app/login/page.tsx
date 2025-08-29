@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '@/app/store/authStore';
-import { Mail, Lock, User, Phone, MapPin, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, Phone, MapPin, Eye, EyeOff, CheckCircle, AlertCircle, Loader2, Zap, Shield } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -223,29 +223,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="grid min-h-[100svh] place-items-center bg-gradient-to-br from-green-50 via-white to-emerald-50 p-4">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('/placeholder.svg?height=100&width=100')] opacity-5"></div>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900/20 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-[url('/tennis-court-background.png')] opacity-5 bg-cover bg-center"></div>
+      <div className="absolute top-10 left-10 w-20 h-20 bg-emerald-400/20 rounded-full blur-2xl animate-pulse"></div>
+      <div className="absolute bottom-10 right-10 w-32 h-32 bg-green-400/10 rounded-full blur-3xl animate-pulse"></div>
 
       <div className="relative w-full max-w-6xl">
-        <Card className={`mx-auto overflow-hidden backdrop-blur-sm bg-white/95 border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === 'register' ? 'max-w-4xl' : 'max-w-md'}`}>
-          {/* Header */}
-          <div className="bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 p-6 text-white">
-            <div className="text-center">
-              {/* <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Image src="/placeholder.svg?height=32&width=32" alt="도깨비 테니스" width={32} height={32} className="text-white" />
-              </div> */}
-              <h1 className="text-2xl font-bold">도깨비 테니스 아카데미</h1>
-              <p className="text-green-100 mt-2">프리미엄 테니스 용품 전문점</p>
+        <Card className={`mx-auto overflow-hidden backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === 'register' ? 'max-w-4xl' : 'max-w-md'}`}>
+          <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 p-6 text-white relative overflow-hidden">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="relative text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black">도깨비 테니스</h1>
+              <p className="text-emerald-100 mt-2 font-medium">프리미엄 테니스 스트링 전문점</p>
             </div>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-green-700 font-semibold">
+            <TabsList className="grid w-full grid-cols-2 bg-slate-100 dark:bg-slate-700">
+              <TabsTrigger value="login" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-md data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 font-semibold">
                 로그인
               </TabsTrigger>
-              <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-green-700 font-semibold">
+              <TabsTrigger value="register" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-md data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 font-semibold">
                 회원가입
               </TabsTrigger>
             </TabsList>
@@ -254,8 +254,8 @@ export default function LoginPage() {
             <TabsContent value="login" className="p-6">
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-2xl font-bold text-slate-800">로그인</h2>
-                  <p className="text-slate-600 mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
+                  <h2 className="text-2xl font-bold text-slate-800 dark:text-white">로그인</h2>
+                  <p className="text-slate-600 dark:text-slate-400 mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
                 </div>
 
                 <form
@@ -266,39 +266,54 @@ export default function LoginPage() {
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-700 font-medium">
+                    <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">
                       이메일
                     </Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <Input id="email" type="email" placeholder="이메일 주소를 입력하세요" className="pl-10 h-12 border-slate-200 focus:border-green-500 focus:ring-green-500" />
+                      <Input id="email" type="email" placeholder="이메일 주소를 입력하세요" className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-slate-700 font-medium">
+                    <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-medium">
                       비밀번호
                     </Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="비밀번호를 입력하세요" className="pl-10 pr-10 h-12 border-slate-200 focus:border-green-500 focus:ring-green-500" />
-                      <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-slate-400 hover:text-slate-600" onClick={() => setShowPassword(!showPassword)}>
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="비밀번호를 입력하세요"
+                        className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 text-sm text-slate-600">
-                      <input type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="rounded border-slate-300 text-green-600 focus:ring-green-500" />
+                    <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                      <input type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
                       이메일 저장
                     </label>
-                    <Link href="/forgot-password" className="text-sm text-green-600 hover:text-green-700 hover:underline">
+                    <Link href="/forgot-password" className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline">
                       비밀번호 찾기
                     </Link>
                   </div>
 
-                  <Button type="submit" className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all" disabled={loginLoading}>
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    disabled={loginLoading}
+                  >
                     {loginLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -312,31 +327,36 @@ export default function LoginPage() {
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-slate-200" />
+                    <span className="w-full border-t border-slate-200 dark:border-slate-600" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-4 text-slate-500 font-medium">SNS 계정으로 로그인</span>
+                    <span className="bg-white dark:bg-slate-800 px-4 text-slate-500 dark:text-slate-400 font-medium">SNS 계정으로 로그인</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
-                  <Button variant="outline" className="h-12 border-slate-200 hover:bg-yellow-50 hover:border-yellow-300 bg-transparent">
+                  <Button variant="outline" className="h-12 border-slate-200 dark:border-slate-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-300 dark:hover:border-yellow-600 bg-transparent">
                     <Image src="/placeholder.svg?height=20&width=20" alt="카카오" width={20} height={20} />
                   </Button>
-                  <Button variant="outline" className="h-12 border-slate-200 hover:bg-green-50 hover:border-green-300 bg-transparent">
+                  <Button variant="outline" className="h-12 border-slate-200 dark:border-slate-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-600 bg-transparent">
                     <Image src="/placeholder.svg?height=20&width=20" alt="네이버" width={20} height={20} />
                   </Button>
-                  <Button variant="outline" className="h-12 border-slate-200 hover:bg-blue-50 hover:border-blue-300 bg-transparent">
+                  <Button variant="outline" className="h-12 border-slate-200 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 bg-transparent">
                     <Image src="/placeholder.svg?height=20&width=20" alt="구글" width={20} height={20} />
                   </Button>
                 </div>
 
                 <div className="text-center">
-                  <div className="bg-slate-50 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-slate-600 mb-2">
-                      <span className="font-semibold text-green-600">비회원</span>도 주문하실 수 있습니다
-                    </p>
-                    <Button variant="outline" className="w-full border-green-200 text-green-700 hover:bg-green-50 bg-transparent" onClick={() => router.push('/order-lookup')}>
+                  <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-4 mb-4 border border-emerald-200/50 dark:border-emerald-800/50">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">비회원도 주문하실 수 있습니다</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
+                      onClick={() => router.push('/order-lookup')}
+                    >
                       비회원 주문 조회하기
                     </Button>
                   </div>
@@ -348,15 +368,15 @@ export default function LoginPage() {
             <TabsContent value="register" className="p-6">
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-2xl font-bold text-slate-800">회원가입</h2>
-                  <p className="text-slate-600 mt-2">도깨비 테니스 아카데미의 회원이 되어보세요</p>
+                  <h2 className="text-2xl font-bold text-slate-800 dark:text-white">회원가입</h2>
+                  <p className="text-slate-600 dark:text-slate-400 mt-2">도깨비 테니스의 회원이 되어보세요</p>
                 </div>
 
                 <form onSubmit={handleRegister} className="space-y-6">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* 이메일 */}
                     <div className="lg:col-span-2 space-y-2">
-                      <Label className="text-slate-700 font-medium">이메일 주소</Label>
+                      <Label className="text-slate-700 dark:text-slate-300 font-medium">이메일 주소</Label>
                       <div className="flex gap-2">
                         <div className="relative flex-1">
                           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -367,10 +387,10 @@ export default function LoginPage() {
                               setEmailId(e.target.value);
                               setIsEmailAvailable(null);
                             }}
-                            className="pl-10 h-12 border-slate-200 focus:border-green-500"
+                            className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
                           />
                         </div>
-                        <span className="self-center text-slate-500 font-medium">@</span>
+                        <span className="self-center text-slate-500 dark:text-slate-400 font-medium">@</span>
                         {isCustomDomain ? (
                           <div className="flex gap-2">
                             <Input
@@ -380,12 +400,12 @@ export default function LoginPage() {
                                 setEmailDomain(e.target.value);
                                 setIsEmailAvailable(null);
                               }}
-                              className="w-40 h-12 border-slate-200 focus:border-green-500"
+                              className="w-40 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
                             />
                             <Button
                               type="button"
                               variant="outline"
-                              className="h-12 px-3 border-slate-200 bg-transparent"
+                              className="h-12 px-3 border-slate-200 dark:border-slate-600 bg-transparent"
                               onClick={() => {
                                 setIsCustomDomain(false);
                                 setEmailDomain('gmail.com');
@@ -409,7 +429,7 @@ export default function LoginPage() {
                               setIsEmailAvailable(null);
                             }}
                           >
-                            <SelectTrigger className="w-40 h-12 border-slate-200">
+                            <SelectTrigger className="w-40 h-12 border-slate-200 dark:border-slate-600">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -423,7 +443,7 @@ export default function LoginPage() {
                         <Button
                           type="button"
                           variant="outline"
-                          className="h-12 px-4 border-green-200 text-green-700 hover:bg-green-50 bg-transparent"
+                          className="h-12 px-4 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
                           onClick={checkEmailAvailability}
                           disabled={!emailRegex.test(`${emailId}@${emailDomain}`) || checkingEmail}
                         >
@@ -431,7 +451,7 @@ export default function LoginPage() {
                         </Button>
                       </div>
                       {isEmailAvailable !== null && (
-                        <div className={`flex items-center gap-2 text-sm mt-2 ${isEmailAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className={`flex items-center gap-2 text-sm mt-2 ${isEmailAvailable ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                           {isEmailAvailable ? (
                             <>
                               <CheckCircle className="h-4 w-4" />
@@ -449,7 +469,7 @@ export default function LoginPage() {
 
                     {/* 비밀번호 */}
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-medium">비밀번호</Label>
+                      <Label className="text-slate-700 dark:text-slate-300 font-medium">비밀번호</Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                         <Input
@@ -457,7 +477,7 @@ export default function LoginPage() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="비밀번호를 입력하세요"
-                          className="pl-10 pr-10 h-12 border-slate-200 focus:border-green-500"
+                          className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
                         />
                         <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-slate-400" onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
                           {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -467,7 +487,7 @@ export default function LoginPage() {
 
                     {/* 비밀번호 확인 */}
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-medium">비밀번호 확인</Label>
+                      <Label className="text-slate-700 dark:text-slate-300 font-medium">비밀번호 확인</Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                         <Input
@@ -475,14 +495,14 @@ export default function LoginPage() {
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="비밀번호를 다시 입력하세요"
-                          className="pl-10 pr-10 h-12 border-slate-200 focus:border-green-500"
+                          className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
                         />
                         <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-slate-400" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                           {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
                       </div>
                       {password && confirmPassword && password !== confirmPassword && (
-                        <div className="flex items-center gap-2 text-sm text-red-600">
+                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
                           <AlertCircle className="h-4 w-4" />
                           비밀번호가 일치하지 않습니다.
                         </div>
@@ -491,48 +511,74 @@ export default function LoginPage() {
 
                     {/* 이름 */}
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-medium">이름</Label>
+                      <Label className="text-slate-700 dark:text-slate-300 font-medium">이름</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름을 입력하세요" className="pl-10 h-12 border-slate-200 focus:border-green-500" />
+                        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름을 입력하세요" className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400" />
                       </div>
                     </div>
 
                     {/* 연락처 */}
                     <div className="space-y-2">
-                      <Label className="text-slate-700 font-medium">연락처</Label>
+                      <Label className="text-slate-700 dark:text-slate-300 font-medium">연락처</Label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                        <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외)" className="pl-10 h-12 border-slate-200 focus:border-green-500" />
+                        <Input
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="연락처를 입력하세요 ('-' 제외)"
+                          className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                        />
                       </div>
                     </div>
 
                     {/* 우편번호 */}
                     <div className="lg:col-span-2 space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className="text-slate-700 font-medium">우편번호</Label>
-                        <Button type="button" variant="outline" size="sm" className="border-green-200 text-green-700 hover:bg-green-50 bg-transparent" onClick={handleFindPostcode}>
+                        <Label className="text-slate-700 dark:text-slate-300 font-medium">우편번호</Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
+                          onClick={handleFindPostcode}
+                        >
                           <MapPin className="mr-2 h-4 w-4" />
                           우편번호 찾기
                         </Button>
                       </div>
-                      <Input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="우편번호를 입력하세요" readOnly className="bg-slate-50 cursor-not-allowed max-w-xs h-12 border-slate-200" />
+                      <Input
+                        value={postalCode}
+                        onChange={(e) => setPostalCode(e.target.value)}
+                        placeholder="우편번호를 입력하세요"
+                        readOnly
+                        className="bg-slate-50 dark:bg-slate-700 cursor-not-allowed max-w-xs h-12 border-slate-200 dark:border-slate-600"
+                      />
                     </div>
 
                     {/* 기본 주소 */}
                     <div className="lg:col-span-2 space-y-2">
-                      <Label className="text-slate-700 font-medium">기본 배송지 주소</Label>
-                      <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소를 입력하세요" readOnly className="bg-slate-50 cursor-not-allowed h-12 border-slate-200" />
+                      <Label className="text-slate-700 dark:text-slate-300 font-medium">기본 배송지 주소</Label>
+                      <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소를 입력하세요" readOnly className="bg-slate-50 dark:bg-slate-700 cursor-not-allowed h-12 border-slate-200 dark:border-slate-600" />
                     </div>
 
                     {/* 상세 주소 */}
                     <div className="lg:col-span-2 space-y-2">
-                      <Label className="text-slate-700 font-medium">상세 주소</Label>
-                      <Input value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" className="h-12 border-slate-200 focus:border-green-500" />
+                      <Label className="text-slate-700 dark:text-slate-300 font-medium">상세 주소</Label>
+                      <Input
+                        value={addressDetail}
+                        onChange={(e) => setAddressDetail(e.target.value)}
+                        placeholder="상세 주소를 입력하세요"
+                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                      />
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all" disabled={submitting}>
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    disabled={submitting}
+                  >
                     {submitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -545,21 +591,21 @@ export default function LoginPage() {
 
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-slate-200" />
+                      <span className="w-full border-t border-slate-200 dark:border-slate-600" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-4 text-slate-500 font-medium">SNS 계정으로 가입</span>
+                      <span className="bg-white dark:bg-slate-800 px-4 text-slate-500 dark:text-slate-400 font-medium">SNS 계정으로 가입</span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3">
-                    <Button variant="outline" className="h-12 border-slate-200 hover:bg-yellow-50 hover:border-yellow-300 bg-transparent">
+                    <Button variant="outline" className="h-12 border-slate-200 dark:border-slate-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-300 dark:hover:border-yellow-600 bg-transparent">
                       <Image src="/placeholder.svg?height=20&width=20" alt="카카오" width={20} height={20} />
                     </Button>
-                    <Button variant="outline" className="h-12 border-slate-200 hover:bg-green-50 hover:border-green-300 bg-transparent">
+                    <Button variant="outline" className="h-12 border-slate-200 dark:border-slate-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-600 bg-transparent">
                       <Image src="/placeholder.svg?height=20&width=20" alt="네이버" width={20} height={20} />
                     </Button>
-                    <Button variant="outline" className="h-12 border-slate-200 hover:bg-blue-50 hover:border-blue-300 bg-transparent">
+                    <Button variant="outline" className="h-12 border-slate-200 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 bg-transparent">
                       <Image src="/placeholder.svg?height=20&width=20" alt="구글" width={20} height={20} />
                     </Button>
                   </div>
