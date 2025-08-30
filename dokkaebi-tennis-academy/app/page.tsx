@@ -1,478 +1,547 @@
+'use client';
+
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, Award, Users, Clock, Shield, Zap, Target, ArrowRight, Quote, Calendar, ChevronRight, Sparkles, Trophy, Heart } from 'lucide-react';
+import { Star, ArrowRight, Play, Phone, MapPin, Target, Shield, Clock, Award, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useRef } from 'react';
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  brand: string;
+  rating: number;
+  reviews: number;
+  description: string;
+}
+
+interface StringProducts {
+  polyester: Product[];
+  hybrid: Product[];
+}
 
 export default function Home() {
-  const featuredProducts = [
-    {
-      id: 1,
-      name: '루키론 프로 스트링',
-      price: 25000,
-      originalPrice: 30000,
-      image: '/tennis-string-luxilon-pro.png',
-      brand: '루키론',
-      features: ['반발력 ★★★★☆', '내구성 ★★★★★', '스핀 ★★★☆☆'],
-      isNew: true,
-      isBestseller: false,
-      rating: 4.8,
-      reviews: 124,
-    },
-    {
-      id: 2,
-      name: '테크니파이버 블랙코드',
-      price: 32000,
-      originalPrice: null,
-      image: '/tecnifibre-black-code-tennis-string.png',
-      brand: '테크니파이버',
-      features: ['반발력 ★★★★★', '내구성 ★★★☆☆', '스핀 ★★★★☆'],
-      isNew: false,
-      isBestseller: true,
-      rating: 4.9,
-      reviews: 89,
-    },
-    {
-      id: 3,
-      name: '윌슨 NXT 파워',
-      price: 28000,
-      originalPrice: null,
-      image: '/wilson-nxt-power-tennis-string.png',
-      brand: '윌슨',
-      features: ['반발력 ★★★★★', '내구성 ★★★☆☆', '스핀 ★★★☆☆'],
-      isNew: false,
-      isBestseller: false,
-      rating: 4.6,
-      reviews: 67,
-    },
-    {
-      id: 4,
-      name: '바볼랏 RPM 블라스트',
-      price: 30000,
-      originalPrice: 35000,
-      image: '/babolat-rpm-blast-tennis-string.png',
-      brand: '바볼랏',
-      features: ['반발력 ★★★☆☆', '내구성 ★★★★☆', '스핀 ★★★★★'],
-      isNew: true,
-      isBestseller: true,
-      rating: 4.7,
-      reviews: 156,
-    },
-  ];
+  const [activeCategory, setActiveCategory] = useState<keyof StringProducts>('polyester');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const categories = [
-    {
-      name: '폴리에스터',
-      icon: <Target className="w-6 h-6" />,
-      href: '/products/polyester',
-      description: '강력한 스핀과 컨트롤',
-      color: 'from-emerald-600 to-green-700',
-    },
-    {
-      name: '멀티필라멘트',
-      icon: <Shield className="w-6 h-6" />,
-      href: '/products/multifilament',
-      description: '부드러운 타감과 편안함',
-      color: 'from-slate-600 to-slate-700',
-    },
-    {
-      name: '하이브리드',
-      icon: <Zap className="w-6 h-6" />,
-      href: '/products/hybrid',
-      description: '최적의 조합',
-      color: 'from-gray-800 to-black',
-    },
-    {
-      name: '내추럴 거트',
-      icon: <Award className="w-6 h-6" />,
-      href: '/products/natural',
-      description: '최고급 프리미엄',
-      color: 'from-amber-600 to-yellow-700',
-    },
-  ];
+  const stringProducts: StringProducts = {
+    polyester: [
+      {
+        id: 1,
+        name: '루키론 프로 스트링',
+        price: 25000,
+        originalPrice: 30000,
+        image: '/tennis-string-luxilon-pro.png',
+        brand: '루키론',
+        rating: 4.8,
+        reviews: 124,
+        description: '프로 선수들이 선택하는 최고급 폴리에스터 스트링',
+      },
+      {
+        id: 2,
+        name: '바볼랏 RPM 블라스트',
+        price: 30000,
+        originalPrice: 35000,
+        image: '/babolat-rpm-blast-tennis-string.png',
+        brand: '바볼랏',
+        rating: 4.7,
+        reviews: 156,
+        description: '강력한 스핀과 컨트롤을 제공하는 폴리에스터',
+      },
+      {
+        id: 3,
+        name: '소링코 투어 바이트',
+        price: 28000,
+        image: '/solinco-tour-bite-tennis-string.png',
+        brand: '소링코',
+        rating: 4.6,
+        reviews: 89,
+        description: '뛰어난 내구성과 파워를 자랑하는 폴리에스터',
+      },
+      {
+        id: 4,
+        name: '헤드 린스 투어',
+        price: 26000,
+        image: '/head-lynx-tour-tennis-string.png',
+        brand: '헤드',
+        rating: 4.5,
+        reviews: 67,
+        description: '부드러운 타구감의 프리미엄 폴리에스터',
+      },
+      {
+        id: 5,
+        name: '윌슨 폴리 프로',
+        price: 24000,
+        image: '/wilson-poly-pro-tennis-string.png',
+        brand: '윌슨',
+        rating: 4.4,
+        reviews: 45,
+        description: '가성비 뛰어난 폴리에스터 스트링',
+      },
+      {
+        id: 6,
+        name: '요넥스 폴리투어 프로',
+        price: 27000,
+        image: '/yonex-polytour-pro-tennis-string.png',
+        brand: '요넥스',
+        rating: 4.6,
+        reviews: 78,
+        description: '일본 기술력의 정밀한 폴리에스터',
+      },
+      {
+        id: 7,
+        name: '테크니파이버 블랙 코드',
+        price: 29000,
+        image: '/tecnifibre-black-code-tennis-string.png',
+        brand: '테크니파이버',
+        rating: 4.7,
+        reviews: 91,
+        description: '독특한 5각형 단면의 혁신적 스트링',
+      },
+    ],
+    hybrid: [
+      {
+        id: 8,
+        name: '루키론 + 윌슨 NXT',
+        price: 35000,
+        originalPrice: 40000,
+        image: '/hybrid-luxilon-wilson-tennis-string.png',
+        brand: '하이브리드',
+        rating: 4.9,
+        reviews: 78,
+        description: '파워와 컨트롤의 완벽한 조합',
+      },
+      {
+        id: 9,
+        name: '바볼랏 + 테크니파이버',
+        price: 38000,
+        image: '/hybrid-babolat-tecnifibre-tennis-string.png',
+        brand: '하이브리드',
+        rating: 4.8,
+        reviews: 92,
+        description: '프로 선수들이 선호하는 하이브리드 세팅',
+      },
+      {
+        id: 10,
+        name: '소링코 + 헤드 멀티',
+        price: 32000,
+        image: '/hybrid-solinco-head-tennis-string.png',
+        brand: '하이브리드',
+        rating: 4.7,
+        reviews: 56,
+        description: '스핀과 편안함을 동시에 제공',
+      },
+      {
+        id: 11,
+        name: '윌슨 + 바볼랏 멀티',
+        price: 30000,
+        image: '/hybrid-wilson-babolat-tennis-string.png',
+        brand: '하이브리드',
+        rating: 4.6,
+        reviews: 34,
+        description: '초보자부터 중급자까지 추천',
+      },
+      {
+        id: 12,
+        name: '요넥스 + 테크니파이버',
+        price: 36000,
+        image: '/hybrid-yonex-tecnifibre-tennis-string.png',
+        brand: '하이브리드',
+        rating: 4.8,
+        reviews: 65,
+        description: '정밀함과 편안함의 조화',
+      },
+      {
+        id: 13,
+        name: '헤드 + 윌슨 멀티',
+        price: 31000,
+        image: '/hybrid-head-wilson-tennis-string.png',
+        brand: '하이브리드',
+        rating: 4.5,
+        reviews: 43,
+        description: '균형잡힌 성능의 하이브리드',
+      },
+      {
+        id: 14,
+        name: '바볼랏 + 윌슨 NXT',
+        price: 37000,
+        image: '/hybrid-babolat-wilson-tennis-string.png',
+        brand: '하이브리드',
+        rating: 4.7,
+        reviews: 58,
+        description: '클래식한 조합의 하이브리드 세팅',
+      },
+    ],
+  };
 
-  const notices = [
-    { id: 1, title: '5월 스트링 할인 이벤트 진행중', date: '2024-05-01', isHot: true },
-    { id: 2, title: '여름 아카데미 회원 모집 시작', date: '2024-05-10', isHot: false },
-    { id: 3, title: '신규 프리미엄 스트링 입고 안내', date: '2024-05-15', isHot: true },
-    { id: 4, title: '장착 서비스 예약 시스템 업데이트', date: '2024-05-20', isHot: false },
-  ];
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -340, behavior: 'smooth' });
+    }
+  };
 
-  const stats = [
-    { icon: Users, label: '만족한 고객', value: '5,000+', color: 'text-emerald-600' },
-    { icon: Award, label: '전문 경력', value: '15년+', color: 'text-slate-600' },
-    { icon: Target, label: '장착 완료', value: '50,000+', color: 'text-gray-800' },
-    { icon: Star, label: '평균 평점', value: '4.9/5', color: 'text-amber-600' },
-  ];
-
-  const testimonials = [
-    {
-      name: '죡팡',
-      role: '테니스 동호회 회장',
-      content: '도깨비 테니스의 스트링 장착 서비스는 정말 전문적입니다. 제 플레이 스타일에 맞는 완벽한 세팅을 해주셨어요.',
-      rating: 5,
-      image: '/korean-tennis-player-portrait.png',
-    },
-    {
-      name: '주말',
-      role: '테니스 코치',
-      content: '다양한 스트링을 체험해볼 수 있어서 좋았고, 전문가의 조언이 경기력 향상에 큰 도움이 되었습니다.',
-      rating: 5,
-      image: '/korean-female-tennis-coach.png',
-    },
-    {
-      name: '쑹빵이',
-      role: '주니어 선수',
-      content: '학생들에게 추천하고 있는 곳입니다. 품질과 서비스 모두 만족스럽고, 가격도 합리적이에요.',
-      rating: 5,
-      image: '/young-korean-tennis-player.png',
-    },
-  ];
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+    }
+  };
 
   return (
-    <div className="min-h-screen">
-      <section className="relative overflow-hidden bg-gradient-to-br from-white via-emerald-50 to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25"></div>
-
-        <div className="relative container mx-auto px-4 py-12 sm:py-16 lg:py-20">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-            {/* 왼쪽 콘텐츠 */}
-            <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30 rounded-full px-3 sm:px-4 py-2 border border-emerald-200/50 dark:border-emerald-800/50">
-                <Sparkles className="h-4 w-4 text-emerald-600" />
-                <span className="text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300">15년 전통의 전문 테니스 스트링 샵</span>
-              </div>
-
-              <div className="space-y-4">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
-                  <span className="text-slate-900 dark:text-white">완벽한</span>
-                  <br />
-                  <span className="bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 bg-clip-text text-transparent">테니스 스트링</span>
-                  <br />
-                  <span className="text-slate-900 dark:text-white">경험을</span>
-                </h1>
-
-                <p className="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg mx-auto lg:mx-0">
-                  당신의 플레이 스타일에 맞는 최적의 스트링으로
-                  <span className="font-semibold text-emerald-600"> 최상의 경기력</span>을 경험하세요
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Link href="/products" className="flex items-center gap-2">
-                    <Zap className="h-5 w-5" />
-                    스트링 쇼핑하기
-                    <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-xl transition-all duration-300 bg-transparent"
-                >
-                  <Link href="/services" className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    장착 서비스 예약
-                  </Link>
-                </Button>
-              </div>
-
-              {/* 통계 */}
-              <div className="grid grid-cols-2 gap-4 sm:gap-6 pt-6 lg:pt-8 max-w-sm mx-auto lg:max-w-none">
-                {stats.slice(0, 2).map((stat, index) => (
-                  <div key={index} className="text-center">
-                    <div className={`text-2xl sm:text-3xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
-                    <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 오른쪽 이미지 */}
-            <div className="relative order-first lg:order-last">
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-green-400/20 rounded-3xl blur-3xl"></div>
-              <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/20 shadow-2xl">
-                <Image src="/test2.jpg" alt="테니스 스트링 장착 작업실" width={600} height={400} className="rounded-2xl object-cover w-full h-48 sm:h-64 lg:h-80" priority />
-                <div className="absolute -bottom-2 sm:-bottom-4 -right-2 sm:-right-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-2xl shadow-lg">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
-                    <span className="font-semibold text-xs sm:text-sm">15년 전문 경력</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      {/* ... existing hero section ... */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+        {/* Tennis court line pattern background */}
+        <div className="absolute inset-0 opacity-10">
+          <svg className="w-full h-full" viewBox="0 0 800 600" fill="none">
+            {/* Court outline */}
+            <rect x="100" y="100" width="600" height="400" stroke="white" strokeWidth="4" fill="none" />
+            {/* Center line */}
+            <line x1="400" y1="100" x2="400" y2="500" stroke="white" strokeWidth="2" />
+            {/* Service boxes */}
+            <line x1="100" y1="250" x2="700" y2="250" stroke="white" strokeWidth="2" />
+            <line x1="100" y1="350" x2="700" y2="350" stroke="white" strokeWidth="2" />
+            <line x1="250" y1="250" x2="250" y2="350" stroke="white" strokeWidth="2" />
+            <line x1="550" y1="250" x2="550" y2="350" stroke="white" strokeWidth="2" />
+            {/* Net posts */}
+            <circle cx="100" cy="300" r="4" fill="white" />
+            <circle cx="700" cy="300" r="4" fill="white" />
+          </svg>
         </div>
-      </section>
 
-      <section className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-slate-900">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12 lg:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">스트링 카테고리</h2>
-            <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400">다양한 스트링 타입으로 당신만의 완벽한 세팅을 찾아보세요</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {categories.map((category, index) => (
-              <Link key={category.name} href={category.href} className="group">
-                <Card className="h-full overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
-                  <div className={`h-2 bg-gradient-to-r ${category.color}`}></div>
-                  <CardContent className="p-6 lg:p-8 text-center">
-                    <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${category.color} rounded-2xl mb-4 sm:mb-6 text-white group-hover:scale-110 transition-transform duration-300`}>
-                      {category.icon}
-                    </div>
-                    <h3 className="text-lg sm:text-xl font-bold mb-2">{category.name}</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{category.description}</p>
-                    <div className="flex items-center justify-center text-emerald-600 group-hover:text-emerald-700 transition-colors">
-                      <span className="text-sm font-medium">자세히 보기</span>
-                      <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+        {/* String pattern overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="w-full h-full bg-[linear-gradient(0deg,transparent_24%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_26%,transparent_27%,transparent_74%,rgba(255,255,255,0.1)_75%,rgba(255,255,255,0.1)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_26%,transparent_27%,transparent_74%,rgba(255,255,255,0.1)_75%,rgba(255,255,255,0.1)_76%,transparent_77%,transparent)] bg-[size:20px_20px]"></div>
         </div>
-      </section>
 
-      <section className="py-20 bg-gradient-to-br from-slate-50 to-emerald-50 dark:from-slate-800 dark:to-slate-900">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">왜 도깨비 테니스를 선택해야 할까요?</h2>
-            <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">15년간 쌓아온 전문성과 노하우로 최고의 테니스 스트링 서비스를 제공합니다</p>
-          </div>
-
-          <div className="space-y-20">
-            {/* 첫 번째 특징 */}
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="space-y-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl">
-                  <Shield className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-3xl font-bold">전문 기술력</h3>
-                <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                  15년 경력의 전문가가 직접 장착하는 프리미엄 서비스로 완벽한 텐션과 균형을 보장합니다. 각 라켓의 특성과 플레이어의 스타일을 고려한 맞춤형 장착 서비스를 제공합니다.
-                </p>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-green-400/20 rounded-3xl blur-2xl"></div>
-                <Image src="/professional-tennis-stringing-service.png" alt="전문 스트링 장착 서비스" width={500} height={400} className="relative rounded-2xl shadow-2xl" />
-              </div>
+        <div className="relative z-10 text-center max-w-6xl mx-auto px-4">
+          <div className="space-y-8 mb-12">
+            {/* Court-inspired title layout */}
+            <div className="relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
+              <h1 className="text-6xl lg:text-8xl font-black text-white leading-tight tracking-tight">
+                <span className="block">PRECISION</span>
+                <span className="block text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text">STRINGS</span>
+              </h1>
+              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
             </div>
 
-            {/* 두 번째 특징 */}
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="relative lg:order-1">
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-400/20 to-gray-400/20 rounded-3xl blur-2xl"></div>
-                <Image src="/tennis-string-consultation-and-advice.png" alt="맞춤형 상담 서비스" width={500} height={400} className="relative rounded-2xl shadow-2xl" />
-              </div>
-              <div className="space-y-6 lg:order-2">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-slate-500 to-gray-600 rounded-2xl">
-                  <Target className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-3xl font-bold">맞춤형 상담</h3>
-                <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">개인의 플레이 스타일과 선호도를 분석하여 최적의 스트링과 텐션을 추천해드립니다. 초보자부터 프로까지 모든 레벨에 맞는 전문적인 컨설팅을 제공합니다.</p>
-                {/* <Button asChild className="bg-slate-600 hover:bg-slate-700">
-                  <Link href="/">무료 상담 받기</Link>
-                </Button> */}
-              </div>
-            </div>
-
-            {/* 세 번째 특징 */}
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="space-y-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-gray-800 to-black rounded-2xl">
-                  <Clock className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-3xl font-bold">빠른 서비스</h3>
-                <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">당일 장착 서비스와 온라인 예약 시스템으로 편리하고 빠른 서비스를 제공합니다. 바쁜 일정 중에도 언제든지 예약하고 빠르게 서비스를 받으실 수 있습니다.</p>
-                {/* <Button asChild className="bg-gray-800 hover:bg-black">
-                  <Link href="/booking">지금 예약하기</Link>
-                </Button> */}
-              </div>
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-400/20 to-black/20 rounded-3xl blur-2xl"></div>
-                <Image src="/fast-tennis-string-service-booking-system.png" alt="빠른 서비스 예약" width={500} height={400} className="relative rounded-2xl shadow-2xl" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-slate-900">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center justify-between mb-8 lg:mb-12">
-            <div className="text-center lg:text-left mb-4 lg:mb-0">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">추천 상품</h2>
-              <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400">전문가가 엄선한 최고 품질의 테니스 스트링</p>
-            </div>
-            <Button asChild variant="outline" className="bg-transparent">
-              <Link href="/products" className="flex items-center gap-2">
-                전체 상품 보기
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
-            {featuredProducts.map((product) => (
-              <Link key={product.id} href={`/products/${product.id}`} className="group">
-                <Card className="h-full overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
-                  <div className="relative overflow-hidden">
-                    <Image src={product.image || '/placeholder.svg'} alt={product.name} width={300} height={300} className="h-48 sm:h-56 lg:h-64 w-full object-cover group-hover:scale-110 transition-transform duration-500" priority />
-                    <div className="absolute top-3 left-3 flex flex-col gap-2">
-                      {product.isNew && <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-xs">NEW</Badge>}
-                      {product.isBestseller && <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 text-xs">BEST</Badge>}
-                    </div>
-                    {product.originalPrice && (
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 text-xs">{Math.round((1 - product.price / product.originalPrice) * 100)}% OFF</Badge>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
-
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="text-sm text-slate-500 mb-2">{product.brand}</div>
-                    <CardTitle className="text-base sm:text-lg mb-3 group-hover:text-emerald-600 transition-colors line-clamp-2">{product.name}</CardTitle>
-
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(product.rating) ? 'text-yellow-500 fill-current' : 'text-slate-300'}`} />
-                        ))}
-                      </div>
-                      <span className="text-xs sm:text-sm text-slate-500">({product.reviews})</span>
-                    </div>
-
-                    <div className="space-y-1 mb-4">
-                      {product.features.slice(0, 2).map((feature, index) => (
-                        <div key={index} className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                          {feature}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-
-                  <CardFooter className="p-4 sm:p-6 pt-0 flex justify-between items-center">
-                    <div className="flex flex-col">
-                      {product.originalPrice && <span className="text-xs sm:text-sm text-slate-500 line-through">{product.originalPrice.toLocaleString()}원</span>}
-                      <span className="text-lg sm:text-xl font-bold text-emerald-600">{product.price.toLocaleString()}원</span>
-                    </div>
-                    <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white border-0 text-xs sm:text-sm">
-                      상세보기
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-white dark:bg-slate-900">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">고객 후기</h2>
-            <p className="text-xl text-slate-600 dark:text-slate-400">실제 고객들이 경험한 도깨비 테니스의 서비스</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <div className="flex items-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-500 fill-current" />
-                    ))}
-                  </div>
-
-                  <Quote className="h-8 w-8 text-blue-200 mb-4" />
-
-                  <p className="text-slate-700 dark:text-slate-300 mb-6 leading-relaxed">{testimonial.content}</p>
-
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <Image src={testimonial.image || '/placeholder.svg'} alt={testimonial.name} width={60} height={60} className="rounded-full border-2 border-blue-200" />
-                      <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full p-1">
-                        <Heart className="h-3 w-3 text-white fill-current" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-slate-900 dark:text-white">{testimonial.name}</div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">{testimonial.role}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <Button asChild variant="outline" className="border-emerald-200 hover:bg-emerald-50 dark:border-emerald-800 dark:hover:bg-emerald-900/20 bg-transparent">
-              <Link href="/reviews" className="inline-flex items-center gap-2">
-                리뷰 더보기
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="absolute inset-0 bg-[url('/tennis-court-background.png')] bg-cover bg-center opacity-10"></div>
-
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 sm:px-6 py-2 sm:py-3">
-              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="font-semibold text-sm sm:text-base">지금 바로 시작하세요!</span>
-            </div>
-
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
-              완벽한 테니스 경험을
+            <p className="text-xl lg:text-2xl text-slate-300 font-medium max-w-3xl mx-auto leading-relaxed">
+              프로 선수들이 신뢰하는 정밀한 스트링 기술로
               <br />
-              <span className="text-yellow-300">지금 시작하세요</span>
-            </h2>
+              당신의 게임을 한 단계 끌어올리세요
+            </p>
+          </div>
 
-            <p className="text-base sm:text-lg lg:text-xl xl:text-2xl opacity-90 max-w-2xl mx-auto leading-relaxed">전문가의 맞춤 상담을 통해 당신에게 완벽한 스트링을 찾아보세요</p>
+          {/* Court-inspired button layout */}
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <Button
+              asChild
+              size="lg"
+              className="relative bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-blue-400/20"
+            >
+              <Link href="/products" className="flex items-center gap-3">
+                <Target className="h-5 w-5" />
+                스트링 둘러보기
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </Button>
 
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
-              <Button asChild size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 px-6 sm:px-10 py-4 sm:py-5 text-base sm:text-lg rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 font-semibold w-full sm:w-auto">
-                <Link href="/services" className="flex items-center gap-2 sm:gap-3">
-                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6" />
-                  무료 상담 예약하기
-                  <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
+            <Button asChild variant="outline" size="lg" className="relative border-2 border-slate-300 text-slate-300 hover:bg-slate-300 hover:text-slate-900 px-8 py-4 text-lg font-semibold bg-transparent rounded-lg transition-all duration-300">
+              <Link href="/services" className="flex items-center gap-3">
+                <Play className="h-5 w-5" />
+                장착 서비스
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Floating tennis ball dots */}
+        <div className="absolute top-20 left-20 w-3 h-3 bg-yellow-400 rounded-full animate-bounce opacity-60"></div>
+        <div className="absolute top-40 right-32 w-2 h-2 bg-yellow-400 rounded-full animate-pulse opacity-40"></div>
+        <div className="absolute bottom-32 left-40 w-4 h-4 bg-yellow-400 rounded-full animate-bounce opacity-50" style={{ animationDelay: '1s' }}></div>
+      </section>
+
+      <section className="py-20 bg-white dark:bg-slate-800 relative">
+        <div className="container mx-auto px-4">
+          {/* Court center line inspired divider */}
+          <div className="flex items-center justify-center mb-16">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-slate-300 dark:to-slate-600"></div>
+            <div className="px-8">
+              <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
+            </div>
+            <div className="flex-1 h-px bg-gradient-to-l from-transparent to-slate-300 dark:to-slate-600"></div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: Award,
+                title: '15년 전문 경력',
+                description: '검증된 전문성',
+                color: 'blue',
+                detail: '15년간 축적된 노하우로 최고의 서비스를 제공합니다',
+              },
+              {
+                icon: Shield,
+                title: '품질 보장',
+                description: 'A/S 완벽 지원',
+                color: 'indigo',
+                detail: '모든 제품과 서비스에 대해 완벽한 품질을 보장합니다',
+              },
+              {
+                icon: Clock,
+                title: '빠른 배송',
+                description: '당일/익일 배송',
+                color: 'purple',
+                detail: '주문 후 24시간 내 빠른 배송으로 만족도를 높입니다',
+              },
+              {
+                icon: Star,
+                title: '고객 만족',
+                description: '4.9/5 평점',
+                color: 'blue',
+                detail: '5,000명 이상의 고객이 인정한 최고의 서비스',
+              },
+            ].map((feature, index) => (
+              <div
+                key={index}
+                className="group relative text-center p-8 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-300 hover:shadow-lg"
+              >
+                {/* Court corner inspired decoration */}
+                <div className="absolute top-4 left-4 w-6 h-6 border-l-2 border-t-2 border-slate-300 dark:border-slate-500 group-hover:border-blue-400 transition-colors duration-300"></div>
+                <div className="absolute bottom-4 right-4 w-6 h-6 border-r-2 border-b-2 border-slate-300 dark:border-slate-500 group-hover:border-blue-400 transition-colors duration-300"></div>
+
+                <div className="space-y-4">
+                  <div className={`inline-flex p-4 rounded-full bg-${feature.color}-100 dark:bg-${feature.color}-900/30`}>
+                    <feature.icon className={`h-8 w-8 text-${feature.color}-600 dark:text-${feature.color}-400`} />
+                  </div>
+                  <div className="text-xl font-bold text-slate-900 dark:text-white">{feature.title}</div>
+                  <div className="text-slate-600 dark:text-slate-300 font-medium">{feature.description}</div>
+                  <div className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{feature.detail}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-slate-50 dark:bg-slate-900 relative">
+        {/* String pattern background */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(59,130,246,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-4 mb-6">
+              <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></div>
+              <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">프리미엄 스트링</h2>
+              <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400"></div>
+            </div>
+            <p className="text-xl text-slate-600 dark:text-slate-300">프로가 선택하는 최고급 테니스 스트링</p>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex justify-center mb-12">
+            <div className="inline-flex bg-white dark:bg-slate-800 rounded-2xl p-2 border border-slate-200 dark:border-slate-700 shadow-lg">
+              <button
+                onClick={() => setActiveCategory('polyester')}
+                className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
+                  activeCategory === 'polyester' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
+                }`}
+              >
+                폴리에스터
+              </button>
+              <button
+                onClick={() => setActiveCategory('hybrid')}
+                className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
+                  activeCategory === 'hybrid' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
+                }`}
+              >
+                하이브리드
+              </button>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div ref={scrollContainerRef} className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <style jsx>{`
+                .scrollbar-hide::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
+              <div className="flex gap-6 pb-4" style={{ width: 'max-content' }}>
+                {stringProducts[activeCategory].map((product: Product, index: number) => (
+                  <Link
+                    key={product.id}
+                    href={`/products/${product.id}`}
+                    className="group block flex-none w-[320px] bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
+                  >
+                    {/* Product Image Placeholder */}
+                    <div className="relative mb-6 h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-xl flex items-center justify-center overflow-hidden">
+                      <div className="text-4xl font-bold text-slate-400 dark:text-slate-500">{product.brand.charAt(0)}</div>
+                      {product.originalPrice && <Badge className="absolute top-3 right-3 bg-red-500 text-white">할인</Badge>}
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{product.brand}</div>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                          <span className="text-sm text-slate-600 dark:text-slate-300">{product.rating}</span>
+                        </div>
+                      </div>
+
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">{product.name}</h3>
+
+                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{product.description}</p>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{product.price.toLocaleString()}원</div>
+                          {product.originalPrice && <div className="text-sm text-slate-400 line-through">{product.originalPrice.toLocaleString()}원</div>}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{product.reviews}개 리뷰</div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+
+                <Link
+                  href="/products"
+                  className="group flex-none w-[320px] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border-2 border-dashed border-blue-300 dark:border-blue-600 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 flex items-center justify-center"
+                >
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
+                      <ArrowRight className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">더 많은 상품</h3>
+                      <p className="text-sm text-blue-600 dark:text-blue-300">전체 스트링 컬렉션 보기</p>
+                    </div>
+                  </div>
                 </Link>
+              </div>
+            </div>
+
+            <div className="flex justify-center mt-8 gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
+                onClick={scrollLeft}
+              >
+                <ChevronLeft className="h-5 w-5" />
               </Button>
               <Button
-                asChild
                 variant="outline"
-                size="lg"
-                className="border-2 border-white text-white hover:bg-white hover:text-emerald-600 px-6 sm:px-10 py-4 sm:py-5 text-base sm:text-lg rounded-2xl bg-transparent shadow-lg hover:shadow-xl transition-all duration-300 font-semibold w-full sm:w-auto"
+                size="sm"
+                className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
+                onClick={scrollRight}
               >
-                <Link href="/products" className="flex items-center gap-2 sm:gap-3">
-                  <Zap className="h-5 w-5 sm:h-6 sm:w-6" />
-                  스트링 둘러보기
-                </Link>
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 pt-8 lg:pt-12 max-w-2xl lg:max-w-none mx-auto">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-yellow-300 mb-2">{stat.value}</div>
-                  <div className="text-xs sm:text-sm opacity-80">{stat.label}</div>
+      {/* Expert Testimonials Section */}
+      <section className="py-20 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
+        {/* Net pattern background */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="w-full h-full bg-[repeating-linear-gradient(0deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_11px),repeating-linear-gradient(90deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_11px)]"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-4 mb-6">
+              <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></div>
+              <h2 className="text-4xl lg:text-6xl font-bold text-white">전문가 추천</h2>
+              <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400"></div>
+            </div>
+            <p className="text-xl text-slate-300">프로 선수와 코치들이 인정한 스트링 전문성</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {[
+              {
+                name: '김재민',
+                title: '낚시신공',
+                image: '/expert-kim-minsu.jpg',
+                quote: '도깨비 테니스의 스트링 장착 기술은 정말 뛰어납니다. 매번 완벽한 텐션으로 제 플레이를 한 단계 끌어올려 주죠.',
+                rating: 5,
+                specialty: '금붕어 낚아봄',
+              },
+              {
+                name: '윤형섭',
+                title: '비숍',
+                image: '/expert-park-jiyoung.jpg',
+                quote: '15년간 다양한 스트링 샵을 이용해봤지만, 이곳만큼 정밀하고 신뢰할 수 있는 곳은 없었습니다.',
+                rating: 5,
+                specialty: '검밑솔전문가',
+              },
+              {
+                name: '쿠키선수',
+                title: '귀여워',
+                image: '/expert-lee-junho.jpg',
+                quote: '하이브리드 스트링 세팅을 완벽하게 해주셔서 파워와 컨트롤을 동시에 얻을 수 있었습니다.',
+                rating: 5,
+                specialty: '귀여움대회우승자',
+              },
+            ].map((expert, index) => (
+              <div key={index} className="group bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:border-blue-400/50 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+                {/* Expert Image Placeholder */}
+                <div className="relative mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-white">{expert.name.charAt(0)}</span>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-white mb-1">{expert.name}</h3>
+                    <p className="text-blue-300 text-sm font-medium">{expert.title}</p>
+                    <p className="text-slate-400 text-xs mt-1">{expert.specialty}</p>
+                  </div>
                 </div>
-              ))}
+
+                {/* Rating Stars */}
+                <div className="flex justify-center mb-6">
+                  {[...Array(expert.rating)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+
+                {/* Quote */}
+                <blockquote className="text-slate-200 text-center leading-relaxed italic">"{expert.quote}"</blockquote>
+
+                {/* Court corner decoration */}
+                <div className="absolute top-4 left-4 w-6 h-6 border-l-2 border-t-2 border-white/30 group-hover:border-blue-400/70 transition-colors duration-300"></div>
+                <div className="absolute bottom-4 right-4 w-6 h-6 border-r-2 border-b-2 border-white/30 group-hover:border-purple-400/70 transition-colors duration-300"></div>
+              </div>
+            ))}
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center mt-16">
+            <div className="space-y-6">
+              <h3 className="text-3xl font-bold text-white">당신도 전문가의 서비스를 경험해보세요</h3>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Link href="/contact" className="flex items-center gap-3">
+                    <Phone className="h-5 w-5" />
+                    상담 받기
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="border-2 border-slate-300 text-slate-300 hover:bg-slate-300 hover:text-slate-900 px-8 py-4 text-lg font-semibold bg-transparent rounded-xl transition-all duration-300">
+                  <Link href="/services/locations" className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5" />
+                    매장 찾기
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Youtube, Award, Shield, Truck, Rocket as Racquet, Star, Heart, Zap } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Youtube, Award, Shield, Truck, Star } from 'lucide-react';
 
 const Footer = () => {
   const quickLinks = [
@@ -29,7 +29,7 @@ const Footer = () => {
       icon: Shield,
       title: '품질 보장',
       description: 'A/S 완벽 지원',
-      color: 'text-emerald-400',
+      color: 'text-blue-400',
     },
     {
       icon: Truck,
@@ -46,67 +46,42 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="w-full bg-gradient-to-br from-slate-900 via-emerald-900 to-green-900 text-white relative overflow-hidden">
+    <footer className="w-full bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden">
       <div className="absolute inset-0 bg-[url('/abstract-geometric-pattern.png')] opacity-5"></div>
 
-      <div className="border-b border-white/10 relative z-10">
-        <div className="container py-12 lg:py-16">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="text-center group hover:scale-105 transition-transform duration-300">
-                <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-white/10 rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:bg-white/20 transition-colors">
-                  <feature.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${feature.color}`} />
-                </div>
-                <h4 className="font-bold text-sm sm:text-lg text-white mb-1 sm:mb-2">{feature.title}</h4>
-                <p className="text-xs sm:text-sm text-emerald-200">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="container py-12 sm:py-16 lg:py-20 relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 sm:py-16 lg:py-20 relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-8">
           {/* 브랜드 섹션 */}
-          <div className="sm:col-span-2 lg:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-400 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
-              </div>
               <div>
-                <div className="font-black text-2xl sm:text-3xl bg-gradient-to-r from-emerald-300 to-green-300 bg-clip-text text-transparent">도깨비 테니스</div>
-                <div className="text-xs sm:text-sm text-emerald-200 font-semibold tracking-wider">PROFESSIONAL STRING SHOP</div>
+                <div className="font-black text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">도깨비 테니스</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold tracking-wider">PROFESSIONAL STRING SHOP</div>
               </div>
             </Link>
 
-            <p className="text-emerald-100 mb-6 sm:mb-8 leading-relaxed text-sm sm:text-base lg:text-lg">15년 전통의 전문 테니스 스트링 서비스로 여러분의 테니스 라이프를 완성해드립니다. 최고 품질의 스트링과 전문적인 장착 서비스를 경험하세요.</p>
+            <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed text-sm">15년 전통의 전문 테니스 스트링 서비스로 여러분의 테니스 라이프를 완성해드립니다.</p>
 
-            <div className="flex space-x-3 sm:space-x-4 mb-6 sm:mb-8">
-              <Button size="icon" variant="ghost" className="hover:bg-white/10 rounded-xl transition-all duration-300 hover:scale-110">
-                <Facebook className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-300" />
+            <div className="flex space-x-3 mb-6">
+              <Button size="icon" variant="ghost" className="opacity-80 hover:opacity-100 focus:ring-2 ring-blue-500 rounded-md">
+                <Facebook className="h-5 w-5 text-blue-600" />
               </Button>
-              <Button size="icon" variant="ghost" className="hover:bg-white/10 rounded-xl transition-all duration-300 hover:scale-110">
-                <Instagram className="h-5 w-5 sm:h-6 sm:w-6 text-pink-300" />
+              <Button size="icon" variant="ghost" className="opacity-80 hover:opacity-100 focus:ring-2 ring-blue-500 rounded-md">
+                <Instagram className="h-5 w-5 text-pink-600" />
               </Button>
-              <Button size="icon" variant="ghost" className="hover:bg-white/10 rounded-xl transition-all duration-300 hover:scale-110">
-                <Youtube className="h-5 w-5 sm:h-6 sm:w-6 text-red-300" />
+              <Button size="icon" variant="ghost" className="opacity-80 hover:opacity-100 focus:ring-2 ring-blue-500 rounded-md">
+                <Youtube className="h-5 w-5 text-red-600" />
               </Button>
-            </div>
-
-            <div className="flex items-center gap-2 text-emerald-200">
-              <Heart className="h-4 w-4 text-red-400 fill-current" />
-              <span className="text-xs sm:text-sm">5,000+ 만족한 고객들과 함께</span>
             </div>
           </div>
 
           {/* 바로가기 */}
           <div>
-            <h3 className="text-lg sm:text-xl font-bold mb-6 sm:mb-8 text-white flex items-center gap-2">바로가기</h3>
-            <ul className="space-y-3 sm:space-y-4">
+            <h3 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">바로가기</h3>
+            <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-emerald-200 hover:text-white transition-all duration-300 flex items-center group text-xs sm:text-sm">
-                    <span className="w-0 group-hover:w-3 h-0.5 bg-gradient-to-r from-emerald-400 to-green-400 transition-all duration-300 mr-0 group-hover:mr-3 rounded-full"></span>
+                  <Link href={link.href} className="text-sm text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white transition-colors duration-300">
                     {link.name}
                   </Link>
                 </li>
@@ -116,15 +91,11 @@ const Footer = () => {
 
           {/* 고객센터 */}
           <div>
-            <h3 className="text-lg sm:text-xl font-bold mb-6 sm:mb-8 text-white flex items-center gap-2">
-              <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
-              고객센터
-            </h3>
-            <ul className="space-y-3 sm:space-y-4">
+            <h3 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">고객센터</h3>
+            <ul className="space-y-3">
               {customerService.map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-emerald-200 hover:text-white transition-all duration-300 flex items-center group text-xs sm:text-sm">
-                    <span className="w-0 group-hover:w-3 h-0.5 bg-gradient-to-r from-emerald-400 to-green-400 transition-all duration-300 mr-0 group-hover:mr-3 rounded-full"></span>
+                  <Link href={link.href} className="text-sm text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white transition-colors duration-300">
                     {link.name}
                   </Link>
                 </li>
@@ -132,48 +103,36 @@ const Footer = () => {
             </ul>
           </div>
 
+          {/* 연락처 */}
           <div>
-            <h3 className="text-lg sm:text-xl font-bold mb-6 sm:mb-8 text-white flex items-center gap-2">
-              <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
-              연락처
-            </h3>
-            <div className="space-y-4 sm:space-y-6">
-              <div className="flex items-center space-x-3 group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-white/10 rounded-xl group-hover:bg-white/20 transition-colors">
-                  <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-300" />
-                </div>
+            <h3 className="text-lg font-bold mb-6 text-slate-900 dark:text-white">연락처</h3>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <Phone className="h-4 w-4 text-blue-600" />
                 <div>
-                  <span className="text-white font-semibold text-sm sm:text-base">02-123-4567</span>
-                  <p className="text-xs text-emerald-200">24시간 상담 가능</p>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">02-123-4567</span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">24시간 상담 가능</p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-white/10 rounded-xl group-hover:bg-white/20 transition-colors">
-                  <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-300" />
-                </div>
+              <div className="flex items-center space-x-3">
+                <Mail className="h-4 w-4 text-blue-600" />
+                <span className="text-sm text-slate-900 dark:text-white break-all">info@dokkaebi-tennis.com</span>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <MapPin className="h-4 w-4 text-blue-600 mt-1" />
                 <div>
-                  <span className="text-white font-semibold text-xs sm:text-sm break-all">info@dokkaebi-tennis.com</span>
+                  <span className="text-sm text-slate-900 dark:text-white">서울시 강남구 테니스로 123</span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">지하철 2호선 강남역 3번 출구</p>
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-white/10 rounded-xl group-hover:bg-white/20 transition-colors mt-1">
-                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-300" />
-                </div>
+              <div className="flex items-center space-x-3">
+                <Clock className="h-4 w-4 text-blue-600" />
                 <div>
-                  <span className="text-white font-semibold text-xs sm:text-sm">서울시 강남구 테니스로 123</span>
-                  <p className="text-xs text-emerald-200 mt-1">지하철 2호선 강남역 3번 출구</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-white/10 rounded-xl group-hover:bg-white/20 transition-colors">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-300" />
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-xs sm:text-sm">평일: 09:00 - 20:00</div>
-                  <div className="text-xs text-emerald-200">주말: 09:00 - 18:00</div>
+                  <div className="text-sm text-slate-900 dark:text-white">평일: 09:00 - 20:00</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">주말: 09:00 - 18:00</div>
                 </div>
               </div>
             </div>
@@ -181,14 +140,10 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="border-t border-white/10 bg-black/30 relative z-10">
-        <div className="container py-6 sm:py-8">
-          <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
-            <div className="text-center lg:text-left">
-              <p className="text-emerald-200 text-xs sm:text-sm mb-2">&copy; {new Date().getFullYear()} 도깨비 테니스. All rights reserved.</p>
-              <p className="text-emerald-300 text-xs">사업자등록번호: 123-45-67890 | 대표: 김재민 | 통신판매업신고: 2024-서울강남-1234</p>
-            </div>
-          </div>
+      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t mt-8 pt-4 border-slate-200 dark:border-slate-800 max-w-7xl mx-auto px-4 md:px-6 pb-6">
+        <div>
+          <p className="mb-1">&copy; {new Date().getFullYear()} 도깨비 테니스. All rights reserved.</p>
+          <p>사업자등록번호: 123-45-67890 | 대표: 김재민 | 통신판매업신고: 2024-서울강남-1234</p>
         </div>
       </div>
     </footer>
