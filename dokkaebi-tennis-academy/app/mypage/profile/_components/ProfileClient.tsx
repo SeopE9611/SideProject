@@ -178,9 +178,15 @@ export default function ProfileClient({ user }: Props) {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-emerald-50 via-white to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900/20">
-      {/* 히어로 섹션 */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 text-white">
+    <div className="min-h-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+      <div
+        className="absolute inset-0 opacity-5 dark:opacity-10"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23000000' fillOpacity='0.1'%3E%3Cpath d='M0 30h60v2H0zM28 0v60h2V0z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }}
+      />
+
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute inset-0">
           <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full animate-pulse" />
@@ -202,15 +208,14 @@ export default function ProfileClient({ user }: Props) {
                 <Settings className="h-12 w-12" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">회원정보 수정</h1>
-                <p className="text-xl text-emerald-100">개인정보를 안전하게 관리하세요</p>
+                <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">회원정보 수정</h1>
+                <p className="text-xl text-blue-100">개인정보를 안전하게 관리하세요</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 메인 콘텐츠 */}
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <Tabs defaultValue="profile" className="space-y-8">
@@ -237,13 +242,12 @@ export default function ProfileClient({ user }: Props) {
               </CardContent>
             </Card>
 
-            {/* 기본정보 탭 */}
             <TabsContent value="profile">
               <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20 border-b">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b">
                   <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 rounded-2xl p-3 shadow-lg">
-                      <User className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                    <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-2xl p-3 shadow-lg">
+                      <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
                       <CardTitle className="text-xl">기본정보</CardTitle>
@@ -252,14 +256,13 @@ export default function ProfileClient({ user }: Props) {
                   </div>
                 </CardHeader>
                 <CardContent className="p-8 space-y-8">
-                  {/* 프로필 이미지 */}
                   <div className="flex items-center gap-6">
                     <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
                       <AvatarImage src="/placeholder.svg?height=96&width=96" alt="프로필 이미지" />
-                      <AvatarFallback className="text-2xl bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 text-emerald-600 dark:text-emerald-400">{profileData.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-2xl bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 text-blue-600 dark:text-blue-400">{profileData.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-emerald-200 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
+                      <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
                         <Camera className="mr-2 h-4 w-4" />
                         이미지 변경
                       </Button>
@@ -277,7 +280,7 @@ export default function ProfileClient({ user }: Props) {
                         id="name"
                         value={profileData.name ?? '이름 없음'}
                         onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                       />
                     </div>
                     <div className="space-y-2">
@@ -290,7 +293,7 @@ export default function ProfileClient({ user }: Props) {
                         type="email"
                         value={profileData.email ?? '이메일 없음'}
                         onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
@@ -302,14 +305,14 @@ export default function ProfileClient({ user }: Props) {
                         id="phone"
                         value={profileData.phone ?? '전화번호 없음'}
                         onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                         placeholder="01012345678"
                       />
                     </div>
                   </div>
 
                   <div className="flex justify-end">
-                    <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? '저장 중...' : '저장'}
                     </Button>
@@ -318,7 +321,6 @@ export default function ProfileClient({ user }: Props) {
               </Card>
             </TabsContent>
 
-            {/* 비밀번호 탭 */}
             <TabsContent value="password">
               <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
                 <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-b">
@@ -342,7 +344,7 @@ export default function ProfileClient({ user }: Props) {
                       type="password"
                       value={passwordData.currentPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -354,7 +356,7 @@ export default function ProfileClient({ user }: Props) {
                       type="password"
                       value={passwordData.newPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                     />
                     <p className="text-sm text-slate-500 dark:text-slate-400">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
                   </div>
@@ -367,7 +369,7 @@ export default function ProfileClient({ user }: Props) {
                       type="password"
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                     />
                   </div>
 
@@ -381,7 +383,6 @@ export default function ProfileClient({ user }: Props) {
               </Card>
             </TabsContent>
 
-            {/* 배송지 탭 */}
             <TabsContent value="address">
               <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
                 <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-b">
@@ -403,12 +404,7 @@ export default function ProfileClient({ user }: Props) {
                       </Label>
                       <div className="flex gap-2">
                         <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default" placeholder="12345" />
-                        <Button
-                          type="button"
-                          onClick={handleAddressSearch}
-                          className="h-12 px-6 bg-transparent border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                          variant="outline"
-                        >
+                        <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20" variant="outline">
                           검색
                         </Button>
                       </div>
@@ -433,7 +429,7 @@ export default function ProfileClient({ user }: Props) {
                           address: { ...profileData.address, address2: e.target.value },
                         })
                       }
-                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                       placeholder="동, 호수 등 상세주소"
                     />
                   </div>
@@ -448,7 +444,6 @@ export default function ProfileClient({ user }: Props) {
               </Card>
             </TabsContent>
 
-            {/* 설정 탭 */}
             <TabsContent value="preferences">
               <div className="space-y-8">
                 <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">

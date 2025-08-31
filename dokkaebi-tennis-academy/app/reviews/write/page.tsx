@@ -1,5 +1,7 @@
 'use client';
 
+import type React from 'react';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -15,7 +17,13 @@ function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: nu
   return (
     <div className={`flex gap-1 ${disabled ? 'opacity-60 pointer-events-none' : ''}`}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} type="button" aria-label={`${n}점`} className={`text-2xl transition-transform will-change-transform ${value >= n ? 'text-yellow-400' : 'text-muted-foreground'} hover:scale-[1.06]`} onClick={() => onChange?.(n)}>
+        <button
+          key={n}
+          type="button"
+          aria-label={`${n}점`}
+          className={`text-3xl transition-all duration-200 ${value >= n ? 'text-yellow-400 scale-110' : 'text-slate-300 dark:text-slate-600'} hover:scale-125 hover:text-yellow-300`}
+          onClick={() => onChange?.(n)}
+        >
           ★
         </button>
       ))}
@@ -184,7 +192,10 @@ export default function ReviewWritePage() {
       }));
       setApps(formatted);
       try {
-        const elig = await fetch('/api/reviews/eligibility?service=stringing', { credentials: 'include', cache: 'no-store' });
+        const elig = await fetch('/api/reviews/eligibility?service=stringing', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
         const ej = await elig.json();
         if (ej.suggestedApplicationId) setSelectedAppId(ej.suggestedApplicationId);
         else if (formatted.length) setSelectedAppId(formatted[0]._id);
@@ -367,161 +378,254 @@ export default function ReviewWritePage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-24">
-      {/* 헤더 카드 : 현재 상품만 보여주기 */}
-      <div className="rounded-3xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white p-6 sm:p-8 mt-6 shadow-[0_10px_30px_rgba(0,0,0,0.08)] ring-1 ring-black/5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{title}</h1>
-            <p className="mt-1 text-white/90">{subtitle}</p>
-
-            {/* 현재 상품 메타 */}
-            {mode === 'product' && currentMeta && (
-              <div className="mt-5 flex items-center gap-4">
-                <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-1 ring-black/10 bg-white/20 shrink-0">
-                  {currentMeta.image ? <NextImage src={currentMeta.image} alt={currentMeta.name} fill sizes="64px" className="object-cover" /> : <div className="h-full w-full grid place-items-center text-white/70">IMG</div>}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-lg font-semibold truncate">{currentMeta.name}</div>
-                  {orderItems && (
-                    <div className="text-sm/6 text-white/85">
-                      {orderItems.filter((x) => x.reviewed).length} / {orderItems.length} 완료
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 상태 뱃지 */}
-          {badge && <span className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm font-medium shadow-sm whitespace-nowrap">{badge}</span>}
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.08] pointer-events-none">
+        <svg width="100%" height="100%" viewBox="0 0 800 600" className="absolute inset-0 w-full h-full">
+          <defs>
+            <pattern id="court-bg" patternUnits="userSpaceOnUse" width="800" height="600">
+              {/* 메인 코트 */}
+              <rect x="50" y="100" width="700" height="400" fill="none" stroke="currentColor" strokeWidth="2" />
+              {/* 중앙선 */}
+              <line x1="400" y1="100" x2="400" y2="500" stroke="currentColor" strokeWidth="2" />
+              {/* 서비스 라인 */}
+              <line x1="50" y1="300" x2="750" y2="300" stroke="currentColor" strokeWidth="1" />
+              {/* 서비스 박스 */}
+              <line x1="200" y1="100" x2="200" y2="500" stroke="currentColor" strokeWidth="1" />
+              <line x1="600" y1="100" x2="600" y2="500" stroke="currentColor" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#court-bg)" />
+        </svg>
       </div>
 
-      {/* 이 주문의 다른 상품 (카드 그리드) */}
-      {mode === 'product' && orderItems && orderItems.length > 1 && (
-        <div className="mt-5">
-          <div className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-200">이 주문의 다른 상품</div>
+      <div className="relative mx-auto max-w-7xl px-4 py-8">
+        <div className="grid lg:grid-cols-[400px_1fr] gap-8 min-h-[80vh]">
+          {/* 왼쪽: 정보 패널 (코트의 왼쪽 서비스 박스) */}
+          <div className="space-y-6">
+            {/* 헤더 정보 카드 */}
+            <div className="relative rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white p-6 shadow-xl overflow-hidden">
+              {/* 코트 라인 장식 */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-white/30"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30"></div>
+              <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/20 transform -translate-x-0.5"></div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {orderItems.map((it) => {
-              const isCurrent = it.productId === resolvedProductId;
-              const statusText = it.reviewed ? '완료' : isCurrent ? '작성중' : '미작성';
-              const statusClass = it.reviewed ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : isCurrent ? 'bg-violet-50 text-violet-700 ring-violet-200' : 'bg-neutral-50 text-neutral-600 ring-neutral-200';
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                  <span className="text-sm font-medium opacity-90">{mode === 'product' ? 'PRODUCT REVIEW' : mode === 'service' ? 'SERVICE REVIEW' : 'INVALID'}</span>
+                </div>
 
-              return (
-                <div key={it.productId} className={`flex items-center gap-3 rounded-xl p-3 ring-1 ${statusClass}`}>
-                  <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-white/70 shrink-0">
-                    {it.image ? <NextImage src={it.image} alt={it.name} fill sizes="48px" className="object-cover" /> : <div className="h-full w-full grid place-items-center text-neutral-400">IMG</div>}
+                <h1 className="text-2xl font-bold mb-2">{title}</h1>
+                <p className="text-white/90 text-sm leading-relaxed">{subtitle}</p>
+
+                {/* 상태 뱃지 */}
+                {badge && (
+                  <div className="mt-4 inline-flex items-center rounded-full bg-white/20 backdrop-blur-sm px-3 py-1.5 text-sm font-medium border border-white/20">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/60 mr-2"></div>
+                    {badge}
                   </div>
+                )}
+              </div>
+            </div>
 
+            {/* 현재 상품 정보 */}
+            {mode === 'product' && currentMeta && (
+              <div className="rounded-xl bg-white dark:bg-slate-800 p-5 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700">
+                <div className="flex items-center gap-4">
+                  <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-2 ring-blue-200 dark:ring-blue-800 shrink-0">
+                    {currentMeta.image ? (
+                      <NextImage src={currentMeta.image} alt={currentMeta.name} fill sizes="64px" className="object-cover" />
+                    ) : (
+                      <div className="h-full w-full grid place-items-center bg-slate-100 dark:bg-slate-700 text-slate-400">IMG</div>
+                    )}
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{it.name}</div>
-                    <div className="text-xs opacity-80">{statusText}</div>
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{currentMeta.name}</h3>
+                    {orderItems && (
+                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        진행률: {orderItems.filter((x) => x.reviewed).length} / {orderItems.length} 완료
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 다른 상품들 (세로 리스트) */}
+            {mode === 'product' && orderItems && orderItems.length > 1 && (
+              <div className="rounded-xl bg-white dark:bg-slate-800 p-5 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700">
+                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-blue-500 rounded-full"></div>이 주문의 다른 상품
+                </h3>
+
+                <div className="space-y-3">
+                  {orderItems.map((it) => {
+                    const isCurrent = it.productId === resolvedProductId;
+                    const statusText = it.reviewed ? '완료' : isCurrent ? '작성중' : '미작성';
+                    const statusClass = it.reviewed
+                      ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300'
+                      : isCurrent
+                      ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300'
+                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+
+                    return (
+                      <div key={it.productId} className={`flex items-center gap-3 rounded-lg p-3 ${statusClass} transition-all duration-200 hover:shadow-sm`}>
+                        <div className="relative h-10 w-10 overflow-hidden rounded-lg shrink-0">
+                          {it.image ? <NextImage src={it.image} alt={it.name} fill sizes="40px" className="object-cover" /> : <div className="h-full w-full grid place-items-center bg-white/50 text-slate-400 text-xs">IMG</div>}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-medium">{it.name}</div>
+                          <div className="text-xs opacity-75">{statusText}</div>
+                        </div>
+
+                        {!isCurrent && (
+                          <Button size="sm" variant="ghost" onClick={() => switchProduct(it.productId)} className="shrink-0 h-7 px-2 text-xs">
+                            작성
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 오른쪽: 작성 폼 (코트의 오른쪽 서비스 박스) */}
+          <div className="relative">
+            {/* 중앙선 장식 */}
+            <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-indigo-300 to-purple-200 dark:from-blue-800 dark:via-indigo-700 dark:to-purple-800 opacity-60"></div>
+
+            <div className="rounded-2xl bg-white dark:bg-slate-800 shadow-xl ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden">
+              {/* 폼 헤더 */}
+              <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 px-6 py-4 border-b border-slate-200 dark:border-slate-600">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">리뷰 작성</h2>
+                </div>
+              </div>
+
+              <form onSubmit={onSubmit} className="p-6 space-y-8">
+                {/* 입력 블럭 잠금 오버레이 */}
+                <div className="relative">
+                  {state !== 'ok' && (
+                    <div className="absolute inset-0 z-10 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                        <div className="text-sm text-slate-600 dark:text-slate-300">{state === 'loading' ? '검증 중...' : '작성할 수 없는 상태입니다.'}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 서비스 모드: 대상 신청서 선택 */}
+                  {mode === 'service' && (
+                    <div className="mb-8">
+                      <Label className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3 block">대상 신청서</Label>
+                      <select
+                        className="w-full h-12 rounded-xl border border-slate-200 dark:border-slate-600 px-4 shadow-sm bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        value={selectedAppId ?? ''}
+                        onChange={(e) => setSelectedAppId(e.target.value || null)}
+                        disabled={!apps.length}
+                      >
+                        {apps.length === 0 && <option value="">내 신청서가 없습니다</option>}
+                        {apps.map((a) => (
+                          <option key={a._id} value={a._id}>
+                            {a.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* 별점 섹션 */}
+                  <div className="text-center py-6 bg-gradient-to-r from-slate-50/50 to-blue-50/50 dark:from-slate-800/50 dark:to-slate-700/50 rounded-xl">
+                    <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">만족도를 별점으로 평가해주세요</label>
+                    <Stars value={rating} onChange={setRating} disabled={state !== 'ok'} />
+                    <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">{rating === 5 ? '최고예요!' : rating === 4 ? '좋아요!' : rating === 3 ? '보통이에요' : rating === 2 ? '아쉬워요' : '별로예요'}</div>
                   </div>
 
-                  <Button size="sm" variant={isCurrent ? 'secondary' : 'outline'} onClick={() => !isCurrent && switchProduct(it.productId)} disabled={isCurrent} className="shrink-0">
-                    {isCurrent ? '현재' : '작성하기'}
+                  {/* 후기 작성 */}
+                  <div className="space-y-4">
+                    <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">상세 후기</label>
+                    <Textarea
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      placeholder="제품/장착 만족도, 타구감, 서비스 경험 등을 자유롭게 남겨주세요 (5자 이상)"
+                      className="min-h-[180px] resize-y border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-xl"
+                      disabled={state !== 'ok'}
+                    />
+                    <div className="text-xs text-slate-500 dark:text-slate-400 text-right">{content.length} / 1000자</div>
+                  </div>
+
+                  {/* 사진 업로드 */}
+                  <div className="space-y-4">
+                    <Label className="text-sm font-semibold text-slate-800 dark:text-slate-200">사진 첨부 (선택, 최대 5장)</Label>
+                    <div className="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 p-4">
+                      <PhotosUploader value={photos} onChange={setPhotos} max={5} />
+                      <PhotosReorderGrid value={photos} onChange={setPhotos} disabled={state !== 'ok'} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 안내문 */}
+                {state !== 'ok' && mode !== 'invalid' && (
+                  <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-4">
+                    <div className="text-sm text-amber-800 dark:text-amber-200">
+                      {state === 'notPurchased' && (
+                        <div>
+                          구매/이용 이력이 확인되어야 작성할 수 있어요.{' '}
+                          <button
+                            type="button"
+                            onClick={() => (mode === 'product' && resolvedProductId ? router.replace(`/products/${resolvedProductId}`) : router.replace('/services'))}
+                            className="underline underline-offset-2 hover:opacity-80 font-medium"
+                          >
+                            관련 페이지로 이동
+                          </button>
+                        </div>
+                      )}
+                      {state === 'already' && <div>이미 작성하신 대상이에요. 변경/삭제는 마이페이지 &gt; 나의 리뷰에서 관리해 주세요.</div>}
+                    </div>
+                  </div>
+                )}
+
+                {/* 액션 버튼들 */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-600">
+                  <Button type="button" variant="outline" onClick={goPrimary} className="rounded-xl shadow-sm order-2 sm:order-1 bg-transparent">
+                    {mode === 'product' ? '제품 상세 이동' : mode === 'service' ? '서비스 소개' : '리뷰 홈'}
+                  </Button>
+                  <Button type="button" variant="secondary" onClick={() => router.replace('/mypage?tab=orders')} className="rounded-xl shadow-sm order-3 sm:order-2">
+                    주문 목록으로
+                  </Button>
+                  <Button
+                    data-cy="submit-review"
+                    type="submit"
+                    disabled={locked}
+                    aria-disabled={locked}
+                    className="rounded-xl shadow-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 order-1 sm:order-3"
+                  >
+                    후기 등록하기
                   </Button>
                 </div>
-              );
-            })}
+
+                {/* invalid 진입 시 CTA */}
+                {mode === 'invalid' && (
+                  <div className="text-center py-6 text-sm text-slate-500 dark:text-slate-400">
+                    <div className="font-medium text-slate-700 dark:text-slate-200 mb-2">도움이 필요하신가요?</div>
+                    <div className="space-x-4">
+                      <button type="button" onClick={() => router.replace('/services')} className="underline underline-offset-2 hover:opacity-80 text-blue-600 dark:text-blue-400">
+                        스트링 서비스 소개
+                      </button>
+                      <span>·</span>
+                      <button type="button" onClick={() => router.replace('/reviews')} className="underline underline-offset-2 hover:opacity-80 text-blue-600 dark:text-blue-400">
+                        리뷰 모아보기
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </form>
+            </div>
           </div>
         </div>
-      )}
-
-      {/* 작성 카드 */}
-      <div className="relative mt-6 rounded-2xl bg-white dark:bg-neutral-900 shadow-lg ring-1 ring-black/5">
-        <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-6">
-          <div className="flex items-center gap-2">
-            <span className="text-xs rounded-full px-2 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 ring-1 ring-black/5">{mode === 'product' ? '상품 리뷰' : mode === 'service' ? '서비스 리뷰' : '오류'}</span>
-          </div>
-
-          {/* 입력 블럭 잠금 오버레이 */}
-          <div className="relative">
-            {state !== 'ok' && (
-              <div className="absolute inset-0 z-10 rounded-xl bg-white/60 dark:bg-neutral-900/60 backdrop-blur-[1px] flex items-center justify-center">
-                <div className="text-sm text-neutral-600 dark:text-neutral-300">{state === 'loading' ? '검증 중…' : '작성할 수 없는 상태입니다.'}</div>
-              </div>
-            )}
-
-            {/* 서비스 모드: 대상 신청서 선택 */}
-            {mode === 'service' && (
-              <div className="grid gap-1 mb-4">
-                <Label className="text-sm font-medium">대상 신청서</Label>
-                <select className="h-10 rounded-xl border px-3 shadow-sm bg-background" value={selectedAppId ?? ''} onChange={(e) => setSelectedAppId(e.target.value || null)} disabled={!apps.length}>
-                  {apps.length === 0 && <option value="">내 신청서가 없습니다</option>}
-                  {apps.map((a) => (
-                    <option key={a._id} value={a._id}>
-                      {a.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-neutral-800 dark:text-neutral-200">별점</label>
-                <Stars value={rating} onChange={setRating} disabled={state !== 'ok'} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-neutral-800 dark:text-neutral-200">후기</label>
-                <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="제품/장착 만족도, 타구감, 서비스 경험 등을 자유롭게 남겨주세요 (5자 이상)" className="min-h-[160px] resize-y" disabled={state !== 'ok'} />
-                <div className="mt-3">
-                  <Label>사진 (선택, 최대 5장)</Label>
-                  <PhotosUploader value={photos} onChange={setPhotos} max={5} />
-                  <PhotosReorderGrid value={photos} onChange={setPhotos} disabled={state !== 'ok'} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 안내문 */}
-          {state !== 'ok' && mode !== 'invalid' && (
-            <div className="pt-1 text-sm text-neutral-500 dark:text-neutral-400">
-              {state === 'notPurchased' && (
-                <div>
-                  구매/이용 이력이 확인되어야 작성할 수 있어요.
-                  <button type="button" onClick={() => (mode === 'product' && resolvedProductId ? router.replace(`/products/${resolvedProductId}`) : router.replace('/services'))} className="underline underline-offset-4 hover:opacity-80">
-                    관련 페이지로 이동
-                  </button>
-                </div>
-              )}
-              {state === 'already' && <div>이미 작성하신 대상이에요. 변경/삭제는 마이페이지 &gt; 나의 리뷰에서 관리해 주세요.</div>}
-            </div>
-          )}
-
-          {/* 액션 바 */}
-          <div className="flex items-center justify-end gap-2">
-            <Button type="button" variant="outline" onClick={goPrimary} className="rounded-xl shadow-sm">
-              {mode === 'product' ? '제품 상세 이동' : mode === 'service' ? '서비스 소개' : '리뷰 홈'}
-            </Button>
-            <Button type="button" variant="secondary" onClick={() => router.replace('/mypage?tab=orders')} className="rounded-xl shadow-sm">
-              주문 목록으로
-            </Button>
-            <Button data-cy="submit-review" type="submit" disabled={locked} aria-disabled={locked} className="rounded-xl shadow-sm">
-              후기 등록하기
-            </Button>
-          </div>
-
-          {/* invalid 진입 시 CTA */}
-          {mode === 'invalid' && (
-            <div className="pt-2 text-sm text-neutral-500 dark:text-neutral-400">
-              <div className="mt-2">
-                <span className="font-medium text-neutral-700 dark:text-neutral-200">도움이 필요하신가요? </span>
-                <button type="button" onClick={() => router.replace('/services')} className="underline underline-offset-4 hover:opacity-80">
-                  스트링 서비스 소개
-                </button>
-                <span> · </span>
-                <button type="button" onClick={() => router.replace('/reviews')} className="underline underline-offset-4 hover:opacity-80">
-                  리뷰 모아보기
-                </button>
-              </div>
-            </div>
-          )}
-        </form>
       </div>
     </div>
   );

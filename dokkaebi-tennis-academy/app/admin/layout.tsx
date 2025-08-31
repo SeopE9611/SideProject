@@ -34,22 +34,22 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   ];
 
   return (
-    <div className="flex min-h-full flex-col bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+    <div className="flex min-h-full flex-col bg-gradient-to-br from-blue-50  via-indigo-50 to-cyan-50">
       {/* 관리자 헤더 */}
-      <header className="sticky top-0 z-40 border-b border-emerald-200/50 bg-white/80 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-blue-200/50 bg-white/80 backdrop-blur-md">
         <div className="container flex h-16 items-center">
           <div className="mr-4 flex">
             <Link href="/" className="mr-6 flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-blue-600">
                 <span className="text-sm font-bold text-white">D</span>
               </div>
               <span className="font-bold text-gray-900">도깨비 테니스 아카데미</span>
-              <span className="rounded-md bg-gradient-to-r from-emerald-600 to-teal-600 px-2 py-1 text-xs font-medium text-white shadow-sm">관리자</span>
+              <span className="rounded-md bg-gradient-to-r from-blue-600 to-blue-600 px-2 py-1 text-xs font-medium text-white shadow-sm">관리자</span>
             </Link>
           </div>
           <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
             <nav className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" asChild className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 bg-transparent">
+              <Button variant="outline" size="sm" asChild className="border-blue-200 text-blue-700 hover:bg-blue-50 bg-transparent">
                 <Link href="/">
                   <Home className="mr-2 h-4 w-4" />
                   사이트로 이동
@@ -62,11 +62,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
       <div className="container flex flex-1 min-h-0 md:grid md:grid-rows-[1fr] md:grid-cols-[240px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
         {/* 사이드바 */}
-        <aside className="sticky top-[4rem] z-30 hidden md:block h-full overflow-y-auto border-r border-emerald-200/50 bg-white/60 backdrop-blur-sm">
+        <aside className="sticky top-[4rem] z-30 hidden md:block h-full overflow-y-auto border-r border-blue-200/50 bg-white/60 backdrop-blur-sm">
           <div className="py-6 pr-6">
             <nav className="flex flex-col space-y-1">
               {menuItems.map((item) => (
-                <Button key={item.name} variant="ghost" className="justify-start text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors" asChild>
+                <Button key={item.name} variant="ghost" className="justify-start text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors" asChild>
                   <Link href={item.href}>
                     {item.icon}
                     {item.name}

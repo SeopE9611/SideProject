@@ -287,16 +287,9 @@ export default function FilterableProductList() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4">
           <div className="flex items-center gap-4">
             <div className="text-lg font-semibold dark:text-white">
-              총 <span className="text-emerald-600 dark:text-emerald-400 font-bold">{(productsList ?? []).length}</span> 개 상품
+              총 <span className="text-blue-600 dark:text-blue-400 font-bold">{(productsList ?? []).length}</span> 개 상품
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters((f) => !f)}
-              className="lg:hidden border-emerald-200 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-              aria-expanded={showFilters}
-              aria-label="필터 열기"
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowFilters((f) => !f)} className="lg:hidden border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" aria-expanded={showFilters} aria-label="필터 열기">
               <Filter className="w-4 h-4 mr-2" />
               필터 {activeFiltersCount > 0 && `(${activeFiltersCount})`}
             </Button>
@@ -304,12 +297,12 @@ export default function FilterableProductList() {
 
           <div className="flex items-center gap-3">
             {/* 뷰 모드 토글 */}
-            <div className="flex items-center border border-emerald-200 dark:border-emerald-700 rounded-lg p-1 bg-white dark:bg-slate-800">
+            <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-white dark:bg-slate-800">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className={cn('px-3', viewMode === 'grid' ? 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600' : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/20')}
+                className={cn('px-3', viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
               >
                 <Grid3X3 className="w-4 h-4" />
               </Button>
@@ -317,7 +310,7 @@ export default function FilterableProductList() {
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-                className={cn('px-3', viewMode === 'list' ? 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600' : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/20')}
+                className={cn('px-3', viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
               >
                 <List className="w-4 h-4" />
               </Button>
@@ -325,7 +318,7 @@ export default function FilterableProductList() {
 
             {/* 정렬 */}
             <Select value={sortOption} onValueChange={setSortOption}>
-              <SelectTrigger className="w-[160px] md:w-[180px] rounded-lg border-2 focus:border-emerald-500 dark:focus:border-emerald-400 bg-white dark:bg-slate-800">
+              <SelectTrigger className="w-[160px] md:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800">
                 <SelectValue placeholder="정렬 기준" />
               </SelectTrigger>
               <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
@@ -340,34 +333,30 @@ export default function FilterableProductList() {
 
         {/* 콘텐츠 */}
         {isLoadingInitial ? (
-          // 초기 로딩: 카드 스켈레톤
           <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
             {Array.from({ length: 6 }).map((_, i) => (
               <SkeletonProductCard key={i} />
             ))}
           </div>
         ) : error ? (
-          // 에러
           <div className="text-center py-16">
             <p className="text-red-500 dark:text-red-400 mb-2">불러오는 중 오류가 발생했습니다.</p>
-            <Button onClick={() => loadMore()} className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">
+            <Button onClick={() => loadMore()} className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
               다시 시도
             </Button>
           </div>
         ) : (productsList ?? []).length === 0 ? (
-          // 빈 상태
           <div className="text-center py-16">
-            <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 bg-gradient-to-br from-emerald-100 to-teal-200 dark:from-emerald-800 dark:to-teal-700 rounded-full flex items-center justify-center">
-              <Search className="w-10 h-10 md:w-12 md:h-12 text-emerald-600 dark:text-emerald-400" />
+            <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
+              <Search className="w-10 h-10 md:w-12 md:h-12 text-blue-600 dark:text-blue-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>
             <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
-            <Button onClick={handleResetAll} variant="outline" className="border-emerald-200 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent">
+            <Button onClick={handleResetAll} variant="outline" className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-transparent">
               필터 초기화
             </Button>
           </div>
         ) : (
-          // 정상 리스트
           <>
             <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
               {productsList.map((product, i) => {
@@ -383,7 +372,7 @@ export default function FilterableProductList() {
             {/* 추가 로딩 표시 */}
             {isFetchingMore && (
               <div aria-live="polite" className="text-center py-4 flex justify-center items-center gap-2">
-                <div className="h-4 w-4 rounded-full border-2 border-emerald-600 dark:border-emerald-400 border-t-transparent animate-spin" />
+                <div className="h-4 w-4 rounded-full border-2 border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
                 <span className="dark:text-white">더 불러오는 중...</span>
               </div>
             )}

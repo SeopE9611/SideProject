@@ -46,11 +46,20 @@ const ProductCard = React.memo(
 
     if (viewMode === 'list') {
       return (
-        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-2 hover:border-emerald-300 dark:hover:border-emerald-500">
-          <div className="flex flex-col md:flex-row">
+        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 relative">
+          <div className="absolute inset-0 opacity-5 dark:opacity-10">
+            <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
+              <rect x="0" y="0" width="400" height="200" stroke="currentColor" strokeWidth="2" />
+              <line x1="200" y1="0" x2="200" y2="200" stroke="currentColor" strokeWidth="2" />
+              <rect x="50" y="50" width="300" height="100" stroke="currentColor" strokeWidth="1" />
+              <line x1="50" y1="100" x2="350" y2="100" stroke="currentColor" strokeWidth="1" />
+            </svg>
+          </div>
+
+          <div className="flex flex-col md:flex-row relative z-10">
             <div className="relative w-full md:w-48 h-48 flex-shrink-0">
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
-              {product.isNew && <Badge className="absolute right-2 top-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg">NEW</Badge>}
+              {product.isNew && <Badge className="absolute right-2 top-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
             </div>
             <div className="flex-1 p-4 md:p-6">
               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4 gap-4">
@@ -67,7 +76,7 @@ const ProductCard = React.memo(
                   </div>
                 </div>
                 <div className="text-left lg:text-right">
-                  <div className="text-xl md:text-2xl font-bold text-emerald-600 dark:text-emerald-400">{product.price.toLocaleString()}원</div>
+                  <div className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">{product.price.toLocaleString()}원</div>
                   <div className="text-sm text-muted-foreground line-through">{Math.round(product.price * 1.2).toLocaleString()}원</div>
                 </div>
               </div>
@@ -75,12 +84,13 @@ const ProductCard = React.memo(
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 mb-4">
                 {product.features ? (
                   Object.entries(product.features).map(([key, value]) => (
-                    <div key={key} className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">{keyMap[key as keyof typeof keyMap] || key}:</span>
-                      <span className="text-sm font-medium">
-                        {'★'.repeat(value)}
-                        {'☆'.repeat(5 - value)}
-                      </span>
+                    <div key={key} className="flex justify-between items-center p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800">
+                      <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <div key={i} className={`w-2 h-2 rounded-full ${i < value ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-600'}`} />
+                        ))}
+                      </div>
                     </div>
                   ))
                 ) : (
@@ -90,7 +100,7 @@ const ProductCard = React.memo(
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <Link href={`/products/${product._id}`} className="flex-1">
-                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-500 dark:hover:from-emerald-600 dark:hover:to-teal-600">
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 shadow-lg">
                     <Eye className="w-4 h-4 mr-2" />
                     상세보기
                   </Button>
@@ -100,7 +110,7 @@ const ProductCard = React.memo(
                   <Button
                     size="sm"
                     variant="outline"
-                    className={`bg-white/90 dark:bg-slate-700/90 hover:bg-white dark:hover:bg-slate-600 ${inWish ? 'border-red-300 text-red-600 dark:border-red-400 dark:text-red-400' : ''}`}
+                    className={`bg-white/90 dark:bg-slate-700/90 hover:bg-white dark:hover:bg-slate-600 ${inWish ? 'border-red-300 text-red-600 dark:border-red-400 dark:text-red-400' : 'hover:border-blue-300 dark:hover:border-blue-500'}`}
                     onClick={async (e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -121,7 +131,7 @@ const ProductCard = React.memo(
                   >
                     <Heart className={`w-4 h-4 ${inWish ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
-                  <Button variant="outline" size="icon" className="hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-900/20 dark:hover:border-emerald-500 bg-transparent">
+                  <Button variant="outline" size="icon" className="hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:border-blue-500 bg-transparent">
                     <ShoppingCart className="w-4 h-4" />
                   </Button>
                 </div>
@@ -135,7 +145,9 @@ const ProductCard = React.memo(
     // grid view
     return (
       <Link href={`/products/${product._id}`}>
-        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-2 hover:border-emerald-300 dark:hover:border-emerald-500 group">
+        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 group relative">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
           <div className="relative">
             <Image
               src={(product.images?.[0] as string) || '/placeholder.svg?height=300&width=300&query=tennis+string'}
@@ -144,12 +156,12 @@ const ProductCard = React.memo(
               height={300}
               className="h-48 md:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            {product.isNew && <Badge className="absolute right-3 top-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg">NEW</Badge>}
+            {product.isNew && <Badge className="absolute right-3 top-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+                  className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
@@ -161,7 +173,7 @@ const ProductCard = React.memo(
                 <Button
                   size="sm"
                   variant="outline"
-                  className={`bg-white/90 dark:bg-slate-700/90 hover:bg-white dark:hover:bg-slate-600 ${inWish ? 'border-red-300 text-red-600 dark:border-red-400 dark:text-red-400' : ''}`}
+                  className={`bg-white/90 dark:bg-slate-700/90 hover:bg-white dark:hover:bg-slate-600 shadow-lg ${inWish ? 'border-red-300 text-red-600 dark:border-red-400 dark:text-red-400' : ''}`}
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -183,7 +195,7 @@ const ProductCard = React.memo(
 
           <CardContent className="p-4 md:p-5">
             <div className="text-sm text-muted-foreground mb-2 font-medium">{brandLabel}</div>
-            <CardTitle className="text-base md:text-lg mb-3 line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors dark:text-white">{product.name}</CardTitle>
+            <CardTitle className="text-base md:text-lg mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{product.name}</CardTitle>
 
             <div className="flex items-center gap-2 mb-3">
               <div className="flex items-center">
@@ -194,17 +206,18 @@ const ProductCard = React.memo(
               <span className="text-xs text-muted-foreground">(128)</span>
             </div>
 
-            <div className="space-y-1 mb-4 text-xs">
+            <div className="space-y-2 mb-4 text-xs">
               {product.features ? (
                 Object.entries(product.features)
                   .slice(0, 3)
                   .map(([key, value]) => (
-                    <div key={key} className="flex justify-between">
-                      <span className="text-muted-foreground">{keyMap[key as keyof typeof keyMap] || key}:</span>
-                      <span className="font-medium">
-                        {'★'.repeat(value)}
-                        {'☆'.repeat(5 - value)}
-                      </span>
+                    <div key={key} className="flex justify-between items-center p-2 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10">
+                      <span className="text-slate-600 dark:text-slate-300 font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < value ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-600'}`} />
+                        ))}
+                      </div>
                     </div>
                   ))
               ) : (
@@ -215,9 +228,9 @@ const ProductCard = React.memo(
 
           <CardFooter className="p-4 md:p-5 pt-0 flex justify-between items-center">
             <div>
-              <div className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{product.price.toLocaleString()}원</div>
+              <div className="font-bold text-lg text-blue-600 dark:text-blue-400">{product.price.toLocaleString()}원</div>
             </div>
-            <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-500 dark:hover:from-emerald-600 dark:hover:to-teal-600 shadow-lg">
+            <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 shadow-lg">
               <ShoppingCart className="w-4 h-4 mr-1" />
               담기
             </Button>
@@ -226,7 +239,6 @@ const ProductCard = React.memo(
       </Link>
     );
   },
-  // 커스텀 비교: 실제 의미 있는 props 변화 있을 때만 렌더
   (prev, next) => prev.product._id === next.product._id && prev.viewMode === next.viewMode && prev.brandLabel === next.brandLabel
 );
 

@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpDown, ChevronDown, Filter, MoreHorizontal, Plus, Search, Trash2 } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, Filter, MoreHorizontal, Plus, Search, Trash2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -13,20 +13,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import AccessDenied from '@/components/system/AccessDenied';
 
-// 게시판 유형 정의
 const boardTypes = [
-  { id: 'notice', name: '공지사항', color: 'default' },
-  { id: 'qna', name: 'Q&A', color: 'blue' },
+  { id: 'notice', name: '공지사항', color: 'blue' },
+  { id: 'qna', name: 'Q&A', color: 'teal' },
   { id: 'community', name: '커뮤니티', color: 'green' },
-  { id: 'faq', name: '자주 묻는 질문', color: 'amber' },
+  { id: 'faq', name: '자주 묻는 질문', color: 'cyan' },
 ];
 
-// 게시물 상태 정의
 const postStatuses = [
-  { id: 'published', name: '게시됨', color: 'green' },
+  { id: 'published', name: '게시됨', color: 'blue' },
   { id: 'draft', name: '임시저장', color: 'yellow' },
   { id: 'hidden', name: '숨김', color: 'gray' },
 ];
@@ -201,33 +197,31 @@ export default function BoardsPageClient() {
     return postStatus ? postStatus.name : status;
   };
 
-  // 게시물 상태에 따른 배지 색상 가져오기
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'published':
-        return 'bg-green-500/20 text-green-500 hover:bg-green-500/30';
+        return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border-blue-200 dark:border-blue-800';
       case 'draft':
-        return 'bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30';
+        return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/30 border-yellow-200 dark:border-yellow-800';
       case 'hidden':
-        return 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30';
+        return 'bg-gray-500/20 text-gray-600 dark:text-gray-400 hover:bg-gray-500/30 border-gray-200 dark:border-gray-800';
       default:
-        return 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30';
+        return 'bg-gray-500/20 text-gray-600 dark:text-gray-400 hover:bg-gray-500/30 border-gray-200 dark:border-gray-800';
     }
   };
 
-  // 게시판 유형에 따른 배지 색상 가져오기
   const getBoardTypeColor = (type: string) => {
     switch (type) {
       case 'notice':
-        return 'bg-primary/20 text-primary hover:bg-primary/30';
+        return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border-blue-200 dark:border-blue-800';
       case 'qna':
-        return 'bg-blue-500/20 text-blue-500 hover:bg-blue-500/30';
+        return 'bg-teal-500/20 text-teal-600 dark:text-teal-400 hover:bg-teal-500/30 border-teal-200 dark:border-teal-800';
       case 'community':
-        return 'bg-green-500/20 text-green-500 hover:bg-green-500/30';
+        return 'bg-green-500/20 text-green-600 dark:text-green-400 hover:bg-green-500/30 border-green-200 dark:border-green-800';
       case 'faq':
-        return 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30';
+        return 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/30 border-cyan-200 dark:border-cyan-800';
       default:
-        return 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30';
+        return 'bg-gray-500/20 text-gray-600 dark:text-gray-400 hover:bg-gray-500/30 border-gray-200 dark:border-gray-800';
     }
   };
 
@@ -258,41 +252,115 @@ export default function BoardsPageClient() {
   });
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">게시판 관리</h1>
-            <p className="text-muted-foreground">웹사이트의 모든 게시판과 게시물을 관리합니다.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button asChild>
-              <Link href="/admin/boards/new">
-                <Plus className="mr-2 h-4 w-4" />새 게시물
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/admin/boards/categories">카테고리 관리</Link>
-            </Button>
+    <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="flex flex-col space-y-6 sm:space-y-8">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
+                <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">게시판 관리</h1>
+                <p className="mt-1 sm:mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-300">웹사이트의 모든 게시판과 게시물을 관리합니다</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <Button asChild className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white shadow-lg">
+                <Link href="/admin/boards/new">
+                  <Plus className="mr-2 h-4 w-4" />새 게시물
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="bg-white/80 dark:bg-gray-800/80 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                <Link href="/admin/boards/categories">카테고리 관리</Link>
+              </Button>
+            </div>
           </div>
         </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>게시물 목록</CardTitle>
-            <CardDescription>
-              전체 게시물 {posts.length}개 중 {filteredPosts.length}개 표시 중
-            </CardDescription>
+        <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-4 mb-6 sm:mb-8">
+          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 게시물</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{posts.length}</p>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
+                  <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">게시됨</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{posts.filter((p) => p.status === 'published').length}</p>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
+                  <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">임시저장</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{posts.filter((p) => p.status === 'draft').length}</p>
+                </div>
+                <div className="bg-yellow-50 dark:bg-yellow-950/50 rounded-xl p-3">
+                  <FileText className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">총 조회수</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{posts.reduce((sum, p) => sum + p.viewCount, 0)}</p>
+                </div>
+                <div className="bg-teal-50 dark:bg-teal-950/50 rounded-xl p-3">
+                  <FileText className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+                <span>게시물 목록</span>
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                전체 게시물 {posts.length}개 중 {filteredPosts.length}개 표시 중
+              </div>
+            </CardTitle>
           </CardHeader>
-          <CardContent className="relative">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center gap-6">
-              <p className="text-white text-2xl md:text-4xl font-semibold">이 기능은 개발 중 입니다. (게시판 관리)</p>
-              <p className="text-lg text-gray-300">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
+          <CardContent className="relative p-4 sm:p-6">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center gap-6 rounded-lg">
+              <div className="bg-gradient-to-r from-blue-600 to-teal-600 rounded-full p-4">
+                <FileText className="h-8 w-8 text-white" />
+              </div>
+              <p className="text-white text-xl sm:text-2xl md:text-4xl font-semibold">이 기능은 개발 중입니다</p>
+              <p className="text-base sm:text-lg text-gray-300">게시판 관리 기능이 곧 활성화됩니다</p>
             </div>
+
             <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2">
                 <Select value={boardTypeFilter} onValueChange={setBoardTypeFilter}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                     <SelectValue placeholder="게시판 유형" />
                   </SelectTrigger>
                   <SelectContent>
@@ -309,7 +377,7 @@ export default function BoardsPageClient() {
                 </Select>
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                     <SelectValue placeholder="게시물 상태" />
                   </SelectTrigger>
                   <SelectContent>
@@ -325,22 +393,22 @@ export default function BoardsPageClient() {
                   </SelectContent>
                 </Select>
 
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-950/20">
                   <Filter className="h-4 w-4" />
                 </Button>
               </div>
 
               <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input type="search" placeholder="게시물 검색..." className="w-full pl-8 sm:w-[300px]" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                <Input type="search" placeholder="게시물 검색..." className="w-full pl-8 sm:w-[300px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
             </div>
 
             {selectedPosts.length > 0 && (
-              <div className="mb-4 flex items-center gap-2 rounded-md bg-muted p-2">
-                <span className="text-sm font-medium">{selectedPosts.length}개 선택됨</span>
+              <div className="mb-4 flex items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950/20 p-2 border border-blue-200 dark:border-blue-800">
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{selectedPosts.length}개 선택됨</span>
                 <div className="ml-auto flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="bg-white dark:bg-gray-700 border-blue-200 dark:border-blue-700">
                     상태 변경
                     <ChevronDown className="ml-2 h-4 w-4" />
                   </Button>
@@ -352,10 +420,10 @@ export default function BoardsPageClient() {
               </div>
             )}
 
-            <div className="rounded-md border">
+            <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="bg-gray-50 dark:bg-gray-700/50">
                     <TableHead className="w-[40px]">
                       <Checkbox checked={selectedPosts.length === filteredPosts.length && filteredPosts.length > 0} onCheckedChange={toggleSelectAll} aria-label="모두 선택" />
                     </TableHead>
@@ -384,13 +452,13 @@ export default function BoardsPageClient() {
                 <TableBody>
                   {filteredPosts.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="h-24 text-center">
+                      <TableCell colSpan={10} className="h-24 text-center text-gray-500 dark:text-gray-400">
                         검색 결과가 없습니다.
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredPosts.map((post) => (
-                      <TableRow key={post.id}>
+                      <TableRow key={post.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                         <TableCell>
                           <Checkbox checked={selectedPosts.includes(post.id)} onCheckedChange={() => togglePostSelection(post.id)} aria-label={`${post.title} 선택`} />
                         </TableCell>
@@ -471,13 +539,13 @@ export default function BoardsPageClient() {
               </Table>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">총 {filteredPosts.length}개 게시물</div>
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-600 dark:text-gray-400">총 {filteredPosts.length}개 게시물</div>
               <div className="flex items-center space-x-6 lg:space-x-8">
                 <div className="flex items-center space-x-2">
-                  <p className="text-sm font-medium">페이지당 항목</p>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">페이지당 항목</p>
                   <Select defaultValue="10">
-                    <SelectTrigger className="h-8 w-[70px]">
+                    <SelectTrigger className="h-8 w-[70px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                       <SelectValue placeholder="10" />
                     </SelectTrigger>
                     <SelectContent side="top">
@@ -489,14 +557,14 @@ export default function BoardsPageClient() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex w-[100px] items-center justify-center text-sm font-medium">1 / 1</div>
+                <div className="flex w-[100px] items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-300">1 / 1</div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="icon" disabled>
+                  <Button variant="outline" size="icon" disabled className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                       <polyline points="15 18 9 12 15 6" />
                     </svg>
                   </Button>
-                  <Button variant="outline" size="icon" disabled>
+                  <Button variant="outline" size="icon" disabled className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                       <polyline points="9 18 15 12 9 6" />
                     </svg>

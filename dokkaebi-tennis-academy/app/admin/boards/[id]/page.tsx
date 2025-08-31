@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, Calendar, Eye, MessageSquare, Pencil, Trash2, User } from 'lucide-react';
+import { ArrowLeft, Calendar, Eye, MessageSquare, Pencil, Trash2, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -103,132 +103,147 @@ export default async function BoardPostDetailPage({ params }: { params: { id: st
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <Link href="/admin/boards" className="inline-flex items-center text-primary hover:underline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          게시판 목록으로 돌아가기
-        </Link>
-      </div>
-
-      <div className="flex flex-col space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">게시물 상세 보기</h1>
-            <p className="text-muted-foreground">게시물의 상세 정보를 확인하고 관리할 수 있습니다.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link href={`/admin/boards/${postId}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                수정
-              </Link>
-            </Button>
-            <Button variant="destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              삭제
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20">
+      <div className="container py-8 px-6">
+        <div className="mb-6">
+          <Link href="/admin/boards" className="inline-flex items-center text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            게시판 목록으로 돌아가기
+          </Link>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <CardTitle className="text-2xl">{post.title}</CardTitle>
-                  <CardDescription>
-                    <div className="flex flex-wrap items-center gap-3 text-sm">
-                      <Badge className={getBoardTypeColor(post.boardType)} variant="outline">
-                        {post.boardTypeName}
-                      </Badge>
-                      <Badge variant="outline">{post.category}</Badge>
-                      <Badge className={getStatusColor(post.status)} variant="outline">
-                        {post.statusName}
-                      </Badge>
-                    </div>
-                  </CardDescription>
+        <div className="flex flex-col space-y-8">
+          <div className="bg-gradient-to-r from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/30 shadow-lg">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
+                  <Settings className="h-8 w-8 text-blue-600" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">게시물 상세 보기</h1>
+                  <p className="mt-1 text-gray-600 dark:text-gray-400">게시물의 상세 정보를 확인하고 관리할 수 있습니다.</p>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
-            </CardContent>
-          </Card>
-
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>게시물 정보</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center">
-                  <User className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">{post.author}</p>
-                    <p className="text-sm text-muted-foreground">{post.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">작성일</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(post.createdAt)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">조회수</p>
-                    <p className="text-sm text-muted-foreground">{post.viewCount}</p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <MessageSquare className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">댓글</p>
-                    <p className="text-sm text-muted-foreground">{post.commentCount}개</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>게시물 설정</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="pinned">상단 고정</Label>
-                    <p className="text-sm text-muted-foreground">게시물을 목록 상단에 고정합니다.</p>
-                  </div>
-                  <Switch id="pinned" checked={post.isPinned} />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="comments">댓글 허용</Label>
-                    <p className="text-sm text-muted-foreground">이 게시물에 댓글 작성을 허용합니다.</p>
-                  </div>
-                  <Switch id="comments" checked={true} />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full">설정 저장</Button>
-              </CardFooter>
-            </Card>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" asChild className="bg-white/60 backdrop-blur-sm border-blue-200 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/20">
+                  <Link href={`/admin/boards/${postId}/edit`}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    수정
+                  </Link>
+                </Button>
+                <Button variant="destructive" className="bg-red-500 hover:bg-red-600">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  삭제
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {post.comments && post.comments.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>댓글 ({post.comments.length})</CardTitle>
-            </CardHeader>
-            <CardContent>{post.comments.length === 0 ? <p className="text-center text-muted-foreground py-8">아직 댓글이 없습니다.</p> : <div className="space-y-4">{/* 댓글 목록 렌더링 */}</div>}</CardContent>
-          </Card>
-        )}
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <CardTitle className="text-2xl text-blue-800 dark:text-blue-200">{post.title}</CardTitle>
+                    <CardDescription>
+                      <div className="flex flex-wrap items-center gap-3 text-sm">
+                        <Badge className={getBoardTypeColor(post.boardType)} variant="outline">
+                          {post.boardTypeName}
+                        </Badge>
+                        <Badge variant="outline" className="border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400">
+                          {post.category}
+                        </Badge>
+                        <Badge className={getStatusColor(post.status)} variant="outline">
+                          {post.statusName}
+                        </Badge>
+                      </div>
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="prose prose-blue dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-col gap-6">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30">
+                  <CardTitle className="text-blue-800 dark:text-blue-200">게시물 정보</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 p-6">
+                  <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <User className="mr-3 h-4 w-4 text-blue-600" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">{post.author}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{post.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Calendar className="mr-3 h-4 w-4 text-blue-600" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">작성일</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{formatDate(post.createdAt)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Eye className="mr-3 h-4 w-4 text-blue-600" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">조회수</p>
+                      <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{post.viewCount}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <MessageSquare className="mr-3 h-4 w-4 text-blue-600" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">댓글</p>
+                      <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{post.commentCount}개</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30">
+                  <CardTitle className="text-blue-800 dark:text-blue-200">게시물 설정</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 p-6">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="pinned" className="text-gray-900 dark:text-gray-100">
+                        상단 고정
+                      </Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">게시물을 목록 상단에 고정합니다.</p>
+                    </div>
+                    <Switch id="pinned" checked={post.isPinned} className="data-[state=checked]:bg-blue-500" />
+                  </div>
+                  <Separator className="bg-blue-100 dark:bg-blue-800/30" />
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="comments" className="text-gray-900 dark:text-gray-100">
+                        댓글 허용
+                      </Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">이 게시물에 댓글 작성을 허용합니다.</p>
+                    </div>
+                    <Switch id="comments" checked={true} className="data-[state=checked]:bg-blue-500" />
+                  </div>
+                </CardContent>
+                <CardFooter className="bg-blue-50/50 dark:bg-blue-950/20">
+                  <Button className="w-full bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white">설정 저장</Button>
+                </CardFooter>
+              </Card>
+            </div>
+          </div>
+
+          {post.comments && post.comments.length > 0 && (
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30">
+                <CardTitle className="text-blue-800 dark:text-blue-200">댓글 ({post.comments.length})</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">{post.comments.length === 0 ? <p className="text-center text-gray-500 dark:text-gray-400 py-8">아직 댓글이 없습니다.</p> : <div className="space-y-4">{/* 댓글 목록 렌더링 */}</div>}</CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );

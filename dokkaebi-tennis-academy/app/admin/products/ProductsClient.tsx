@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { PlusCircle, Search, MoreHorizontal, Package, AlertTriangle, CheckCircle, X, CheckCircle2, TriangleAlert, XCircle, ArrowUp, ArrowUpDown, ArrowDown } from 'lucide-react';
@@ -190,269 +191,295 @@ export default function ProductsClient() {
   };
 
   return (
-    <div className="min-h-full flex flex-col p-6 space-y-8">
-      {error && <div className="text-center text-red-500">상품 로드 중 오류가 발생했습니다.</div>}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20">
+      <div className="container py-8 px-6">
+        {error && <div className="text-center text-red-500">상품 로드 중 오류가 발생했습니다.</div>}
 
-      {/* 제목 */}
-      <section className="mb-8 shrink-0">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
-            <Package className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">상품 관리</h1>
-            <p className="mt-2 text-lg text-gray-600">테니스 스트링 상품을 효율적으로 관리하세요</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 전역 통계 카드(숫자만 스켈레톤) */}
-      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
-        {[
-          { label: '전체 상품', icon: <Package className="h-6 w-6 text-blue-600" />, value: totalAll },
-          { label: '판매 중', icon: <CheckCircle className="h-6 w-6 text-emerald-600" />, value: activeAll },
-          { label: '재고 부족', icon: <AlertTriangle className="h-6 w-6 text-yellow-600" />, value: lowStockAll },
-          { label: '품절', icon: <XCircle className="h-6 w-6 text-rose-600" />, value: outOfStockAll },
-        ].map((c, i) => (
-          <Card key={i} className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{c.label}</p>
-                  <p className="text-3xl font-bold text-gray-900">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-gray-200 animate-pulse align-middle" /> : c.value}</p>
-                </div>
-                <div className={`${i === 0 ? 'bg-blue-50' : i === 1 ? 'bg-emerald-50' : i === 2 ? 'bg-yellow-50' : 'bg-rose-50'} rounded-xl p-3`}>{c.icon}</div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
-
-      {/* 리스트 카드 */}
-      <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm flex-1 min-h-0 flex flex-col">
-        <CardHeader className="pb-4 shrink-0">
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <section className="bg-gradient-to-r from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/30 shadow-lg mb-8">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
+              <Package className="h-8 w-8 text-blue-600" />
+            </div>
             <div>
-              <CardTitle className="text-xl font-semibold text-gray-900">스트링 목록</CardTitle>
-              <CardDescription className="text-gray-600">{total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
+              <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 md:text-5xl">상품 관리</h1>
+              <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">테니스 스트링 상품을 효율적으로 관리하세요</p>
             </div>
-            <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg">
-              <Link href="/admin/products/new">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                스트링 등록
-              </Link>
-            </Button>
           </div>
-        </CardHeader>
+        </section>
 
-        <CardContent className="space-y-6 flex-1 min-h-0 flex flex-col">
-          {/* 검색/필터 */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-3 md:space-y-0">
-            <div className="w-full space-y-3">
-              {/* 검색 */}
-              <div className="w-full max-w-md">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input type="search" placeholder="스트링명, 브랜드, SKU로 검색" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8 h-9 text-xs" />
-                  {searchTerm && (
-                    <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => setSearchTerm('')}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
+          {[
+            {
+              label: '전체 상품',
+              icon: <Package className="h-6 w-6 text-blue-600" />,
+              value: totalAll,
+              bgColor: 'bg-blue-50 dark:bg-blue-950/20',
+            },
+            {
+              label: '판매 중',
+              icon: <CheckCircle className="h-6 w-6 text-green-600" />,
+              value: activeAll,
+              bgColor: 'bg-green-50 dark:bg-green-950/20',
+            },
+            {
+              label: '재고 부족',
+              icon: <AlertTriangle className="h-6 w-6 text-yellow-600" />,
+              value: lowStockAll,
+              bgColor: 'bg-yellow-50 dark:bg-yellow-950/20',
+            },
+            {
+              label: '품절',
+              icon: <XCircle className="h-6 w-6 text-rose-600" />,
+              value: outOfStockAll,
+              bgColor: 'bg-rose-50 dark:bg-rose-950/20',
+            },
+          ].map((c, i) => (
+            <Card key={i} className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{c.label}</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-blue-200/50 dark:bg-blue-800/50 animate-pulse align-middle" /> : c.value}</p>
+                  </div>
+                  <div className={`${c.bgColor} rounded-xl p-3 border border-blue-100 dark:border-blue-800/30`}>{c.icon}</div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
+
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30 flex-1 min-h-0 flex flex-col">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30 pb-4 shrink-0">
+            <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+              <div>
+                <CardTitle className="text-xl font-semibold text-blue-800 dark:text-blue-200">스트링 목록</CardTitle>
+                <CardDescription className="text-blue-600 dark:text-blue-400">{total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
+              </div>
+              <Button asChild className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white shadow-lg">
+                <Link href="/admin/products/new">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  스트링 등록
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-6 flex-1 min-h-0 flex flex-col p-6">
+            {/* 검색/필터 */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-3 md:space-y-0">
+              <div className="w-full space-y-3">
+                {/* 검색 */}
+                <div className="w-full max-w-md">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder="스트링명, 브랜드, SKU로 검색"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8 h-9 text-xs border-blue-200 dark:border-blue-700 focus:border-blue-400 dark:focus:border-blue-500"
+                    />
+                    {searchTerm && (
+                      <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-blue-50 dark:hover:bg-blue-950/20" onClick={() => setSearchTerm('')}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 필터 */}
+                <div className="grid w-full gap-2 border-t border-blue-100 dark:border-blue-800/30 pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                  <BrandFilter value={brandFilter} onChange={setBrandFilter} options={BRAND_OPTIONS.map((o) => o.id)} />
+                  <MaterialFilter value={materialFilter} onChange={setMaterialFilter} options={MATERIAL_OPTIONS.map((o) => o.id)} />
+                  <StockStatusFilter value={statusFilter} onChange={setStatusFilter} />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setBrandFilter('all');
+                      setMaterialFilter('all');
+                      setStatusFilter('all');
+                      setSearchTerm('');
+                    }}
+                    className="w-full border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                  >
+                    필터 초기화
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 bg-transparent" onClick={() => setSort(null)}>
+                    정렬 초기화
+                  </Button>
                 </div>
               </div>
-
-              {/* 필터 */}
-              <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                <BrandFilter value={brandFilter} onChange={setBrandFilter} options={BRAND_OPTIONS.map((o) => o.id)} />
-                <MaterialFilter value={materialFilter} onChange={setMaterialFilter} options={MATERIAL_OPTIONS.map((o) => o.id)} />
-                <StockStatusFilter value={statusFilter} onChange={setStatusFilter} />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setBrandFilter('all');
-                    setMaterialFilter('all');
-                    setStatusFilter('all');
-                    setSearchTerm('');
-                  }}
-                  className="w-full"
-                >
-                  필터 초기화
-                </Button>
-                <Button variant="outline" size="sm" className="w-full" onClick={() => setSort(null)}>
-                  정렬 초기화
-                </Button>
-              </div>
             </div>
-          </div>
 
-          {/* 테이블 */}
-          <div className="flex-1">
-            <div className="overflow-auto rounded-lg border border-gray-200">
-              <Table className="table-fixed [&_tr]:border-0">
-                <TableHeader className="sticky top-0 z-10 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-gray-200">
-                  <TableRow className="border-b">
-                    <TableHead className="w-[32%] text-left">
-                      <SortBtn field="name">스트링명</SortBtn>
-                    </TableHead>
-                    <TableHead className="w-[12%] text-center">
-                      <SortBtn field="brand" align="center">
-                        브랜드
-                      </SortBtn>
-                    </TableHead>
-                    <TableHead className="w-[10%] text-center">
-                      <SortBtn field="gauge" align="center">
-                        게이지
-                      </SortBtn>
-                    </TableHead>
-                    <TableHead className="w-[14%] text-center">
-                      <SortBtn field="material" align="center">
-                        재질
-                      </SortBtn>
-                    </TableHead>
-                    <TableHead className="w-[12%] text-right">
-                      <SortBtn field="price" align="right">
-                        가격
-                      </SortBtn>
-                    </TableHead>
-                    <TableHead className="w-[10%] text-right">
-                      <SortBtn field="stock" align="right">
-                        재고
-                      </SortBtn>
-                    </TableHead>
-                    <TableHead className="w-[10%] text-center">상태</TableHead>
-                    <TableHead className="w-[10%] text-right">관리</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {isLoading || isValidating ? (
-                    // 전환/첫 로딩: 고정 행수 스켈레톤
-                    <ProductsTableSkeleton rows={PAGE_SIZE} />
-                  ) : items.length === 0 ? (
-                    <TableRow className="border-0">
-                      <TableCell colSpan={8} className="text-center" style={{ height: ROW_PX * PAGE_SIZE }}>
-                        <div className="flex flex-col items-center justify-center gap-2">
-                          <div className="text-sm font-medium text-gray-900">조건에 맞는 스트링이 없습니다.</div>
-                          <div className="text-xs text-muted-foreground">필터를 초기화하거나 검색어를 수정해 보세요.</div>
-                          <div className="mt-3 flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setBrandFilter('all');
-                                setMaterialFilter('all');
-                                setStatusFilter('all');
-                                setSearchTerm('');
-                              }}
-                            >
-                              필터 초기화
-                            </Button>
-                            {searchTerm && (
-                              <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')}>
-                                검색어 지우기
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
+            {/* 테이블 */}
+            <div className="flex-1">
+              <div className="overflow-auto rounded-lg border border-blue-100 dark:border-blue-800/30">
+                <Table className="table-fixed [&_tr]:border-0">
+                  <TableHeader className="sticky top-0 z-10 bg-blue-50/80 dark:bg-blue-950/30 backdrop-blur supports-[backdrop-filter]:bg-blue-50/60 border-b border-blue-100 dark:border-blue-800/30">
+                    <TableRow className="border-b border-blue-100 dark:border-blue-800/30">
+                      <TableHead className="w-[32%] text-left text-blue-700 dark:text-blue-300">
+                        <SortBtn field="name">스트링명</SortBtn>
+                      </TableHead>
+                      <TableHead className="w-[12%] text-center text-blue-700 dark:text-blue-300">
+                        <SortBtn field="brand" align="center">
+                          브랜드
+                        </SortBtn>
+                      </TableHead>
+                      <TableHead className="w-[10%] text-center text-blue-700 dark:text-blue-300">
+                        <SortBtn field="gauge" align="center">
+                          게이지
+                        </SortBtn>
+                      </TableHead>
+                      <TableHead className="w-[14%] text-center text-blue-700 dark:text-blue-300">
+                        <SortBtn field="material" align="center">
+                          재질
+                        </SortBtn>
+                      </TableHead>
+                      <TableHead className="w-[12%] text-right text-blue-700 dark:text-blue-300">
+                        <SortBtn field="price" align="right">
+                          가격
+                        </SortBtn>
+                      </TableHead>
+                      <TableHead className="w-[10%] text-right text-blue-700 dark:text-blue-300">
+                        <SortBtn field="stock" align="right">
+                          재고
+                        </SortBtn>
+                      </TableHead>
+                      <TableHead className="w-[10%] text-center text-blue-700 dark:text-blue-300">상태</TableHead>
+                      <TableHead className="w-[10%] text-right text-blue-700 dark:text-blue-300">관리</TableHead>
                     </TableRow>
-                  ) : (
-                    items.map((s) => {
-                      const statusKey: StatusKey = (s.computedStatus ?? 'active') as StatusKey;
-                      const S = STATUS_UI[statusKey];
-                      return (
-                        <TableRow key={s._id} className="h-14 border-b border-gray-100 last:border-b-0 hover:bg-emerald-50/30 even:bg-gray-50/50 transition-colors">
-                          <TableCell className="text-left align-middle py-3">
-                            <Link href={`/products/${s._id}`} className="hover:text-emerald-600">
-                              <div className="space-y-1">
-                                <div className="truncate font-medium text-gray-900">{s.name}</div>
-                                <div className="font-mono text-[11px] text-muted-foreground">{s.sku}</div>
-                              </div>
-                            </Link>
-                          </TableCell>
+                  </TableHeader>
 
-                          <TableCell className="text-center align-middle">
-                            <Badge variant="secondary" className="px-2 py-0.5 rounded-full">
-                              {brandLabel(s.brand)}
-                            </Badge>
-                          </TableCell>
-
-                          <TableCell className="text-center align-middle">{s.gauge}</TableCell>
-                          <TableCell className="text-center align-middle">{materialLabel(s.material)}</TableCell>
-
-                          <TableCell className="text-right align-middle font-medium text-gray-900">{s.price?.toLocaleString?.() ?? s.price}원</TableCell>
-
-                          <TableCell className="text-right align-middle">
-                            {s.inventory?.stock && s.inventory.stock > 0 ? <span className="font-medium text-gray-900">{s.inventory.stock}</span> : <span className="font-medium text-rose-600">품절</span>}
-                          </TableCell>
-
-                          <TableCell className="text-center align-middle">
-                            <Badge variant="outline" className={cn('inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full', S.color)}>
-                              <S.Icon className="h-3.5 w-3.5" />
-                              {S.label}
-                            </Badge>
-                          </TableCell>
-
-                          <TableCell className="text-right align-middle">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="p-0">
-                                  <MoreHorizontal />
+                  <TableBody>
+                    {isLoading || isValidating ? (
+                      // 전환/첫 로딩: 고정 행수 스켈레톤
+                      <ProductsTableSkeleton rows={PAGE_SIZE} />
+                    ) : items.length === 0 ? (
+                      <TableRow className="border-0">
+                        <TableCell colSpan={8} className="text-center" style={{ height: ROW_PX * PAGE_SIZE }}>
+                          <div className="flex flex-col items-center justify-center gap-2">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">조건에 맞는 스트링이 없습니다.</div>
+                            <div className="text-xs text-muted-foreground">필터를 초기화하거나 검색어를 수정해 보세요.</div>
+                            <div className="mt-3 flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setBrandFilter('all');
+                                  setMaterialFilter('all');
+                                  setStatusFilter('all');
+                                  setSearchTerm('');
+                                }}
+                                className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                              >
+                                필터 초기화
+                              </Button>
+                              {searchTerm && (
+                                <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')} className="hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                                  검색어 지우기
                                 </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/products/${s._id}`}>상세 보기</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(s._id)}>
-                                  삭제
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-
-                  {/* 마지막 페이지 보정용 필러 행(로딩/빈상태 제외) */}
-                  {!(isLoading || isValidating) &&
-                    items.length > 0 &&
-                    Array.from({ length: Math.max(0, PAGE_SIZE - items.length) }).map((_, i) => (
-                      <TableRow key={`filler-${i}`} className="pointer-events-none">
-                        <TableCell colSpan={8} className="p-0">
-                          <div className="h-14" />
+                              )}
+                            </div>
+                          </div>
                         </TableCell>
                       </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+                    ) : (
+                      items.map((s) => {
+                        const statusKey: StatusKey = (s.computedStatus ?? 'active') as StatusKey;
+                        const S = STATUS_UI[statusKey];
+                        return (
+                          <TableRow key={s._id} className="h-14 border-b border-blue-100 dark:border-blue-800/30 last:border-b-0 hover:bg-blue-50/30 dark:hover:bg-blue-950/10 even:bg-blue-50/20 dark:even:bg-blue-950/5 transition-colors">
+                            <TableCell className="text-left align-middle py-3">
+                              <Link href={`/products/${s._id}`} className="hover:text-blue-600 dark:hover:text-blue-400">
+                                <div className="space-y-1">
+                                  <div className="truncate font-medium text-gray-900 dark:text-gray-100">{s.name}</div>
+                                  <div className="font-mono text-[11px] text-muted-foreground">{s.sku}</div>
+                                </div>
+                              </Link>
+                            </TableCell>
 
-          {/* 페이지네이션 */}
-          <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {page} / {totalPages}
-              </span>
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
-                이전
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
-                다음
-              </Button>
+                            <TableCell className="text-center align-middle">
+                              <Badge variant="secondary" className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700">
+                                {brandLabel(s.brand)}
+                              </Badge>
+                            </TableCell>
+
+                            <TableCell className="text-center align-middle text-gray-900 dark:text-gray-100">{s.gauge}</TableCell>
+                            <TableCell className="text-center align-middle text-gray-900 dark:text-gray-100">{materialLabel(s.material)}</TableCell>
+
+                            <TableCell className="text-right align-middle font-medium text-gray-900 dark:text-gray-100">{s.price?.toLocaleString?.() ?? s.price}원</TableCell>
+
+                            <TableCell className="text-right align-middle">
+                              {s.inventory?.stock && s.inventory.stock > 0 ? <span className="font-medium text-blue-600 dark:text-blue-400">{s.inventory.stock}</span> : <span className="font-medium text-rose-600 dark:text-rose-400">품절</span>}
+                            </TableCell>
+
+                            <TableCell className="text-center align-middle">
+                              <Badge variant="outline" className={cn('inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full', S.color)}>
+                                <S.Icon className="h-3.5 w-3.5" />
+                                {S.label}
+                              </Badge>
+                            </TableCell>
+
+                            <TableCell className="text-right align-middle">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="p-0 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                                    <MoreHorizontal />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="border-blue-100 dark:border-blue-800/30">
+                                  <DropdownMenuLabel>작업</DropdownMenuLabel>
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/products/${s._id}`}>상세 보기</Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(s._id)}>
+                                    삭제
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+
+                    {/* 마지막 페이지 보정용 필러 행(로딩/빈상태 제외) */}
+                    {!(isLoading || isValidating) &&
+                      items.length > 0 &&
+                      Array.from({ length: Math.max(0, PAGE_SIZE - items.length) }).map((_, i) => (
+                        <TableRow key={`filler-${i}`} className="pointer-events-none">
+                          <TableCell colSpan={8} className="p-0">
+                            <div className="h-14" />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+
+            {/* 페이지네이션 */}
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {page} / {totalPages}
+                </span>
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                  이전
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                  다음
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

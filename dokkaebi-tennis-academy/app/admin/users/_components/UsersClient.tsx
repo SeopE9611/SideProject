@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Search, Filter, MoreHorizontal, UserX, Trash2, Mail, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, UserX, Trash2, Mail, CheckCircle, XCircle, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -11,8 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { Card, CardContent } from '@/components/ui/card';
 
-// 임시 회원 데이터
 const users = [
   {
     id: '1',
@@ -39,29 +39,20 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // 전체 선택 여부와 일부 선택 여부 계산
   const isAllSelected = users.length > 0 && selectedUsers.length === users.length;
   const isPartiallySelected = selectedUsers.length > 0 && selectedUsers.length < users.length;
 
-  // 체크박스 DOM 요소를 참조할 ref 생성
-  // ShadCN의 Checkbox 컴포넌트는 실제로 HTMLButtonElement로 타입이 잡혀 있음
   const allCheckboxRef = useRef<HTMLButtonElement>(null);
 
-  // indeterminate 상태 설정: 일부만 선택되었을 경우 체크박스를 반쯤 체크된 것처럼 보이게 만듦
   useEffect(() => {
     if (allCheckboxRef.current) {
-      // 실제 Checkbox 내부에 숨겨진 <input type="checkbox"> 요소를 찾아냄
       const input = allCheckboxRef.current.querySelector("input[type='checkbox']");
-
-      // 그 input 요소가 존재하고 HTMLInputElement가 맞다면
       if (input instanceof HTMLInputElement) {
-        // indeterminate 속성을 직접 DOM에 설정 (true 또는 false)
         input.indeterminate = isPartiallySelected;
       }
     }
   }, [isPartiallySelected]);
 
-  // 전체 선택/해제 처리
   const handleSelectAll = () => {
     if (isAllSelected) {
       setSelectedUsers([]);
@@ -70,7 +61,6 @@ export default function UsersPage() {
     }
   };
 
-  // 개별 선택/해제 처리
   const handleSelectUser = (userId: string) => {
     if (selectedUsers.includes(userId)) {
       setSelectedUsers(selectedUsers.filter((id) => id !== userId));
@@ -79,70 +69,135 @@ export default function UsersPage() {
     }
   };
 
-  // 필터링된 회원 목록
   const filteredUsers = users.filter((user) => {
-    // 검색어 필터링
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) || user.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // 상태 필터링
     const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-
     return matchesSearch && matchesStatus;
   });
 
   return (
     <AuthGuard>
-      <div className="container py-10">
+      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
-          <p className="text-white text-2xl md:text-4xl font-semibold">이 기능은 개발 중 입니다. (회원 관리)</p>
-          <p className="text-lg text-gray-300">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
+          <div className="bg-gradient-to-r from-blue-600 to-teal-600 rounded-full p-4">
+            <Users className="h-8 w-8 text-white" />
+          </div>
+          <p className="text-white text-xl sm:text-2xl md:text-4xl font-semibold">이 기능은 개발 중입니다</p>
+          <p className="text-base sm:text-lg text-gray-300">회원 관리 기능이 곧 활성화됩니다</p>
         </div>
+
         <div className="mx-auto max-w-7xl">
-          {/* 페이지 제목 */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold">회원 관리</h1>
-            <p className="mt-2 text-muted-foreground">가입한 모든 회원 정보를 확인하고 관리할 수 있습니다.</p>
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">회원 관리</h1>
+                <p className="mt-1 sm:mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-300">가입한 모든 회원 정보를 확인하고 관리할 수 있습니다</p>
+              </div>
+            </div>
           </div>
 
-          {/* 검색 및 필터 */}
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex w-full max-w-sm items-center space-x-2">
-              <Input placeholder="이름 또는 이메일로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="h-9" />
-              <Button variant="outline" size="sm" className="h-9 px-3">
-                <Search className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-9 w-[180px]">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4" />
-                    <SelectValue placeholder="상태 필터" />
+          <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-4 mb-6 sm:mb-8">
+            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 회원</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{users.length}</p>
                   </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">모든 상태</SelectItem>
-                  <SelectItem value="active">활성</SelectItem>
-                  <SelectItem value="inactive">비활성</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                  <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
+                    <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">활성 회원</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{users.filter((u) => u.status === 'active').length}</p>
+                  </div>
+                  <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
+                    <CheckCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">비활성 회원</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{users.filter((u) => u.status === 'inactive').length}</p>
+                  </div>
+                  <div className="bg-red-50 dark:bg-red-950/50 rounded-xl p-3">
+                    <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">성인반</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{users.filter((u) => u.membershipType === '성인반').length}</p>
+                  </div>
+                  <div className="bg-teal-50 dark:bg-teal-950/50 rounded-xl p-3">
+                    <Users className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* 선택된 항목에 대한 액션 */}
+          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm mb-6">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex w-full max-w-sm items-center space-x-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input placeholder="이름 또는 이메일로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        <SelectValue placeholder="상태 필터" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">모든 상태</SelectItem>
+                      <SelectItem value="active">활성</SelectItem>
+                      <SelectItem value="inactive">비활성</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {selectedUsers.length > 0 && (
-            <div className="mb-4 flex items-center gap-2 rounded-md bg-muted p-2">
-              <span className="text-sm font-medium">{selectedUsers.length}명의 회원이 선택됨</span>
-              <div className="ml-auto flex gap-2">
-                <Button variant="outline" size="sm" className="h-8">
+            <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950/20 p-4 border border-blue-200 dark:border-blue-800">
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{selectedUsers.length}명의 회원이 선택됨</span>
+              <div className="flex flex-wrap gap-2 sm:ml-auto">
+                <Button variant="outline" size="sm" className="bg-white dark:bg-gray-700 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
                   <Mail className="mr-2 h-3.5 w-3.5" />
                   메일 발송
                 </Button>
-                <Button variant="outline" size="sm" className="h-8">
+                <Button variant="outline" size="sm" className="bg-white dark:bg-gray-700 border-yellow-200 dark:border-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/20">
                   <UserX className="mr-2 h-3.5 w-3.5" />
                   비활성화
                 </Button>
-                <Button variant="destructive" size="sm" className="h-8">
+                <Button variant="destructive" size="sm">
                   <Trash2 className="mr-2 h-3.5 w-3.5" />
                   삭제
                 </Button>
@@ -150,19 +205,13 @@ export default function UsersPage() {
             </div>
           )}
 
-          {/* 회원 테이블 */}
-          <div className="rounded-md border border-border/40 bg-card/60 backdrop-blur">
+          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
             <div className="relative overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-700">
                     <TableHead className="w-[50px]">
-                      <Checkbox
-                        ref={allCheckboxRef} // 위에서 만든 ref를 여기 연결
-                        checked={isAllSelected} // 모두 선택됐는지 여부 (true/false)
-                        onCheckedChange={handleSelectAll} // 클릭 시 전체 선택/해제 로직 수행
-                        aria-label="전체 선택" // 접근성 개선용 텍스트
-                      />
+                      <Checkbox ref={allCheckboxRef} checked={isAllSelected} onCheckedChange={handleSelectAll} aria-label="전체 선택" />
                     </TableHead>
                     <TableHead>이름</TableHead>
                     <TableHead>이메일</TableHead>
@@ -176,28 +225,39 @@ export default function UsersPage() {
                 <TableBody>
                   {filteredUsers.length > 0 ? (
                     filteredUsers.map((user) => (
-                      <TableRow key={user.id} className="hover:bg-muted/50">
+                      <TableRow key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                         <TableCell>
                           <Checkbox checked={selectedUsers.includes(user.id)} onCheckedChange={() => handleSelectUser(user.id)} aria-label={`${user.name} 선택`} />
                         </TableCell>
-                        <TableCell className="font-medium">{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
+                        <TableCell className="font-medium text-gray-900 dark:text-white">{user.name}</TableCell>
+                        <TableCell className="text-gray-600 dark:text-gray-300">{user.email}</TableCell>
                         <TableCell>
-                          <Badge variant={user.membershipType === '성인반' ? 'default' : user.membershipType === '주니어반' ? 'secondary' : 'outline'}>{user.membershipType}</Badge>
+                          <Badge
+                            variant="outline"
+                            className={
+                              user.membershipType === '성인반'
+                                ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800'
+                                : user.membershipType === '주니어반'
+                                ? 'bg-teal-50 text-teal-600 border-teal-200 dark:bg-teal-950/50 dark:text-teal-400 dark:border-teal-800'
+                                : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-950/50 dark:text-gray-400 dark:border-gray-800'
+                            }
+                          >
+                            {user.membershipType}
+                          </Badge>
                         </TableCell>
-                        <TableCell>{user.joinDate}</TableCell>
-                        <TableCell>{user.lastLogin}</TableCell>
+                        <TableCell className="text-gray-600 dark:text-gray-300">{user.joinDate}</TableCell>
+                        <TableCell className="text-gray-600 dark:text-gray-300">{user.lastLogin}</TableCell>
                         <TableCell>
                           <div className="flex items-center">
                             {user.status === 'active' ? (
                               <>
-                                <CheckCircle className="mr-1.5 h-3.5 w-3.5 text-green-500" />
-                                <span className="text-sm">활성</span>
+                                <CheckCircle className="mr-1.5 h-3.5 w-3.5 text-blue-500 dark:text-blue-400" />
+                                <span className="text-sm text-blue-600 dark:text-blue-400">활성</span>
                               </>
                             ) : (
                               <>
-                                <XCircle className="mr-1.5 h-3.5 w-3.5 text-red-500" />
-                                <span className="text-sm">비활성</span>
+                                <XCircle className="mr-1.5 h-3.5 w-3.5 text-red-500 dark:text-red-400" />
+                                <span className="text-sm text-red-600 dark:text-red-400">비활성</span>
                               </>
                             )}
                           </div>
@@ -205,7 +265,7 @@ export default function UsersPage() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-950/20">
                                 <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">메뉴 열기</span>
                               </Button>
@@ -214,8 +274,8 @@ export default function UsersPage() {
                               <DropdownMenuItem>상세 정보</DropdownMenuItem>
                               <DropdownMenuItem>메일 발송</DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-amber-500">{user.status === 'active' ? '비활성화' : '활성화'}</DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-500">삭제</DropdownMenuItem>
+                              <DropdownMenuItem className="text-amber-600 dark:text-amber-400">{user.status === 'active' ? '비활성화' : '활성화'}</DropdownMenuItem>
+                              <DropdownMenuItem className="text-red-600 dark:text-red-400">삭제</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -223,7 +283,7 @@ export default function UsersPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-24 text-center">
+                      <TableCell colSpan={8} className="h-24 text-center text-gray-500 dark:text-gray-400">
                         검색 결과가 없습니다.
                       </TableCell>
                     </TableRow>
@@ -231,84 +291,84 @@ export default function UsersPage() {
                 </TableBody>
               </Table>
             </div>
-            <Button
-              variant="destructive"
-              className="mt-4"
-              onClick={async () => {
-                const previewRes = await fetch('/api/system/cleanup/preview', {
-                  method: 'GET',
-                });
-                const preview = await previewRes.json();
 
-                if (!Array.isArray(preview) || preview.length === 0) {
-                  showInfoToast('삭제 예정인 탈퇴 회원이 없습니다.');
-                  return;
-                }
+            <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 space-y-2">
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  const previewRes = await fetch('/api/system/cleanup/preview', {
+                    method: 'GET',
+                  });
+                  const preview = await previewRes.json();
 
-                const previewText = preview.map((user: any) => `- ${user.name} (${user.email})`).join('\n');
+                  if (!Array.isArray(preview) || preview.length === 0) {
+                    showInfoToast('삭제 예정인 탈퇴 회원이 없습니다.');
+                    return;
+                  }
 
-                const ok = window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`);
-                if (!ok) return;
+                  const previewText = preview.map((user: any) => `- ${user.name} (${user.email})`).join('\n');
 
-                const res = await fetch('/api/system/cleanup', {
-                  method: 'GET',
-                });
-                const data = await res.json();
-                if (res.ok) {
-                  showSuccessToast(`삭제된 계정 수: ${data.deletedCount}`);
-                } else {
-                  showErrorToast(`실패: ${data.message}`);
-                }
-              }}
-            >
-              탈퇴 회원 자동 삭제 실행
-            </Button>
-            <Button
-              variant="destructive"
-              className="mt-4"
-              onClick={async () => {
-                const previewRes = await fetch('/api/system/purge', {
-                  method: 'GET',
-                  credentials: 'include', // NextAuth 세션 기반
-                });
-                const preview = await previewRes.json();
+                  const ok = window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`);
+                  if (!ok) return;
 
-                if (!Array.isArray(preview) || preview.length === 0) {
-                  showInfoToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
-                  return;
-                }
+                  const res = await fetch('/api/system/cleanup', {
+                    method: 'GET',
+                  });
+                  const data = await res.json();
+                  if (res.ok) {
+                    showSuccessToast(`삭제된 계정 수: ${data.deletedCount}`);
+                  } else {
+                    showErrorToast(`실패: ${data.message}`);
+                  }
+                }}
+              >
+                탈퇴 회원 자동 삭제 실행
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  const previewRes = await fetch('/api/system/purge', {
+                    method: 'GET',
+                    credentials: 'include', // NextAuth 세션 기반
+                  });
+                  const preview = await previewRes.json();
 
-                const previewText = preview.map((user: any) => `- ${user.name} (${user.email})`).join('\n');
-                const ok = window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`);
-                if (!ok) return;
+                  if (!Array.isArray(preview) || preview.length === 0) {
+                    showInfoToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
+                    return;
+                  }
 
-                const res = await fetch('/api/system/purge', {
-                  method: 'GET',
-                  credentials: 'include', //  NextAuth 세션 기반
-                });
-                const data = await res.json();
-                if (res.ok) {
-                  showSuccessToast(`완전 삭제된 계정 수: ${data.deletedCount}`);
-                } else {
-                  showErrorToast(`실패: ${data.message}`);
-                }
-              }}
-            >
-              1년 이상 경과한 탈퇴 회원 완전 삭제
-            </Button>
-          </div>
+                  const previewText = preview.map((user: any) => `- ${user.name} (${user.email})`).join('\n');
+                  const ok = window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`);
+                  if (!ok) return;
 
-          {/* 페이지네이션 */}
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">총 {filteredUsers.length}명의 회원</div>
+                  const res = await fetch('/api/system/purge', {
+                    method: 'GET',
+                    credentials: 'include', // NextAuth 세션 기반
+                  });
+                  const data = await res.json();
+                  if (res.ok) {
+                    showSuccessToast(`완전 삭제된 계정 수: ${data.deletedCount}`);
+                  } else {
+                    showErrorToast(`실패: ${data.message}`);
+                  }
+                }}
+              >
+                1년 이상 경과한 탈퇴 회원 완전 삭제
+              </Button>
+            </div>
+          </Card>
+
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400">총 {filteredUsers.length}명의 회원</div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" disabled>
+              <Button variant="outline" size="sm" disabled className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                 이전
               </Button>
-              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+              <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400">
                 1
               </Button>
-              <Button variant="outline" size="sm" disabled>
+              <Button variant="outline" size="sm" disabled className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                 다음
               </Button>
             </div>
