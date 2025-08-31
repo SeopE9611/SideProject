@@ -9,6 +9,9 @@ import { UserNav } from '@/components/nav/UserNav';
 import { UserNavMobile } from '@/components/nav/UserNavMobile';
 import { useRouter, usePathname } from 'next/navigation';
 import SearchPreview from '@/components/SearchPreview';
+import { useCartStore } from '@/app/store/cartStore';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Header = () => {
   const router = useRouter();
@@ -21,6 +24,11 @@ const Header = () => {
   const [stringCloseTimer, setStringCloseTimer] = useState<NodeJS.Timeout | null>(null);
   const [boardOpenTimer, setBoardOpenTimer] = useState<NodeJS.Timeout | null>(null);
   const [boardCloseTimer, setBoardCloseTimer] = useState<NodeJS.Timeout | null>(null);
+  const { items } = useCartStore();
+  const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
+  const { user } = useCurrentUser();
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     const handleResize = () => {
@@ -68,6 +76,7 @@ const Header = () => {
   const boardLinks = [
     { name: '공지사항', href: '/board/notice' },
     { name: 'QnA', href: '/board/qna' },
+    { name: '리뷰 게시판', href: '/reviews' },
   ];
 
   const openStringWithDelay = () => {
@@ -154,18 +163,6 @@ const Header = () => {
         메인 콘텐츠로 건너뛰기
       </a>
 
-      <div className="hidden lg:block bg-slate-900 text-white h-9" role="status">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between h-full">
-          <div className="flex items-center space-x-8">
-            <span className="text-xs font-medium">02-123-4567</span>
-            <span className="text-xs font-medium">info@dokkaebi-tennis.com</span>
-          </div>
-          <div className="flex items-center">
-            <span className="text-xs font-medium">스트링 할인 이벤트 진행중! 최대 30% 할인</span>
-          </div>
-        </div>
-      </div>
-
       <header
         className={`sticky top-0 z-[50] w-full isolate bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 transition-[height,background] duration-300 ${isScrolled ? 'h-[56px]' : 'h-[72px]'}`}
         data-scrolled={isScrolled}
@@ -177,7 +174,7 @@ const Header = () => {
               <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">PROFESSIONAL STRING SHOP</div>
             </Link>
 
-            <nav className="hidden xl:flex overflow-visible" role="navigation" aria-label="주요 메뉴">
+            <nav className="hidden lg:flex overflow-visible" role="navigation" aria-label="주요 메뉴">
               <ul className="flex items-center gap-5 2xl:gap-7 overflow-visible">
                 {menuItems.map((item) => (
                   <li key={item.name} className="relative overflow-visible">
@@ -219,18 +216,22 @@ const Header = () => {
                       >
                         <Link
                           href={item.href}
-                          className="text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-white focus-visible:ring-2 ring-blue-500 rounded-md px-2 py-1 text-sm font-semibold transition-all duration-300 relative group whitespace-nowrap flex items-center gap-1"
+                          className=" relative group px-3 py-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300 transition
+    hover:bg-slate-100/80 dark:hover:bg-slate-800/60
+    hover:text-slate-900 dark:hover:text-white
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400
+    whitespace-nowrap flex items-center gap-1
+  "
                           aria-haspopup="true"
                           aria-expanded={item.isBoardMenu ? showBoardMenu : showStringMenu}
                         >
                           {item.name}
                           <ChevronDown className="h-3 w-3" />
-                          <span className="absolute -bottom-2 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:w-full"></span>
                         </Link>
 
                         {((item.isBoardMenu && showBoardMenu) || (!item.isBoardMenu && showStringMenu)) && (
                           <div
-                            className="absolute left-0 top-full z-[40] mt-0 w-[640px] rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-6 shadow-xl overflow-visible"
+                            className="absolute left-0 top-full z-[40] mt-0 w-[640px] rounded-2xl bg-white dark:bg-slate-900 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-6 shadow-xl overflow-visible"
                             onMouseEnter={() => {
                               if (item.isBoardMenu) {
                                 keepBoardOpen();
@@ -379,7 +380,20 @@ const Header = () => {
             <Link href="/cart">
               <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 transition-all duration-300 focus-visible:ring-2 ring-blue-500" data-count="3" aria-label="장바구니">
                 <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</span>
+                {cartCount > 0 && (
+                  <span
+                    className="
+          absolute -top-1 -right-1
+          text-[10px] min-w-[18px] h-[18px]
+          px-[5px] rounded-full
+          bg-rose-600 text-white
+          flex items-center justify-center font-bold
+        "
+                    aria-label={`장바구니에 ${cartBadge}개`}
+                  >
+                    {cartBadge}
+                  </span>
+                )}
               </Button>
             </Link>
 
@@ -393,7 +407,7 @@ const Header = () => {
             <Link href="/cart" className="sm:hidden">
               <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
                 <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</span>
+                {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">{cartBadge}</span>}
               </Button>
             </Link>
 
@@ -403,13 +417,26 @@ const Header = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[320px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg">
-                <div className="grid gap-6 py-6">
+              <SheetContent
+                side="left"
+                className="w-[300px] sm:w-[320px] bg-white dark:bg-slate-900 p-0 flex flex-col"
+                onOpenAutoFocus={(e) => {
+                  if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                    e.preventDefault();
+                  }
+                }}
+              >
+                <div className="shrink-0 p-6 pb-3 border-b border-slate-200 dark:border-slate-800">
                   <Link href="/" className="flex flex-col" aria-label="도깨비 테니스 홈">
                     <div className="font-bold whitespace-nowrap text-slate-900 dark:text-white">도깨비 테니스</div>
                     <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">PROFESSIONAL STRING SHOP</div>
                   </Link>
+                  <div className="mt-4">
+                    <SearchPreview placeholder="스트링 검색..." className="w-full" />
+                  </div>
+                </div>
 
+                <div className="flex-1 overflow-y-auto scrollbar-hide p-6">
                   <nav className="grid gap-2">
                     {menuItems.map((item) => (
                       <div key={item.name}>
@@ -499,24 +526,101 @@ const Header = () => {
                       </div>
                     ))}
                   </nav>
+                </div>
 
-                  <div className="flex flex-col gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="shrink-0 border-t border-slate-200 dark:border-slate-700 p-6">
+                  {/* 프로필 */}
+                  {user ? (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.image || '/placeholder.svg'} />
+                          <AvatarFallback>{user.name?.charAt(0) ?? 'U'}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold truncate">
+                            {user.name} 님
+                            {isAdmin && (
+                              <span
+                                className="mt-1 inline-block text-[11px] font-semibold px-1.5 py-[2px] rounded
+              bg-emerald-100 text-emerald-700
+              dark:bg-emerald-900/30 dark:text-emerald-300"
+                              >
+                                관리자
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 액션 버튼: 장바구니 / 마이페이지 */}
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          className="w-full justify-center rounded-xl border-slate-200 dark:border-slate-700"
+                          onClick={() => {
+                            setOpen(false);
+                            router.push('/cart');
+                          }}
+                          aria-label="장바구니 페이지로 이동"
+                        >
+                          <ShoppingCart className="mr-2 h-4 w-4" />
+                          장바구니{cartCount > 0 ? ` (${cartBadge})` : ''}
+                        </Button>
+
+                        <Button
+                          className="w-full justify-center rounded-xl"
+                          onClick={() => {
+                            setOpen(false);
+                            router.push('/mypage');
+                          }}
+                          aria-label="마이페이지로 이동"
+                        >
+                          마이페이지
+                        </Button>
+                      </div>
+
+                      {/* 관리자 페이지 (관리자일 때만) */}
+                      {isAdmin && (
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-center rounded-xl mt-2"
+                          onClick={() => {
+                            setOpen(false);
+                            router.push('/admin/dashboard');
+                          }}
+                        >
+                          관리자 페이지
+                        </Button>
+                      )}
+
+                      {/* 로그아웃 */}
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-center rounded-xl mt-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                        onClick={async () => {
+                          await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+                          window.location.href = '/';
+                        }}
+                      >
+                        로그아웃
+                      </Button>
+                    </>
+                  ) : (
+                    // 비로그인 시
                     <Button
-                      variant="outline"
-                      className="w-full justify-start rounded-xl border-slate-200 dark:border-slate-700 hover:bg-slate-100/70 dark:hover:bg-slate-800 bg-transparent sm:hidden focus-visible:ring-2 ring-blue-500"
+                      className="w-full justify-center rounded-xl"
                       onClick={() => {
                         setOpen(false);
-                        router.push('/cart');
+                        router.push('/login');
                       }}
-                      aria-label="장바구니 페이지로 이동"
                     >
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      장바구니 (3)
+                      로그인
                     </Button>
-                    <UserNavMobile setOpen={setOpen} />
-                  </div>
+                  )}
 
-                  <div className="flex justify-center pt-4">
+                  {/* 테마 토글 */}
+                  <div className="mt-4 flex justify-center">
                     <ThemeToggle />
                   </div>
                 </div>

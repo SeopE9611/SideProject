@@ -36,15 +36,39 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex items-center gap-2 cursor-pointer hover:bg-accent/50 px-2 py-1.5 rounded-md transition">
+        <div className="flex items-center gap-2 cursor-pointer hover:bg-accent/50 px-2 py-1.5 rounded-md transition min-w-0">
           <Avatar className="h-6 w-6">
             <AvatarImage src={user.image || '/placeholder.svg'} />
             <AvatarFallback>{user.name?.charAt(0) ?? 'U'}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col">
-            <span className="text-sm">
-              {user.name} 님 {isAdmin && <span className="ml-1 text-xs text-muted-foreground">(관리자)</span>}
+
+          <div className="flex items-center gap-1 min-w-0">
+            {/* 이름만 말줄임 */}
+            <span
+              className="
+          text-sm min-w-0 grow
+          max-w-[140px] sm:max-w-[180px] md:max-w-[220px]
+          whitespace-nowrap overflow-hidden text-ellipsis
+        "
+              title={`${user.name} 님`}
+            >
+              {user.name} 님
             </span>
+
+            {/* 관리자 배지: 항상 보이게 shrink-0 */}
+            {isAdmin && (
+              <span
+                className="
+            shrink-0 whitespace-nowrap
+            text-[11px] font-semibold
+            px-1.5 py-[2px] rounded
+            bg-blue-100 text-blue-700
+            dark:bg-blue-900/30 dark:text-blue-300
+          "
+              >
+                관리자
+              </span>
+            )}
           </div>
         </div>
       </DropdownMenuTrigger>

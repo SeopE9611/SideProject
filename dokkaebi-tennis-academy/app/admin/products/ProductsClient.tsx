@@ -194,18 +194,17 @@ export default function ProductsClient() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20">
       <div className="container py-8 px-6">
         {error && <div className="text-center text-red-500">상품 로드 중 오류가 발생했습니다.</div>}
-
-        <section className="bg-gradient-to-r from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/30 shadow-lg mb-8">
-          <div className="flex items-center space-x-4 mb-6">
+        <div className="mb-2">
+          <div className="flex items-center space-x-3 mb-4">
             <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
               <Package className="h-8 w-8 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 md:text-5xl">상품 관리</h1>
-              <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">테니스 스트링 상품을 효율적으로 관리하세요</p>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">상품 관리</h1>
+              <p className="mt-2 text-base text-gray-600">테니스 스트링 상품을 효율적으로 관리하세요</p>
             </div>
           </div>
-        </section>
+        </div>
 
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
           {[

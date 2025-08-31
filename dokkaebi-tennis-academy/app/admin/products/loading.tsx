@@ -15,18 +15,17 @@ export default function ProductsLoading() {
 
   return (
     <div className="min-h-full flex flex-col p-6 space-y-8">
-      {/* 페이지 제목: 실제 UI */}
-      <section className="mb-8 shrink-0">
+      <div className="mb-2">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
-            <Package className="h-6 w-6 text-white" />
+          <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
+            <Package className="h-8 w-8 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">상품 관리</h1>
-            <p className="mt-2 text-lg text-gray-600">테니스 스트링 상품을 효율적으로 관리하세요</p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">상품 관리</h1>
+            <p className="mt-2 text-base text-gray-600">테니스 스트링 상품을 효율적으로 관리하세요</p>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* 전역 통계 카드: 라벨은 실 UI, 숫자만 스켈레톤 */}
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
