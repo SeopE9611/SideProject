@@ -140,7 +140,7 @@ export default async function BoardPostDetailPage({ params }: { params: { id: st
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+            <Card className="md:col-span-2 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
               <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
@@ -167,7 +167,7 @@ export default async function BoardPostDetailPage({ params }: { params: { id: st
             </Card>
 
             <div className="flex flex-col gap-6">
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+              <Card className=" shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
                 <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30">
                   <CardTitle className="text-blue-800 dark:text-blue-200">게시물 정보</CardTitle>
                 </CardHeader>
@@ -203,7 +203,7 @@ export default async function BoardPostDetailPage({ params }: { params: { id: st
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+              <Card className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
                 <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30">
                   <CardTitle className="text-blue-800 dark:text-blue-200">게시물 설정</CardTitle>
                 </CardHeader>
@@ -236,7 +236,7 @@ export default async function BoardPostDetailPage({ params }: { params: { id: st
           </div>
 
           {post.comments && post.comments.length > 0 && (
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+            <Card className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
               <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30">
                 <CardTitle className="text-blue-800 dark:text-blue-200">댓글 ({post.comments.length})</CardTitle>
               </CardHeader>

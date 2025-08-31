@@ -234,7 +234,7 @@ export default function ProductsClient() {
               bgColor: 'bg-rose-50 dark:bg-rose-950/20',
             },
           ].map((c, i) => (
-            <Card key={i} className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+            <Card key={i} className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -248,7 +248,7 @@ export default function ProductsClient() {
           ))}
         </section>
 
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30 flex-1 min-h-0 flex flex-col">
+        <Card className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30 flex-1 min-h-0 flex flex-col">
           <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30 pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
