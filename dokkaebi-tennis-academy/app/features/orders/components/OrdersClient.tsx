@@ -307,7 +307,7 @@ export default function OrdersClient() {
               )}
             </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto scrollbar-hidden relative pr-8">
+          <CardContent className="overflow-x-auto md:overflow-x-visible scrollbar-hidden relative pr-2 md:pr-0">
             <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
               <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-900 shadow-sm">
                 <TableRow>

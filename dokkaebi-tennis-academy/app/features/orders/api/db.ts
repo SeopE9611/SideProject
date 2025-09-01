@@ -122,7 +122,7 @@ export async function fetchCombinedOrders() {
         userId: app.userId ? app.userId.toString() : null,
         date: app.createdAt,
         status: app.status,
-        paymentStatus: app.paymentStatus || '결제대기',
+        paymentStatus: app.paymentStatus ?? (app.status && app.status !== '검토 중' ? '결제완료' : '결제대기'),
         type: '서비스',
         total: totalCalculated, // app.totalPrice 대신 재계산된 값
         items, // 방금 만들어낸 배열
