@@ -9,21 +9,26 @@ import { Separator } from '@/components/ui/separator';
 import { useCartStore } from '@/app/store/cartStore';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { showErrorToast } from '@/lib/toast';
+import { useEffect, useMemo, useState } from 'react';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import WishlistSidebar from '@/app/cart/_components/WishlistSidebar';
 
+// 통화 포맷 유틸 (일관성)
+const formatKRW = (n: number) => n.toLocaleString('ko-KR');
+
 export default function CartPageClient() {
-  const router = useRouter();
-  const { logout } = useAuthStore();
+  const { logout } = useAuthStore(); // 사용 여부와 관계없이 훅 순서 안정
   const { items: cartItems, removeItem, updateQuantity, clearCart } = useCartStore();
+
+  // 인증
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 선택 상태
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
   useEffect(() => {
     let cancelled = false;
-
     getMyInfo({ quiet: true })
       .then(({ user }) => {
         if (!cancelled) setUser(user);
@@ -32,21 +37,37 @@ export default function CartPageClient() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-
     return () => {
       cancelled = true;
     };
   }, []);
-  if (loading) return <p>null</p>;
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingFee = subtotal >= 30000 ? 0 : 3000;
+  const subtotal = useMemo(() => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [cartItems]);
+  const FREE_SHIP_THRESHOLD = 30000;
+  const shippingFee = subtotal >= FREE_SHIP_THRESHOLD ? 0 : 3000;
   const total = subtotal + shippingFee;
+
+  // 선택/일괄
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+  const toggleAll = () => {
+    if (selectedIds.length === cartItems.length) setSelectedIds([]);
+    else setSelectedIds(cartItems.map((i) => i.id));
+  };
+  const removeSelected = () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`선택한 ${selectedIds.length}개 상품을 장바구니에서 삭제할까요?`)) return;
+    selectedIds.forEach((id) => removeItem(id));
+    setSelectedIds([]);
+    showSuccessToast?.('선택한 상품을 삭제했어요.');
+  };
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+      {/* 헤더 */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
-        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0 bg-black/10" />
         <div className="absolute inset-0 opacity-20">
           <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
             <defs>
@@ -61,20 +82,20 @@ export default function CartPageClient() {
           </svg>
         </div>
         <div className="relative container py-16">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg">
+          <div className="mb-4 flex items-center gap-4">
+            <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-sm shadow-lg">
               <ShoppingBag className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-4xl font-black mb-2">장바구니</h1>
-              <p className="text-blue-100">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
+              <h1 className="mb-2 text-4xl font-black">장바구니</h1>
+              <p className="  text-blue-100">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
             </div>
           </div>
 
           {cartItems.length > 0 && (
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-300 rounded-full animate-pulse"></div>
+                <div className="h-2 w-2 animate-pulse rounded-full bg-blue-300" />
                 <span>총 {cartItems.length}개 상품</span>
               </div>
               <div className="flex items-center gap-2">
@@ -89,203 +110,184 @@ export default function CartPageClient() {
       <div className="container py-8">
         {cartItems.length > 0 ? (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            {/* 장바구니 상품 목록 */}
+            {/* 목록 */}
             <div className="lg:col-span-2 space-y-6">
               <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-t-lg border-b">
-                  <CardTitle className="flex items-center gap-3">
-                    <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-2xl p-2 shadow-lg">
-                      <ShoppingBag className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <CardHeader className="rounded-t-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <CardTitle className="flex items-center gap-3">
+                        <span className="rounded-2xl bg-gradient-to-r from-blue-100 to-indigo-100 p-2 shadow-lg dark:from-blue-900 dark:to-indigo-900">
+                          <ShoppingBag className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </span>
+                        선택한 상품 ({cartItems.length}개)
+                      </CardTitle>
+                      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">상품명을 눌러 상세로 이동할 수 있어요.</p>
                     </div>
-                    선택한 상품 ({cartItems.length}개)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  {/* 데스크톱 헤더 */}
-                  <div className="hidden md:grid grid-cols-12 text-sm font-medium p-4 bg-slate-50/50 dark:bg-slate-700/50 border-b">
-                    <div className="col-span-6">상품정보</div>
-                    <div className="col-span-2 text-center">가격</div>
-                    <div className="col-span-2 text-center">수량</div>
-                    <div className="col-span-2 text-right">합계</div>
-                  </div>
 
-                  {cartItems.map((item, index) => (
-                    <div
-                      key={item.id}
-                      className={`p-4 border-b last:border-b-0 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all duration-300 ${
-                        index % 2 === 0 ? 'bg-slate-50/30 dark:bg-slate-800/30' : ''
-                      }`}
-                    >
-                      {/* 모바일 레이아웃 */}
-                      <div className="md:hidden space-y-4">
-                        <div className="flex items-start gap-4">
-                          <div className="relative group">
-                            <Image
-                              src={item.image || '/placeholder.svg?height=80&width=80&query=tennis+product'}
-                              alt={item.name}
-                              width={80}
-                              height={80}
-                              className="rounded-xl border-2 border-white shadow-lg group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          </div>
-                          <div className="flex-1">
-                            <Link href={`/products/${item.id}`} className="font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-2">
+                    {/* 전체선택 / 선택n개 / 선택삭제 */}
+                    <div className="flex items-center gap-3 text-sm">
+                      <Button variant="ghost" size="sm" onClick={toggleAll} className="hover:bg-white/60 dark:hover:bg-slate-800/60">
+                        {selectedIds.length === cartItems.length ? '전체 해제' : '전체 선택'}
+                      </Button>
+                      <div className="h-4 w-px bg-black/10 dark:bg-white/10" />
+                      <span className="text-slate-500 dark:text-slate-400">선택 {selectedIds.length}개</span>
+                      <Button variant="ghost" size="sm" onClick={removeSelected} className="text-red-600 hover:bg-red-50/70 dark:hover:bg-red-900/20">
+                        선택 삭제
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-4 md:p-6 space-y-4">
+                  {cartItems.map((item) => {
+                    // 버튼 비활성 판단
+                    const stock = item.stock ?? Number.POSITIVE_INFINITY;
+                    const canDec = item.quantity > 1;
+                    const canInc = item.quantity < stock;
+
+                    return (
+                      <div key={item.id} className="rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md dark:bg-slate-800">
+                        <div className="flex items-center gap-4">
+                          {/* 선택 체크박스 */}
+                          <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} className="h-4 w-4 accent-blue-600" aria-label={`${item.name} 선택`} />
+
+                          {/* 썸네일 (비율 고정 + lazy) */}
+                          <Link href={`/products/${item.id}`} className="shrink-0">
+                            <Image src={item.image || '/placeholder.svg?height=72&width=72'} alt={item.name} width={72} height={72} loading="lazy" className="aspect-square rounded-lg object-cover" />
+                          </Link>
+
+                          {/* 이름 / 개당 가격 */}
+                          <div className="min-w-0 flex-1">
+                            <Link href={`/products/${item.id}`} className="block line-clamp-1 font-medium text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400">
                               {item.name}
                             </Link>
-                            <div className="mt-2 flex items-center justify-between">
-                              <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{item.price.toLocaleString()}원</span>
-                              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => removeItem(item.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                            <div className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                              개당 <span className="tabular-nums font-medium text-slate-700 dark:text-slate-200">{formatKRW(item.price)}원</span>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
-                            <Button variant="ghost" size="sm" className="h-10 w-10 hover:bg-blue-50 dark:hover:bg-blue-900/20" onClick={() => updateQuantity(item.id, Math.max(item.quantity - 1, 1))}>
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="w-12 text-center font-semibold">{item.quantity}</span>
+                          {/* 우측: 합계 / 수량 / 삭제 */}
+                          <div className="flex items-end gap-3">
+                            {/* 합계 */}
+                            <div className="text-right">
+                              <div className="text-xs text-slate-500 dark:text-slate-400">합계</div>
+                              <div className="tabular-nums text-lg font-semibold text-slate-900 dark:text-slate-100">{formatKRW(item.price * item.quantity)}원</div>
+                            </div>
+
+                            {/* 수량 스테퍼 (pill, 비활성 표시) */}
+                            <div className="flex items-center rounded-full bg-slate-100 px-1 dark:bg-slate-700">
+                              <Button variant="ghost" size="sm" className="h-8 w-8 disabled:opacity-40" aria-label={`${item.name} 수량 감소`} disabled={!canDec} onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                              <span className="tabular-nums w-8 select-none text-center font-medium">{item.quantity}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 disabled:opacity-40"
+                                aria-label={`${item.name} 수량 증가`}
+                                disabled={!canInc}
+                                onClick={() => {
+                                  if (!canInc) {
+                                    showErrorToast(
+                                      <>
+                                        <p>
+                                          <strong>{item.name}</strong>의 최대 주문 수량은 {stock}개입니다.
+                                        </p>
+                                        <p>더 이상 수량을 늘릴 수 없습니다.</p>
+                                      </>
+                                    );
+                                    return;
+                                  }
+                                  updateQuantity(item.id, item.quantity + 1);
+                                }}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+
+                            {/* 삭제 버튼 (컨펌) */}
                             <Button
                               variant="ghost"
-                              size="sm"
-                              className="h-10 w-10 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                              size="icon"
+                              aria-label={`${item.name} 삭제`}
                               onClick={() => {
-                                const stock = item.stock ?? Number.POSITIVE_INFINITY;
-                                if (item.quantity + 1 > stock) {
-                                  showErrorToast(
-                                    <>
-                                      <p>
-                                        <strong>{item.name}</strong>의 최대 주문 수량은 {stock}개입니다.
-                                      </p>
-                                      <p>더 이상 수량을 늘릴 수 없습니다.</p>
-                                    </>
-                                  );
-                                  return;
+                                if (confirm(`"${item.name}"을(를) 장바구니에서 삭제할까요?`)) {
+                                  removeItem(item.id);
                                 }
-                                updateQuantity(item.id, item.quantity + 1);
                               }}
+                              className="text-slate-400 hover:text-red-600"
                             >
-                              <Plus className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-slate-800 dark:text-slate-200">{(item.price * item.quantity).toLocaleString()}원</div>
                           </div>
                         </div>
                       </div>
-
-                      {/* 데스크톱 레이아웃 */}
-                      <div className="hidden md:grid md:grid-cols-12 items-center">
-                        <div className="col-span-6 flex items-center gap-4">
-                          <div className="relative group">
-                            <Image
-                              src={item.image || '/placeholder.svg?height=80&width=80&query=tennis+product'}
-                              alt={item.name}
-                              width={80}
-                              height={80}
-                              className="rounded-xl border-2 border-white shadow-lg group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          </div>
-                          <div>
-                            <Link href={`/products/${item.id}`} className="font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-2">
-                              {item.name}
-                            </Link>
-                          </div>
-                        </div>
-
-                        <div className="col-span-2 text-center">
-                          <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">{item.price.toLocaleString()}원</span>
-                        </div>
-
-                        <div className="col-span-2 flex items-center justify-center">
-                          <div className="flex items-center bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm">
-                            <Button variant="ghost" size="sm" className="h-10 w-10 hover:bg-blue-50 dark:hover:bg-blue-900/20" onClick={() => updateQuantity(item.id, Math.max(item.quantity - 1, 1))}>
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="w-12 text-center font-semibold">{item.quantity}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-10 w-10 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                              onClick={() => {
-                                const stock = item.stock ?? Number.POSITIVE_INFINITY;
-                                if (item.quantity + 1 > stock) {
-                                  showErrorToast(
-                                    <>
-                                      <p>
-                                        <strong>{item.name}</strong>의 최대 주문 수량은 {stock}개입니다.
-                                      </p>
-                                      <p>더 이상 수량을 늘릴 수 없습니다.</p>
-                                    </>
-                                  );
-                                  return;
-                                }
-                                updateQuantity(item.id, item.quantity + 1);
-                              }}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="col-span-2 flex items-center justify-end gap-3">
-                          <span className="text-lg font-bold text-slate-800 dark:text-slate-200">{(item.price * item.quantity).toLocaleString()}원</span>
-                          <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => removeItem(item.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </CardContent>
-                <CardFooter className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-b-lg border-t">
-                  <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
-                    <Button variant="outline" className="group hover:bg-blue-50 dark:hover:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700 bg-transparent" asChild>
+
+                {/* 선택 작업 바 */}
+                <div className="px-4 pb-4 md:px-6">
+                  <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-slate-50/70 p-3 dark:bg-slate-700/40">
+                    <span className="text-sm text-slate-600 dark:text-slate-300">선택 {selectedIds.length}개</span>
+                    <Button variant="ghost" size="sm" onClick={removeSelected} className="text-red-600 hover:bg-red-50/70 dark:hover:bg-red-900/20">
+                      선택 삭제
+                    </Button>
+                  </div>
+                </div>
+
+                <CardFooter className="rounded-b-lg bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                  <div className="flex w-full flex-col justify-between gap-4 sm:flex-row">
+                    <Button variant="outline" className="group border-0 shadow-sm hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
                       <Link href="/products" className="flex items-center gap-2">
-                        <ArrowRight className="h-4 w-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
+                        <ArrowRight className="h-4 w-4 -rotate-180 transition-transform group-hover:-translate-x-1" />
                         쇼핑 계속하기
                       </Link>
                     </Button>
-                    <Button variant="destructive" className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 shadow-lg" onClick={clearCart}>
-                      <Trash2 className="h-4 w-4 mr-2" />
+                    <Button
+                      variant="destructive"
+                      className="bg-gradient-to-r from-red-500 to-pink-500 shadow-lg hover:from-red-600 hover:to-pink-600"
+                      onClick={() => {
+                        if (confirm('장바구니의 모든 상품을 비울까요?')) clearCart();
+                      }}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
                       장바구니 비우기
                     </Button>
                   </div>
                 </CardFooter>
               </Card>
+
               <WishlistSidebar variant="inline" />
             </div>
 
-            {/* 주문 요약 및 결제 */}
+            {/* 요약 */}
             <div className="lg:col-span-1">
               <div className="sticky top-20">
                 <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-6 text-white">
                     <CardTitle className="flex items-center gap-3 text-xl">
-                      <div className="p-2 bg-white/20 rounded-2xl shadow-lg">
+                      <div className="rounded-2xl bg-white/20 p-2 shadow-lg">
                         <Package className="h-5 w-5" />
                       </div>
                       주문 요약
                     </CardTitle>
                   </div>
-                  <CardContent className="p-6 space-y-6">
+                  <CardContent className="space-y-6 p-6">
                     <div className="space-y-4">
-                      <div className="flex justify-between items-center">
+                      <div className="flex items-center justify-between">
                         <span className="text-slate-600 dark:text-slate-400">상품 금액</span>
-                        <span className="font-semibold text-lg">{subtotal.toLocaleString()}원</span>
+                        <span className="tabular-nums text-lg font-semibold">{formatKRW(subtotal)}원</span>
                       </div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex items-center justify-between">
                         <span className="text-slate-600 dark:text-slate-400">배송비</span>
-                        <span className={`font-semibold ${shippingFee === 0 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}</span>
+                        <span className={shippingFee === 0 ? 'font-semibold text-blue-600 dark:text-blue-400' : 'font-semibold'}>{shippingFee > 0 ? `${formatKRW(shippingFee)}원` : '무료'}</span>
                       </div>
-                      <Separator />
-                      <div className="flex justify-between items-center text-xl font-bold">
+                      <Separator className="opacity-40" />
+                      <div className="flex items-center justify-between text-xl font-bold">
                         <span>총 결제 금액</span>
-                        <span className="text-blue-600 dark:text-blue-400">{total.toLocaleString()}원</span>
+                        <span className="tabular-nums text-blue-600 dark:text-blue-400">{formatKRW(total)}원</span>
                       </div>
                     </div>
 
@@ -301,23 +303,23 @@ export default function CartPageClient() {
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                      <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400 mx-auto mb-1" />
+                      <div className="rounded-lg bg-blue-50 p-2 dark:bg-blue-900/20">
+                        <Shield className="mx-auto mb-1 h-4 w-4 text-blue-600 dark:text-blue-400" />
                         <span className="text-blue-700 dark:text-blue-400">안전결제</span>
                       </div>
-                      <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                        <Truck className="h-4 w-4 text-indigo-600 dark:text-indigo-400 mx-auto mb-1" />
+                      <div className="rounded-lg bg-indigo-50 p-2 dark:bg-indigo-900/20">
+                        <Truck className="mx-auto mb-1 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                         <span className="text-indigo-700 dark:text-indigo-400">빠른배송</span>
                       </div>
-                      <div className="p-2 bg-slate-50 dark:bg-slate-900/20 rounded-lg">
-                        <Star className="h-4 w-4 text-slate-600 dark:text-slate-400 mx-auto mb-1" />
+                      <div className="rounded-lg bg-slate-50 p-2 dark:bg-slate-900/20">
+                        <Star className="mx-auto mb-1 h-4 w-4 text-slate-600 dark:text-slate-400" />
                         <span className="text-slate-700 dark:text-slate-400">A/S보장</span>
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter className="p-6 pt-0">
                     <Button
-                      className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300"
+                      className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
                       size="lg"
                       asChild
                     >
@@ -333,32 +335,32 @@ export default function CartPageClient() {
             </div>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto">
+          <div className="mx-auto max-w-2xl">
             <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl text-center overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 p-12">
-                <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mb-6 shadow-xl">
+              <div className="bg-gradient-to-r from-blue-100 to-indigo-100 p-12 dark:from-blue-900/30 dark:to-indigo-900/30">
+                <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 shadow-xl">
                   <PackageOpen className="h-12 w-12 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold mb-4 text-slate-800 dark:text-slate-200">장바구니가 비어있습니다</h2>
-                <p className="text-slate-600 dark:text-slate-400 mb-8 text-lg">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
+                <h2 className="mb-4 text-3xl font-bold text-slate-800 dark:text-slate-200">장바구니가 비어있습니다</h2>
+                <p className="mb-8 text-lg text-slate-600 dark:text-slate-400">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
               </div>
               <CardContent className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                    <Package className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div className="rounded-xl bg-blue-50 p-4 text-center dark:bg-blue-900/20">
+                    <Package className="mx-auto mb-2 h-8 w-8 text-blue-500" />
                     <p className="text-sm font-medium">추천 상품</p>
                   </div>
-                  <div className="text-center p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
-                    <Star className="h-8 w-8 text-indigo-500 mx-auto mb-2" />
+                  <div className="rounded-xl bg-indigo-50 p-4 text-center dark:bg-indigo-900/20">
+                    <Star className="mx-auto mb-2 h-8 w-8 text-indigo-500" />
                     <p className="text-sm font-medium">인기 상품</p>
                   </div>
-                  <div className="text-center p-4 bg-slate-50 dark:bg-slate-900/20 rounded-xl">
-                    <Truck className="h-8 w-8 text-slate-500 mx-auto mb-2" />
+                  <div className="rounded-xl bg-slate-50 p-4 text-center dark:bg-slate-900/20">
+                    <Truck className="mx-auto mb-2 h-8 w-8 text-slate-500" />
                     <p className="text-sm font-medium">빠른 배송</p>
                   </div>
                 </div>
                 <Button
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-8 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300"
+                  className="transform bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
                   size="lg"
                   asChild
                 >
@@ -370,12 +372,27 @@ export default function CartPageClient() {
                 </Button>
               </CardContent>
             </Card>
-            <div className="max-w-2xl mx-auto mt-8">
+            <div className="mx-auto mt-8 max-w-2xl">
               <WishlistSidebar variant="inline" />
             </div>
           </div>
         )}
       </div>
+
+      {/* 모바일 하단 결제 바 */}
+      {cartItems.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 md:hidden">
+          <div className="mx-auto max-w-screen-sm rounded-t-2xl bg-white/95 p-4 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-slate-800/95">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-sm text-slate-600 dark:text-slate-300">결제 금액</span>
+              <span className="tabular-nums text-lg font-bold text-blue-600 dark:text-blue-400">{formatKRW(total)}원</span>
+            </div>
+            <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
+              <Link href="/checkout">주문하기</Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
