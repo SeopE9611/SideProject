@@ -68,9 +68,7 @@ export default function OrdersClient() {
 
   // 데이터 준비: data.items, data.total
   const orders = data?.items ?? []; // 현재 페이지 항목 배열
-  const totalPages = data?.total
-    ? Math.ceil(data.total / limit) // 전체 페이지 수
-    : 0;
+  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
 
   // 검색 / 필터링 로직
   const filteredOrders = orders.filter((order) => {
@@ -121,22 +119,21 @@ export default function OrdersClient() {
   });
 
   // 제한형 페이지 네이션
-  const getPaginationRange = () => {
-    const delta = 2;
-    const range = [];
+  function getPaginationItems(page: number, totalPages: number, delta = 2): (number | string)[] {
+    // 한 페이지만 있으면 그냥 1만 반환
+    if (totalPages <= 1) return [1];
 
-    const start = Math.max(2, page - delta);
-    const end = Math.min(totalPages - 1, page + delta);
+    const items: (number | string)[] = [1];
+    const left = Math.max(2, page - delta);
+    const right = Math.min(totalPages - 1, page + delta);
 
-    if (start > 2) range.push('...');
-    for (let i = start; i <= end; i++) {
-      range.push(i);
-    }
-    if (end < totalPages - 1) range.push('...');
+    if (left > 2) items.push('dots-left');
+    for (let i = left; i <= right; i++) items.push(i);
+    if (right < totalPages - 1) items.push('dots-right');
 
-    return [1, ...range, totalPages];
-  };
-
+    items.push(totalPages);
+    return items;
+  }
   // 비회원 vs 탈퇴회원 표시
   function getDisplayUserType(order: OrderWithType) {
     if (order.customer.name.includes('(탈퇴한 회원)')) return '(탈퇴한 회원)';
@@ -500,27 +497,34 @@ export default function OrdersClient() {
             </Table>
 
             {/* 페이지네이션 */}
-            <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
-              <Button size="sm" variant="outline" onClick={() => setPage(page - 1)} disabled={page === 1}>
-                이전
-              </Button>
+            {totalPages > 1 && (
+              <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
+                <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+                  이전
+                </Button>
 
-              {getPaginationRange().map((p, idx) =>
-                p === '...' ? (
-                  <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
-                    ...
-                  </span>
-                ) : (
-                  <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} onClick={() => setPage(Number(p))}>
-                    {p}
-                  </Button>
-                )
-              )}
+                {getPaginationItems(page, totalPages).map((it, idx) =>
+                  typeof it === 'number' ? (
+                    <Button
+                      key={`page-${it}`} // ← 고유 key
+                      size="sm"
+                      variant={it === page ? 'default' : 'outline'}
+                      onClick={() => setPage(it)}
+                    >
+                      {it}
+                    </Button>
+                  ) : (
+                    <span key={`dots-${idx}`} className="px-2 text-muted-foreground">
+                      …
+                    </span>
+                  )
+                )}
 
-              <Button size="sm" variant="outline" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
-                다음
-              </Button>
-            </div>
+                <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                  다음
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
