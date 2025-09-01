@@ -415,6 +415,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const averageRating = product.reviews.length > 0 ? product.reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / product.reviews.length : 0;
 
+  // 수량 버튼 상태
+  const canDec = quantity > 1;
+  const canInc = quantity < stock;
+
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
       {/* Hero Section with Breadcrumb */}
@@ -541,29 +545,33 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="space-y-4 pt-4 border-t">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">수량</span>
-                      <div className="flex items-center border rounded-lg">
-                        <Button variant="ghost" size="sm" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="h-10 w-10">
+
+                      {/* 장바구니와 동일한 pill 형태 스테퍼 */}
+                      <div className="flex items-center rounded-full bg-slate-100 px-1 dark:bg-slate-700">
+                        <Button variant="ghost" size="sm" className="h-9 w-9 disabled:opacity-40" aria-label="수량 감소" disabled={!canDec} onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
                           <Minus className="h-4 w-4" />
                         </Button>
-                        <span className="w-12 text-center font-medium">{quantity}</span>
+
+                        <span className="tabular-nums w-10 select-none text-center font-medium">{quantity}</span>
+
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-9 w-9 disabled:opacity-40"
+                          aria-label="수량 증가"
+                          disabled={!canInc}
                           onClick={() => {
-                            if (quantity + 1 > stock) {
+                            if (!canInc) {
                               showErrorToast(`더 이상 담을 수 없습니다. 재고: ${stock}개`);
                               return;
                             }
-                            setQuantity(quantity + 1);
+                            setQuantity((q) => q + 1);
                           }}
-                          className="h-10 w-10"
-                          disabled={quantity >= stock}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-
                     {product.inventory?.manageStock && product.inventory.stock <= 5 && product.inventory.stock > 0 && (
                       <div className="flex items-center gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg dark:bg-orange-900/20 dark:border-orange-800">
                         <Clock className="h-4 w-4 text-orange-600" />
