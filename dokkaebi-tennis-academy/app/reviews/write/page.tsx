@@ -11,11 +11,12 @@ import { Label } from '@/components/ui/label';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
 import NextImage from 'next/image';
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
+import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 
 /* ---- 별점 ---- */
 function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: number) => void; disabled?: boolean }) {
   return (
-    <div className={`flex gap-1 ${disabled ? 'opacity-60 pointer-events-none' : ''}`}>
+    <div className={`flex justify-center gap-1 ${disabled ? 'opacity-60 pointer-events-none' : ''}`}>
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
@@ -39,9 +40,87 @@ type OrderReviewItem = {
 };
 
 type EligState = 'loading' | 'ok' | 'notPurchased' | 'already' | 'unauthorized' | 'invalid' | 'error';
+type AppLite = {
+  _id: string;
+  label: string;
+  status?: string;
+  racketType?: string | null;
+  stringItems?: { id: string; name: string }[];
+  preferredDate?: string | null;
+  preferredTime?: string | null;
+  desiredDateTime?: string | null;
+  createdAt?: string | null;
+  requirements?: string | null;
+};
 
-// service 모드에서 사용할 신청서 목록/선택
-type AppLite = { _id: string; label: string };
+// 예약일자 포멧
+function formatKoDate(iso?: string | null) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(d);
+  } catch {
+    return '';
+  }
+}
+
+function formatKoTime(iso?: string | null) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return '';
+  }
+}
+
+function formatYMD(dateStr?: string | null) {
+  if (!dateStr) return '';
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+  if (!m) return dateStr; // 예외: 그대로 표시
+  const [, y, mo, d] = m;
+  return `${y}. ${mo}. ${d}.`;
+}
+
+function formatHM(timeStr?: string | null) {
+  if (!timeStr) return '';
+  return timeStr;
+}
+
+// 신청일자 포멧
+function formatKoDateTime(iso?: string | null) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return '';
+  }
+}
+
+function buildAppLabel(a: any) {
+  const when = a?.stringDetails?.preferredDate ? `${formatYMD(a.stringDetails.preferredDate)} ${a.stringDetails.preferredTime ?? ''}`.trim() : a?.desiredDateTime ? formatKoDateTime(a.desiredDateTime) : '';
+
+  const racket = a?.stringDetails?.racketType || a?.racketType || '';
+
+  const names = (a?.stringDetails?.stringItems || a?.stringItems || []).map((s: any) => s?.name).filter(Boolean) as string[];
+  const strings = names.length > 2 ? `${names.slice(0, 2).join(', ')} 외 ${names.length - 2}` : names.join(', ');
+
+  return [when, racket, strings].filter(Boolean).join(' • ');
+}
 
 export default function ReviewWritePage() {
   const sp = useSearchParams();
@@ -67,6 +146,7 @@ export default function ReviewWritePage() {
   const [rating, setRating] = useState(5);
   const [content, setContent] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   // E2E에서만(쿠키 __e2e=1) 최초 진입 시 샘플 이미지 3장 시드
   useEffect(() => {
@@ -182,25 +262,52 @@ export default function ReviewWritePage() {
   useEffect(() => {
     if (mode !== 'service') return;
     let aborted = false;
+
     (async () => {
-      const r = await fetch('/api/applications/stringing/list', { credentials: 'include', cache: 'no-store' });
+      // 전체 신청서(원본) 조회
+      const r = await fetch('/api/applications/stringing/list', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
       const list = (await r.json()) as any[];
       if (aborted) return;
+
+      // 라벨/요약을 가진 AppLite로 포맷
       const formatted: AppLite[] = (list || []).map((a) => ({
-        _id: a._id,
-        label: a.desiredDateTime ? new Date(a.desiredDateTime).toLocaleString() : new Date(a.createdAt).toLocaleString(),
+        _id: String(a._id),
+        label: buildAppLabel(a),
+        status: a.status,
+        racketType: a?.stringDetails?.racketType ?? null,
+        stringItems: a?.stringDetails?.stringItems ?? [],
+
+        preferredDate: a?.stringDetails?.preferredDate ?? null,
+        preferredTime: a?.stringDetails?.preferredTime ?? null,
+
+        desiredDateTime: a?.desiredDateTime ?? a?.stringDetails?.desiredDateTime ?? null,
+
+        createdAt: a?.createdAt ?? null,
+        requirements: a?.stringDetails?.requirements ?? null,
       }));
+
       setApps(formatted);
+
+      // 기본 선택: suggested -> 최근 '교체완료' -> 첫 항목
+      let nextId: string | null = null;
+
       try {
         const elig = await fetch('/api/reviews/eligibility?service=stringing', {
           credentials: 'include',
           cache: 'no-store',
-        });
-        const ej = await elig.json();
-        if (ej.suggestedApplicationId) setSelectedAppId(ej.suggestedApplicationId);
-        else if (formatted.length) setSelectedAppId(formatted[0]._id);
-      } catch {}
+        }).then((x) => x.json());
+
+        nextId = elig?.suggestedApplicationId ?? formatted.find((x) => x.status === '교체완료')?._id ?? formatted[0]?._id ?? null;
+      } catch {
+        nextId = formatted.find((x) => x.status === '교체완료')?._id ?? formatted[0]?._id ?? null;
+      }
+
+      if (!aborted) setSelectedAppId(nextId);
     })();
+
     return () => {
       aborted = true;
     };
@@ -228,6 +335,9 @@ export default function ReviewWritePage() {
       aborted = true;
     };
   }, [mode, selectedAppId]);
+
+  // 선택된 AppLite 계산
+  const selectedApp = useMemo(() => apps.find((a) => a._id === selectedAppId) || null, [apps, selectedAppId]);
 
   // 잠금: 서비스 모드에서는 신청서가 선택되어 있어야 언락
   const locked = state !== 'ok' || (mode === 'service' && !selectedAppId);
@@ -521,8 +631,11 @@ export default function ReviewWritePage() {
                   {mode === 'service' && (
                     <div className="mb-8">
                       <Label className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3 block">대상 신청서</Label>
+
                       <select
-                        className="w-full h-12 rounded-xl border border-slate-200 dark:border-slate-600 px-4 shadow-sm bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        className="w-full h-12 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4
+                 text-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus:border-blue-500 transition-all duration-200
+                 text-left whitespace-normal leading-relaxed"
                         value={selectedAppId ?? ''}
                         onChange={(e) => setSelectedAppId(e.target.value || null)}
                         disabled={!apps.length}
@@ -534,9 +647,47 @@ export default function ReviewWritePage() {
                           </option>
                         ))}
                       </select>
+
+                      {/* 선택된 신청서 요약 카드 */}
+                      {selectedApp && (
+                        <div className="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{selectedApp.createdAt ? `신청일 ${formatKoDateTime(selectedApp.createdAt)}` : ''}</div>
+                            {selectedApp.status && <ApplicationStatusBadge status={selectedApp.status} />}
+                          </div>
+
+                          <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                            <div>
+                              <dt className="text-slate-500 dark:text-slate-400">예약일자</dt>
+                              <dd className="text-slate-900 dark:text-slate-100">{formatYMD(selectedApp.preferredDate) || '-'}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-500 dark:text-slate-400">예약시간</dt>
+                              <dd className="text-slate-900 dark:text-slate-100">{formatHM(selectedApp.preferredTime) || '-'}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-500 dark:text-slate-400">라켓</dt>
+                              <dd className="text-slate-900 dark:text-slate-100">{selectedApp.racketType || '-'}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-500 dark:text-slate-400">스트링</dt>
+                              <dd className="text-slate-900 dark:text-slate-100 truncate">{(selectedApp.stringItems || []).map((s) => s.name).join(', ') || '-'}</dd>
+                            </div>
+                          </dl>
+
+                          {/* 요청사항 블록 */}
+                          {selectedApp.requirements && (
+                            <div className="mt-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/40 p-3">
+                              <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">요청사항</div>
+                              <p className="text-sm text-slate-900 dark:text-slate-100 whitespace-pre-line break-words">{selectedApp.requirements}</p>
+                            </div>
+                          )}
+
+                          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">신청번호 {selectedApp._id}</div>
+                        </div>
+                      )}
                     </div>
                   )}
-
                   {/* 별점 섹션 */}
                   <div className="text-center py-6 bg-gradient-to-r from-slate-50/50 to-blue-50/50 dark:from-slate-800/50 dark:to-slate-700/50 rounded-xl">
                     <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">만족도를 별점으로 평가해주세요</label>
@@ -561,8 +712,9 @@ export default function ReviewWritePage() {
                   <div className="space-y-4">
                     <Label className="text-sm font-semibold text-slate-800 dark:text-slate-200">사진 첨부 (선택, 최대 5장)</Label>
                     <div className="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 p-4">
-                      <PhotosUploader value={photos} onChange={setPhotos} max={5} />
-                      <PhotosReorderGrid value={photos} onChange={setPhotos} disabled={state !== 'ok'} />
+                      <PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} />
+                      <PhotosReorderGrid value={photos} onChange={setPhotos} disabled={state !== 'ok' || isUploading} />
+                      {isUploading && <div className="mt-2 text-xs text-slate-500">이미지 업로드 중...</div>}
                     </div>
                   </div>
                 </div>
@@ -599,11 +751,11 @@ export default function ReviewWritePage() {
                   <Button
                     data-cy="submit-review"
                     type="submit"
-                    disabled={locked}
-                    aria-disabled={locked}
+                    disabled={locked || isUploading}
+                    aria-disabled={locked || isUploading}
                     className="rounded-xl shadow-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 order-1 sm:order-3"
                   >
-                    후기 등록하기
+                    {isUploading ? '이미지 업로드 중...' : '후기 등록하기'}
                   </Button>
                 </div>
 
