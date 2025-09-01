@@ -17,6 +17,8 @@ import { useRouter } from 'next/navigation';
 import RequestEditForm from '@/app/mypage/orders/_components/RequestEditForm';
 import CustomerEditForm from '@/app/features/orders/components/CustomerEditForm';
 import PaymentMethodDetail from '@/app/mypage/orders/_components/PaymentMethodDetail';
+import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
+import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
 
 // SWR Infinite용 getKey (처리 이력 페이지네이션)
 const LIMIT = 5;
@@ -86,6 +88,11 @@ export default function OrderDetailClient({ orderId }: Props) {
   // 상품 리뷰 작성 여부 맵: { [productId]: boolean }
   const [reviewedMap, setReviewedMap] = useState<Record<string, boolean>>({});
 
+  // 완료 상태
+  const completedStatuses = new Set(['배송완료', '완료', '구매확정']);
+  const canShowReviewCTA = completedStatuses.has(orderDetail?.status ?? '');
+  const reviewsReady = (orderDetail?.items ?? []).every((it) => it.id in reviewedMap);
+
   useEffect(() => {
     const ids = (orderDetail?.items ?? []).map((it) => it.id).filter(Boolean);
     if (!ids.length) return;
@@ -124,33 +131,6 @@ export default function OrderDetailClient({ orderId }: Props) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
   };
-
-  const [serviceReview, setServiceReview] = useState<'none' | 'canWrite' | 'done' | 'unknown'>('none');
-
-  useEffect(() => {
-    const appId = orderDetail?.stringingApplicationId;
-    if (!appId) {
-      setServiceReview('none');
-      return;
-    }
-    let aborted = false;
-    (async () => {
-      try {
-        const r = await fetch(`/api/reviews/eligibility?service=stringing&applicationId=${appId}`, { credentials: 'include' });
-        if (!r.ok) {
-          setServiceReview('unknown');
-          return;
-        }
-        const j = await r.json();
-        setServiceReview(j.eligible ? 'canWrite' : j.reason === 'already' ? 'done' : 'unknown');
-      } catch {
-        setServiceReview('unknown');
-      }
-    })();
-    return () => {
-      aborted = true;
-    };
-  }, [orderDetail?.stringingApplicationId]);
 
   // 에러/로딩 처리
   if (orderError) {
@@ -252,16 +232,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </Button>
                   </Link>
                 )}
-                {serviceReview === 'canWrite' && orderDetail.stringingApplicationId && (
-                  <Link href={`/reviews/write?service=stringing&applicationId=${orderDetail.stringingApplicationId}`}>
-                    <Button className="ml-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white">서비스 리뷰 작성하기</Button>
-                  </Link>
-                )}
-                {serviceReview === 'done' && (
-                  <Button variant="secondary" disabled className="ml-2">
-                    서비스 리뷰 작성완료
-                  </Button>
-                )}
+                <ServiceReviewCTA applicationId={orderDetail.stringingApplicationId} className="ml-2" />
               </div>
             </div>
           )}
@@ -288,13 +259,18 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <div>
                     <p className="font-semibold text-yellow-900 dark:text-yellow-100">이 주문은 리뷰를 작성하지 않았습니다.</p>
                     <p className="text-sm text-yellow-700 dark:text-yellow-300">아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.</p>
+                    <p className="text-sm text-red-700 dark:text-red-300">※상품이 정상적으로 '배송완료' 처리가 되면 [리뷰 작성] 버튼이 나타납니다.</p>
                   </div>
                 </div>
-                {firstUnreviewed && (
-                  <Link href={`/reviews/write?productId=${firstUnreviewed.id}&orderId=${orderDetail._id}`}>
-                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">리뷰 작성하기</Button>
-                  </Link>
-                )}
+                <OrderReviewCTA
+                  orderId={orderDetail._id as string}
+                  reviewAllDone={allReviewed}
+                  unreviewedCount={items.filter((it) => !reviewedMap[it.id]).length}
+                  reviewNextTargetProductId={firstUnreviewed?.id ?? null}
+                  orderStatus={orderDetail.status}
+                  showOnlyWhenCompleted
+                  loading={!reviewsReady}
+                />
               </div>
             )}
           </div>
@@ -496,19 +472,20 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <p className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(item.price)}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">소계: {formatCurrency(item.price * item.quantity)}</p>
                     <div className="mt-2">
-                      {reviewedMap[item.id] ? (
-                        <Link href={`/products/${item.id}?tab=reviews`}>
-                          <Button size="sm" variant="secondary">
-                            리뷰 상세보기
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Link href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}>
-                          <Button size="sm" variant="outline">
-                            리뷰 작성하기
-                          </Button>
-                        </Link>
-                      )}
+                      {canShowReviewCTA &&
+                        (reviewedMap[item.id] ? (
+                          <Link href={`/products/${item.id}?tab=reviews`}>
+                            <Button size="sm" variant="secondary">
+                              리뷰 상세보기
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Link href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}>
+                            <Button size="sm" variant="outline">
+                              리뷰 작성하기
+                            </Button>
+                          </Link>
+                        ))}
                     </div>
                   </div>
                 </div>

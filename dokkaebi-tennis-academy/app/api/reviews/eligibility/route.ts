@@ -114,28 +114,43 @@ export async function GET(req: Request) {
 
   // ===== 서비스(스트링) =====
   if (service === 'stringing') {
+    const col = db.collection('stringing_applications');
+
     // 특정 신청서 검사 모드
     if (applicationId) {
       if (!ObjectId.isValid(applicationId)) {
-        return NextResponse.json({ eligible: false, reason: 'invalid' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+        return NextResponse.json({ eligible: false, reason: 'invalidApplicationId' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
       }
       const appIdObj = new ObjectId(applicationId);
-      const app = await db.collection('applications').findOne({ _id: appIdObj, userId });
-      if (!app) return NextResponse.json({ eligible: false, reason: 'notPurchased' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+      const app = await col.findOne({ _id: appIdObj, userId });
+      if (!app) {
+        return NextResponse.json({ eligible: false, reason: 'notFound' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+      }
 
+      // 이용 완료 상태만 리뷰 허용 (필요 시 조건 완화 가능)
+      if (app.status !== '교체완료') {
+        return NextResponse.json({ eligible: false, reason: 'notCompleted' }, { headers: { 'Cache-Control': 'no-store' } });
+      }
+
+      // 중복 작성 방지
       const already = await db.collection('reviews').findOne({
         userId,
         service: 'stringing',
         serviceApplicationId: appIdObj,
         isDeleted: { $ne: true },
       });
-      if (already) return NextResponse.json({ eligible: false, reason: 'already' }, { headers: { 'Cache-Control': 'no-store' } });
+      if (already) {
+        return NextResponse.json({ eligible: false, reason: 'already' }, { headers: { 'Cache-Control': 'no-store' } });
+      }
 
       return NextResponse.json({ eligible: true, reason: null }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
-    // 추천 모드: 아직 리뷰 안 쓴 신청서 하나 추천
-    const myApps = await db.collection('applications').find({ userId }).project({ _id: 1, createdAt: 1, desiredDateTime: 1 }).sort({ createdAt: -1 }).toArray();
+    // 추천 모드: 아직 리뷰 안 쓴 '교체완료' 신청서 하나 추천
+    const myApps = await col
+      .find({ userId, status: '교체완료' }, { projection: { _id: 1, createdAt: 1, desiredDateTime: 1 } })
+      .sort({ createdAt: -1 })
+      .toArray();
 
     if (!myApps.length) {
       return NextResponse.json({ eligible: false, reason: 'notPurchased' }, { headers: { 'Cache-Control': 'no-store' } });
@@ -146,10 +161,13 @@ export async function GET(req: Request) {
       .find({ userId, service: 'stringing', serviceApplicationId: { $exists: true }, isDeleted: { $ne: true } })
       .project({ serviceApplicationId: 1 })
       .toArray();
-    const reviewedSet = new Set(reviewed.map((r) => String(r.serviceApplicationId)));
 
+    const reviewedSet = new Set(reviewed.map((r) => String(r.serviceApplicationId)));
     const candidate = myApps.find((a) => !reviewedSet.has(String(a._id)));
-    if (!candidate) return NextResponse.json({ eligible: false, reason: 'already' }, { headers: { 'Cache-Control': 'no-store' } });
+
+    if (!candidate) {
+      return NextResponse.json({ eligible: false, reason: 'already' }, { headers: { 'Cache-Control': 'no-store' } });
+    }
 
     return NextResponse.json({ eligible: true, reason: null, suggestedApplicationId: String(candidate._id) }, { headers: { 'Cache-Control': 'no-store' } });
   }

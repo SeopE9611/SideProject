@@ -9,6 +9,7 @@ import useSWRInfinite from 'swr/infinite';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { useMemo } from 'react';
 import useSWRImmutable from 'swr/immutable';
+import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 export interface Application {
   id: string;
   type: '스트링 장착 서비스' | '아카데미 수강 신청';
@@ -25,30 +26,6 @@ export interface Application {
 }
 
 type AppResponse = { items: Application[]; total: number };
-
-function ServiceReviewCTA({ appId }: { appId: string }) {
-  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
-  const { data } = useSWRImmutable(appId ? `/api/reviews/eligibility?service=stringing&applicationId=${appId}` : null, fetcher);
-
-  if (!appId) return null;
-  if (!data) return null; // 로딩 중엔 아무 것도 안 보여줌(필요하면 스켈레톤 추가 가능)
-
-  if (data.eligible) {
-    return (
-      <Button size="sm" className="ml-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white" asChild>
-        <Link href={`/reviews/write?service=stringing&applicationId=${appId}`}>리뷰 작성하기</Link>
-      </Button>
-    );
-  }
-  if (data.reason === 'already') {
-    return (
-      <Button size="sm" variant="secondary" disabled className="ml-2">
-        리뷰 작성완료
-      </Button>
-    );
-  }
-  return null;
-}
 
 const formatDateTime = (iso: string) => {
   const date = new Date(iso);
@@ -161,18 +138,20 @@ export default function ApplicationsClient() {
                     </div>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push(`/mypage?tab=applications&id=${app.id}`)}
-                    className="border-slate-200 hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:hover:border-blue-600 dark:hover:bg-blue-950 transition-colors"
-                  >
-                    상세보기
-                    <ArrowRight className="ml-1 h-3 w-3" />
-                  </Button>
-                  <ServiceReviewCTA appId={app.id} />
-                </div>
+                  <div className="ml-auto flex items-center gap-2">
+                    {isStringService && <ServiceReviewCTA applicationId={app.id} status={app.status} />}
 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/mypage?tab=applications&id=${app.id}`)}
+                      className="border-slate-200 hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:hover:border-blue-600 dark:hover:bg-blue-950 transition-colors"
+                    >
+                      상세보기
+                      <ArrowRight className="ml-1 h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
                     <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />
