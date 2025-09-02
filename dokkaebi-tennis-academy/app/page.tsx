@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, ArrowRight, Play, Phone, MapPin, Target, Shield, Clock, Award, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, ArrowRight, Play, Phone, MapPin, Target, Shield, Clock, Award, ChevronLeft, ChevronRight, Package } from 'lucide-react';
 import { useState, useRef } from 'react';
 
 interface Product {
@@ -253,6 +253,13 @@ export default function Home() {
               <Link href="/services" className="flex items-center gap-3">
                 <Play className="h-5 w-5" />
                 장착 서비스
+              </Link>
+            </Button>
+
+            <Button asChild variant="outline" size="lg" className="relative border-2 border-purple-300 text-purple-300 hover:bg-purple-300 hover:text-purple-900 px-8 py-4 text-lg font-semibold bg-transparent rounded-lg transition-all duration-300">
+              <Link href="/services/packages" className="flex items-center gap-3">
+                <Package className="h-5 w-5" />
+                패키지 상품
               </Link>
             </Button>
           </div>

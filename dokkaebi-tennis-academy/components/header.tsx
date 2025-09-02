@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UserNav } from '@/components/nav/UserNav';
-import { UserNavMobile } from '@/components/nav/UserNavMobile';
 import { useRouter, usePathname } from 'next/navigation';
 import SearchPreview from '@/components/SearchPreview';
 import { useCartStore } from '@/app/store/cartStore';
@@ -18,12 +17,17 @@ const Header = () => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
   const [showStringMenu, setShowStringMenu] = useState(false);
   const [showBoardMenu, setShowBoardMenu] = useState(false);
-  const [stringOpenTimer, setStringOpenTimer] = useState<NodeJS.Timeout | null>(null);
-  const [stringCloseTimer, setStringCloseTimer] = useState<NodeJS.Timeout | null>(null);
-  const [boardOpenTimer, setBoardOpenTimer] = useState<NodeJS.Timeout | null>(null);
-  const [boardCloseTimer, setBoardCloseTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showPackageMenu, setShowPackageMenu] = useState(false);
+  const [stringOpenTimer, setStringOpenTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [stringCloseTimer, setStringCloseTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [boardOpenTimer, setBoardOpenTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [boardCloseTimer, setBoardCloseTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [packageOpenTimer, setPackageOpenTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [packageCloseTimer, setPackageCloseTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+
   const { items } = useCartStore();
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
@@ -52,6 +56,7 @@ const Header = () => {
   const menuItems = [
     { name: '스트링', href: '/products', hasMegaMenu: true },
     { name: '장착 서비스', href: '/services' },
+    { name: '패키지', href: '/services/packages', hasMegaMenu: true, isPackageMenu: true },
     { name: '게시판', href: '/board', hasMegaMenu: true, isBoardMenu: true },
   ];
 
@@ -79,6 +84,21 @@ const Header = () => {
     { name: '리뷰 게시판', href: '/reviews' },
   ];
 
+  const packageLinks = [
+    { name: '스타터 패키지 (10회)', href: '/services/packages?package=10-sessions', description: '테니스 입문자를 위한 기본 패키지' },
+    { name: '레귤러 패키지 (30회)', href: '/services/packages?package=30-sessions', description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지', isPopular: true },
+    { name: '프로 패키지 (50회)', href: '/services/packages?package=50-sessions', description: '진지한 테니스 플레이어를 위한 프리미엄 패키지' },
+    { name: '챔피언 패키지 (100회)', href: '/services/packages?package=100-sessions', description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지' },
+  ];
+
+  const packageBenefits = [
+    { name: '최대 17% 할인', href: '/services/packages#benefits' },
+    { name: '우선 예약 혜택', href: '/services/packages#benefits' },
+    { name: '전문가 상담', href: '/services/packages#benefits' },
+    { name: '품질 보장', href: '/services/packages#benefits' },
+  ];
+
+  // ----- 스트링 메뉴 -----
   const openStringWithDelay = () => {
     if (stringCloseTimer) {
       clearTimeout(stringCloseTimer);
@@ -92,7 +112,6 @@ const Header = () => {
       setStringOpenTimer(timer);
     }
   };
-
   const closeStringWithDelay = () => {
     if (stringOpenTimer) {
       clearTimeout(stringOpenTimer);
@@ -106,7 +125,6 @@ const Header = () => {
       setStringCloseTimer(timer);
     }
   };
-
   const keepStringOpen = () => {
     if (stringOpenTimer) {
       clearTimeout(stringOpenTimer);
@@ -118,6 +136,7 @@ const Header = () => {
     }
   };
 
+  // ----- 게시판 메뉴 -----
   const openBoardWithDelay = () => {
     if (boardCloseTimer) {
       clearTimeout(boardCloseTimer);
@@ -131,7 +150,6 @@ const Header = () => {
       setBoardOpenTimer(timer);
     }
   };
-
   const closeBoardWithDelay = () => {
     if (boardOpenTimer) {
       clearTimeout(boardOpenTimer);
@@ -145,7 +163,6 @@ const Header = () => {
       setBoardCloseTimer(timer);
     }
   };
-
   const keepBoardOpen = () => {
     if (boardOpenTimer) {
       clearTimeout(boardOpenTimer);
@@ -157,8 +174,47 @@ const Header = () => {
     }
   };
 
+  // ----- 패키지 메뉴 -----
+  const openPackageWithDelay = () => {
+    if (packageCloseTimer) {
+      clearTimeout(packageCloseTimer);
+      setPackageCloseTimer(null);
+    }
+    if (!packageOpenTimer) {
+      const timer = setTimeout(() => {
+        setShowPackageMenu(true);
+        setPackageOpenTimer(null);
+      }, 150);
+      setPackageOpenTimer(timer);
+    }
+  };
+  const closePackageWithDelay = () => {
+    if (packageOpenTimer) {
+      clearTimeout(packageOpenTimer);
+      setPackageOpenTimer(null);
+    }
+    if (!packageCloseTimer) {
+      const timer = setTimeout(() => {
+        setShowPackageMenu(false);
+        setPackageCloseTimer(null);
+      }, 220);
+      setPackageCloseTimer(timer);
+    }
+  };
+  const keepPackageOpen = () => {
+    if (packageOpenTimer) {
+      clearTimeout(packageOpenTimer);
+      setPackageOpenTimer(null);
+    }
+    if (packageCloseTimer) {
+      clearTimeout(packageCloseTimer);
+      setPackageCloseTimer(null);
+    }
+  };
+
   return (
     <>
+      {/* 스킵 링크 */}
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-md focus:shadow-lg">
         메인 콘텐츠로 건너뛰기
       </a>
@@ -168,6 +224,7 @@ const Header = () => {
         data-scrolled={isScrolled}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between overflow-visible">
+          {/* 좌측: 로고 + 내비 */}
           <div className="flex items-center gap-4 lg:gap-12">
             <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈">
               <div className="font-black text-lg lg:text-xl tracking-[-0.01em] whitespace-nowrap text-slate-900 dark:text-white">도깨비 테니스</div>
@@ -184,6 +241,8 @@ const Header = () => {
                         onMouseEnter={() => {
                           if (item.isBoardMenu) {
                             openBoardWithDelay();
+                          } else if (item.isPackageMenu) {
+                            openPackageWithDelay();
                           } else {
                             openStringWithDelay();
                           }
@@ -191,6 +250,8 @@ const Header = () => {
                         onMouseLeave={() => {
                           if (item.isBoardMenu) {
                             closeBoardWithDelay();
+                          } else if (item.isPackageMenu) {
+                            closePackageWithDelay();
                           } else {
                             closeStringWithDelay();
                           }
@@ -199,6 +260,9 @@ const Header = () => {
                           if (item.isBoardMenu) {
                             keepBoardOpen();
                             setShowBoardMenu(true);
+                          } else if (item.isPackageMenu) {
+                            keepPackageOpen();
+                            setShowPackageMenu(true);
                           } else {
                             keepStringOpen();
                             setShowStringMenu(true);
@@ -208,6 +272,8 @@ const Header = () => {
                           if (!e.currentTarget.contains(e.relatedTarget)) {
                             if (item.isBoardMenu) {
                               setShowBoardMenu(false);
+                            } else if (item.isPackageMenu) {
+                              setShowPackageMenu(false);
                             } else {
                               setShowStringMenu(false);
                             }
@@ -216,25 +282,22 @@ const Header = () => {
                       >
                         <Link
                           href={item.href}
-                          className=" relative group px-3 py-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300 transition
-    hover:bg-slate-100/80 dark:hover:bg-slate-800/60
-    hover:text-slate-900 dark:hover:text-white
-    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400
-    whitespace-nowrap flex items-center gap-1
-  "
+                          className="relative group px-3 py-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300 transition hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 whitespace-nowrap flex items-center gap-1"
                           aria-haspopup="true"
-                          aria-expanded={item.isBoardMenu ? showBoardMenu : showStringMenu}
+                          aria-expanded={item.isBoardMenu ? showBoardMenu : item.isPackageMenu ? showPackageMenu : showStringMenu}
                         >
                           {item.name}
                           <ChevronDown className="h-3 w-3" />
                         </Link>
 
-                        {((item.isBoardMenu && showBoardMenu) || (!item.isBoardMenu && showStringMenu)) && (
+                        {((item.isBoardMenu && showBoardMenu) || (item.isPackageMenu && showPackageMenu) || (!item.isBoardMenu && !item.isPackageMenu && showStringMenu)) && (
                           <div
                             className="absolute left-0 top-full z-[40] mt-0 w-[640px] rounded-2xl bg-white dark:bg-slate-900 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-6 shadow-xl overflow-visible"
                             onMouseEnter={() => {
                               if (item.isBoardMenu) {
                                 keepBoardOpen();
+                              } else if (item.isPackageMenu) {
+                                keepPackageOpen();
                               } else {
                                 keepStringOpen();
                               }
@@ -242,12 +305,64 @@ const Header = () => {
                             onMouseLeave={() => {
                               if (item.isBoardMenu) {
                                 closeBoardWithDelay();
+                              } else if (item.isPackageMenu) {
+                                closePackageWithDelay();
                               } else {
                                 closeStringWithDelay();
                               }
                             }}
                           >
-                            {item.isBoardMenu ? (
+                            {item.isPackageMenu ? (
+                              <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">스트링 교체 패키지</h3>
+                                  <nav>
+                                    <ul className="space-y-3" role="menu">
+                                      {packageLinks.map((link) => (
+                                        <li key={link.name} role="none">
+                                          <Link
+                                            href={link.href}
+                                            className={`block p-3 rounded-lg border transition-colors focus-visible:ring-2 ring-blue-500 ${
+                                              link.isPopular
+                                                ? 'border-indigo-200 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                            }`}
+                                            role="menuitem"
+                                          >
+                                            <div className="flex items-center justify-between mb-1">
+                                              <span className="text-sm font-semibold text-slate-900 dark:text-white">{link.name}</span>
+                                              {link.isPopular && <span className="text-xs bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-2 py-1 rounded-full font-semibold">인기</span>}
+                                            </div>
+                                            <p className="text-xs text-slate-600 dark:text-slate-400">{link.description}</p>
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </nav>
+                                </div>
+                                <div>
+                                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">패키지 혜택</h3>
+                                  <nav>
+                                    <ul className="space-y-2" role="menu">
+                                      {packageBenefits.map((benefit) => (
+                                        <li key={benefit.name} role="none">
+                                          <Link
+                                            href={benefit.href}
+                                            className="text-sm text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white transition-colors focus-visible:ring-2 ring-blue-500 rounded px-1 py-0.5 block"
+                                            role="menuitem"
+                                          >
+                                            • {benefit.name}
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </nav>
+                                  <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                    <p className="text-xs text-green-700 dark:text-green-400 font-semibold">💡 패키지 구매 시 회당 최대 2,000원 절약!</p>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : item.isBoardMenu ? (
                               <div className="grid grid-cols-2 gap-6">
                                 <div>
                                   <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">게시판 메뉴</h3>
@@ -359,6 +474,7 @@ const Header = () => {
                         aria-current={pathname === item.href ? 'page' : undefined}
                       >
                         {item.name}
+                        {/* ⬇ 여기에서 \" → " 로 수정 */}
                         <span className="absolute -bottom-2 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:w-full"></span>
                       </Link>
                     )}
@@ -368,6 +484,7 @@ const Header = () => {
             </nav>
           </div>
 
+          {/* 우측: 검색/아이콘/유저 */}
           <div className="hidden lg:flex items-center gap-3 xl:gap-4">
             <div className="relative z-[30]">
               <SearchPreview
@@ -377,18 +494,19 @@ const Header = () => {
               />
             </div>
 
+            {/* ⬇ 여기에서도 href의 \" → " 로 수정 */}
             <Link href="/cart">
               <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 transition-all duration-300 focus-visible:ring-2 ring-blue-500" data-count="3" aria-label="장바구니">
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
                   <span
                     className="
-          absolute -top-1 -right-1
-          text-[10px] min-w-[18px] h-[18px]
-          px-[5px] rounded-full
-          bg-rose-600 text-white
-          flex items-center justify-center font-bold
-        "
+                      absolute -top-1 -right-1
+                      text-[10px] min-w-[18px] h-[18px]
+                      px-[5px] rounded-full
+                      bg-rose-600 text-white
+                      flex items-center justify-center font-bold
+                    "
                     aria-label={`장바구니에 ${cartBadge}개`}
                   >
                     {cartBadge}
@@ -403,6 +521,7 @@ const Header = () => {
             <ThemeToggle />
           </div>
 
+          {/* 모바일 우측 */}
           <div className="flex items-center gap-2 lg:hidden">
             <Link href="/cart" className="sm:hidden">
               <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
@@ -451,7 +570,30 @@ const Header = () => {
                         >
                           {item.name}
                         </Button>
-                        {item.hasMegaMenu && !item.isBoardMenu && (
+
+                        {item.hasMegaMenu && item.isPackageMenu && (
+                          <div className="ml-4 mt-2 space-y-1">
+                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">스트링 교체 패키지</div>
+                            {packageLinks.map((link) => (
+                              <Button
+                                key={link.name}
+                                variant="ghost"
+                                size="sm"
+                                className={`justify-start text-xs w-full text-left rounded-lg py-2 focus-visible:ring-2 ring-blue-500 ${
+                                  link.isPopular ? 'text-indigo-600 dark:text-indigo-400 font-semibold hover:text-indigo-700 dark:hover:text-indigo-300' : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white'
+                                }`}
+                                onClick={() => {
+                                  setOpen(false);
+                                  router.push(link.href);
+                                }}
+                              >
+                                {link.name} {link.isPopular && '⭐'}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+
+                        {item.hasMegaMenu && !item.isBoardMenu && !item.isPackageMenu && (
                           <div className="ml-4 mt-2 space-y-1">
                             <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">스트링 카테고리</div>
                             {stringTypes.map((type) => (
@@ -504,6 +646,7 @@ const Header = () => {
                             </div>
                           </div>
                         )}
+
                         {item.hasMegaMenu && item.isBoardMenu && (
                           <div className="ml-4 mt-2 space-y-1">
                             <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">게시판 메뉴</div>
@@ -529,7 +672,6 @@ const Header = () => {
                 </div>
 
                 <div className="shrink-0 border-t border-slate-200 dark:border-slate-700 p-6">
-                  {/* 프로필 */}
                   {user ? (
                     <>
                       <div className="flex items-center gap-3">
@@ -539,25 +681,15 @@ const Header = () => {
                         </Avatar>
                         <div className="min-w-0">
                           <div className="text-sm font-semibold truncate">
-                            {user.name} 님
-                            {isAdmin && (
-                              <span
-                                className="mt-1 inline-block text-[11px] font-semibold px-1.5 py-[2px] rounded
-              bg-emerald-100 text-emerald-700
-              dark:bg-emerald-900/30 dark:text-emerald-300"
-                              >
-                                관리자
-                              </span>
-                            )}
+                            {user.name} 님{isAdmin && <span className="mt-1 inline-block text-[11px] font-semibold px-1.5 py-[2px] rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">관리자</span>}
                           </div>
                         </div>
                       </div>
 
-                      {/* 액션 버튼: 장바구니 / 마이페이지 */}
                       <div className="mt-4 grid grid-cols-2 gap-2">
                         <Button
                           variant="outline"
-                          className="w-full justify-center rounded-xl border-slate-200 dark:border-slate-700"
+                          className="w-full justify-center rounded-xl border-slate-200 dark:border-slate-700 bg-transparent"
                           onClick={() => {
                             setOpen(false);
                             router.push('/cart');
@@ -580,7 +712,6 @@ const Header = () => {
                         </Button>
                       </div>
 
-                      {/* 관리자 페이지 (관리자일 때만) */}
                       {isAdmin && (
                         <Button
                           variant="ghost"
@@ -594,7 +725,6 @@ const Header = () => {
                         </Button>
                       )}
 
-                      {/* 로그아웃 */}
                       <Button
                         variant="ghost"
                         className="w-full justify-center rounded-xl mt-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30"
@@ -607,7 +737,6 @@ const Header = () => {
                       </Button>
                     </>
                   ) : (
-                    // 비로그인 시
                     <Button
                       className="w-full justify-center rounded-xl"
                       onClick={() => {
@@ -619,7 +748,6 @@ const Header = () => {
                     </Button>
                   )}
 
-                  {/* 테마 토글 */}
                   <div className="mt-4 flex justify-center">
                     <ThemeToggle />
                   </div>

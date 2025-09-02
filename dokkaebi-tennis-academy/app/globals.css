@@ -50,6 +50,22 @@
   /* Tooltip (Popover) 색상 변수 (Light) */
   --popover: 255 255 255; /* bg-white */
   --popover-foreground: 31 31 31; /* text-gray-800 */
+
+  /* 패키지 페이지를 위한 추가 디자인 토큰 */
+  --chart-1: 59 130 246; /* #3b82f6 - blue */
+  --chart-2: 99 102 241; /* #6366f1 - indigo */
+  --chart-3: 147 51 234; /* #9333ea - purple */
+  --chart-4: 75 85 99; /* #4b5563 - gray */
+  --chart-5: 245 158 11; /* #f59e0b - amber */
+  --radius: 0.5rem;
+  --sidebar: 0 0% 100%; /* white */
+  --sidebar-foreground: 55 65 81; /* gray-700 */
+  --sidebar-primary: 59 130 246; /* blue */
+  --sidebar-primary-foreground: 0 0% 100%; /* white */
+  --sidebar-accent: 99 102 241; /* indigo */
+  --sidebar-accent-foreground: 0 0% 100%; /* white */
+  --sidebar-border: 209 213 219; /* gray-300 */
+  --sidebar-ring: 59 130 246 / 0.5; /* blue with opacity */
 }
 
 /* 전역 기본 스타일 */
