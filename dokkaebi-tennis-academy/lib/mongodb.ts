@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import { ensureReviewIndexes } from '@/lib/reviews.maintenance';
+import { ensurePassIndexes } from '@/lib/passes.indexes';
 
 const uri = process.env.MONGODB_URI;
 if (!uri) throw new Error('⛔ MONGODB_URI 환경변수가 설정되지 않았습니다.');
@@ -12,6 +13,9 @@ declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
   // 리뷰 인덱스 보장 1회 실행 상태
   var _reviewsIndexesReady: Promise<void> | null | undefined;
+
+  // DB 커넥션이 만들어질 때 인덱스 보장 함수들을 컨테이너 생애당 1회만 실행
+  var _passesIndexesReady: Promise<void> | null | undefined;
 }
 
 let client: MongoClient;
@@ -39,6 +43,15 @@ export default clientPromise;
 export async function getDb() {
   const c = await clientPromise; // 재할당하지 않도록 변수명 변경
   const db = c.db(dbName);
+
+  if (!global._passesIndexesReady) {
+    global._passesIndexesReady = ensurePassIndexes(db).catch((e) => {
+      console.error('[passes] ensurePassIndexes failed', e);
+      // 실패 시 다음 요청에서 재시도되도록 null 처리
+      global._passesIndexesReady = null;
+    });
+  }
+  await global._passesIndexesReady; // 실패했어도 다음 요청에서 재시도됨
 
   // 인덱스 보장: 컨테이너(람다) 생명주기당 1회만 실행
   if (!global._reviewsIndexesReady) {
