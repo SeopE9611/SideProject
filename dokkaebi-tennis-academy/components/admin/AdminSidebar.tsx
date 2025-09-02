@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, PackageSearch, Boxes, Users, CalendarClock, MessageCircle, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, PackageSearch, Boxes, Users, CalendarClock, MessageCircle, Settings, ChevronLeft, ChevronRight, Package, Cog } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
@@ -16,6 +16,8 @@ const SECTIONS = [
       { title: '대시보드', href: '/admin/dashboard', icon: LayoutDashboard },
       { title: '주문 관리', href: '/admin/orders', icon: PackageSearch, key: 'orders' as const },
       { title: '상품 관리', href: '/admin/products', icon: Boxes, key: 'products' as const },
+      { title: '패키지 관리', href: '/admin/packages', icon: Package, key: 'packages' as const },
+      { title: '패키지 설정', href: '/admin/packages/settings', icon: Cog },
     ],
   },
   {
@@ -35,7 +37,7 @@ const SECTIONS = [
   },
 ];
 
-type BadgeCounts = Partial<{ orders: number; products: number; reviews: number; users: number }>;
+type BadgeCounts = Partial<{ orders: number; products: number; reviews: number; users: number; packages: number }>;
 type Props = { defaultCollapsed?: boolean; badgeCounts?: BadgeCounts };
 
 export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {} }: Props) {
