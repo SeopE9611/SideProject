@@ -4,9 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
-export default function DevMarkPaidButton({ orderId }: { orderId: string }) {
+type Props = { orderId: string; show?: boolean };
+
+export default function DevMarkPaidButton({ orderId, show = false }: Props) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  if (!show) return null;
 
   async function markPaid() {
     try {
@@ -28,10 +32,8 @@ export default function DevMarkPaidButton({ orderId }: { orderId: string }) {
     }
   }
 
-  if (process.env.NODE_ENV === 'production') return null; // 운영에서 자동 숨김
-
   return (
-    <Button onClick={markPaid} disabled={loading} className="mt-6">
+    <Button onClick={markPaid} disabled={loading} className="mt-6" variant="destructive">
       {loading ? '처리 중…' : '(개발용) 이 주문 결제완료 처리'}
     </Button>
   );
