@@ -7,6 +7,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { OrderItem } from '@/lib/types/order';
 import { normalizeEmail } from '@/lib/claims';
+import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
 
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
@@ -519,9 +520,23 @@ export async function handleSubmitStringingApplication(req: Request) {
   const userId = payload?.sub ? new ObjectId(payload.sub) : null;
 
   try {
-    // body에서 필요한 값들 추출
-    const { name, phone, email, shippingInfo, racketType, stringTypes, customStringName, preferredDate, preferredTime, requirements, orderId } = await req.json();
-    //  자동 귀속용 이메일 , 전하번호 정규화(소문자 트림)
+    // body에서 필요한 값들 추출 (+ packageOptOut 추가)
+    const {
+      name,
+      phone,
+      email,
+      shippingInfo,
+      racketType,
+      stringTypes,
+      customStringName,
+      preferredDate,
+      preferredTime,
+      requirements,
+      orderId,
+      packageOptOut, // ← 추가: 이번 신청에서 패키지 사용 안 함(옵트아웃)
+    } = await req.json();
+
+    //  자동 귀속용 이메일 , 전화번호 정규화(소문자 트림/숫자만)
     const contactEmail = normalizeEmail(email);
     const contactPhone = (phone ?? '').replace(/\D/g, '') || null;
 
@@ -560,6 +575,7 @@ export async function handleSubmitStringingApplication(req: Request) {
         };
       })
     );
+
     const stringDetails: any = {
       racketType,
       stringTypes,
@@ -570,7 +586,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       requirements,
     };
 
-    // 금액 계산
+    // 금액 계산 (교체비 합계)
     let totalPrice = 0;
     for (const id of stringTypes) {
       if (id === 'custom') {
@@ -581,9 +597,41 @@ export async function handleSubmitStringingApplication(req: Request) {
         totalPrice += prod?.mountingFee ?? 0;
       }
     }
+    const serviceFeeBefore = totalPrice; // 패키지 적용 전 교체비 합계
 
-    // 신청서 저장
+    // ====== [패키지 자동 차감] 시작 ======
+    // 신청 도큐먼트 ID를 미리 만들어 멱등 차감 로그(applicationId)로 사용
+    const applicationId = new ObjectId();
+
+    let packageApplied = false;
+    let packagePassId: ObjectId | null = null;
+    let packageRedeemedAt: Date | null = null;
+
+    if (userId && !packageOptOut) {
+      // 활성 + 만료 미도래 + 잔여횟수 > 0 인 패스 중 만료 임박 순 1개
+      const pass = await findOneActivePassForUser(db, userId);
+      if (pass?._id) {
+        try {
+          // 패스 1회 차감(원자 조건 + 멱등 로그)
+          await consumePass(db, pass._id, applicationId);
+          packageApplied = true;
+          packagePassId = pass._id;
+          packageRedeemedAt = new Date();
+        } catch (e) {
+          // PASS_CONSUME_FAILED 등: 패스 사용 불가 → 일반 요금 적용(그대로 진행)
+        }
+      }
+    }
+
+    // 패키지 적용 시 교체비 0원 처리 (배송/옵션비는 별도 로직에서 과금한다면 유지)
+    if (packageApplied) {
+      totalPrice = 0;
+    }
+    // ====== [패키지 자동 차감] 끝 ======
+
+    // 신청서 저장 (추가 필드 포함)
     const result = await db.collection('stringing_applications').insertOne({
+      _id: applicationId, // ← 미리 생성한 ID 사용
       orderId: new ObjectId(orderId),
       name,
       phone,
@@ -592,7 +640,14 @@ export async function handleSubmitStringingApplication(req: Request) {
       contactPhone, // 숫자만 저장한 전화번호
       shippingInfo,
       stringDetails,
-      totalPrice,
+      // 금액
+      totalPrice, // 실제 청구 교체비(패키지면 0)
+      serviceFeeBefore, // 패키지 미적용 시 교체비 합계(기록 용도)
+      // 패키지 적용 정보
+      packageApplied,
+      packagePassId,
+      packageRedeemedAt,
+      // 상태/메타
       status: '검토 중',
       createdAt: new Date(),
       userId,
@@ -602,7 +657,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       userSnapshot: userId ? { name, email } : null,
     });
 
-    // 주문에도 플래그 추가
+    // 주문에도 플래그 추가(기존 로직 유지)
     await db.collection('orders').updateOne(
       { _id: new ObjectId(orderId) },
       {
