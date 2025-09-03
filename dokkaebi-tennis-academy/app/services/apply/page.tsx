@@ -15,7 +15,9 @@ import type { Order } from '@/lib/types/order';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { bankLabelMap } from '@/lib/constants';
 import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
-import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign, SlidersHorizontal, Settings2, Wrench, PanelTopClose, FormInput, ClipboardList } from 'lucide-react';
+import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign, SlidersHorizontal, Settings2, Wrench, PanelTopClose, FormInput, ClipboardList, Ticket } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 
 declare global {
   interface Window {
@@ -51,7 +53,47 @@ export default function StringServiceApplyPage() {
     shippingDepositor: '',
     shippingRequest: '',
     shippingBank: '',
+    packageOptOut: false,
   });
+
+  // 패키지 미리보기 상태 + 패스조회
+  const [packagePreview, setPackagePreview] = useState<null | {
+    has: boolean;
+    remaining?: number;
+    expiresAt?: string;
+    passId?: string;
+    packageSize?: number;
+  }>(null);
+
+  // 패키지 사용 여부(자동 적용 + 미옵트아웃)
+  const usingPackage = !!(packagePreview?.has && !formData.packageOptOut);
+
+  // 로그인 여부와 관계 없이 시도 (401이면 무시)
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/passes/me', { credentials: 'include' });
+        if (!res.ok) return; // 비로그인 등
+        const data = await res.json();
+        const items = (data?.items ?? []).filter((p: any) => p.status === 'active' && p.remainingCount > 0 && new Date(p.expiresAt).getTime() >= Date.now());
+        items.sort((a: any, b: any) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime());
+        if (items.length > 0) {
+          const p = items[0];
+          setPackagePreview({
+            has: true,
+            remaining: p.remainingCount,
+            expiresAt: p.expiresAt,
+            passId: p.id,
+            packageSize: p.packageSize,
+          });
+        } else {
+          setPackagePreview({ has: false });
+        }
+      } catch {
+        // ignore
+      }
+    })();
+  }, []);
 
   // 가격 상태 추가 및 표시
   const [price, setPrice] = useState<number>(0);
@@ -191,9 +233,15 @@ export default function StringServiceApplyPage() {
     }
 
     // 입금자명 검증
-    if (!formData.shippingDepositor?.trim()) {
-      showErrorToast('입금자명을 입력해주세요.');
-      return;
+    if (!usingPackage) {
+      if (!formData.shippingBank) {
+        showErrorToast('은행을 선택해주세요.');
+        return;
+      }
+      if (!formData.shippingDepositor?.trim()) {
+        showErrorToast('입금자명을 입력해주세요.');
+        return;
+      }
     }
 
     // 연락처 정제
@@ -215,6 +263,7 @@ export default function StringServiceApplyPage() {
       preferredDate: formData.preferredDate,
       preferredTime: formData.preferredTime,
       requirements: formData.requirements,
+      packageOptOut: !!formData.packageOptOut,
       orderId,
       shippingInfo: {
         name: formData.shippingName,
@@ -223,8 +272,8 @@ export default function StringServiceApplyPage() {
         address: formData.shippingAddress,
         addressDetail: formData.shippingAddressDetail,
         postalCode: formData.shippingPostcode,
-        depositor: formData.shippingDepositor,
-        bank: formData.shippingBank,
+        depositor: usingPackage ? undefined : formData.shippingDepositor,
+        bank: usingPackage ? undefined : formData.shippingBank,
         deliveryRequest: formData.shippingRequest,
       },
     };
@@ -499,59 +548,143 @@ export default function StringServiceApplyPage() {
               <p className="text-muted-foreground">결제 방법을 선택해주세요</p>
             </div>
 
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="shippingBank" className="text-sm font-medium">
-                  은행 선택 <span className="text-red-500">*</span>
-                </Label>
-                <select
-                  id="shippingBank"
-                  name="shippingBank"
-                  value={formData.shippingBank}
-                  onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })}
-                  className="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                >
-                  <option value="" disabled hidden>
-                    입금하실 은행을 선택해주세요.
-                  </option>
-                  {Object.entries(bankLabelMap).map(([key, info]) => (
-                    <option key={key} value={key}>
-                      {info.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {/* 패키지 자동 적용 안내/옵트아웃 */}
+            {packagePreview?.has ? (
+              <div className="rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-5">
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-emerald-600 text-white grid place-content-center shadow-sm">
+                    <Ticket className="h-5 w-5" />
+                  </div>
 
-              {formData.shippingBank && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                  <h3 className="font-semibold text-blue-900 mb-4 flex items-center">
-                    <CreditCard className="h-5 w-5 mr-2" />
-                    계좌 정보
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                      <span className="text-sm text-gray-600">은행</span>
-                      <span className="font-medium text-gray-900">{bankLabelMap[formData.shippingBank].label}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-emerald-900 dark:text-emerald-200">패키지 자동 적용</h3>
+                      <Badge className="bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">활성</Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                      <span className="text-sm text-gray-600">계좌번호</span>
-                      <span className="font-mono font-medium text-gray-900">{bankLabelMap[formData.shippingBank].account}</span>
+
+                    <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                      교체비는 <span className="font-semibold text-emerald-700 dark:text-emerald-300">0원</span>으로 처리됩니다.
+                    </p>
+
+                    {/* 잔여/만료 pill */}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-300">
+                        잔여 {packagePreview.remaining}회
+                      </Badge>
+                      <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-300">
+                        만료일 {packagePreview.expiresAt ? new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR') : '-'}
+                      </Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                      <span className="text-sm text-gray-600">예금주</span>
-                      <span className="font-medium text-gray-900">{bankLabelMap[formData.shippingBank].holder}</span>
+
+                    {/* 잔여 게이지 */}
+                    {(() => {
+                      const total = packagePreview?.packageSize ?? 0;
+                      const remaining = packagePreview?.remaining ?? 0;
+                      const used = total ? Math.max(0, total - remaining) : 0;
+                      const remainPct = total ? Math.round((remaining / total) * 100) : 0;
+
+                      return (
+                        <div className="mt-4">
+                          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                            <span>
+                              총 {total}회 중 <span className="font-medium text-slate-700">{used}</span>회 사용
+                            </span>
+                            <span className="tabular-nums">{remainPct}%</span>
+                          </div>
+                          <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-500" style={{ width: `${remainPct}%` }} />
+                          </div>
+                          <div className="mt-1 text-xs text-slate-500">
+                            잔여 <span className="font-medium text-emerald-700">{remaining}</span>회
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* 옵트아웃 체크박스 */}
+                    <div className="mt-4 inline-flex items-center gap-2">
+                      <Checkbox
+                        id="package-optout"
+                        checked={!!formData.packageOptOut}
+                        onCheckedChange={(v) => setFormData({ ...formData, packageOptOut: v === true })}
+                        className="h-4 w-4 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      />
+                      <Label htmlFor="package-optout" className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                        이번 신청에는 패키지 <span className="font-medium">사용 안 함</span>
+                      </Label>
                     </div>
                   </div>
                 </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="shippingDepositor" className="text-sm font-medium">
-                  입금자명 <span className="text-red-500">*</span>
-                </Label>
-                <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} placeholder="입금자명을 입력하세요" className="focus:ring-2 focus:ring-purple-500 transition-all duration-200" />
               </div>
-            </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 dark:bg-slate-900/20 p-5">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-slate-400/20 grid place-content-center text-slate-500">
+                    <Ticket className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="font-medium">패키지가 없거나 잔여 횟수가 없습니다.</div>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">패키지를 보유하면 교체비가 0원으로 처리됩니다. (배송/추가옵션비 제외)</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!usingPackage && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="shippingBank" className="text-sm font-medium">
+                    은행 선택 <span className="text-red-500">*</span>
+                  </Label>
+                  <select
+                    id="shippingBank"
+                    name="shippingBank"
+                    value={formData.shippingBank}
+                    onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })}
+                    className="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  >
+                    <option value="" disabled hidden>
+                      입금하실 은행을 선택해주세요.
+                    </option>
+                    {Object.entries(bankLabelMap).map(([key, info]) => (
+                      <option key={key} value={key}>
+                        {info.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {formData.shippingBank && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                    <h3 className="font-semibold text-blue-900 mb-4 flex items-center">
+                      <CreditCard className="h-5 w-5 mr-2" />
+                      계좌 정보
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                        <span className="text-sm text-gray-600">은행</span>
+                        <span className="font-medium text-gray-900">{bankLabelMap[formData.shippingBank].label}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                        <span className="text-sm text-gray-600">계좌번호</span>
+                        <span className="font-mono font-medium text-gray-900">{bankLabelMap[formData.shippingBank].account}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                        <span className="text-sm text-gray-600">예금주</span>
+                        <span className="font-medium text-gray-900">{bankLabelMap[formData.shippingBank].holder}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="shippingDepositor" className="text-sm font-medium">
+                    입금자명 <span className="text-red-500">*</span>
+                  </Label>
+                  <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} placeholder="입금자명을 입력하세요" className="focus:ring-2 focus:ring-purple-500 transition-all duration-200" />
+                </div>
+              </div>
+            )}
           </div>
         );
 
