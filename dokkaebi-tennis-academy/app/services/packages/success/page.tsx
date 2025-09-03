@@ -10,6 +10,7 @@ import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { bankLabelMap } from '@/lib/constants';
+import DevMarkPaidButton from '@/app/services/packages/success/DevMarkPaidButton';
 
 const Trophy = ({ className }: { className: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,7 +24,7 @@ const Trophy = ({ className }: { className: string }) => (
 );
 
 export default async function PackageSuccessPage({ searchParams }: { searchParams: { packageOrderId?: string } }) {
-  const packageOrderId = await searchParams.packageOrderId;
+  const packageOrderId = typeof searchParams?.packageOrderId === 'string' ? searchParams.packageOrderId : Array.isArray(searchParams?.packageOrderId) ? searchParams.packageOrderId[0] : '';
 
   if (!packageOrderId) return notFound();
 
@@ -296,7 +297,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                   className="flex-1 h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:from-blue-700 hover:via-purple-700 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
                   asChild
                 >
-                  <Link href={isLoggedIn ? '/mypage/packages' : `/package-lookup/details/${packageOrder._id}`} className="flex items-center gap-2">
+                  <Link href={isLoggedIn ? '/mypage?tab=passes' : `/package-lookup/details/${packageOrder._id}`} className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
                     패키지 내역 확인
                     <ArrowRight className="h-4 w-4" />
@@ -310,6 +311,9 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                 </Button>
               </div>
             </CardFooter>
+            <div className="px-6">
+              <DevMarkPaidButton orderId={packageOrder._id.toString()} />
+            </div>
           </Card>
 
           {/* 안내사항 */}
