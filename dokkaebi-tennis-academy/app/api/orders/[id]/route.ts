@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { issuePassesForPaidOrder } from '@/lib/passes.service';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -186,6 +187,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         $set: updateFields,
         $push: { history: historyEntry },
       } as any);
+
+      // 상태가 '결제완료'로 변경되었다면, 패키지 패스 발급(멱등)
+      if (status === '결제완료') {
+        const updatedOrder = await orders.findOne({ _id: new ObjectId(id) });
+        const db = client.db();
+        await issuePassesForPaidOrder(db, updatedOrder);
+      }
 
       // === 동기화: 연결된 스트링 신청서가 있으면 고객 정보도 반영 ===
       if ((existing as any).stringingApplicationId && ObjectId.isValid((existing as any).stringingApplicationId)) {
