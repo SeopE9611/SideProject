@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { CalendarCheck, ClipboardList, Heart, MessageCircleQuestion, Star, UserCog, ChevronRight } from 'lucide-react';
+import { CalendarCheck, ClipboardList, Heart, MessageCircleQuestion, Star, UserCog, ChevronRight, Ticket, MessageSquare } from 'lucide-react';
 
 export function UserSidebar() {
   const searchParams = useSearchParams();
@@ -36,7 +36,7 @@ export function UserSidebar() {
     {
       label: '리뷰 관리',
       value: 'reviews',
-      icon: Star,
+      icon: MessageSquare,
       gradient: 'from-yellow-500 to-orange-500',
       bgGradient: 'from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20',
     },
@@ -44,6 +44,13 @@ export function UserSidebar() {
       label: 'Q&A 내역',
       value: 'qna',
       icon: MessageCircleQuestion,
+      gradient: 'from-indigo-500 to-purple-500',
+      bgGradient: 'from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20',
+    },
+    {
+      label: '패키지',
+      value: 'passes',
+      icon: Ticket,
       gradient: 'from-indigo-500 to-purple-500',
       bgGradient: 'from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20',
     },
