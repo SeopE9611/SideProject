@@ -5,11 +5,12 @@ import clientPromise from '@/lib/mongodb';
 import { bankLabelMap } from '@/lib/constants';
 import jwt from 'jsonwebtoken';
 import Link from 'next/link';
-import { CheckCircle, Calendar, CreditCard, MapPin, Phone, Mail, User, Rocket as Racquet, Clock, Home, FileText, Shield, Award, Zap } from 'lucide-react';
+import { CheckCircle, Calendar, CreditCard, MapPin, Phone, Mail, User, Rocket as Racquet, Clock, Home, FileText, Shield, Award, Zap, Ticket } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import BackButtonGuard from '@/app/services/_components/BackButtonGuard';
+import { Badge } from '@/components/ui/badge';
 
 interface Props {
   searchParams: {
@@ -30,6 +31,14 @@ export default async function StringServiceSuccessPage(props: Props) {
   const client = await clientPromise;
   const db = client.db();
   const application = await db.collection('stringing_applications').findOne({ _id: new ObjectId(applicationId) });
+
+  // 패키지 정보 조회
+  let appliedPass: any = null;
+  if (application?.packageApplied && application?.packagePassId) {
+    try {
+      appliedPass = await db.collection('service_passes').findOne({ _id: new ObjectId(application.packagePassId) }, { projection: { remainingCount: 1, packageSize: 1, expiresAt: 1 } });
+    } catch {}
+  }
 
   // 여러 개 선택/커스텀 이름까지 합쳐 표시용 이름 랜더
   const stringTypes: string[] = application?.stringDetails?.stringTypes ?? [];
@@ -159,35 +168,101 @@ export default async function StringServiceSuccessPage(props: Props) {
                   </div>
                 </div>
 
-                {application.shippingInfo?.bank && (
+                {application.packageApplied ? (
+                  // ===== 패키지 적용 카드 =====
                   <div className="mb-8">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                      <CreditCard className="h-6 w-6 mr-3 text-blue-600" />
-                      입금 계좌 정보
+                      <Ticket className="h-6 w-6 mr-3 text-emerald-600" />
+                      패키지 적용됨
                     </h3>
-                    <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-blue-200 dark:border-slate-500">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">은행</p>
-                          <p className="font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.label}</p>
+
+                    <div className="rounded-xl p-6 border-2 border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20">
+                      <div className="flex items-start gap-4">
+                        <div className="h-10 w-10 shrink-0 rounded-full bg-emerald-600 text-white grid place-content-center shadow-sm">
+                          <Ticket className="h-5 w-5" />
                         </div>
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">계좌번호</p>
-                          <p className="font-mono font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.account}</p>
-                        </div>
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">예금주</p>
-                          <p className="font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.holder}</p>
-                        </div>
-                      </div>
-                      <div className="mt-4 p-4 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-lg border border-orange-200 dark:border-orange-700">
-                        <div className="flex items-center">
-                          <Zap className="h-5 w-5 text-orange-600 mr-2" />
-                          <p className="font-semibold text-orange-800 dark:text-orange-200">입금 기한: {new Date(application.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
+
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-emerald-900 dark:text-emerald-200">교체 패키지가 자동 적용되었습니다.</span>
+                            <Badge className="bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">입금 불필요</Badge>
+                          </div>
+
+                          <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                            장착 금액은 <span className="font-semibold text-emerald-700 dark:text-emerald-300">0원</span> 으로 처리 됩니다.
+                          </p>
+
+                          {/* 잔여/만료 pill */}
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-300">
+                              잔여 {appliedPass?.remainingCount ?? '-'}회
+                            </Badge>
+                            <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-300">
+                              만료일 {appliedPass?.expiresAt ? new Date(appliedPass.expiresAt).toLocaleDateString('ko-KR') : '-'}
+                            </Badge>
+                          </div>
+
+                          {/* 잔여 게이지 */}
+                          {appliedPass?.packageSize
+                            ? (() => {
+                                const total = appliedPass.packageSize as number;
+                                const remaining = appliedPass.remainingCount as number;
+                                const used = Math.max(0, total - remaining);
+                                const remainPct = Math.round((remaining / total) * 100);
+                                return (
+                                  <div className="mt-4">
+                                    <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                                      <span>
+                                        총 {total}회 중 <span className="font-medium text-slate-700">{used}</span>회 사용
+                                      </span>
+                                      <span className="tabular-nums">{remainPct}%</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
+                                      <div className="h-full bg-emerald-500" style={{ width: `${remainPct}%` }} />
+                                    </div>
+                                    <div className="mt-1 text-xs text-slate-500">
+                                      잔여 <span className="font-medium text-emerald-700">{remaining}</span>회
+                                    </div>
+                                  </div>
+                                );
+                              })()
+                            : null}
                         </div>
                       </div>
                     </div>
                   </div>
+                ) : (
+                  // ===== 기존 입금 계좌 정보 (패키지 미적용 시에만 노출) =====
+                  application.shippingInfo?.bank && (
+                    <div className="mb-8">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <CreditCard className="h-6 w-6 mr-3 text-blue-600" />
+                        입금 계좌 정보
+                      </h3>
+                      <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-blue-200 dark:border-slate-500">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">은행</p>
+                            <p className="font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.label}</p>
+                          </div>
+                          <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">계좌번호</p>
+                            <p className="font-mono font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.account}</p>
+                          </div>
+                          <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">예금주</p>
+                            <p className="font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.holder}</p>
+                          </div>
+                        </div>
+                        <div className="mt-4 p-4 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-lg border border-orange-200 dark:border-orange-700">
+                          <div className="flex items-center">
+                            <Zap className="h-5 w-5 text-orange-600 mr-2" />
+                            <p className="font-semibold text-orange-800 dark:text-orange-200">입금 기한: {new Date(application.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
                 )}
 
                 <Separator className="my-8" />
