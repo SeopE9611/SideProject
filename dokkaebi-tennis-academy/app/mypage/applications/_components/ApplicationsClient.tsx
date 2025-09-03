@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Phone, User, RatIcon as Racquet, Zap, GraduationCap, ArrowRight, FileText } from 'lucide-react';
+import { Calendar, Clock, Phone, User, RatIcon as Racquet, Zap, GraduationCap, ArrowRight, FileText, Target, LayoutGrid, RocketIcon, Gauge } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useSWRInfinite from 'swr/infinite';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
@@ -127,7 +127,11 @@ export default function ApplicationsClient() {
                         isStringService ? 'bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900' : 'bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900'
                       }`}
                     >
-                      {isStringService ? <Racquet className={`h-6 w-6 ${isStringService ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`} /> : <GraduationCap className="h-6 w-6 text-green-600 dark:text-green-400" />}
+                      {isStringService ? (
+                        <LayoutGrid className={`h-6 w-6  ${isStringService ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`} />
+                      ) : (
+                        <GraduationCap className="h-6 w-6 text-green-600 dark:text-green-400" />
+                      )}
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-900 dark:text-slate-100">{app.type}</h3>
