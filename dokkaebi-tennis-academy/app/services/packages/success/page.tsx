@@ -11,6 +11,7 @@ import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { bankLabelMap } from '@/lib/constants';
 import DevMarkPaidButton from '@/app/services/packages/success/DevMarkPaidButton';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 const Trophy = ({ className }: { className: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,8 +24,9 @@ const Trophy = ({ className }: { className: string }) => (
   </svg>
 );
 
-export default async function PackageSuccessPage({ searchParams }: { searchParams: { packageOrderId?: string } }) {
-  const packageOrderId = typeof searchParams?.packageOrderId === 'string' ? searchParams.packageOrderId : Array.isArray(searchParams?.packageOrderId) ? searchParams.packageOrderId[0] : '';
+export default async function PackageSuccessPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const packageOrderId = Array.isArray(sp.packageOrderId) ? sp.packageOrderId[0] : sp.packageOrderId ?? '';
 
   if (!packageOrderId) return notFound();
 
@@ -44,6 +46,35 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
       isLoggedIn = true;
     } catch {}
   }
+
+  // --- 관리자 판별 ---
+  const cookieStore2 = await cookies();
+  const accessToken = cookieStore2.get('accessToken')?.value;
+
+  let authPayload: any = null;
+  try {
+    if (accessToken) authPayload = verifyAccessToken(accessToken);
+  } catch {}
+  if (!authPayload && refreshToken) {
+    try {
+      authPayload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
+    } catch {}
+  }
+
+  // 토큰 페이로드 기반
+  const tokenIsAdmin = authPayload?.role === 'admin' || authPayload?.roles?.includes?.('admin') || authPayload?.isAdmin === true;
+
+  // 이메일 화이트리스트(옵션)
+  const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const emailIsAdmin = ADMIN_EMAILS.includes((authPayload?.email ?? '').toLowerCase());
+
+  const isAdmin = tokenIsAdmin || emailIsAdmin;
+
+  // 운영 긴급 노출 스위치
+  const showDevBtn = isAdmin || process.env.NEXT_PUBLIC_SHOW_DEV_BUTTON === '1';
 
   // 안전한 가격 표시 함수
   const formatPrice = (price: any): string => {
@@ -312,7 +343,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
               </div>
             </CardFooter>
             <div className="px-6">
-              <DevMarkPaidButton orderId={packageOrder._id.toString()} />
+              <DevMarkPaidButton orderId={packageOrder._id.toString()} show={showDevBtn} />
             </div>
           </Card>
 
