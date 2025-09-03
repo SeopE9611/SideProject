@@ -520,21 +520,8 @@ export async function handleSubmitStringingApplication(req: Request) {
   const userId = payload?.sub ? new ObjectId(payload.sub) : null;
 
   try {
-    // body에서 필요한 값들 추출 (+ packageOptOut 추가)
-    const {
-      name,
-      phone,
-      email,
-      shippingInfo,
-      racketType,
-      stringTypes,
-      customStringName,
-      preferredDate,
-      preferredTime,
-      requirements,
-      orderId,
-      packageOptOut, // ← 추가: 이번 신청에서 패키지 사용 안 함(옵트아웃)
-    } = await req.json();
+    // body에서 필요한 값들 추출
+    const { name, phone, email, shippingInfo, racketType, stringTypes, customStringName, preferredDate, preferredTime, requirements, orderId, packageOptOut } = await req.json();
 
     //  자동 귀속용 이메일 , 전화번호 정규화(소문자 트림/숫자만)
     const contactEmail = normalizeEmail(email);
@@ -586,7 +573,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       requirements,
     };
 
-    // 금액 계산 (교체비 합계)
+    // 금액 계산
     let totalPrice = 0;
     for (const id of stringTypes) {
       if (id === 'custom') {
@@ -618,7 +605,7 @@ export async function handleSubmitStringingApplication(req: Request) {
           packagePassId = pass._id;
           packageRedeemedAt = new Date();
         } catch (e) {
-          // PASS_CONSUME_FAILED 등: 패스 사용 불가 → 일반 요금 적용(그대로 진행)
+          // PASS_CONSUME_FAILED 등: 패스 사용 불가 -> 일반 요금 적용(그대로 진행)
         }
       }
     }
@@ -629,9 +616,9 @@ export async function handleSubmitStringingApplication(req: Request) {
     }
     // ====== [패키지 자동 차감] 끝 ======
 
-    // 신청서 저장 (추가 필드 포함)
+    // 신청서 저장
     const result = await db.collection('stringing_applications').insertOne({
-      _id: applicationId, // ← 미리 생성한 ID 사용
+      _id: applicationId,
       orderId: new ObjectId(orderId),
       name,
       phone,
@@ -657,7 +644,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       userSnapshot: userId ? { name, email } : null,
     });
 
-    // 주문에도 플래그 추가(기존 로직 유지)
+    // 주문에도 플래그 추가
     await db.collection('orders').updateOne(
       { _id: new ObjectId(orderId) },
       {
