@@ -41,12 +41,25 @@ const Header = () => {
       }
     };
 
+    // 히스테리시스 + rAF 스로틀
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      const y = window.scrollY || 0;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        setIsScrolled((prev) => {
+          // 내려갈 때는 32px을 넘으면 축소 상태로
+          if (!prev && y > 32) return true;
+          // 올라갈 때는 4px 미만에서만 원복
+          if (prev && y < 4) return false;
+          return prev;
+        });
+        ticking = false;
+      });
     };
-
     window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleScroll);
@@ -219,11 +232,24 @@ const Header = () => {
         메인 콘텐츠로 건너뛰기
       </a>
 
-      <header
-        className={`sticky top-0 z-[50] w-full isolate bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 transition-[height,background] duration-300 ${isScrolled ? 'h-[56px]' : 'h-[72px]'}`}
-        data-scrolled={isScrolled}
-      >
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between overflow-visible">
+      <header className="sticky top-0 z-[50] w-full isolate h-[72px]" data-scrolled={isScrolled}>
+        <div
+          aria-hidden="true"
+          className={`absolute left-0 right-0 top-0 z-0 pointer-events-none
+      transition-[height,background] duration-300
+      ${isScrolled ? 'h-[56px]' : 'h-[72px]'}
+      bg-white/70 dark:bg-slate-900/60 backdrop-blur-md
+      border-b border-slate-200 dark:border-slate-700`}
+        />
+        <div
+          className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
+          style={{
+            // 72px(헤더) ↔ 56px(바) 차이의 절반(8px)을 위로 올려 중앙 정렬
+            transform: isScrolled ? 'translateY(-8px) scale(0.96)' : 'translateY(0) scale(1)',
+            transformOrigin: 'center',
+            willChange: 'transform',
+          }}
+        >
           {/* 좌측: 로고 + 내비 */}
           <div className="flex items-center gap-4 lg:gap-12">
             <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈">
