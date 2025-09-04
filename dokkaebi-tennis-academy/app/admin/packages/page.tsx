@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import AuthGuard from '@/components/auth/AuthGuard';
+import useSWR from 'swr';
 
 // 패키지 주문 타입 정의
 interface PackageOrder {
@@ -36,121 +37,79 @@ interface PackageOrder {
   serviceType: '방문' | '출장';
 }
 
-// 더미 데이터
-const dummyPackageOrders: PackageOrder[] = [
-  {
-    id: 'PKG-2024-001',
-    userId: 'user123',
-    customer: {
-      name: '김테니스',
-      email: 'kim.tennis@example.com',
-      phone: '010-1234-5678',
-    },
-    packageType: '30회권',
-    totalSessions: 30,
-    remainingSessions: 25,
-    usedSessions: 5,
-    price: 300000,
-    purchaseDate: '2024-01-15T10:30:00Z',
-    expiryDate: '2024-07-15T23:59:59Z',
-    status: '활성',
-    paymentStatus: '결제완료',
-    serviceType: '방문',
-  },
-  {
-    id: 'PKG-2024-002',
-    userId: 'user456',
-    customer: {
-      name: '이스트링',
-      email: 'lee.string@example.com',
-      phone: '010-2345-6789',
-    },
-    packageType: '50회권',
-    totalSessions: 50,
-    remainingSessions: 42,
-    usedSessions: 8,
-    price: 500000,
-    purchaseDate: '2024-01-20T14:15:00Z',
-    expiryDate: '2024-10-20T23:59:59Z',
-    status: '활성',
-    paymentStatus: '결제완료',
-    serviceType: '출장',
-  },
-  {
-    id: 'PKG-2024-003',
-    customer: {
-      name: '박라켓 (비회원)',
-      email: 'park.racket@example.com',
-      phone: '010-3456-7890',
-    },
-    packageType: '10회권',
-    totalSessions: 10,
-    remainingSessions: 7,
-    usedSessions: 3,
-    price: 100000,
-    purchaseDate: '2024-02-01T09:00:00Z',
-    expiryDate: '2024-05-01T23:59:59Z',
-    status: '활성',
-    paymentStatus: '결제완료',
-    serviceType: '방문',
-  },
-  {
-    id: 'PKG-2024-004',
-    userId: 'user789',
-    customer: {
-      name: '최코트',
-      email: 'choi.court@example.com',
-      phone: '010-4567-8901',
-    },
-    packageType: '100회권',
-    totalSessions: 100,
-    remainingSessions: 0,
-    usedSessions: 100,
-    price: 1000000,
-    purchaseDate: '2023-12-01T16:45:00Z',
-    expiryDate: '2024-12-01T23:59:59Z',
-    status: '만료',
-    paymentStatus: '결제완료',
-    serviceType: '방문',
-  },
-  {
-    id: 'PKG-2024-005',
-    userId: 'user101',
-    customer: {
-      name: '정서브',
-      email: 'jung.serve@example.com',
-      phone: '010-5678-9012',
-    },
-    packageType: '30회권',
-    totalSessions: 30,
-    remainingSessions: 15,
-    usedSessions: 15,
-    price: 300000,
-    purchaseDate: '2024-01-10T11:20:00Z',
-    expiryDate: '2024-07-10T23:59:59Z',
-    status: '일시정지',
-    paymentStatus: '결제완료',
-    serviceType: '출장',
-  },
-];
+// 타입 선언
+type PackageType = '10회권' | '30회권' | '50회권' | '100회권';
+type ServiceType = '방문' | '출장';
+
+// 패스(또는 주문) 상태 라벨
+type PassStatus = '활성' | '만료' | '일시정지' | '취소';
+type PaymentStatus = '결제완료' | '결제대기' | '결제취소';
+
+interface PackageListItem {
+  id: string;
+  userId: string;
+  customer: { name?: string; email?: string; phone?: string };
+  packageType: PackageType;
+  totalSessions: number;
+  remainingSessions: number;
+  usedSessions: number;
+  price: number;
+  purchaseDate: string; 
+  expiryDate: string;
+  passStatus: PassStatus | '대기';
+  paymentStatus: PaymentStatus | string;
+  serviceType: ServiceType;
+}
+
+interface Paginated<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+// 라벨 맵 
+const PKG_LABELS: Record<PackageType, string> = {
+  '10회권': '10회권',
+  '30회권': '30회권',
+  '50회권': '50회권',
+  '100회권': '100회권',
+} as const;
+
+const PASS_STATUS_LABELS: Record<PassStatus, string> = {
+  활성: '활성',
+  만료: '만료',
+  일시정지: '일시정지',
+  취소: '취소',
+} as const;
+
+const PAYMENT_LABELS: Record<PaymentStatus, string> = {
+  결제완료: '결제완료',
+  결제대기: '결제대기',
+  결제취소: '결제취소',
+} as const;
+
+// 인덱싱을 위한 타입 가드 추가
+const isPassStatus = (v: string): v is PassStatus => v === '활성' || v === '만료' || v === '일시정지' || v === '취소';
+const isPaymentStatus = (v: string): v is PaymentStatus => v === '결제완료' || v === '결제대기' || v === '결제취소';
 
 // 패키지 상태별 색상
-const packageStatusColors = {
+const packageStatusColors: Record<PassStatus | '대기', string> = {
   활성: 'bg-green-100 text-green-800 border-green-200',
   만료: 'bg-red-100 text-red-800 border-red-200',
   일시정지: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   취소: 'bg-gray-100 text-gray-800 border-gray-200',
+  대기: 'bg-slate-100 text-slate-700 border-slate-200',
 };
-
 // 결제 상태별 색상
-const paymentStatusColors = {
+const paymentStatusColors: Record<PaymentStatus, string> = {
   결제완료: 'bg-blue-100 text-blue-800 border-blue-200',
   결제대기: 'bg-orange-100 text-orange-800 border-orange-200',
   결제취소: 'bg-red-100 text-red-800 border-red-200',
 };
 
 // 패키지 타입별 색상
-const packageTypeColors = {
+const packageTypeColors: Record<PackageType, string> = {
   '10회권': 'bg-purple-100 text-purple-800 border-purple-200',
   '30회권': 'bg-blue-100 text-blue-800 border-blue-200',
   '50회권': 'bg-green-100 text-green-800 border-green-200',
@@ -168,10 +127,13 @@ export default function PackageOrdersClient() {
   const [searchTerm, setSearchTerm] = useState('');
 
   // 필터 상태들
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [packageTypeFilter, setPackageTypeFilter] = useState('all');
-  const [paymentFilter, setPaymentFilter] = useState('all');
-  const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
+  const [packageTypeFilter, setPackageTypeFilter] = useState<'all' | PackageType>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | PassStatus>('all');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | PaymentStatus>('all');
+  const [serviceTypeFilter, setServiceTypeFilter] = useState<'all' | ServiceType>('all');
+  const pkgLabel = packageTypeFilter === 'all' ? '전체' : PKG_LABELS[packageTypeFilter];
+  const passStatusLabel = statusFilter === 'all' ? '전체' : PASS_STATUS_LABELS[statusFilter];
+  const paymentLabel = paymentFilter === 'all' ? '전체' : PAYMENT_LABELS[paymentFilter];
 
   // 정렬 상태
   const [sortBy, setSortBy] = useState<'customer' | 'purchaseDate' | 'remainingSessions' | 'price' | null>(null);
@@ -180,24 +142,37 @@ export default function PackageOrdersClient() {
   // 한 페이지에 보여줄 항목 수
   const limit = 10;
 
-  // 임시로 더미 데이터 사용 (실제로는 SWR로 API 호출)
-  const data = {
-    items: dummyPackageOrders,
-    total: dummyPackageOrders.length,
-  };
-  const error = null;
+  const qs = new URLSearchParams();
+  if (searchTerm) qs.set('q', searchTerm);
+  if (statusFilter !== 'all') qs.set('status', statusFilter);
+  if (packageTypeFilter !== 'all') qs.set('package', packageTypeFilter.replace('회권', '')); // '10회권' -> '10'
+  if (paymentFilter !== 'all') qs.set('payment', paymentFilter);
+  if (serviceTypeFilter !== 'all') qs.set('service', serviceTypeFilter);
+  if (sortBy) qs.set('sort', `${sortBy}:${sortDirection}`);
+
+  if (packageTypeFilter !== 'all') qs.set('package', packageTypeFilter.replace('회권', ''));
+  if (statusFilter !== 'all') qs.set('status', statusFilter);
+  if (paymentFilter !== 'all') qs.set('payment', paymentFilter);
+
+  qs.set('page', String(page));
+  qs.set('limit', String(limit));
+
+  const { data, error, isValidating, mutate } = useSWR<Paginated<PackageListItem>>(`/api/package-orders?${qs.toString()}`, fetcher);
 
   // 데이터 준비
-  const packages = data?.items ?? [];
-  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
+  const packages: PackageListItem[] = data?.items ?? [];
+  const totalPages: number = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
 
   // 검색 / 필터링 로직
-  const filteredPackages = packages.filter((pkg) => {
+  const filteredPackages = packages.filter((pkg: PackageListItem) => {
     // 검색어 매치: ID, 고객명, 이메일
-    const searchMatch = pkg.id.toLowerCase().includes(searchTerm.toLowerCase()) || pkg.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) || pkg.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const needle = searchTerm.toLowerCase();
+    const name = pkg.customer?.name?.toLowerCase() ?? '';
+    const email = pkg.customer?.email?.toLowerCase() ?? '';
+    const searchMatch = pkg.id.toLowerCase().includes(needle) || name.includes(needle) || email.includes(needle);
 
     // 필터 매치
-    const statusMatch = statusFilter === 'all' || pkg.status === statusFilter;
+    const statusMatch = statusFilter === 'all' || pkg.passStatus === statusFilter;
     const packageTypeMatch = packageTypeFilter === 'all' || pkg.packageType === packageTypeFilter;
     const paymentMatch = paymentFilter === 'all' || pkg.paymentStatus === paymentFilter;
     const serviceTypeMatch = serviceTypeFilter === 'all' || pkg.serviceType === serviceTypeFilter;
@@ -213,12 +188,12 @@ export default function PackageOrdersClient() {
 
     switch (sortBy) {
       case 'customer':
-        aValue = a.customer.name.toLowerCase();
-        bValue = b.customer.name.toLowerCase();
+        aValue = (a.customer?.name ?? '').toLowerCase();
+        bValue = (b.customer?.name ?? '').toLowerCase();
         break;
       case 'purchaseDate':
-        aValue = new Date(a.purchaseDate).getTime();
-        bValue = new Date(b.purchaseDate).getTime();
+        aValue = toDateSafe(a.purchaseDate)?.getTime() ?? 0;
+        bValue = toDateSafe(b.purchaseDate)?.getTime() ?? 0;
         break;
       case 'remainingSessions':
         aValue = a.remainingSessions;
@@ -236,15 +211,25 @@ export default function PackageOrdersClient() {
   });
 
   // 날짜 포맷터
-  const formatDate = (dateString: string) =>
-    new Intl.DateTimeFormat('ko-KR', {
+  const formatDate = (v?: string | Date | null) => {
+    const d = toDateSafe(v);
+    if (!d) return '-';
+    return new Intl.DateTimeFormat('ko-KR', {
       year: '2-digit',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
-    }).format(new Date(dateString));
+    }).format(d);
+  };
+
+  // 날짜 헬퍼
+  const toDateSafe = (v?: string | Date | null) => {
+    if (!v) return null;
+    const d = typeof v === 'string' ? new Date(v) : v;
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
 
   // 금액 포맷터
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
@@ -278,12 +263,11 @@ export default function PackageOrdersClient() {
   };
 
   // 만료일까지 남은 일수 계산
-  const getDaysUntilExpiry = (expiryDate: string) => {
-    const today = new Date();
-    const expiry = new Date(expiryDate);
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const getDaysUntilExpiry = (v?: string | Date | null) => {
+    const d = toDateSafe(v);
+    if (!d) return 0;
+    const diffMs = d.getTime() - Date.now();
+    return Math.ceil(diffMs / 86400000);
   };
 
   return (
@@ -322,7 +306,7 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">활성 패키지</p>
-                    <p className="text-3xl font-bold text-green-600">{packages.filter((p) => p.status === '활성').length}</p>
+                    <p className="text-3xl font-bold text-green-600">{packages.filter((p) => p.passStatus === '활성').length}</p>
                   </div>
                   <div className="bg-green-50 rounded-xl p-3">
                     <Calendar className="h-6 w-6 text-green-600" />
@@ -350,7 +334,7 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">만료 예정</p>
-                    <p className="text-3xl font-bold text-orange-600">{packages.filter((p) => getDaysUntilExpiry(p.expiryDate) <= 30 && p.status === '활성').length}</p>
+                    <p className="text-3xl font-bold text-orange-600">{packages.filter((p) => getDaysUntilExpiry(p.expiryDate) <= 30 && p.passStatus === '활성').length}</p>
                   </div>
                   <div className="bg-orange-50 rounded-xl p-3">
                     <Calendar className="h-6 w-6 text-orange-600" />
@@ -386,7 +370,7 @@ export default function PackageOrdersClient() {
 
                 {/* 필터 컴포넌트들 */}
                 <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | PassStatus)}>
                     <SelectTrigger>
                       <SelectValue placeholder="패키지 상태" />
                     </SelectTrigger>
@@ -399,7 +383,7 @@ export default function PackageOrdersClient() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={packageTypeFilter} onValueChange={setPackageTypeFilter}>
+                  <Select value={packageTypeFilter} onValueChange={(v) => setPackageTypeFilter(v as 'all' | PackageType)}>
                     <SelectTrigger>
                       <SelectValue placeholder="패키지 유형" />
                     </SelectTrigger>
@@ -412,7 +396,7 @@ export default function PackageOrdersClient() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                  <Select value={paymentFilter} onValueChange={(v) => setPaymentFilter(v as 'all' | PaymentStatus)}>
                     <SelectTrigger>
                       <SelectValue placeholder="결제 상태" />
                     </SelectTrigger>
@@ -424,7 +408,7 @@ export default function PackageOrdersClient() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={serviceTypeFilter} onValueChange={setServiceTypeFilter}>
+                  <Select value={serviceTypeFilter} onValueChange={(v) => setServiceTypeFilter(v as 'all' | ServiceType)}>
                     <SelectTrigger>
                       <SelectValue placeholder="서비스 유형" />
                     </SelectTrigger>
@@ -523,11 +507,21 @@ export default function PackageOrdersClient() {
 
                             <TableCell className={tdClasses}>
                               <div className="flex flex-col items-center">
-                                <span className="font-medium">
-                                  {pkg.customer.name.replace(/\s*$$비회원$$$/, '')}
-                                  {pkg.customer.name.includes('(비회원)') && <span className="ml-1 text-xs text-gray-500">(비회원)</span>}
-                                </span>
-                                <span className="text-xs text-muted-foreground">{pkg.customer.email}</span>
+                                {(() => {
+                                  const cName = pkg.customer?.name ?? '이름없음';
+                                  const cEmail = pkg.customer?.email ?? '';
+                                  const baseName = cName.replace(/\s*\(비회원\)\s*$/, '');
+                                  const isGuest = cName.includes('(비회원)');
+                                  return (
+                                    <>
+                                      <span className="font-medium">
+                                        {baseName}
+                                        {isGuest && <span className="ml-1 text-xs text-gray-500">(비회원)</span>}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">{cEmail}</span>
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </TableCell>
 
@@ -558,17 +552,22 @@ export default function PackageOrdersClient() {
                             <TableCell className={tdClasses}>
                               <div className="flex flex-col items-center">
                                 <span className="text-sm">{formatDate(pkg.expiryDate)}</span>
-                                {daysUntilExpiry <= 30 && daysUntilExpiry > 0 && pkg.status === '활성' && <span className="text-xs text-orange-600 font-medium">{daysUntilExpiry}일 남음</span>}
-                                {daysUntilExpiry <= 0 && pkg.status === '활성' && <span className="text-xs text-red-600 font-medium">만료됨</span>}
+                                {daysUntilExpiry <= 30 && daysUntilExpiry > 0 && pkg.passStatus === '활성' && <span className="text-xs text-orange-600 font-medium">{daysUntilExpiry}일 남음</span>}
+                                {daysUntilExpiry <= 0 && pkg.passStatus === '활성' && <span className="text-xs text-red-600 font-medium">만료됨</span>}
                               </div>
                             </TableCell>
 
+                            {/* 상태 */}
                             <TableCell className={tdClasses}>
-                              <Badge className={packageStatusColors[pkg.status]}>{pkg.status}</Badge>
+                              {(() => {
+                                const pass: PassStatus | '대기' = pkg.passStatus === '활성' || pkg.passStatus === '만료' || pkg.passStatus === '일시정지' || pkg.passStatus === '취소' ? (pkg.passStatus as PassStatus) : '대기';
+                                return <Badge className={packageStatusColors[pass]}>{pass}</Badge>;
+                              })()}
                             </TableCell>
 
+                            {/* 결제 */}
                             <TableCell className={tdClasses}>
-                              <Badge className={paymentStatusColors[pkg.paymentStatus]}>{pkg.paymentStatus}</Badge>
+                              <Badge className={paymentStatusColors[(pkg.paymentStatus as PaymentStatus) ?? '결제대기']}>{pkg.paymentStatus}</Badge>
                             </TableCell>
 
                             <TableCell className={tdClasses}>

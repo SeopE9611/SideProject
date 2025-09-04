@@ -14,16 +14,14 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { Skeleton } from '@/components/ui/skeleton';
+import useSWR from 'swr';
+import { parseISO, isValid, format } from 'date-fns';
 
 // 패키지 상세 정보 타입
 interface PackageDetail {
   id: string;
   userId?: string;
-  customer: {
-    name: string;
-    email: string;
-    phone: string;
-  };
+  customer: { name: string; email: string; phone: string };
   packageType: '10회권' | '30회권' | '50회권' | '100회권';
   totalSessions: number;
   remainingSessions: number;
@@ -31,9 +29,16 @@ interface PackageDetail {
   price: number;
   purchaseDate: string;
   expiryDate: string;
-  status: '활성' | '만료' | '일시정지' | '취소';
+
+  // 🔁 여기! 주문 상태가 아니라 "패스 상태"로 받자
+  passStatus: '활성' | '만료' | '일시정지' | '취소' | '대기';
+
+  // (필요하면 남겨둬도 됨)
+  // status?: never;
+
   paymentStatus: '결제완료' | '결제대기' | '결제취소';
   serviceType: '방문' | '출장';
+
   usageHistory: Array<{
     id: string;
     applicationId: string;
@@ -52,68 +57,13 @@ interface PackageDetail {
   }>;
 }
 
-// 더미 패키지 상세 데이터
-const dummyPackageDetail: PackageDetail = {
-  id: 'PKG-2024-001',
-  userId: 'user123',
-  customer: {
-    name: '김테니스',
-    email: 'kim.tennis@example.com',
-    phone: '010-1234-5678',
-  },
-  packageType: '30회권',
-  totalSessions: 30,
-  remainingSessions: 25,
-  usedSessions: 5,
-  price: 300000,
-  purchaseDate: '2024-01-15T10:30:00Z',
-  expiryDate: '2024-07-15T23:59:59Z',
-  status: '활성',
-  paymentStatus: '결제완료',
-  serviceType: '방문',
-  usageHistory: [
-    {
-      id: 'usage-001',
-      applicationId: 'APP-2024-001',
-      date: '2024-01-20T14:00:00Z',
-      sessionsUsed: 2,
-      description: '테니스 라켓 스트링 교체 (메인 + 크로스)',
-      adminNote: '정상 처리 완료',
-    },
-    {
-      id: 'usage-002',
-      applicationId: 'APP-2024-002',
-      date: '2024-02-05T11:30:00Z',
-      sessionsUsed: 1,
-      description: '배드민턴 라켓 스트링 교체',
-      adminNote: '고객 요청으로 장력 조정',
-    },
-    {
-      id: 'usage-003',
-      applicationId: 'APP-2024-003',
-      date: '2024-02-18T16:45:00Z',
-      sessionsUsed: 2,
-      description: '테니스 라켓 스트링 교체 (메인 + 크로스)',
-    },
-  ],
-  extensionHistory: [
-    {
-      id: 'ext-001',
-      date: '2024-02-01T09:00:00Z',
-      extendedSessions: 5,
-      extendedDays: 30,
-      reason: '고객 요청으로 인한 연장',
-      adminName: '관리자',
-    },
-  ],
-};
-
 // 패키지 상태별 색상
-const packageStatusColors = {
+const packageStatusColors: Record<PackageDetail['passStatus'], string> = {
   활성: 'bg-green-100 text-green-800 border-green-200',
   만료: 'bg-red-100 text-red-800 border-red-200',
   일시정지: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   취소: 'bg-gray-100 text-gray-800 border-gray-200',
+  대기: 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
 // 결제 상태별 색상
@@ -129,6 +79,24 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((re
 interface Props {
   packageId: string;
 }
+
+const toDateSafe = (v: string | Date | null | undefined) => {
+  if (!v) return null;
+  const d = typeof v === 'string' ? parseISO(v) : v;
+  return isValid(d) ? d : null;
+};
+
+const fmtKDate = (v: string | Date | null | undefined) => {
+  const d = toDateSafe(v);
+  return d ? format(d, 'yyyy. MM. dd.') : '-';
+};
+
+const daysUntil = (v: string | Date | null | undefined) => {
+  const d = toDateSafe(v);
+  if (!d) return 0;
+  const diffMs = d.getTime() - Date.now();
+  return Math.max(0, Math.ceil(diffMs / 86400000));
+};
 
 export default function PackageDetailClient({ packageId }: Props) {
   const router = useRouter();
@@ -152,10 +120,12 @@ export default function PackageDetailClient({ packageId }: Props) {
     reason: '',
   });
 
-  // 임시로 더미 데이터 사용 (실제로는 SWR로 API 호출)
-  const data = dummyPackageDetail;
-  const error = null;
-  const isLoading = false;
+  // SWR로 실데이터 호출
+  const { data: resp, error, isLoading } = useSWR<{ item: PackageDetail }>(`/api/package-orders/${packageId}`, fetcher);
+
+  const data = resp?.item;
+  const usageHistory = Array.isArray(data?.usageHistory) ? data!.usageHistory : [];
+  const extensionHistory = Array.isArray(data?.extensionHistory) ? data!.extensionHistory : [];
 
   // 로딩/에러 처리
   if (isLoading) {
@@ -182,6 +152,14 @@ export default function PackageDetailClient({ packageId }: Props) {
     return (
       <div className="container py-6">
         <div className="text-center text-red-500">패키지 정보를 불러오는 중 오류가 발생했습니다.</div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="container py-6">
+        <div className="text-center text-gray-500">해당 패키지를 찾을 수 없습니다.</div>
       </div>
     );
   }
@@ -213,6 +191,10 @@ export default function PackageDetailClient({ packageId }: Props) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+
+  const expiry = toDateSafe(data?.expiryDate);
+  const daysLeft = daysUntil(expiry); // 0 이상 정수 (지난 날짜면 0)
+  const expired = !!expiry && expiry.getTime() < Date.now();
 
   // 패키지 연장 처리
   const handleExtension = async () => {
@@ -314,7 +296,7 @@ export default function PackageDetailClient({ packageId }: Props) {
                   <Calendar className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">만료일</span>
                 </div>
-                <p className="text-lg font-semibold text-gray-900">{formatDate(data.expiryDate).split(' ')[0]}</p>
+                <p className="text-lg font-semibold text-gray-900">{fmtKDate(expiry)}</p>
               </div>
             </div>
           </div>
@@ -334,7 +316,7 @@ export default function PackageDetailClient({ packageId }: Props) {
                     <User className="h-4 w-4 text-gray-500" />
                     <div>
                       <p className="text-sm text-gray-600">이름</p>
-                      <p className="font-semibold text-gray-900">{data.customer.name}</p>
+                      <p className="font-semibold text-gray-900">{data.customer.name ?? '이름 없음'}</p>
                     </div>
                   </div>
 
@@ -342,7 +324,7 @@ export default function PackageDetailClient({ packageId }: Props) {
                     <Mail className="h-4 w-4 text-gray-500" />
                     <div>
                       <p className="text-sm text-gray-600">이메일</p>
-                      <p className="font-semibold text-gray-900">{data.customer.email}</p>
+                      <p className="font-semibold text-gray-900">{data.customer.email ?? '-'}</p>
                     </div>
                   </div>
 
@@ -350,7 +332,7 @@ export default function PackageDetailClient({ packageId }: Props) {
                     <Phone className="h-4 w-4 text-gray-500" />
                     <div>
                       <p className="text-sm text-gray-600">전화번호</p>
-                      <p className="font-semibold text-gray-900">{data.customer.phone}</p>
+                      <p className="font-semibold text-gray-900">{data.customer.phone ?? '-'}</p>
                     </div>
                   </div>
 
@@ -378,9 +360,10 @@ export default function PackageDetailClient({ packageId }: Props) {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
+                  {/* 패키지 상태 카드 내부 */}
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm text-gray-600">현재 상태</span>
-                    <Badge className={packageStatusColors[data.status]}>{data.status}</Badge>
+                    <Badge className={packageStatusColors[data.passStatus] ?? packageStatusColors['대기']}>{data.passStatus}</Badge>
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -405,7 +388,7 @@ export default function PackageDetailClient({ packageId }: Props) {
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">만료까지</span>
-                      <span className={cn('text-sm font-medium', daysUntilExpiry <= 7 ? 'text-red-600' : daysUntilExpiry <= 30 ? 'text-orange-600' : 'text-green-600')}>{daysUntilExpiry > 0 ? `${daysUntilExpiry}일 남음` : '만료됨'}</span>
+                      <span className={cn('text-sm font-medium', expired ? 'text-gray-500' : daysLeft <= 7 ? 'text-red-600' : daysLeft <= 30 ? 'text-orange-600' : 'text-emerald-600')}>{expired ? '만료됨' : `${daysLeft}일 남음`}</span>
                     </div>
                   </div>
                 </div>
@@ -434,11 +417,11 @@ export default function PackageDetailClient({ packageId }: Props) {
                 <CardDescription>패키지 횟수가 차감된 신청서 목록입니다.</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
-                {data.usageHistory.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">아직 사용 내역이 없습니다.</p>
+                {usageHistory.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">사용 내역이 없습니다.</p>
                 ) : (
                   <div className="space-y-4">
-                    {data.usageHistory.map((usage) => (
+                    {usageHistory.map((usage) => (
                       <div key={usage.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -473,11 +456,11 @@ export default function PackageDetailClient({ packageId }: Props) {
                 <CardDescription>패키지 연장 처리 기록입니다.</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
-                {data.extensionHistory.length === 0 ? (
+                {extensionHistory.length === 0 ? (
                   <p className="text-center text-gray-500 py-8">연장 내역이 없습니다.</p>
                 ) : (
                   <div className="space-y-4">
-                    {data.extensionHistory.map((extension) => (
+                    {extensionHistory.map((extension) => (
                       <div key={extension.id} className="border border-gray-200 rounded-lg p-4 bg-green-50">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
