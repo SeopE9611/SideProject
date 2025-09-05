@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Package, Star, CheckCircle, Clock, Shield, Award, Zap, Target, Users, ArrowRight, Gift, Percent, Calendar, Phone } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 interface PackageOption {
   id: string;
@@ -39,7 +40,8 @@ const Trophy = ({ className }: { className: string }) => (
 
 export default function StringPackagesPage() {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-
+  const searchParams = useSearchParams();
+  const packagesSectionRef = useRef<HTMLElement | null>(null);
   const packages: PackageOption[] = [
     {
       id: '10-sessions',
@@ -127,6 +129,27 @@ export default function StringPackagesPage() {
     },
   ];
 
+  // 처음 진입 시 쿼리로 스크롤 트리거
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const shouldScroll = searchParams.get('target') === 'packages';
+    if (!shouldScroll) return;
+
+    // 첫 페인트 이후로 살짝 지연 → 레이아웃/이미지 로딩 후 부드럽게
+    const id = window.setTimeout(() => {
+      packagesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // (선택) URL을 깔끔히: 해시로 교체해서 공유/북마크 친화적
+      const url = new URL(window.location.href);
+      url.searchParams.delete('target');
+      url.hash = 'packages';
+      window.history.replaceState(null, '', url.toString());
+    }, 0);
+
+    return () => window.clearTimeout(id);
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
@@ -178,10 +201,13 @@ export default function StringPackagesPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
-                <ArrowRight className="w-5 h-5 mr-2" />
-                패키지 선택하기
+              <Button size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
+                <Link href="#packages">
+                  <ArrowRight className="w-5 h-5 mr-2" />
+                  패키지 선택하기
+                </Link>
               </Button>
+
               <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm bg-transparent" asChild>
                 <Link href="/services">
                   <Phone className="w-5 h-5 mr-2" />
@@ -194,7 +220,7 @@ export default function StringPackagesPage() {
       </section>
 
       {/* Package Cards Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
+      <section id="packages" ref={packagesSectionRef} className="py-20 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 scroll-mt-24">
         <div className="container">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">

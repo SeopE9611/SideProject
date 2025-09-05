@@ -98,10 +98,10 @@ const Header = () => {
   ];
 
   const packageLinks = [
-    { name: '스타터 패키지 (10회)', href: '/services/packages?package=10-sessions', description: '테니스 입문자를 위한 기본 패키지' },
-    { name: '레귤러 패키지 (30회)', href: '/services/packages?package=30-sessions', description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지', isPopular: true },
-    { name: '프로 패키지 (50회)', href: '/services/packages?package=50-sessions', description: '진지한 테니스 플레이어를 위한 프리미엄 패키지' },
-    { name: '챔피언 패키지 (100회)', href: '/services/packages?package=100-sessions', description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지' },
+    { name: '스타터 패키지 (10회)', href: '/services/packages?package=10-sessions&target=packages', description: '테니스 입문자를 위한 기본 패키지' },
+    { name: '레귤러 패키지 (30회)', href: '/services/packages?package=30-sessions&target=packages', description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지', isPopular: true },
+    { name: '프로 패키지 (50회)', href: '/services/packages?package=50-sessions&target=packages', description: '진지한 테니스 플레이어를 위한 프리미엄 패키지' },
+    { name: '챔피언 패키지 (100회)', href: '/services/packages?package=100-sessions&target=packages', description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지' },
   ];
 
   const packageBenefits = [

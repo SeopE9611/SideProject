@@ -51,7 +51,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     }
   }
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning className="scroll-smooth">
       <body className={`${inter.className} bg-background text-foreground`}>
         <Script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="beforeInteractive" />
         {/* 초기 유저를 클라 스토어로 밀어넣기 */}
