@@ -372,8 +372,14 @@ export default function PackageDetailClient({ packageId }: Props) {
 
   // 진행률계산을 "사용 + 남은"을 분모로 계산
   const progressPercentage = getProgressPercentage(data.usedSessions, data.usedSessions + data.remainingSessions);
-
   const daysUntilExpiry = getDaysUntilExpiry(data.expiryDate);
+  // 연장 프리뷰 계산: (현재 만료일이 미래면 그 날짜 기준, 이미 지났으면 오늘 기준)
+  const currentExpiryDate = data?.expiryDate ? new Date(data.expiryDate) : null;
+  const baseForPreview = (() => {
+    const now = new Date();
+    return currentExpiryDate && currentExpiryDate > now ? currentExpiryDate : now;
+  })();
+  const previewExpiryDate = extensionData.days > 0 ? new Date(baseForPreview.getTime() + extensionData.days * 86400000) : null;
 
   return (
     <AuthGuard>
@@ -643,7 +649,43 @@ export default function PackageDetailClient({ packageId }: Props) {
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="days">연장 일수</Label>
-                    <Input id="days" type="number" min="0" value={extensionData.days} onChange={(e) => setExtensionData((prev) => ({ ...prev, days: Number.parseInt(e.target.value) || 0 }))} placeholder="연장할 일수를 입력하세요" />
+                    {/* 프리뷰: 현재 만료일 → 예상 만료일 */}
+                    <div className="mt-2 text-sm">
+                      <span className="text-muted-foreground">현재 만료일:</span> <span>{fmtDate(currentExpiryDate)}</span>
+                      {previewExpiryDate && (
+                        <>
+                          <ChevronRight className="inline h-4 w-4 mx-1 text-muted-foreground" />
+                          <span className="font-medium text-emerald-600">{fmtDate(previewExpiryDate)}</span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* - / + 버튼 UI (세션 조절과 동일 톤) */}
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setExtensionData((prev) => ({ ...prev, days: Math.max(0, prev.days - 1) }))} disabled={extensionData.days <= 0}>
+                        <Minus className="h-4 w-4" />
+                      </Button>
+
+                      {/* 스피너 제거를 위해 number 대신 text + numeric 패턴 */}
+                      <Input
+                        id="days"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={String(extensionData.days)}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^\d]/g, '');
+                          const n = v === '' ? 0 : Number(v);
+                          setExtensionData((prev) => ({ ...prev, days: Number.isFinite(n) ? n : 0 }));
+                        }}
+                        className="text-center"
+                        placeholder="연장할 일수를 입력하세요"
+                      />
+
+                      <Button variant="outline" size="sm" onClick={() => setExtensionData((prev) => ({ ...prev, days: prev.days + 1 }))}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div>
                     <Label htmlFor="reason">연장 사유</Label>
@@ -654,7 +696,7 @@ export default function PackageDetailClient({ packageId }: Props) {
                   <Button variant="outline" onClick={() => setShowExtensionForm(false)}>
                     취소
                   </Button>
-                  <Button onClick={handleExtension}>연장 처리</Button>
+                  <Button onClick={handleExtension}>저장</Button>
                 </CardFooter>
               </Card>
             </div>
@@ -670,7 +712,11 @@ export default function PackageDetailClient({ packageId }: Props) {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="adjustment">조절 횟수</Label>
+                    <Label htmlFor="adjustment">횟수 조절</Label>
+                    <p className="text-sm text-gray-500 mt-1">
+                      현재 남은 횟수: {data.remainingSessions}회
+                      {sessionAdjustment.amount !== 0 && <span className={cn('ml-2 font-medium', sessionAdjustment.amount > 0 ? 'text-green-600' : 'text-red-600')}>→ {data.remainingSessions + sessionAdjustment.amount}회</span>}
+                    </p>
                     <div className="flex items-center gap-2">
                       <Button variant="outline" size="sm" onClick={() => setSessionAdjustment((prev) => ({ ...prev, amount: prev.amount - 1 }))}>
                         <Minus className="h-4 w-4" />
@@ -680,10 +726,6 @@ export default function PackageDetailClient({ packageId }: Props) {
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
-                      현재 남은 횟수: {data.remainingSessions}회
-                      {sessionAdjustment.amount !== 0 && <span className={cn('ml-2 font-medium', sessionAdjustment.amount > 0 ? 'text-green-600' : 'text-red-600')}>→ {data.remainingSessions + sessionAdjustment.amount}회</span>}
-                    </p>
                   </div>
                   <div>
                     <Label htmlFor="adjustReason">조절 사유</Label>
@@ -694,7 +736,7 @@ export default function PackageDetailClient({ packageId }: Props) {
                   <Button variant="outline" onClick={() => setEditingSessions(false)}>
                     취소
                   </Button>
-                  <Button onClick={handleSessionAdjustment}>조절 처리</Button>
+                  <Button onClick={handleSessionAdjustment}>저장</Button>
                 </CardFooter>
               </Card>
             </div>
