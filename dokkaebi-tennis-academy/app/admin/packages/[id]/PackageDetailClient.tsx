@@ -16,7 +16,9 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { Skeleton } from '@/components/ui/skeleton';
 import useSWR from 'swr';
 import { parseISO, isValid, format } from 'date-fns';
-import { CalendarPlus, ChevronRight, User2 } from 'lucide-react';
+import { CalendarPlus, ChevronRight, User2, Loader2 } from 'lucide-react';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+
 // 패키지 상세 정보 타입
 interface PackageDetail {
   id: string;
@@ -194,6 +196,10 @@ export default function PackageDetailClient({ packageId }: Props) {
   const [editingSessions, setEditingSessions] = useState(false);
   const [editingStatus, setEditingStatus] = useState(false);
 
+  // 저장 로딩 상태
+  const [isSavingExtend, setIsSavingExtend] = useState(false);
+  const [isSavingAdjust, setIsSavingAdjust] = useState(false);
+
   // 연장 모달 상태
   const [showExtensionForm, setShowExtensionForm] = useState(false);
   const [extensionData, setExtensionData] = useState({
@@ -301,24 +307,24 @@ export default function PackageDetailClient({ packageId }: Props) {
 
   // 패키지 연장 처리
   const handleExtension = async () => {
-    if (extensionData.sessions <= 0 && extensionData.days <= 0) {
-      toast.error('연장할 횟수 또는 기간을 입력해주세요.');
+    if (isSavingExtend) return; // 중복 클릭 방지
+    if (extensionData.days <= 0) {
+      showErrorToast('연장할 일수를 입력해주세요.');
       return;
     }
-
     if (!extensionData.reason.trim()) {
-      toast.error('연장 사유를 입력해주세요.');
+      showErrorToast('연장 사유를 입력해주세요.');
       return;
     }
 
+    setIsSavingExtend(true);
     try {
       const res = await fetch(`/api/package-orders/${packageId}/extend`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mode: extensionData.days > 0 ? 'days' : 'absolute',
-          days: extensionData.days > 0 ? extensionData.days : undefined,
-          newExpiry: extensionData.days > 0 ? undefined : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // fallback absolute 예시
+          mode: 'days',
+          days: extensionData.days,
           reason: extensionData.reason,
         }),
       });
@@ -326,27 +332,30 @@ export default function PackageDetailClient({ packageId }: Props) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err?.error || '연장에 실패했습니다.');
       }
-      await mutate(); // 최신 데이터 갱신
-      toast.success('패키지가 연장되었습니다.');
+      await mutate();
+      showSuccessToast('패키지가 연장되었습니다.');
       setShowExtensionForm(false);
       setExtensionData({ sessions: 0, days: 0, reason: '' });
     } catch (e: any) {
-      toast.error(e?.message || '연장 중 오류가 발생했습니다.');
+      showErrorToast(e?.message || '연장 중 오류가 발생했습니다.');
+    } finally {
+      setIsSavingExtend(false);
     }
   };
 
   // 횟수 조절 처리
   const handleSessionAdjustment = async () => {
+    if (isSavingAdjust) return; // 중복 클릭 방지
     if (sessionAdjustment.amount === 0) {
-      toast.error('조절할 횟수를 입력해주세요.');
+      showErrorToast('조절할 횟수를 입력해주세요.');
       return;
     }
-
     if (!sessionAdjustment.reason.trim()) {
-      toast.error('조절 사유를 입력해주세요.');
+      showErrorToast('조절 사유를 입력해주세요.');
       return;
     }
 
+    setIsSavingAdjust(true);
     try {
       const res = await fetch(`/api/package-orders/${packageId}/adjust-sessions`, {
         method: 'POST',
@@ -362,11 +371,13 @@ export default function PackageDetailClient({ packageId }: Props) {
         throw new Error(err?.error || '횟수 조절에 실패했습니다.');
       }
       await mutate();
-      toast.success('횟수가 조절되었습니다.');
+      showSuccessToast('횟수가 조절되었습니다.');
       setEditingSessions(false);
       setSessionAdjustment({ amount: 0, reason: '' });
     } catch (e: any) {
-      toast.error(e?.message || '횟수 조절 중 오류가 발생했습니다.');
+      showErrorToast(e?.message || '횟수 조절 중 오류가 발생했습니다.');
+    } finally {
+      setIsSavingAdjust(false);
     }
   };
 
@@ -646,7 +657,7 @@ export default function PackageDetailClient({ packageId }: Props) {
                   <CardTitle>패키지 연장</CardTitle>
                   <CardDescription>패키지의 유효기간을 연장할 수 있습니다.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className={cn('space-y-4', isSavingExtend && 'opacity-70 pointer-events-none')}>
                   <div>
                     <Label htmlFor="days">연장 일수</Label>
                     {/* 프리뷰: 현재 만료일 → 예상 만료일 */}
@@ -660,17 +671,17 @@ export default function PackageDetailClient({ packageId }: Props) {
                       )}
                     </div>
 
-                    {/* - / + 버튼 UI (세션 조절과 동일 톤) */}
+                    {/* - / + 버튼 UI */}
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setExtensionData((prev) => ({ ...prev, days: Math.max(0, prev.days - 1) }))} disabled={extensionData.days <= 0}>
+                      <Button variant="outline" size="sm" onClick={() => setExtensionData((prev) => ({ ...prev, days: Math.max(0, prev.days - 1) }))} disabled={isSavingExtend || extensionData.days <= 0}>
                         <Minus className="h-4 w-4" />
                       </Button>
 
-                      {/* 스피너 제거를 위해 number 대신 text + numeric 패턴 */}
                       <Input
                         id="days"
                         type="text"
                         inputMode="numeric"
+                        disabled={isSavingExtend}
                         pattern="[0-9]*"
                         value={String(extensionData.days)}
                         onChange={(e) => {
@@ -689,14 +700,22 @@ export default function PackageDetailClient({ packageId }: Props) {
                   </div>
                   <div>
                     <Label htmlFor="reason">연장 사유</Label>
-                    <Textarea id="reason" value={extensionData.reason} onChange={(e) => setExtensionData((prev) => ({ ...prev, reason: e.target.value }))} placeholder="연장 사유를 입력하세요" rows={3} />
+                    <Textarea id="reason" disabled={isSavingExtend} value={extensionData.reason} onChange={(e) => setExtensionData((prev) => ({ ...prev, reason: e.target.value }))} placeholder="연장 사유를 입력하세요" rows={3} />
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setShowExtensionForm(false)}>
+                  <Button variant="outline" onClick={() => setShowExtensionForm(false)} disabled={isSavingExtend}>
                     취소
                   </Button>
-                  <Button onClick={handleExtension}>저장</Button>
+                  <Button onClick={handleExtension} disabled={isSavingExtend}>
+                    {isSavingExtend ? (
+                      <>
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" /> 저장 중...
+                      </>
+                    ) : (
+                      '저장'
+                    )}
+                  </Button>
                 </CardFooter>
               </Card>
             </div>
@@ -710,7 +729,7 @@ export default function PackageDetailClient({ packageId }: Props) {
                   <CardTitle>횟수 조절</CardTitle>
                   <CardDescription>패키지의 남은 횟수를 조절할 수 있습니다.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className={cn('space-y-4', isSavingAdjust && 'opacity-70 pointer-events-none')}>
                   <div>
                     <Label htmlFor="adjustment">횟수 조절</Label>
                     <p className="text-sm text-gray-500 mt-1">
@@ -718,25 +737,40 @@ export default function PackageDetailClient({ packageId }: Props) {
                       {sessionAdjustment.amount !== 0 && <span className={cn('ml-2 font-medium', sessionAdjustment.amount > 0 ? 'text-green-600' : 'text-red-600')}>→ {data.remainingSessions + sessionAdjustment.amount}회</span>}
                     </p>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setSessionAdjustment((prev) => ({ ...prev, amount: prev.amount - 1 }))}>
+                      <Button variant="outline" size="sm" disabled={isSavingAdjust} onClick={() => setSessionAdjustment((prev) => ({ ...prev, amount: prev.amount - 1 }))}>
                         <Minus className="h-4 w-4" />
                       </Button>
-                      <Input id="adjustment" type="number" value={sessionAdjustment.amount} onChange={(e) => setSessionAdjustment((prev) => ({ ...prev, amount: Number.parseInt(e.target.value) || 0 }))} className="text-center" />
-                      <Button variant="outline" size="sm" onClick={() => setSessionAdjustment((prev) => ({ ...prev, amount: prev.amount + 1 }))}>
+                      <Input
+                        id="adjustment"
+                        type="number"
+                        disabled={isSavingAdjust}
+                        value={sessionAdjustment.amount}
+                        onChange={(e) => setSessionAdjustment((prev) => ({ ...prev, amount: Number.parseInt(e.target.value) || 0 }))}
+                        className="text-center"
+                      />
+                      <Button variant="outline" size="sm" disabled={isSavingAdjust} onClick={() => setSessionAdjustment((prev) => ({ ...prev, amount: prev.amount + 1 }))}>
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="adjustReason">조절 사유</Label>
-                    <Textarea id="adjustReason" value={sessionAdjustment.reason} onChange={(e) => setSessionAdjustment((prev) => ({ ...prev, reason: e.target.value }))} placeholder="횟수 조절 사유를 입력하세요" rows={3} />
+                    <Textarea id="adjustReason" value={sessionAdjustment.reason} disabled={isSavingAdjust} onChange={(e) => setSessionAdjustment((prev) => ({ ...prev, reason: e.target.value }))} placeholder="횟수 조절 사유를 입력하세요" rows={3} />
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setEditingSessions(false)}>
+                  <Button variant="outline" onClick={() => setEditingSessions(false)} disabled={isSavingAdjust}>
                     취소
                   </Button>
-                  <Button onClick={handleSessionAdjustment}>저장</Button>
+                  <Button onClick={handleSessionAdjustment} disabled={isSavingAdjust}>
+                    {isSavingAdjust ? (
+                      <>
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" /> 저장 중...
+                      </>
+                    ) : (
+                      '저장'
+                    )}
+                  </Button>
                 </CardFooter>
               </Card>
             </div>
