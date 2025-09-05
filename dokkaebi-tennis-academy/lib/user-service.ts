@@ -1,8 +1,8 @@
-import { connectToDatabase } from './db';
+import { getDb } from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 
 export async function getUserByEmail(email: string) {
-  const db = await connectToDatabase(); // 여기서 db 객체 받아옴
+  const db = await getDb();
   return await db.collection('users').findOne({ email });
 }
 export async function verifyPassword(plain: string, hashed: string) {

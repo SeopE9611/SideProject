@@ -16,6 +16,9 @@ declare global {
 
   // DB 커넥션이 만들어질 때 인덱스 보장 함수들을 컨테이너 생애당 1회만 실행
   var _passesIndexesReady: Promise<void> | null | undefined;
+
+  // users 컬렉션 인덱스 보장 상태
+  var _usersIndexesReady: Promise<void> | null | undefined;
 }
 
 let client: MongoClient;
@@ -53,15 +56,28 @@ export async function getDb() {
   }
   await global._passesIndexesReady; // 실패했어도 다음 요청에서 재시도됨
 
-  // 인덱스 보장: 컨테이너(람다) 생명주기당 1회만 실행
+  // users.email unique 인덱스 보장
+  if (!global._usersIndexesReady) {
+    global._usersIndexesReady = (async () => {
+      // 이메일은 회원가입 시 toLowerCase() 하므로 { email: 1 } unique로 충분
+      await db.collection('users').createIndex({ email: 1 }, { unique: true, background: true });
+      // role, createdAt 등 보조 인덱스도 여기서 보장 가능
+      // await db.collection('users').createIndex({ role: 1 });
+      // await db.collection('users').createIndex({ createdAt: -1 });
+    })().catch((e) => {
+      console.error('[users] ensureUsersIndexes failed', e);
+      global._usersIndexesReady = null; // 실패 시 다음 요청에서 재시도
+    });
+  }
+  await global._usersIndexesReady;
+
   if (!global._reviewsIndexesReady) {
     global._reviewsIndexesReady = ensureReviewIndexes(db).catch((e) => {
       console.error('[reviews] ensureReviewIndexes failed', e);
-      // 실패 시 다음 요청에서 재시도
       global._reviewsIndexesReady = null;
     });
   }
-  await global._reviewsIndexesReady; // 실패했어도 다음 요청에서 재시도됨
+  await global._reviewsIndexesReady;
 
   return db;
 }

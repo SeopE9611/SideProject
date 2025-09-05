@@ -1,20 +1,20 @@
+// app/api/users/me/route.ts
 // JWT 기반 사용자 인증 API (GET: 내 정보 조회 / PATCH: 내 정보 수정)
+
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server'; // 요청/응답 객체
-import jwt from 'jsonwebtoken'; // JWT 해석 및 검증용
-import clientPromise from '@/lib/mongodb'; // MongoDB 연결
-import { ObjectId } from 'mongodb'; // 사용자 _id 타입
-import { getUserByEmail } from '@/lib/user-service'; // 이메일로 사용자 조회
+import { NextRequest, NextResponse } from 'next/server';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { ObjectId } from 'mongodb';
+import { getDb } from '@/lib/mongodb';
 
 // 환경변수에서 JWT 비밀키 로딩
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
 // GET: 현재 로그인한 사용자 정보 조회
-
 export async function GET() {
   // 서버 쿠키 저장소에서 accessToken 읽기
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('accessToken')?.value;
+  const jar = await cookies();
+  const accessToken = jar.get('accessToken')?.value;
 
   // accessToken이 없으면 인증 실패
   if (!accessToken) {
@@ -23,42 +23,56 @@ export async function GET() {
   }
 
   try {
-    // JWT 디코딩 (payload에는 email 포함)
-    const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as { email: string };
+    // sub(= user._id)를 사용
+    const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as JwtPayload;
+    const sub = decoded?.sub as string | undefined;
+    if (!sub) {
+      // 구 토큰 등에서 email만 담겼다면 과도기적으로 email fallback을 두어도 됨.
+      // 여기서는 정책을 명확히 하기 위해 sub 없으면 401 처리.
+      return NextResponse.json({ error: 'Invalid token (no sub)' }, { status: 401 });
+    }
 
-    // 이메일로 사용자 조회
-    const user = await getUserByEmail(decoded.email);
+    const db = await getDb();
+    const user = await db.collection('users').findOne(
+      { _id: new ObjectId(sub) },
+      {
+        projection: {
+          hashedPassword: 0,
+        },
+      }
+    );
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-
     // 프론트에 노출 가능한 필드만 전달
-    const safeUser = {
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      phone: user.phone,
-      address: user.address,
-      addressDetail: user.addressDetail,
-      postalCode: user.postalCode,
-      // marketing: user.marketing,
-    };
 
-    return NextResponse.json(safeUser);
-  } catch (error) {
-    console.error('[API users/me] Token error:', error);
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    return NextResponse.json({
+      id: user._id.toString(),
+      name: user.name ?? null,
+      email: user.email ?? null,
+      role: user.role ?? 'user',
+      phone: user.phone ?? null,
+      address: user.address ?? null,
+      addressDetail: user.addressDetail ?? null,
+      postalCode: user.postalCode ?? null,
+    });
+  } catch (err: any) {
+    // 토큰 오류(만료/변조)
+    if (err?.name === 'JsonWebTokenError' || err?.name === 'TokenExpiredError') {
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+    }
+    // DB/네트워크 오류
+    console.error('[API users/me] DB error:', err);
+    return NextResponse.json({ error: 'DB unavailable' }, { status: 503 });
   }
 }
 
 // PATCH: 현재 로그인한 사용자의 정보 수정 요청
-
 export async function PATCH(req: NextRequest) {
   // accessToken 쿠키 읽기
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('accessToken')?.value;
+  const jar = await cookies();
+  const accessToken = jar.get('accessToken')?.value;
 
   // 인증되지 않은 요청
   if (!accessToken) {
@@ -66,33 +80,40 @@ export async function PATCH(req: NextRequest) {
   }
 
   // JWT 검증
-  let payload: { sub: string }; // sub: user._id
+  let payload: JwtPayload;
   try {
-    payload = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as { sub: string };
-  } catch (e) {
+    payload = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as JwtPayload;
+  } catch {
     return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
   }
 
-  // 사용자로부터 전달받은 수정 내용
-  const { name, phone, postalCode, address, addressDetail, marketing } = await req.json();
+  const sub = payload?.sub as string | undefined;
+  if (!sub) {
+    return NextResponse.json({ error: 'Invalid token (no sub)' }, { status: 401 });
+  }
 
-  // MongoDB 연결 후 사용자 정보 업데이트
-  const client = await clientPromise;
-  const db = client.db();
+  const { name, phone, postalCode, address, addressDetail /*, marketing*/ } = await req.json();
 
-  await db.collection('users').updateOne(
-    { _id: new ObjectId(payload.sub) },
-    {
-      $set: {
-        name,
-        phone,
-        postalCode,
-        address,
-        addressDetail,
-        // marketing,
-      },
-    }
-  );
+  try {
+    const db = await getDb();
+    await db.collection('users').updateOne(
+      { _id: new ObjectId(sub) },
+      {
+        $set: {
+          ...(name !== undefined && { name }),
+          ...(phone !== undefined && { phone }),
+          ...(postalCode !== undefined && { postalCode }),
+          ...(address !== undefined && { address }),
+          ...(addressDetail !== undefined && { addressDetail }),
+          // ...(marketing !== undefined && { marketing }),
+          updatedAt: new Date(),
+        },
+      }
+    );
 
-  return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('[API users/me] DB error:', err);
+    return NextResponse.json({ error: 'DB unavailable' }, { status: 503 });
+  }
 }

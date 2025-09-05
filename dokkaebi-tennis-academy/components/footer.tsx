@@ -47,7 +47,7 @@ const Footer = () => {
 
   return (
     <footer className="w-full bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[url('/abstract-geometric-pattern.png')] opacity-5"></div>
+      <div className="absolute inset-0 pointer-events-none opacity-5 bg-[radial-gradient(circle_at_20%_20%,theme(colors.slate.400/40),transparent_40%),radial-gradient(circle_at_80%_0%,theme(colors.purple.400/30),transparent_35%),radial-gradient(circle_at_0%_80%,theme(colors.blue.400/30),transparent_35%)]" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 sm:py-16 lg:py-20 relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-8">
