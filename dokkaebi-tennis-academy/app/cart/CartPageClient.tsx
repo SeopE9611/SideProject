@@ -343,22 +343,6 @@ export default function CartPageClient() {
                 </div>
                 <h2 className="mb-4 text-3xl font-bold text-slate-800 dark:text-slate-200">장바구니가 비어있습니다</h2>
                 <p className="mb-8 text-lg text-slate-600 dark:text-slate-400">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
-              </div>
-              <CardContent className="p-8">
-                <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="rounded-xl bg-blue-50 p-4 text-center dark:bg-blue-900/20">
-                    <Package className="mx-auto mb-2 h-8 w-8 text-blue-500" />
-                    <p className="text-sm font-medium">추천 상품</p>
-                  </div>
-                  <div className="rounded-xl bg-indigo-50 p-4 text-center dark:bg-indigo-900/20">
-                    <Star className="mx-auto mb-2 h-8 w-8 text-indigo-500" />
-                    <p className="text-sm font-medium">인기 상품</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 p-4 text-center dark:bg-slate-900/20">
-                    <Truck className="mx-auto mb-2 h-8 w-8 text-slate-500" />
-                    <p className="text-sm font-medium">빠른 배송</p>
-                  </div>
-                </div>
                 <Button
                   className="transform bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
                   size="lg"
@@ -370,7 +354,7 @@ export default function CartPageClient() {
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
-              </CardContent>
+              </div>
             </Card>
             <div className="mx-auto mt-8 max-w-2xl">
               <WishlistSidebar variant="inline" />
