@@ -177,6 +177,43 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
                 },
               },
             },
+
+            // 패스 운영 이력(연장+횟수조절) 변환
+            operationsHistory: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: { $ifNull: ['$passDoc.history', []] },
+                    as: 'h',
+                    cond: { $in: ['$$h.type', ['extend_expiry', 'adjust_sessions']] },
+                  },
+                },
+                as: 'h',
+                in: {
+                  id: { $toString: '$$h._id' },
+                  date: '$$h.at',
+                  // +N일 / +N회 뱃지 값
+                  extendedDays: {
+                    $cond: [
+                      { $eq: ['$$h.type', 'extend_expiry'] },
+                      {
+                        $cond: [{ $and: ['$$h.from', '$$h.to'] }, { $toInt: { $divide: [{ $subtract: ['$$h.to', '$$h.from'] }, 86400000] } }, { $ifNull: ['$$h.daysAdded', 0] }],
+                      },
+                      0,
+                    ],
+                  },
+                  extendedSessions: {
+                    $cond: [{ $eq: ['$$h.type', 'adjust_sessions'] }, { $ifNull: ['$$h.delta', 0] }, 0],
+                  },
+                  reason: { $ifNull: ['$$h.reason', ''] },
+                  adminName: { $ifNull: ['$$h.adminName', ''] },
+                  adminEmail: { $ifNull: ['$$h.adminEmail', ''] },
+                  from: { $ifNull: ['$$h.from', null] },
+                  to: { $ifNull: ['$$h.to', null] },
+                  eventType: '$$h.type',
+                },
+              },
+            },
           },
         },
 
@@ -276,6 +313,8 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
             usageHistory: '$usageHistory',
             history: '$history',
             passStatus: '$passStatusKo',
+            operationsHistory: '$operationsHistory',
+            extensionHistory: '$operationsHistory',
           },
         },
       ])

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, CreditCard, Package, User, Settings, Edit3, Clock, Target, MapPin, Phone, Mail, Plus, Minus, History, RotateCcw } from 'lucide-react';
@@ -16,7 +16,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { Skeleton } from '@/components/ui/skeleton';
 import useSWR from 'swr';
 import { parseISO, isValid, format } from 'date-fns';
-
+import { CalendarPlus, ChevronRight, User2 } from 'lucide-react';
 // 패키지 상세 정보 타입
 interface PackageDetail {
   id: string;
@@ -30,10 +30,8 @@ interface PackageDetail {
   purchaseDate: string;
   expiryDate: string;
 
-  // 🔁 여기! 주문 상태가 아니라 "패스 상태"로 받자
   passStatus: '활성' | '만료' | '일시정지' | '취소' | '대기';
 
-  // (필요하면 남겨둬도 됨)
   // status?: never;
 
   paymentStatus: '결제완료' | '결제대기' | '결제취소';
@@ -47,15 +45,25 @@ interface PackageDetail {
     description: string;
     adminNote?: string;
   }>;
-  extensionHistory: Array<{
-    id: string;
-    date: string;
-    extendedSessions: number;
-    extendedDays: number;
-    reason: string;
-    adminName: string;
-  }>;
+  // 운영 이력(연장/횟수조절) – API에서 operationsHistory로 내려옴
+  operationsHistory: OperationsHistoryItem[];
+
+  // 하위호환: 기존 extensionHistory를 쓰는 다른 코드를 optional로 남겨둠
+  extensionHistory?: OperationsHistoryItem[];
 }
+
+type OperationsHistoryItem = {
+  id: string;
+  date: string;
+  extendedSessions?: number; // +N회 / -N회
+  extendedDays?: number; // +N일
+  reason?: string;
+  adminName?: string;
+  adminEmail?: string;
+  from?: string | null; // 이전 만료일(있으면 표시)
+  to?: string | null; // 이후 만료일(있으면 표시)
+  eventType?: 'extend_expiry' | 'adjust_sessions';
+};
 
 // 패키지 상태별 색상
 const packageStatusColors: Record<PackageDetail['passStatus'], string> = {
@@ -98,6 +106,86 @@ const daysUntil = (v: string | Date | null | undefined) => {
   return Math.max(0, Math.ceil(diffMs / 86400000));
 };
 
+function fmtDate(v?: string | Date | null) {
+  if (!v) return '-';
+  try {
+    return new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium' }).format(new Date(v));
+  } catch {
+    return String(v);
+  }
+}
+function fmtDateTime(v?: string | Date | null) {
+  if (!v) return '-';
+  try {
+    return new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(v));
+  } catch {
+    return String(v);
+  }
+}
+
+function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
+  if (!items || items.length === 0) {
+    return <div className="py-8 text-center text-sm text-muted-foreground">운영 내역이 없습니다.</div>;
+  }
+
+  return (
+    <ol className="relative ml-1">
+      {items.map((it) => {
+        const adminLabel = it.adminName || it.adminEmail || '관리자';
+
+        // 유형 판별
+        const isExtend = it.eventType === 'extend_expiry' || (typeof it.extendedDays === 'number' && it.extendedDays !== 0);
+        const isAdjust = it.eventType === 'adjust_sessions' || (typeof it.extendedSessions === 'number' && it.extendedSessions !== 0);
+
+        // 칩 텍스트
+        const chips: string[] = [];
+        if (isExtend) chips.push(`${it.extendedDays! > 0 ? '+' : ''}${it.extendedDays ?? 0}일 연장`);
+        if (isAdjust) chips.push(`${it.extendedSessions! > 0 ? '+' : ''}${it.extendedSessions ?? 0}회 ${it.extendedSessions! >= 0 ? '증가' : '감소'}`);
+
+        // 스타일 (점/헤더색)
+        const dotCls = isExtend ? 'bg-emerald-500' : it.extendedSessions! < 0 ? 'bg-red-500' : 'bg-blue-500';
+        const headTextCls = isExtend ? 'text-emerald-700' : it.extendedSessions! < 0 ? 'text-red-700' : 'text-blue-700';
+
+        return (
+          <li key={it.id} className="pl-8 py-4 border-l border-border relative">
+            <span className={`absolute -left-[7px] top-6 h-3 w-3 rounded-full ${dotCls} shadow`} />
+
+            <div className={`flex items-center gap-2 text-sm ${headTextCls}`}>
+              {isExtend ? <CalendarPlus className="h-4 w-4" /> : <Target className="h-4 w-4" />}
+              <span className="font-medium">{chips.length ? chips.join(' · ') : '운영 기록'}</span>
+            </div>
+
+            {isExtend
+              ? (it.from || it.to) && (
+                  <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+                    <span>{fmtDate(it.from ?? null)}</span>
+                    <ChevronRight className="h-4 w-4" />
+                    <span className="font-medium text-foreground">{fmtDate(it.to ?? null)}</span>
+                  </div>
+                )
+              : (typeof it.from === 'number' || typeof it.to === 'number') && (
+                  <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+                    <span>{typeof it.from === 'number' ? `${it.from}회` : '-'}</span>
+                    <ChevronRight className="h-4 w-4" />
+                    <span className="font-medium text-foreground">{typeof it.to === 'number' ? `${it.to}회` : '-'}</span>
+                  </div>
+                )}
+
+            {it.reason && <p className="mt-2 whitespace-pre-wrap text-[13px] leading-5">{it.reason}</p>}
+
+            <div className="mt-2 text-xs text-muted-foreground flex items-center gap-2">
+              <User2 className="h-3.5 w-3.5" />
+              <span>처리자: {adminLabel}</span>
+              <span>·</span>
+              <span>{fmtDateTime(it.date)}</span>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 export default function PackageDetailClient({ packageId }: Props) {
   const router = useRouter();
 
@@ -121,11 +209,28 @@ export default function PackageDetailClient({ packageId }: Props) {
   });
 
   // SWR로 실데이터 호출
-  const { data: resp, error, isLoading } = useSWR<{ item: PackageDetail }>(`/api/package-orders/${packageId}`, fetcher);
+  const { data: resp, error, isLoading, mutate } = useSWR<{ item: PackageDetail }>(`/api/package-orders/${packageId}`, fetcher, { revalidateOnFocus: false });
 
   const data = resp?.item;
   const usageHistory = Array.isArray(data?.usageHistory) ? data!.usageHistory : [];
   const extensionHistory = Array.isArray(data?.extensionHistory) ? data!.extensionHistory : [];
+  // 운영 이력(연장/횟수) 통합: 신(operationsHistory) 우선, 없으면 구(extensionHistory) 사용
+  const operationsHistory = Array.isArray(data?.operationsHistory) ? data!.operationsHistory : Array.isArray(data?.extensionHistory) ? data!.extensionHistory : [];
+
+  // 최초 5개만 보여주고 '더 보기'로 5개씩 추가
+  const [opsLimit, setOpsLimit] = useState(5);
+
+  // 페이지/아이템 교체 시 초기화
+  useEffect(() => {
+    setOpsLimit(5);
+  }, [data?.id]);
+
+  // 최신순 정렬(내림차순)
+  const operationsHistorySorted = [...operationsHistory].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  // 화면에 보여줄 슬라이스
+  const visibleOps = operationsHistorySorted.slice(0, opsLimit);
+  const opsHasMore = operationsHistorySorted.length > opsLimit;
 
   // 로딩/에러 처리
   if (isLoading) {
@@ -179,9 +284,7 @@ export default function PackageDetailClient({ packageId }: Props) {
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
 
   // 진행률 계산
-  const getProgressPercentage = (used: number, total: number) => {
-    return Math.round((used / total) * 100);
-  };
+  const getProgressPercentage = (used: number, total: number) => (total > 0 ? Math.round((used / total) * 100) : 0);
 
   // 만료일까지 남은 일수 계산
   const getDaysUntilExpiry = (expiryDate: string) => {
@@ -208,10 +311,28 @@ export default function PackageDetailClient({ packageId }: Props) {
       return;
     }
 
-    // 실제 구현에서는 API 호출
-    toast.success('패키지가 연장되었습니다.');
-    setShowExtensionForm(false);
-    setExtensionData({ sessions: 0, days: 0, reason: '' });
+    try {
+      const res = await fetch(`/api/package-orders/${packageId}/extend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: extensionData.days > 0 ? 'days' : 'absolute',
+          days: extensionData.days > 0 ? extensionData.days : undefined,
+          newExpiry: extensionData.days > 0 ? undefined : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // fallback absolute 예시
+          reason: extensionData.reason,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || '연장에 실패했습니다.');
+      }
+      await mutate(); // 최신 데이터 갱신
+      toast.success('패키지가 연장되었습니다.');
+      setShowExtensionForm(false);
+      setExtensionData({ sessions: 0, days: 0, reason: '' });
+    } catch (e: any) {
+      toast.error(e?.message || '연장 중 오류가 발생했습니다.');
+    }
   };
 
   // 횟수 조절 처리
@@ -226,13 +347,32 @@ export default function PackageDetailClient({ packageId }: Props) {
       return;
     }
 
-    // 실제 구현에서는 API 호출
-    toast.success('횟수가 조절되었습니다.');
-    setEditingSessions(false);
-    setSessionAdjustment({ amount: 0, reason: '' });
+    try {
+      const res = await fetch(`/api/package-orders/${packageId}/adjust-sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          delta: sessionAdjustment.amount,
+          clampZero: true,
+          reason: sessionAdjustment.reason,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || '횟수 조절에 실패했습니다.');
+      }
+      await mutate();
+      toast.success('횟수가 조절되었습니다.');
+      setEditingSessions(false);
+      setSessionAdjustment({ amount: 0, reason: '' });
+    } catch (e: any) {
+      toast.error(e?.message || '횟수 조절 중 오류가 발생했습니다.');
+    }
   };
 
-  const progressPercentage = getProgressPercentage(data.usedSessions, data.totalSessions);
+  // 진행률계산을 "사용 + 남은"을 분모로 계산
+  const progressPercentage = getProgressPercentage(data.usedSessions, data.usedSessions + data.remainingSessions);
+
   const daysUntilExpiry = getDaysUntilExpiry(data.expiryDate);
 
   return (
@@ -451,31 +591,42 @@ export default function PackageDetailClient({ packageId }: Props) {
               <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
                 <CardTitle className="flex items-center space-x-2">
                   <Clock className="h-5 w-5 text-purple-600" />
-                  <span>연장 내역</span>
+                  <span>운영 내역 (연장/횟수)</span>
                 </CardTitle>
-                <CardDescription>패키지 연장 처리 기록입니다.</CardDescription>
+                <CardDescription className="mt-1">패키지 연장 및 횟수 조절 기록입니다.</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
-                {extensionHistory.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">연장 내역이 없습니다.</p>
-                ) : (
-                  <div className="space-y-4">
-                    {extensionHistory.map((extension) => (
-                      <div key={extension.id} className="border border-gray-200 rounded-lg p-4 bg-green-50">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              {extension.extendedSessions > 0 && <Badge className="bg-green-100 text-green-800 text-xs">+{extension.extendedSessions}회 추가</Badge>}
-                              {extension.extendedDays > 0 && <Badge className="bg-blue-100 text-blue-800 text-xs">+{extension.extendedDays}일 연장</Badge>}
-                            </div>
-                            <p className="font-medium text-gray-900 mb-1">{extension.reason}</p>
-                            <p className="text-sm text-gray-600">{formatDate(extension.date)}</p>
-                            <p className="text-sm text-gray-600">처리자: {extension.adminName}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                <span className="text-xs text-muted-foreground">
+                  총 {operationsHistorySorted.length}건 (현재 {visibleOps.length}건 표시)
+                </span>
+                {operationsHistorySorted.length > 0 && (
+                  <div className="mb-2 flex justify-end">
+                    <span className="text-xs text-muted-foreground">총 {operationsHistorySorted.length}건이 검색되었습니다.</span>
                   </div>
+                )}
+                {operationsHistorySorted.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">운영 내역이 없습니다.</p>
+                ) : (
+                  <>
+                    {/* 리스트: 현재 슬라이스만 */}
+                    <ExtensionHistoryList items={visibleOps} />
+
+                    {/* 더 보기 / 접기 */}
+                    <div className="pt-4 flex justify-center items-center gap-2">
+                      {opsHasMore ? (
+                        <Button variant="outline" size="sm" onClick={() => setOpsLimit((n) => n + 5)}>
+                          더 보기
+                        </Button>
+                      ) : operationsHistorySorted.length > 5 ? (
+                        <>
+                          <p className="text-xs text-muted-foreground">마지막 페이지입니다.</p>
+                          <Button variant="ghost" size="sm" onClick={() => setOpsLimit(5)}>
+                            접기
+                          </Button>
+                        </>
+                      ) : null}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -487,13 +638,9 @@ export default function PackageDetailClient({ packageId }: Props) {
               <Card className="w-full max-w-md mx-4">
                 <CardHeader>
                   <CardTitle>패키지 연장</CardTitle>
-                  <CardDescription>패키지의 횟수나 유효기간을 연장할 수 있습니다.</CardDescription>
+                  <CardDescription>패키지의 유효기간을 연장할 수 있습니다.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="sessions">추가 횟수</Label>
-                    <Input id="sessions" type="number" min="0" value={extensionData.sessions} onChange={(e) => setExtensionData((prev) => ({ ...prev, sessions: Number.parseInt(e.target.value) || 0 }))} placeholder="추가할 횟수를 입력하세요" />
-                  </div>
                   <div>
                     <Label htmlFor="days">연장 일수</Label>
                     <Input id="days" type="number" min="0" value={extensionData.days} onChange={(e) => setExtensionData((prev) => ({ ...prev, days: Number.parseInt(e.target.value) || 0 }))} placeholder="연장할 일수를 입력하세요" />
