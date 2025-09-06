@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from '@/lib/constants';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
+import { baseCookie } from '@/lib/cookieOptions';
 
 export async function POST() {
   const cookieStore = await cookies();
@@ -34,21 +35,17 @@ export async function POST() {
   const newRefreshToken = jwt.sign({ sub: decoded.sub }, REFRESH_TOKEN_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN });
 
   // 쿠키에 다시 심어서 만료시간 연장
-  const res = NextResponse.json({ accessToken: newAccessToken }, { status: 200 });
-  // accessToken 쿠키 갱신
+  const res = NextResponse.json({ success: true }, { status: 200 });
+
+  //  AccessToken 쿠키 갱신
   res.cookies.set('accessToken', newAccessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
+    ...baseCookie,
     maxAge: ACCESS_TOKEN_EXPIRES_IN,
   });
-  // refreshToken 슬라이딩 로테이션(원하면)
+
+  //  RefreshToken 쿠키 갱신 (슬라이딩 로테이션)
   res.cookies.set('refreshToken', newRefreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
+    ...baseCookie,
     maxAge: REFRESH_TOKEN_EXPIRES_IN,
   });
 

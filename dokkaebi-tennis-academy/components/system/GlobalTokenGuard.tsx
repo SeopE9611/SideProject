@@ -3,16 +3,16 @@
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
 
-// 부트스트랩은 딱 한 번만 실행
+// 부트스트랩은 탭당 딱 한 번만 실행
 export default function GlobalTokenGuard() {
-  const { user, setUser } = useAuthStore(); // 셀렉터 인자 없이 호출
-  const started = useRef(false); // React StrictMode로 인한 2회 실행 방지
+  const { user, setUser } = useAuthStore();
+  const started = useRef(false);
 
   useEffect(() => {
-    if (started.current) return; // 이미 시작했으면 무시
+    if (started.current) return;
     started.current = true;
 
-    // 서버 레이아웃(AuthHydrator)이 이미 user를 주입했다면 아무 것도 안 함
+    // 서버(AuthHydrator)에서 이미 주입됐다면 아무것도 안 함
     if (user) return;
 
     let alive = true;
@@ -32,8 +32,8 @@ export default function GlobalTokenGuard() {
           return;
         }
 
-        // 401이면: refresh 1회 → me 재시도
-        if (res.status === 401) {
+        //  401/403일 때만 refresh 시도
+        if (res.status === 401 || res.status === 403) {
           const r = await fetch('/api/refresh', {
             method: 'POST',
             credentials: 'include',
@@ -52,20 +52,20 @@ export default function GlobalTokenGuard() {
               return;
             }
           }
-
-          // refresh 실패 또는 재시도 실패 → 비로그인으로 간주
-          setUser(null);
         }
+
+        // 여기까지 오면 로그인 실패로 간주
+        setUser(null);
       } catch {
-        // 네트워크 오류는 조용히 무시 (user는 그대로)
+        // 네트워크 오류는 조용히 무시
       }
     })();
 
     return () => {
-      alive = false; // 언마운트 시 fetch 결과 무시
+      alive = false;
     };
-    // 의존성배열 - 의도적으로 빈 배열: "한 번만" 실행
-  }, []);
+    // 의도적으로 빈 배열: 마운트 때 한 번만
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return null;
 }

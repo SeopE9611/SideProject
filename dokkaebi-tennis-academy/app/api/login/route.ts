@@ -4,6 +4,7 @@ import { getUserByEmail, verifyPassword } from '@/lib/user-service';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from '@/lib/constants';
 import { getDb } from '@/lib/mongodb';
 import { autoLinkStringingByEmail } from '@/lib/claims';
+import { baseCookie } from '@/lib/cookieOptions';
 
 // // JWT 비밀 키 불러오기 (환경 변수에서 설정)
 // const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
@@ -57,22 +58,14 @@ export async function POST(req: Request) {
   // JSON 응답: 토큰은 쿠키로만 전달하므로 success만 반환
   const response = NextResponse.json({ success: true });
 
-  // AccessToken을 HttpOnly 쿠키에 저장
   response.cookies.set('accessToken', accessToken, {
-    httpOnly: true, // JS에서 접근 불가 (XSS 방지용)
-    secure: process.env.NODE_ENV === 'production', // 로컬 http 개발에서도 쿠키가 안정적으로 심기고/지워지게 설정
-    path: '/', // 사이트 전체에 쿠키 포함
-    maxAge: ACCESS_TOKEN_EXPIRES_IN, // 쿠키 만료 시간: 1시간
-    sameSite: 'lax', // CSRF 방지 기본 설정
+    ...baseCookie,
+    maxAge: ACCESS_TOKEN_EXPIRES_IN,
   });
 
-  // RefreshToken도 HttpOnly 쿠키로 저장
   response.cookies.set('refreshToken', refreshToken, {
-    httpOnly: true, // 마찬가지로 JS 접근 불가
-    secure: process.env.NODE_ENV === 'production', // 로컬 http 개발에서도 쿠키가 안정적으로 심기고/지워지게 설정
-    path: '/', // 전역 쿠키
-    maxAge: REFRESH_TOKEN_EXPIRES_IN, // 7일 유효
-    sameSite: 'lax', // 기본 CSRF 보호
+    ...baseCookie,
+    maxAge: REFRESH_TOKEN_EXPIRES_IN,
   });
 
   // 토큰 쿠키 세팅 직후, 현재 계정 이메일로 게스트 신청서 자동 귀속
