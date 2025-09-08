@@ -6,6 +6,11 @@ import { useAuthStore } from '@/app/store/authStore';
 // 부트스트랩은 탭당 딱 한 번만 실행
 export default function GlobalTokenGuard() {
   const { user, setUser } = useAuthStore();
+  // 최신 user 스냅샷을 들고 있어 실패 경로에서 덮어쓰는 걸 막음
+  const latestUser = useRef(user);
+  useEffect(() => {
+    latestUser.current = user;
+  }, [user]);
   const started = useRef(false);
 
   useEffect(() => {
@@ -54,8 +59,8 @@ export default function GlobalTokenGuard() {
           }
         }
 
-        // 여기까지 오면 로그인 실패로 간주
-        setUser(null);
+        // 이미 다른 경로에서 user가 채워졌다면 덮어쓰지 않음
+        if (!latestUser.current) setUser(null);
       } catch {
         // 네트워크 오류는 조용히 무시
       }

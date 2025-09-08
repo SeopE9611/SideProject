@@ -15,6 +15,10 @@ export function useCurrentUser(): {
   const { user, setUser } = useAuthStore();
   const inFlight = useRef<Promise<void> | null>(null);
   const bootstrapped = useRef(false);
+  const latestUser = useRef(user);
+  useEffect(() => {
+    latestUser.current = user;
+  }, [user]);
 
   const refresh = useCallback(async () => {
     if (inFlight.current) return inFlight.current;
@@ -41,8 +45,8 @@ export function useCurrentUser(): {
             }
           }
         }
-        // 실패 → 명시적 비로그인
-        setUser(null);
+        // 실패 -> 명시적 비로그인 처리하되, 이미 user가 채워진 상태라면 보존
+        if (!latestUser.current) setUser(null);
         bootstrapped.current = true;
       } catch {
         // 네트워크 오류는 조용히
@@ -57,5 +61,6 @@ export function useCurrentUser(): {
     if (!bootstrapped.current) void refresh();
   }, [refresh]);
 
-  return { user, loading: false, refresh };
+  const loading = !bootstrapped.current || !!inFlight.current;
+  return { user, loading, refresh };
 }
