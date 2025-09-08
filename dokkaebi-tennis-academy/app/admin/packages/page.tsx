@@ -262,6 +262,18 @@ export default function PackageOrdersClient() {
     return Math.round((used / total) * 100);
   };
 
+  // 진행률을 상세 화면과 동일하게 계산: used / (used + remaining)
+  // - 분모가 0인 경우 0%
+  // - 값은 0~100 사이로 클램프
+  function calcProgressPercent(usedRaw: unknown, remainingRaw: unknown) {
+    const used = Math.max(0, Number(usedRaw) || 0); // 사용횟수(음수 방지)
+    const remaining = Math.max(0, Number(remainingRaw) || 0); // 남은횟수(음수 방지)
+    const total = used + remaining; // 현재 총량(연장/횟수조절 반영)
+    if (total <= 0) return { percent: 0, used, remaining, total };
+    const percent = Math.min(100, Math.max(0, Math.round((used / total) * 100)));
+    return { percent, used, remaining, total };
+  }
+
   // 만료일까지 남은 일수 계산
   const getDaysUntilExpiry = (v?: string | Date | null) => {
     const d = toDateSafe(v);
@@ -474,9 +486,8 @@ export default function PackageOrdersClient() {
                       </TableRow>
                     ) : (
                       sortedPackages.map((pkg) => {
-                        const progressPercentage = getProgressPercentage(pkg.usedSessions, pkg.totalSessions);
+                        const { percent: progressPercentage, total: currentTotal } = calcProgressPercent(pkg.usedSessions, pkg.remainingSessions);
                         const daysUntilExpiry = getDaysUntilExpiry(pkg.expiryDate);
-
                         return (
                           <TableRow key={pkg.id} className="hover:bg-muted/50 transition-colors">
                             <TableCell className={tdClasses}>
@@ -534,7 +545,7 @@ export default function PackageOrdersClient() {
                             <TableCell className={tdClasses}>
                               <div className="flex flex-col items-center">
                                 <span className="font-bold text-lg">{pkg.remainingSessions}</span>
-                                <span className="text-xs text-muted-foreground">/ {pkg.totalSessions}회</span>
+                                <span className="text-xs text-muted-foreground">/ {currentTotal}회</span>
                               </div>
                             </TableCell>
 
