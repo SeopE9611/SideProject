@@ -18,6 +18,8 @@ import useSWR from 'swr';
 import { parseISO, isValid, format } from 'date-fns';
 import { CalendarPlus, ChevronRight, User2, Loader2 } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import PackagePaymentStatusSelect from '@/app/features/packages/components/PackagePaymentStatusSelect';
+import PackagePassStatusSelect from '@/app/features/packages/components/PackagePassStatusSelect';
 
 // 패키지 상세 정보 타입
 interface PackageDetail {
@@ -64,7 +66,8 @@ type OperationsHistoryItem = {
   adminEmail?: string;
   from?: string | null; // 이전 만료일(있으면 표시)
   to?: string | null; // 이후 만료일(있으면 표시)
-  eventType?: 'extend_expiry' | 'adjust_sessions';
+  paymentStatus?: '결제대기' | '결제완료' | '결제취소' | '취소';
+  eventType?: 'extend_expiry' | 'adjust_sessions' | 'payment_status_change';
 };
 
 // 패키지 상태별 색상
@@ -72,7 +75,7 @@ const packageStatusColors: Record<PackageDetail['passStatus'], string> = {
   활성: 'bg-green-100 text-green-800 border-green-200',
   만료: 'bg-red-100 text-red-800 border-red-200',
   일시정지: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  취소: 'bg-gray-100 text-gray-800 border-gray-200',
+  취소: 'bg-red-100 text-red-800 border-red-200',
   대기: 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
@@ -138,22 +141,45 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
         // 유형 판별
         const isExtend = it.eventType === 'extend_expiry' || (typeof it.extendedDays === 'number' && it.extendedDays !== 0);
         const isAdjust = it.eventType === 'adjust_sessions' || (typeof it.extendedSessions === 'number' && it.extendedSessions !== 0);
+        const isPayment = it.eventType === 'payment_status_change' || !!it.paymentStatus;
 
         // 칩 텍스트
         const chips: string[] = [];
         if (isExtend) chips.push(`${it.extendedDays! > 0 ? '+' : ''}${it.extendedDays ?? 0}일 연장`);
         if (isAdjust) chips.push(`${it.extendedSessions! > 0 ? '+' : ''}${it.extendedSessions ?? 0}회 ${it.extendedSessions! >= 0 ? '증가' : '감소'}`);
+        if (isPayment && it.paymentStatus) chips.push(`결제상태: ${it.paymentStatus}`);
 
         // 스타일 (점/헤더색)
-        const dotCls = isExtend ? 'bg-emerald-500' : it.extendedSessions! < 0 ? 'bg-red-500' : 'bg-blue-500';
-        const headTextCls = isExtend ? 'text-emerald-700' : it.extendedSessions! < 0 ? 'text-red-700' : 'text-blue-700';
+        const dotCls = isPayment
+          ? it.paymentStatus === '결제완료'
+            ? 'bg-blue-500'
+            : it.paymentStatus === '결제취소' || it.paymentStatus === '취소'
+            ? 'bg-red-500'
+            : 'bg-amber-500'
+          : isExtend
+          ? 'bg-emerald-500'
+          : it.extendedSessions! < 0
+          ? 'bg-red-500'
+          : 'bg-blue-500';
+
+        const headTextCls = isPayment
+          ? it.paymentStatus === '결제완료'
+            ? 'text-blue-700'
+            : it.paymentStatus === '결제취소' || it.paymentStatus === '취소'
+            ? 'text-red-700'
+            : 'text-amber-700'
+          : isExtend
+          ? 'text-emerald-700'
+          : it.extendedSessions! < 0
+          ? 'text-red-700'
+          : 'text-blue-700';
 
         return (
           <li key={it.id} className="pl-8 py-4 border-l border-border relative">
             <span className={`absolute -left-[7px] top-6 h-3 w-3 rounded-full ${dotCls} shadow`} />
 
             <div className={`flex items-center gap-2 text-sm ${headTextCls}`}>
-              {isExtend ? <CalendarPlus className="h-4 w-4" /> : <Target className="h-4 w-4" />}
+              {isPayment ? <CreditCard className="h-4 w-4" /> : isExtend ? <CalendarPlus className="h-4 w-4" /> : <Target className="h-4 w-4" />}
               <span className="font-medium">{chips.length ? chips.join(' · ') : '운영 기록'}</span>
             </div>
 
@@ -384,6 +410,14 @@ export default function PackageDetailClient({ packageId }: Props) {
   // 진행률계산을 "사용 + 남은"을 분모로 계산
   const progressPercentage = getProgressPercentage(data.usedSessions, data.usedSessions + data.remainingSessions);
   const daysUntilExpiry = getDaysUntilExpiry(data.expiryDate);
+  const isPaid = data.paymentStatus === '결제완료';
+  const isCancelled = data.passStatus === '취소';
+  const isExpired = daysUntilExpiry <= 0;
+
+  // 연장/조절 버튼 활성화 조건
+  const canExtend = isPaid && !isCancelled; // 만료든 아니든 결제완료면 연장 가능
+  const canAdjust = isPaid && !isCancelled && !isExpired; // 만료면 조절 비활성
+
   // 연장 프리뷰 계산: (현재 만료일이 미래면 그 날짜 기준, 이미 지났으면 오늘 기준)
   const currentExpiryDate = data?.expiryDate ? new Date(data.expiryDate) : null;
   const baseForPreview = (() => {
@@ -520,12 +554,12 @@ export default function PackageDetailClient({ packageId }: Props) {
                   {/* 패키지 상태 카드 내부 */}
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm text-gray-600">현재 상태</span>
-                    <Badge className={packageStatusColors[data.passStatus] ?? packageStatusColors['대기']}>{data.passStatus}</Badge>
+                    <Badge className={packageStatusColors[data.passStatus]}>{data.passStatus === '대기' ? '비활성' : data.passStatus}</Badge>
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm text-gray-600">결제 상태</span>
-                    <Badge className={paymentStatusColors[data.paymentStatus]}>{data.paymentStatus}</Badge>
+                    <PackagePaymentStatusSelect orderId={packageId} currentStatus={data.paymentStatus ?? '결제대기'} onUpdated={() => mutate()} />
                   </div>
 
                   <div className="p-3 bg-gray-50 rounded-lg">
@@ -549,14 +583,18 @@ export default function PackageDetailClient({ packageId }: Props) {
                     </div>
                   </div>
                 </div>
+                {!isPaid && data.paymentStatus !== '결제취소' && <p className="mt-2 text-xs text-amber-600">결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.</p>}
+                {isCancelled && <p className="mt-2 text-xs text-red-600">결제취소 상태이므로 모든 작업이 비활성화되었습니다.</p>}
+                {isExpired && isPaid && !isCancelled && <p className="mt-2 text-xs text-slate-600">만료된 패스는 연장만 가능합니다.</p>}
               </CardContent>
+
               {isEditMode && (
                 <CardFooter className="flex justify-center gap-2 bg-gray-50/50">
-                  <Button variant="outline" size="sm" onClick={() => setShowExtensionForm(true)} className="hover:bg-green-50 border-green-200">
+                  <Button variant="outline" size="sm" disabled={!canExtend} onClick={() => setShowExtensionForm(true)} className="hover:bg-green-50 border-green-200">
                     <RotateCcw className="mr-1 h-4 w-4" />
                     패키지 연장
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setEditingSessions(true)} className="hover:bg-blue-50 border-blue-200">
+                  <Button variant="outline" size="sm" disabled={!canAdjust} onClick={() => setEditingSessions(true)} className="hover:bg-blue-50 border-blue-200">
                     <Target className="mr-1 h-4 w-4" />
                     횟수 조절
                   </Button>

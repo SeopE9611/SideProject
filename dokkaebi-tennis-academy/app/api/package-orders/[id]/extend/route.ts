@@ -20,6 +20,13 @@ type PassHistoryItem = {
   adminName?: string | null;
   delta?: number; // adjust_sessions용
 };
+
+type PassStatus = ServicePass['status'];
+const PASS_STATUS = {
+  active: 'active' as PassStatus,
+  paused: 'paused' as PassStatus,
+  cancelled: 'cancelled' as PassStatus,
+};
 // body: { mode: 'days'|'absolute', days?: number, newExpiry?: string, reason?: string }
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -59,7 +66,22 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     // 연결된 pass 찾기 (orderId = packageOrder._id)
     const passDoc = await passes.findOne({ orderId: _id });
-    if (!passDoc) return NextResponse.json({ error: 'service pass not found for this order' }, { status: 404 });
+    if (!passDoc) {
+      return NextResponse.json({ error: 'service pass not found for this order' }, { status: 404 });
+    }
+
+    const pkgOrder = await packageOrders.findOne({ _id });
+    if (!pkgOrder) {
+      return NextResponse.json({ error: 'order not found' }, { status: 404 });
+    }
+
+    if (pkgOrder.paymentStatus !== '결제완료') {
+      return NextResponse.json({ error: '결제완료 상태에서만 연장이 가능합니다.' }, { status: 409 });
+    }
+
+    if (passDoc.status === PASS_STATUS.cancelled) {
+      return NextResponse.json({ error: '취소된 패스입니다.' }, { status: 409 });
+    }
 
     const currentExpiry = passDoc.expiresAt ? new Date(passDoc.expiresAt) : null;
     let nextExpiry: Date;

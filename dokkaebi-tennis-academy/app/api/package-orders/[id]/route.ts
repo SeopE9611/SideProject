@@ -52,12 +52,25 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const packageOrders = db.collection<PackageOrder>('packageOrders');
 
     const body = await request.json();
-    const statusStr = String(body?.status ?? '');
+    const statusStr = String(body?.status ?? '').trim();
+    const reason = String(body?.reason ?? '').trim();
+
+    // 결제 계열 상태 집합과 paymentStatus 매핑(취소 -> 결제취소)
+    const paymentSet = new Set(['결제대기', '결제완료', '결제취소', '취소']);
+    const willSetPayment = paymentSet.has(statusStr);
+    const paymentToSet = statusStr === '취소' ? '결제취소' : statusStr; // 서버 저장은 결제취소로 통일
+
     const now = new Date();
     const _id = new ObjectId(id);
 
     const pkgOrder = await packageOrders.findOne({ _id });
     if (!pkgOrder) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
+
+    const prevPayment = pkgOrder.paymentStatus ?? '결제대기';
+    const adminLabel = String(user?.name ?? user?.email ?? user?.sub ?? '');
+    const historyDesc = willSetPayment
+      ? `결제 상태 ${prevPayment} → ${paymentToSet}` + (reason ? ` / 사유: ${reason}` : '') + (adminLabel ? ` / 관리자: ${adminLabel}` : '')
+      : `상태 변경: ${statusStr}` + (reason ? ` / 사유: ${reason}` : '') + (adminLabel ? ` / 관리자: ${adminLabel}` : '');
 
     await packageOrders.updateOne(
       { _id },
@@ -65,7 +78,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         $set: {
           status: statusStr,
           updatedAt: now,
-          ...(statusStr === '결제완료' ? { paymentStatus: '결제완료' } : {}),
+          ...(willSetPayment ? { paymentStatus: paymentToSet as any } : {}),
         },
         $push: {
           history: {
@@ -73,7 +86,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
               {
                 status: statusStr,
                 date: now,
-                description: `상태 변경: ${statusStr}`,
+                description: historyDesc,
               } satisfies PackageOrder['history'][number],
             ],
           },
@@ -178,8 +191,8 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
               },
             },
 
-            // 패스 운영 이력(연장+횟수조절) 변환
-            operationsHistory: {
+            // 패스 운영 이력(연장+횟수조절) 변환 + 결제상태 변경 합치기
+            passOps: {
               $map: {
                 input: {
                   $filter: {
@@ -210,9 +223,104 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
                   adminEmail: { $ifNull: ['$$h.adminEmail', ''] },
                   from: { $ifNull: ['$$h.from', null] },
                   to: { $ifNull: ['$$h.to', null] },
-                  eventType: '$$h.type',
+                  eventType: '$$h.type', // 'extend_expiry' | 'adjust_sessions'
                 },
               },
+            },
+
+            // 주문 히스토리 중 "결제상태" 변경만 따로 변환
+            paymentOps: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: { $ifNull: ['$history', []] },
+                    as: 'h',
+                    cond: { $in: ['$$h.status', ['결제대기', '결제완료', '결제취소', '취소']] },
+                  },
+                },
+                as: 'h',
+                in: {
+                  id: { $concat: ['pay-', { $toString: '$$h.date' }] },
+                  date: '$$h.date',
+                  extendedDays: 0,
+                  extendedSessions: 0,
+                  reason: { $ifNull: ['$$h.description', ''] },
+                  adminName: '',
+                  adminEmail: '',
+                  from: null,
+                  to: null,
+                  eventType: 'payment_status_change',
+                  paymentStatus: '$$h.status',
+                },
+              },
+            },
+
+            // 패스 운영 이력(연장+횟수조절) + 결제상태 변경 합치기
+            operationsHistory: {
+              $concatArrays: [
+                // 1) 결제 상태 변경 이벤트
+                {
+                  $map: {
+                    input: {
+                      $filter: {
+                        input: { $ifNull: ['$history', []] },
+                        as: 'h',
+                        cond: { $in: ['$$h.status', ['결제대기', '결제완료', '결제취소', '취소']] },
+                      },
+                    },
+                    as: 'h',
+                    in: {
+                      id: { $concat: ['pay-', { $toString: '$$h.date' }] },
+                      date: '$$h.date',
+                      extendedDays: 0,
+                      extendedSessions: 0,
+                      reason: { $ifNull: ['$$h.description', ''] },
+                      adminName: '',
+                      adminEmail: '',
+                      from: null,
+                      to: null,
+                      eventType: 'payment_status_change',
+                      paymentStatus: '$$h.status',
+                    },
+                  },
+                },
+
+                // 2) 패스 이력(연장/횟수조절)
+                {
+                  $map: {
+                    input: {
+                      $filter: {
+                        input: { $ifNull: ['$passDoc.history', []] },
+                        as: 'h',
+                        cond: { $in: ['$$h.type', ['extend_expiry', 'adjust_sessions']] },
+                      },
+                    },
+                    as: 'h',
+                    in: {
+                      id: { $toString: '$$h._id' },
+                      date: '$$h.at',
+                      extendedDays: {
+                        $cond: [
+                          { $eq: ['$$h.type', 'extend_expiry'] },
+                          {
+                            $cond: [{ $and: ['$$h.from', '$$h.to'] }, { $toInt: { $divide: [{ $subtract: ['$$h.to', '$$h.from'] }, 86400000] } }, { $ifNull: ['$$h.daysAdded', 0] }],
+                          },
+                          0,
+                        ],
+                      },
+                      extendedSessions: {
+                        $cond: [{ $eq: ['$$h.type', 'adjust_sessions'] }, { $ifNull: ['$$h.delta', 0] }, 0],
+                      },
+                      reason: { $ifNull: ['$$h.reason', ''] },
+                      adminName: { $ifNull: ['$$h.adminName', ''] },
+                      adminEmail: { $ifNull: ['$$h.adminEmail', ''] },
+                      from: { $ifNull: ['$$h.from', null] },
+                      to: { $ifNull: ['$$h.to', null] },
+                      eventType: '$$h.type', // 'extend_expiry' | 'adjust_sessions'
+                    },
+                  },
+                },
+              ],
             },
           },
         },
@@ -226,12 +334,15 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
                 in: {
                   $switch: {
                     branches: [
-                      { case: { $lte: ['$$exp', '$$NOW'] }, then: '만료' }, // 만료일이 지났다면 무조건 만료
-                      { case: { $eq: ['$passDoc.status', 'paused'] }, then: '일시정지' },
-                      { case: { $eq: ['$passDoc.status', 'cancelled'] }, then: '취소' },
-                      { case: { $eq: ['$passDoc.status', 'active'] }, then: '활성' },
+                      // 결제 취소면 무조건 '취소'
+                      { case: { $eq: ['$paymentStatus', '결제취소'] }, then: '취소' },
+                      // 만료일이 지났으면 '만료' (표시용 우선)
+                      { case: { $lte: ['$$exp', '$$NOW'] }, then: '만료' },
+                      // 결제 완료면 '활성'
+                      { case: { $eq: ['$paymentStatus', '결제완료'] }, then: '활성' },
                     ],
-                    default: { $cond: [{ $eq: ['$paymentStatus', '결제완료'] }, '활성', '대기'] },
+                    // 그 외는 '대기'(= 비활성)
+                    default: '대기',
                   },
                 },
               },
