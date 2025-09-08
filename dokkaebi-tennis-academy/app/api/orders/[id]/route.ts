@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { issuePassesForPaidOrder } from '@/lib/passes.service';
+import jwt from 'jsonwebtoken';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -129,44 +130,74 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+// ⚠️ 프로젝트에 이미 존재한다고 하신 유틸 그대로 사용
+
+// ✅ App Router 규약: params는 Promise가 아니라 "그냥 객체"로 받습니다.
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params;
-    // 전체 payload를 body에 저장
-    const body = await request.json();
-    // 필요한 필드만 꺼내기
+    // 파라미터/바디 파싱
+    const { id } = params; // 동적 세그먼트
+    const body = await request.json(); // 요청 바디
     const { status, cancelReason, cancelReasonDetail, payment, deliveryRequest, customer } = body;
+
     if (!ObjectId.isValid(id)) {
       return new NextResponse('유효하지 않은 주문 ID입니다.', { status: 400 });
     }
 
+    // DB/기존 주문 조회
     const client = await clientPromise;
     const db = client.db();
     const orders = db.collection('orders');
 
-    const existing = await orders.findOne({ _id: new ObjectId(id) });
+    const _id = new ObjectId(id); // ObjectId 한 번만 생성해서 재사용
+    const existing = await orders.findOne({ _id });
 
     if (!existing) {
       return new NextResponse('해당 주문을 찾을 수 없습니다.', { status: 404 });
     }
 
-    // 인증/보호 로직
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
-    const payload = token ? verifyAccessToken(token) : null;
+    // 인증/인가 가드
+    const jar = await cookies();
+    const at = jar.get('accessToken')?.value;
+    const rt = jar.get('refreshToken')?.value;
 
-    const isOwner = payload?.sub === existing.userId?.toString();
-    const isAdmin = payload?.role === 'admin';
+    // access 우선
+    let user: any = at ? verifyAccessToken(at) : null;
 
-    if (existing.userId && !isOwner && !isAdmin) {
+    // access 만료 시 refresh 보조 (쿠키 기반 JWT)
+    if (!user && rt) {
+      try {
+        user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);
+      } catch {
+        /* refresh도 실패시 아래에서 401 */
+      }
+    }
+
+    if (!user?.sub) {
+      return new NextResponse('인증이 필요합니다.', { status: 401 });
+    }
+
+    // 관리자 화이트리스트 ADMIN_EMAIL_WHITELIST="a@x.com,b@y.com"
+    const adminList = (process.env.ADMIN_EMAIL_WHITELIST || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const isOwner = user?.sub === existing.userId?.toString();
+    const isAdmin = user?.role === 'admin' || (user?.email && adminList.includes(user.email));
+
+    // 주문에 userId가 있을 때만 소유자 체크, 없으면(비회원 주문 등) 관리자만 허용
+    if (existing.userId ? !(isOwner || isAdmin) : !isAdmin) {
       return new NextResponse('권한이 없습니다.', { status: 403 });
     }
 
+    // 취소된 주문은 추가 변경 금지
     if (existing.status === '취소') {
       return new NextResponse('취소된 주문입니다.', { status: 400 });
     }
 
-    // 고객 정보 업데이트 분기
+    // 고객정보 수정 분기
+    // - 패스 발급은 여기서 하지 않도록 수정(아래 상태변경 분기로 이동)
     if (customer) {
       const updateFields = {
         customer: {
@@ -178,30 +209,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           postalCode: customer.postalCode,
         },
       };
+
       const historyEntry = {
         status: '고객정보수정',
         date: new Date(),
         description: '고객 정보가 업데이트되었습니다.',
       };
-      await orders.updateOne({ _id: new ObjectId(id) }, {
-        $set: updateFields,
-        $push: { history: historyEntry },
-      } as any);
 
-      // 상태가 '결제완료'로 변경되었다면, 패키지 패스 발급(멱등)
-      if (status === '결제완료') {
-        const updatedOrder = await orders.findOne({ _id: new ObjectId(id) });
-        const db = client.db();
-        await issuePassesForPaidOrder(db, updatedOrder);
-      }
+      await orders.updateOne({ _id }, { $set: updateFields, $push: { history: historyEntry } } as any);
 
-      // === 동기화: 연결된 스트링 신청서가 있으면 고객 정보도 반영 ===
+      // 연결된 스트링 신청서 동기화
       if ((existing as any).stringingApplicationId && ObjectId.isValid((existing as any).stringingApplicationId)) {
         const stringingColl = db.collection('stringing_applications');
-        await stringingColl.updateOne({ _id: new ObjectId((existing as any).stringingApplicationId) }, {
+        const appId = new ObjectId((existing as any).stringingApplicationId);
+        const prevApp = await stringingColl.findOne({ _id: appId }); // 한 번만 읽어서 재사용
+
+        await stringingColl.updateOne({ _id: appId }, {
           $set: {
             customer: {
-              ...((await stringingColl.findOne({ _id: new ObjectId((existing as any).stringingApplicationId) }))?.customer ?? {}),
+              ...(prevApp?.customer ?? {}),
               name: customer.name,
               email: customer.email,
               phone: customer.phone,
@@ -222,18 +248,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
       return NextResponse.json({ ok: true });
     }
+
     // 결제 금액 수정
     if (payment) {
       const { total } = payment;
       const historyEntry = {
         status: '결제금액수정',
         date: new Date(),
-        description: `결제 금액이 ${total.toLocaleString()}원(으)로 수정되었습니다.`,
+        description: `결제 금액이 ${Number(total).toLocaleString()}원(으)로 수정되었습니다.`,
       };
-      await orders.updateOne({ _id: new ObjectId(id) }, {
-        $set: { totalPrice: total },
-        $push: { history: historyEntry },
-      } as any);
+
+      await orders.updateOne({ _id }, { $set: { totalPrice: total }, $push: { history: historyEntry } } as any);
+
       return NextResponse.json({ ok: true });
     }
 
@@ -242,16 +268,24 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       const historyEntry = {
         status: '배송요청사항수정',
         date: new Date(),
-        description: `배송 요청사항이 수정되었습니다.`,
+        description: '배송 요청사항이 수정되었습니다.',
       };
-      await orders.updateOne({ _id: new ObjectId(id) }, {
-        $set: { 'shippingInfo.deliveryRequest': deliveryRequest },
-        $push: { history: historyEntry },
-      } as any);
+
+      await orders.updateOne({ _id }, { $set: { 'shippingInfo.deliveryRequest': deliveryRequest }, $push: { history: historyEntry } } as any);
+
       return NextResponse.json({ ok: true });
     }
 
+    // 상태 변경 분기
+    // - paymentStatus 계산/정규화를 한 곳에서 수행
+    // - 이 시점에서만 패스 발급 멱등 트리거
+    if (!status) {
+      return new NextResponse('상태 값이 필요합니다.', { status: 400 });
+    }
+
     const updateFields: Record<string, any> = { status };
+
+    // 취소면 사유/상세 저장
     if (status === '취소') {
       updateFields.cancelReason = cancelReason;
       if (cancelReason === '기타') {
@@ -259,16 +293,22 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }
     }
 
+    // 결제상태 정규화
+    let newPaymentStatus: string | undefined = undefined;
     if (['결제완료', '배송중', '배송완료'].includes(status)) {
-      updateFields.paymentStatus = '결제완료';
+      newPaymentStatus = '결제완료';
     } else if (status === '대기중') {
-      updateFields.paymentStatus = '결제대기';
+      newPaymentStatus = '결제대기';
     } else if (status === '취소') {
-      updateFields.paymentStatus = '결제취소';
+      newPaymentStatus = '결제취소';
     } else if (status === '환불') {
-      updateFields.paymentStatus = '환불';
+      newPaymentStatus = '환불';
+    }
+    if (newPaymentStatus) {
+      updateFields.paymentStatus = newPaymentStatus;
     }
 
+    // 히스토리 메시지
     const description = status === '취소' ? `주문이 취소되었습니다. 사유: ${cancelReason}${cancelReason === '기타' && cancelReasonDetail ? ` (${cancelReasonDetail})` : ''}` : `주문 상태가 '${status}'(으)로 변경되었습니다.`;
 
     const historyEntry = {
@@ -277,13 +317,27 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       description,
     };
 
-    const result = await orders.updateOne({ _id: new ObjectId(id) }, {
-      $set: updateFields,
-      $push: { history: historyEntry },
-    } as any);
+    // 상태 업데이트
+    const result = await orders.updateOne({ _id }, { $set: updateFields, $push: { history: historyEntry } } as any);
 
     if (result.modifiedCount === 0) {
       return new NextResponse('주문 상태 업데이트에 실패했습니다.', { status: 500 });
+    }
+
+    // 패스 발급 멱등 트리거
+    // 기존 결제상태가 결제완료가 아니었고, 이번에 결제완료가 되었다면 발급
+    const becamePaid = (existing.paymentStatus ?? null) !== '결제완료' && newPaymentStatus === '결제완료';
+
+    if (becamePaid) {
+      try {
+        const updatedOrder = await orders.findOne({ _id }); // 최신 문서 읽어서 전달
+        if (updatedOrder) {
+          await issuePassesForPaidOrder(db, updatedOrder);
+        }
+      } catch (e) {
+        console.error('issuePassesForPaidOrder error:', e);
+        // 필요하면 여기서 history에 "발급 실패" 로그를 더 남길 수 있음
+      }
     }
 
     return NextResponse.json({ ok: true });
