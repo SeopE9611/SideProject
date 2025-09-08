@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuthStore } from '@/app/store/authStore';
+import { bootstrapOnce } from '@/lib/auth/bootstrap';
+import { refreshOnce } from '@/lib/auth/refresh-mutex';
 import { useCallback, useEffect, useRef } from 'react';
 
 /**
@@ -20,36 +22,23 @@ export function useCurrentUser(): {
     latestUser.current = user;
   }, [user]);
 
+  // 수동 갱신용: 인터셉터 등에서 401 맞았을 때 호출
   const refresh = useCallback(async () => {
     if (inFlight.current) return inFlight.current;
     inFlight.current = (async () => {
       try {
-        // 1차 me
-        let res = await fetch('/api/users/me', { credentials: 'include', cache: 'no-store' });
-        if (res.ok) {
-          const me = await res.json();
-          setUser(me ?? null);
-          bootstrapped.current = true;
-          return;
-        }
-        // 401/403이면 refresh 후 재시도
-        if (res.status === 401 || res.status === 403) {
-          const r = await fetch('/api/refresh', { method: 'POST', credentials: 'include' });
-          if (r.ok) {
-            res = await fetch('/api/users/me', { credentials: 'include', cache: 'no-store' });
-            if (res.ok) {
-              const me = await res.json();
-              setUser(me ?? null);
-              bootstrapped.current = true;
-              return;
-            }
+        const r = await refreshOnce();
+        if (r.ok) {
+          const res = await fetch('/api/users/me', { credentials: 'include', cache: 'no-store' });
+          if (res.ok) {
+            const me = await res.json();
+            setUser(me ?? null);
+            bootstrapped.current = true;
+            return;
           }
         }
-        // 실패 -> 명시적 비로그인 처리하되, 이미 user가 채워진 상태라면 보존
         if (!latestUser.current) setUser(null);
         bootstrapped.current = true;
-      } catch {
-        // 네트워크 오류는 조용히
       } finally {
         inFlight.current = null;
       }
@@ -58,7 +47,12 @@ export function useCurrentUser(): {
   }, [setUser]);
 
   useEffect(() => {
-    if (!bootstrapped.current) void refresh();
+    // 자동 부트스트랩은 병합 함수만 사용 (가드/훅/페이지 어디서든 중복 없이 1회)
+    if (!bootstrapped.current) {
+      bootstrapOnce(setUser, () => latestUser.current as any).finally(() => {
+        bootstrapped.current = true;
+      });
+    }
   }, [refresh]);
 
   const loading = !bootstrapped.current || !!inFlight.current;

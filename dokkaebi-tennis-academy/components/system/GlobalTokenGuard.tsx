@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
+import { bootstrapOnce } from '@/lib/auth/bootstrap';
 
 // 부트스트랩은 탭당 딱 한 번만 실행
 export default function GlobalTokenGuard() {
@@ -22,53 +23,7 @@ export default function GlobalTokenGuard() {
 
     let alive = true;
 
-    (async () => {
-      try {
-        // 1차: me 조회
-        let res = await fetch('/api/users/me', {
-          credentials: 'include',
-          cache: 'no-store',
-        });
-        if (!alive) return;
-
-        if (res.ok) {
-          const me = await res.json();
-          setUser(me ?? null);
-          return;
-        }
-
-        //  401/403일 때만 refresh 시도
-        if (res.status === 401 || res.status === 403) {
-          const r = await fetch('/api/refresh', {
-            method: 'POST',
-            credentials: 'include',
-          });
-
-          if (r.ok) {
-            res = await fetch('/api/users/me', {
-              credentials: 'include',
-              cache: 'no-store',
-            });
-            if (!alive) return;
-
-            if (res.ok) {
-              const me = await res.json();
-              setUser(me ?? null);
-              return;
-            }
-          }
-        }
-
-        // 이미 다른 경로에서 user가 채워졌다면 덮어쓰지 않음
-        if (!latestUser.current) setUser(null);
-      } catch {
-        // 네트워크 오류는 조용히 무시
-      }
-    })();
-
-    return () => {
-      alive = false;
-    };
+    bootstrapOnce(setUser, () => latestUser.current as any);
     // 의도적으로 빈 배열: 마운트 때 한 번만
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
