@@ -282,6 +282,53 @@ export default function PackageOrdersClient() {
     return Math.ceil(diffMs / 86400000);
   };
 
+  // 목록의 표시 상태를 "결제상태 + 만료일"로 일관되게 계산
+  function computeListStatus(
+    paymentStatus?: string | null, // '결제완료' | '결제대기' | '결제취소' |
+    passExpiresAt?: string | Date | null // 패스 만료일(연장 반영)
+  ) {
+    // 결제취소가 최우선
+    if (paymentStatus === '결제취소') {
+      return { label: '결제취소', tone: 'destructive' as const };
+    }
+
+    // 만료 여부 (연장 반영: pass.expiresAt 우선)
+    let expired = false;
+    if (passExpiresAt) {
+      const ts = new Date(passExpiresAt).getTime();
+      if (!Number.isNaN(ts)) {
+        // "현재 시각" 기준으로 과거면 만료
+        expired = ts < Date.now();
+      }
+    }
+    if (expired) {
+      return { label: '만료', tone: 'muted' as const };
+    }
+
+    // 결제대기는 비활성로 통일
+    if (paymentStatus && paymentStatus !== '결제완료') {
+      return { label: '비활성', tone: 'warning' as const };
+    }
+
+    // 그 외는 활성
+    return { label: '활성', tone: 'success' as const };
+  }
+
+  // 상태 뱃지 스타일(필요시 프로젝트 공통 Badge에 맞춰 색상만 바꿔도 됨)
+  function statusBadgeClass(tone: 'destructive' | 'muted' | 'warning' | 'success') {
+    switch (tone) {
+      case 'destructive':
+        return 'bg-red-100 text-red-800 border border-red-200';
+      case 'muted':
+        return 'bg-gray-100 text-gray-800 border border-gray-200';
+      case 'warning':
+        return 'bg-amber-100 text-amber-800 border border-amber-200';
+      case 'success':
+      default:
+        return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+    }
+  }
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50">
@@ -571,10 +618,27 @@ export default function PackageOrdersClient() {
                             </TableCell>
 
                             {/* 상태 */}
+                            {/* 상태 (결제취소 최우선 → 만료 → 결제대기=비활성 → 그 외=활성) */}
                             <TableCell className={tdClasses}>
                               {(() => {
-                                const pass: PassStatus | '대기' = pkg.passStatus === '활성' || pkg.passStatus === '만료' || pkg.passStatus === '일시정지' || pkg.passStatus === '취소' ? (pkg.passStatus as PassStatus) : '대기';
-                                return <Badge className={packageStatusColors[pass]}>{pass}</Badge>;
+                                // 1) 결제상태와 만료일(연장 반영)을 입력으로 받아 목록용 상태를 계산
+                                //    - computeListStatus는 이 파일 상단에 이미 정의되어 있음
+                                const listState = computeListStatus(
+                                  pkg.paymentStatus, // '결제완료' | '결제대기' | '결제취소' (서버 응답 그대로)
+                                  pkg.expiryDate // 연장 반영된 만료일(서버가 갱신해서 내려주는 값 사용)
+                                );
+
+                                // 2) 시각적 스타일: tone을 배지 클래스에 매핑
+                                //    - statusBadgeClass도 상단에 정의되어 있음
+                                const badgeCls = statusBadgeClass(listState.tone);
+
+                                // 3) 접근성/디버깅 보조를 위해 title/aria-label에 원천값도 함께 남김
+                                return (
+                                  <Badge className={`${badgeCls} font-medium`} title={`결제상태: ${String(pkg.paymentStatus)} · 만료일: ${formatDate(pkg.expiryDate)}`} aria-label={`표시상태 ${listState.label}`}>
+                                    {/* 화면에 보이는 라벨은 '결제취소' / '만료' / '비활성' / '활성' 중 하나 */}
+                                    {listState.label}
+                                  </Badge>
+                                );
                               })()}
                             </TableCell>
 
