@@ -54,7 +54,7 @@ interface PackageListItem {
   remainingSessions: number;
   usedSessions: number;
   price: number;
-  purchaseDate: string; 
+  purchaseDate: string;
   expiryDate: string;
   passStatus: PassStatus | '대기';
   paymentStatus: PaymentStatus | string;
@@ -68,7 +68,7 @@ interface Paginated<T> {
   pageSize: number;
 }
 
-// 라벨 맵 
+// 라벨 맵
 const PKG_LABELS: Record<PackageType, string> = {
   '10회권': '10회권',
   '30회권': '30회권',
@@ -483,7 +483,9 @@ export default function PackageOrdersClient() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <span className="font-mono text-sm cursor-pointer">{pkg.id}</span>
+                                    <span className="font-mono text-sm cursor-pointer">
+                                      {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
+                                    </span>
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     <div className="flex items-center gap-2">
