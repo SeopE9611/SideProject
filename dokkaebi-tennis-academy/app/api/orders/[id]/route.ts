@@ -276,6 +276,19 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({ ok: true });
     }
 
+    // 역행 여부 판정: 배송완료→배송중 같은 되돌림은 허용하되, 나중에 히스토리에 표시
+    const __phaseIndex: Record<string, number> = {
+      대기중: 0,
+      결제완료: 1,
+      배송중: 2,
+      배송완료: 3,
+      // '환불', '취소'는 종단 상태라 인덱스 필요 없음 (이미 서버에서 락)
+    };
+
+    const __prevStatus = String(existing.status); // 기존 문서의 상태
+    const __nextStatus = String(status); // 이번에 바꾸려는 상태
+    const __isBackward = (__phaseIndex[__nextStatus] ?? 0) < (__phaseIndex[__prevStatus] ?? 0);
+
     // 상태 변경 분기
     // - paymentStatus 계산/정규화를 한 곳에서 수행
     // - 이 시점에서만 패스 발급 멱등 트리거
@@ -309,7 +322,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     // 히스토리 메시지
-    const description = status === '취소' ? `주문이 취소되었습니다. 사유: ${cancelReason}${cancelReason === '기타' && cancelReasonDetail ? ` (${cancelReasonDetail})` : ''}` : `주문 상태가 '${status}'(으)로 변경되었습니다.`;
+    const description =
+      __nextStatus === '취소'
+        ? `주문이 취소되었습니다. 사유: ${cancelReason}${cancelReason === '기타' && cancelReasonDetail ? ` (${cancelReasonDetail})` : ''}`
+        : __isBackward
+        ? `주문 상태가 '${__prevStatus}' → '${__nextStatus}'(으)로 되돌려졌습니다.`
+        : `주문 상태가 '${__nextStatus}'(으)로 변경되었습니다.`;
 
     const historyEntry = {
       status,
