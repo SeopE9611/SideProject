@@ -55,6 +55,7 @@ export function useCurrentUser(): {
     }
   }, [refresh]);
 
-  const loading = !bootstrapped.current || !!inFlight.current;
+  // user가 이미 존재하면 bootstrapped가 아직 false여도 로딩으로 보지 않음
+  const loading = !!inFlight.current || (!bootstrapped.current && !user);
   return { user, loading, refresh };
 }

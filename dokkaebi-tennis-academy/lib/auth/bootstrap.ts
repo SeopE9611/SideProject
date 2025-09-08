@@ -7,6 +7,8 @@ let bootInflight: Promise<void> | null = null;
 // getUser를 받아서 "이미 user가 세팅돼 있으면 null 덮어쓰기 방지"
 export function bootstrapOnce(setUser: (u: User | null) => void, getUser: () => User | null) {
   if (bootInflight) return bootInflight;
+  // 이미 user가 있다면 네트워크 호출 없이 즉시 종료
+  if (getUser()) return Promise.resolve();
 
   bootInflight = (async () => {
     try {
