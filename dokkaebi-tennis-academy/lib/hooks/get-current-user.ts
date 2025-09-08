@@ -1,4 +1,3 @@
-// lib/hooks/get-current-user.ts
 // 서버 컴포넌트/서버 액션에서 현재 로그인한 사용자 정보를 가져오는 헬퍼
 // - 실패 시 반드시 null 반환 (상위에서 redirect('/login') 등 처리 용이)
 // - 토큰은 sub(ObjectId) 기준으로 조회

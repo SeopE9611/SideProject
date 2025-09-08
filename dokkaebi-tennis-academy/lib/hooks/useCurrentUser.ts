@@ -1,48 +1,61 @@
-// lib/hooks/useCurrentUser.ts
 'use client';
 
 import { useAuthStore } from '@/app/store/authStore';
 import { useCallback, useEffect, useRef } from 'react';
 
-export function useCurrentUser() {
+/**
+ * 전역 user를 구독 + 탭당 1회 자동 복구(fetch /api/users/me -> 401/403이면 /api/refresh 후 재시도)
+ * - loading은 간단히 false로 두고, 필요 시 refresh()로 강제 재시도 가능
+ */
+export function useCurrentUser(): {
+  user: ReturnType<typeof useAuthStore>['user'];
+  loading: boolean;
+  refresh: () => Promise<void>;
+} {
   const { user, setUser } = useAuthStore();
   const inFlight = useRef<Promise<void> | null>(null);
-  const bootstrapped = useRef(false); //  탭에서 한 번만 복구
+  const bootstrapped = useRef(false);
 
-  const fetchMe = useCallback(async () => {
+  const refresh = useCallback(async () => {
     if (inFlight.current) return inFlight.current;
-
     inFlight.current = (async () => {
       try {
-        const res = await fetch('/api/users/me', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store',
-        });
+        // 1차 me
+        let res = await fetch('/api/users/me', { credentials: 'include', cache: 'no-store' });
         if (res.ok) {
           const me = await res.json();
           setUser(me ?? null);
-          bootstrapped.current = true; //  복구 완료 표시
-        } else if (res.status === 401 || res.status === 403) {
-          setUser(null);
-          bootstrapped.current = true; //  실패해도 한 번만
-        } else {
-          // 503 등은 조용히 무시 → 다음 사용자 액션 시 재시도 가능
+          bootstrapped.current = true;
+          return;
         }
+        // 401/403이면 refresh 후 재시도
+        if (res.status === 401 || res.status === 403) {
+          const r = await fetch('/api/refresh', { method: 'POST', credentials: 'include' });
+          if (r.ok) {
+            res = await fetch('/api/users/me', { credentials: 'include', cache: 'no-store' });
+            if (res.ok) {
+              const me = await res.json();
+              setUser(me ?? null);
+              bootstrapped.current = true;
+              return;
+            }
+          }
+        }
+        // 실패 → 명시적 비로그인
+        setUser(null);
+        bootstrapped.current = true;
       } catch {
-        // 네트워크 오류 무시
+        // 네트워크 오류는 조용히
       } finally {
         inFlight.current = null;
       }
     })();
-
     return inFlight.current;
   }, [setUser]);
 
   useEffect(() => {
-    //  user가 비어 있고 아직 부트스트랩 안 했을 때만 1회 시도
-    if (!user && !bootstrapped.current) void fetchMe();
-  }, [user, fetchMe]);
+    if (!bootstrapped.current) void refresh();
+  }, [refresh]);
 
-  return { user, loading: false, refresh: fetchMe };
+  return { user, loading: false, refresh };
 }
