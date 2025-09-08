@@ -12,13 +12,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { paymentStatusColors } from '@/lib/badge-style';
 import AdminCancelOrderDialog from '@/app/features/orders/components/AdminCancelOrderDialog';
 import OrderHistory from '@/app/features/orders/components/OrderHistory';
-import { OrderStatusSelect } from '@/app/features/orders/components/OrderStatusSelect';
 import Loading from '@/app/admin/orders/[id]/loading';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import CustomerEditForm from '@/app/features/orders/components/CustomerEditForm';
 import PaymentEditForm from '@/app/features/orders/components/PaymentEditForm';
 import RequestEditForm from '@/app/features/orders/components/RequestEditForm';
 import PaymentMethodDetail from '@/app/features/orders/components/PaymentMethodDetail';
+import OrderStatusSelect from '@/app/features/orders/components/OrderStatusSelect';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());

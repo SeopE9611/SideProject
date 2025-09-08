@@ -55,12 +55,12 @@ export default function AdminCancelOrderDialog({
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           status: '취소',
           cancelReason: selectedReason,
           cancelReasonDetail: selectedReason === '기타' ? detail : undefined,
         }),
-        credentials: 'include',
       });
 
       if (!res.ok) {
