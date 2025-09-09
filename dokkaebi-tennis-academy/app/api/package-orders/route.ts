@@ -5,7 +5,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
 
-type SortKey = 'customer' | 'purchaseDate' | 'remainingSessions' | 'price';
+type SortKey = 'customer' | 'purchaseDate' | 'expiryDate' | 'remainingSessions' | 'usedSessions' | 'totalSessions' | 'progress' | 'status' | 'payment' | 'price' | 'service' | 'package';
 
 export async function GET(req: Request) {
   try {
@@ -69,12 +69,22 @@ export async function GET(req: Request) {
     if (sortParam) {
       const [rawKey, rawDir] = String(sortParam).split(':');
       const dir: 1 | -1 = rawDir === 'asc' ? 1 : -1;
+
       const map: Record<SortKey, string> = {
         customer: 'customerName',
         purchaseDate: 'purchaseDate',
+        expiryDate: 'expiryDate',
         remainingSessions: 'passRemaining',
+        usedSessions: 'passUsed',
+        totalSessions: 'packageSessions',
+        progress: 'progressRate',
+        status: 'statusRank',
+        payment: 'paymentRank',
         price: 'totalPrice',
+        service: 'serviceRank',
+        package: 'packageSessions',
       };
+
       const key = map[rawKey as SortKey] ?? 'createdAt';
       sortDoc = { [key]: dir, createdAt: -1, _id: -1 };
     }
@@ -135,7 +145,52 @@ export async function GET(req: Request) {
           },
         },
       },
+      // 정렬용 계산 필드
+      {
+        $addFields: {
+          // 진행률: used / (used + remaining)
+          progressRate: {
+            $let: {
+              vars: {
+                u: { $ifNull: ['$passUsed', 0] },
+                r: { $ifNull: ['$passRemaining', 0] },
+              },
+              in: {
+                $cond: [{ $gt: [{ $add: ['$$u', '$$r'] }, 0] }, { $divide: ['$$u', { $add: ['$$u', '$$r'] }] }, 0],
+              },
+            },
+          },
 
+          // 상태 정렬 우선순위: 취소(-1) < 만료(0) < 비활성(1) < 활성(2)
+          statusRank: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$passStatusKo', '취소'] }, then: -1 },
+                { case: { $eq: ['$passStatusKo', '만료'] }, then: 0 },
+                { case: { $eq: ['$passStatusKo', '비활성'] }, then: 1 },
+                { case: { $eq: ['$passStatusKo', '활성'] }, then: 2 },
+              ],
+              default: 0,
+            },
+          },
+
+          // 결제 정렬 우선순위: 결제취소(-1) < 결제대기(0) < 결제완료(1)
+          paymentRank: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$paymentStatus', '결제취소'] }, then: -1 },
+                { case: { $eq: ['$paymentStatus', '결제대기'] }, then: 0 },
+                { case: { $eq: ['$paymentStatus', '결제완료'] }, then: 1 },
+              ],
+              default: 0,
+            },
+          },
+
+          // 패키지/서비스 정렬 보조
+          packageSessions: { $ifNull: ['$packageInfo.sessions', 0] }, // 10/30/50/100회권 숫자 기준
+          serviceRank: { $cond: [{ $eq: ['$serviceType', '출장'] }, 1, 0] }, // 방문(0) < 출장(1)
+        },
+      },
       // 계산된 상태로 서버-사이드 필터 (필요할 때만 붙이기)
       ...(status && status !== 'all' ? [{ $match: { passStatusKo: status } }] : []),
 

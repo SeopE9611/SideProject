@@ -116,8 +116,10 @@ export default function PackageOrdersClient() {
   const [serviceTypeFilter, setServiceTypeFilter] = useState<'all' | ServiceType>('all');
 
   // 정렬 상태
-  const [sortBy, setSortBy] = useState<'customer' | 'purchaseDate' | 'remainingSessions' | 'price' | null>(null);
+  type SortKey = 'customer' | 'purchaseDate' | 'expiryDate' | 'remainingSessions' | 'price' | 'status' | 'payment' | 'package' | 'progress';
+  const [sortBy, setSortBy] = useState<SortKey | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const SortIcon = (k: SortKey) => <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === k && 'text-primary', sortBy === k && sortDirection === 'desc' && 'rotate-180')} />;
 
   // 한 페이지에 보여줄 항목 수
   const limit = 10;
@@ -174,37 +176,37 @@ export default function PackageOrdersClient() {
     });
   }, [packages, searchTerm, statusFilter, packageTypeFilter, paymentFilter, serviceTypeFilter]);
 
-  // 정렬 로직 (useMemo)
-  const sortedPackages = useMemo(() => {
-    if (!sortBy) return filteredPackages;
-    const arr = [...filteredPackages];
-    arr.sort((a, b) => {
-      let aValue: string | number = '',
-        bValue: string | number = '';
-      switch (sortBy) {
-        case 'customer':
-          aValue = (a.customer?.name ?? '').toLowerCase();
-          bValue = (b.customer?.name ?? '').toLowerCase();
-          break;
-        case 'purchaseDate':
-          aValue = toDateSafe(a.purchaseDate)?.getTime() ?? 0;
-          bValue = toDateSafe(b.purchaseDate)?.getTime() ?? 0;
-          break;
-        case 'remainingSessions':
-          aValue = a.remainingSessions;
-          bValue = b.remainingSessions;
-          break;
-        case 'price':
-          aValue = a.price;
-          bValue = b.price;
-          break;
-      }
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-    return arr;
-  }, [filteredPackages, sortBy, sortDirection]);
+  // // 정렬 로직 (useMemo)
+  // const sortedPackages = useMemo(() => {
+  //   if (!sortBy) return filteredPackages;
+  //   const arr = [...filteredPackages];
+  //   arr.sort((a, b) => {
+  //     let aValue: string | number = '',
+  //       bValue: string | number = '';
+  //     switch (sortBy) {
+  //       case 'customer':
+  //         aValue = (a.customer?.name ?? '').toLowerCase();
+  //         bValue = (b.customer?.name ?? '').toLowerCase();
+  //         break;
+  //       case 'purchaseDate':
+  //         aValue = toDateSafe(a.purchaseDate)?.getTime() ?? 0;
+  //         bValue = toDateSafe(b.purchaseDate)?.getTime() ?? 0;
+  //         break;
+  //       case 'remainingSessions':
+  //         aValue = a.remainingSessions;
+  //         bValue = b.remainingSessions;
+  //         break;
+  //       case 'price':
+  //         aValue = a.price;
+  //         bValue = b.price;
+  //         break;
+  //     }
+  //     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+  //     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+  //     return 0;
+  //   });
+  //   return arr;
+  // }, [filteredPackages, sortBy, sortDirection]);
 
   // 날짜 포맷터
   const formatDate = (v?: string | number | Date | null) => {
@@ -291,23 +293,18 @@ export default function PackageOrdersClient() {
   };
 
   // 정렬 헤더 클릭 핸들러
-  const handleSort = (key: 'customer' | 'purchaseDate' | 'remainingSessions' | 'price') => {
+  const handleSort = (key: SortKey) => {
     if (sortBy === key) {
       setSortDirection((dir) => (dir === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortBy(key);
       setSortDirection('asc');
     }
+    setPage(1);
   };
-
   // 공통 스타일 상수
   const thClasses = 'px-4 py-2 text-center align-middle ' + 'border-b border-gray-200 dark:border-gray-700 ' + 'font-semibold text-gray-700 dark:text-gray-300';
   const tdClasses = 'px-3 py-4 align-middle text-center';
-
-  // 진행률 계산
-  const getProgressPercentage = (used: number, total: number) => {
-    return Math.round((used / total) * 100);
-  };
 
   // 진행률을 상세 화면과 동일하게 계산: used / (used + remaining)
   // - 분모가 0인 경우 0%
@@ -586,39 +583,65 @@ export default function PackageOrdersClient() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className={thClasses}>패키지 ID</TableHead>
-                      <TableHead onClick={() => handleSort('customer')} className={cn(thClasses, 'cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'customer' && 'text-primary')}>
-                        고객
-                        <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
+
+                      {/* 고객 */}
+                      <TableHead onClick={() => handleSort('customer')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'customer' && 'text-primary')}>
+                        고객 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
                       </TableHead>
-                      <TableHead className={thClasses}>패키지 유형</TableHead>
-                      <TableHead onClick={() => handleSort('remainingSessions')} className={cn(thClasses, 'cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'remainingSessions' && 'text-primary')}>
-                        남은 횟수
-                        <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'remainingSessions' && sortDirection === 'desc' && 'rotate-180')} />
+
+                      {/* 패키지 유형 */}
+                      <TableHead onClick={() => handleSort('package')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'package' && 'text-primary')}>
+                        패키지 유형 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'package' && sortDirection === 'desc' && 'rotate-180')} />
                       </TableHead>
-                      <TableHead className={thClasses}>진행률</TableHead>
-                      <TableHead onClick={() => handleSort('purchaseDate')} className={cn(thClasses, 'cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'purchaseDate' && 'text-primary')}>
-                        구매일
-                        <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'purchaseDate' && sortDirection === 'desc' && 'rotate-180')} />
+
+                      {/* 남은 횟수 */}
+                      <TableHead onClick={() => handleSort('remainingSessions')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'remainingSessions' && 'text-primary')}>
+                        남은 횟수 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'remainingSessions' && sortDirection === 'desc' && 'rotate-180')} />
                       </TableHead>
-                      <TableHead className={thClasses}>만료일</TableHead>
-                      <TableHead className={thClasses}>상태</TableHead>
-                      <TableHead className={thClasses}>결제</TableHead>
-                      <TableHead onClick={() => handleSort('price')} className={cn(thClasses, 'cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'price' && 'text-primary')}>
-                        금액
-                        <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'price' && sortDirection === 'desc' && 'rotate-180')} />
+
+                      {/* 진행률 */}
+                      <TableHead onClick={() => handleSort('progress')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'progress' && 'text-primary')}>
+                        진행률 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'progress' && sortDirection === 'desc' && 'rotate-180')} />
                       </TableHead>
+
+                      {/* 구매일 */}
+                      <TableHead onClick={() => handleSort('purchaseDate')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'purchaseDate' && 'text-primary')}>
+                        구매일 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'purchaseDate' && sortDirection === 'desc' && 'rotate-180')} />
+                      </TableHead>
+
+                      {/* 만료일 */}
+                      <TableHead onClick={() => handleSort('expiryDate')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'expiryDate' && 'text-primary')}>
+                        만료일 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'expiryDate' && sortDirection === 'desc' && 'rotate-180')} />
+                      </TableHead>
+
+                      {/* 상태 */}
+                      <TableHead onClick={() => handleSort('status')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'status' && 'text-primary')}>
+                        상태 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'status' && sortDirection === 'desc' && 'rotate-180')} />
+                      </TableHead>
+
+                      {/* 결제 */}
+                      <TableHead onClick={() => handleSort('payment')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'payment' && 'text-primary')}>
+                        결제 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'payment' && sortDirection === 'desc' && 'rotate-180')} />
+                      </TableHead>
+
+                      {/* 금액 */}
+                      <TableHead onClick={() => handleSort('price')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'price' && 'text-primary')}>
+                        금액 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'price' && sortDirection === 'desc' && 'rotate-180')} />
+                      </TableHead>
+
                       <TableHead className={thClasses}>작업</TableHead>
                     </TableRow>
                   </TableHeader>
+
                   <TableBody>
-                    {sortedPackages.length === 0 ? (
+                    {filteredPackages.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                           {searchTerm || statusFilter !== 'all' || packageTypeFilter !== 'all' || paymentFilter !== 'all' || serviceTypeFilter !== 'all' ? '검색 결과가 없습니다.' : '등록된 패키지가 없습니다.'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      sortedPackages.map((pkg) => {
+                      filteredPackages.map((pkg) => {
                         const { percent: progressPercentage, total: currentTotal } = calcProgressPercent(pkg.usedSessions, pkg.remainingSessions);
 
                         // 만료일 소스
