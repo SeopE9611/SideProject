@@ -54,8 +54,8 @@ interface PackageListItem {
   remainingSessions: number;
   usedSessions: number;
   price: number;
-  purchaseDate: string;
-  expiryDate: string;
+  purchaseDate: string | null;
+  expiryDate: string | null;
   passStatus: PassStatus | '대기';
   paymentStatus: PaymentStatus | string;
   serviceType: ServiceType;
@@ -68,39 +68,6 @@ interface Paginated<T> {
   pageSize: number;
 }
 
-// 라벨 맵
-const PKG_LABELS: Record<PackageType, string> = {
-  '10회권': '10회권',
-  '30회권': '30회권',
-  '50회권': '50회권',
-  '100회권': '100회권',
-} as const;
-
-const PASS_STATUS_LABELS: Record<PassStatus, string> = {
-  활성: '활성',
-  만료: '만료',
-  일시정지: '일시정지',
-  취소: '취소',
-} as const;
-
-const PAYMENT_LABELS: Record<PaymentStatus, string> = {
-  결제완료: '결제완료',
-  결제대기: '결제대기',
-  결제취소: '결제취소',
-} as const;
-
-// 인덱싱을 위한 타입 가드 추가
-const isPassStatus = (v: string): v is PassStatus => v === '활성' || v === '만료' || v === '일시정지' || v === '취소';
-const isPaymentStatus = (v: string): v is PaymentStatus => v === '결제완료' || v === '결제대기' || v === '결제취소';
-
-// 패키지 상태별 색상
-const packageStatusColors: Record<PassStatus | '대기', string> = {
-  활성: 'bg-green-100 text-green-800 border-green-200',
-  만료: 'bg-red-100 text-red-800 border-red-200',
-  일시정지: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  취소: 'bg-gray-100 text-gray-800 border-gray-200',
-  대기: 'bg-slate-100 text-slate-700 border-slate-200',
-};
 // 결제 상태별 색상
 const paymentStatusColors: Record<PaymentStatus, string> = {
   결제완료: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -131,9 +98,6 @@ export default function PackageOrdersClient() {
   const [statusFilter, setStatusFilter] = useState<'all' | PassStatus>('all');
   const [paymentFilter, setPaymentFilter] = useState<'all' | PaymentStatus>('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState<'all' | ServiceType>('all');
-  const pkgLabel = packageTypeFilter === 'all' ? '전체' : PKG_LABELS[packageTypeFilter];
-  const passStatusLabel = statusFilter === 'all' ? '전체' : PASS_STATUS_LABELS[statusFilter];
-  const paymentLabel = paymentFilter === 'all' ? '전체' : PAYMENT_LABELS[paymentFilter];
 
   // 정렬 상태
   const [sortBy, setSortBy] = useState<'customer' | 'purchaseDate' | 'remainingSessions' | 'price' | null>(null);
@@ -149,10 +113,6 @@ export default function PackageOrdersClient() {
   if (paymentFilter !== 'all') qs.set('payment', paymentFilter);
   if (serviceTypeFilter !== 'all') qs.set('service', serviceTypeFilter);
   if (sortBy) qs.set('sort', `${sortBy}:${sortDirection}`);
-
-  if (packageTypeFilter !== 'all') qs.set('package', packageTypeFilter.replace('회권', ''));
-  if (statusFilter !== 'all') qs.set('status', statusFilter);
-  if (paymentFilter !== 'all') qs.set('payment', paymentFilter);
 
   qs.set('page', String(page));
   qs.set('limit', String(limit));
@@ -211,7 +171,7 @@ export default function PackageOrdersClient() {
   });
 
   // 날짜 포맷터
-  const formatDate = (v?: string | Date | null) => {
+  const formatDate = (v?: string | number | Date | null) => {
     const d = toDateSafe(v);
     if (!d) return '-';
     return new Intl.DateTimeFormat('ko-KR', {
@@ -225,10 +185,60 @@ export default function PackageOrdersClient() {
   };
 
   // 날짜 헬퍼
-  const toDateSafe = (v?: string | Date | null) => {
-    if (!v) return null;
-    const d = typeof v === 'string' ? new Date(v) : v;
-    return Number.isNaN(d.getTime()) ? null : d;
+  // - ISO 문자열/Date/number(epoch) 모두 처리
+  // - 'YYYY. MM. DD.' / 'YY. MM. DD.' / 'YYYY-MM-DD' / 'YYYY/MM/DD' / 'YYYYMMDD' 지원
+  // - 끝의 점(.)/공백 허용
+  const toDateSafe = (v?: string | number | Date | null) => {
+    if (v == null) return null;
+
+    // Date 인스턴스
+    if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v;
+
+    // 숫자(epoch 초/밀리초)
+    if (typeof v === 'number') {
+      const ms = v < 1e12 ? v * 1000 : v; // 10^12 미만은 초로 판단
+      const d = new Date(ms);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    // 문자열
+    let s = String(v).trim();
+
+    // 기본 파서(ISO 등)
+    const direct = new Date(s);
+    if (!Number.isNaN(direct.getTime())) return direct;
+
+    // 'YYYY. MM. DD.' 또는 'YY. MM. DD.'
+    const mDot = s.match(/^(\d{2,4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?$/);
+    if (mDot) {
+      const y = Number(mDot[1].length === 2 ? '20' + mDot[1] : mDot[1]);
+      const mo = Number(mDot[2]);
+      const d = Number(mDot[3]);
+      const dd = new Date(y, mo - 1, d);
+      return Number.isNaN(dd.getTime()) ? null : dd;
+    }
+
+    // 'YYYY/MM/DD' 또는 'YYYY-MM-DD'
+    const mSep = s.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
+    if (mSep) {
+      const y = Number(mSep[1]);
+      const mo = Number(mSep[2]);
+      const d = Number(mSep[3]);
+      const dd = new Date(y, mo - 1, d);
+      return Number.isNaN(dd.getTime()) ? null : dd;
+    }
+
+    // 'YYYYMMDD'
+    const mCompact = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (mCompact) {
+      const y = Number(mCompact[1]);
+      const mo = Number(mCompact[2]);
+      const d = Number(mCompact[3]);
+      const dd = new Date(y, mo - 1, d);
+      return Number.isNaN(dd.getTime()) ? null : dd;
+    }
+
+    return null;
   };
 
   // 금액 포맷터
@@ -275,42 +285,40 @@ export default function PackageOrdersClient() {
   }
 
   // 만료일까지 남은 일수 계산
-  const getDaysUntilExpiry = (v?: string | Date | null) => {
-    const d = toDateSafe(v);
+  // - 목록 표기는 "그날 23:59:59"까지 유효로 보여야 운영 혼선을 줄임
+  // - 서버가 'YYYY-MM-DD' 같은 날짜 문자열을 줄 때 00:00 해석 문제를 피하기 위함
+  const getDaysUntilExpiry = (v?: string | number | Date | null) => {
+    const d = toDateSafe(v); // 안전하게 Date로 변환(없으면 null)
     if (!d) return 0;
-    const diffMs = d.getTime() - Date.now();
+
+    // "해당 날짜의 하루 끝"까지 유효로 보이도록 보정
+    const endOfDay = new Date(d); // 복사본
+    endOfDay.setHours(23, 59, 59, 999); // 로컬(=KST) 기준 EOD
+
+    const diffMs = endOfDay.getTime() - Date.now();
+    // 일수 올림(양수면 오늘 포함하여 1일 남음 처럼 보임)
     return Math.ceil(diffMs / 86400000);
   };
 
   // 목록의 표시 상태를 "결제상태 + 만료일"로 일관되게 계산
-  function computeListStatus(
-    paymentStatus?: string | null, // '결제완료' | '결제대기' | '결제취소' |
-    passExpiresAt?: string | Date | null // 패스 만료일(연장 반영)
-  ) {
+  function computeListStatus(paymentStatus?: string | null, passExpiresAt?: string | number | Date | null) {
     // 결제취소가 최우선
     if (paymentStatus === '결제취소') {
       return { label: '결제취소', tone: 'destructive' as const };
     }
 
-    // 만료 여부 (연장 반영: pass.expiresAt 우선)
+    // 만료 계산은 반드시 toDateSafe로(숫자/다양한 포맷 모두 처리)
+    const d = toDateSafe(passExpiresAt);
     let expired = false;
-    if (passExpiresAt) {
-      const ts = new Date(passExpiresAt).getTime();
-      if (!Number.isNaN(ts)) {
-        // "현재 시각" 기준으로 과거면 만료
-        expired = ts < Date.now();
-      }
-    }
-    if (expired) {
-      return { label: '만료', tone: 'muted' as const };
+    if (d) {
+      // 목록은 "그날 23:59:59"까지 유효하게 보정
+      const eod = new Date(d);
+      eod.setHours(23, 59, 59, 999);
+      expired = eod.getTime() < Date.now();
     }
 
-    // 결제대기는 비활성로 통일
-    if (paymentStatus && paymentStatus !== '결제완료') {
-      return { label: '비활성', tone: 'warning' as const };
-    }
-
-    // 그 외는 활성
+    if (expired) return { label: '만료', tone: 'muted' as const };
+    if (paymentStatus && paymentStatus !== '결제완료') return { label: '비활성', tone: 'warning' as const };
     return { label: '활성', tone: 'success' as const };
   }
 
@@ -327,6 +335,11 @@ export default function PackageOrdersClient() {
       default:
         return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
     }
+  }
+
+  // 연장 반영된 만료일
+  function getExpirySource(pkg: any): string | null {
+    return pkg?.expiryDate ?? null;
   }
 
   return (
@@ -393,7 +406,16 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">만료 예정</p>
-                    <p className="text-3xl font-bold text-orange-600">{packages.filter((p) => getDaysUntilExpiry(p.expiryDate) <= 30 && p.passStatus === '활성').length}</p>
+                    <p className="text-3xl font-bold text-orange-600">
+                      {
+                        packages.filter((p) => {
+                          const exp = p.expiryDate ?? null;
+                          const days = getDaysUntilExpiry(exp);
+                          const s = computeListStatus(p.paymentStatus, exp);
+                          return s.label !== '결제취소' && days <= 30 && days > 0;
+                        }).length
+                      }
+                    </p>
                   </div>
                   <div className="bg-orange-50 rounded-xl p-3">
                     <Calendar className="h-6 w-6 text-orange-600" />
@@ -534,7 +556,13 @@ export default function PackageOrdersClient() {
                     ) : (
                       sortedPackages.map((pkg) => {
                         const { percent: progressPercentage, total: currentTotal } = calcProgressPercent(pkg.usedSessions, pkg.remainingSessions);
-                        const daysUntilExpiry = getDaysUntilExpiry(pkg.expiryDate);
+
+                        // 만료일 소스
+                        const expirySource = pkg.expiryDate ?? null;
+
+                        const listState = computeListStatus(pkg.paymentStatus, expirySource);
+                        const daysUntilExpiry = getDaysUntilExpiry(expirySource);
+
                         return (
                           <TableRow key={pkg.id} className="hover:bg-muted/50 transition-colors">
                             <TableCell className={tdClasses}>
@@ -611,31 +639,26 @@ export default function PackageOrdersClient() {
 
                             <TableCell className={tdClasses}>
                               <div className="flex flex-col items-center">
-                                <span className="text-sm">{formatDate(pkg.expiryDate)}</span>
-                                {daysUntilExpiry <= 30 && daysUntilExpiry > 0 && pkg.passStatus === '활성' && <span className="text-xs text-orange-600 font-medium">{daysUntilExpiry}일 남음</span>}
-                                {daysUntilExpiry <= 0 && pkg.passStatus === '활성' && <span className="text-xs text-red-600 font-medium">만료됨</span>}
+                                <span className="text-sm">{formatDate(expirySource)}</span>
+
+                                {/* 결제취소는 남은일수/만료 라벨을 숨김, 나머지만 카운트다운 표시 */}
+                                {listState.label !== '결제취소' && daysUntilExpiry <= 30 && daysUntilExpiry > 0 && <span className="text-xs text-orange-600 font-medium">{daysUntilExpiry}일 남음</span>}
+                                {/* '만료' 표기 - 실제 계산된 목록 상태(listState) */}
+                                {listState.label === '만료' && <span className="text-xs text-red-600 font-medium">만료됨</span>}
                               </div>
                             </TableCell>
 
-                            {/* 상태 */}
-                            {/* 상태 (결제취소 최우선 → 만료 → 결제대기=비활성 → 그 외=활성) */}
+                            {/* 상태 (결제취소 최우선 -> 만료 -> 결제대기=비활성 -> 그 외=활성) */}
                             <TableCell className={tdClasses}>
                               {(() => {
-                                // 1) 결제상태와 만료일(연장 반영)을 입력으로 받아 목록용 상태를 계산
-                                //    - computeListStatus는 이 파일 상단에 이미 정의되어 있음
-                                const listState = computeListStatus(
-                                  pkg.paymentStatus, // '결제완료' | '결제대기' | '결제취소' (서버 응답 그대로)
-                                  pkg.expiryDate // 연장 반영된 만료일(서버가 갱신해서 내려주는 값 사용)
-                                );
-
-                                // 2) 시각적 스타일: tone을 배지 클래스에 매핑
-                                //    - statusBadgeClass도 상단에 정의되어 있음
+                                // 위에서 계산한 listState/expirySource 그대로 사용
                                 const badgeCls = statusBadgeClass(listState.tone);
-
-                                // 3) 접근성/디버깅 보조를 위해 title/aria-label에 원천값도 함께 남김
                                 return (
-                                  <Badge className={`${badgeCls} font-medium`} title={`결제상태: ${String(pkg.paymentStatus)} · 만료일: ${formatDate(pkg.expiryDate)}`} aria-label={`표시상태 ${listState.label}`}>
-                                    {/* 화면에 보이는 라벨은 '결제취소' / '만료' / '비활성' / '활성' 중 하나 */}
+                                  <Badge
+                                    className={`${badgeCls} font-medium`}
+                                    title={`결제상태: ${String(pkg.paymentStatus)} · 만료일: ${formatDate(expirySource)}`} // ← 변경
+                                    aria-label={`표시상태 ${listState.label}`}
+                                  >
                                     {listState.label}
                                   </Badge>
                                 );

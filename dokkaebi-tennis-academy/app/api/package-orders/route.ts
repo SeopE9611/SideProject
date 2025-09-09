@@ -89,11 +89,11 @@ export async function GET(req: Request) {
       { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'userDocs' } },
       { $addFields: { userDoc: { $first: '$userDocs' } } },
 
-      // 패스 조인
+      // service_passes 조인 (orderId ←→ _id)
       { $lookup: { from: 'service_passes', localField: '_id', foreignField: 'orderId', as: 'passDocs' } },
       { $addFields: { passDoc: { $first: '$passDocs' } } },
 
-      // 표시용 계산 (패스 날짜 우선)
+      // 만료일 계산
       {
         $addFields: {
           passUsed: { $ifNull: ['$passDoc.usedCount', 0] },
@@ -102,9 +102,8 @@ export async function GET(req: Request) {
 
           purchaseDate: { $ifNull: ['$passDoc.purchasedAt', '$createdAt'] },
           _calcExpiry: {
-            $ifNull: ['$passDoc.expiresAt', { $dateAdd: { startDate: '$createdAt', unit: 'day', amount: '$packageInfo.validityPeriod' } }],
+            $ifNull: ['$passDoc.expiresAt', { $dateAdd: { startDate: '$createdAt', unit: 'day', amount: { $ifNull: ['$packageInfo.validityPeriod', 0] } } }],
           },
-          expiryDate: '$_calcExpiry',
 
           serviceType: {
             $cond: [{ $regexMatch: { input: { $ifNull: ['$serviceInfo.serviceMethod', '방문'] }, regex: '출장', options: 'i' } }, '출장', '방문'],
@@ -195,6 +194,7 @@ export async function GET(req: Request) {
           items: [
             { $skip: skip },
             { $limit: limit },
+            // facet > items > $project 에서 날짜를 문자열로 직렬화
             {
               $project: {
                 _id: 0,
@@ -206,8 +206,14 @@ export async function GET(req: Request) {
                 remainingSessions: '$passRemaining',
                 usedSessions: '$passUsed',
                 price: '$totalPrice',
-                purchaseDate: '$purchaseDate',
-                expiryDate: '$expiryDate',
+
+                purchaseDate: {
+                  $ifNull: [{ $dateToString: { date: '$purchaseDate', format: '%Y-%m-%dT%H:%M:%S.%LZ', timezone: 'UTC' } }, null],
+                },
+                expiryDate: {
+                  $ifNull: [{ $dateToString: { date: '$_calcExpiry', format: '%Y-%m-%dT%H:%M:%S.%LZ', timezone: 'UTC' } }, null],
+                },
+
                 passStatus: '$passStatusKo',
                 status: '$status',
                 paymentStatus: '$paymentStatus',
