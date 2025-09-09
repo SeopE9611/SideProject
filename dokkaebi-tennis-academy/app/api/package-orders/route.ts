@@ -46,7 +46,7 @@ export async function GET(req: Request) {
     const sortParam = sp.get('sort');
 
     const match: any = {};
-    if (status && status !== 'all') match.status = status;
+    // if (status && status !== 'all') match.status = status;
     if (payment && payment !== 'all') match.paymentStatus = payment;
     if (pkg && pkg !== 'all') match['packageInfo.sessions'] = Number(pkg);
     if (service && service !== 'all') {
@@ -120,18 +120,24 @@ export async function GET(req: Request) {
               in: {
                 $switch: {
                   branches: [
+                    // 1) 만료 최우선
                     { case: { $lte: ['$$exp', '$$NOW'] }, then: '만료' },
-                    { case: { $eq: ['$passDoc.status', 'paused'] }, then: '일시정지' },
-                    { case: { $eq: ['$passDoc.status', 'cancelled'] }, then: '취소' },
-                    { case: { $eq: ['$passDoc.status', 'active'] }, then: '활성' },
+                    // 2) 결제취소 또는 패스 취소
+                    { case: { $or: [{ $eq: ['$paymentStatus', '결제취소'] }, { $eq: ['$passDoc.status', 'cancelled'] }] }, then: '취소' },
+                    // 3) 일시정지 또는 결제미완료 → 비활성
+                    { case: { $or: [{ $eq: ['$passDoc.status', 'paused'] }, { $ne: ['$paymentStatus', '결제완료'] }] }, then: '비활성' },
                   ],
-                  default: { $cond: [{ $eq: ['$paymentStatus', '결제완료'] }, '활성', '대기'] },
+                  // 4) 그 외는 활성
+                  default: '활성',
                 },
               },
             },
           },
         },
       },
+
+      // 계산된 상태로 서버-사이드 필터 (필요할 때만 붙이기)
+      ...(status && status !== 'all' ? [{ $match: { passStatusKo: status } }] : []),
 
       // 고객 표시용 필드
       {

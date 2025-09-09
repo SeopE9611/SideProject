@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ChevronDown, Copy, Eye, Filter, MoreHorizontal, Search, X, Package, Calendar, CreditCard } from 'lucide-react';
 import Link from 'next/link';
+import { ChevronDown, Copy, Eye, Filter, MoreHorizontal, Search, X, Package, Calendar, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,9 +42,25 @@ type PackageType = '10회권' | '30회권' | '50회권' | '100회권';
 type ServiceType = '방문' | '출장';
 
 // 패스(또는 주문) 상태 라벨
-type PassStatus = '활성' | '만료' | '일시정지' | '취소';
+type PassStatus = '비활성' | '활성' | '만료' | '취소';
 type PaymentStatus = '결제완료' | '결제대기' | '결제취소';
 
+// 2) 라벨 맵
+const PASS_STATUS_LABELS: Record<PassStatus, string> = {
+  비활성: '비활성',
+  활성: '활성',
+  만료: '만료',
+  취소: '취소',
+};
+
+// 3) 상태 뱃지 색 (원하는 톤으로)
+const packageStatusColors: Record<PassStatus | '대기', string> = {
+  비활성: 'bg-amber-100 text-amber-800 border-amber-200',
+  활성: 'bg-green-100 text-green-800 border-green-200',
+  만료: 'bg-gray-100 text-gray-800 border-gray-200',
+  취소: 'bg-red-100 text-red-800 border-red-200',
+  대기: 'bg-slate-100 text-slate-700 border-slate-200',
+};
 interface PackageListItem {
   id: string;
   userId: string;
@@ -109,11 +125,10 @@ export default function PackageOrdersClient() {
   const qs = new URLSearchParams();
   if (searchTerm) qs.set('q', searchTerm);
   if (statusFilter !== 'all') qs.set('status', statusFilter);
-  if (packageTypeFilter !== 'all') qs.set('package', packageTypeFilter.replace('회권', '')); // '10회권' -> '10'
+  if (packageTypeFilter !== 'all') qs.set('package', packageTypeFilter.replace('회권', ''));
   if (paymentFilter !== 'all') qs.set('payment', paymentFilter);
   if (serviceTypeFilter !== 'all') qs.set('service', serviceTypeFilter);
   if (sortBy) qs.set('sort', `${sortBy}:${sortDirection}`);
-
   qs.set('page', String(page));
   qs.set('limit', String(limit));
 
@@ -123,7 +138,23 @@ export default function PackageOrdersClient() {
 
   // 데이터 준비
   const packages: PackageListItem[] = data?.items ?? [];
-  const totalPages: number = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
+  const totalPages = useMemo(() => Math.max(1, Math.ceil((data?.total ?? 0) / limit)), [data?.total, limit]);
+  const goToPage = (p: number) => setPage(Math.min(totalPages, Math.max(1, p)));
+
+  // 페이지 번호 목록(앞·뒤 ... 처리)
+  const pageItems = useMemo<(number | string)[]>(() => {
+    const t = totalPages,
+      c = page;
+    if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
+    const items: (number | string)[] = [1];
+    const start = Math.max(2, c - 1);
+    const end = Math.min(t - 1, c + 1);
+    if (start > 2) items.push('…');
+    for (let i = start; i <= end; i++) items.push(i);
+    if (end < t - 1) items.push('…');
+    items.push(t);
+    return items;
+  }, [page, totalPages]);
 
   // 검색 / 필터링 로직 (useMemo)
   const filteredPackages = useMemo(() => {
@@ -256,6 +287,7 @@ export default function PackageOrdersClient() {
     setPackageTypeFilter('all');
     setPaymentFilter('all');
     setServiceTypeFilter('all');
+    setPage(1);
   };
 
   // 정렬 헤더 클릭 핸들러
@@ -305,18 +337,13 @@ export default function PackageOrdersClient() {
     return Math.ceil(diffMs / 86400000);
   };
 
-  // 목록의 표시 상태를 "결제상태 + 만료일"로 일관되게 계산
+  // 상태 계산 함수
   function computeListStatus(paymentStatus?: string | null, passExpiresAt?: string | number | Date | null) {
-    // 결제취소가 최우선
-    if (paymentStatus === '결제취소') {
-      return { label: '결제취소', tone: 'destructive' as const };
-    }
+    if (paymentStatus === '결제취소') return { label: '취소', tone: 'destructive' as const };
 
-    // 만료 계산은 반드시 toDateSafe로(숫자/다양한 포맷 모두 처리)
     const d = toDateSafe(passExpiresAt);
     let expired = false;
     if (d) {
-      // 목록은 "그날 23:59:59"까지 유효하게 보정
       const eod = new Date(d);
       eod.setHours(23, 59, 59, 999);
       expired = eod.getTime() < Date.now();
@@ -445,7 +472,16 @@ export default function PackageOrdersClient() {
                 <div className="w-full max-w-md">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input type="search" placeholder="패키지 ID, 고객명, 이메일 검색..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    <Input
+                      type="search"
+                      placeholder="패키지 ID, 고객명, 이메일 검색..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setPage(1);
+                      }}
+                    />
                     {searchTerm && (
                       <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => setSearchTerm('')}>
                         <X className="h-4 w-4" />
@@ -456,20 +492,31 @@ export default function PackageOrdersClient() {
 
                 {/* 필터 컴포넌트들 */}
                 <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | PassStatus)}>
+                  <Select
+                    value={statusFilter}
+                    onValueChange={(v) => {
+                      setStatusFilter(v as 'all' | PassStatus);
+                      setPage(1);
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="패키지 상태" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">모든 상태</SelectItem>
+                      <SelectItem value="비활성">비활성</SelectItem>
                       <SelectItem value="활성">활성</SelectItem>
                       <SelectItem value="만료">만료</SelectItem>
-                      <SelectItem value="일시정지">일시정지</SelectItem>
                       <SelectItem value="취소">취소</SelectItem>
                     </SelectContent>
                   </Select>
-
-                  <Select value={packageTypeFilter} onValueChange={(v) => setPackageTypeFilter(v as 'all' | PackageType)}>
+                  <Select
+                    value={packageTypeFilter}
+                    onValueChange={(v) => {
+                      setPackageTypeFilter(v as 'all' | PackageType);
+                      setPage(1);
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="패키지 유형" />
                     </SelectTrigger>
@@ -482,7 +529,13 @@ export default function PackageOrdersClient() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={paymentFilter} onValueChange={(v) => setPaymentFilter(v as 'all' | PaymentStatus)}>
+                  <Select
+                    value={paymentFilter}
+                    onValueChange={(v) => {
+                      setPaymentFilter(v as 'all' | PaymentStatus);
+                      setPage(1);
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="결제 상태" />
                     </SelectTrigger>
@@ -494,7 +547,13 @@ export default function PackageOrdersClient() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={serviceTypeFilter} onValueChange={(v) => setServiceTypeFilter(v as 'all' | ServiceType)}>
+                  <Select
+                    value={serviceTypeFilter}
+                    onValueChange={(v) => {
+                      setServiceTypeFilter(v as 'all' | ServiceType);
+                      setPage(1);
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="서비스 유형" />
                     </SelectTrigger>
@@ -703,6 +762,40 @@ export default function PackageOrdersClient() {
                     )}
                   </TableBody>
                 </Table>
+                {/* pagination */}
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="text-sm text-muted-foreground">
+                    총 <b>{data?.total ?? 0}</b>개 · 페이지 <b>{page}</b>/<b>{totalPages}</b>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(1)} disabled={page <= 1} aria-label="첫 페이지">
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(page - 1)} disabled={page <= 1} aria-label="이전">
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+
+                    {pageItems.map((it, idx) =>
+                      typeof it === 'number' ? (
+                        <Button key={idx} variant={it === page ? 'default' : 'outline'} className="h-9 min-w-9 px-3" aria-current={it === page ? 'page' : undefined} onClick={() => goToPage(it)}>
+                          {it}
+                        </Button>
+                      ) : (
+                        <span key={idx} className="px-2 text-muted-foreground select-none">
+                          …
+                        </span>
+                      )
+                    )}
+
+                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} aria-label="다음">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(totalPages)} disabled={page >= totalPages} aria-label="끝 페이지">
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
