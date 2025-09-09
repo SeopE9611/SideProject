@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChevronDown, Copy, Eye, Filter, MoreHorizontal, Search, X, Package, Calendar, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -117,58 +117,63 @@ export default function PackageOrdersClient() {
   qs.set('page', String(page));
   qs.set('limit', String(limit));
 
-  const { data, error, isValidating, mutate } = useSWR<Paginated<PackageListItem>>(`/api/package-orders?${qs.toString()}`, fetcher);
+  const { data, error, isValidating, mutate } = useSWR<Paginated<PackageListItem>>(`/api/package-orders?${qs.toString()}`, fetcher, { dedupingInterval: 1000, revalidateOnFocus: false });
+
+  if (error) return <div className="p-6 text-red-600">목록을 불러오지 못했습니다.</div>;
 
   // 데이터 준비
   const packages: PackageListItem[] = data?.items ?? [];
   const totalPages: number = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
 
-  // 검색 / 필터링 로직
-  const filteredPackages = packages.filter((pkg: PackageListItem) => {
+  // 검색 / 필터링 로직 (useMemo)
+  const filteredPackages = useMemo(() => {
     // 검색어 매치: ID, 고객명, 이메일
     const needle = searchTerm.toLowerCase();
-    const name = pkg.customer?.name?.toLowerCase() ?? '';
-    const email = pkg.customer?.email?.toLowerCase() ?? '';
-    const searchMatch = pkg.id.toLowerCase().includes(needle) || name.includes(needle) || email.includes(needle);
+    return packages.filter((pkg) => {
+      const name = pkg.customer?.name?.toLowerCase() ?? '';
+      const email = pkg.customer?.email?.toLowerCase() ?? '';
+      const searchMatch = pkg.id.toLowerCase().includes(needle) || name.includes(needle) || email.includes(needle);
 
-    // 필터 매치
-    const statusMatch = statusFilter === 'all' || pkg.passStatus === statusFilter;
-    const packageTypeMatch = packageTypeFilter === 'all' || pkg.packageType === packageTypeFilter;
-    const paymentMatch = paymentFilter === 'all' || pkg.paymentStatus === paymentFilter;
-    const serviceTypeMatch = serviceTypeFilter === 'all' || pkg.serviceType === serviceTypeFilter;
+      // 필터 매치
+      const statusMatch = statusFilter === 'all' || pkg.passStatus === statusFilter;
+      const packageTypeMatch = packageTypeFilter === 'all' || pkg.packageType === packageTypeFilter;
+      const paymentMatch = paymentFilter === 'all' || pkg.paymentStatus === paymentFilter;
+      const serviceTypeMatch = serviceTypeFilter === 'all' || pkg.serviceType === serviceTypeFilter;
+      return searchMatch && statusMatch && packageTypeMatch && paymentMatch && serviceTypeMatch;
+    });
+  }, [packages, searchTerm, statusFilter, packageTypeFilter, paymentFilter, serviceTypeFilter]);
 
-    return searchMatch && statusMatch && packageTypeMatch && paymentMatch && serviceTypeMatch;
-  });
-
-  // 정렬 로직
-  const sortedPackages = [...filteredPackages].sort((a, b) => {
-    if (!sortBy) return 0;
-    let aValue: string | number = '';
-    let bValue: string | number = '';
-
-    switch (sortBy) {
-      case 'customer':
-        aValue = (a.customer?.name ?? '').toLowerCase();
-        bValue = (b.customer?.name ?? '').toLowerCase();
-        break;
-      case 'purchaseDate':
-        aValue = toDateSafe(a.purchaseDate)?.getTime() ?? 0;
-        bValue = toDateSafe(b.purchaseDate)?.getTime() ?? 0;
-        break;
-      case 'remainingSessions':
-        aValue = a.remainingSessions;
-        bValue = b.remainingSessions;
-        break;
-      case 'price':
-        aValue = a.price;
-        bValue = b.price;
-        break;
-    }
-
-    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
+  // 정렬 로직 (useMemo)
+  const sortedPackages = useMemo(() => {
+    if (!sortBy) return filteredPackages;
+    const arr = [...filteredPackages];
+    arr.sort((a, b) => {
+      let aValue: string | number = '',
+        bValue: string | number = '';
+      switch (sortBy) {
+        case 'customer':
+          aValue = (a.customer?.name ?? '').toLowerCase();
+          bValue = (b.customer?.name ?? '').toLowerCase();
+          break;
+        case 'purchaseDate':
+          aValue = toDateSafe(a.purchaseDate)?.getTime() ?? 0;
+          bValue = toDateSafe(b.purchaseDate)?.getTime() ?? 0;
+          break;
+        case 'remainingSessions':
+          aValue = a.remainingSessions;
+          bValue = b.remainingSessions;
+          break;
+        case 'price':
+          aValue = a.price;
+          bValue = b.price;
+          break;
+      }
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [filteredPackages, sortBy, sortDirection]);
 
   // 날짜 포맷터
   const formatDate = (v?: string | number | Date | null) => {
