@@ -99,6 +99,39 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       await issuePassesForPaidPackageOrder(db, { ...pkgOrder, _id });
     }
 
+    /**
+     * 주문/결제 상태에 따라 연결된 패스 상태 동기화
+     * - 결제완료가 아니면: suspended
+     * - 결제완료이면: active (단, 잔여/만료 체크)
+     */
+    try {
+      const passCol = db.collection('service_passes');
+      const now = new Date();
+
+      // 이 주문과 연결된 패스(보통 1개)
+      const passDoc = await passCol.findOne({ orderId: _id });
+
+      if (passDoc) {
+        // '결제완료' 이외(결제대기/결제취소/주문 취소 등)는 모두 suspended로 본다
+        const shouldSuspend = statusStr !== '결제완료';
+
+        if (shouldSuspend) {
+          if (passDoc.status !== 'suspended') {
+            await passCol.updateOne({ _id: passDoc._id }, { $set: { status: 'suspended', updatedAt: now } });
+          }
+        } else {
+          // 결제완료인 경우에만 active로 복구 (잔여 & 미만료일 때)
+          const stillValid = (passDoc.remainingCount ?? 0) > 0 && (!passDoc.expiresAt || passDoc.expiresAt > now);
+
+          if (stillValid && passDoc.status !== 'active') {
+            await passCol.updateOne({ _id: passDoc._id }, { $set: { status: 'active', updatedAt: now } });
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[package-orders] pass status sync error', e);
+    }
+
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('[PATCH /api/package-orders/[id]] error', e);
