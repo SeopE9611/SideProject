@@ -119,7 +119,19 @@ export default function PackageOrdersClient() {
   type SortKey = 'customer' | 'purchaseDate' | 'expiryDate' | 'remainingSessions' | 'price' | 'status' | 'payment' | 'package' | 'progress';
   const [sortBy, setSortBy] = useState<SortKey | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const SortIcon = (k: SortKey) => <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === k && 'text-primary', sortBy === k && sortDirection === 'desc' && 'rotate-180')} />;
+  const SortIcon = (k: SortKey) => (
+    <ChevronDown
+      className={cn(
+        // 아이콘 크기/정렬
+        'inline-block h-3 w-3 shrink-0 align-middle transition-transform',
+        // 현재 정렬키 여부에 따라 투명도 조절
+        sortBy === k ? 'opacity-80' : 'opacity-50',
+        // 내림차순이면 화살표 뒤집기
+        sortBy === k && sortDirection === 'desc' && 'rotate-180'
+      )}
+      aria-hidden="true" // 스크린리더는 th의 aria-sort를 이용
+    />
+  );
 
   // 한 페이지에 보여줄 항목 수
   const limit = 10;
@@ -349,6 +361,19 @@ export default function PackageOrdersClient() {
     price: 'text-center',
     actions: 'text-center',
   } as const;
+
+  // 현재 정렬 상태를 ARIA 규격 문자열로 변환하는 헬퍼
+  // - 인자 k는 정렬 키(이미 존재하는 SortKey 유니온 타입 가정: 'customer' | 'package' | ...)
+  // - 반환값은 스크린리더가 이해하는 정확한 값: 'ascending' | 'descending' | 'none'
+  const ariaSort = (k: SortKey) => {
+    // 현재 사용자가 선택한 정렬 키(sortBy)가 이 헤더의 키(k)와 같다면
+    if (sortBy === k) {
+      // 정렬 방향이 'asc'면 'ascending', 'desc'면 'descending'을 반환
+      return sortDirection === 'asc' ? 'ascending' : 'descending';
+    }
+    // 현재 정렬 컬럼이 아니라면 'none'으로 표시
+    return 'none';
+  };
 
   // 진행률을 상세 화면과 동일하게 계산: used / (used + remaining)
   // - 분모가 0인 경우 0%
@@ -626,34 +651,64 @@ export default function PackageOrdersClient() {
                 <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs ">
                   <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-900 shadow-sm">
                     <TableRow>
-                      <TableHead className={cn(thClasses, 'w-[120px] ')}>패키지 ID</TableHead>
-                      <TableHead onClick={() => handleSort('customer')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'customer' && 'text-primary')}>
+                      <TableHead className={cn(thClasses, 'w-[120px]')}>패키지 ID</TableHead>
+
+                      <TableHead onClick={() => handleSort('customer')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'customer' && 'text-primary')} role="columnheader" aria-sort={ariaSort('customer')}>
                         <span className="inline-flex items-center justify-center gap-1">고객 {SortIcon('customer')}</span>
                       </TableHead>
-                      <TableHead onClick={() => handleSort('package')} className={cn(thClasses, 'w-[96px] cursor-pointer select-none hover:text-primary', sortBy === 'package' && 'text-primary')}>
+
+                      <TableHead onClick={() => handleSort('package')} className={cn(thClasses, 'w-[96px] cursor-pointer select-none hover:text-primary', sortBy === 'package' && 'text-primary')} role="columnheader" aria-sort={ariaSort('package')}>
                         <span className="inline-flex items-center justify-center gap-1">패키지 {SortIcon('package')}</span>
                       </TableHead>
-                      <TableHead onClick={() => handleSort('remainingSessions')} className={cn(thClasses, 'w-[92px] hidden lg:table-cell cursor-pointer select-none hover:text-primary', sortBy === 'remainingSessions' && 'text-primary')}>
+
+                      <TableHead
+                        onClick={() => handleSort('remainingSessions')}
+                        className={cn(thClasses, 'w-[92px] hidden lg:table-cell cursor-pointer select-none hover:text-primary', sortBy === 'remainingSessions' && 'text-primary')}
+                        role="columnheader"
+                        aria-sort={ariaSort('remainingSessions')}
+                      >
                         <span className="inline-flex items-center justify-center gap-1">남은 횟수 {SortIcon('remainingSessions')}</span>
                       </TableHead>
-                      <TableHead onClick={() => handleSort('progress')} className={cn(thClasses, 'w-[96px] cursor-pointer select-none hover:text-primary', sortBy === 'progress' && 'text-primary')}>
+
+                      <TableHead onClick={() => handleSort('progress')} className={cn(thClasses, 'w-[96px] cursor-pointer select-none hover:text-primary', sortBy === 'progress' && 'text-primary')} role="columnheader" aria-sort={ariaSort('progress')}>
                         <span className="inline-flex items-center justify-center gap-1">진행률 {SortIcon('progress')}</span>
                       </TableHead>
-                      <TableHead onClick={() => handleSort('purchaseDate')} className={cn(thClasses, 'w-36 cursor-pointer select-none hover:text-primary', sortBy === 'purchaseDate' && 'text-primary')}>
+
+                      <TableHead
+                        onClick={() => handleSort('purchaseDate')}
+                        className={cn(thClasses, 'w-36 cursor-pointer select-none hover:text-primary', sortBy === 'purchaseDate' && 'text-primary')}
+                        role="columnheader"
+                        aria-sort={ariaSort('purchaseDate')}
+                      >
                         <span className="inline-flex items-center justify-center gap-1">구매일 {SortIcon('purchaseDate')}</span>
                       </TableHead>
-                      <TableHead onClick={() => handleSort('expiryDate')} className={cn(thClasses, 'w-36 cursor-pointer select-none hover:text-primary', sortBy === 'expiryDate' && 'text-primary')}>
+
+                      <TableHead
+                        onClick={() => handleSort('expiryDate')}
+                        className={cn(thClasses, 'w-36 cursor-pointer select-none hover:text-primary', sortBy === 'expiryDate' && 'text-primary')}
+                        role="columnheader"
+                        aria-sort={ariaSort('expiryDate')}
+                      >
                         <span className="inline-flex items-center justify-center gap-1">만료일 {SortIcon('expiryDate')}</span>
                       </TableHead>
-                      <TableHead onClick={() => handleSort('status')} className={cn(thClasses, 'w-[72px] cursor-pointer select-none hover:text-primary', sortBy === 'status' && 'text-primary')}>
+
+                      <TableHead onClick={() => handleSort('status')} className={cn(thClasses, 'w-[72px] cursor-pointer select-none hover:text-primary', sortBy === 'status' && 'text-primary')} role="columnheader" aria-sort={ariaSort('status')}>
                         <span className="inline-flex items-center justify-center gap-1">상태 {SortIcon('status')}</span>
                       </TableHead>
-                      <TableHead onClick={() => handleSort('payment')} className={cn(thClasses, 'w-[84px] hidden xl:table-cell cursor-pointer select-none hover:text-primary', sortBy === 'payment' && 'text-primary')}>
+
+                      <TableHead
+                        onClick={() => handleSort('payment')}
+                        className={cn(thClasses, 'w-[84px] hidden xl:table-cell cursor-pointer select-none hover:text-primary', sortBy === 'payment' && 'text-primary')}
+                        role="columnheader"
+                        aria-sort={ariaSort('payment')}
+                      >
                         <span className="inline-flex items-center justify-center gap-1">결제 {SortIcon('payment')}</span>
                       </TableHead>
-                      <TableHead onClick={() => handleSort('price')} className={cn(thClasses, 'w-[96px] cursor-pointer select-none hover:text-primary', sortBy === 'price' && 'text-primary')}>
+
+                      <TableHead onClick={() => handleSort('price')} className={cn(thClasses, 'w-[96px] cursor-pointer select-none hover:text-primary', sortBy === 'price' && 'text-primary')} role="columnheader" aria-sort={ariaSort('price')}>
                         <span className="inline-flex items-center justify-center gap-1">금액 {SortIcon('price')}</span>
                       </TableHead>
+
                       <TableHead className={cn(thClasses, 'w-[44px] text-center')}>작업</TableHead>
                     </TableRow>
                   </TableHeader>
