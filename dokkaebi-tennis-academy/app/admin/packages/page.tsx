@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Copy, Eye, Filter, MoreHorizontal, Search, X, Package, Calendar, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import AuthGuard from '@/components/auth/AuthGuard';
 import useSWR from 'swr';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 // 패키지 주문 타입 정의
 interface PackageOrder {
@@ -149,8 +150,124 @@ export default function PackageOrdersClient() {
     />
   );
 
+  // URL 동기화 훅
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const didInitFromURL = useRef(false); // 초기 URL -> state 적용 완료 플래그
+
+  // 기본값(디폴트 상태)
+  const DEFAULTS = {
+    page: 1 as number,
+    limit: 10 as number, // 이미 limit=10 사용 중
+    status: 'all' as 'all' | PassStatus,
+    package: 'all' as 'all' | PackageType,
+    payment: 'all' as 'all' | PaymentStatus,
+    service: 'all' as 'all' | ServiceType,
+    sortBy: null as SortKey | null,
+    sortDirection: 'asc' as 'asc' | 'desc',
+    q: '' as string,
+  };
+
+  // state -> URLSearchParams (항상 같은 순서로 직렬화)
+  function buildParamsFromState() {
+    const params = new URLSearchParams();
+    if (searchTerm?.trim()) params.set('q', searchTerm.trim());
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (packageTypeFilter !== 'all') params.set('package', packageTypeFilter.replace('회권', '')); // '10' | '30' ...
+    if (paymentFilter !== 'all') params.set('payment', paymentFilter);
+    if (serviceTypeFilter !== 'all') params.set('service', serviceTypeFilter);
+    if (sortBy) params.set('sort', `${sortBy}:${sortDirection}`);
+    if (page !== DEFAULTS.page) params.set('page', String(page));
+    params.set('limit', String(DEFAULTS.limit)); // 명시 유지
+    return params;
+  }
+
+  // URLSearchParams -> state 값 파싱
+  function parseParamsToState(sp: URLSearchParams) {
+    // page
+    const pageNum = Math.max(1, parseInt(sp.get('page') || String(DEFAULTS.page), 10));
+
+    // q
+    const q = (sp.get('q') || DEFAULTS.q).trim();
+
+    // status/payment/service
+    const status = (sp.get('status') as PassStatus) || DEFAULTS.status;
+    const payment = (sp.get('payment') as PaymentStatus) || DEFAULTS.payment;
+    const service = (sp.get('service') as ServiceType) || DEFAULTS.service;
+
+    // package: '10' -> '10회권'
+    const pkgRaw = sp.get('package');
+    const pkg: 'all' | PackageType = pkgRaw && ['10', '30', '50', '100'].includes(pkgRaw) ? ((pkgRaw + '회권') as PackageType) : DEFAULTS.package;
+
+    // sort
+    const sortParam = sp.get('sort');
+    let sBy: SortKey | null = DEFAULTS.sortBy;
+    let sDir: 'asc' | 'desc' = DEFAULTS.sortDirection;
+    if (sortParam) {
+      const [rk, rd] = sortParam.split(':');
+      if (rk) sBy = rk as SortKey;
+      if (rd === 'asc' || rd === 'desc') sDir = rd;
+    }
+
+    return {
+      page: pageNum,
+      q,
+      status,
+      package: pkg,
+      payment,
+      service,
+      sortBy: sBy,
+      sortDirection: sDir,
+    };
+  }
+
+  // URL 변경(초기 진입/뒤로가기 등) 시 -> state로 반영
+  useEffect(() => {
+    const sp = new URLSearchParams(searchParams.toString());
+    const parsed = parseParamsToState(sp);
+
+    // 현재 state와 달라야만 setState (루프 방지)
+    const needsUpdate =
+      parsed.q !== searchTerm ||
+      parsed.status !== statusFilter ||
+      parsed.package !== packageTypeFilter ||
+      parsed.payment !== paymentFilter ||
+      parsed.service !== serviceTypeFilter ||
+      parsed.sortBy !== sortBy ||
+      parsed.sortDirection !== sortDirection ||
+      parsed.page !== page;
+
+    if (needsUpdate) {
+      setSearchTerm(parsed.q);
+      setStatusFilter(parsed.status);
+      setPackageTypeFilter(parsed.package);
+      setPaymentFilter(parsed.payment);
+      setServiceTypeFilter(parsed.service);
+      setSortBy(parsed.sortBy);
+      setSortDirection(parsed.sortDirection);
+      setPage(parsed.page);
+    }
+    didInitFromURL.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]); // URL이 바뀔 때만 동작
+
   // 한 페이지에 보여줄 항목 수
   const limit = 10;
+
+  // state가 바뀌면 URL을 갱신(동일하면 noop)
+  useEffect(() => {
+    if (!didInitFromURL.current) return; // 초기 URL 반영 끝난 뒤부터 동작
+
+    const newParams = buildParamsFromState();
+    const newQuery = newParams.toString();
+    const currQuery = searchParams.toString();
+
+    if (newQuery !== currQuery) {
+      router.replace(`${pathname}?${newQuery}`, { scroll: false }); // 히스토리에 쌓지 않고 교체
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, searchTerm, statusFilter, packageTypeFilter, paymentFilter, serviceTypeFilter, sortBy, sortDirection, limit]);
 
   const qs = new URLSearchParams();
   if (searchTerm) qs.set('q', searchTerm);
@@ -251,7 +368,7 @@ export default function PackageOrdersClient() {
   };
 
   // 날짜 헬퍼
-  // ✅ 안전한 Date 변환 유틸 — 함수 선언(호이스팅됨)
+  // 안전한 Date 변환 유틸 — 함수 선언(호이스팅됨)
   function toDateSafe(v?: string | number | Date | null) {
     if (v == null) return null;
 
@@ -313,7 +430,7 @@ export default function PackageOrdersClient() {
   // 금액 포맷터
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
 
-  // 현재 화면이 "필터/검색 적용 중"인지 여부 → 메시지 분기용
+  // 현재 화면이 "필터/검색 적용 중"인지 여부 -> 메시지 분기용
   const hasAnyFilter = !!searchTerm || statusFilter !== 'all' || packageTypeFilter !== 'all' || paymentFilter !== 'all' || serviceTypeFilter !== 'all';
 
   // 필터 리셋
