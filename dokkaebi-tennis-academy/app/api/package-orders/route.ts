@@ -145,6 +145,23 @@ export async function GET(req: Request) {
           },
         },
       },
+
+      // 만료까지 남은 일수(정수, 오늘 포함 올림). 음수면 이미 만료.
+      // - $$NOW(UTC 기준)와의 차이를 일수로 환산
+      // - 클라의 "만료 예정" 계산(getDaysUntilExpiry)과 의미를 맞추기 위한 서버 측 지표
+      {
+        $addFields: {
+          _daysUntilExpiry: {
+            $ceil: {
+              $divide: [
+                { $subtract: ['$_calcExpiry', '$$NOW'] }, // 만료시각 - 현재시각
+                86400000, // 1일(ms)
+              ],
+            },
+          },
+        },
+      },
+
       // 정렬용 계산 필드
       {
         $addFields: {

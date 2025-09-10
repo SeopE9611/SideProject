@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Copy, Eye, Filter, MoreHorizontal, Search, X, Package, Calendar, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -84,6 +84,19 @@ interface Paginated<T> {
   pageSize: number;
 }
 
+//  KPI
+interface PackageMetrics {
+  total: number;
+  active: number;
+  revenue: number;
+  expirySoon: number;
+}
+
+// 이 페이지에서만 쓸 응답 타입: 기존 Paginated에 metrics만
+type PackagesResponse = Paginated<PackageListItem> & {
+  metrics?: PackageMetrics;
+};
+
 //  모든 뱃지(패키지/상태/결제) 공통 사이즈
 const badgeSizeCls = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
 
@@ -149,7 +162,10 @@ export default function PackageOrdersClient() {
   qs.set('page', String(page));
   qs.set('limit', String(limit));
 
-  const { data, error, isValidating, mutate } = useSWR<Paginated<PackageListItem>>(`/api/package-orders?${qs.toString()}`, fetcher, { dedupingInterval: 1000, revalidateOnFocus: false });
+  const { data, error, isValidating, mutate } = useSWR<PackagesResponse>(`/api/package-orders?${qs.toString()}`, fetcher, {
+    dedupingInterval: 1000,
+    revalidateOnFocus: false,
+  });
 
   if (error) return <div className="p-6 text-red-600">목록을 불러오지 못했습니다.</div>;
 
@@ -157,6 +173,29 @@ export default function PackageOrdersClient() {
   const packages: PackageListItem[] = data?.items ?? [];
   const totalPages = useMemo(() => Math.max(1, Math.ceil((data?.total ?? 0) / limit)), [data?.total, limit]);
   const goToPage = (p: number) => setPage(Math.min(totalPages, Math.max(1, p)));
+
+  const metrics = data?.metrics;
+
+  const totalCount = data?.total ?? 0; // 상단 "총 N개의 패키지"에도 이미 사용
+
+  // 총 개수 (현재 필터/검색/정렬 조건 기준 전체)
+  const kpiTotal = metrics?.total ?? totalCount;
+
+  // 활성 패키지 수 (서버가 주면 사용, 아니면 기존 필터)
+  const kpiActive = metrics?.active ?? packages.filter((p) => p.passStatus === '활성').length;
+
+  // 총 매출 (서버는 '결제완료' 합계. 폴백은 기존처럼 페이지 아이템 합)
+  const kpiRevenue = metrics?.revenue ?? packages.reduce((sum, p) => sum + p.price, 0);
+
+  // 만료 예정 (0 < 남은일수 ≤ 30, '취소' 제외)
+  const kpiExpSoon =
+    metrics?.expirySoon ??
+    packages.filter((p) => {
+      const exp = p.expiryDate ?? null;
+      const days = getDaysUntilExpiry(exp);
+      const s = computeListStatus(p.paymentStatus, exp);
+      return s.label !== '취소' && days <= 30 && days > 0;
+    }).length;
 
   // 페이지 번호 목록(앞·뒤 ... 처리)
   const pageItems = useMemo<(number | string)[]>(() => {
@@ -172,56 +211,6 @@ export default function PackageOrdersClient() {
     items.push(t);
     return items;
   }, [page, totalPages]);
-
-  // 검색 / 필터링 로직 (useMemo)
-  const filteredPackages = useMemo(() => {
-    // 검색어 매치: ID, 고객명, 이메일
-    const needle = searchTerm.toLowerCase();
-    return packages.filter((pkg) => {
-      const name = pkg.customer?.name?.toLowerCase() ?? '';
-      const email = pkg.customer?.email?.toLowerCase() ?? '';
-      const searchMatch = pkg.id.toLowerCase().includes(needle) || name.includes(needle) || email.includes(needle);
-
-      // 필터 매치
-      const statusMatch = statusFilter === 'all' || pkg.passStatus === statusFilter;
-      const packageTypeMatch = packageTypeFilter === 'all' || pkg.packageType === packageTypeFilter;
-      const paymentMatch = paymentFilter === 'all' || pkg.paymentStatus === paymentFilter;
-      const serviceTypeMatch = serviceTypeFilter === 'all' || pkg.serviceType === serviceTypeFilter;
-      return searchMatch && statusMatch && packageTypeMatch && paymentMatch && serviceTypeMatch;
-    });
-  }, [packages, searchTerm, statusFilter, packageTypeFilter, paymentFilter, serviceTypeFilter]);
-
-  // // 정렬 로직 (useMemo)
-  // const sortedPackages = useMemo(() => {
-  //   if (!sortBy) return filteredPackages;
-  //   const arr = [...filteredPackages];
-  //   arr.sort((a, b) => {
-  //     let aValue: string | number = '',
-  //       bValue: string | number = '';
-  //     switch (sortBy) {
-  //       case 'customer':
-  //         aValue = (a.customer?.name ?? '').toLowerCase();
-  //         bValue = (b.customer?.name ?? '').toLowerCase();
-  //         break;
-  //       case 'purchaseDate':
-  //         aValue = toDateSafe(a.purchaseDate)?.getTime() ?? 0;
-  //         bValue = toDateSafe(b.purchaseDate)?.getTime() ?? 0;
-  //         break;
-  //       case 'remainingSessions':
-  //         aValue = a.remainingSessions;
-  //         bValue = b.remainingSessions;
-  //         break;
-  //       case 'price':
-  //         aValue = a.price;
-  //         bValue = b.price;
-  //         break;
-  //     }
-  //     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-  //     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-  //     return 0;
-  //   });
-  //   return arr;
-  // }, [filteredPackages, sortBy, sortDirection]);
 
   // 날짜 포맷터
   const formatDate = (v?: string | number | Date | null) => {
@@ -262,30 +251,23 @@ export default function PackageOrdersClient() {
   };
 
   // 날짜 헬퍼
-  // - ISO 문자열/Date/number(epoch) 모두 처리
-  // - 'YYYY. MM. DD.' / 'YY. MM. DD.' / 'YYYY-MM-DD' / 'YYYY/MM/DD' / 'YYYYMMDD' 지원
-  // - 끝의 점(.)/공백 허용
-  const toDateSafe = (v?: string | number | Date | null) => {
+  // ✅ 안전한 Date 변환 유틸 — 함수 선언(호이스팅됨)
+  function toDateSafe(v?: string | number | Date | null) {
     if (v == null) return null;
 
-    // Date 인스턴스
     if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v;
 
-    // 숫자(epoch 초/밀리초)
     if (typeof v === 'number') {
-      const ms = v < 1e12 ? v * 1000 : v; // 10^12 미만은 초로 판단
+      const ms = v < 1e12 ? v * 1000 : v;
       const d = new Date(ms);
       return Number.isNaN(d.getTime()) ? null : d;
     }
 
-    // 문자열
     let s = String(v).trim();
 
-    // 기본 파서(ISO 등)
     const direct = new Date(s);
     if (!Number.isNaN(direct.getTime())) return direct;
 
-    // 'YYYY. MM. DD.' 또는 'YY. MM. DD.'
     const mDot = s.match(/^(\d{2,4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?$/);
     if (mDot) {
       const y = Number(mDot[1].length === 2 ? '20' + mDot[1] : mDot[1]);
@@ -295,7 +277,6 @@ export default function PackageOrdersClient() {
       return Number.isNaN(dd.getTime()) ? null : dd;
     }
 
-    // 'YYYY/MM/DD' 또는 'YYYY-MM-DD'
     const mSep = s.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
     if (mSep) {
       const y = Number(mSep[1]);
@@ -305,7 +286,6 @@ export default function PackageOrdersClient() {
       return Number.isNaN(dd.getTime()) ? null : dd;
     }
 
-    // 'YYYYMMDD'
     const mCompact = s.match(/^(\d{4})(\d{2})(\d{2})$/);
     if (mCompact) {
       const y = Number(mCompact[1]);
@@ -316,10 +296,25 @@ export default function PackageOrdersClient() {
     }
 
     return null;
-  };
+  }
+
+  // 만료일까지 남은 일수 — 함수 선언(호이스팅됨)
+  function getDaysUntilExpiry(v?: string | number | Date | null) {
+    const d = toDateSafe(v);
+    if (!d) return 0;
+
+    const endOfDay = new Date(d);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const diffMs = endOfDay.getTime() - Date.now();
+    return Math.ceil(diffMs / 86400000);
+  }
 
   // 금액 포맷터
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
+
+  // 현재 화면이 "필터/검색 적용 중"인지 여부 → 메시지 분기용
+  const hasAnyFilter = !!searchTerm || statusFilter !== 'all' || packageTypeFilter !== 'all' || paymentFilter !== 'all' || serviceTypeFilter !== 'all';
 
   // 필터 리셋
   const resetFilters = () => {
@@ -330,6 +325,13 @@ export default function PackageOrdersClient() {
     setServiceTypeFilter('all');
     setPage(1);
   };
+
+  useEffect(() => {
+    // totalPages가 줄어든 경우 현재 페이지를 자동 보정
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [totalPages]);
 
   // 정렬 헤더 클릭 핸들러
   const handleSort = (key: SortKey) => {
@@ -390,22 +392,6 @@ export default function PackageOrdersClient() {
     return { percent, used, remaining, total };
   }
 
-  // 만료일까지 남은 일수 계산
-  // - 목록 표기는 "그날 23:59:59"까지 유효로 보여야 운영 혼선을 줄임
-  // - 서버가 'YYYY-MM-DD' 같은 날짜 문자열을 줄 때 00:00 해석 문제를 피하기 위함
-  const getDaysUntilExpiry = (v?: string | number | Date | null) => {
-    const d = toDateSafe(v); // 안전하게 Date로 변환(없으면 null)
-    if (!d) return 0;
-
-    // "해당 날짜의 하루 끝"까지 유효로 보이도록 보정
-    const endOfDay = new Date(d); // 복사본
-    endOfDay.setHours(23, 59, 59, 999); // 로컬(=KST) 기준 EOD
-
-    const diffMs = endOfDay.getTime() - Date.now();
-    // 일수 올림(양수면 오늘 포함하여 1일 남음 처럼 보임)
-    return Math.ceil(diffMs / 86400000);
-  };
-
   // 상태 계산 함수
   function computeListStatus(paymentStatus?: string | null, passExpiresAt?: string | number | Date | null) {
     if (paymentStatus === '결제취소') return { label: '취소', tone: 'destructive' as const };
@@ -465,7 +451,7 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">총 패키지</p>
-                    <p className="text-3xl font-bold text-gray-900">{packages.length}</p>
+                    <p className="text-3xl font-bold text-gray-900">{kpiTotal}</p>
                   </div>
                   <div className="bg-blue-50 rounded-xl p-3">
                     <Package className="h-6 w-6 text-blue-600" />
@@ -479,7 +465,7 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">활성 패키지</p>
-                    <p className="text-3xl font-bold text-green-600">{packages.filter((p) => p.passStatus === '활성').length}</p>
+                    <p className="text-3xl font-bold text-green-600">{kpiActive}</p>
                   </div>
                   <div className="bg-green-50 rounded-xl p-3">
                     <Calendar className="h-6 w-6 text-green-600" />
@@ -493,7 +479,7 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">총 매출</p>
-                    <p className="text-3xl font-bold text-purple-600">{formatCurrency(packages.reduce((sum, p) => sum + p.price, 0))}</p>
+                    <p className="text-3xl font-bold text-purple-600">{formatCurrency(kpiRevenue)}</p>
                   </div>
                   <div className="bg-purple-50 rounded-xl p-3">
                     <CreditCard className="h-6 w-6 text-purple-600" />
@@ -507,16 +493,7 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">만료 예정</p>
-                    <p className="text-3xl font-bold text-orange-600">
-                      {
-                        packages.filter((p) => {
-                          const exp = p.expiryDate ?? null;
-                          const days = getDaysUntilExpiry(exp);
-                          const s = computeListStatus(p.paymentStatus, exp);
-                          return s.label !== '취소' && days <= 30 && days > 0;
-                        }).length
-                      }
-                    </p>
+                    <p className="text-3xl font-bold text-orange-600">{kpiExpSoon}</p>
                   </div>
                   <div className="bg-orange-50 rounded-xl p-3">
                     <Calendar className="h-6 w-6 text-orange-600" />
@@ -646,7 +623,9 @@ export default function PackageOrdersClient() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>패키지 목록</CardTitle>
-                <p className="text-sm text-muted-foreground">총 {filteredPackages.length}개의 패키지</p>
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  총 {totalCount}개의 패키지
+                </p>
               </div>
             </CardHeader>
             <CardContent className="overflow-x-auto md:overflow-x-visible relative px-3 sm:px-4">
@@ -717,14 +696,14 @@ export default function PackageOrdersClient() {
                   </TableHeader>
 
                   <TableBody>
-                    {filteredPackages.length === 0 ? (
+                    {packages.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
-                          {searchTerm || statusFilter !== 'all' || packageTypeFilter !== 'all' || paymentFilter !== 'all' || serviceTypeFilter !== 'all' ? '검색 결과가 없습니다.' : '등록된 패키지가 없습니다.'}
+                          {hasAnyFilter ? '검색 결과가 없습니다.' : '등록된 패키지가 없습니다.'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredPackages.map((pkg) => {
+                      packages.map((pkg) => {
                         const { percent: progressPercentage, total: currentTotal } = calcProgressPercent(pkg.usedSessions, pkg.remainingSessions);
 
                         // 만료일 소스
