@@ -222,6 +222,30 @@ export default function PackageOrdersClient() {
     }).format(d);
   };
 
+  // 표용 짧은 날짜 포맷 (한 줄 고정)
+  const formatDateCompact = (v?: string | number | Date | null) => {
+    const d = toDateSafe(v);
+    if (!d) return '-';
+    const yy = String(d.getFullYear()).slice(2);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return `${yy}.${mm}.${dd} ${hh}:${mi}`;
+  };
+
+  // 날짜를 "YY.MM.DD" / "HH:MM" 두 줄로 나눠 쓰기
+  const formatDateSplit = (v?: string | number | Date | null) => {
+    const d = toDateSafe(v);
+    if (!d) return { date: '-', time: '' };
+    const yy = String(d.getFullYear()).slice(2);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return { date: `${yy}.${mm}.${dd}`, time: `${hh}:${mi}` };
+  };
+
   // 날짜 헬퍼
   // - ISO 문자열/Date/number(epoch) 모두 처리
   // - 'YYYY. MM. DD.' / 'YY. MM. DD.' / 'YYYY-MM-DD' / 'YYYY/MM/DD' / 'YYYYMMDD' 지원
@@ -303,8 +327,28 @@ export default function PackageOrdersClient() {
     setPage(1);
   };
   // 공통 스타일 상수
-  const thClasses = 'px-4 py-2 text-center align-middle ' + 'border-b border-gray-200 dark:border-gray-700 ' + 'font-semibold text-gray-700 dark:text-gray-300';
-  const tdClasses = 'px-3 py-4 align-middle text-center';
+  const thClasses =
+    'sticky top-0 z-10 whitespace-nowrap px-1.5 py-1.5 text-center align-middle ' +
+    'bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 ' +
+    'border-b border-slate-200 text-slate-600 dark:bg-slate-900/60 dark:border-slate-700 dark:text-slate-300 ' +
+    'font-semibold text-[11px] leading-[1.05] box-border';
+
+  const tdClasses = 'px-3 py-2 align-middle text-center text-[11px] leading-tight tabular-nums';
+
+  // 열별 정렬 (헤더/바디 공통 적용)
+  const col = {
+    id: 'text-center',
+    customer: 'text-center',
+    type: 'text-center',
+    remain: 'text-center',
+    progress: 'text-center',
+    buy: 'text-center',
+    expire: 'text-center',
+    status: 'text-center',
+    payment: 'text-center',
+    price: 'text-center',
+    actions: 'text-center',
+  } as const;
 
   // 진행률을 상세 화면과 동일하게 계산: used / (used + remaining)
   // - 분모가 0인 경우 0%
@@ -441,7 +485,7 @@ export default function PackageOrdersClient() {
                           const exp = p.expiryDate ?? null;
                           const days = getDaysUntilExpiry(exp);
                           const s = computeListStatus(p.paymentStatus, exp);
-                          return s.label !== '결제취소' && days <= 30 && days > 0;
+                          return s.label !== '취소' && days <= 30 && days > 0;
                         }).length
                       }
                     </p>
@@ -577,59 +621,40 @@ export default function PackageOrdersClient() {
                 <p className="text-sm text-muted-foreground">총 {filteredPackages.length}개의 패키지</p>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
+            <CardContent className="overflow-x-auto md:overflow-x-visible relative px-3 sm:px-4">
+              <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-slate-200 shadow-sm max-h-[60vh] min-w-0">
+                <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs ">
+                  <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-900 shadow-sm">
                     <TableRow>
-                      <TableHead className={thClasses}>패키지 ID</TableHead>
-
-                      {/* 고객 */}
+                      <TableHead className={cn(thClasses, 'w-[120px] ')}>패키지 ID</TableHead>
                       <TableHead onClick={() => handleSort('customer')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'customer' && 'text-primary')}>
-                        고객 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
+                        <span className="inline-flex items-center justify-center gap-1">고객 {SortIcon('customer')}</span>
                       </TableHead>
-
-                      {/* 패키지 유형 */}
-                      <TableHead onClick={() => handleSort('package')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'package' && 'text-primary')}>
-                        패키지 유형 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'package' && sortDirection === 'desc' && 'rotate-180')} />
+                      <TableHead onClick={() => handleSort('package')} className={cn(thClasses, 'w-[96px] cursor-pointer select-none hover:text-primary', sortBy === 'package' && 'text-primary')}>
+                        <span className="inline-flex items-center justify-center gap-1">패키지 {SortIcon('package')}</span>
                       </TableHead>
-
-                      {/* 남은 횟수 */}
-                      <TableHead onClick={() => handleSort('remainingSessions')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'remainingSessions' && 'text-primary')}>
-                        남은 횟수 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'remainingSessions' && sortDirection === 'desc' && 'rotate-180')} />
+                      <TableHead onClick={() => handleSort('remainingSessions')} className={cn(thClasses, 'w-[92px] hidden lg:table-cell cursor-pointer select-none hover:text-primary', sortBy === 'remainingSessions' && 'text-primary')}>
+                        <span className="inline-flex items-center justify-center gap-1">남은 횟수 {SortIcon('remainingSessions')}</span>
                       </TableHead>
-
-                      {/* 진행률 */}
-                      <TableHead onClick={() => handleSort('progress')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'progress' && 'text-primary')}>
-                        진행률 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'progress' && sortDirection === 'desc' && 'rotate-180')} />
+                      <TableHead onClick={() => handleSort('progress')} className={cn(thClasses, 'w-[96px] cursor-pointer select-none hover:text-primary', sortBy === 'progress' && 'text-primary')}>
+                        <span className="inline-flex items-center justify-center gap-1">진행률 {SortIcon('progress')}</span>
                       </TableHead>
-
-                      {/* 구매일 */}
-                      <TableHead onClick={() => handleSort('purchaseDate')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'purchaseDate' && 'text-primary')}>
-                        구매일 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'purchaseDate' && sortDirection === 'desc' && 'rotate-180')} />
+                      <TableHead onClick={() => handleSort('purchaseDate')} className={cn(thClasses, 'w-36 cursor-pointer select-none hover:text-primary', sortBy === 'purchaseDate' && 'text-primary')}>
+                        <span className="inline-flex items-center justify-center gap-1">구매일 {SortIcon('purchaseDate')}</span>
                       </TableHead>
-
-                      {/* 만료일 */}
-                      <TableHead onClick={() => handleSort('expiryDate')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'expiryDate' && 'text-primary')}>
-                        만료일 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'expiryDate' && sortDirection === 'desc' && 'rotate-180')} />
+                      <TableHead onClick={() => handleSort('expiryDate')} className={cn(thClasses, 'w-36 cursor-pointer select-none hover:text-primary', sortBy === 'expiryDate' && 'text-primary')}>
+                        <span className="inline-flex items-center justify-center gap-1">만료일 {SortIcon('expiryDate')}</span>
                       </TableHead>
-
-                      {/* 상태 */}
-                      <TableHead onClick={() => handleSort('status')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'status' && 'text-primary')}>
-                        상태 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'status' && sortDirection === 'desc' && 'rotate-180')} />
+                      <TableHead onClick={() => handleSort('status')} className={cn(thClasses, 'w-[72px] cursor-pointer select-none hover:text-primary', sortBy === 'status' && 'text-primary')}>
+                        <span className="inline-flex items-center justify-center gap-1">상태 {SortIcon('status')}</span>
                       </TableHead>
-
-                      {/* 결제 */}
-                      <TableHead onClick={() => handleSort('payment')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'payment' && 'text-primary')}>
-                        결제 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'payment' && sortDirection === 'desc' && 'rotate-180')} />
+                      <TableHead onClick={() => handleSort('payment')} className={cn(thClasses, 'w-[84px] hidden xl:table-cell cursor-pointer select-none hover:text-primary', sortBy === 'payment' && 'text-primary')}>
+                        <span className="inline-flex items-center justify-center gap-1">결제 {SortIcon('payment')}</span>
                       </TableHead>
-
-                      {/* 금액 */}
-                      <TableHead onClick={() => handleSort('price')} className={cn(thClasses, 'cursor-pointer select-none hover:text-primary', sortBy === 'price' && 'text-primary')}>
-                        금액 <ChevronDown className={cn('inline ml-1 w-3 h-3', sortBy === 'price' && sortDirection === 'desc' && 'rotate-180')} />
+                      <TableHead onClick={() => handleSort('price')} className={cn(thClasses, 'w-[96px] cursor-pointer select-none hover:text-primary', sortBy === 'price' && 'text-primary')}>
+                        <span className="inline-flex items-center justify-center gap-1">금액 {SortIcon('price')}</span>
                       </TableHead>
-
-                      <TableHead className={thClasses}>작업</TableHead>
+                      <TableHead className={cn(thClasses, 'w-[44px] text-center')}>작업</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -651,18 +676,19 @@ export default function PackageOrdersClient() {
                         const daysUntilExpiry = getDaysUntilExpiry(expirySource);
 
                         return (
-                          <TableRow key={pkg.id} className="hover:bg-muted/50 transition-colors">
-                            <TableCell className={tdClasses}>
+                          <TableRow key={pkg.id} className="hover:bg-primary/5 transition-colors even:bg-slate-50/60 border-b last:border-0">
+                            {/* 패키지 ID (좌정렬 + 말줄임) */}
+                            <TableCell className={cn(tdClasses)}>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <span className="font-mono text-sm cursor-pointer">
+                                    <span className="font-mono text-sm cursor-pointer block truncate" title={pkg.id}>
                                       {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
                                     </span>
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     <div className="flex items-center gap-2">
-                                      <span>{pkg.id}</span>
+                                      <span className="whitespace-nowrap">{pkg.id}</span>
                                       <Button
                                         size="icon"
                                         variant="ghost"
@@ -680,91 +706,104 @@ export default function PackageOrdersClient() {
                               </TooltipProvider>
                             </TableCell>
 
-                            <TableCell className={tdClasses}>
-                              <div className="flex flex-col items-center">
-                                {(() => {
-                                  const cName = pkg.customer?.name ?? '이름없음';
-                                  const cEmail = pkg.customer?.email ?? '';
-                                  const baseName = cName.replace(/\s*\(비회원\)\s*$/, '');
-                                  const isGuest = cName.includes('(비회원)');
-                                  return (
-                                    <>
-                                      <span className="font-medium">
-                                        {baseName}
-                                        {isGuest && <span className="ml-1 text-xs text-gray-500">(비회원)</span>}
-                                      </span>
-                                      <span className="text-xs text-muted-foreground">{cEmail}</span>
-                                    </>
-                                  );
-                                })()}
-                              </div>
+                            {/* 고객 (좌정렬 + 2줄 구성, 둘 다 말줄임) */}
+                            <TableCell className={cn(tdClasses, 'text-center')}>
+                              {(() => {
+                                const cName = pkg.customer?.name ?? '이름없음';
+                                const cEmail = pkg.customer?.email ?? '';
+                                const baseName = cName.replace(/\(비회원\)\s*$/, '');
+                                const isGuest = cName.includes('(비회원)');
+                                return (
+                                  <div className="flex flex-col items-center text-center">
+                                    <span className="font-medium max-w-[200px] truncate">
+                                      {baseName}
+                                      {isGuest && <span className="ml-1 text-xs text-gray-500">(비회원)</span>}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground max-w-[200px] truncate">{cEmail}</span>
+                                  </div>
+                                );
+                              })()}
                             </TableCell>
 
-                            <TableCell className={tdClasses}>
-                              <Badge className={`${packageTypeColors[pkg.packageType]} font-medium`}>{pkg.packageType}</Badge>
+                            {/* 패키지 유형 (한 줄 고정) */}
+                            <TableCell className={cn(tdClasses, col.type, 'whitespace-nowrap')}>
+                              <Badge className={cn(packageTypeColors[pkg.packageType], 'font-medium px-2.5 py-0.5 text-xs')}>{pkg.packageType}</Badge>
                             </TableCell>
 
-                            <TableCell className={tdClasses}>
-                              <div className="flex flex-col items-center">
+                            {/* 남은 횟수 (한 줄 + 균일 정렬) */}
+                            <TableCell className={cn(tdClasses, col.remain, 'whitespace-nowrap hidden lg:table-cell')}>
+                              <div className="flex flex-col items-center leading-tight">
                                 <span className="font-bold text-lg">{pkg.remainingSessions}</span>
                                 <span className="text-xs text-muted-foreground">/ {currentTotal}회</span>
                               </div>
                             </TableCell>
 
-                            <TableCell className={tdClasses}>
+                            {/* 진행률 (고정폭 바 + 한 줄 %) */}
+                            <TableCell className={cn(tdClasses, col.progress, 'whitespace-nowrap')}>
                               <div className="flex flex-col items-center gap-1">
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }}></div>
+                                <div className="w-[56px] bg-gray-200 rounded-full h-1.5 xl:w-[72px]">
+                                  <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
                                 </div>
                                 <span className="text-xs font-medium">{progressPercentage}%</span>
                               </div>
                             </TableCell>
 
-                            <TableCell className={tdClasses}>
-                              <span className="text-sm">{formatDate(pkg.purchaseDate)}</span>
-                            </TableCell>
+                            {/* 구매일 / 만료일 (한 줄 고정) */}
+                            {/* 구매일: 날짜 / 시간 두 줄 */}
+                            {(() => {
+                              const { date, time } = formatDateSplit(pkg.purchaseDate);
+                              return (
+                                <TableCell className={cn(tdClasses, col.buy)}>
+                                  <div className="flex flex-col items-center leading-tight">
+                                    <span className="text-sm">{date}</span>
+                                    <span className="text-xs text-muted-foreground">{time}</span>
+                                  </div>
+                                </TableCell>
+                              );
+                            })()}
 
-                            <TableCell className={tdClasses}>
-                              <div className="flex flex-col items-center">
-                                <span className="text-sm">{formatDate(expirySource)}</span>
+                            {/* 만료일: 날짜 / 시간 두 줄 + 보조 라벨 */}
+                            {(() => {
+                              const { date, time } = formatDateSplit(expirySource);
+                              return (
+                                <TableCell className={cn(tdClasses, col.expire)}>
+                                  <div className="flex flex-col items-center leading-tight">
+                                    <span className="text-sm">{date}</span>
+                                    <span className="text-xs text-muted-foreground">{time}</span>
+                                    {listState.label !== '취소' && daysUntilExpiry <= 30 && daysUntilExpiry > 0 && <span className="text-xs text-orange-600 font-medium">{daysUntilExpiry}일 남음</span>}
+                                    {listState.label === '만료' && <span className="text-xs text-red-600 font-medium">만료됨</span>}
+                                  </div>
+                                </TableCell>
+                              );
+                            })()}
 
-                                {/* 결제취소는 남은일수/만료 라벨을 숨김, 나머지만 카운트다운 표시 */}
-                                {listState.label !== '결제취소' && daysUntilExpiry <= 30 && daysUntilExpiry > 0 && <span className="text-xs text-orange-600 font-medium">{daysUntilExpiry}일 남음</span>}
-                                {/* '만료' 표기 - 실제 계산된 목록 상태(listState) */}
-                                {listState.label === '만료' && <span className="text-xs text-red-600 font-medium">만료됨</span>}
-                              </div>
-                            </TableCell>
-
-                            {/* 상태 (결제취소 최우선 -> 만료 -> 결제대기=비활성 -> 그 외=활성) */}
-                            <TableCell className={tdClasses}>
+                            {/* 상태 = 항상 노출 */}
+                            <TableCell className={cn(tdClasses, col.status, 'whitespace-nowrap')}>
                               {(() => {
-                                // 위에서 계산한 listState/expirySource 그대로 사용
                                 const badgeCls = statusBadgeClass(listState.tone);
                                 return (
-                                  <Badge
-                                    className={`${badgeCls} font-medium`}
-                                    title={`결제상태: ${String(pkg.paymentStatus)} · 만료일: ${formatDate(expirySource)}`} // ← 변경
-                                    aria-label={`표시상태 ${listState.label}`}
-                                  >
+                                  <Badge className={cn(badgeCls, 'font-medium')} title={`결제상태: ${String(pkg.paymentStatus)} · 만료일: ${formatDate(expirySource)}`} aria-label={`표시상태 ${listState.label}`}>
                                     {listState.label}
                                   </Badge>
                                 );
                               })()}
                             </TableCell>
 
-                            {/* 결제 */}
-                            <TableCell className={tdClasses}>
+                            {/* 결제 = xl 이상에서만 노출 (헤더 규칙과 동일) */}
+                            <TableCell className={cn(tdClasses, col.payment, 'whitespace-nowrap hidden xl:table-cell')}>
                               <Badge className={paymentStatusColors[(pkg.paymentStatus as PaymentStatus) ?? '결제대기']}>{pkg.paymentStatus}</Badge>
                             </TableCell>
 
-                            <TableCell className={tdClasses}>
+                            {/* 금액 (우정렬 + 한 줄) */}
+                            <TableCell className={cn(tdClasses, col.price, 'whitespace-nowrap')}>
                               <span className="font-medium">{formatCurrency(pkg.price)}</span>
                             </TableCell>
 
-                            <TableCell className={tdClasses}>
+                            {/* 작업 */}
+                            <TableCell className={cn(tdClasses, col.actions, 'p-0')}>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -786,19 +825,14 @@ export default function PackageOrdersClient() {
                   </TableBody>
                 </Table>
                 {/* pagination */}
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <div className="text-sm text-muted-foreground">
-                    총 <b>{data?.total ?? 0}</b>개 · 페이지 <b>{page}</b>/<b>{totalPages}</b>
-                  </div>
-
-                  <div className="flex items-center gap-1">
+                <div className="relative mt-4 h-12">
+                  <div className="absolute inset-x-0 top-[55%] -translate-y-1/2 flex items-center justify-center gap-1">
                     <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(1)} disabled={page <= 1} aria-label="첫 페이지">
                       <ChevronsLeft className="h-4 w-4" />
                     </Button>
                     <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(page - 1)} disabled={page <= 1} aria-label="이전">
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-
                     {pageItems.map((it, idx) =>
                       typeof it === 'number' ? (
                         <Button key={idx} variant={it === page ? 'default' : 'outline'} className="h-9 min-w-9 px-3" aria-current={it === page ? 'page' : undefined} onClick={() => goToPage(it)}>
@@ -810,7 +844,6 @@ export default function PackageOrdersClient() {
                         </span>
                       )
                     )}
-
                     <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} aria-label="다음">
                       <ChevronRight className="h-4 w-4" />
                     </Button>
