@@ -1,5 +1,10 @@
 import { Order } from '@/lib/types/order';
 
+// 전역 배지 토큰 (크기/정렬/테두리 옵션)
+export const badgeSizeSm = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
+export const badgeBase = 'inline-flex items-center gap-1 font-medium';
+export const badgeBaseOutlined = `${badgeBase} border`;
+
 export const orderStatusColors: Record<string, string> = {
   대기중: 'bg-yellow-500/10 text-yellow-500',
   처리중: 'bg-blue-500/10 text-blue-500',

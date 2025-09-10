@@ -9,7 +9,7 @@ import { ArrowLeft, Calendar, CreditCard, LinkIcon, Mail, MapPin, Package, Penci
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
 import AdminCancelOrderDialog from '@/app/features/orders/components/AdminCancelOrderDialog';
 import OrderHistory from '@/app/features/orders/components/OrderHistory';
 import Loading from '@/app/admin/orders/[id]/loading';
@@ -19,6 +19,7 @@ import PaymentEditForm from '@/app/features/orders/components/PaymentEditForm';
 import RequestEditForm from '@/app/features/orders/components/RequestEditForm';
 import PaymentMethodDetail from '@/app/features/orders/components/PaymentMethodDetail';
 import OrderStatusSelect from '@/app/features/orders/components/OrderStatusSelect';
+import { cn } from '@/lib/utils';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -226,7 +227,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <User className="h-4 w-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">결제 상태</span>
               </div>
-              <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
             </div>
           </div>
         </div>
@@ -444,7 +445,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">결제 상태</p>
-                        <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
+                        <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
                       </div>
                     </div>
 

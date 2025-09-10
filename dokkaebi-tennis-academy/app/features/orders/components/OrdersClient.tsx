@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { shortenId } from '@/lib/shorten';
 import { toast } from 'sonner';
-import { getShippingBadge, orderStatusColors, orderTypeColors, paymentStatusColors, shippingStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, getShippingBadge, orderStatusColors, orderTypeColors, paymentStatusColors, shippingStatusColors } from '@/lib/badge-style';
 import CustomerTypeFilter from '@/app/features/orders/components/order-filters/CustomerTypeFilter';
 import { OrderStatusFilter } from '@/app/features/orders/components/order-filters/OrderStatusFilter';
 import { PaymentStatusFilter } from '@/app/features/orders/components/order-filters/PaymentStatusFilter';
@@ -429,25 +429,25 @@ export default function OrdersClient() {
 
                         {/* 상태 셀 */}
                         <TableCell className={tdClasses}>
-                          {order.__type === 'stringing_application' ? <ApplicationStatusBadge status={order.status} /> : <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${orderStatusColors[order.status]}`}>{order.status}</Badge>}
+                          {order.__type === 'stringing_application' ? <ApplicationStatusBadge status={order.status} /> : <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', orderStatusColors[order.status])}>{order.status}</Badge>}
                         </TableCell>
 
                         {/* 결제 상태 셀 */}
                         <TableCell className={tdClasses}>
-                          <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${paymentStatusColors[order.paymentStatus]}`}>{order.paymentStatus}</Badge>
+                          <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', paymentStatusColors[order.paymentStatus])}>{order.paymentStatus}</Badge>
                         </TableCell>
 
                         {/* 운송장 셀 */}
                         <TableCell className={tdClasses}>
                           {(() => {
                             const { label, color } = getShippingBadge(order);
-                            return <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${color}`}>{label}</Badge>;
+                            return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', color)}>{label}</Badge>;
                           })()}
                         </TableCell>
 
                         {/* 유형 셀 */}
                         <TableCell className={tdClasses}>
-                          <Badge className={`px-2 py-0.5 text-xs whitespace-nowrap ${order.__type === 'stringing_application' ? orderTypeColors['서비스'] : orderTypeColors['상품']}`}>{order.type}</Badge>
+                          <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', order.__type === 'stringing_application' ? orderTypeColors['서비스'] : orderTypeColors['상품'])}>{order.type}</Badge>
                         </TableCell>
 
                         {/* 금액 셀 */}

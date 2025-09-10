@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import CancelOrderDialog from './CancelOrderDialog'; // 기존 다이얼로그 그대로 사용
 import OrderHistory from '@/app/features/orders/components/OrderHistory';
 import { OrderStatusBadge } from '@/app/features/orders/components/OrderStatusBadge';
-import { paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
 import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
 import { useRouter } from 'next/navigation';
 import RequestEditForm from '@/app/mypage/orders/_components/RequestEditForm';
@@ -19,6 +19,7 @@ import CustomerEditForm from '@/app/features/orders/components/CustomerEditForm'
 import PaymentMethodDetail from '@/app/mypage/orders/_components/PaymentMethodDetail';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
+import { cn } from '@/lib/utils';
 
 // SWR Infinite용 getKey (처리 이력 페이지네이션)
 const LIMIT = 5;
@@ -428,7 +429,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">결제 상태</p>
-                  <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
+                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
                 </div>
               </div>
 

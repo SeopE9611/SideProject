@@ -84,6 +84,9 @@ interface Paginated<T> {
   pageSize: number;
 }
 
+//  모든 뱃지(패키지/상태/결제) 공통 사이즈
+const badgeSizeCls = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
+
 // 결제 상태별 색상
 const paymentStatusColors: Record<PaymentStatus, string> = {
   결제완료: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -782,7 +785,7 @@ export default function PackageOrdersClient() {
 
                             {/* 패키지 유형 (한 줄 고정) */}
                             <TableCell className={cn(tdClasses, col.type, 'whitespace-nowrap')}>
-                              <Badge className={cn(packageTypeColors[pkg.packageType], 'font-medium px-2.5 py-0.5 text-xs')}>{pkg.packageType}</Badge>
+                              <Badge className={cn('border', packageTypeColors[pkg.packageType], 'font-medium', badgeSizeCls)}>{pkg.packageType}</Badge>
                             </TableCell>
 
                             {/* 남은 횟수 (한 줄 + 균일 정렬) */}
@@ -837,7 +840,7 @@ export default function PackageOrdersClient() {
                               {(() => {
                                 const badgeCls = statusBadgeClass(listState.tone);
                                 return (
-                                  <Badge className={cn(badgeCls, 'font-medium')} title={`결제상태: ${String(pkg.paymentStatus)} · 만료일: ${formatDate(expirySource)}`} aria-label={`표시상태 ${listState.label}`}>
+                                  <Badge className={cn(badgeCls, 'font-medium', badgeSizeCls)} title={`만료기준: ${formatDate(expirySource)}`} aria-label={`표시상태 ${listState.label}`}>
                                     {listState.label}
                                   </Badge>
                                 );
@@ -846,7 +849,17 @@ export default function PackageOrdersClient() {
 
                             {/* 결제 = xl 이상에서만 노출 (헤더 규칙과 동일) */}
                             <TableCell className={cn(tdClasses, col.payment, 'whitespace-nowrap hidden xl:table-cell')}>
-                              <Badge className={paymentStatusColors[(pkg.paymentStatus as PaymentStatus) ?? '결제대기']}>{pkg.paymentStatus}</Badge>
+                              <Badge
+                                className={cn(
+                                  'border', // ← 결제 배지도 실제 테두리 두께 적용
+                                  paymentStatusColors[pkg.paymentStatus as PaymentStatus] ?? paymentStatusColors['결제대기'],
+                                  'font-medium',
+                                  badgeSizeCls
+                                )}
+                                aria-label={`결제상태 ${String(pkg.paymentStatus)}`}
+                              >
+                                {pkg.paymentStatus}
+                              </Badge>
                             </TableCell>
 
                             {/* 금액 (우정렬 + 한 줄) */}

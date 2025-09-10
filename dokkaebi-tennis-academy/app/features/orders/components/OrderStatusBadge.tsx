@@ -2,7 +2,8 @@
 
 import useSWR from 'swr';
 import { Badge } from '@/components/ui/badge';
-import { orderStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, orderStatusColors } from '@/lib/badge-style';
+import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
@@ -19,8 +20,6 @@ export function OrderStatusBadge({ orderId, initialStatus }: Props) {
     revalidateOnFocus: false, // 탭 전환 시 re-fetch 방지
     dedupingInterval: 3000, // 동일 요청 최소 간격 3초
   });
-
-  const badgeClass = orderStatusColors[data?.status as keyof typeof orderStatusColors] ?? 'bg-muted';
-
-  return <Badge className={badgeClass}>{data?.status}</Badge>;
+  const cls = orderStatusColors[data?.status as keyof typeof orderStatusColors] ?? 'bg-muted';
+  return <Badge className={cn(badgeBase, badgeSizeSm, cls)}>{data?.status}</Badge>;
 }
