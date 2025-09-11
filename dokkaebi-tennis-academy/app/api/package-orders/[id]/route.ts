@@ -6,6 +6,7 @@ import { ObjectId } from 'mongodb';
 import { issuePassesForPaidPackageOrder } from '@/lib/passes.service';
 import type { PackageOrder } from '@/lib/types/package-order';
 import jwt from 'jsonwebtoken';
+import { ServicePass } from '@/lib/types/pass';
 
 //* 테스트 데이터 */
 // 원하는 만료일로 직접 설정
@@ -93,12 +94,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         },
       }
     );
+    const passesCol = db.collection<ServicePass>('service_passes');
 
     if (statusStr === '결제완료') {
-      // 결제완료 시 패스 발급(멱등)
       await issuePassesForPaidPackageOrder(db, { ...pkgOrder, _id });
     }
-
     /**
      * 주문/결제 상태에 따라 연결된 패스 상태 동기화
      * - 결제완료가 아니면: suspended

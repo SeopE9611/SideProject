@@ -102,9 +102,24 @@ export async function findOneActivePassForUser(db: Db, userId: ObjectId) {
 export async function consumePass(db: Db, passId: ObjectId, applicationId: ObjectId) {
   const passes = db.collection<ServicePass>('service_passes');
   const consumptions = db.collection<ServicePassConsumption>('service_pass_consumptions');
+  const packageOrders = db.collection('packageOrders'); // ← 주문 컬렉션
   const now = new Date();
 
-  // 멱등 로그(Unique: passId + applicationId) — 인덱스 ensure 필요(별도 유틸 또는 초기화 시점)
+  // 1) 먼저 패스를 읽어서 연결된 orderId 확인
+  const passDoc = await passes.findOne({ _id: passId }, { projection: { _id: 1, orderId: 1 } as any });
+  if (!passDoc) {
+    throw Object.assign(new Error('PASS_NOT_FOUND'), { code: 'PASS_NOT_FOUND', httpStatus: 404 });
+  }
+
+  // 2) 연결된 주문이 있으면 결제완료인지 검증 (서버 측 방어막)
+  if (passDoc.orderId) {
+    const order = await packageOrders.findOne({ _id: passDoc.orderId as any }, { projection: { paymentStatus: 1 } as any });
+    if (!order || order.paymentStatus !== '결제완료') {
+      throw Object.assign(new Error('ORDER_NOT_PAID'), { code: 'ORDER_NOT_PAID', httpStatus: 409 });
+    }
+  }
+
+  // 3) 멱등 소비 로그 먼저 기록(유니크 인덱스 권장: {passId, applicationId})
   await consumptions.insertOne({
     _id: new OID(),
     passId,
@@ -113,12 +128,13 @@ export async function consumePass(db: Db, passId: ObjectId, applicationId: Objec
     createdAt: now,
   });
 
-  // $push 시 $each 사용 + redemptions 원소 타입 명시
+  // 4) 차감 기록(redemptions) 원소 타입 맞춰 준비
   const redemption: ServicePass['redemptions'][number] = {
     applicationId,
     usedAt: now,
   };
 
+  // 5) 원자 차감
   const raw = await passes.findOneAndUpdate(
     { _id: passId, status: 'active', remainingCount: { $gt: 0 }, expiresAt: { $gte: now } },
     {
@@ -126,22 +142,19 @@ export async function consumePass(db: Db, passId: ObjectId, applicationId: Objec
       $push: { redemptions: { $each: [redemption] } },
       $set: { updatedAt: now },
     },
-    // v4: { returnDocument: 'after' } | v3: { returnOriginal: false }
     { returnDocument: 'after' } as any
   );
 
-  // 드라이버 버전별 반환 타입에 안전하게 대응
-  const updatedDoc = extractUpdatedDoc<ServicePass>(raw);
+  const updatedDoc = (raw && 'value' in raw ? raw.value : raw) as ServicePass | null;
 
   if (!updatedDoc) {
-    // 실패 시 소비 로그 롤백 시도
+    // 차감 실패 시 소비 로그 롤백 시도
     await consumptions.deleteOne({ passId, applicationId });
     throw new Error('PASS_CONSUME_FAILED');
   }
 
   return updatedDoc;
 }
-
 /** 차감 복원(취소 시 등) */
 export async function revertConsumption(db: Db, passId: ObjectId, applicationId: ObjectId) {
   const passes = db.collection<ServicePass>('service_passes');
