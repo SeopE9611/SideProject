@@ -52,8 +52,32 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
     localStorage.setItem('admin.sidebar.collapsed', collapsed ? '1' : '0');
   }, [collapsed]);
 
-  const isActive = (href: string) => (href === '/admin/dashboard' ? pathname.startsWith('/admin/dashboard') : pathname.startsWith(href));
+  // 경로 활성화 판별 함수 (세그먼트 경계 기반)
+  // - 정확히 일치하거나, href 뒤에 '/'가 붙은 세그먼트로 시작할 때만 활성 처리
+  // - '/admin/packages'는 '/admin/packages/settings' 페이지에서는 활성으로 보지 않도록 예외 처리
+  const isActive = (href: string) => {
+    const path = pathname || '';
 
+    // 대시보드 특별 처리: '/admin' 루트에서도 대시보드를 활성으로 보길 원할 수 있음
+    if (href === '/admin/dashboard') {
+      return path === '/admin' || path === '/admin/dashboard' || path.startsWith('/admin/dashboard/');
+    }
+
+    // 정확히 같으면 활성
+    if (path === href) return true;
+
+    // 세그먼트 경계 고려: href 다음은 '/' 로 이어질 때만 하위 경로로 인정
+    const withSlash = href.endsWith('/') ? href : href + '/';
+    const under = path.startsWith(withSlash);
+
+    // 특수 케이스: '/admin/packages'는 '/admin/packages/settings' 계열에서는 비활성 처리
+    if (href === '/admin/packages') {
+      if (/^\/admin\/packages\/settings(?:\/|$)/.test(path)) return false;
+      return under; // '/admin/packages/...' (예: 상세/목록 등)은 활성
+    }
+
+    return under;
+  };
   return (
     <TooltipProvider delayDuration={10}>
       <aside
