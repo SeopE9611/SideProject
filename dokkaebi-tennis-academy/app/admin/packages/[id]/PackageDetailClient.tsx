@@ -20,6 +20,7 @@ import { CalendarPlus, ChevronRight, User2, Loader2 } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import PackagePaymentStatusSelect from '@/app/features/packages/components/PackagePaymentStatusSelect';
 import PackagePassStatusSelect from '@/app/features/packages/components/PackagePassStatusSelect';
+import PackageCurrentStatusSelect from '@/app/features/packages/components/PackageCurrentStatusSelect';
 
 // 패키지 상세 정보 타입
 interface PackageDetail {
@@ -554,12 +555,17 @@ export default function PackageDetailClient({ packageId }: Props) {
                   {/* 패키지 상태 카드 내부 */}
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm text-gray-600">현재 상태</span>
-                    <Badge className={packageStatusColors[data.passStatus]}>{data.passStatus === '대기' ? '비활성' : data.passStatus}</Badge>
+                    <PackageCurrentStatusSelect
+                      orderId={packageId}
+                      passStatus={data.passStatus as any} // '활성' | '대기' | '만료' | '취소'
+                      paymentStatus={(data.paymentStatus ?? '결제대기') as any} // '결제대기' | '결제완료' | '결제취소'
+                      onUpdated={() => mutate()}
+                    />
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm text-gray-600">결제 상태</span>
-                    <PackagePaymentStatusSelect orderId={packageId} currentStatus={data.paymentStatus ?? '결제대기'} onUpdated={() => mutate()} />
+                    <Badge className={paymentStatusColors[data.paymentStatus ?? '결제대기']}>{data.paymentStatus ?? '결제대기'}</Badge>
                   </div>
 
                   <div className="p-3 bg-gray-50 rounded-lg">
