@@ -12,36 +12,63 @@ import { Badge } from '@/components/ui/badge';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { Card, CardContent } from '@/components/ui/card';
+import useSWRInfinite from 'swr/infinite';
+import Link from 'next/link';
 
-const users = [
-  {
-    id: '1',
-    name: '김재민',
-    email: 'woals4800@gmail.com',
-    joinDate: '2025-01-01',
-    status: 'active',
-    lastLogin: '2025-01-01',
-    membershipType: '성인반',
-  },
-  {
-    id: '2',
-    name: '섭',
-    email: 'pplo23@gmail.com',
-    joinDate: '2025-01-01',
-    status: 'inactive',
-    lastLogin: '2025-01-01',
-    membershipType: '주말반',
-  },
-];
+// 공용 fetcher
+const LIMIT = 10;
+const fetcher = (url: string) =>
+  fetch(url, { credentials: 'include' }).then((r) => {
+    if (!r.ok) throw new Error('불러오기 실패');
+    return r.json();
+  });
 
 export default function UsersPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  // 검색/필터/정렬
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'deleted'>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
+  const [sort, setSort] = useState<'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'>('created_desc');
 
-  const isAllSelected = users.length > 0 && selectedUsers.length === users.length;
-  const isPartiallySelected = selectedUsers.length > 0 && selectedUsers.length < users.length;
+  // getKey: 리뷰 리스트와 동일한 패턴
+  const getKey = (index: number, prev: any) => {
+    if (prev && prev.items.length < LIMIT) return null;
+    const page = index + 1;
+    const p = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
+    if (searchQuery.trim()) p.set('q', searchQuery.trim());
+    if (roleFilter !== 'all') p.set('role', roleFilter);
+    if (statusFilter !== 'all') p.set('status', statusFilter);
+    if (sort) p.set('sort', sort);
+    return `/api/admin/users?${p.toString()}`;
+  };
 
+  const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite(getKey, fetcher, {
+    revalidateFirstPage: true,
+    revalidateOnFocus: false,
+  });
+
+  // 평탄화된 행
+  const rows = (data ? data.flatMap((d: any) => d.items) : []) as Array<{
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: 'user' | 'admin';
+    isDeleted: boolean;
+    createdAt?: string;
+    lastLoginAt?: string;
+  }>;
+
+  // ✅ rows 기반/total 기반 지표
+  const totalCount = (data && data[0]?.total) ?? rows.length; // 총 회원수(가능하면 total 사용)
+  const activeCount = rows.filter((u) => !u.isDeleted).length; // 현재 페이지 기준
+  const deletedCount = rows.filter((u) => u.isDeleted).length; // 현재 페이지 기준
+
+  const hasMore = data?.length ? data[data.length - 1].items.length === LIMIT : false;
+
+  const isAllSelected = rows.length > 0 && selectedUsers.length === rows.length;
+  const isPartiallySelected = selectedUsers.length > 0 && selectedUsers.length < rows.length;
   const allCheckboxRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -57,7 +84,7 @@ export default function UsersPage() {
     if (isAllSelected) {
       setSelectedUsers([]);
     } else {
-      setSelectedUsers(users.map((user) => user.id));
+      setSelectedUsers(rows.map((user) => user.id));
     }
   };
 
@@ -69,22 +96,16 @@ export default function UsersPage() {
     }
   };
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) || user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
   return (
     <AuthGuard>
       <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
+        {/* <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
           <div className="bg-gradient-to-r from-blue-600 to-teal-600 rounded-full p-4">
             <Users className="h-8 w-8 text-white" />
           </div>
           <p className="text-white text-xl sm:text-2xl md:text-4xl font-semibold">이 기능은 개발 중입니다</p>
           <p className="text-base sm:text-lg text-gray-300">회원 관리 기능이 곧 활성화됩니다</p>
-        </div>
+        </div> */}
 
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 sm:mb-8">
@@ -105,7 +126,7 @@ export default function UsersPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 회원</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{users.length}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{totalCount}</p>
                   </div>
                   <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
                     <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -119,7 +140,7 @@ export default function UsersPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">활성 회원</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{users.filter((u) => u.status === 'active').length}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{activeCount}</p>
                   </div>
                   <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
                     <CheckCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -133,7 +154,7 @@ export default function UsersPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">비활성 회원</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{users.filter((u) => u.status === 'inactive').length}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{deletedCount}</p>
                   </div>
                   <div className="bg-red-50 dark:bg-red-950/50 rounded-xl p-3">
                     <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -142,7 +163,7 @@ export default function UsersPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+            {/* <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -154,7 +175,7 @@ export default function UsersPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
           <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm mb-6">
@@ -167,7 +188,7 @@ export default function UsersPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'deleted')}>
                     <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                       <div className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
@@ -177,7 +198,7 @@ export default function UsersPage() {
                     <SelectContent>
                       <SelectItem value="all">모든 상태</SelectItem>
                       <SelectItem value="active">활성</SelectItem>
-                      <SelectItem value="inactive">비활성</SelectItem>
+                      <SelectItem value="deleted">삭제됨</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -215,7 +236,7 @@ export default function UsersPage() {
                     </TableHead>
                     <TableHead>이름</TableHead>
                     <TableHead>이메일</TableHead>
-                    <TableHead>회원 유형</TableHead>
+                    <TableHead>권한</TableHead>
                     <TableHead>가입일</TableHead>
                     <TableHead>마지막 로그인</TableHead>
                     <TableHead>상태</TableHead>
@@ -223,67 +244,55 @@ export default function UsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map((user) => (
+                  {rows.length > 0 ? (
+                    rows.map((user) => (
                       <TableRow key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                        <TableCell>
-                          <Checkbox checked={selectedUsers.includes(user.id)} onCheckedChange={() => handleSelectUser(user.id)} aria-label={`${user.name} 선택`} />
+                        {/* ✅ 1) 행 체크박스 칼럼 추가 (thead 첫 칼럼과 대응) */}
+                        <TableCell className="w-[50px]">
+                          <Checkbox checked={selectedUsers.includes(user.id)} onCheckedChange={() => handleSelectUser(user.id)} aria-label={`${user.name || '사용자'} 선택`} />
                         </TableCell>
-                        <TableCell className="font-medium text-gray-900 dark:text-white">{user.name}</TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-300">{user.email}</TableCell>
+
+                        {/* 나머지 칼럼은 기존 순서를 그대로 유지 */}
+                        <TableCell className="font-medium">{user.name || '(이름없음)'}</TableCell>
+                        <TableCell className="max-w-[240px] truncate">{user.email}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              user.membershipType === '성인반'
-                                ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800'
-                                : user.membershipType === '주니어반'
-                                ? 'bg-teal-50 text-teal-600 border-teal-200 dark:bg-teal-950/50 dark:text-teal-400 dark:border-teal-800'
-                                : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-950/50 dark:text-gray-400 dark:border-gray-800'
-                            }
-                          >
-                            {user.membershipType}
+                          <Badge variant="outline" className="shrink-0">
+                            {user.role === 'admin' ? '관리자' : '일반'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-300">{user.joinDate}</TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-300">{user.lastLogin}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            {user.status === 'active' ? (
-                              <>
-                                <CheckCircle className="mr-1.5 h-3.5 w-3.5 text-blue-500 dark:text-blue-400" />
-                                <span className="text-sm text-blue-600 dark:text-blue-400">활성</span>
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="mr-1.5 h-3.5 w-3.5 text-red-500 dark:text-red-400" />
-                                <span className="text-sm text-red-600 dark:text-red-400">비활성</span>
-                              </>
-                            )}
-                          </div>
+                        <TableCell className="whitespace-nowrap">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</TableCell>
+                        <TableCell className="whitespace-nowrap">{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '-'}</TableCell>
+                        <TableCell className="w-[90px]">
+                          {user.isDeleted ? (
+                            <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
+                              삭제됨
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                              활성
+                            </Badge>
+                          )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[100px]">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                              <Button variant="ghost" size="icon" aria-label="작업">
                                 <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">메뉴 열기</span>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>상세 정보</DropdownMenuItem>
-                              <DropdownMenuItem>메일 발송</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-amber-600 dark:text-amber-400">{user.status === 'active' ? '비활성화' : '활성화'}</DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600 dark:text-red-400">삭제</DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/admin/users/${user.id}`}>상세 보기</Link>
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
+                    /* ✅ 2) 빈 상태 colSpan을 8(헤더 칼럼 수)로 맞추기 */
                     <TableRow>
-                      <TableCell colSpan={8} className="h-24 text-center text-gray-500 dark:text-gray-400">
+                      <TableCell colSpan={8} className="text-center text-gray-500">
                         검색 결과가 없습니다.
                       </TableCell>
                     </TableRow>
@@ -360,7 +369,8 @@ export default function UsersPage() {
           </Card>
 
           <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400">총 {filteredUsers.length}명의 회원</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">총 {totalCount}명의 회원</div>
+
             <div className="flex items-center space-x-2">
               <Button variant="outline" size="sm" disabled className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                 이전
