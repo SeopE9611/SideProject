@@ -1,6 +1,3 @@
-// app/api/users/me/route.ts
-// JWT 기반 사용자 인증 API (GET: 내 정보 조회 / PATCH: 내 정보 수정)
-
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import jwt, { JwtPayload } from 'jsonwebtoken';

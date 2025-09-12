@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Search, Filter, MoreHorizontal, UserX, Trash2, Mail, CheckCircle, XCircle, Users } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, UserX, Trash2, Mail, CheckCircle, XCircle, Users, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -53,14 +53,15 @@ export default function UsersPage() {
     id: string;
     name: string;
     email: string;
-    phone: string;
+    phone?: string;
+    postalCode?: string;
     role: 'user' | 'admin';
     isDeleted: boolean;
     createdAt?: string;
     lastLoginAt?: string;
   }>;
 
-  // ✅ rows 기반/total 기반 지표
+  // rows 기반/total 기반 지표
   const totalCount = (data && data[0]?.total) ?? rows.length; // 총 회원수(가능하면 total 사용)
   const activeCount = rows.filter((u) => !u.isDeleted).length; // 현재 페이지 기준
   const deletedCount = rows.filter((u) => u.isDeleted).length; // 현재 페이지 기준
@@ -93,6 +94,27 @@ export default function UsersPage() {
       setSelectedUsers(selectedUsers.filter((id) => id !== userId));
     } else {
       setSelectedUsers([...selectedUsers, userId]);
+    }
+  };
+
+  // 이니셜
+  const initials = (name?: string, email?: string) => {
+    const base = (name || email || '').trim();
+    if (!base) return 'U';
+    const parts = base.replace(/@.*/, '').split(' ');
+    const s = (parts[0]?.[0] || '') + (parts[1]?.[0] || '');
+    return s.toUpperCase() || base[0]?.toUpperCase() || 'U';
+  };
+
+  // 클립보드
+  const copy = async (text?: string) => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      // 필요하면 toast 연결
+      showSuccessToast('복사되었습니다.');
+    } catch {
+      showErrorToast('복사에 실패했습니다.');
     }
   };
 
@@ -230,39 +252,80 @@ export default function UsersPage() {
             <div className="relative overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-700">
-                    <TableHead className="w-[50px]">
-                      <Checkbox ref={allCheckboxRef} checked={isAllSelected} onCheckedChange={handleSelectAll} aria-label="전체 선택" />
-                    </TableHead>
-                    <TableHead>이름</TableHead>
-                    <TableHead>이메일</TableHead>
-                    <TableHead>권한</TableHead>
-                    <TableHead>가입일</TableHead>
-                    <TableHead>마지막 로그인</TableHead>
-                    <TableHead>상태</TableHead>
-                    <TableHead className="w-[100px]">액션</TableHead>
+                  <TableRow className="sticky top-0 z-10 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/70 dark:supports-[backdrop-filter]:bg-gray-900/40">
+                    <TableHead className="w-[48px]"></TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">이름</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">이메일</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">권한</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">전화</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">지역</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">가입일</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">마지막 로그인</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">상태</TableHead>
+                    <TableHead className="w-[90px] text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">액션</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {rows.length > 0 ? (
                     rows.map((user) => (
-                      <TableRow key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                        {/* ✅ 1) 행 체크박스 칼럼 추가 (thead 첫 칼럼과 대응) */}
-                        <TableCell className="w-[50px]">
+                      <TableRow key={user.id} className="odd:bg-white even:bg-slate-50/40 dark:odd:bg-gray-800 dark:even:bg-gray-800/60 hover:bg-blue-50/40 dark:hover:bg-blue-900/20 transition-colors">
+                        {/* 1) 체크박스 */}
+                        <TableCell className="w-[48px]">
                           <Checkbox checked={selectedUsers.includes(user.id)} onCheckedChange={() => handleSelectUser(user.id)} aria-label={`${user.name || '사용자'} 선택`} />
                         </TableCell>
 
-                        {/* 나머지 칼럼은 기존 순서를 그대로 유지 */}
-                        <TableCell className="font-medium">{user.name || '(이름없음)'}</TableCell>
-                        <TableCell className="max-w-[240px] truncate">{user.email}</TableCell>
+                        {/* 2) 이름(아바타 + 이름) */}
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 text-white grid place-items-center text-xs font-bold">{initials(user.name, user.email)}</div>
+                            <span className="truncate max-w-[160px]">{user.name || '(이름없음)'}</span>
+                          </div>
+                        </TableCell>
+
+                        {/* 3) 이메일(복사) */}
+                        <TableCell className="max-w-[220px]">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate">{user.email}</span>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copy(user.email)} aria-label="이메일 복사">
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+
+                        {/* 4) 권한 */}
                         <TableCell>
-                          <Badge variant="outline" className="shrink-0">
+                          <Badge variant="outline" className="px-2 py-0.5 rounded-full">
                             {user.role === 'admin' ? '관리자' : '일반'}
                           </Badge>
                         </TableCell>
+
+                        {/* 5) 전화 */}
+                        <TableCell className="whitespace-nowrap">
+                          {user.phone ? (
+                            <div className="flex items-center gap-2">
+                              <a href={`tel:${user.phone}`} className="underline decoration-dotted">
+                                {user.phone}
+                              </a>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copy(user.phone)} aria-label="전화번호 복사">
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </TableCell>
+
+                        {/* 6) 지역(우편번호) */}
+                        <TableCell className="whitespace-nowrap">{user.postalCode ? `[${user.postalCode}]` : '-'}</TableCell>
+
+                        {/* 7) 가입일 */}
                         <TableCell className="whitespace-nowrap">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</TableCell>
+
+                        {/* 8) 마지막 로그인 */}
                         <TableCell className="whitespace-nowrap">{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '-'}</TableCell>
-                        <TableCell className="w-[90px]">
+
+                        {/* 9) 상태 */}
+                        <TableCell className="w-[96px]">
                           {user.isDeleted ? (
                             <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
                               삭제됨
@@ -273,7 +336,9 @@ export default function UsersPage() {
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="w-[100px]">
+
+                        {/* 10) 액션 */}
+                        <TableCell className="w-[90px]">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon" aria-label="작업">
@@ -284,15 +349,16 @@ export default function UsersPage() {
                               <DropdownMenuItem asChild>
                                 <Link href={`/admin/users/${user.id}`}>상세 보기</Link>
                               </DropdownMenuItem>
+                              {/* 이후: 비활성/복구, 역할 변경 등 */}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
-                    /* ✅ 2) 빈 상태 colSpan을 8(헤더 칼럼 수)로 맞추기 */
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-gray-500">
+                      {/* ✅ 헤더 칼럼 수 = 10 */}
+                      <TableCell colSpan={10} className="text-center text-gray-500">
                         검색 결과가 없습니다.
                       </TableCell>
                     </TableRow>
