@@ -1,455 +1,516 @@
+// app/admin/users/_components/UsersClient.tsx
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Search, Filter, MoreHorizontal, UserX, Trash2, Mail, CheckCircle, XCircle, Users, Copy } from 'lucide-react';
+import Link from 'next/link';
+import useSWR from 'swr';
+import { Search, Filter, MoreHorizontal, Copy, Mail, UserX, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { Card, CardContent } from '@/components/ui/card';
-import useSWRInfinite from 'swr/infinite';
-import Link from 'next/link';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
+import { cn } from '@/lib/utils';
 
-// 공용 fetcher
-const LIMIT = 10;
+// ---------------------- fetcher ----------------------
 const fetcher = (url: string) =>
-  fetch(url, { credentials: 'include' }).then((r) => {
+  fetch(url, { credentials: 'include', cache: 'no-store' }).then((r) => {
     if (!r.ok) throw new Error('불러오기 실패');
     return r.json();
   });
 
-export default function UsersPage() {
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  // 검색/필터/정렬
+// ---------------------- helpers ----------------------
+// 전체 주소 문자열
+const fullAddress = (postal?: string, addr?: string, detail?: string) => {
+  const p = postal ? `[${postal}] ` : '';
+  const a = addr || '';
+  const d = detail ? ` ${detail}` : '';
+  const s = `${p}${a}${d}`.trim();
+  return s || '-';
+};
+
+// 요약 주소(도/시/구 정도까지만)
+const shortAddress = (addr?: string) => {
+  if (!addr) return '-';
+  const t = addr.split(/\s+/).filter(Boolean);
+  // 시/도 + 시/구 + (동) 정도까지만 노출
+  return t.slice(0, 3).join(' ');
+};
+
+// 날짜/시간 두 줄 표시용
+const splitDateTime = (iso?: string) => {
+  if (!iso) return { date: '-', time: '' };
+  const d = new Date(iso);
+  return {
+    date: d.toLocaleDateString(),
+    time: d.toLocaleTimeString(),
+  };
+};
+
+// 헤더/셀(컴팩트)
+const th = 'sticky top-0 z-10 whitespace-nowrap px-3.5 py-2 bg-gray-50/90 dark:bg-gray-900/70 shadow-sm border-b border-slate-200 text-[12px] font-semibold text-slate-600 text-center';
+const td = 'px-3.5 py-2 align-middle text-center text-[13px] leading-tight tabular-nums';
+
+// 배지
+const roleColors: Record<'admin' | 'user', string> = {
+  admin: 'bg-purple-100 text-purple-800 border-purple-200',
+  user: 'bg-slate-100 text-slate-700 border-slate-200',
+};
+const statusColors: Record<'active' | 'deleted', string> = {
+  active: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  deleted: 'bg-red-100 text-red-800 border-red-200',
+};
+const badgeSm = 'px-2 py-0.5 text-[11px] rounded-md font-medium border';
+
+// 페이지 목록(… 포함)
+const buildPageItems = (page: number, totalPages: number) => {
+  const arr: (number | '...')[] = [];
+  const DOT: '...' = '...';
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) arr.push(i);
+  } else {
+    const l = Math.max(2, page - 1);
+    const r = Math.min(totalPages - 1, page + 1);
+    arr.push(1);
+    if (l > 2) arr.push(DOT);
+    for (let i = l; i <= r; i++) arr.push(i);
+    if (r < totalPages - 1) arr.push(DOT);
+    arr.push(totalPages);
+  }
+  return arr;
+};
+
+export default function UsersClient() {
+  // 서버 페이징 & 필터
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'deleted'>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
   const [sort, setSort] = useState<'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'>('created_desc');
 
-  // getKey: 리뷰 리스트와 동일한 패턴
-  const getKey = (index: number, prev: any) => {
-    if (prev && prev.items.length < LIMIT) return null;
-    const page = index + 1;
-    const p = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
+  const key = (() => {
+    const p = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (searchQuery.trim()) p.set('q', searchQuery.trim());
     if (roleFilter !== 'all') p.set('role', roleFilter);
     if (statusFilter !== 'all') p.set('status', statusFilter);
     if (sort) p.set('sort', sort);
     return `/api/admin/users?${p.toString()}`;
-  };
+  })();
 
-  const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite(getKey, fetcher, {
-    revalidateFirstPage: true,
-    revalidateOnFocus: false,
-  });
+  const { data, isLoading, mutate } = useSWR(key, fetcher);
 
-  // 평탄화된 행
-  const rows = (data ? data.flatMap((d: any) => d.items) : []) as Array<{
-    id: string;
-    name: string;
-    email: string;
-    phone?: string;
-    postalCode?: string;
-    role: 'user' | 'admin';
-    isDeleted: boolean;
-    createdAt?: string;
-    lastLoginAt?: string;
-  }>;
+  const rows =
+    (data?.items as Array<{
+      id: string;
+      name: string;
+      email: string;
+      phone?: string;
+      address?: string;
+      addressDetail?: string;
+      postalCode?: string;
+      role: 'user' | 'admin';
+      isDeleted: boolean;
+      createdAt?: string;
+      lastLoginAt?: string;
+    }>) || [];
 
-  // rows 기반/total 기반 지표
-  const totalCount = (data && data[0]?.total) ?? rows.length; // 총 회원수(가능하면 total 사용)
-  const activeCount = rows.filter((u) => !u.isDeleted).length; // 현재 페이지 기준
-  const deletedCount = rows.filter((u) => u.isDeleted).length; // 현재 페이지 기준
+  const total = (data?.total as number) || 0;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const pageItems = buildPageItems(page, totalPages);
 
-  const hasMore = data?.length ? data[data.length - 1].items.length === LIMIT : false;
+  // KPI 카드 값 주입
+  useEffect(() => {
+    const q = (sel: string) => document.querySelector(sel);
+    if (!data) return;
+    const active = rows.filter((u) => !u.isDeleted).length;
+    const deleted = rows.filter((u) => u.isDeleted).length;
+    const admins = rows.filter((u) => u.role === 'admin').length;
+    (q('#kpi-total') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(total)));
+    (q('#kpi-active') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(active)));
+    (q('#kpi-deleted') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(deleted)));
+    (q('#kpi-admins') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(admins)));
+  }, [data, rows, total]);
 
+  // 선택
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const isAllSelected = rows.length > 0 && selectedUsers.length === rows.length;
   const isPartiallySelected = selectedUsers.length > 0 && selectedUsers.length < rows.length;
   const allCheckboxRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (allCheckboxRef.current) {
-      const input = allCheckboxRef.current.querySelector("input[type='checkbox']");
-      if (input instanceof HTMLInputElement) {
-        input.indeterminate = isPartiallySelected;
-      }
-    }
+    if (!allCheckboxRef.current) return;
+    const input = allCheckboxRef.current.querySelector("input[type='checkbox']");
+    if (input instanceof HTMLInputElement) input.indeterminate = isPartiallySelected;
   }, [isPartiallySelected]);
 
-  const handleSelectAll = () => {
-    if (isAllSelected) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(rows.map((user) => user.id));
-    }
-  };
+  const handleSelectAll = () => setSelectedUsers(isAllSelected ? [] : rows.map((u) => u.id));
+  const handleSelectUser = (id: string) => setSelectedUsers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  const handleSelectUser = (userId: string) => {
-    if (selectedUsers.includes(userId)) {
-      setSelectedUsers(selectedUsers.filter((id) => id !== userId));
-    } else {
-      setSelectedUsers([...selectedUsers, userId]);
-    }
-  };
-
-  // 이니셜
-  const initials = (name?: string, email?: string) => {
-    const base = (name || email || '').trim();
-    if (!base) return 'U';
-    const parts = base.replace(/@.*/, '').split(' ');
-    const s = (parts[0]?.[0] || '') + (parts[1]?.[0] || '');
-    return s.toUpperCase() || base[0]?.toUpperCase() || 'U';
-  };
-
-  // 클립보드
-  const copy = async (text?: string) => {
-    if (!text) return;
+  // 복사 공통
+  const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      // 필요하면 toast 연결
-      showSuccessToast('복사되었습니다.');
+      showSuccessToast('클립보드에 복사되었습니다.');
     } catch {
       showErrorToast('복사에 실패했습니다.');
     }
   };
 
+  const goToPage = (p: number) => setPage(Math.max(1, Math.min(totalPages, p)));
+
   return (
     <AuthGuard>
-      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        {/* <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
-          <div className="bg-gradient-to-r from-blue-600 to-teal-600 rounded-full p-4">
-            <Users className="h-8 w-8 text-white" />
-          </div>
-          <p className="text-white text-xl sm:text-2xl md:text-4xl font-semibold">이 기능은 개발 중입니다</p>
-          <p className="text-base sm:text-lg text-gray-300">회원 관리 기능이 곧 활성화됩니다</p>
-        </div> */}
-
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-6 sm:mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
-                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">회원 관리</h1>
-                <p className="mt-1 sm:mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-300">가입한 모든 회원 정보를 확인하고 관리할 수 있습니다</p>
-              </div>
-            </div>
+      {/* 검색/필터 바 */}
+      <div className="border-0 bg-white/80 shadow-lg backdrop-blur-sm rounded-xl p-4 sm:p-6 mb-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="이름/이메일/전화 검색"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9"
+            />
           </div>
 
-          <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-4 mb-6 sm:mb-8">
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 회원</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{totalCount}</p>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
-                    <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">활성 회원</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{activeCount}</p>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
-                    <CheckCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">비활성 회원</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{deletedCount}</p>
-                  </div>
-                  <div className="bg-red-50 dark:bg-red-950/50 rounded-xl p-3">
-                    <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">성인반</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{users.filter((u) => u.membershipType === '성인반').length}</p>
-                  </div>
-                  <div className="bg-teal-50 dark:bg-teal-950/50 rounded-xl p-3">
-                    <Users className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card> */}
-          </div>
-
-          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm mb-6">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex w-full max-w-sm items-center space-x-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input placeholder="이름 또는 이메일로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" />
-                  </div>
-                </div>
+          <div className="flex items-center gap-2">
+            {/* 상태 */}
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => {
+                setStatusFilter(v as any);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[130px]">
                 <div className="flex items-center gap-2">
-                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'deleted')}>
-                    <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                      <div className="flex items-center gap-2">
-                        <Filter className="h-4 w-4" />
-                        <SelectValue placeholder="상태 필터" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">모든 상태</SelectItem>
-                      <SelectItem value="active">활성</SelectItem>
-                      <SelectItem value="deleted">삭제됨</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Filter className="h-4 w-4" />
+                  <SelectValue placeholder="상태" />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">모든 상태</SelectItem>
+                <SelectItem value="active">활성</SelectItem>
+                <SelectItem value="deleted">삭제됨</SelectItem>
+              </SelectContent>
+            </Select>
 
-          {selectedUsers.length > 0 && (
-            <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950/20 p-4 border border-blue-200 dark:border-blue-800">
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{selectedUsers.length}명의 회원이 선택됨</span>
-              <div className="flex flex-wrap gap-2 sm:ml-auto">
-                <Button variant="outline" size="sm" className="bg-white dark:bg-gray-700 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                  <Mail className="mr-2 h-3.5 w-3.5" />
-                  메일 발송
-                </Button>
-                <Button variant="outline" size="sm" className="bg-white dark:bg-gray-700 border-yellow-200 dark:border-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-950/20">
-                  <UserX className="mr-2 h-3.5 w-3.5" />
-                  비활성화
-                </Button>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="mr-2 h-3.5 w-3.5" />
-                  삭제
-                </Button>
-              </div>
-            </div>
-          )}
+            {/* 역할 */}
+            <Select
+              value={roleFilter}
+              onValueChange={(v) => {
+                setRoleFilter(v as any);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[110px]">
+                <SelectValue placeholder="역할" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="user">일반</SelectItem>
+                <SelectItem value="admin">관리자</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
-            <div className="relative overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="sticky top-0 z-10 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/70 dark:supports-[backdrop-filter]:bg-gray-900/40">
-                    <TableHead className="w-[48px]"></TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">이름</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">이메일</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">권한</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">전화</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">지역</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">가입일</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">마지막 로그인</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">상태</TableHead>
-                    <TableHead className="w-[90px] text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">액션</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.length > 0 ? (
-                    rows.map((user) => (
-                      <TableRow key={user.id} className="odd:bg-white even:bg-slate-50/40 dark:odd:bg-gray-800 dark:even:bg-gray-800/60 hover:bg-blue-50/40 dark:hover:bg-blue-900/20 transition-colors">
-                        {/* 1) 체크박스 */}
-                        <TableCell className="w-[48px]">
-                          <Checkbox checked={selectedUsers.includes(user.id)} onCheckedChange={() => handleSelectUser(user.id)} aria-label={`${user.name || '사용자'} 선택`} />
+            {/* 정렬 */}
+            <Select
+              value={sort}
+              onValueChange={(v) => {
+                setSort(v as any);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[130px]">
+                <SelectValue placeholder="정렬" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_desc">가입일 ↓</SelectItem>
+                <SelectItem value="created_asc">가입일 ↑</SelectItem>
+                <SelectItem value="name_asc">이름 A→Z</SelectItem>
+                <SelectItem value="name_desc">이름 Z→A</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* 선택 액션바 */}
+      {selectedUsers.length > 0 && (
+        <div className="mb-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950/20 p-4 border border-blue-200 dark:border-blue-800">
+          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{selectedUsers.length}명의 회원이 선택됨</span>
+          <div className="flex flex-wrap gap-2 sm:ml-auto">
+            <Button variant="outline" size="sm">
+              <Mail className="mr-2 h-3.5 w-3.5" />
+              메일 발송
+            </Button>
+            <Button variant="outline" size="sm" className="border-yellow-200">
+              <UserX className="mr-2 h-3.5 w-3.5" />
+              비활성화
+            </Button>
+            <Button variant="destructive" size="sm">
+              <Trash2 className="mr-2 h-3.5 w-3.5" />
+              삭제
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 한눈에 보기: 칼럼 병합 + 고정폭 + dense */}
+      <div className="border-0 bg-white/80 shadow-lg backdrop-blur-sm rounded-xl max-w-[1120px] mx-auto">
+        <div className="flex items-center justify-between px-4 sm:px-5 pt-4">
+          <h2 className="text-lg font-semibold">회원 목록</h2>
+          <p className="text-sm text-muted-foreground">총 {total}명의 회원</p>
+        </div>
+
+        <div className="relative overflow-x-hidden px-3 sm:px-4 pb-3">
+          <div className="relative rounded-2xl border border-slate-200 shadow-sm min-w-0">
+            <Table className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center" aria-busy={isLoading && rows.length === 0}>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className={cn(th, 'w-[40px]')}>
+                    <Checkbox ref={allCheckboxRef} checked={isAllSelected} onCheckedChange={() => handleSelectAll()} aria-label="전체 선택" />
+                  </TableHead>
+                  <TableHead className={cn(th, 'w-[220px]')}>회원</TableHead>
+                  <TableHead className={cn(th, 'w-[72px]')}>권한</TableHead>
+                  <TableHead className={cn(th, 'w-[110px]')}>전화</TableHead>
+                  <TableHead className={cn(th, 'w-[280px]')}>주소</TableHead>
+                  {/* 가입일 + 마지막 로그인 병합 */}
+                  <TableHead className={cn(th, 'w-[150px]')}>활동(가입/로그인)</TableHead>
+                  <TableHead className={cn(th, 'w-[64px]')}>상태</TableHead>
+                  <TableHead className={cn(th, 'w-[44px] text-center')}>작업</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {/* 로딩 스켈레톤 */}
+                {isLoading &&
+                  rows.length === 0 &&
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow key={`sk-${i}`} className="border-b last:border-0">
+                      <TableCell className={td}>
+                        <div className="h-4 w-4 mx-auto rounded bg-gray-200" />
+                      </TableCell>
+                      <TableCell className={td}>
+                        <div className="h-3.5 w-40 mx-auto rounded bg-gray-200" />
+                        <div className="h-3 w-28 mx-auto mt-1 rounded bg-gray-200" />
+                      </TableCell>
+                      <TableCell className={td}>
+                        <div className="h-4 w-10 mx-auto rounded-full bg-gray-200" />
+                      </TableCell>
+                      <TableCell className={td}>
+                        <div className="h-3.5 w-24 mx-auto rounded bg-gray-200" />
+                      </TableCell>
+                      <TableCell className={td}>
+                        <div className="h-3.5 w-48 mx-auto rounded bg-gray-200" />
+                      </TableCell>
+                      <TableCell className={td}>
+                        <div className="h-3.5 w-28 mx-auto rounded bg-gray-200" />
+                      </TableCell>
+                      <TableCell className={td}>
+                        <div className="h-4 w-10 mx-auto rounded-full bg-gray-200" />
+                      </TableCell>
+                      <TableCell className={td}>
+                        <div className="h-5 w-5 mx-auto rounded bg-gray-200" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+
+                {/* 데이터 */}
+                {rows.length > 0 &&
+                  rows.map((u) => {
+                    const statusKey = u.isDeleted ? ('deleted' as const) : ('active' as const);
+                    const joined = splitDateTime(u.createdAt);
+                    const last = splitDateTime(u.lastLoginAt);
+
+                    return (
+                      <TableRow key={u.id} className="hover:bg-primary/5 transition-colors even:bg-slate-50/60 border-b last:border-0">
+                        {/* 선택 */}
+                        <TableCell className={cn(td, 'w-[40px]')}>
+                          <Checkbox checked={selectedUsers.includes(u.id)} onCheckedChange={() => handleSelectUser(u.id)} aria-label={`${u.name || '사용자'} 선택`} />
                         </TableCell>
 
-                        {/* 2) 이름(아바타 + 이름) */}
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 text-white grid place-items-center text-xs font-bold">{initials(user.name, user.email)}</div>
-                            <span className="truncate max-w-[160px]">{user.name || '(이름없음)'}</span>
+                        {/* 회원: 이름/이메일 두 줄 + 복사 */}
+                        <TableCell className={cn(td, 'w-[220px]')}>
+                          <div className="min-w-0 flex flex-col items-center text-center mx-auto max-w-[200px]">
+                            <span className="font-medium truncate">{u.name || '(이름없음)'}</span>
+                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground min-w-0">
+                              <span className="truncate">{u.email}</span>
+                              <button className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-slate-100" onClick={() => copy(u.email)} title="복사" aria-label="이메일 복사">
+                                <Copy className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
                         </TableCell>
 
-                        {/* 3) 이메일(복사) */}
-                        <TableCell className="max-w-[220px]">
-                          <div className="flex items-center gap-2">
-                            <span className="truncate">{user.email}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copy(user.email)} aria-label="이메일 복사">
-                              <Copy className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
+                        {/* 권한 */}
+                        <TableCell className={cn(td, 'w-[72px] whitespace-nowrap')}>
+                          <Badge className={cn(badgeSm, roleColors[u.role])}>{u.role === 'admin' ? '관리자' : '일반'}</Badge>
                         </TableCell>
 
-                        {/* 4) 권한 */}
-                        <TableCell>
-                          <Badge variant="outline" className="px-2 py-0.5 rounded-full">
-                            {user.role === 'admin' ? '관리자' : '일반'}
-                          </Badge>
-                        </TableCell>
-
-                        {/* 5) 전화 */}
-                        <TableCell className="whitespace-nowrap">
-                          {user.phone ? (
-                            <div className="flex items-center gap-2">
-                              <a href={`tel:${user.phone}`} className="underline decoration-dotted">
-                                {user.phone}
+                        {/* 전화 */}
+                        <TableCell className={cn(td, 'w-[110px] whitespace-nowrap')}>
+                          {u.phone ? (
+                            <div className="flex items-center justify-center gap-1">
+                              <a href={`tel:${u.phone}`} className="underline decoration-dotted">
+                                {u.phone}
                               </a>
-                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copy(user.phone)} aria-label="전화번호 복사">
-                                <Copy className="h-3.5 w-3.5" />
-                              </Button>
+                              <button className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-slate-100" onClick={() => copy(u.phone!)} title="복사" aria-label="전화번호 복사">
+                                <Copy className="w-3 h-3" />
+                              </button>
                             </div>
                           ) : (
                             <span className="text-slate-400">-</span>
                           )}
                         </TableCell>
 
-                        {/* 6) 지역(우편번호) */}
-                        <TableCell className="whitespace-nowrap">{user.postalCode ? `[${user.postalCode}]` : '-'}</TableCell>
-
-                        {/* 7) 가입일 */}
-                        <TableCell className="whitespace-nowrap">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</TableCell>
-
-                        {/* 8) 마지막 로그인 */}
-                        <TableCell className="whitespace-nowrap">{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '-'}</TableCell>
-
-                        {/* 9) 상태 */}
-                        <TableCell className="w-[96px]">
-                          {user.isDeleted ? (
-                            <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
-                              삭제됨
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                              활성
-                            </Badge>
-                          )}
+                        {/* 주소: 요약 + 복사, 전체는 title로 */}
+                        <TableCell className={cn(td, 'w-[280px]')} title={fullAddress(u.postalCode, u.address, u.addressDetail)}>
+                          <div className="min-w-0 flex items-center justify-center gap-1">
+                            <span className="truncate block max-w-[250px]">{shortAddress(u.address)}</span>
+                            <button
+                              className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-slate-100"
+                              onClick={() => copy(fullAddress(u.postalCode, u.address, u.addressDetail))}
+                              title="전체 주소 복사"
+                              aria-label="주소 복사"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
                         </TableCell>
 
-                        {/* 10) 액션 */}
-                        <TableCell className="w-[90px]">
+                        {/* 활동(가입/로그인) 한 칼럼 */}
+                        <TableCell className={cn(td, 'w-[150px] whitespace-nowrap')}>
+                          <div className="flex flex-col items-center leading-tight">
+                            <span className="text-[12px]">{joined.date}</span>
+                            <span className="text-[11px] text-muted-foreground">{last.time ? `${last.date} ${last.time}` : '-'}</span>
+                          </div>
+                        </TableCell>
+
+                        {/* 상태 */}
+                        <TableCell className={cn(td, 'w-[64px] whitespace-nowrap')}>
+                          <Badge className={cn(badgeSm, statusColors[statusKey])}>{statusKey === 'active' ? '활성' : '삭제됨'}</Badge>
+                        </TableCell>
+
+                        {/* 작업 */}
+                        <TableCell className={cn(td, 'w-[44px] p-0')}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" aria-label="작업">
+                              <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem asChild>
-                                <Link href={`/admin/users/${user.id}`}>상세 보기</Link>
+                                <Link href={`/admin/users/${u.id}`}>상세 보기</Link>
                               </DropdownMenuItem>
-                              {/* 이후: 비활성/복구, 역할 변경 등 */}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      {/* ✅ 헤더 칼럼 수 = 10 */}
-                      <TableCell colSpan={10} className="text-center text-gray-500">
-                        검색 결과가 없습니다.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    );
+                  })}
+              </TableBody>
+            </Table>
+          </div>
 
-            <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 space-y-2">
-              <Button
-                variant="destructive"
-                onClick={async () => {
-                  const previewRes = await fetch('/api/system/cleanup/preview', {
-                    method: 'GET',
-                  });
-                  const preview = await previewRes.json();
-
-                  if (!Array.isArray(preview) || preview.length === 0) {
-                    showInfoToast('삭제 예정인 탈퇴 회원이 없습니다.');
-                    return;
-                  }
-
-                  const previewText = preview.map((user: any) => `- ${user.name} (${user.email})`).join('\n');
-
-                  const ok = window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`);
-                  if (!ok) return;
-
-                  const res = await fetch('/api/system/cleanup', {
-                    method: 'GET',
-                  });
-                  const data = await res.json();
-                  if (res.ok) {
-                    showSuccessToast(`삭제된 계정 수: ${data.deletedCount}`);
-                  } else {
-                    showErrorToast(`실패: ${data.message}`);
-                  }
-                }}
-              >
-                탈퇴 회원 자동 삭제 실행
+          {/* 페이지네이션 */}
+          <div className="relative mt-3 h-10">
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center gap-1">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={page <= 1} aria-label="첫 페이지">
+                <ChevronsLeft className="h-4 w-4" />
               </Button>
-              <Button
-                variant="destructive"
-                onClick={async () => {
-                  const previewRes = await fetch('/api/system/purge', {
-                    method: 'GET',
-                    credentials: 'include', // NextAuth 세션 기반
-                  });
-                  const preview = await previewRes.json();
-
-                  if (!Array.isArray(preview) || preview.length === 0) {
-                    showInfoToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
-                    return;
-                  }
-
-                  const previewText = preview.map((user: any) => `- ${user.name} (${user.email})`).join('\n');
-                  const ok = window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`);
-                  if (!ok) return;
-
-                  const res = await fetch('/api/system/purge', {
-                    method: 'GET',
-                    credentials: 'include', // NextAuth 세션 기반
-                  });
-                  const data = await res.json();
-                  if (res.ok) {
-                    showSuccessToast(`완전 삭제된 계정 수: ${data.deletedCount}`);
-                  } else {
-                    showErrorToast(`실패: ${data.message}`);
-                  }
-                }}
-              >
-                1년 이상 경과한 탈퇴 회원 완전 삭제
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page - 1)} disabled={page <= 1} aria-label="이전">
+                <ChevronLeft className="h-4 w-4" />
               </Button>
-            </div>
-          </Card>
-
-          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400">총 {totalCount}명의 회원</div>
-
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" disabled className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                이전
+              {pageItems.map((it, i) =>
+                typeof it === 'number' ? (
+                  <Button key={i} variant={it === page ? 'default' : 'outline'} className="h-8 min-w-8 px-2" onClick={() => goToPage(it)} aria-current={it === page ? 'page' : undefined}>
+                    {it}
+                  </Button>
+                ) : (
+                  <span key={i} className="px-2 text-muted-foreground select-none">
+                    …
+                  </span>
+                )
+              )}
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} aria-label="다음">
+                <ChevronRight className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400">
-                1
-              </Button>
-              <Button variant="outline" size="sm" disabled className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                다음
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={page >= totalPages} aria-label="끝 페이지">
+                <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* 운영 버튼 */}
+      <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <Button
+          variant="destructive"
+          onClick={async () => {
+            try {
+              const previewRes = await fetch('/api/system/cleanup/preview', { method: 'GET' });
+              const preview = await previewRes.json();
+              if (!Array.isArray(preview) || preview.length === 0) {
+                showInfoToast('삭제 예정인 탈퇴 회원이 없습니다.');
+                return;
+              }
+              const previewText = preview.map((u: any) => `- ${u.name} (${u.email})`).join('\n');
+              if (!window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
+              const res = await fetch('/api/system/cleanup', { method: 'GET' });
+              const json = await res.json();
+              if (res.ok) {
+                showSuccessToast(`삭제된 계정 수: ${json.deletedCount}`);
+                mutate();
+              } else {
+                showErrorToast(`실패: ${json.message}`);
+              }
+            } catch {
+              showErrorToast('실패: 예기치 못한 오류');
+            }
+          }}
+        >
+          탈퇴 회원 자동 삭제 실행
+        </Button>
+
+        <Button
+          variant="destructive"
+          onClick={async () => {
+            try {
+              const previewRes = await fetch('/api/system/purge', { method: 'GET', credentials: 'include' });
+              const preview = await previewRes.json();
+              if (!Array.isArray(preview) || preview.length === 0) {
+                showInfoToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
+                return;
+              }
+              const previewText = preview.map((u: any) => `- ${u.name} (${u.email})`).join('\n');
+              if (!window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
+              const res = await fetch('/api/system/purge', { method: 'GET', credentials: 'include' });
+              const json = await res.json();
+              if (res.ok) {
+                showSuccessToast(`완전 삭제된 계정 수: ${json.deletedCount}`);
+                mutate();
+              } else {
+                showErrorToast(`실패: ${json.message}`);
+              }
+            } catch {
+              showErrorToast('실패: 예기치 못한 오류');
+            }
+          }}
+        >
+          1년 이상 경과한 탈퇴 회원 완전 삭제
+        </Button>
       </div>
     </AuthGuard>
   );

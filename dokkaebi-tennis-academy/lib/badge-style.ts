@@ -5,6 +5,24 @@ export const badgeSizeSm = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
 export const badgeBase = 'inline-flex items-center gap-1 font-medium';
 export const badgeBaseOutlined = `${badgeBase} border`;
 
+// 사용자 역할/상태 배지 전역 토큰
+export const userRoleColors = {
+  admin: 'bg-purple-500/10 text-purple-600 dark:text-purple-300',
+  user: 'bg-gray-500/10 text-gray-700 dark:text-gray-300',
+} as const;
+
+export const userStatusColors = {
+  active: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
+  deleted: 'bg-red-500/10 text-red-600 dark:text-red-300',
+} as const;
+
+export function getUserStatusBadge(isDeleted: boolean) {
+  return {
+    label: isDeleted ? '삭제됨' : '활성',
+    color: isDeleted ? userStatusColors.deleted : userStatusColors.active,
+  };
+}
+
 export const orderStatusColors: Record<string, string> = {
   대기중: 'bg-yellow-500/10 text-yellow-500',
   처리중: 'bg-blue-500/10 text-blue-500',
