@@ -1,11 +1,9 @@
-// app/admin/users/_components/UsersClient.tsx
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { Search, Filter, MoreHorizontal, Copy, Mail, UserX, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
-
+import { Search, Filter, MoreHorizontal, Copy, Mail, UserX, UserCheck, Trash2, ChevronLeft, ChevronRight, ChevronsRight, ChevronDown, ChevronsLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -16,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
-
 // ---------------------- fetcher ----------------------
 const fetcher = (url: string) =>
   fetch(url, { credentials: 'include', cache: 'no-store' }).then((r) => {
@@ -132,8 +129,10 @@ export default function UsersClient() {
   // 선택된 행의 현재 상태를 계산
   const selectedRows = useMemo(() => (selectedUsers.length ? rows.filter((r) => selectedUsers.includes(r.id)) : []), [rows, selectedUsers]);
 
+  // 각각 가능 여부
   const canSuspend = useMemo(() => selectedRows.some((u) => !u.isDeleted && !u.isSuspended), [selectedRows]);
-  const canUnsuspend = useMemo(() => selectedRows.some((u) => !u.isDeleted && !!u.isSuspended), [selectedRows]);
+  const canUnsuspend = useMemo(() => selectedRows.some((u) => !u.isDeleted && u.isSuspended), [selectedRows]);
+  const hasSelection = selectedUsers.length > 0;
   const canSoftDelete = useMemo(() => selectedRows.some((u) => !u.isDeleted), [selectedRows]);
 
   const total = (data?.total as number) || 0;
@@ -350,16 +349,55 @@ export default function UsersClient() {
       {selectedUsers.length > 0 && (
         <div className="mb-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950/20 p-4 border border-blue-200 dark:border-blue-800">
           <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{selectedUsers.length}명의 회원이 선택됨</span>
+          {canSuspend && canUnsuspend && (
+            <span className="text-xs text-muted-foreground ml-2">
+              활성화 가능 {selectedRows.filter((u) => !u.isDeleted && u.isSuspended).length}건 · 비활성화 가능 {selectedRows.filter((u) => !u.isDeleted && !u.isSuspended).length}건
+            </span>
+          )}
           <div className="flex flex-wrap gap-2 sm:ml-auto">
             <Button variant="outline" size="sm" onClick={handleBulkMail}>
               <Mail className="mr-2 h-3.5 w-3.5" />
               메일 발송
             </Button>
 
-            <Button variant="outline" size="sm" className="border-yellow-200" onClick={() => bulkSuspend(true)} disabled={!canSuspend} title={!canSuspend ? '선택 항목이 이미 비활성 상태입니다' : undefined}>
-              <UserX className="mr-2 h-3.5 w-3.5" />
-              비활성화
-            </Button>
+            {/* 상태 토글 */}
+            {canSuspend && !canUnsuspend && (
+              // 전원 활성 → 비활성화만 가능
+              <Button variant="outline" size="sm" onClick={() => bulkSuspend(true)} disabled={!hasSelection} title={!hasSelection ? '선택된 회원이 없습니다' : undefined}>
+                <UserX className="mr-2 h-3.5 w-3.5" />
+                비활성화
+              </Button>
+            )}
+
+            {!canSuspend && canUnsuspend && (
+              // 전원 비활성 → 활성화만 가능
+              <Button variant="outline" size="sm" onClick={() => bulkSuspend(false)} disabled={!hasSelection} title={!hasSelection ? '선택된 회원이 없습니다' : undefined}>
+                <UserCheck className="mr-2 h-3.5 w-3.5" />
+                활성화
+              </Button>
+            )}
+
+            {canSuspend && canUnsuspend && (
+              // 혼합 선택(활성+비활성 섞임) → 드롭다운으로 선택
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={!hasSelection} title={!hasSelection ? '선택된 회원이 없습니다' : '선택된 회원의 상태를 일괄 변경'}>
+                    상태 변경
+                    <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => bulkSuspend(false)}>
+                    <UserCheck className="mr-2 h-3.5 w-3.5" />
+                    활성화
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => bulkSuspend(true)}>
+                    <UserX className="mr-2 h-3.5 w-3.5" />
+                    비활성화
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Button variant="destructive" size="sm" onClick={bulkSoftDelete} disabled={!canSoftDelete} title={!canSoftDelete ? '선택 항목이 이미 삭제 상태입니다' : undefined}>
               <Trash2 className="mr-2 h-3.5 w-3.5" />
               삭제
