@@ -68,9 +68,8 @@ export async function POST(req: Request) {
         break;
       }
       case 'restore': {
-        // 삭제 상태에서만 복구 의미 있음
-        if (deleted) eligible.push(d._id);
-        else already.push(d._id); // (이미 삭제 아님)
+        // 정책: 복구 금지
+        incompatible.push(d._id);
         break;
       }
       default:
