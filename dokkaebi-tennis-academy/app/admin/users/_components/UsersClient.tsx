@@ -1,7 +1,7 @@
 // app/admin/users/_components/UsersClient.tsx
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { Search, Filter, MoreHorizontal, Copy, Mail, UserX, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
@@ -93,9 +93,11 @@ export default function UsersClient() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'deleted'>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
   const [sort, setSort] = useState<'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'>('created_desc');
+
+  // 상태 필터 타입 보정 ('suspended' 포함)
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'deleted' | 'suspended'>('all');
 
   const key = (() => {
     const p = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -124,6 +126,16 @@ export default function UsersClient() {
       isSuspended?: boolean;
     }>) || [];
 
+  // 선택된 사용자 ID 목록 상태
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+  // 선택된 행의 현재 상태를 계산
+  const selectedRows = useMemo(() => (selectedUsers.length ? rows.filter((r) => selectedUsers.includes(r.id)) : []), [rows, selectedUsers]);
+
+  const canSuspend = useMemo(() => selectedRows.some((u) => !u.isDeleted && !u.isSuspended), [selectedRows]);
+  const canUnsuspend = useMemo(() => selectedRows.some((u) => !u.isDeleted && !!u.isSuspended), [selectedRows]);
+  const canSoftDelete = useMemo(() => selectedRows.some((u) => !u.isDeleted), [selectedRows]);
+
   const total = (data?.total as number) || 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const pageItems = buildPageItems(page, totalPages);
@@ -149,7 +161,6 @@ export default function UsersClient() {
   }, [data, rows, total]);
 
   // 선택
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const isAllSelected = rows.length > 0 && selectedUsers.length === rows.length;
   const isPartiallySelected = selectedUsers.length > 0 && selectedUsers.length < rows.length;
   const allCheckboxRef = useRef<HTMLButtonElement>(null);
@@ -188,7 +199,7 @@ export default function UsersClient() {
     window.location.href = `mailto:?bcc=${bcc}`;
   };
 
-  // 비활성화/해제
+  //  비활성화/해제
   const bulkSuspend = async (suspend: boolean) => {
     try {
       const res = await fetch('/api/admin/users/bulk', {
@@ -198,10 +209,31 @@ export default function UsersClient() {
         body: JSON.stringify({ op: suspend ? 'suspend' : 'unsuspend', ids: selectedUsers }),
       });
       const json = await res.json();
+
       if (!res.ok) throw new Error(json.message || '실패');
-      showSuccessToast(suspend ? '비활성화 완료' : '비활성화 해제 완료');
+
+      const modified = Number(json.modifiedCount || 0);
+      const alreadyCnt = Array.isArray(json?.skipped?.already) ? json.skipped.already.length : 0;
+      const incompatibleCnt = Array.isArray(json?.skipped?.incompatible) ? json.skipped.incompatible.length : 0;
+
+      if (modified > 0) {
+        showSuccessToast(`${suspend ? '비활성화' : '비활성 해제'} ${modified}건 완료`);
+      }
+      if (alreadyCnt > 0) {
+        showInfoToast(`${alreadyCnt}건은 이미 ${suspend ? '비활성' : '활성'} 상태여서 건너뜀`);
+      }
+      if (incompatibleCnt > 0 && suspend) {
+        // 비활성화 시도에서만 안내: 삭제 계정 비활성화 불가
+        showInfoToast(`${incompatibleCnt}건은 삭제 상태라 비활성화할 수 없음`);
+      }
+
+      if (modified === 0 && alreadyCnt + incompatibleCnt > 0) {
+        // 실제 변경 없음
+        showInfoToast('변경된 항목이 없습니다.');
+      }
+
       setSelectedUsers([]);
-      mutate?.(); // SWR 사용 시
+      mutate?.();
     } catch (e: any) {
       showErrorToast(e.message || '처리 중 오류');
     }
@@ -219,14 +251,20 @@ export default function UsersClient() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || '실패');
-      showSuccessToast('삭제(탈퇴) 처리 완료');
+
+      const modified = Number(json.modifiedCount || 0);
+      const alreadyCnt = Array.isArray(json?.skipped?.already) ? json.skipped.already.length : 0;
+
+      if (modified > 0) showSuccessToast(`삭제(탈퇴) ${modified}건 완료`);
+      if (alreadyCnt > 0) showInfoToast(`${alreadyCnt}건은 이미 삭제 상태여서 건너뜀`);
+      if (modified === 0 && alreadyCnt > 0) showInfoToast('변경된 항목이 없습니다.');
+
       setSelectedUsers([]);
       mutate?.();
     } catch (e: any) {
       showErrorToast(e.message || '처리 중 오류');
     }
   };
-
   return (
     <AuthGuard>
       {/* 검색/필터 바 */}
@@ -318,12 +356,11 @@ export default function UsersClient() {
               메일 발송
             </Button>
 
-            <Button variant="outline" size="sm" className="border-yellow-200" onClick={() => bulkSuspend(true)}>
+            <Button variant="outline" size="sm" className="border-yellow-200" onClick={() => bulkSuspend(true)} disabled={!canSuspend} title={!canSuspend ? '선택 항목이 이미 비활성 상태입니다' : undefined}>
               <UserX className="mr-2 h-3.5 w-3.5" />
               비활성화
             </Button>
-
-            <Button variant="destructive" size="sm" onClick={bulkSoftDelete}>
+            <Button variant="destructive" size="sm" onClick={bulkSoftDelete} disabled={!canSoftDelete} title={!canSoftDelete ? '선택 항목이 이미 삭제 상태입니다' : undefined}>
               <Trash2 className="mr-2 h-3.5 w-3.5" />
               삭제
             </Button>
