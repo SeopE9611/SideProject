@@ -61,10 +61,13 @@ const roleColors: Record<'admin' | 'user', string> = {
   admin: 'bg-purple-100 text-purple-800 border-purple-200',
   user: 'bg-slate-100 text-slate-700 border-slate-200',
 };
-const statusColors: Record<'active' | 'deleted', string> = {
+const STATUS = {
   active: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  suspended: 'bg-amber-100 text-amber-800 border-amber-200',
   deleted: 'bg-red-100 text-red-800 border-red-200',
-};
+} as const;
+type UserStatusKey = keyof typeof STATUS; // "active" | "suspended" | "deleted"
+
 const badgeSm = 'px-2 py-0.5 text-[11px] rounded-md font-medium border';
 
 // 페이지 목록(… 포함)
@@ -118,6 +121,7 @@ export default function UsersClient() {
       isDeleted: boolean;
       createdAt?: string;
       lastLoginAt?: string;
+      isSuspended?: boolean;
     }>) || [];
 
   const total = (data?.total as number) || 0;
@@ -126,15 +130,22 @@ export default function UsersClient() {
 
   // KPI 카드 값 주입
   useEffect(() => {
-    const q = (sel: string) => document.querySelector(sel);
     if (!data) return;
-    const active = rows.filter((u) => !u.isDeleted).length;
-    const deleted = rows.filter((u) => u.isDeleted).length;
-    const admins = rows.filter((u) => u.role === 'admin').length;
-    (q('#kpi-total') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(total)));
+    const q = (sel: string) => document.querySelector(sel);
+    const c = (data as any).counters;
+
+    // data.counters가 있으면 그 값으로, 없으면 fallback(현 페이지 집계)
+    const active = c?.active ?? rows.filter((u) => !u.isDeleted && !u.isSuspended).length;
+    const deleted = c?.deleted ?? rows.filter((u) => u.isDeleted).length;
+    const admins = c?.admins ?? rows.filter((u) => u.role === 'admin').length;
+    const suspended = c?.suspended ?? rows.filter((u) => u.isSuspended && !u.isDeleted).length;
+    const totalVal = c?.total ?? total;
+
+    (q('#kpi-total') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(totalVal)));
     (q('#kpi-active') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(active)));
     (q('#kpi-deleted') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(deleted)));
     (q('#kpi-admins') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(admins)));
+    (q('#kpi-suspended') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(suspended)));
   }, [data, rows, total]);
 
   // 선택
@@ -163,6 +174,58 @@ export default function UsersClient() {
   };
 
   const goToPage = (p: number) => setPage(Math.max(1, Math.min(totalPages, p)));
+
+  // 공용: 선택된 row의 이메일
+  const selectedEmails = rows
+    .filter((r) => selectedUsers.includes(r.id))
+    .map((r) => r.email)
+    .filter(Boolean);
+
+  // 메일 발송(초기 구현은 mailto로 기본 메일 클라이언트 호출)
+  const handleBulkMail = () => {
+    if (selectedEmails.length === 0) return;
+    const bcc = encodeURIComponent(selectedEmails.join(','));
+    window.location.href = `mailto:?bcc=${bcc}`;
+  };
+
+  // 비활성화/해제
+  const bulkSuspend = async (suspend: boolean) => {
+    try {
+      const res = await fetch('/api/admin/users/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ op: suspend ? 'suspend' : 'unsuspend', ids: selectedUsers }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || '실패');
+      showSuccessToast(suspend ? '비활성화 완료' : '비활성화 해제 완료');
+      setSelectedUsers([]);
+      mutate?.(); // SWR 사용 시
+    } catch (e: any) {
+      showErrorToast(e.message || '처리 중 오류');
+    }
+  };
+
+  // 삭제(소프트 삭제)
+  const bulkSoftDelete = async () => {
+    if (!window.confirm(`선택된 ${selectedUsers.length}명을 삭제(탈퇴) 처리할까요?`)) return;
+    try {
+      const res = await fetch('/api/admin/users/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ op: 'softDelete', ids: selectedUsers }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || '실패');
+      showSuccessToast('삭제(탈퇴) 처리 완료');
+      setSelectedUsers([]);
+      mutate?.();
+    } catch (e: any) {
+      showErrorToast(e.message || '처리 중 오류');
+    }
+  };
 
   return (
     <AuthGuard>
@@ -200,6 +263,7 @@ export default function UsersClient() {
               <SelectContent>
                 <SelectItem value="all">모든 상태</SelectItem>
                 <SelectItem value="active">활성</SelectItem>
+                <SelectItem value="suspended">비활성</SelectItem>
                 <SelectItem value="deleted">삭제됨</SelectItem>
               </SelectContent>
             </Select>
@@ -249,15 +313,17 @@ export default function UsersClient() {
         <div className="mb-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950/20 p-4 border border-blue-200 dark:border-blue-800">
           <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{selectedUsers.length}명의 회원이 선택됨</span>
           <div className="flex flex-wrap gap-2 sm:ml-auto">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleBulkMail}>
               <Mail className="mr-2 h-3.5 w-3.5" />
               메일 발송
             </Button>
-            <Button variant="outline" size="sm" className="border-yellow-200">
+
+            <Button variant="outline" size="sm" className="border-yellow-200" onClick={() => bulkSuspend(true)}>
               <UserX className="mr-2 h-3.5 w-3.5" />
               비활성화
             </Button>
-            <Button variant="destructive" size="sm">
+
+            <Button variant="destructive" size="sm" onClick={bulkSoftDelete}>
               <Trash2 className="mr-2 h-3.5 w-3.5" />
               삭제
             </Button>
@@ -328,7 +394,7 @@ export default function UsersClient() {
                 {/* 데이터 */}
                 {rows.length > 0 &&
                   rows.map((u) => {
-                    const statusKey = u.isDeleted ? ('deleted' as const) : ('active' as const);
+                    const statusKey: UserStatusKey = u.isDeleted ? 'deleted' : u.isSuspended ? 'suspended' : 'active';
                     const joined = splitDateTime(u.createdAt);
                     const last = splitDateTime(u.lastLoginAt);
 
@@ -398,7 +464,7 @@ export default function UsersClient() {
 
                         {/* 상태 */}
                         <TableCell className={cn(td, 'w-[64px] whitespace-nowrap')}>
-                          <Badge className={cn(badgeSm, statusColors[statusKey])}>{statusKey === 'active' ? '활성' : '삭제됨'}</Badge>
+                          <Badge className={cn(badgeSm, STATUS[statusKey])}>{statusKey === 'active' ? '활성' : statusKey === 'suspended' ? '비활성' : '삭제됨'}</Badge>
                         </TableCell>
 
                         {/* 작업 */}

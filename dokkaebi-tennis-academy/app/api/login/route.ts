@@ -31,6 +31,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: '이메일 또는 비밀번호가 일치하지 않습니다.' }, { status: 401 });
   }
 
+  if (user.isDeleted) return NextResponse.json({ error: '탈퇴한 계정입니다.' }, { status: 403 });
+  if (user.isSuspended) return NextResponse.json({ error: '비활성화된 계정입니다.' }, { status: 403 });
+
   // AccessToken 생성 (payload, 시크릿 키, 옵션)
   const accessToken = jwt.sign(
     {

@@ -1,3 +1,4 @@
+// app/api/admin/users/route.ts
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
@@ -12,13 +13,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ message: 'forbidden' }, { status: 403 });
   }
 
-  // --- 쿼리 파라미터 ---
+  // --- 쿼리 ---
   const url = new URL(req.url);
   const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
   const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || '10')));
   const q = (url.searchParams.get('q') || '').trim();
-  const role = url.searchParams.get('role'); // 'user' | 'admin' | null
-  const status = url.searchParams.get('status') || 'all'; // 'all' | 'active' | 'deleted'
+  const role = url.searchParams.get('role'); // 'user' | 'admin'
+  const status = url.searchParams.get('status') || 'all'; // 'all' | 'active' | 'deleted' | 'suspended'
   const sortKey = url.searchParams.get('sort') || 'created_desc'; // 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'
 
   const db = await getDb();
@@ -31,15 +32,20 @@ export async function GET(req: Request) {
     filter.$or = [{ name: regex }, { email: regex }, { phone: regex }];
   }
   if (role === 'user' || role === 'admin') filter.role = role;
-  if (status === 'active') filter.isDeleted = { $ne: true };
+
+  if (status === 'active') {
+    filter.isDeleted = { $ne: true };
+    filter.isSuspended = { $ne: true };
+  }
   if (status === 'deleted') filter.isDeleted = true;
+  if (status === 'suspended') filter.isSuspended = true;
 
   // --- 정렬 ---
   type SortDoc = Record<string, SortDirection>;
   let sort: SortDoc;
   switch (sortKey) {
     case 'created_asc':
-      sort = { createdAt: 1 };
+      sort = { createdAt: 1, name: 1 };
       break;
     case 'name_asc':
       sort = { name: 1, createdAt: -1 };
@@ -49,7 +55,7 @@ export async function GET(req: Request) {
       break;
     case 'created_desc':
     default:
-      sort = { createdAt: -1 };
+      sort = { createdAt: -1, name: 1 };
       break;
   }
 
@@ -66,6 +72,7 @@ export async function GET(req: Request) {
         postalCode: 1,
         role: 1,
         isDeleted: 1,
+        isSuspended: 1,
         createdAt: 1,
         updatedAt: 1,
         lastLoginAt: 1,
@@ -77,7 +84,15 @@ export async function GET(req: Request) {
 
   const [items, total] = await Promise.all([cursor.toArray(), col.countDocuments(filter)]);
 
-  // --- 응답 ---
+  // 전체 지표(필터 무시) 동시 계산
+  const [grandTotal, activeTotal, deletedTotal, adminTotal, suspendedTotal] = await Promise.all([
+    col.countDocuments({}),
+    col.countDocuments({ isDeleted: { $ne: true } }),
+    col.countDocuments({ isDeleted: true }),
+    col.countDocuments({ role: 'admin' }),
+    col.countDocuments({ isSuspended: true }),
+  ]);
+
   return NextResponse.json({
     items: items.map((u: any) => ({
       id: u._id.toString(),
@@ -89,10 +104,18 @@ export async function GET(req: Request) {
       postalCode: u.postalCode ?? '',
       role: u.role ?? 'user',
       isDeleted: !!u.isDeleted,
+      isSuspended: !!u.isSuspended,
       createdAt: u.createdAt ?? null,
       updatedAt: u.updatedAt ?? null,
       lastLoginAt: u.lastLoginAt ?? null,
     })),
     total,
+    counters: {
+      total: grandTotal,
+      active: activeTotal,
+      deleted: deletedTotal,
+      admins: adminTotal,
+      suspended: suspendedTotal,
+    },
   });
 }

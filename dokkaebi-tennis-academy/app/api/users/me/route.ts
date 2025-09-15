@@ -30,20 +30,24 @@ export async function GET() {
     }
 
     const db = await getDb();
-    const user = await db.collection('users').findOne(
-      { _id: new ObjectId(sub) },
-      {
-        projection: {
-          hashedPassword: 0,
-        },
-      }
-    );
+    const user = await db.collection('users').findOne({ _id: new ObjectId(sub) }, { projection: { hashedPassword: 0 } });
 
+    // 1) 존재X
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    // 프론트에 노출 가능한 필드만 전달
 
+    // 2) 탈퇴(soft delete)
+    if (user.isDeleted) {
+      return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+    }
+
+    // 3) 비활성
+    if (user.isSuspended) {
+      return NextResponse.json({ message: 'suspended' }, { status: 403 });
+    }
+
+    // 4) 정상 응답(보여줘도 되는 필드만)
     return NextResponse.json({
       id: user._id.toString(),
       name: user.name ?? null,

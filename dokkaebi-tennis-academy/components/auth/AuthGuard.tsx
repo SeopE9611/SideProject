@@ -14,20 +14,28 @@ export default function AuthGuard({ children }: Props) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    getMyInfo()
-      .then(({ user }) => {
-        if (user) {
-          setIsLoggedIn(true);
-        } else {
-          router.replace('/login');
+    (async () => {
+      try {
+        const res = await fetch('/api/users/me', { credentials: 'include' });
+        if (res.status === 403) {
+          router.replace('/suspended');
+          return;
         }
-      })
-      .catch(() => {
+        if (res.status === 401) {
+          router.replace('/login');
+          return;
+        }
+        if (!res.ok) {
+          router.replace('/login');
+          return;
+        }
+        setIsLoggedIn(true);
+      } catch {
         router.replace('/login');
-      })
-      .finally(() => {
+      } finally {
         setChecked(true);
-      });
+      }
+    })();
   }, [router]);
 
   if (!checked) return null;

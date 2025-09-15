@@ -28,6 +28,21 @@ export async function POST() {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
+  // 탈퇴 계정: 401 + 쿠키 정리
+  if (user.isDeleted) {
+    const res = NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+    res.cookies.set('accessToken', '', { ...baseCookie, maxAge: 0 });
+    res.cookies.set('refreshToken', '', { ...baseCookie, maxAge: 0 });
+    return res;
+  }
+
+  // 비활성 계정: 403 (accessToken만 비우는 쪽을 권장)
+  if (user.isSuspended) {
+    const res = NextResponse.json({ message: 'suspended' }, { status: 403 });
+    res.cookies.set('accessToken', '', { ...baseCookie, maxAge: 0 });
+    return res;
+  }
+
   // 새 액세스 토큰 발급
   const newAccessToken = jwt.sign({ sub: user._id.toString(), email: user.email, role: user.role }, ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRES_IN });
 
