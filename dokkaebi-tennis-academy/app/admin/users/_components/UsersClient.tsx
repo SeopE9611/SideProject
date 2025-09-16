@@ -809,7 +809,7 @@ export default function UsersClient() {
               }}
             >
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">탈퇴 회원 자동 삭제 실행</Button>
+                <Button variant="destructive">7일 이상 경과한 탈퇴 회원 자동 삭제 실행</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
