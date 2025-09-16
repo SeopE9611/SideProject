@@ -71,12 +71,12 @@ export async function POST(req: Request) {
     maxAge: REFRESH_TOKEN_EXPIRES_IN,
   });
 
-  // 토큰 쿠키 세팅 직후, 현재 계정 이메일로 게스트 신청서 자동 귀속
+  // 토큰 쿠키 세팅 직후, 자동 귀속 + 최근 로그인 기록
   try {
     const db = await getDb();
-    await autoLinkStringingByEmail(db as any, user._id, user.email);
+    await Promise.all([autoLinkStringingByEmail(db as any, user._id, user.email), db.collection('users').updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } })]);
   } catch (e) {
-    console.warn('[login] autoLinkStringingByEmail fail:', e);
+    console.warn('[login] post-login side effects fail:', e);
   }
 
   return response;
