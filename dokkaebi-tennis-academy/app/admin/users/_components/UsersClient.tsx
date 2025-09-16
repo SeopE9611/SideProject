@@ -100,11 +100,15 @@ export default function UsersClient() {
   // 상태 필터 타입 보정 ('suspended' 포함)
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'deleted' | 'suspended'>('all');
 
+  // 로그인 필터 상태: 전체 / 미로그인 / 최근 30,90일
+  const [loginFilter, setLoginFilter] = useState<'all' | 'nologin' | 'recent30' | 'recent90'>('all');
+
   const key = (() => {
     const p = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (searchQuery.trim()) p.set('q', searchQuery.trim());
     if (roleFilter !== 'all') p.set('role', roleFilter);
     if (statusFilter !== 'all') p.set('status', statusFilter);
+    if (loginFilter !== 'all') p.set('login', loginFilter);
     if (sort) p.set('sort', sort);
     return `/api/admin/users?${p.toString()}`;
   })();
@@ -481,6 +485,25 @@ export default function UsersClient() {
                 <SelectItem value="all">전체</SelectItem>
                 <SelectItem value="user">일반</SelectItem>
                 <SelectItem value="admin">관리자</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* 로그인 필터 */}
+            <Select
+              value={loginFilter}
+              onValueChange={(v) => {
+                setLoginFilter(v as 'all' | 'nologin' | 'recent30' | 'recent90');
+                setPage(1); // 페이지 첫 장으로
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="로그인" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">로그인 전체</SelectItem>
+                <SelectItem value="recent30">최근 30일 로그인</SelectItem>
+                <SelectItem value="recent90">최근 90일 로그인</SelectItem>
+                <SelectItem value="nologin">미로그인</SelectItem>
               </SelectContent>
             </Select>
 

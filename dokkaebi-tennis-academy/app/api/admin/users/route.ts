@@ -1,4 +1,3 @@
-// app/api/admin/users/route.ts
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
@@ -25,20 +24,43 @@ export async function GET(req: Request) {
   const db = await getDb();
   const col = db.collection('users');
 
+  const login = (url.searchParams.get('login') || 'all') as 'all' | 'nologin' | 'recent30' | 'recent90';
+
   // --- 필터 ---
-  const filter: Filter<any> = {};
+  const and: Filter<any>[] = [];
+
+  // 검색어(q): 이름/이메일/휴대폰 부분 일치
   if (q) {
     const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    filter.$or = [{ name: regex }, { email: regex }, { phone: regex }];
+    and.push({ $or: [{ name: regex }, { email: regex }, { phone: regex }] });
   }
-  if (role === 'user' || role === 'admin') filter.role = role;
 
-  if (status === 'active') {
-    filter.isDeleted = { $ne: true };
-    filter.isSuspended = { $ne: true };
+  // 역할 필터
+  if (role === 'user' || role === 'admin') {
+    and.push({ role });
   }
-  if (status === 'deleted') filter.isDeleted = true;
-  if (status === 'suspended') filter.isSuspended = true;
+
+  // 상태 필터
+  if (status === 'active') {
+    and.push({ isDeleted: { $ne: true } });
+    and.push({ isSuspended: { $ne: true } });
+  }
+  if (status === 'deleted') and.push({ isDeleted: true });
+  if (status === 'suspended') and.push({ isSuspended: true });
+
+  // 로그인 필터
+  if (login === 'nologin') {
+    // lastLoginAt 기록이 없거나(null)인 사용자만
+    and.push({ $or: [{ lastLoginAt: { $exists: false } }, { lastLoginAt: null }] });
+  } else if (login === 'recent30' || login === 'recent90') {
+    // 최근 N일 이내 로그인
+    const days = login === 'recent30' ? 30 : 90;
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    and.push({ lastLoginAt: { $gte: cutoff } });
+  }
+
+  // 최종 필터
+  const filter: Filter<any> = and.length ? { $and: and } : {};
 
   // --- 정렬 ---
   type SortDoc = Record<string, SortDirection>;
