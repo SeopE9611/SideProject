@@ -613,8 +613,8 @@ export default function UsersClient() {
             <Table className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center" aria-busy={isLoading && rows.length === 0}>
               <TableHeader>
                 <TableRow>
-                  <TableHead className={cn(th, 'w-[40px]')}>
-                    <Checkbox ref={allCheckboxRef} checked={isAllSelected} onCheckedChange={() => handleSelectAll()} aria-label="전체 선택" />
+                  <TableHead className={cn(th, 'w-[40px] px-0')}>
+                    <Checkbox ref={allCheckboxRef} checked={isAllSelected} onCheckedChange={() => handleSelectAll()} aria-label="전체 선택" className="mx-auto" />
                   </TableHead>
                   <TableHead className={cn(th, 'w-[220px]')}>회원</TableHead>
                   <TableHead className={cn(th, 'w-[72px]')}>권한</TableHead>
@@ -622,7 +622,7 @@ export default function UsersClient() {
                   <TableHead className={cn(th, 'w-[280px]')}>주소</TableHead>
                   {/* 가입일 + 마지막 로그인 병합 */}
                   <TableHead className={cn(th, 'w-[150px]')}>활동(가입/로그인)</TableHead>
-                  <TableHead className={cn(th, 'w-[64px]')}>상태</TableHead>
+                  <TableHead className={cn(th, 'w-[64px] px-0')}>상태</TableHead>
                   <TableHead className={cn(th, 'w-[44px] text-center')}>작업</TableHead>
                 </TableRow>
               </TableHeader>
@@ -671,8 +671,8 @@ export default function UsersClient() {
                     return (
                       <TableRow key={u.id} className="hover:bg-primary/5 transition-colors even:bg-slate-50/60 border-b last:border-0">
                         {/* 선택 */}
-                        <TableCell className={cn(td, 'w-[40px]')}>
-                          <Checkbox checked={selectedUsers.includes(u.id)} onCheckedChange={() => handleSelectUser(u.id)} aria-label={`${u.name || '사용자'} 선택`} />
+                        <TableCell className={cn(td, 'w-[40px] px-0')}>
+                          <Checkbox checked={selectedUsers.includes(u.id)} onCheckedChange={() => handleSelectUser(u.id)} aria-label={`${u.name || '사용자'} 선택`} className="mx-auto" />
                         </TableCell>
 
                         {/* 회원: 이름/이메일 두 줄 + 복사 */}
@@ -733,8 +733,10 @@ export default function UsersClient() {
                         </TableCell>
 
                         {/* 상태 */}
-                        <TableCell className={cn(td, 'w-[64px] whitespace-nowrap')}>
-                          <Badge className={cn(badgeSm, STATUS[statusKey])}>{statusKey === 'active' ? '활성' : statusKey === 'suspended' ? '비활성' : '삭제됨'}</Badge>
+                        <TableCell className={cn(td, 'w-[64px] whitespace-nowrap px-0')}>
+                          <div className="flex justify-center">
+                            <Badge className={cn(badgeSm, STATUS[statusKey])}>{statusKey === 'active' ? '활성' : statusKey === 'suspended' ? '비활성' : '삭제됨'}</Badge>
+                          </div>
                         </TableCell>
 
                         {/* 작업 */}
