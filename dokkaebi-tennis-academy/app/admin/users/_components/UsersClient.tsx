@@ -14,6 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
+
 // ---------------------- fetcher ----------------------
 const fetcher = (url: string) =>
   fetch(url, { credentials: 'include', cache: 'no-store' }).then((r) => {
@@ -267,6 +271,160 @@ export default function UsersClient() {
       showErrorToast(e.message || '처리 중 오류');
     }
   };
+  // --- Cleanup(7일) 모달 상태 ---
+  const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [cleanupPreview, setCleanupPreview] = useState<any[]>([]);
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+  const [cleanupSubmitting, setCleanupSubmitting] = useState(false);
+  const [cleanupAck, setCleanupAck] = useState(false);
+
+  // --- Purge(1년) 모달 상태 ---
+  const [purgeOpen, setPurgeOpen] = useState(false);
+  const [purgePreview, setPurgePreview] = useState<any[]>([]);
+  const [purgeLoading, setPurgeLoading] = useState(false);
+  const [purgeSubmitting, setPurgeSubmitting] = useState(false);
+  const [purgeAck, setPurgeAck] = useState(false);
+
+  // --- 미리보기 요청 ---
+  const fetchCleanupPreview = async () => {
+    setCleanupLoading(true);
+    try {
+      const res = await fetch('/api/system/cleanup/preview', { credentials: 'include' });
+      const json = await res.json();
+      setCleanupPreview(Array.isArray(json?.candidates) ? json.candidates : []);
+    } catch {
+      setCleanupPreview([]);
+    } finally {
+      setCleanupLoading(false);
+    }
+  };
+
+  const fetchPurgePreview = async () => {
+    setPurgeLoading(true);
+    try {
+      const res = await fetch('/api/system/purge/preview', { credentials: 'include' });
+      const json = await res.json();
+      setPurgePreview(Array.isArray(json?.candidates) ? json.candidates : []);
+    } catch {
+      setPurgePreview([]);
+    } finally {
+      setPurgeLoading(false);
+    }
+  };
+
+  // --- 실행(DELETE) ---
+  const confirmCleanup = async () => {
+    setCleanupSubmitting(true);
+    try {
+      const res = await fetch('/api/system/cleanup', { method: 'DELETE', credentials: 'include' });
+      const json = await res.json();
+      if (res.ok) {
+        showSuccessToast(`삭제된 계정 수: ${json.deletedCount ?? 0}`);
+        setCleanupOpen(false);
+        setCleanupAck(false);
+        mutate?.();
+      } else {
+        showErrorToast(json?.message || '삭제 실패');
+      }
+    } catch {
+      showErrorToast('네트워크 오류');
+    } finally {
+      setCleanupSubmitting(false);
+    }
+  };
+
+  const confirmPurge = async () => {
+    setPurgeSubmitting(true);
+    try {
+      const res = await fetch('/api/system/purge', { method: 'DELETE', credentials: 'include' });
+      const json = await res.json();
+      if (res.ok) {
+        showSuccessToast(`완전 삭제된 계정 수: ${json.deletedCount ?? 0}`);
+        setPurgeOpen(false);
+        setPurgeAck(false);
+        mutate?.();
+      } else {
+        showErrorToast(json?.message || '완전 삭제 실패');
+      }
+    } catch {
+      showErrorToast('네트워크 오류');
+    } finally {
+      setPurgeSubmitting(false);
+    }
+  };
+
+  // ▽ 미사용 handleCleanup/handlePurge (AlertDialog 플로우로 대체)
+  // 7일 경과 탈퇴 회원 정리(soft-deleted → 완전삭제)
+  const handleCleanup = async () => {
+    try {
+      const previewRes = await fetch('/api/system/cleanup/preview', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const previewJson = await previewRes.json();
+      const candidates: any[] = Array.isArray(previewJson?.candidates) ? previewJson.candidates : [];
+
+      if (candidates.length === 0) {
+        showInfoToast('삭제 예정인 탈퇴 회원이 없습니다.');
+        return;
+      }
+
+      const previewText = candidates.map((u) => `- ${u.name} (${u.email})`).join('\n');
+      if (!window.confirm(`삭제 예정 회원 (${candidates.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
+
+      const res = await fetch('/api/system/cleanup', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const json = await res.json();
+
+      if (res.ok) {
+        showSuccessToast(`삭제된 계정 수: ${json.deletedCount}`);
+        mutate?.();
+      } else {
+        showErrorToast(`실패: ${json.message || '요청 실패'}`);
+      }
+    } catch (e) {
+      showErrorToast('실패: 예기치 못한 오류');
+    }
+  };
+
+  // 1년 경과 탈퇴 회원 완전 삭제
+  const handlePurge = async () => {
+    try {
+      const previewRes = await fetch('/api/system/purge/preview', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const previewJson = await previewRes.json();
+      const candidates: any[] = Array.isArray(previewJson?.candidates) ? previewJson.candidates : [];
+
+      if (candidates.length === 0) {
+        showInfoToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
+        return;
+      }
+
+      const previewText = candidates.map((u) => `- ${u.name} (${u.email})`).join('\n');
+      if (!window.confirm(`삭제 예정 회원 (${candidates.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
+
+      const res = await fetch('/api/system/purge', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const json = await res.json();
+
+      if (res.ok) {
+        showSuccessToast(`완전 삭제된 계정 수: ${json.deletedCount}`);
+        mutate?.();
+      } else {
+        showErrorToast(`실패: ${json.message || '요청 실패'}`);
+      }
+    } catch (e) {
+      showErrorToast('실패: 예기치 못한 오류');
+    }
+  };
+  // △ 미사용 handleCleanup/handlePurge (AlertDialog 플로우로 대체)
+
   return (
     <AuthGuard>
       {/* 검색/필터 바 */}
@@ -632,63 +790,130 @@ export default function UsersClient() {
         </div>
       </div>
 
-      {/* 운영 버튼 */}
-      <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <Button
-          variant="destructive"
-          onClick={async () => {
-            try {
-              const previewRes = await fetch('/api/system/cleanup/preview', { method: 'GET' });
-              const preview = await previewRes.json();
-              if (!Array.isArray(preview) || preview.length === 0) {
-                showInfoToast('삭제 예정인 탈퇴 회원이 없습니다.');
-                return;
-              }
-              const previewText = preview.map((u: any) => `- ${u.name} (${u.email})`).join('\n');
-              if (!window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
-              const res = await fetch('/api/system/cleanup', { method: 'GET' });
-              const json = await res.json();
-              if (res.ok) {
-                showSuccessToast(`삭제된 계정 수: ${json.deletedCount}`);
-                mutate();
-              } else {
-                showErrorToast(`실패: ${json.message}`);
-              }
-            } catch {
-              showErrorToast('실패: 예기치 못한 오류');
-            }
-          }}
-        >
-          탈퇴 회원 자동 삭제 실행
-        </Button>
+      <div className="mt-6">
+        <Card className="border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-red-700 dark:text-red-300 text-sm">탈퇴 회원 정리 (Danger zone)</CardTitle>
+            <CardDescription className="text-xs">7일 경과 탈퇴 계정은 정리, 1년 경과 탈퇴 계정은 완전 삭제합니다. 실행 전 미리보기 목록을 확인하세요.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {/* 탈퇴 회원 자동 삭제 실행 (7일 경과) */}
+            <AlertDialog
+              open={cleanupOpen}
+              onOpenChange={(o) => {
+                setCleanupOpen(o);
+                if (o) {
+                  setCleanupAck(false);
+                  fetchCleanupPreview();
+                }
+              }}
+            >
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">탈퇴 회원 자동 삭제 실행</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>탈퇴 회원 자동 삭제</AlertDialogTitle>
+                  <AlertDialogDescription>탈퇴 후 7일이 지난 계정을 영구 삭제합니다. 아래 목록을 확인하고 동의 후 실행하세요.</AlertDialogDescription>
+                </AlertDialogHeader>
 
-        <Button
-          variant="destructive"
-          onClick={async () => {
-            try {
-              const previewRes = await fetch('/api/system/purge', { method: 'GET', credentials: 'include' });
-              const preview = await previewRes.json();
-              if (!Array.isArray(preview) || preview.length === 0) {
-                showInfoToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
-                return;
-              }
-              const previewText = preview.map((u: any) => `- ${u.name} (${u.email})`).join('\n');
-              if (!window.confirm(`삭제 예정 회원 (${preview.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
-              const res = await fetch('/api/system/purge', { method: 'GET', credentials: 'include' });
-              const json = await res.json();
-              if (res.ok) {
-                showSuccessToast(`완전 삭제된 계정 수: ${json.deletedCount}`);
-                mutate();
-              } else {
-                showErrorToast(`실패: ${json.message}`);
-              }
-            } catch {
-              showErrorToast('실패: 예기치 못한 오류');
-            }
-          }}
-        >
-          1년 이상 경과한 탈퇴 회원 완전 삭제
-        </Button>
+                {/* 미리보기 리스트 */}
+                <div className="border rounded-md p-3 max-h-64 overflow-auto">
+                  {cleanupLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" /> 불러오는 중…
+                    </div>
+                  ) : cleanupPreview.length === 0 ? (
+                    <div className="text-sm text-muted-foreground">삭제 예정인 탈퇴 회원이 없습니다.</div>
+                  ) : (
+                    <ul className="text-sm space-y-1">
+                      {cleanupPreview.map((u: any) => (
+                        <li key={String(u._id)} className="flex items-center justify-between gap-2">
+                          <span className="truncate">{u.name || u.email || u._id}</span>
+                          <span className="text-xs text-muted-foreground">{u.email}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {/* 동의 체크 */}
+                <div className="mt-3 flex items-center gap-2">
+                  <Checkbox id="cleanup-ack" checked={cleanupAck} onCheckedChange={(v) => setCleanupAck(Boolean(v))} />
+                  <label htmlFor="cleanup-ack" className="text-xs text-muted-foreground">
+                    위 목록을 확인했으며, 영구 삭제에 동의합니다.
+                  </label>
+                </div>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={cleanupSubmitting}>취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmCleanup} disabled={cleanupSubmitting || cleanupLoading || !cleanupAck || cleanupPreview.length === 0}>
+                    {cleanupSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    영구 삭제 실행
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            {/* 1년 이상 경과한 탈퇴 회원 완전 삭제 */}
+            <AlertDialog
+              open={purgeOpen}
+              onOpenChange={(o) => {
+                setPurgeOpen(o);
+                if (o) {
+                  setPurgeAck(false);
+                  fetchPurgePreview();
+                }
+              }}
+            >
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">1년 이상 경과한 탈퇴 회원 완전 삭제</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>탈퇴 1년 경과 계정 완전 삭제</AlertDialogTitle>
+                  <AlertDialogDescription>개인정보 최소 보관 정책에 따라, 탈퇴 후 1년이 지난 계정을 완전 삭제합니다.</AlertDialogDescription>
+                </AlertDialogHeader>
+
+                {/* 미리보기 리스트 */}
+                <div className="border rounded-md p-3 max-h-64 overflow-auto">
+                  {purgeLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" /> 불러오는 중…
+                    </div>
+                  ) : purgePreview.length === 0 ? (
+                    <div className="text-sm text-muted-foreground">완전 삭제 대상 계정이 없습니다.</div>
+                  ) : (
+                    <ul className="text-sm space-y-1">
+                      {purgePreview.map((u: any) => (
+                        <li key={String(u._id)} className="flex items-center justify-between gap-2">
+                          <span className="truncate">{u.name || u.email || u._id}</span>
+                          <span className="text-xs text-muted-foreground">{u.email}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {/* 동의 체크 */}
+                <div className="mt-3 flex items-center gap-2">
+                  <Checkbox id="purge-ack" checked={purgeAck} onCheckedChange={(v) => setPurgeAck(Boolean(v))} />
+                  <label htmlFor="purge-ack" className="text-xs text-muted-foreground">
+                    위 목록을 확인했으며, 완전 삭제에 동의합니다.
+                  </label>
+                </div>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={purgeSubmitting}>취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmPurge} disabled={purgeSubmitting || purgeLoading || !purgeAck || purgePreview.length === 0}>
+                    {purgeSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    완전 삭제 실행
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
       </div>
     </AuthGuard>
   );
