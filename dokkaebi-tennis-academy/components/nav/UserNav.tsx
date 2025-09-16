@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { mutate } from 'swr';
+import { useAuthStore } from '@/app/store/authStore';
 
 export function UserNav() {
   const router = useRouter();
   const { user, loading, refresh } = useCurrentUser();
+  const { logout } = useAuthStore();
 
   if (loading) {
     return (
@@ -85,8 +87,10 @@ export function UserNav() {
         )}
         <DropdownMenuItem
           onClick={async () => {
+            logout();
             await fetch('/api/logout', { method: 'POST', credentials: 'include' });
-            window.location.href = '/';
+            router.replace('/');
+            router.refresh();
           }}
         >
           <LogOut className="mr-2 h-4 w-4" />

@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
+import { useAuthStore } from '@/app/store/authStore';
 
 interface UserNavMobileProps {
   setOpen: (open: boolean) => void;
@@ -11,6 +12,7 @@ interface UserNavMobileProps {
 export function UserNavMobile({ setOpen }: UserNavMobileProps) {
   const router = useRouter();
   const { user, loading, refresh } = useCurrentUser();
+  const { logout } = useAuthStore();
 
   if (loading) return null;
 
@@ -49,8 +51,10 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
         className="w-full justify-center"
         onClick={async () => {
           setOpen(false);
+          logout();
           await fetch('/api/logout', { method: 'POST', credentials: 'include' });
-          window.location.href = '/';
+          router.replace('/');
+          router.refresh();
         }}
       >
         로그아웃
