@@ -159,8 +159,17 @@ export default function UserDetailClient({ id }: { id: string }) {
               </div>
               <div className="space-y-1 text-right">
                 <div className="text-sm text-muted-foreground">상태</div>
-                <Badge variant="secondary" className={user.isDeleted ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}>
-                  {user.isDeleted ? '삭제됨' : '활성'}
+                <Badge
+                  variant="secondary"
+                  className={
+                    user.isDeleted
+                      ? 'bg-red-100 text-red-700' // 삭제됨
+                      : user.isSuspended
+                      ? 'bg-amber-100 text-amber-800' // 비활성
+                      : 'bg-emerald-100 text-emerald-700' // 활성
+                  }
+                >
+                  {user.isDeleted ? '삭제됨' : user.isSuspended ? '비활성' : '활성'}
                 </Badge>
               </div>
             </div>
