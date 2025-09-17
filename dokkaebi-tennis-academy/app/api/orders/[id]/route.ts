@@ -130,9 +130,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
-// ⚠️ 프로젝트에 이미 존재한다고 하신 유틸 그대로 사용
-
-// ✅ App Router 규약: params는 Promise가 아니라 "그냥 객체"로 받습니다.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
     // 파라미터/바디 파싱

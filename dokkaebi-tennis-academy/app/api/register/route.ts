@@ -1,6 +1,6 @@
 // app/api/register/route.ts
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb'; // ✅ 단일 DB 유틸 사용
+import { getDb } from '@/lib/mongodb'; // 단일 DB 유틸 사용
 import { hash } from 'bcryptjs';
 
 /**
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     await users.insertOne({
       email,
       name,
-      hashedPassword, // ✅ 평문 저장 금지
+      hashedPassword, // 평문 저장 금지
       isDeleted: false,
       phone,
       address,

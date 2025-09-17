@@ -22,6 +22,10 @@ export async function GET(req: Request) {
   const sortKey = url.searchParams.get('sort') || 'created_desc'; // 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'
 
   const db = await getDb();
+  await db
+    .collection('users')
+    .createIndex({ lastLoginAt: -1 }, { name: 'users_lastLoginAt_idx' })
+    .catch(() => {});
   const col = db.collection('users');
 
   const login = (url.searchParams.get('login') || 'all') as 'all' | 'nologin' | 'recent30' | 'recent90';

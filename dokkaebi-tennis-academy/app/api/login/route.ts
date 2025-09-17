@@ -71,6 +71,18 @@ export async function POST(req: Request) {
     maxAge: REFRESH_TOKEN_EXPIRES_IN,
   });
 
+  // 로그인 대상 유저 문서: 위에서 const user = await getUserByEmail(email) 로 조회됨
+  if (user?.passwordMustChange === true) {
+    // 로그인 직후 전역 리다이렉트를 트리거하는 HttpOnly 쿠키
+    response.cookies.set('force_pwd_change', '1', {
+      ...baseCookie,
+      maxAge: 60 * 10, // 10분 (원하면 더 길게)
+    });
+  } else {
+    // 혹시 남아있던 플래그 쿠키는 제거
+    response.cookies.delete('force_pwd_change');
+  }
+
   // 토큰 쿠키 세팅 직후, 자동 귀속 + 최근 로그인 기록
   try {
     const db = await getDb();
