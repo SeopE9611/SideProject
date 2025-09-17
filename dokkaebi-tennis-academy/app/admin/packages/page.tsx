@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import AuthGuard from '@/components/auth/AuthGuard';
 import useSWR from 'swr';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { showSuccessToast } from '@/lib/toast';
 
 // 패키지 주문 타입 정의
 interface PackageOrder {
@@ -973,7 +974,7 @@ export default function PackageOrdersClient() {
                                           className="h-4 w-4"
                                           onClick={() => {
                                             navigator.clipboard.writeText(pkg.id);
-                                            toast.success('패키지 ID가 클립보드에 복사되었습니다.');
+                                            showSuccessToast('패키지 ID가 클립보드에 복사되었습니다.');
                                           }}
                                         >
                                           <Copy className="w-3 h-3" />

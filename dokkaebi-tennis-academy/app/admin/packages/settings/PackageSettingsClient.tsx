@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 // 패키지 설정 타입
 interface PackageConfig {
@@ -124,9 +125,9 @@ export default function PackageSettingsClient() {
     try {
       // 실제 구현에서는 API 호출
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success('패키지 설정이 저장되었습니다.');
+      showSuccessToast('패키지 설정이 저장되었습니다.');
     } catch (error) {
-      toast.error('저장 중 오류가 발생했습니다.');
+      showErrorToast('저장 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -138,9 +139,9 @@ export default function PackageSettingsClient() {
     try {
       // 실제 구현에서는 API 호출
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success('일반 설정이 저장되었습니다.');
+      showSuccessToast('일반 설정이 저장되었습니다.');
     } catch (error) {
-      toast.error('저장 중 오류가 발생했습니다.');
+      showErrorToast('저장 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -173,7 +174,7 @@ export default function PackageSettingsClient() {
   const deletePackage = (id: string) => {
     if (confirm('정말로 이 패키지를 삭제하시겠습니까?')) {
       setPackageConfigs((prev) => prev.filter((pkg) => pkg.id !== id));
-      toast.success('패키지가 삭제되었습니다.');
+      showSuccessToast('패키지가 삭제되었습니다.');
     }
   };
 
