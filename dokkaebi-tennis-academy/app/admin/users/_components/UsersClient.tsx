@@ -634,6 +634,17 @@ export default function UsersClient() {
         <div className="relative overflow-x-hidden px-3 sm:px-4 pb-3">
           <div className="relative rounded-2xl border border-slate-200 shadow-sm min-w-0">
             <Table className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center" aria-busy={isLoading && rows.length === 0}>
+              {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}
+              <colgroup>
+                <col style={{ width: '40px' }} />
+                <col style={{ width: '220px' }} />
+                <col style={{ width: '72px' }} />
+                <col style={{ width: '110px' }} />
+                <col style={{ width: '280px' }} />
+                <col style={{ width: '150px' }} />
+                <col style={{ width: '64px' }} />
+                <col style={{ width: '44px' }} />
+              </colgroup>
               <TableHeader className="sticky top-0 z-10 bg-slate-50/90 backdrop-blur shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)]">
                 <TableRow>
                   <TableHead className={cn(th, 'w-[40px] px-0')}>
