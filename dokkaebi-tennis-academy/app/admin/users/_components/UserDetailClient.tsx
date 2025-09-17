@@ -175,6 +175,10 @@ export default function UserDetailClient({ id }: { id: string }) {
   const [pwDialogOpen, setPwDialogOpen] = useState(false);
   const [tmpPw, setTmpPw] = useState<string | null>(null);
 
+  // 비번 초기화 실행 전 입력 확인용
+  const [pwConfirmOpen, setPwConfirmOpen] = useState(false);
+  const [pwConfirmText, setPwConfirmText] = useState('');
+
   // KPI
   const { data: kpi } = useSWR<{ orders: number; applications: number; reviews: number }>(`/api/admin/users/${id}/kpi`, fetcher);
 
@@ -398,10 +402,54 @@ export default function UserDetailClient({ id }: { id: string }) {
                   {Boolean(user.isSuspended) ? '비활성 해제' : '비활성화'}
                 </Button>
 
-                {/* 비밀번호 초기화 */}
-                <Button variant="secondary" className="whitespace-nowrap shrink-0" onClick={resetPassword} disabled={pending}>
-                  비밀번호 초기화
-                </Button>
+                {/* 비밀번호 초기화 (실수 방지: 확인 다이얼로그 1단계) */}
+                <AlertDialog
+                  open={pwConfirmOpen}
+                  onOpenChange={(o) => {
+                    setPwConfirmOpen(o);
+                    if (!o) setPwConfirmText('');
+                  }}
+                >
+                  <AlertDialogTrigger asChild>
+                    <Button variant="secondary" className="whitespace-nowrap shrink-0" disabled={pending}>
+                      비밀번호 초기화
+                    </Button>
+                  </AlertDialogTrigger>
+
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>비밀번호 초기화 실행</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        이 회원의 비밀번호를 임시 비밀번호로 재설정합니다. 실행 즉시 <b>임시 비밀번호가 1회 표시</b>되며, 사용자는 로그인 후 비밀번호 변경이 <b>강제</b>됩니다.
+                        <br />
+                        실수 클릭 방지를 위해 아래 확인 문구를 입력해 주세요.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    <div className="space-y-2">
+                      <Label>확인 문구</Label>
+                      <div className="text-xs text-muted-foreground">
+                        아래 입력창에 <code>초기화</code> 라고 입력하면 실행 버튼이 활성화됩니다.
+                      </div>
+                      <Input value={pwConfirmText} onChange={(e) => setPwConfirmText(e.target.value)} placeholder="초기화" />
+                    </div>
+
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>취소</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={pwConfirmText !== '초기화' || pending}
+                        onClick={async () => {
+                          await resetPassword(); // ← 실제 초기화 호출(기존 함수 그대로 사용)
+                          setPwConfirmOpen(false); // 다이얼로그 닫기
+                          setPwConfirmText(''); // 입력값 초기화
+                        }}
+                      >
+                        초기화 실행
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
                 {/* 탈퇴(삭제) */}
                 {user.isDeleted ? (
