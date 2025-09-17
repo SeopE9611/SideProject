@@ -84,8 +84,17 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   const db = await getDb();
   const _id = new ObjectId(id);
 
-  const r = await db.collection('users').updateOne({ _id }, { $set: { isDeleted: true, updatedAt: new Date() } });
-
+  // update pipeline
+  const r = await db.collection('users').updateOne({ _id }, [
+    {
+      $set: {
+        isDeleted: true,
+        // 이미 값이 있으면 보존, 없으면 지금 시각으로 최초 1회만 세팅
+        deletedAt: { $ifNull: ['$deletedAt', '$$NOW'] },
+        updatedAt: '$$NOW',
+      },
+    },
+  ]);
   if (!r.matchedCount) return NextResponse.json({ message: 'not found' }, { status: 404 });
 
   // DELETE 성공: 감사 로그 추가 (핸들러 내부)
