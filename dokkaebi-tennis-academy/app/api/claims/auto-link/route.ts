@@ -18,7 +18,8 @@ export async function POST(req: NextRequest) {
     const userId = new ObjectId(payload.sub);
     const user = await db.collection('users').findOne({ _id: userId }, { projection: { email: 1 } });
 
-    const { matched, modified } = await autoLinkStringingByEmail(db as any, userId, user?.email);
+    if (!user?.email) return NextResponse.json({ ok: true, matched: 0, linked: 0 });
+    const { matched, modified } = await autoLinkStringingByEmail(db, userId, user.email);
     return NextResponse.json({ ok: true, matched, linked: modified });
   } catch (e) {
     console.error('[POST /api/claims/auto-link] error', e);

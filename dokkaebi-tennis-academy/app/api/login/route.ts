@@ -110,7 +110,11 @@ export async function POST(req: Request) {
       console.warn('[login] session log fail', e);
     }
 
-    await Promise.all([autoLinkStringingByEmail(db as any, user.email), db.collection('users').updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } })]);
+    await Promise.all([
+      // (db, userId, email) 순서로 통일
+      autoLinkStringingByEmail(db, user._id, user.email),
+      db.collection('users').updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } }),
+    ]);
   } catch (e) {
     console.warn('[login] post-login side effects fail:', e);
   }

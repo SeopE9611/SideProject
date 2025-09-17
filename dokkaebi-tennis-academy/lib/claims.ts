@@ -21,23 +21,30 @@ export async function ensureStringingIndexes(db: Db) {
 }
 
 /* 게스트 스트링 신청서 자동 귀속 */
-export async function autoLinkStringingByEmail(db: Db, userId: ObjectId, userEmail?: string | null) {
+export async function autoLinkStringingByEmail(db: Db, userId: ObjectId | string, userEmail?: string | null) {
   const email = normalizeEmail(userEmail);
   if (!email) return { matched: 0, modified: 0 };
 
   await ensureStringingIndexes(db);
 
+  // userId를 문자열로 전달해도 안전하게 ObjectId로 고정
+  const uid = typeof userId === 'string' ? new ObjectId(userId) : userId;
+
   const res = await db.collection('stringing_applications').updateMany(
     {
-      userId: { $exists: false }, // 아직 귀속 안 된 문서
-      contactEmail: email, // 동일 이메일
-      status: { $nin: ['취소', '환불'] }, // 유효 상태만
+      // 아직 귀속 안 된 문서(존재하지 않음 OR null OR '')
+      $or: [{ userId: { $exists: false } }, { userId: null }, { userId: '' }],
+      // 동일 이메일(소문자 정규화)
+      contactEmail: email,
+      // 유효 상태만
+      status: { $nin: ['취소', '환불'] },
     },
     {
       $set: {
-        userId,
+        userId: uid,
         claimed: true,
         claimedAt: new Date(),
+        updatedAt: new Date(),
       },
     }
   );
