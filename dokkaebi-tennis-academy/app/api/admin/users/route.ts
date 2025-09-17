@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
 import type { Filter, SortDirection } from 'mongodb';
+import { requireAdmin } from '@/lib/admin.guard';
 
 export async function GET(req: Request) {
-  // --- 관리자 인증 ---
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload?.sub || payload.role !== 'admin') {
-    return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-  }
+  // --- 관리자 인증 (공용 가드) ---
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+  const { db } = guard;
 
   // --- 쿼리 ---
   const url = new URL(req.url);
@@ -21,7 +17,6 @@ export async function GET(req: Request) {
   const status = url.searchParams.get('status') || 'all'; // 'all' | 'active' | 'deleted' | 'suspended'
   const sortKey = url.searchParams.get('sort') || 'created_desc'; // 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'
 
-  const db = await getDb();
   await db
     .collection('users')
     .createIndex({ lastLoginAt: -1 }, { name: 'users_lastLoginAt_idx' })

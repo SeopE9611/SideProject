@@ -1,23 +1,15 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
-import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { requireAdmin } from '@/lib/admin.guard';
+import { appendAudit } from '@/lib/audit';
 
-async function requireAdmin() {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  return payload && payload.role === 'admin' ? payload : null;
-}
-
-export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+  const { db } = guard;
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
-  const db = await getDb();
   const doc = await db.collection('users').findOne({ _id: new ObjectId(id) }, { projection: { hashedPassword: 0 } });
 
   if (!doc) return NextResponse.json({ message: 'not found' }, { status: 404 });
@@ -32,9 +24,9 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 }
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+  const { db, admin } = guard;
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
@@ -49,7 +41,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ ok: true, noop: true });
   }
 
-  const db = await getDb();
   const _id = new ObjectId(id);
 
   const r = await db.collection('users').updateOne({ _id }, { $set, $currentDate: { updatedAt: true } });
@@ -65,7 +56,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     if (k in body) acc[k] = body[k];
     return acc;
   }, {});
-  await appendAudit(db, id, '프로필 수정', detail, String(admin.sub));
+  await appendAudit(db, { type: 'user_update', actorId: admin._id, targetId: _id, message: '프로필 수정', diff: detail }, req);
 
   return NextResponse.json({
     ...v,
@@ -74,14 +65,13 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   });
 }
 
-export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+  const { db, admin } = guard;
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
-  const db = await getDb();
   const _id = new ObjectId(id);
 
   // update pipeline
@@ -98,20 +88,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   if (!r.matchedCount) return NextResponse.json({ message: 'not found' }, { status: 404 });
 
   // DELETE 성공: 감사 로그 추가 (핸들러 내부)
-  await appendAudit(db, id, '탈퇴(삭제)', { isDeleted: true }, String(admin.sub));
+  await appendAudit(db, { type: 'user_delete', actorId: admin._id, targetId: _id, message: '탈퇴(삭제)' }, req);
 
   return NextResponse.json({ ok: true });
-}
-
-/** (성공 직후 공통) 감사 로그 유틸 */
-async function appendAudit(db: any, targetId: string, action: string, detail: any, actor: string) {
-  const userId = new ObjectId(targetId);
-  await db.collection('user_audit_logs').createIndex({ userId: 1, at: -1 }, { name: 'audit_userId_at' });
-  await db.collection('user_audit_logs').insertOne({
-    userId,
-    action,
-    detail: typeof detail === 'string' ? detail : JSON.stringify(detail ?? {}),
-    at: new Date(),
-    by: new ObjectId(actor),
-  });
 }

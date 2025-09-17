@@ -1,17 +1,9 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
-
-// 관리자 권한 확인
-async function requireAdmin() {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  return payload && payload.role === 'admin' ? payload : null;
-}
+import { requireAdmin } from '@/lib/admin.guard';
+import { appendAudit } from '@/lib/audit';
 
 // 임시 비밀번호 생성 (영문대/소 + 숫자 조합, 반드시 각 그룹 1자 이상 포함)
 function generateTempPassword(length = 12) {
@@ -30,15 +22,15 @@ function generateTempPassword(length = 12) {
     .join('');
 }
 
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
-    const admin = await requireAdmin();
-    if (!admin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-
+    // 공용 가드 사용
+    const guard = await requireAdmin(req);
+    if (!guard.ok) return guard.res;
+    const { db, admin } = guard;
     const { id } = await ctx.params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
-    const db = await getDb();
     const _id = new ObjectId(id);
 
     const user = await db.collection('users').findOne({ _id }, { projection: { _id: 1, email: 1 } });
@@ -54,7 +46,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
       {
         $set: {
           hashedPassword: hashed,
-          passwordMustChange: true, // (선택) 다음 로그인 때 변경 유도용
+          passwordMustChange: true, // 다음 로그인 때 변경 강제
           passwordResetAt: new Date(),
           updatedAt: new Date(),
         },
@@ -62,18 +54,17 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
       }
     );
 
-    // 3) 감사 로그 기록
-    await db
-      .collection('user_audit_logs')
-      .createIndex({ userId: 1, at: -1 }, { name: 'audit_userId_at' })
-      .catch(() => {});
-    await db.collection('user_audit_logs').insertOne({
-      userId: _id,
-      action: '비밀번호 초기화',
-      detail: '{}',
-      at: new Date(),
-      by: new ObjectId(String(admin.sub)),
-    });
+    // 3) 감사 로그 기록(공용 유틸)
+    await appendAudit(
+      db,
+      {
+        type: 'user_password_reset',
+        actorId: admin._id,
+        targetId: _id,
+        message: '관리자 비밀번호 초기화',
+      },
+      req
+    );
 
     // 4) 임시 비밀번호를 한 번만 반환(화면에 노출 후 관리자가 전달)
     return NextResponse.json({ tempPassword, passwordMustChange: true });
