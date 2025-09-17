@@ -16,5 +16,8 @@ export async function POST() {
     maxAge: 0,
   });
 
+  // 전역 강제 리다이렉트 플래그 삭제
+  response.cookies.set('force_pwd_change', '', { path: '/', httpOnly: true, maxAge: 0 });
+
   return response;
 }

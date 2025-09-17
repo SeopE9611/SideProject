@@ -20,6 +20,28 @@ export default function ForceChangePasswordClient() {
 
   // 이 페이지를 떠나려 할 때 경고를 띄울지 여부(성공하면 false로 꺼서 더는 방해 안 함)
   const [leaveGuard, setLeaveGuard] = useState(true);
+
+  // 떠나기 확정 시 먼저 로그아웃(쿠키 제거) → 가드 해제
+  const logoutBeforeLeave = async () => {
+    try {
+      // click/back 같은 소프트 내비게이션
+      await fetch('/api/logout', { method: 'POST', keepalive: true });
+    } catch {}
+    setLeaveGuard(false);
+  };
+
+  // 새로고침/창닫기에서 로그아웃 시도(쿠키 제거)
+  const logoutBeacon = () => {
+    try {
+      if ('sendBeacon' in navigator) {
+        const blob = new Blob([], { type: 'application/json' });
+        navigator.sendBeacon('/api/logout', blob);
+      } else {
+        fetch('/api/logout', { method: 'POST', keepalive: true });
+      }
+    } catch {}
+  };
+
   // 1) 페이지 떠남(새로고침/닫기) 경고
   // 2) 내부 링크 클릭 시 확인창
   // 3) 뒤로 가기(popstate) 시 확인창
@@ -28,6 +50,7 @@ export default function ForceChangePasswordClient() {
 
     // 1) 새로고침/닫기 등 하드 네비게이션
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      logoutBeacon(); // ← 떠나기 전에 쿠키 제거 시도
       // 대부분 브라우저에서 커스텀 메시지는 무시되고, 기본 경고만 표시됩니다.
       e.preventDefault();
       e.returnValue = '';
@@ -35,10 +58,10 @@ export default function ForceChangePasswordClient() {
     window.addEventListener('beforeunload', onBeforeUnload);
 
     // 공통 확인 함수
-    const confirmLeave = () => window.confirm('비밀번호 변경을 완료하지 않고 이 페이지를 떠나면, 임시 비밀번호는 다시 볼 수 없습니다.\n' + '계속 이동하시겠습니까? (떠난 뒤에는 임시 비밀번호로 다시 로그인하여 변경해야 합니다)');
+    const confirmLeave = () => window.confirm('아직 비밀번호를 바꾸지 않았습니다.\n떠나면 임시 비밀번호를 다시 볼 수 없어요.\n계속 이동할까요?');
 
     // 2) 내부 링크/버튼으로 다른 경로로 나가려는 경우(캡처 단계에서 선차단)
-    const onClickCapture = (e: MouseEvent) => {
+    const onClickCapture = async (e: MouseEvent) => {
       const el = e.target as HTMLElement | null;
       const anchor = el?.closest('a');
       if (!anchor) return;
@@ -55,6 +78,12 @@ export default function ForceChangePasswordClient() {
       if (!confirmLeave()) {
         e.preventDefault();
         e.stopPropagation();
+      } else {
+        // 기본 이동을 막고, 먼저 로그아웃 → 전체 페이지 이동(SSR 반영)
+        e.preventDefault();
+        e.stopPropagation();
+        await logoutBeforeLeave(); // 토큰/force_pwd_change 쿠키 삭제
+        window.location.assign(url.href); // 전체 페이지 로드
       }
     };
     document.addEventListener('click', onClickCapture, true); // 캡처 단계!
@@ -62,11 +91,14 @@ export default function ForceChangePasswordClient() {
     // 3) 뒤로 가기: 현재 히스토리 위에 "잠금 스냅샷"을 한 번 더 쌓아두고 popstate에서 복귀
     const pushLock = () => history.pushState({ pwdChangeLock: true }, '', window.location.href);
     pushLock();
-    const onPopState = () => {
+    const onPopState = async () => {
       if (!confirmLeave()) {
-        // 복귀(원래 주소로 다시 밀어 넣음)
-        pushLock();
-      } // 확인했다면 아무 것도 하지 않아 내비게이션 진행
+        pushLock(); // 취소 시 복귀
+      } else {
+        await logoutBeforeLeave();
+        // 뒤로가려던 곳으로 전체 이동(참조 없으면 홈)
+        window.location.replace(document.referrer || '/');
+      }
     };
     window.addEventListener('popstate', onPopState);
 
