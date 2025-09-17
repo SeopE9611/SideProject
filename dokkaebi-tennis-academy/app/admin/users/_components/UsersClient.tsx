@@ -634,7 +634,7 @@ export default function UsersClient() {
         <div className="relative overflow-x-hidden px-3 sm:px-4 pb-3">
           <div className="relative rounded-2xl border border-slate-200 shadow-sm min-w-0">
             <Table className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center" aria-busy={isLoading && rows.length === 0}>
-              <TableHeader>
+              <TableHeader className="sticky top-0 z-10 bg-slate-50/90 backdrop-blur shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)]">
                 <TableRow>
                   <TableHead className={cn(th, 'w-[40px] px-0')}>
                     <Checkbox ref={allCheckboxRef} checked={isAllSelected} onCheckedChange={() => handleSelectAll()} aria-label="전체 선택" className="mx-auto" />
@@ -692,7 +692,7 @@ export default function UsersClient() {
                     const last = splitDateTime(u.lastLoginAt);
 
                     return (
-                      <TableRow key={u.id} className="hover:bg-primary/5 transition-colors even:bg-slate-50/60 border-b last:border-0">
+                      <TableRow key={u.id} className="odd:bg-white even:bg-slate-50/50 hover:bg-slate-50/80 transition-colors">
                         {/* 선택 */}
                         <TableCell className={cn(td, 'w-[40px] px-0')}>
                           <Checkbox checked={selectedUsers.includes(u.id)} onCheckedChange={() => handleSelectUser(u.id)} aria-label={`${u.name || '사용자'} 선택`} className="mx-auto" />
