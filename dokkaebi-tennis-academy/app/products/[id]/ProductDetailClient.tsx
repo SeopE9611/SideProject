@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Activity, FileText, Settings, Pencil } from 'lucide-react';
+import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Activity, FileText, Settings, Pencil, MessageSquare, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
+import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor } from '@/lib/badge-style';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   // ====== 사양/브랜드/색상/게이지 매핑 ======
@@ -143,17 +144,26 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [loading, setLoading] = useState(true);
   const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then(async (r) => (r.status === 200 ? r.json() : null));
 
-  // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
-  const initialTab = (searchParams.get('tab') as 'description' | 'specifications' | 'reviews') ?? 'description';
-  const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>(initialTab);
+  // 상품별 QnA 목록
+  const { data: qnaData, error: qnaError, isLoading: qnaLoading } = useSWR(`/api/products/${product._id}/qna?page=1&limit=10`, fetcher, { revalidateOnFocus: false });
 
+  const qnas = qnaData?.items ?? [];
+  const qnaTotal = qnaData?.total ?? 0;
+
+  const fmtDate = (v?: string | Date) => (v ? new Date(v).toLocaleDateString() : '');
+
+  // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
+  type DetailTab = 'description' | 'specifications' | 'reviews' | 'qna';
+  const initialTab = (searchParams.get('tab') as DetailTab) ?? 'description';
+  const [activeTab, setActiveTab] = useState<DetailTab>(initialTab);
+
+  // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
-    // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
-    const current = (searchParams.get('tab') as 'description' | 'specifications' | 'reviews') ?? 'description';
+    const current = (searchParams.get('tab') as DetailTab) ?? 'description';
     setActiveTab(current);
   }, [searchParams]);
 
-  const updateTabInUrl = (tab: 'description' | 'specifications' | 'reviews') => {
+  const updateTabInUrl = (tab: DetailTab) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', tab);
     // 스크롤 점프 방지
@@ -699,7 +709,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <Card className="mt-12 border-0 shadow-xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
-              <TabsList className="w-full grid grid-cols-3 h-16 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-t-lg">
+              <TabsList className="w-full grid grid-cols-4 h-16 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-t-lg">
                 <TabsTrigger
                   value="description"
                   className="text-base font-medium h-full data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-700 dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-blue-400"
@@ -720,6 +730,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 >
                   <Star className="h-4 w-4 mr-2" />
                   리뷰 ({product.reviews.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="qna"
+                  className="text-base font-medium h-full data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-700 dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-blue-400"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  상품 문의 ({qnaTotal})
                 </TabsTrigger>
               </TabsList>
 
@@ -989,6 +1006,81 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     )}
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="qna" className="p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                      <MessageSquare className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200">상품 문의</h3>
+                  </div>
+                  <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
+                    <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
+                  </Button>
+                </div>
+
+                {qnaLoading && <div className="text-sm text-gray-500">불러오는 중…</div>}
+                {qnaError && <div className="text-sm text-red-500">문의 목록을 불러오지 못했습니다.</div>}
+
+                {!qnaLoading && !qnaError && (
+                  <>
+                    {qnas.length === 0 ? (
+                      <div className="text-center py-16">
+                        <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                          <MessageSquare className="h-10 w-10 text-blue-500 dark:text-blue-400" />
+                        </div>
+                        <h4 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">아직 문의가 없습니다</h4>
+                        <p className="text-slate-600 dark:text-slate-400 mb-6">첫 번째 문의를 남겨보세요!</p>
+                        <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg px-8 py-3">
+                          <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {qnas.map((q: any) => (
+                          <Link key={q._id} href={`/board/qna/${q._id}`}>
+                            <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-gray-200 dark:border-gray-700">
+                              <CardContent className="p-5">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1 min-w-0">
+                                      {/* 카테고리 배지 */}
+                                      <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(q.category)}`}>
+                                        {q.category ?? '상품문의'}
+                                      </Badge>
+
+                                      {/* 비밀글 배지: 중립 톤 */}
+                                      {q.isSecret && (
+                                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/40 dark:text-gray-300 dark:border-gray-700 shrink-0`}>
+                                          <Lock className="h-3 w-3 mr-1" />
+                                          비밀글
+                                        </Badge>
+                                      )}
+
+                                      {/* 답변 상태 배지 (완료/대기 공통 톤) */}
+                                      <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!q.answer)} shrink-0`}>
+                                        {q.answer ? '답변 완료' : '답변 대기'}
+                                      </Badge>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="font-semibold text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400">{q.title}</div>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                      <span>{q.authorName ?? '익명'}</span>
+                                      <span>{fmtDate(q.createdAt)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>
