@@ -3,8 +3,7 @@
 import type React from 'react';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { ArrowLeft, MessageSquare, Upload, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,11 +12,66 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { useRouter, useSearchParams } from 'next/navigation';
+import useSWR from 'swr';
+import { ArrowLeft, MessageSquare, Upload, X, Search } from 'lucide-react';
+
+const CATEGORY_LABELS: Record<string, string> = {
+  product: '상품문의',
+  order: '주문/결제',
+  delivery: '배송',
+  refund: '환불/교환',
+  service: '서비스',
+  academy: '아카데미',
+  member: '회원',
+};
 
 export default function QnaWritePage() {
+  const router = useRouter();
+  const sp = useSearchParams();
+  const [product, setProduct] = useState<{ id: string; name: string; image?: string | null } | null>(null);
+  const preProductId = sp.get('productId');
+  const preProductName = sp.get('productName') ?? '';
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState(preProductId ? 'product' : '');
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  // SWR fetcher
+  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : Promise.reject(r)));
+
+  // “내 구매상품” 목록
+  const { data: myOrders } = useSWR('/api/orders?limit=100', fetcher);
+  // 주문 내 모든 상품을 평탄화 후 productId 기준으로 중복 제거
+  const myProducts: { id: string; name: string; image?: string | null }[] = useMemo(() => {
+    const set = new Map<string, { id: string; name: string; image?: string | null }>();
+    const orders = myOrders?.items ?? myOrders?.orders ?? [];
+    for (const o of orders) {
+      const lines = o.items ?? o.orderItems ?? [];
+      for (const it of lines) {
+        const pid = String(it.productId ?? it.product?._id ?? it._id ?? '');
+        if (!pid) continue;
+        const name = it.product?.name ?? it.name ?? it.title ?? '상품';
+        const image = it.product?.image ?? it.image ?? null;
+        if (!set.has(pid)) set.set(pid, { id: pid, name, image });
+      }
+    }
+    return Array.from(set.values());
+  }, [myOrders]);
+
+  // “전체 상품 검색”
+  const [q, setQ] = useState('');
+  const { data: searchData } = useSWR(q.trim() ? `/api/products?query=${encodeURIComponent(q.trim())}&limit=20` : null, fetcher);
+  const searchProducts: { id: string; name: string; image?: string | null }[] = useMemo(() => {
+    const rows = searchData?.items ?? searchData?.products ?? [];
+    return rows.map((p: any) => ({
+      id: String(p._id ?? p.id),
+      name: p.name ?? p.title ?? '상품',
+      image: p.image ?? p.thumbnail ?? null,
+    }));
+  }, [searchData]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -31,6 +85,58 @@ export default function QnaWritePage() {
   const removeFile = (index: number) => {
     setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
   };
+
+  async function handleSubmit() {
+    try {
+      if (!title.trim() || !content.trim()) {
+        alert('제목과 내용을 입력해주세요.');
+        return;
+      }
+      if (category === 'product' && !preProductId && !product?.id) {
+        alert('상품을 선택해주세요.');
+        return;
+      }
+      setSubmitting(true);
+
+      if (!category || !CATEGORY_LABELS[category]) {
+        alert('카테고리를 선택해주세요.');
+        return;
+      }
+
+      // 카테고리 값을 라벨로 정규화
+      const mappedCategory = CATEGORY_LABELS[category] ?? category;
+
+      const body: any = {
+        type: 'qna',
+        title,
+        content,
+        category: mappedCategory,
+        isSecret: !!isPrivate,
+      };
+      // 상품 상세에서 프리필되었거나, 본 페이지에서 선택했을 경우 productRef 포함
+      if (preProductId) {
+        body.productRef = { productId: preProductId, name: preProductName, image: null };
+      } else if (category === 'product' && product?.id) {
+        body.productRef = { productId: product.id, name: product.name, image: product.image ?? null };
+      }
+
+      const res = await fetch('/api/boards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.ok) {
+        throw new Error(json?.error || '저장 실패(로그인/권한을 확인해주세요)');
+      }
+      router.replace('/board/qna');
+    } catch (e: any) {
+      alert(e?.message || '저장 중 오류가 발생했습니다.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -70,63 +176,104 @@ export default function QnaWritePage() {
                     <SelectValue placeholder="문의 카테고리를 선택해주세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="product">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          상품
-                        </Badge>
-                        <span>라켓, 스트링 등 상품 관련 문의</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="order">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                          주문/결제
-                        </Badge>
-                        <span>주문, 결제, 배송 관련 문의</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="service">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                          서비스
-                        </Badge>
-                        <span>스트링 교체, 라켓 수리 등</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="academy">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
-                          아카데미
-                        </Badge>
-                        <span>레슨, 프로그램 관련 문의</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="refund">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                          환불/교환
-                        </Badge>
-                        <span>환불, 교환, 반품 관련 문의</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="member">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-                          회원
-                        </Badge>
-                        <span>회원가입, 정보수정 등</span>
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="product">상품</SelectItem>
+                    <SelectItem value="order">주문/결제</SelectItem>
+                    <SelectItem value="delivery">배송</SelectItem>
+                    <SelectItem value="refund">환불/교환</SelectItem>
+                    <SelectItem value="service">서비스</SelectItem>
+                    <SelectItem value="academy">아카데미</SelectItem>
+                    <SelectItem value="member">회원</SelectItem>
                   </SelectContent>
                 </Select>
+                {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
+                {preProductId && (
+                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                    <Badge variant="secondary">프리필</Badge>
+                    <span>
+                      선택된 상품: <strong>{preProductName || preProductId}</strong>
+                    </span>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => router.replace('/board/qna/write')}>
+                      제거
+                    </Button>
+                  </div>
+                )}
               </div>
+
+              {category === 'product' && !preProductId && (
+                <div className="space-y-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    <span className="font-medium">상품 선택</span> — 본인이 구매했던 상품 또는 전체 상품에서 선택하세요.
+                  </div>
+                  {/* 탭처럼 보이는 간단한 토글 */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* 내 구매상품 */}
+                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                      <div className="font-semibold mb-3">내 구매상품</div>
+                      <div className="space-y-2 max-h-60 overflow-auto">
+                        {myProducts.length === 0 && <div className="text-sm text-gray-500">구매 이력이 없습니다.</div>}
+                        {myProducts.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => {
+                              setProduct(p);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
+                          >
+                            <div className="font-medium">{p.name}</div>
+                            <div className="text-xs text-gray-500">{p.id}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 전체 상품 검색 */}
+                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                      <div className="font-semibold mb-3">전체 상품 검색</div>
+                      <div className="relative mb-3">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="상품명으로 검색" className="pl-9 bg-white dark:bg-gray-700" />
+                      </div>
+                      <div className="space-y-2 max-h-60 overflow-auto">
+                        {!q.trim() && <div className="text-sm text-gray-500">검색어를 입력하세요.</div>}
+                        {q.trim() && searchProducts.length === 0 && <div className="text-sm text-gray-500">검색 결과가 없습니다.</div>}
+                        {searchProducts.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => {
+                              setProduct(p);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
+                          >
+                            <div className="font-medium">{p.name}</div>
+                            <div className="text-xs text-gray-500">{p.id}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 현재 선택된 상품 미리보기/해제 */}
+                  {product && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Badge variant="secondary">선택됨</Badge>
+                      <span>
+                        <strong>{product.name}</strong> ({product.id})
+                      </span>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setProduct(null)}>
+                        선택 해제
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-3">
                 <Label htmlFor="title" className="text-base font-semibold">
                   제목 <span className="text-red-500">*</span>
                 </Label>
-                <Input id="title" placeholder="문의 제목을 간단명료하게 작성해주세요" className="h-12 bg-white dark:bg-gray-700 text-base" />
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="문의 제목을 간단명료하게 작성해주세요" className="h-12 bg-white dark:bg-gray-700 text-base" />
               </div>
 
               <div className="space-y-3">
@@ -135,6 +282,8 @@ export default function QnaWritePage() {
                 </Label>
                 <Textarea
                   id="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
                   placeholder="문의하실 내용을 자세히 작성해주세요.&#10;&#10;• 상품 관련 문의: 상품명, 모델명 등을 명시해주세요&#10;• 주문 관련 문의: 주문번호를 함께 작성해주세요&#10;• 서비스 관련 문의: 희망 날짜와 시간을 알려주세요"
                   className="min-h-[200px] bg-white dark:bg-gray-700 text-base resize-none"
                 />
@@ -202,8 +351,8 @@ export default function QnaWritePage() {
               <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
                 <Link href="/board/qna">취소</Link>
               </Button>
-              <Button size="lg" className="px-8 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
-                문의 등록하기
+              <Button size="lg" className="px-8 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 disabled:opacity-60" onClick={handleSubmit} disabled={submitting}>
+                {submitting ? '등록 중…' : '문의 등록하기'}
               </Button>
             </CardFooter>
           </Card>

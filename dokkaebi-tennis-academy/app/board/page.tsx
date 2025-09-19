@@ -1,96 +1,40 @@
+'use client';
+import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Bell, Star, Users, TrendingUp, Eye, ArrowRight, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor, noticePinColor, getReviewTypeColor } from '@/lib/badge-style';
+type NoticeItem = {
+  _id: string;
+  title: string;
+  createdAt: string | Date;
+  viewCount?: number;
+  isPinned?: boolean;
+  excerpt?: string;
+};
 
-// 더미 데이터
-const noticeData = [
-  {
-    id: 1,
-    title: '공지0',
-    excerpt: '공지 내용',
-    date: '2025-01-01',
-    views: 999,
-    isPinned: true,
-  },
-  {
-    id: 2,
-    title: '공지0',
-    excerpt: '공지 내용',
-    date: '2025-01-01',
-    views: 999,
-    isPinned: true,
-  },
-  {
-    id: 3,
-    title: '공지0',
-    excerpt: '공지 내용',
-    date: '2025-01-01',
-    views: 999,
-    isPinned: false,
-  },
-];
+type QnaItem = {
+  _id: string;
+  title: string;
+  createdAt: string | Date;
+  category?: string;
+  authorName?: string | null;
+  answer?: any; // 있으면 답변완료
+  viewCount?: number;
+};
 
-const qnaData = [
-  {
-    id: 1,
-    title: 'QnA테스트',
-    author: '이름테스트',
-    date: '2025-01-01',
-    answers: 2,
-    category: '스트링',
-    isAnswered: true,
-  },
-  {
-    id: 2,
-    title: 'QnA테스트2',
-    author: '이름테스트2',
-    date: '2025-01-01',
-    answers: 1,
-    category: '라켓',
-    isAnswered: true,
-  },
-  {
-    id: 3,
-    title: 'QnA테스트3',
-    author: '이름테스트3',
-    date: '2025-01-01',
-    answers: 0,
-    category: '주문/결제',
-    isAnswered: false,
-  },
-];
-
-const reviewData = [
-  {
-    id: 1,
-    title: '사용후기',
-    author: '이름테스트',
-    rating: 5,
-    date: '2025-01-01',
-    excerpt: '후기후기후기',
-    product: '상품명',
-  },
-  {
-    id: 2,
-    title: '서비스후기',
-    author: '이름테스트',
-    rating: 4,
-    date: '2025-01-01',
-    excerpt: '후기후기후기',
-    product: '스트링 교체 서비스',
-  },
-  {
-    id: 3,
-    title: '리뷰테스트',
-    author: '이름테스트',
-    rating: 5,
-    date: '2025-01-01',
-    excerpt: '후기데스',
-    product: '상품명',
-  },
-];
+type ReviewItem = {
+  _id: string;
+  type: 'product' | 'service';
+  userName: string | null;
+  productName?: string | null;
+  service?: string | null;
+  rating: number;
+  createdAt: string | Date;
+  content?: string;
+};
 
 const stats = [
   { label: '전체 게시물', value: '0', icon: MessageSquare, color: 'text-blue-600' },
@@ -98,6 +42,26 @@ const stats = [
   { label: '이번 주 조회수', value: '0', icon: Eye, color: 'text-purple-600' },
   { label: '참여도', value: '0', icon: TrendingUp, color: 'text-green-600' },
 ];
+
+// HTML 태그 제거 + 공백 정리
+const stripHtml = (s: string) =>
+  s
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+// 리뷰 아이템에서 본문 후보 키(content/body/text/comment) 중 첫 번째 값 사용
+function reviewExcerpt(r: ReviewItem, max = 60) {
+  const raw = (r.content ?? '') as string;
+  const plain = stripHtml(String(raw));
+  if (plain) return plain.length > max ? plain.slice(0, max) + '…' : plain;
+  // 본문이 없으면 기존 제목 대체값으로
+  return r.productName || r.service || '리뷰';
+}
+
+// 데이터 fetcher
+const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
 function StatCard({ stat }: { stat: (typeof stats)[0] }) {
   const Icon = stat.icon;
@@ -118,7 +82,7 @@ function StatCard({ stat }: { stat: (typeof stats)[0] }) {
   );
 }
 
-function NoticeCard() {
+function NoticeCard({ items }: { items: NoticeItem[] }) {
   return (
     <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-b">
@@ -136,39 +100,40 @@ function NoticeCard() {
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-4">
-          {noticeData.map((notice) => (
-            <div key={notice.id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+          {items.map((notice) => (
+            <div key={notice._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
-                    <Link href={`/board/notice/${notice.id}`} className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <Link href={`/board/notice/${notice._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                       {notice.title}
                     </Link>
                     {notice.isPinned && (
-                      <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                      <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`}>
                         고정
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{notice.excerpt}</p>
+                  {!!notice.excerpt && <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{notice.excerpt}</p>}
                   <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
-                    <span>{notice.date}</span>
+                    <span>{fmt(notice.createdAt)}</span>
                     <span className="flex items-center">
                       <Eye className="h-3 w-3 mr-1" />
-                      {notice.views}
+                      {notice.viewCount ?? 0}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
           ))}
+          {items.length === 0 && <div className="text-sm text-gray-500">등록된 공지가 없습니다.</div>}
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function QnaCard() {
+function QnaCard({ items }: { items: QnaItem[] }) {
   return (
     <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-gradient-to-r from-teal-50 to-teal-100 dark:from-teal-950/50 dark:to-teal-900/50 border-b">
@@ -194,35 +159,34 @@ function QnaCard() {
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-4">
-          {qnaData.map((qna) => (
-            <div key={qna.id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+          {items.map((qna) => (
+            <div key={qna._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
-                    <Link href={`/board/qna/${qna.id}`} className="font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+                    <Link href={`/board/qna/${qna._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
                       {qna.title}
                     </Link>
-                    <Badge variant="outline" className="text-xs">
-                      {qna.category}
+                    <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(qna.category)}`}>
+                      {qna.category ?? '일반문의'}
                     </Badge>
-                    {qna.isAnswered && (
-                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300">
-                        답변완료
-                      </Badge>
-                    )}
+                    <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!qna.answer)}`}>
+                      {qna.answer ? '답변 완료' : '답변 대기'}
+                    </Badge>
                   </div>
                   <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
-                    <span>{qna.author}</span>
-                    <span>{qna.date}</span>
+                    <span>{qna.authorName ?? '익명'}</span>
+                    <span>{fmt(qna.createdAt)}</span>
                     <span className="flex items-center">
                       <MessageSquare className="h-3 w-3 mr-1" />
-                      답변 {qna.answers}개
+                      답변 {qna.answer ? 1 : 0}개
                     </span>
                   </div>
                 </div>
               </div>
             </div>
           ))}
+          {items.length === 0 && <div className="text-sm text-gray-500">등록된 문의가 없습니다.</div>}
         </div>
       </CardContent>
     </Card>
@@ -230,6 +194,10 @@ function QnaCard() {
 }
 
 function ReviewCard() {
+  // 최신 리뷰 5개만 보드에 노출
+  const { data, error, isLoading } = useSWR('/api/reviews?type=all&withHidden=mask&sort=latest&limit=5', fetcher);
+  const items: ReviewItem[] = data?.items ?? [];
+
   return (
     <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border-b">
@@ -255,30 +223,35 @@ function ReviewCard() {
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-4">
-          {reviewData.map((review) => (
-            <div key={review.id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+          {isLoading && <div className="text-sm text-gray-500">불러오는 중…</div>}
+          {error && <div className="text-sm text-red-500">리뷰 불러오기에 실패했습니다.</div>}
+
+          {items.map((review) => (
+            <div key={review._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
               <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Link href={`/reviews/${review.id}`} className="font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
-                      {review.title}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1 min-w-0">
+                    <Link href="/reviews" className="font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex-1 min-w-0 truncate ">
+                      {reviewExcerpt(review)}
                     </Link>
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300 dark:text-gray-600'}`} />
-                      ))}
-                    </div>
+                    <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getReviewTypeColor(review.type)}`}>
+                      {review.type === 'product' ? '상품' : review.type === 'service' ? '서비스' : '기타'}
+                    </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{review.excerpt}</p>
                   <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
-                    <span>{review.author}</span>
-                    <span>{review.date}</span>
-                    <span className="text-blue-600 dark:text-blue-400">{review.product}</span>
+                    <span>{review.userName ?? '익명'}</span>
+                    <span>{fmt(review.createdAt)}</span>
+                    <span className="flex items-center">
+                      <Star className="h-3 w-3 mr-1" />
+                      {review.rating}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           ))}
+
+          {!isLoading && !error && items.length === 0 && <div className="text-sm text-gray-500">등록된 리뷰가 없습니다.</div>}
         </div>
       </CardContent>
     </Card>
@@ -286,6 +259,11 @@ function ReviewCard() {
 }
 
 export default function BoardPage() {
+  // 데이터 로드
+  const { data, error, isLoading } = useSWR('/api/boards/main', fetcher);
+  const notices = data?.notices ?? [];
+  const qnas = data?.qna ?? [];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
@@ -309,8 +287,8 @@ export default function BoardPage() {
 
         {/* 메인 게시판 카드들 */}
         <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-          <NoticeCard />
-          <QnaCard />
+          <NoticeCard items={notices} />
+          <QnaCard items={qnas} />
           <ReviewCard />
         </div>
 

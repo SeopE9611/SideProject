@@ -18,6 +18,9 @@ export default function NoticeWritePage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isPinned, setIsPinned] = useState(false);
   const [category, setCategory] = useState('');
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -31,6 +34,41 @@ export default function NoticeWritePage() {
   const removeFile = (index: number) => {
     setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
   };
+
+  async function handleSubmit() {
+    try {
+      if (!title.trim() || !content.trim()) {
+        alert('제목과 내용을 입력해주세요.');
+        return;
+      }
+      setSubmitting(true);
+
+      // 공지 작성은 관리자만 허용 — 서버에서 권한 체크(403)함
+      const res = await fetch('/api/boards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          type: 'notice',
+          title,
+          content,
+          isPinned,
+          // attachments: []  // 업로드 API 도입 시 여기 채우기
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.ok) {
+        throw new Error(json?.error || '저장 실패(권한 확인 필요)');
+      }
+      // 완료 → 목록으로
+      window.location.href = '/board/notice';
+    } catch (e: any) {
+      alert(e?.message || '저장 중 오류가 발생했습니다.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -118,7 +156,7 @@ export default function NoticeWritePage() {
                 <Label htmlFor="title" className="text-base font-semibold">
                   제목 <span className="text-red-500">*</span>
                 </Label>
-                <Input id="title" placeholder="공지사항 제목을 입력해주세요" className="h-12 bg-white dark:bg-gray-700 text-base" />
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="공지사항 제목을 입력해주세요" className="h-12 bg-white dark:bg-gray-700 text-base" />
               </div>
 
               <div className="space-y-3">
@@ -127,6 +165,8 @@ export default function NoticeWritePage() {
                 </Label>
                 <Textarea
                   id="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
                   placeholder="공지사항 내용을 작성해주세요.&#10;&#10;• 명확하고 이해하기 쉽게 작성해주세요&#10;• 중요한 내용은 굵게 표시하거나 별도로 강조해주세요&#10;• 문의사항이 있을 경우 연락처를 포함해주세요"
                   className="min-h-[300px] bg-white dark:bg-gray-700 text-base resize-none"
                 />
@@ -198,8 +238,8 @@ export default function NoticeWritePage() {
                 <Button variant="outline" size="lg" className="px-6 border-blue-200 text-blue-700 hover:bg-blue-50 bg-transparent">
                   임시저장
                 </Button>
-                <Button size="lg" className="px-8 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700">
-                  공지사항 등록
+                <Button size="lg" onClick={handleSubmit} disabled={submitting} className="px-8 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 disabled:opacity-60">
+                  {submitting ? '등록 중…' : '공지사항 등록'}
                 </Button>
               </div>
             </CardFooter>
