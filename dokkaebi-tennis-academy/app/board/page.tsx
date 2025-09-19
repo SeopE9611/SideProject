@@ -36,13 +36,6 @@ type ReviewItem = {
   content?: string;
 };
 
-const stats = [
-  { label: '전체 게시물', value: '0', icon: MessageSquare, color: 'text-blue-600' },
-  { label: '활성 사용자', value: '0', icon: Users, color: 'text-teal-600' },
-  { label: '이번 주 조회수', value: '0', icon: Eye, color: 'text-purple-600' },
-  { label: '참여도', value: '0', icon: TrendingUp, color: 'text-green-600' },
-];
-
 // HTML 태그 제거 + 공백 정리
 const stripHtml = (s: string) =>
   s
@@ -62,25 +55,6 @@ function reviewExcerpt(r: ReviewItem, max = 60) {
 // 데이터 fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
-
-function StatCard({ stat }: { stat: (typeof stats)[0] }) {
-  const Icon = stat.icon;
-  return (
-    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
-            <Icon className={`h-6 w-6 ${stat.color}`} />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 function NoticeCard({ items }: { items: NoticeItem[] }) {
   return (
@@ -276,13 +250,6 @@ export default function BoardPage() {
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">게시판</h1>
           </div>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">도깨비 테니스 아카데미의 최신 소식과 정보를 확인하고, 궁금한 점을 문의하세요</p>
-        </div>
-
-        {/* 통계 카드 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {stats.map((stat, index) => (
-            <StatCard key={index} stat={stat} />
-          ))}
         </div>
 
         {/* 메인 게시판 카드들 */}
