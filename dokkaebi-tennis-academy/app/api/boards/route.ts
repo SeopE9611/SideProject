@@ -1,4 +1,3 @@
-// app/api/boards/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
@@ -6,6 +5,14 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { z } from 'zod';
 import type { BoardPost, BoardType, QnaCategory } from '@/lib/types/board';
 import { ObjectId } from 'mongodb';
+
+// 관리자 확인 헬퍼
+async function mustAdmin() {
+  const jar = await cookies();
+  const at = jar.get('accessToken')?.value;
+  const payload = at ? verifyAccessToken(at) : null;
+  return payload && payload.role === 'admin' ? payload : null;
+}
 
 /**
  * QnA 카테고리 라벨(한글) 목록
@@ -168,6 +175,13 @@ export async function POST(req: NextRequest) {
   if (body.type === 'qna') {
     const norm = normalizeCategory(body.category);
     normalizedCategory = norm ?? '일반문의'; // qna인데 없거나 이상하면 기본값
+  }
+
+  if (body?.type === 'notice') {
+    const admin = await mustAdmin();
+    if (!admin) {
+      return NextResponse.json({ ok: false, message: 'forbidden' }, { status: 403 });
+    }
   }
 
   const now = new Date();

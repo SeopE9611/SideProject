@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Bell, Star, Users, TrendingUp, Eye, ArrowRight, Plus } from 'lucide-react';
+import { MessageSquare, Bell, Star, ArrowRight, Plus, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor, noticePinColor, getReviewTypeColor } from '@/lib/badge-style';
 type NoticeItem = {
@@ -56,7 +56,7 @@ function reviewExcerpt(r: ReviewItem, max = 60) {
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
-function NoticeCard({ items }: { items: NoticeItem[] }) {
+function NoticeCard({ items, isAdmin }: { items: NoticeItem[]; isAdmin?: boolean }) {
   return (
     <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-b">
@@ -65,11 +65,21 @@ function NoticeCard({ items }: { items: NoticeItem[] }) {
             <Bell className="h-5 w-5 text-blue-600" />
             <span>공지사항</span>
           </div>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/board/notice">
-              전체보기 <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="flex space-x-2">
+            {isAdmin && (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/board/notice/write">
+                  <Plus className="h-4 w-4 mr-1" />
+                  공지 쓰기
+                </Link>
+              </Button>
+            )}
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/board/notice">
+                전체보기 <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6">
@@ -238,6 +248,10 @@ export default function BoardPage() {
   const notices = data?.notices ?? [];
   const qnas = data?.qna ?? [];
 
+  // 현재 사용자(관리자 여부) 확인
+  const { data: me } = useSWR('/api/users/me', fetcher);
+  const isAdmin = me?.role === 'admin' || me?.isAdmin === true || (Array.isArray(me?.roles) && me.roles.includes('admin'));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
@@ -254,7 +268,7 @@ export default function BoardPage() {
 
         {/* 메인 게시판 카드들 */}
         <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-          <NoticeCard items={notices} />
+          <NoticeCard items={notices} isAdmin={isAdmin} />
           <QnaCard items={qnas} />
           <ReviewCard />
         </div>

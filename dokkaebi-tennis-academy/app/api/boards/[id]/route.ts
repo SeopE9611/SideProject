@@ -5,6 +5,13 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { z } from 'zod';
 
+// 관리자 확인 헬퍼
+async function mustAdmin() {
+  const at = (await cookies()).get('accessToken')?.value;
+  const payload = at ? verifyAccessToken(at) : null;
+  return payload && payload.role === 'admin' ? payload : null;
+}
+
 const updateSchema = z.object({
   title: z.string().trim().min(2).max(200).optional(),
   content: z.string().trim().min(2).max(20000).optional(),
@@ -26,6 +33,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const post = await db.collection('board_posts').findOne({ _id: new ObjectId(id) });
   if (!post) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+
+  // 공지라면 관리자만
+  if (post.type === 'notice') {
+    const admin = await mustAdmin();
+    if (!admin) return NextResponse.json({ ok: false, message: 'forbidden' }, { status: 403 });
+  }
 
   // 비밀글 마스킹: 작성자/관리자 외에는 본문/첨부 제거
   const token = (await cookies()).get('accessToken')?.value;
@@ -80,6 +93,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params;
   const post = await db.collection('board_posts').findOne({ _id: new ObjectId(id) });
   if (!post) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+
+  // 공지라면 관리자만
+  if (post.type === 'notice') {
+    const admin = await mustAdmin();
+    if (!admin) return NextResponse.json({ ok: false, message: 'forbidden' }, { status: 403 });
+  }
+
   const isAdmin = payload.role === 'admin';
   const isOwner = String(payload.sub) === String(post.authorId);
   if (!isAdmin && !isOwner) return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });

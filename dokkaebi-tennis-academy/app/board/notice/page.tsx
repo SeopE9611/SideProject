@@ -32,6 +32,10 @@ export default function NoticePage() {
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   }).length;
 
+  // 현재 사용자 정보로 관리자 여부 판단
+  const { data: me } = useSWR('/api/users/me', fetcher);
+  const isAdmin = me?.role === 'admin' || me?.isAdmin === true || (Array.isArray(me?.roles) && me.roles.includes('admin'));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
@@ -136,12 +140,14 @@ export default function NoticePage() {
                   <Input type="search" placeholder="검색어를 입력하세요" className="w-[200px] pl-10 bg-white dark:bg-gray-700" />
                 </div>
                 <Button className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700">검색</Button>
-                <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
-                  <Link href="/board/notice/write">
-                    <Plus className="h-4 w-4 mr-2" />
-                    작성하기
-                  </Link>
-                </Button>
+                {isAdmin && (
+                  <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
+                    <Link href="/board/notice/write">
+                      <Plus className="h-4 w-4 mr-2" />
+                      작성하기
+                    </Link>
+                  </Button>
+                )}
               </div>
             </CardTitle>
           </CardHeader>
