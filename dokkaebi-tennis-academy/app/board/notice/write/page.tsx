@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/lib/supabase';
 
 export default function NoticeWritePage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -43,6 +44,26 @@ export default function NoticeWritePage() {
       }
       setSubmitting(true);
 
+      // 첨부 업로드(Supabase) -> URL만 수집
+      const BUCKET = 'tennis-images';
+      const FOLDER = 'boards/notice';
+      const uploadOne = async (file: File) => {
+        const ext = file.name.split('.').pop() || 'bin';
+        const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+          upsert: false,
+          contentType: file.type || undefined,
+        });
+        if (error) throw error;
+        const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        return {
+          url: data.publicUrl,
+          name: file.name,
+          size: file.size,
+        };
+      };
+      const attachments = selectedFiles.length > 0 ? await Promise.all(selectedFiles.map(uploadOne)) : [];
+
       // 공지 작성은 관리자만 허용 — 서버에서 권한 체크(403)함
       const res = await fetch('/api/boards', {
         method: 'POST',
@@ -53,7 +74,7 @@ export default function NoticeWritePage() {
           title,
           content,
           isPinned,
-          // attachments: []  // 업로드 API 도입 시 여기 채우기
+          attachments,
         }),
       });
 

@@ -10,20 +10,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor } from '@/lib/badge-style';
+import type { BoardPost } from '@/lib/types/board';
 
-type QnaItem = {
-  _id: string;
-  title: string;
-  content?: string;
-  createdAt: string | Date;
-  authorId: string;
-  authorName?: string | null;
-  category?: string | null; // '상품문의' | '일반문의'
-  productRef?: { productId: string; name?: string; image?: string | null } | null;
-  answer?: { content: string; authorName?: string | null; createdAt: string | Date } | null;
-  viewCount?: number;
-  isSecret?: boolean;
-};
+type QnaItem = BoardPost & { type: 'qna' };
 
 export default function QnaDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -74,7 +63,6 @@ export default function QnaDetailPage() {
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(qna.category)}`}>
                         {qna.category ?? '일반문의'}
-                        {qna.category ?? '일반문의'}
                       </Badge>
                       {qna.productRef?.productId && (
                         <Link href={`/products/${qna.productRef.productId}`}>
@@ -101,14 +89,32 @@ export default function QnaDetailPage() {
               )}
             </div>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-6 space-y-6">
             {!isLoading && !error && (
-              <div
-                className="prose max-w-none"
-                dangerouslySetInnerHTML={{
-                  __html: String(qna?.content ?? "<p class='text-gray-500'>비공개 글입니다.</p>"),
-                }}
-              />
+              <>
+                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: String(qna?.content || '').replace(/\n/g, '<br/>') }} />
+                {/* 첨부 이미지/문서 */}
+                {Array.isArray(qna?.attachments) && qna.attachments.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {qna.attachments.map((att: any, i: number) => {
+                      const url = typeof att === 'string' ? att : att?.url;
+                      const name = typeof att === 'string' ? `attachment-${i}` : att?.name || `attachment-${i}`;
+                      if (!url) return null;
+                      const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url);
+                      return isImage ? (
+                        <a key={i} href={url} target="_blank" rel="noreferrer" className="block rounded-md overflow-hidden border">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt={name} className="w-full h-40 object-cover" />
+                        </a>
+                      ) : (
+                        <a key={i} href={url} target="_blank" rel="noreferrer" className="text-sm underline break-all">
+                          {name}
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
           {(isAuthor || isAdmin) && qna && (

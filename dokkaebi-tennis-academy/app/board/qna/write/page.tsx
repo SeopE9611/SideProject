@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { ArrowLeft, MessageSquare, Upload, X, Search } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 const CATEGORY_LABELS: Record<string, string> = {
   product: '상품문의',
@@ -106,25 +107,42 @@ export default function QnaWritePage() {
       // 카테고리 값을 라벨로 정규화
       const mappedCategory = CATEGORY_LABELS[category] ?? category;
 
-      const body: any = {
+      // 첨부 업로드(Supabase)
+      const BUCKET = 'tennis-images';
+      const FOLDER = 'boards/qna';
+      const uploadOne = async (file: File) => {
+        const ext = file.name.split('.').pop() || 'bin';
+        const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+          upsert: false,
+          contentType: file.type || undefined,
+        });
+        if (error) throw error;
+        const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        return {
+          url: data.publicUrl,
+          name: file.name,
+          size: file.size,
+        };
+      };
+      const attachments = selectedFiles.length > 0 ? await Promise.all(selectedFiles.map(uploadOne)) : [];
+
+      //  조건부 스프레드로 '한 번에' payload 구성 + attachments 포함
+      const payload = {
         type: 'qna',
         title,
         content,
         category: mappedCategory,
         isSecret: !!isPrivate,
-      };
-      // 상품 상세에서 프리필되었거나, 본 페이지에서 선택했을 경우 productRef 포함
-      if (preProductId) {
-        body.productRef = { productId: preProductId, name: preProductName, image: null };
-      } else if (category === 'product' && product?.id) {
-        body.productRef = { productId: product.id, name: product.name, image: product.image ?? null };
-      }
+        attachments,
+        ...(preProductId ? { productRef: { productId: preProductId, name: preProductName, image: null } } : category === 'product' && product?.id ? { productRef: { productId: product.id, name: product.name, image: product.image ?? null } } : {}),
+      } as const;
 
       const res = await fetch('/api/boards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json?.ok) {

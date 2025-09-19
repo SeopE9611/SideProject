@@ -39,13 +39,32 @@ export default function NoticeDetailPage() {
               )}
             </div>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-6 space-y-6">
             {!isLoading && !error && (
-              <div
-                className="prose max-w-none"
-                // 공지는 비밀글 개념 없음. 서버가 문자열을 그대로 내려주므로 HTML/텍스트 모두 표시 가능
-                dangerouslySetInnerHTML={{ __html: String(notice?.content ?? '') }}
-              />
+              <>
+                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: String(notice?.content || '').replace(/\n/g, '<br/>') }} />
+                {/* 첨부 이미지/문서 */}
+                {Array.isArray(notice?.attachments) && notice.attachments.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {notice.attachments.map((att: any, i: number) => {
+                      const url = typeof att === 'string' ? att : att?.url;
+                      const name = typeof att === 'string' ? `attachment-${i}` : att?.name || `attachment-${i}`;
+                      if (!url) return null;
+                      const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url);
+                      return isImage ? (
+                        <a key={i} href={url} target="_blank" rel="noreferrer" className="block rounded-md overflow-hidden border">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt={name} className="w-full h-40 object-cover" />
+                        </a>
+                      ) : (
+                        <a key={i} href={url} target="_blank" rel="noreferrer" className="text-sm underline break-all">
+                          {name}
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
           <CardFooter className="flex flex-col border-t p-6">

@@ -97,6 +97,22 @@ const createSchema = z.object({
   attachments: z.array(z.object({ url: z.string().url(), name: z.string(), size: z.number().optional() })).optional(),
 });
 
+/** ---- Supabase 퍼블릭 URL만 허용 ---- */
+const ALLOWED_HOSTS = new Set<string>(['cwzpxxahtayoyqqskmnt.supabase.co']);
+const ALLOWED_PATH_PREFIXES = ['/storage/v1/object/public/tennis-images/'];
+const isAllowedHttpUrl = (v: unknown): v is string => {
+  if (typeof v !== 'string') return false;
+  try {
+    const { protocol, hostname, pathname } = new URL(v);
+    const okProto = protocol === 'https:' || protocol === 'http:';
+    const okHost = ALLOWED_HOSTS.has(hostname);
+    const okPath = ALLOWED_PATH_PREFIXES.some((p) => pathname.startsWith(p));
+    return okProto && okHost && okPath;
+  } catch {
+    return false;
+  }
+};
+
 /* ---------------------------------- GET ---------------------------------- */
 export async function GET(req: NextRequest) {
   const db = await getDb();
@@ -185,6 +201,10 @@ export async function POST(req: NextRequest) {
   }
 
   const now = new Date();
+
+  // 첨부 URL 화이트리스트 필터링
+  const safeAttachments = Array.isArray(body.attachments) ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url)) : [];
+
   const doc: BoardPost = {
     type: body.type,
     title: body.title,
@@ -193,7 +213,7 @@ export async function POST(req: NextRequest) {
     productRef: body.type === 'qna' ? body.productRef : undefined,
     isSecret: body.type === 'qna' ? !!body.isSecret : false,
     isPinned: body.type === 'notice' ? !!body.isPinned : false,
-    attachments: body.attachments || [],
+    attachments: safeAttachments,
     authorId: String(payload.sub),
     authorName: displayName,
     status: 'published',
