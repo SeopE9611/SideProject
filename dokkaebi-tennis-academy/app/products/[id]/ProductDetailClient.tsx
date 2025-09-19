@@ -1045,31 +1045,26 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               <CardContent className="p-5">
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1 min-w-0">
-                                      {/* 카테고리 배지 */}
-                                      <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(q.category)}`}>
-                                        {q.category ?? '상품문의'}
-                                      </Badge>
-
-                                      {/* 비밀글 배지: 중립 톤 */}
-                                      {q.isSecret && (
-                                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/40 dark:text-gray-300 dark:border-gray-700 shrink-0`}>
-                                          <Lock className="h-3 w-3 mr-1" />
-                                          비밀글
+                                    <div className="space-y-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(q.category)}`}>
+                                          {q.category ?? '상품문의'}
                                         </Badge>
-                                      )}
-
-                                      {/* 답변 상태 배지 (완료/대기 공통 톤) */}
-                                      <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!q.answer)} shrink-0`}>
-                                        {q.answer ? '답변 완료' : '답변 대기'}
-                                      </Badge>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="font-semibold text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400">{q.title}</div>
+                                        {q.isSecret && (
+                                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/40 dark:text-gray-300 dark:border-gray-700 shrink-0`}>
+                                            <Lock className="h-3 w-3 mr-1" />
+                                            비밀글
+                                          </Badge>
+                                        )}
+                                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!q.answer)} shrink-0`}>
+                                          {q.answer ? '답변 완료' : '답변 대기'}
+                                        </Badge>
                                       </div>
-                                    </div>
-                                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                                      <span>{q.authorName ?? '익명'}</span>
-                                      <span>{fmtDate(q.createdAt)}</span>
+                                      <div className="font-semibold text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400">{q.title}</div>
+                                      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                        <span>{q.authorName ?? '익명'}</span>
+                                        <span>{fmtDate(q.createdAt)}</span>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
