@@ -82,7 +82,7 @@ export default function QnaPage() {
               </div>
             </div>
           </div>
-
+          {/* KPI 미사용 주석처리 (삭제는 일단 대기)
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
               <CardContent className="p-4">
@@ -139,7 +139,7 @@ export default function QnaPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </div> */}
         </div>
 
         <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">

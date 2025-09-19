@@ -56,64 +56,6 @@ export default function NoticePage() {
               </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 공지</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{total}</p>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-2">
-                    <Bell className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">고정 공지</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{pinnedCount}</p>
-                  </div>
-                  <div className="bg-teal-50 dark:bg-teal-950/50 rounded-xl p-2">
-                    <Pin className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">총 조회수</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalViews}</p>
-                  </div>
-                  <div className="bg-purple-50 dark:bg-purple-950/50 rounded-xl p-2">
-                    <Eye className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">이번 달</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{monthCount}</p>
-                  </div>
-                  <div className="bg-green-50 dark:bg-green-950/50 rounded-xl p-2">
-                    <Bell className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
 
         <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
