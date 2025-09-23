@@ -34,12 +34,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const post = await db.collection('board_posts').findOne({ _id: new ObjectId(id) });
   if (!post) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
 
-  // 공지라면 관리자만
-  if (post.type === 'notice') {
-    const admin = await mustAdmin();
-    if (!admin) return NextResponse.json({ ok: false, message: 'forbidden' }, { status: 403 });
-  }
-
   // 비밀글 마스킹: 작성자/관리자 외에는 본문/첨부 제거
   const token = (await cookies()).get('accessToken')?.value;
   const payload = token ? verifyAccessToken(token) : null;
