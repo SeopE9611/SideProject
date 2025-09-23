@@ -3,7 +3,7 @@
 import type React from 'react';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,8 +14,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { ArrowLeft, MessageSquare, Upload, X, Search } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import Image from 'next/image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ChevronLeft, ChevronRight, ArrowLeft, MessageSquare, Upload, X, Search } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<string, string> = {
   product: '상품문의',
@@ -28,17 +30,48 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function QnaWritePage() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const sp = useSearchParams();
   const [product, setProduct] = useState<{ id: string; name: string; image?: string | null } | null>(null);
   const preProductId = sp.get('productId');
   const preProductName = sp.get('productName') ?? '';
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  const [previews, setPreviews] = useState<(string | null)[]>([]);
+  useEffect(() => {
+    const urls = selectedFiles.map((f) => (f.type?.startsWith('image/') ? URL.createObjectURL(f) : null));
+    setPreviews(urls);
+    return () => {
+      urls.forEach((u) => u && URL.revokeObjectURL(u));
+    };
+  }, [selectedFiles]);
+
   const [isPrivate, setIsPrivate] = useState(false);
   const [category, setCategory] = useState(preProductId ? 'product' : '');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // 라이트박스(Dialog) 상태
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState(0);
+
+  // 썸네일 index에서 Dialog 열기 (이미지 파일만 모아서)
+  const openViewerFromIndex = (uiIndex: number) => {
+    const only = previews.map((url, i) => ({ url, i })).filter((v) => !!v.url) as { url: string; i: number }[];
+    if (only.length === 0) return;
+
+    const start = only.findIndex((v) => v.i === uiIndex);
+    setViewerImages(only.map((v) => v.url));
+    setViewerIndex(Math.max(0, start));
+    setViewerOpen(true);
+  };
+
+  const closeViewer = () => setViewerOpen(false);
+  const nextViewer = () => setViewerIndex((i) => (i + 1) % viewerImages.length);
+  const prevViewer = () => setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   // SWR fetcher
   const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : Promise.reject(r)));
@@ -62,7 +95,7 @@ export default function QnaWritePage() {
     return Array.from(set.values());
   }, [myOrders]);
 
-  // “전체 상품 검색”
+  // 전체 상품 검색
   const [q, setQ] = useState('');
   const { data: searchData } = useSWR(q.trim() ? `/api/products?query=${encodeURIComponent(q.trim())}&limit=20` : null, fetcher);
   const searchProducts: { id: string; name: string; image?: string | null }[] = useMemo(() => {
@@ -74,13 +107,31 @@ export default function QnaWritePage() {
     }));
   }, [searchData]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + selectedFiles.length > 3) {
       alert('최대 3개까지만 첨부할 수 있습니다.');
       return;
     }
+    if (files.some((f) => f.size > 5 * 1024 * 1024)) {
+      alert('파일당 최대 5MB까지 업로드할 수 있어요.');
+      return;
+    }
+
+    // 타입 화이트리스트: 이미지만 허용
+    if (files.some((f) => !f.type.startsWith('image/'))) {
+      alert('이미지 파일만 업로드할 수 있어요.');
+      return;
+    }
+    // 개수 제한: 최대 3개
+    const MAX = 3;
+    if (selectedFiles.length + files.length > MAX) {
+      alert(`최대 ${MAX}개까지만 업로드할 수 있어요.`);
+      return;
+    }
+
     setSelectedFiles([...selectedFiles, ...files]);
+    e.currentTarget.value = ''; // 같은 파일 재선택 허용
   };
 
   const removeFile = (index: number) => {
@@ -298,13 +349,7 @@ export default function QnaWritePage() {
                 <Label htmlFor="content" className="text-base font-semibold">
                   문의 내용 <span className="text-red-500">*</span>
                 </Label>
-                <Textarea
-                  id="content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="문의하실 내용을 자세히 작성해주세요.&#10;&#10;• 상품 관련 문의: 상품명, 모델명 등을 명시해주세요&#10;• 주문 관련 문의: 주문번호를 함께 작성해주세요&#10;• 서비스 관련 문의: 희망 날짜와 시간을 알려주세요"
-                  className="min-h-[200px] bg-white dark:bg-gray-700 text-base resize-none"
-                />
+                <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="문의하실 내용을 자세히 작성해주세요" className="min-h-[200px] bg-white dark:bg-gray-700 text-base resize-none" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.</p>
               </div>
 
@@ -313,44 +358,90 @@ export default function QnaWritePage() {
                   이미지 첨부 (선택사항)
                 </Label>
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-teal-400 dark:hover:border-teal-500 transition-colors">
+                  <div
+                    className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-teal-400 dark:hover:border-teal-500 transition-colors"
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      if (e.target !== e.currentTarget) return; // 버튼 클릭 버블링 차단
+                      fileInputRef.current?.click();
+                    }}
+                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ' ? fileInputRef.current?.click() : null)}
+                  >
                     <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">클릭하여 이미지를 선택하거나 드래그하여 업로드하세요</p>
-                    <Input id="image" type="file" multiple accept="image/*" onChange={handleFileChange} className="hidden" />
-                    <Button type="button" variant="outline" onClick={() => document.getElementById('image')?.click()} className="mt-2">
+                    <Input ref={fileInputRef} id="image" type="file" multiple accept="image/*" onChange={handleFileChange} className="sr-only" />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation(); // 부모 onClick으로 버블링 방지
+                        fileInputRef.current?.click(); // 파일창 열기
+                      }}
+                      className="mt-2"
+                    >
                       <Upload className="h-4 w-4 mr-2" />
                       파일 선택
                     </Button>
                   </div>
 
+                  {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">첨부된 파일 ({selectedFiles.length}/3)</p>
-                      <div className="space-y-2">
-                        {selectedFiles.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-teal-100 dark:bg-teal-900/50 rounded flex items-center justify-center">
-                                <Upload className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">{file.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                              </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {selectedFiles.map((file, index) => {
+                          const isImage = file.type?.startsWith('image/');
+                          const previewUrl = isImage ? previews[index] : null;
+                          return (
+                            <div key={index} className="group relative rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition">
+                              {/* 콘텐츠 */}
+                              {isImage ? (
+                                previewUrl ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={previewUrl} alt={file.name} className="w-full h-28 object-cover transition-transform duration-150 group-hover:scale-[1.02]" onClick={() => openViewerFromIndex(index)} role="button" />
+                                ) : (
+                                  <div className="h-28 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                                )
+                              ) : (
+                                <div className="h-28 flex items-center justify-center text-xs text-gray-500 px-2 text-center">{file.name}</div>
+                              )}
+
+                              {/* 파일 크기 */}
+                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-white/85 dark:bg-gray-800/85">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+
+                              {/* 삭제 버튼 */}
+                              <button type="button" className="absolute top-1.5 right-1.5 rounded-full bg-white/95 dark:bg-gray-800/95 shadow p-1 opacity-90 hover:opacity-100" onClick={() => removeFile(index)} aria-label="첨부 제거">
+                                <X className="h-4 w-4" />
+                              </button>
+
+                              {/* 확대 안내 오버레이 (이미지일 때만) */}
+                              {isImage && previewUrl && (
+                                <div className="pointer-events-none absolute bottom-1.5 right-1.5">
+                                  <div
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-150
+                    rounded-full bg-black/50 p-1.5 backdrop-blur-[1px]"
+                                  >
+                                    {/* lucide-react 사용 시 */}
+                                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M21 21l-4.35-4.35" />
+                                      <circle cx="11" cy="11" r="8" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                            <Button type="button" variant="ghost" size="sm" onClick={() => removeFile(index)} className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20">
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
-
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    • 최대 3개까지 첨부 가능 (파일당 최대 5MB)
-                    <br />• 지원 형식: JPG, PNG, GIF, WEBP
-                  </p>
+                  {/* 제한 안내 뱃지 */}
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    • 최대 3개 / 파일당 최대 5MB
+                    <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP)
+                  </div>
                 </div>
               </div>
 
@@ -373,6 +464,47 @@ export default function QnaWritePage() {
                 {submitting ? '등록 중…' : '문의 등록하기'}
               </Button>
             </CardFooter>
+
+            <Dialog open={viewerOpen} onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}>
+              <DialogContent className="sm:max-w-4xl p-0 bg-black/90 text-white border-0">
+                {/* 접근성용 제목(시각적으로 숨김) */}
+                <DialogHeader className="sr-only">
+                  <DialogTitle>이미지 확대 보기</DialogTitle>
+                </DialogHeader>
+
+                <div className="relative w-full aspect-video">
+                  {viewerImages[viewerIndex] && <Image src={viewerImages[viewerIndex]} alt={`첨부 이미지 ${viewerIndex + 1}`} fill className="object-contain" priority />}
+
+                  {/* 좌우 이동 */}
+                  {viewerImages.length > 1 && (
+                    <>
+                      <button type="button" onClick={prevViewer} className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 hover:bg-white/30" aria-label="이전">
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button type="button" onClick={nextViewer} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 hover:bg-white/30" aria-label="다음">
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* 닫기 */}
+                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 hover:bg-white/30" aria-label="닫기">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* 썸네일 네비게이션 */}
+                {viewerImages.length > 1 && (
+                  <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
+                    {viewerImages.map((thumb, i) => (
+                      <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-blue-400' : ''}`} aria-label={`썸네일 ${i + 1}`}>
+                        <Image src={thumb} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </Card>
         </div>
       </div>

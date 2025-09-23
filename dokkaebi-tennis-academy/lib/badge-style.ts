@@ -115,3 +115,21 @@ export function getReviewTypeColor(t?: string | null) {
   const key = t === 'product' || t === 'service' ? (t as ReviewType) : 'etc';
   return reviewTypeColors[key];
 }
+
+/** ---------------------- Notice 카테고리 & 첨부 배지 ---------------------- */
+export const noticeCategoryColors: Record<string, string> = {
+  일반: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/40 dark:text-gray-300 dark:border-gray-700',
+  이벤트: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
+  아카데미: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800',
+  점검: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+  긴급: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800',
+};
+
+export function getNoticeCategoryColor(label?: string | null) {
+  if (!label) return noticeCategoryColors['일반'];
+  return noticeCategoryColors[label] ?? noticeCategoryColors['일반'];
+}
+
+/** 첨부(이미지/파일) 배지 색 */
+export const attachImageColor = 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800';
+export const attachFileColor = 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-950/40 dark:text-slate-300 dark:border-slate-800';

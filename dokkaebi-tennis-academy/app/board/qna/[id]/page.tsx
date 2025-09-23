@@ -22,13 +22,15 @@ export default function QnaDetailPage() {
   const qna = data?.item as QnaItem | undefined;
   const fmt = (v?: string | Date) => (v ? new Date(v).toLocaleString() : '');
 
-  // 로그인 사용자 정보 (권한 판단용)
+  // 로그인 사용자 정보
   const meRes = useSWR(`/api/users/me`, (url: string) => fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null)));
   const me = meRes.data;
   const isAdmin = me?.role === 'admin';
   const isAuthor = me?.sub && qna?.authorId && String(me.sub) === String(qna.authorId);
   const [answerText, setAnswerText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+
+  const [lightbox, setLightbox] = useState<{ open: boolean; src: string; alt: string }>({ open: false, src: '', alt: '' });
 
   async function handleDelete() {
     if (!qna?._id) return;
@@ -93,7 +95,8 @@ export default function QnaDetailPage() {
             {!isLoading && !error && (
               <>
                 <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: String(qna?.content || '').replace(/\n/g, '<br/>') }} />
-                {/* 첨부 이미지/문서 */}
+
+                {/* 첨부 그리드 */}
                 {Array.isArray(qna?.attachments) && qna.attachments.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {qna.attachments.map((att: any, i: number) => {
@@ -102,10 +105,10 @@ export default function QnaDetailPage() {
                       if (!url) return null;
                       const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url);
                       return isImage ? (
-                        <a key={i} href={url} target="_blank" rel="noreferrer" className="block rounded-md overflow-hidden border">
+                        <button key={i} type="button" onClick={() => setLightbox({ open: true, src: url, alt: name })} className="block rounded-md overflow-hidden border">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={url} alt={name} className="w-full h-40 object-cover" />
-                        </a>
+                        </button>
                       ) : (
                         <a key={i} href={url} target="_blank" rel="noreferrer" className="text-sm underline break-all">
                           {name}
@@ -117,6 +120,11 @@ export default function QnaDetailPage() {
               </>
             )}
           </CardContent>
+          {lightbox.open && (
+            <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setLightbox({ open: false, src: '', alt: '' })} role="dialog" aria-modal="true">
+              <img src={lightbox.src} alt={lightbox.alt} className="max-h-[85vh] max-w-[90vw] object-contain rounded" />
+            </div>
+          )}
           {(isAuthor || isAdmin) && qna && (
             <CardFooter className="flex justify-end gap-2 border-t p-6">
               {/* 수정 라우트가 준비되면 href 교체 */}

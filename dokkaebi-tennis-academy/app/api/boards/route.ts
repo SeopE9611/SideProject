@@ -35,6 +35,27 @@ const QNA_CATEGORY_CODES = [
   'general', // '일반문의' 용 코드 (선택사항)
 ] as const;
 
+/** ---- Notice 카테고리(라벨) ---- */
+const NOTICE_CATEGORY_LABELS = ['일반', '이벤트', '아카데미', '점검', '긴급'] as const;
+const NOTICE_CATEGORY_CODES = ['general', 'event', 'academy', 'maintenance', 'urgent'] as const;
+const NOTICE_CODE_TO_LABEL: Record<(typeof NOTICE_CATEGORY_CODES)[number], (typeof NOTICE_CATEGORY_LABELS)[number]> = {
+  general: '일반',
+  event: '이벤트',
+  academy: '아카데미',
+  maintenance: '점검',
+  urgent: '긴급',
+};
+
+function normalizeNoticeCategory(input: string | null | undefined) {
+  if (!input) return null;
+  if ((NOTICE_CATEGORY_CODES as readonly string[]).includes(input)) {
+    // @ts-expect-error - 위 includes로 보장
+    return NOTICE_CODE_TO_LABEL[input];
+  }
+  if ((NOTICE_CATEGORY_LABELS as readonly string[]).includes(input)) return input as (typeof NOTICE_CATEGORY_LABELS)[number];
+  return null;
+}
+
 /** 코드 -> 라벨 매핑 (모든 코드는 반드시 라벨 중 하나로 매핑) */
 const CODE_TO_LABEL: Record<(typeof QNA_CATEGORY_CODES)[number], QnaCategory> = {
   product: '상품문의',
@@ -83,8 +104,15 @@ const productRefSchema = z
 
 const typeSchema = z.enum(['notice', 'qna'] as const);
 
-// category는 "코드 or 라벨" 모두 허용
-const categorySchema = z.union([z.enum(QNA_CATEGORY_CODES as unknown as [string, ...string[]]), z.enum(QNA_CATEGORY_LABELS as unknown as [string, ...string[]])]).optional();
+// category는 "코드 or 라벨" QnA + Notice 모두 허용
+const categorySchema = z
+  .union([
+    z.enum(QNA_CATEGORY_CODES as unknown as [string, ...string[]]),
+    z.enum(QNA_CATEGORY_LABELS as unknown as [string, ...string[]]),
+    z.enum(NOTICE_CATEGORY_CODES as unknown as [string, ...string[]]),
+    z.enum(NOTICE_CATEGORY_LABELS as unknown as [string, ...string[]]),
+  ])
+  .optional();
 
 const createSchema = z.object({
   type: typeSchema,
@@ -94,7 +122,18 @@ const createSchema = z.object({
   productRef: productRefSchema,
   isSecret: z.boolean().optional(),
   isPinned: z.boolean().optional(), // notice에서만 사용
-  attachments: z.array(z.object({ url: z.string().url(), name: z.string(), size: z.number().optional() })).optional(),
+  attachments: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        name: z.string(),
+        size: z.number().optional(),
+        mime: z.string().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+      })
+    )
+    .optional(),
 });
 
 /** ---- Supabase 퍼블릭 URL만 허용 ---- */
@@ -140,15 +179,83 @@ export async function GET(req: NextRequest) {
   if (productId) filter['productRef.productId'] = productId;
 
   // 목록에서는 비밀글이라도 제목/메타는 노출(본문/첨부는 상세에서 제한)
-  const total = await db.collection('board_posts').countDocuments(filter);
-  const items = await db
-    .collection('board_posts')
-    .find(filter)
-    .project({ content: 0, attachments: 0 })
-    .sort(type === 'notice' ? { isPinned: -1, createdAt: -1 } : { createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .toArray();
+  const col = db.collection('board_posts');
+
+  const total = await col.countDocuments(filter);
+
+  // 집계 파이프라인로 목록 + 계산필드(attachmentsCount/hasAttachments) 생성
+  const pipeline = [
+    { $match: filter },
+    { $sort: type === 'notice' ? { isPinned: -1, createdAt: -1 } : { createdAt: -1 } },
+    { $skip: (page - 1) * limit },
+    { $limit: limit },
+
+    // attachments 배열 보정
+    { $addFields: { attachmentsArr: { $ifNull: ['$attachments', []] } } },
+
+    // 이미지 개수 계산
+    {
+      $addFields: {
+        attachmentsCount: { $size: '$attachmentsArr' },
+        imagesCount: {
+          $size: {
+            $filter: {
+              input: '$attachmentsArr',
+              as: 'a',
+              cond: {
+                $or: [{ $regexMatch: { input: { $ifNull: ['$$a.mime', ''] }, regex: /^image\// } }, { $regexMatch: { input: { $ifNull: ['$$a.url', ''] }, regex: /\.(png|jpe?g|gif|webp|bmp|svg)$/i } }],
+              },
+            },
+          },
+        },
+      },
+    },
+
+    // 파일(비이미지) 개수/플래그 — 이미지 조건의 NOT으로 직접 계산
+    {
+      $addFields: {
+        filesCount: {
+          $size: {
+            $filter: {
+              input: '$attachmentsArr',
+              as: 'a',
+              cond: {
+                $and: [{ $not: [{ $regexMatch: { input: { $ifNull: ['$$a.mime', ''] }, regex: /^image\// } }] }, { $not: [{ $regexMatch: { input: { $ifNull: ['$$a.url', ''] }, regex: /\.(png|jpe?g|gif|webp|bmp|svg)$/i } }] }],
+              },
+            },
+          },
+        },
+        hasImage: { $gt: ['$imagesCount', 0] },
+        hasFile: {
+          $gt: [
+            {
+              $size: {
+                $filter: {
+                  input: '$attachmentsArr',
+                  as: 'a',
+                  cond: {
+                    $and: [{ $not: [{ $regexMatch: { input: { $ifNull: ['$$a.mime', ''] }, regex: /^image\// } }] }, { $not: [{ $regexMatch: { input: { $ifNull: ['$$a.url', ''] }, regex: /\.(png|jpe?g|gif|webp|bmp|svg)$/i } }] }],
+                  },
+                },
+              },
+            },
+            0,
+          ],
+        },
+      },
+    },
+
+    // 목록에서는 본문/첨부 내용은 제외(= 순수 exclusion 프로젝션)
+    {
+      $project: {
+        content: 0,
+        attachments: 0,
+        attachmentsArr: 0,
+      },
+    },
+  ];
+
+  const items = await col.aggregate(pipeline).toArray();
 
   return NextResponse.json({ items, total, page, limit });
 }
@@ -190,7 +297,10 @@ export async function POST(req: NextRequest) {
   let normalizedCategory: QnaCategory | undefined = undefined;
   if (body.type === 'qna') {
     const norm = normalizeCategory(body.category);
-    normalizedCategory = norm ?? '일반문의'; // qna인데 없거나 이상하면 기본값
+    normalizedCategory = norm ?? '일반문의';
+  } else if (body.type === 'notice') {
+    const norm = normalizeNoticeCategory(body.category);
+    normalizedCategory = norm ?? '일반'; // 기본값
   }
 
   if (body?.type === 'notice') {

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Bell, Search, Eye, Pin, ArrowLeft, Plus } from 'lucide-react';
 import useSWR from 'swr';
-
+import { badgeBaseOutlined, badgeSizeSm, noticePinColor, getNoticeCategoryColor, attachImageColor, attachFileColor } from '@/lib/badge-style';
 export default function NoticePage() {
   type NoticeItem = {
     _id: string;
@@ -15,8 +15,16 @@ export default function NoticePage() {
     createdAt: string | Date;
     viewCount?: number;
     isPinned?: boolean;
-    excerpt?: string; // 서버에서 제공되면 사용(없으면 안 보임)
+    excerpt?: string;
+    category?: string;
+
+    attachmentsCount?: number; // 전체 첨부 개수
+    imagesCount?: number; // 이미지 개수
+    filesCount?: number; // 비이미지(문서) 개수
+    hasImage?: boolean;
+    hasFile?: boolean;
   };
+
   const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
   const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
@@ -102,15 +110,46 @@ export default function NoticePage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-2">
+                            {/* 상단 고정 */}
                             {notice.isPinned && (
-                              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                              <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`}>
                                 <Pin className="h-3 w-3 mr-1" />
                                 고정
                               </Badge>
                             )}
+
+                            {/* 카테고리 */}
+                            {notice.category && <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)}`}>{notice.category}</Badge>}
+
+                            {/* 제목 */}
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{notice.title}</h3>
+
+                            {/* 첨부(이미지/파일) */}
+                            {(notice.hasImage || notice.hasFile) && (
+                              <div className="ml-2 flex items-center gap-1">
+                                {notice.hasImage && (
+                                  <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachImageColor}`}>
+                                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <rect x="3" y="3" width="18" height="14" rx="2" />
+                                      <path d="M3 13l4-4 5 5 3-3 6 6" />
+                                      <circle cx="8.5" cy="7.5" r="1.5" />
+                                    </svg>
+                                    {/* 필요하면 개수 표시:  {notice.imagesCount ?? ''} */}
+                                  </Badge>
+                                )}
+                                {notice.hasFile && (
+                                  <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachFileColor}`}>
+                                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.88 17.05a2 2 0 01-2.83-2.83l8.48-8.48" />
+                                    </svg>
+                                    {/* 필요하면 개수 표시:  {notice.filesCount ?? ''} */}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          {/* 공지는 비밀글 개념이 없지만, API 목록 응답엔 content를 내리지 않음 → excerpt가 있을 때만 표시 */}
+
+                          {/* 공지는 비밀글 개념이 없지만, API 목록 응답엔 content를 내리지 않음. excerpt가 있을 때만 표시 */}
                           {notice.excerpt && <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{notice.excerpt}</p>}
                           <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-500">
                             <span>{fmt(notice.createdAt)}</span>
