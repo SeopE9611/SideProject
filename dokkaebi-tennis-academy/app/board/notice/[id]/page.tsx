@@ -61,7 +61,8 @@ export default function NoticeDetailPage() {
             {!isLoading && !error && (
               <>
                 {/* 본문 */}
-                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: String(notice?.content || '').replace(/\n/g, '<br/>') }} />
+                {/* 본문: HTML 삽입 금지 + 줄바꿈 유지 + 긴 단어 강제 줄바꿈 */}
+                <div className="prose max-w-none whitespace-pre-line break-words">{String(notice?.content || '')}</div>
 
                 {/* 첨부파일 섹션 */}
                 {/* 이미지가 있으면 큰 갤러리 먼저 */}

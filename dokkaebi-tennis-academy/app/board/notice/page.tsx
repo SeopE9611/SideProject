@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Bell, Search, Eye, Pin, ArrowLeft, Plus } from 'lucide-react';
 import useSWR from 'swr';
-import { badgeBaseOutlined, badgeSizeSm, noticePinColor, getNoticeCategoryColor, attachImageColor, attachFileColor } from '@/lib/badge-style';
+import { useState } from 'react';
+import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor, noticePinColor, getReviewTypeColor, getNoticeCategoryColor, attachImageColor, attachFileColor } from '@/lib/badge-style';
+
 export default function NoticePage() {
   type NoticeItem = {
     _id: string;
@@ -29,7 +31,20 @@ export default function NoticePage() {
   const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
-  const { data, error, isLoading } = useSWR('/api/boards?type=notice&page=1&limit=20', fetcher);
+  // 입력용 상태 (타이핑 중)
+  const [inputKeyword, setInputKeyword] = useState('');
+  const [inputField, setInputField] = useState<'all' | 'title' | 'content' | 'title_content'>('all');
+  // 제출용 상태 (버튼/엔터로 확정된 값만 SWR에 반영)
+  const [keyword, setKeyword] = useState('');
+  const [field, setField] = useState<'all' | 'title' | 'content' | 'title_content'>('all');
+  // 목록 불러오기 (검색 파라미터 포함)
+  const qs = new URLSearchParams({ type: 'notice', page: '1', limit: '20' });
+  if (keyword.trim()) {
+    qs.set('q', keyword.trim());
+    qs.set('field', field);
+  }
+  const { data, error, isLoading } = useSWR(`/api/boards?${qs.toString()}`, fetcher);
+
   const items: NoticeItem[] = data?.items ?? [];
   const total = data?.total ?? items.length;
   const pinnedCount = items.filter((n) => n.isPinned).length;
@@ -75,7 +90,7 @@ export default function NoticePage() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <Select defaultValue="all">
+                <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
                   <SelectTrigger className="w-[120px] bg-white dark:bg-gray-700">
                     <SelectValue placeholder="검색 조건" />
                   </SelectTrigger>
@@ -83,13 +98,35 @@ export default function NoticePage() {
                     <SelectItem value="all">전체</SelectItem>
                     <SelectItem value="title">제목</SelectItem>
                     <SelectItem value="content">내용</SelectItem>
+                    <SelectItem value="title_content">제목+내용</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input type="search" placeholder="검색어를 입력하세요" className="w-[200px] pl-10 bg-white dark:bg-gray-700" />
+                  <Input
+                    type="search"
+                    placeholder="검색어를 입력하세요"
+                    className="w-[200px] pl-10 bg-white dark:bg-gray-700"
+                    value={inputKeyword}
+                    onChange={(e) => setInputKeyword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setKeyword(inputKeyword);
+                        setField(inputField);
+                      }
+                    }}
+                  />
                 </div>
-                <Button className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700">검색</Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setKeyword(inputKeyword);
+                    setField(inputField);
+                  }}
+                  className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
+                >
+                  검색
+                </Button>
                 {isAdmin && (
                   <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
                     <Link href="/board/notice/write">
@@ -103,6 +140,7 @@ export default function NoticePage() {
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-4">
+              {!isLoading && !error && items.length === 0 && <div className="py-8 text-center text-sm text-gray-500">검색 결과가 없습니다.</div>}
               {items.map((notice) => (
                 <Link key={notice._id} href={`/board/notice/${notice._id}`}>
                   <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-gray-200 dark:border-gray-700">

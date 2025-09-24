@@ -41,12 +41,22 @@ export default function QnaPage() {
   const [answerFilter, setAnswerFilter] = useState<'all' | 'waiting' | 'completed'>('all');
   const [page, setPage] = useState(1);
   const limit = 20;
+  // 입력용
+  const [inputKeyword, setInputKeyword] = useState('');
+  const [inputField, setInputField] = useState<'all' | 'title' | 'content' | 'title_content'>('all');
+  // 제출용
+  const [keyword, setKeyword] = useState('');
+  const [field, setField] = useState<'all' | 'title' | 'content' | 'title_content'>('all');
 
   const qs = new URLSearchParams({ type: 'qna', page: String(page), limit: String(limit) });
   // 서버는 라벨을 기대 -> 코드 선택 시 라벨로 변환해서 전송
   if (category !== 'all') {
     const label = CODE_TO_LABEL[category] ?? category; // 혹시 라벨이 들어와도 안전
     qs.set('category', label);
+  }
+  if (keyword.trim()) {
+    qs.set('q', keyword.trim());
+    qs.set('field', field);
   }
   const { data, error, isLoading } = useSWR(`/api/boards?${qs.toString()}`, fetcher);
   const serverItems: QnaItem[] = data?.items ?? [];
@@ -193,21 +203,50 @@ export default function QnaPage() {
                 </Select>
               </div>
               <div className="flex items-center space-x-2">
-                <Select defaultValue="title">
+                <Select
+                  value={inputField}
+                  onValueChange={(v) => {
+                    setInputField(v as any);
+                  }}
+                >
                   <SelectTrigger className="w-[120px] bg-white dark:bg-gray-700">
                     <SelectValue placeholder="검색 조건" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
                     <SelectItem value="title">제목</SelectItem>
                     <SelectItem value="content">내용</SelectItem>
-                    <SelectItem value="author">작성자</SelectItem>
+                    <SelectItem value="title_content">제목+내용</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input type="search" placeholder="검색어를 입력하세요" className="w-[200px] pl-10 bg-white dark:bg-gray-700" />
+                  <Input
+                    type="search"
+                    placeholder="검색어를 입력하세요"
+                    className="w-[200px] pl-10 bg-white dark:bg-gray-700"
+                    value={inputKeyword}
+                    onChange={(e) => setInputKeyword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setPage(1);
+                        setKeyword(inputKeyword);
+                        setField(inputField);
+                      }
+                    }}
+                  />
                 </div>
-                <Button className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">검색</Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setPage(1);
+                    setKeyword(inputKeyword);
+                    setField(inputField);
+                  }}
+                  className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
+                >
+                  검색
+                </Button>
               </div>
             </div>
 
@@ -259,7 +298,7 @@ export default function QnaPage() {
                     </Card>
                   </Link>
                 ))}
-              {!isLoading && !error && items.length === 0 && <div className="text-sm text-gray-500">등록된 문의가 없습니다.</div>}
+              {!isLoading && !error && items.length === 0 && <div className="text-sm text-gray-500">{keyword.trim() ? '검색 결과가 없습니다.' : '등록된 문의가 없습니다.'}</div>}
             </div>
 
             <div className="mt-8 flex items-center justify-center">

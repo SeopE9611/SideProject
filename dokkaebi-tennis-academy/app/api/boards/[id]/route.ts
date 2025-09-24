@@ -12,11 +12,35 @@ async function mustAdmin() {
   return payload && payload.role === 'admin' ? payload : null;
 }
 
+// QnA 카테고리 라벨/코드
+const QNA_CATEGORY_LABELS = ['상품문의', '주문/결제', '배송', '환불/교환', '서비스', '아카데미', '회원', '일반문의'] as const;
+const QNA_CATEGORY_CODES = ['product', 'order', 'delivery', 'refund', 'service', 'academy', 'member', 'general'] as const;
+
+// Notice 카테고리 라벨/코드
+const NOTICE_CATEGORY_LABELS = ['일반', '이벤트', '아카데미', '점검', '긴급'] as const;
+const NOTICE_CATEGORY_CODES = ['general', 'event', 'academy', 'maintenance', 'urgent'] as const;
+
+// 공통 category 스키마
+const categorySchema = z
+  .union([
+    z.enum(QNA_CATEGORY_LABELS as unknown as [string, ...string[]]),
+    z.enum(QNA_CATEGORY_CODES as unknown as [string, ...string[]]),
+    z.enum(NOTICE_CATEGORY_LABELS as unknown as [string, ...string[]]),
+    z.enum(NOTICE_CATEGORY_CODES as unknown as [string, ...string[]]),
+  ])
+  .optional();
+
 const updateSchema = z.object({
   title: z.string().trim().min(2).max(200).optional(),
   content: z.string().trim().min(2).max(20000).optional(),
-  category: z.enum(['일반문의', '상품문의']).optional(),
-  productRef: z.object({ productId: z.string(), name: z.string().optional(), image: z.string().url().nullable().optional() }).optional(),
+  category: categorySchema,
+  productRef: z
+    .object({
+      productId: z.string(),
+      name: z.string().optional(),
+      image: z.string().url().nullable().optional(),
+    })
+    .optional(),
   isSecret: z.boolean().optional(),
   isPinned: z.boolean().optional(),
   status: z.enum(['published', 'hidden', 'deleted']).optional(),
@@ -31,17 +55,26 @@ function canEdit(payload: any, post: any) {
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const db = await getDb();
   const { id } = await params;
+
   const post = await db.collection('board_posts').findOne({ _id: new ObjectId(id) });
   if (!post) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
 
-  // 비밀글 마스킹: 작성자/관리자 외에는 본문/첨부 제거
+  // 권한 확인
   const token = (await cookies()).get('accessToken')?.value;
   const payload = token ? verifyAccessToken(token) : null;
   const isAdmin = payload?.role === 'admin';
   const isOwner = payload?.sub && String(payload.sub) === String(post.authorId);
+
+  // 비밀글: 권한 없으면 본문/첨부 마스킹
   if (post.isSecret && !isAdmin && !isOwner) {
     delete (post as any).content;
     delete (post as any).attachments;
+  } else {
+    // 조회수 증가 (published만)
+    if (post.status === 'published') {
+      await db.collection('board_posts').updateOne({ _id: new ObjectId(id) }, { $inc: { viewCount: 1 } });
+      post.viewCount = (post.viewCount ?? 0) + 1; // 응답 일관성
+    }
   }
 
   return NextResponse.json({ ok: true, item: post });

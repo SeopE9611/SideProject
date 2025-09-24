@@ -94,7 +94,8 @@ export default function QnaDetailPage() {
           <CardContent className="p-6 space-y-6">
             {!isLoading && !error && (
               <>
-                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: String(qna?.content || '').replace(/\n/g, '<br/>') }} />
+                {/* 질문 본문: HTML 삽입 금지 + 줄바꿈 유지 + 긴 단어 강제 줄바꿈 */}
+                <div className="prose max-w-none whitespace-pre-line break-words">{String(qna?.content || '')}</div>
 
                 {/* 첨부 그리드 */}
                 {Array.isArray(qna?.attachments) && qna.attachments.length > 0 && (
@@ -225,7 +226,7 @@ export default function QnaDetailPage() {
             </CardHeader>
             <CardContent className="p-6">
               {!isEditing ? (
-                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: qna.answer.content }} />
+                <div className="prose max-w-none whitespace-pre-line break-words">{String(qna.answer.content || '')}</div>
               ) : (
                 <div className="space-y-3">
                   <Textarea value={answerText} onChange={(e) => setAnswerText(e.target.value)} className="min-h-[140px] bg-white dark:bg-gray-700" />

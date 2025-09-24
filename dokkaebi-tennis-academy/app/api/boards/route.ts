@@ -163,30 +163,58 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(url.searchParams.get('page') || 1));
   const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
 
+  // 키워드 검색 파라미터
+  const q = url.searchParams.get('q') || url.searchParams.get('keyword') || url.searchParams.get('query') || '';
+
   // type 유효성 가드
   const type: BoardType | null = typeParam === 'notice' || typeParam === 'qna' ? (typeParam as BoardType) : null;
 
   const filter: any = { status: 'published' };
   if (type) filter.type = type;
 
-  // 프론트에서 코드('product')를 보내도 DB에는 라벨('상품문의')로 저장되어 있으므로 정규화
-  const normalized = normalizeCategory(rawCategory);
-  if (normalized) {
-    // normalized는 QnaCategory로 확정
-    filter.category = normalized as QnaCategory;
+  // 타입별 카테고리 정규화
+  if (type === 'notice') {
+    const n = normalizeNoticeCategory(rawCategory);
+    if (n) filter.category = n; // 공지는 '일반','이벤트' 등 라벨로 저장됨
+  } else if (type === 'qna') {
+    const n = normalizeCategory(rawCategory); // 코드/라벨 → QnA 라벨로
+    if (n) filter.category = n as QnaCategory;
   }
 
   if (productId) filter['productRef.productId'] = productId;
 
+  // 검색 필드: all | title | content | title_content (한글 라벨도 허용)
+  const fieldRaw = (url.searchParams.get('field') || 'all').toLowerCase();
+  const field = ['title', '제목'].includes(fieldRaw) ? 'title' : ['content', '내용'].includes(fieldRaw) ? 'content' : ['title_content', '제목+내용', '제목내용', '제목내용전체'].includes(fieldRaw) ? 'title_content' : 'all';
+
+  // 정규식 이스케이프
+  const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // 검색 적용 (부분일치: 공지 → 공지1/공지2 전부 매칭)
+  if (q.trim()) {
+    const re = new RegExp(esc(q.trim()), 'i');
+
+    if (field === 'title') {
+      filter.title = { $regex: re };
+    } else if (field === 'content') {
+      filter.content = { $regex: re };
+    } else {
+      // all 또는 title_content: 제목+내용 OR
+      filter.$or = [{ title: { $regex: re } }, { content: { $regex: re } }];
+    }
+  }
   // 목록에서는 비밀글이라도 제목/메타는 노출(본문/첨부는 상세에서 제한)
   const col = db.collection('board_posts');
 
   const total = await col.countDocuments(filter);
 
+  // 정렬: 공지는 핀 우선 + 최신, 나머지는 최신
+  const sort = type === 'notice' ? { isPinned: -1, createdAt: -1 } : { createdAt: -1 };
+
   // 집계 파이프라인로 목록 + 계산필드(attachmentsCount/hasAttachments) 생성
   const pipeline = [
     { $match: filter },
-    { $sort: type === 'notice' ? { isPinned: -1, createdAt: -1 } : { createdAt: -1 } },
+    { $sort: sort },
     { $skip: (page - 1) * limit },
     { $limit: limit },
 
@@ -257,7 +285,7 @@ export async function GET(req: NextRequest) {
 
   const items = await col.aggregate(pipeline).toArray();
 
-  return NextResponse.json({ items, total, page, limit });
+  return NextResponse.json({ ok: true, items, total, page, limit });
 }
 
 /* ---------------------------------- POST --------------------------------- */
