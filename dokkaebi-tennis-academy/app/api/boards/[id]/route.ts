@@ -238,34 +238,62 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
 
-  // === 강제 매칭 업데이트 (findOneAndUpdate 대신 updateOne + 재조회) ===
+  // === 낙관적 락(updatedAt 매칭) + 재조회 반환 시작 ===
+
+  // 0) 클라이언트가 마지막으로 본 updatedAt(선택) 추출: 헤더 우선, 없으면 바디 필드
+  const ifUnmodifiedSinceHeader = req.headers.get('if-unmodified-since');
+  const ifUnmodifiedSinceBody = (parsed.data as any)?.ifUnmodifiedSince; // 필요 시 바디로도 허용
+  const ifUnmodifiedSince = (ifUnmodifiedSinceBody ?? ifUnmodifiedSinceHeader) || null;
+
+  let clientSeenDate: Date | null = null;
+  if (typeof ifUnmodifiedSince === 'string') {
+    const d = new Date(ifUnmodifiedSince);
+    if (!Number.isNaN(d.getTime())) clientSeenDate = d;
+  }
+
+  // 1) 낙관적 락이 켜져 있을 때 사용할 필터 빌더
+  const buildFilter = (idFilter: any) => {
+    if (clientSeenDate) {
+      // 클라이언트가 본 updatedAt과 DB의 updatedAt이 같아야만 매칭
+      return { ...idFilter, updatedAt: clientSeenDate };
+    }
+    return idFilter; // 기준시각 없으면 종전대로 동작(락 미적용)
+  };
+
   const col = db.collection('board_posts');
 
-  // post._id로 1차 시도
-  let r = await col.updateOne({ _id: post._id as any }, { $set: patch });
+  // 2) 1차: post._id(any)로 시도
+  let r = await col.updateOne(buildFilter({ _id: post._id as any }), { $set: patch });
 
-  // 매칭이 0이면 폴백: 문자열/다시 ObjectId 변환 모두 시도
+  // 3) 매칭 실패 시 폴백: ObjectId / string 각각 시도(락 조건은 계속 유지)
   if (!r.matchedCount) {
-    const pid = String(post._id); // '68d52f...' 형태
-    const oid2 = toObjectId(pid); // ObjectId 재생성
-
+    const pid = String(post._id);
+    const oid2 = toObjectId(pid);
     if (oid2) {
-      r = await col.updateOne({ _id: oid2 }, { $set: patch });
+      r = await col.updateOne(buildFilter({ _id: oid2 }), { $set: patch });
     }
     if (!r.matchedCount) {
-      r = await col.updateOne({ _id: pid as any }, { $set: patch });
+      r = await col.updateOne(buildFilter({ _id: pid as any }), { $set: patch });
     }
   }
 
-  // 그래도 매칭이 0이면 not_found 유지
+  // 4) 여전히 실패면:
+  //    - 클라가 기준시각을 보냈으면 => 409(CONFLICT)
+  //    - 아니면 => 404(기존 로직 유지)
   if (!r.matchedCount) {
+    if (clientSeenDate) {
+      return NextResponse.json({ ok: false, error: 'conflict_stale', message: '문서가 이미 다른 곳에서 수정되었습니다. 최신 내용을 확인한 뒤 다시 시도해주세요.' }, { status: 409 });
+    }
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
+
   console.log('[PATCH boards: update matchedCount]', r.matchedCount);
   console.log('PATCH payload', { attachments: normalizedAttachments, removedPaths });
-  // 갱신된 문서를 다시 읽어와서 반환
+
+  // 5) 갱신된 문서를 다시 읽어와서 반환(+선택: 최신 updatedAt 헤더 제공)
   const updated = await BoardRepo.findOneById(db, String(post._id));
-  return NextResponse.json({ ok: true, item: updated });
+  return NextResponse.json({ ok: true, item: updated }, updated?.updatedAt ? { headers: { 'x-updated-at': new Date(updated.updatedAt).toISOString() } } : undefined);
+  // === 낙관적 락(updatedAt 매칭) + 재조회 반환 끝 ===
 }
 // ===================================================================
 
