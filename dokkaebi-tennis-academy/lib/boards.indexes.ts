@@ -32,4 +32,10 @@ export async function ensureBoardIndexes(db: Db) {
   await ensureIndex(db, 'board_posts', { 'productRef.productId': 1, createdAt: -1 }, { name: 'idx_board_product_created' });
   // 작성자별 히스토리(마이페이지 확장 대비)
   await ensureIndex(db, 'board_posts', { authorId: 1, createdAt: -1 }, { name: 'idx_board_author_created' });
+  // 목록용: type/status + isPinned desc + createdAt desc
+  await ensureIndex(db, 'board_posts', { type: 1, status: 1, isPinned: -1, createdAt: -1 }, { name: 'boards_list_compound' });
+  // 최신 수정순: updatedAt desc
+  await ensureIndex(db, 'board_posts', { updatedAt: -1 }, { name: 'boards_updatedAt_desc' });
+  // 첨부 경로: attachments.storagePath (스토리지 삭제/정합 점검용)
+  await ensureIndex(db, 'board_posts', { 'attachments.storagePath': 1 }, { name: 'boards_attachments_storagePath' });
 }
