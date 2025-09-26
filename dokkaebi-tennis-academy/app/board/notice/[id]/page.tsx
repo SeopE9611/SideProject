@@ -1,20 +1,45 @@
 'use client';
 import Link from 'next/link';
-import { ArrowLeft, ArrowUp, Calendar, Eye, FileText, ImageIcon, Download, ExternalLink, Clock, Bell, Pin } from 'lucide-react';
+import { ArrowLeft, ArrowUp, Calendar, Eye, FileText, ImageIcon, Download, ExternalLink, Clock, Bell, Pin, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import useSWR from 'swr';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { getNoticeCategoryColor, badgeBaseOutlined, badgeSizeSm, attachImageColor, attachFileColor, noticePinColor } from '@/lib/badge-style';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 export default function NoticeDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
   const { data, error, isLoading } = useSWR(id ? `/api/boards/${id}` : null, fetcher);
   const notice = data?.item;
+
+  // 관리자 정보 로드
+  const { data: me } = useSWR('/api/users/me', fetcher);
+  const isAdmin = !!(me && (me.isAdmin === true || me.role === 'admin' || (Array.isArray(me.roles) && me.roles.includes('admin'))));
+
+  const onEdit = () => {
+    if (!notice?._id) return;
+    router.push(`/board/notice/write?id=${notice._id}`);
+  };
+
+  const onDelete = async () => {
+    if (!notice?._id) return;
+    if (!confirm('정말 이 공지를 삭제하시겠습니까?')) return;
+
+    const res = await fetch(`/api/boards/${notice._id}`, { method: 'DELETE', credentials: 'include' });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json.ok === false) {
+      showErrorToast(json.error ?? '삭제에 실패했습니다.');
+      return;
+    }
+    showSuccessToast('삭제되었습니다.');
+    router.replace('/board/notice');
+  };
 
   const attachments = Array.isArray(notice?.attachments) ? notice!.attachments : [];
   const imageAtts = attachments.filter((att: any) => {
@@ -76,58 +101,75 @@ export default function NoticeDetailPage() {
                   </div>
                 )}
                 {!isLoading && !error && notice && (
-                  <>
-                    <div className="flex flex-wrap items-center gap-3 mb-4">
-                      {notice.isPinned && (
-                        <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`}>
-                          <Pin className="h-3 w-3 mr-1" />
-                          고정
+                  <div className="flex items-start justify-between gap-4">
+                    {/* 왼쪽: 배지 · 제목 · 메타 */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                        {notice.isPinned && (
+                          <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`}>
+                            <Pin className="h-3 w-3 mr-1" />
+                            고정
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)} font-medium`}>
+                          {notice.category || '일반'}
                         </Badge>
-                      )}
-                      <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)} font-medium`}>
-                        {notice.category || '일반'}
-                      </Badge>
-                      {imageAtts.length > 0 && (
-                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachImageColor}`}>
-                          <ImageIcon className="h-3 w-3 mr-1" />
-                          이미지 {imageAtts.length}개
-                        </Badge>
-                      )}
-                      {fileAtts.length > 0 && (
-                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachFileColor}`}>
-                          <FileText className="h-3 w-3 mr-1" />
-                          첨부파일 {fileAtts.length}개
-                        </Badge>
-                      )}
-                    </div>
+                        {imageAtts.length > 0 && (
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachImageColor}`}>
+                            <ImageIcon className="h-3 w-3 mr-1" />
+                            이미지 {imageAtts.length}개
+                          </Badge>
+                        )}
+                        {fileAtts.length > 0 && (
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachFileColor}`}>
+                            <FileText className="h-3 w-3 mr-1" />
+                            첨부파일 {fileAtts.length}개
+                          </Badge>
+                        )}
+                      </div>
 
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg flex-shrink-0 mt-1">
-                        <Bell className="h-5 w-5 text-white" />
-                      </div>
-                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">{notice.title}</h1>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span className="font-medium">작성일</span>
-                        <span>{fmt(notice.createdAt)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Eye className="h-4 w-4" />
-                        <span className="font-medium">조회수</span>
-                        <span className="font-semibold text-blue-600">{notice.viewCount ?? 0}</span>
-                      </div>
-                      {notice.updatedAt && notice.updatedAt !== notice.createdAt && (
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          <span className="font-medium">수정일</span>
-                          <span>{fmt(notice.updatedAt)}</span>
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg flex-shrink-0 mt-1">
+                          <Bell className="h-5 w-5 text-white" />
                         </div>
-                      )}
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">{notice.title}</h1>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span className="font-medium">작성일</span>
+                          <span>{fmt(notice.createdAt)}</span>
+                        </div>
+                        {notice.updatedAt && notice.updatedAt !== notice.createdAt && (
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            <span className="font-medium">수정일</span>
+                            <span>{fmt(notice.updatedAt)}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          <span className="font-medium">조회수</span>
+                          <span className="font-semibold text-blue-600">{notice.viewCount ?? 0}</span>
+                        </div>
+                      </div>
                     </div>
-                  </>
+
+                    {/* 오른쪽: 관리자 액션 */}
+                    {isAdmin && (
+                      <div className="shrink-0 flex flex-col gap-2">
+                        <Button variant="outline" onClick={onEdit}>
+                          <Pencil className="h-4 w-4 mr-1" />
+                          수정
+                        </Button>
+                        <Button variant="destructive" onClick={onDelete}>
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          삭제
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </CardHeader>

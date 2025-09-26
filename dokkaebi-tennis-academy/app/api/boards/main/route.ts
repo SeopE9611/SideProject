@@ -12,10 +12,10 @@ export async function GET() {
       { $sort: { isPinned: -1, createdAt: -1 } },
       { $limit: 5 },
 
-      // ✅ attachments 보정
+      // attachments 보정
       { $addFields: { attachmentsArr: { $ifNull: ['$attachments', []] } } },
 
-      // ✅ 이미지/파일 카운트 & 플래그
+      // 이미지/파일 카운트 & 플래그
       {
         $addFields: {
           imagesCount: {
@@ -44,7 +44,7 @@ export async function GET() {
       },
       { $addFields: { hasImage: { $gt: ['$imagesCount', 0] }, hasFile: { $gt: ['$filesCount', 0] } } },
 
-      // ✅ 목록에 불필요한 필드 제외
+      // 목록에 불필요한 필드 제외
       { $project: { content: 0, attachments: 0, attachmentsArr: 0 } },
     ])
     .toArray();

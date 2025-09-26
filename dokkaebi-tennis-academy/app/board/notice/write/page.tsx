@@ -16,6 +16,8 @@ import { supabase } from '@/lib/supabase';
 import NextImage from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, ArrowLeft, Bell, Upload, X, Pin } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import useSWR, { mutate } from 'swr';
 
 const NOTICE_LABEL_BY_CODE: Record<string, string> = {
   general: '일반',
@@ -25,7 +27,17 @@ const NOTICE_LABEL_BY_CODE: Record<string, string> = {
   urgent: '긴급',
 };
 
+// 라벨 -> 코드 (상세에서 받아온 라벨을 셀렉트의 값(코드)로 되돌리기)
+const NOTICE_CODE_BY_LABEL: Record<string, string> = Object.fromEntries(Object.entries(NOTICE_LABEL_BY_CODE).map(([code, label]) => [label, code]));
+
 export default function NoticeWritePage() {
+  const sp = useSearchParams();
+  const router = useRouter();
+  const editId = sp.get('id'); // 있으면 수정 모드
+
+  // 프리필은 한번만 실행
+  const prefilledRef = useRef(false);
+
   // 파일 상태
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -73,6 +85,61 @@ export default function NoticeWritePage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [existingAttachments, setExistingAttachments] = useState<Array<{ url: string; name?: string; size?: number }>>([]);
+
+  // 실제 PATCH 시 제외할 기존 첨부 제거
+  const removeExisting = (idx: number) => {
+    setExistingAttachments((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  // (옵션) 스토리지 삭제까지 원할 때: 삭제할 경로 목록
+  const [removedPaths, setRemovedPaths] = useState<string[]>([]);
+
+  // Supabase public URL -> storage path 추출 (예: boards/notice/abc.jpg)
+  const toStoragePathFromPublicUrl = (url: string) => {
+    // https://.../storage/v1/object/public/<bucket>/<path>
+    const m = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
+    return m ? m[1] : '';
+  };
+
+  // 기존 첨부 제거 + 스토리지 삭제 경로 기록(옵션)
+  const removeExistingAndMark = (idx: number) => {
+    setExistingAttachments((prev) => {
+      const next = [...prev];
+      const [gone] = next.splice(idx, 1);
+      if (gone?.url) {
+        const p = toStoragePathFromPublicUrl(gone.url);
+        if (p) setRemovedPaths((rs) => Array.from(new Set([...rs, p])));
+      }
+      return next;
+    });
+  };
+
+  // 상세 불러오기 (수정 모드일 때만)
+  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+  const { data: detail } = useSWR(editId ? `/api/boards/${editId}` : null, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 60_000, // 1분 정도
+  });
+  // 프리필: 상세 응답을 코드값으로 역변환해서 넣는다.
+  useEffect(() => {
+    if (!editId || !detail?.item || prefilledRef.current) return;
+    const p = detail.item;
+    setTitle(p.title ?? '');
+    setContent(p.content ?? '');
+    setIsPinned(!!p.isPinned);
+    setCategory(NOTICE_CODE_BY_LABEL[p.category as string] ?? 'general');
+
+    if (Array.isArray(p.attachments)) {
+      setExistingAttachments(p.attachments.map((a: any) => ({ url: String(a.url), name: a.name, size: a.size })));
+    }
+    // 프리필 직후에 편집 중 임시 상태 초기화
+    setSelectedFiles([]);
+    setRemovedPaths([]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    prefilledRef.current = true; // 두 번 다시 프리필하지 않음
+  }, [editId, detail]);
 
   const MAX = 5; // 공지: 5개
   const MAX_MB = 10; // 공지: 10MB
@@ -138,16 +205,15 @@ export default function NoticeWritePage() {
       }
       setSubmitting(true);
 
-      // Supabase 업로드 + 메타 수집(mime, width, height)
+      // Supabase 업로드는 기존 코드 재사용
       const BUCKET = 'tennis-images';
       const FOLDER = 'boards/notice';
 
-      // getImageSize 내부
       const getImageSize = (file: File) =>
         new Promise<{ width?: number; height?: number }>((resolve) => {
           if (!file.type?.startsWith('image/')) return resolve({});
           const url = URL.createObjectURL(file);
-          const img = new window.Image(); // 전역 생성자 사용
+          const img = new window.Image();
           img.onload = () => {
             resolve({ width: img.naturalWidth, height: img.naturalHeight });
             URL.revokeObjectURL(url);
@@ -162,23 +228,17 @@ export default function NoticeWritePage() {
       const uploadOne = async (file: File) => {
         const ext = file.name.split('.').pop() || 'bin';
         const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
         const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
           upsert: false,
           contentType: file.type || undefined,
         });
         if (error) throw error;
-
         const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-
-        // 이미지라면 크기 메타 수집
         const meta = await getImageSize(file);
-
-        // 다운로드 전용 URL 추가
         const downloadUrl = `${data.publicUrl}${data.publicUrl.includes('?') ? '&' : '?'}download=${encodeURIComponent(file.name)}`;
-
         return {
           url: data.publicUrl,
+          storagePath: path, // 나중 삭제를 위해 경로 보관
           downloadUrl,
           name: file.name,
           size: file.size,
@@ -188,26 +248,31 @@ export default function NoticeWritePage() {
         };
       };
 
-      const attachments = selectedFiles.length > 0 ? await Promise.all(selectedFiles.map(uploadOne)) : [];
-      const cleanAttachments = attachments.map((a) => ({
-        url: a.url,
-        name: a.name,
-        size: a.size,
-      }));
+      // 새로 추가한 파일 업로드
+      const uploaded = selectedFiles.length > 0 ? await Promise.all(selectedFiles.map(uploadOne)) : [];
+      const cleanNew = uploaded.map((a) => ({ url: a.url, name: a.name, size: a.size, storagePath: a.storagePath }));
 
-      // 본문 + 첨부 전송
-      const res = await fetch('/api/boards', {
-        method: 'POST',
+      // 첨부 + 새 첨부 병합
+      const attachments = [...existingAttachments, ...cleanNew];
+
+      const payload: any = {
+        type: 'notice',
+        title,
+        content,
+        isPinned,
+        category: NOTICE_LABEL_BY_CODE[category] ?? '일반', // 코드 -> 라벨 변환
+        attachments,
+        ...(removedPaths.length > 0 ? { removedPaths } : {}), // 새 업로드 파일을 올리고 -> 응답을 attachments로 병합해서 서버로 보냄
+      };
+
+      const url = editId ? `/api/boards/${editId}` : '/api/boards';
+      const method = editId ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          type: 'notice',
-          title,
-          content,
-          isPinned,
-          category: NOTICE_LABEL_BY_CODE[category] ?? '일반',
-          attachments: cleanAttachments,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const text = await res.text();
@@ -217,9 +282,28 @@ export default function NoticeWritePage() {
       } catch {
         json = { ok: false, error: text };
       }
+      // 응답 파싱 후 성공 검사 통과
       if (!res.ok || !json?.ok) {
         const msg = typeof json.error === 'string' ? json.error : JSON.stringify(json.error);
-        throw new Error(msg || '저장 실패(권한 확인 필요)');
+        throw new Error(msg || (editId ? '수정 실패(권한 확인 필요)' : '저장 실패(권한 확인 필요)'));
+      }
+      // 편집 상태 리셋
+      setSelectedFiles([]);
+      setRemovedPaths([]);
+      setExistingAttachments([]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+
+      // 이동 전 캐시 최신화 + 서버컴포넌트 새로고침
+      const goId = editId || json.item?._id;
+      if (goId) {
+        if (json.item) {
+          await mutate(`/api/boards/${goId}`, { ok: true, item: json.item }, false);
+        } else {
+          await mutate(`/api/boards/${goId}`);
+        }
+        router.replace(`/board/notice/${goId}`);
+        router.refresh();
+        return;
       }
 
       window.location.href = '/board/notice';
@@ -245,7 +329,7 @@ export default function NoticeWritePage() {
                 <Bell className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">공지사항 작성</h1>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">{editId ? '공지사항 수정' : '공지사항 작성'}</h1>
                 <p className="text-lg text-gray-600 dark:text-gray-300">중요한 소식을 회원들에게 전달하세요</p>
               </div>
             </div>
@@ -255,7 +339,7 @@ export default function NoticeWritePage() {
             <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50 border-b">
               <CardTitle className="flex items-center space-x-2">
                 <Bell className="h-5 w-5 text-blue-600" />
-                <span>새 공지사항 작성</span>
+                <span>{editId ? '공지사항 수정' : '새 공지사항 작성'}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
@@ -325,6 +409,44 @@ export default function NoticeWritePage() {
                 </Label>
                 <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="공지사항 내용을 작성해주세요" className="min-h-[300px] bg-white dark:bg-gray-700 text-base resize-none" />
               </div>
+              {/* 기존 첨부 (수정 모드에서만 표시) */}
+              {editId && existingAttachments.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">기존 첨부</Label>
+                  <ul className="divide-y rounded-lg border bg-white/70 dark:bg-gray-800/50">
+                    {existingAttachments.map((att, idx) => {
+                      const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(att.url);
+                      return (
+                        <li key={att.url + idx} className="flex items-center justify-between gap-3 p-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            {isImage ? <img src={att.url} alt={att.name ?? 'image'} className="h-10 w-10 rounded object-cover border" /> : <div className="h-10 w-10 flex items-center justify-center rounded border text-xs text-gray-500">FILE</div>}
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-medium">{att.name ?? att.url}</div>
+                              <div className="text-xs text-gray-500">{att.size ? `${(att.size / 1024).toFixed(0)} KB` : ''}</div>
+                            </div>
+                          </div>
+                          <div className="shrink-0 flex items-center gap-2">
+                            <a href={att.url} target="_blank" rel="noreferrer" className="text-xs underline text-blue-600">
+                              열기
+                            </a>
+                            {/* 스토리지까지 지우지 않을 때 ↓ */}
+                            {/* <Button type="button" variant="outline" size="sm" onClick={() => removeExisting(idx)}>제거</Button> */}
+                            {/* 스토리지까지 지울 예정이면 ↓ */}
+                            <Button type="button" variant="outline" size="sm" onClick={() => removeExistingAndMark(idx)}>
+                              제거
+                            </Button>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="mt-1 text-xs text-gray-500">
+                    * ‘제거’를 누르면 저장 시 해당 첨부가 게시물에서 제외됩니다.
+                    {` `}
+                    {`(옵션) 스토리지 파일 삭제도 활성화되면 실제 파일도 함께 삭제됩니다.`}
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <Label htmlFor="image" className="text-base font-semibold">
@@ -456,7 +578,7 @@ export default function NoticeWritePage() {
                   임시저장
                 </Button>
                 <Button size="lg" onClick={handleSubmit} disabled={submitting} className="px-8 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 disabled:opacity-60">
-                  {submitting ? '등록 중…' : '공지사항 등록'}
+                  {submitting ? (editId ? '수정 중…' : '등록 중…') : editId ? '공지사항 수정' : '공지사항 등록'}
                 </Button>
               </div>
             </CardFooter>
