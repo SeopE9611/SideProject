@@ -5,6 +5,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { z } from 'zod';
 import type { BoardPost, BoardType, QnaCategory } from '@/lib/types/board';
 import { ObjectId } from 'mongodb';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 // 관리자 확인 헬퍼
 async function mustAdmin() {
@@ -343,10 +344,14 @@ export async function POST(req: NextRequest) {
   // 첨부 URL 화이트리스트 필터링
   const safeAttachments = Array.isArray(body.attachments) ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url)) : [];
 
+  // 본문 content 서버에서 정제
+  const safeContent = sanitizeHtml(String(body.content ?? ''));
+
   const doc: BoardPost = {
     type: body.type,
     title: body.title,
-    content: body.content,
+    // content: body.content,
+    content: safeContent,
     category: normalizedCategory, // BoardPost['category']는 QnaCategory | undefined
     productRef: body.type === 'qna' ? body.productRef : undefined,
     isSecret: body.type === 'qna' ? !!body.isSecret : false,

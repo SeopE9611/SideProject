@@ -5,6 +5,7 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 // supabase 상수/핼퍼
 const STORAGE_BUCKET = 'tennis-images';
@@ -203,6 +204,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     files: docs, // 문서만
     updatedAt: new Date(),
   };
+  // content가 오면 서버에서 정제
+  if (typeof patch.content === 'string') {
+    patch.content = sanitizeHtml(patch.content);
+  }
   // removedPaths가 오면 patch.attachments에서 해당 항목 제거(이중 안전망)
   if (removedPaths.length > 0 && Array.isArray(patch.attachments)) {
     const rm = new Set(removedPaths);
