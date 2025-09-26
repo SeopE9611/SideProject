@@ -6,6 +6,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { logError, logInfo, reqMeta, startTimer } from '@/lib/logger';
 
 // supabase 상수/핼퍼
 const STORAGE_BUCKET = 'tennis-images';
@@ -122,14 +123,17 @@ const BoardRepo = {
   },
 };
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const stop = startTimer();
+  const meta = reqMeta(req);
   const db = await getDb();
   const { id } = await params;
 
   const post = await BoardRepo.findOneById(db, id);
-
-  if (!post) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
-
+  if (!post) {
+    logInfo({ msg: 'boards:get:not_found', status: 404, docId: id, durationMs: stop(), ...meta });
+    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
   // 권한 확인
   const token = (await cookies()).get('accessToken')?.value;
   const payload = token ? verifyAccessToken(token) : null;
@@ -149,32 +153,40 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     }
   }
 
-  return NextResponse.json(
-    { ok: true, item: post },
-    {
-      headers: {
-        // 항상 최신
-        'Cache-Control': 'no-store',
-      },
-    }
-  );
+  logInfo({ msg: 'boards:get:ok', status: 200, docId: id, durationMs: stop(), ...meta });
+  return NextResponse.json({ ok: true, item: post }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const stop = startTimer();
+  const meta = reqMeta(req);
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-
   const db = await getDb();
   const { id } = await params;
-  const post = await BoardRepo.findOneById(db, id);
 
-  if (!post) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
-  if (!canEdit(payload, post)) return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
+  const payload = token ? verifyAccessToken(token) : null;
+  if (!payload) {
+    logInfo({ msg: 'boards:patch:unauthorized', status: 401, docId: id, durationMs: stop(), ...meta });
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+
+  const post = await BoardRepo.findOneById(db, id);
+  if (!post) {
+    logInfo({ msg: 'boards:patch:not_found', status: 404, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
+    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
+  if (!canEdit(payload, post)) {
+    logInfo({ msg: 'boards:patch:forbidden', status: 403, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
+    return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
+  }
 
   const bodyRaw = await req.json();
+
   const parsed = updateSchema.safeParse(bodyRaw);
-  if (!parsed.success) return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
+  if (!parsed.success) {
+    logInfo({ msg: 'boards:patch:validation_failed', status: 400, docId: id, userId: String(payload.sub), durationMs: stop(), extra: { issues: parsed.error.issues }, ...meta });
+    return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
+  }
 
   // 클라이언트가 보낸 removedPaths(옵션) 분리
   const removedPaths: string[] = Array.isArray((bodyRaw as any).removedPaths) ? (bodyRaw as any).removedPaths.filter((p: any) => typeof p === 'string' && p) : [];
@@ -240,7 +252,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (delErr) {
       // 실패해도 DB 업데이트는 진행할지 여부는 정책 결정
-      console.warn('Supabase remove error:', delErr);
+      logError({ msg: 'boards:patch:storage_remove_failed', status: 200, docId: id, userId: String(payload.sub), durationMs: stop(), extra: { removedPaths }, error: delErr, ...meta });
       // 실패 시 요청 자체를 막으려면 아래 주석을 해제:
       // return NextResponse.json({ ok: false, error: 'storage_remove_failed' }, { status: 500 });
     }
@@ -289,14 +301,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   //    - 클라가 기준시각을 보냈으면 => 409(CONFLICT)
   //    - 아니면 => 404(기존 로직 유지)
   if (!r.matchedCount) {
-    if (clientSeenDate) {
-      return NextResponse.json({ ok: false, error: 'conflict_stale', message: '문서가 이미 다른 곳에서 수정되었습니다. 최신 내용을 확인한 뒤 다시 시도해주세요.' }, { status: 409 });
-    }
+    logInfo({ msg: 'boards:patch:not_found_on_update', status: 404, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
-  console.log('[PATCH boards: update matchedCount]', r.matchedCount);
-  console.log('PATCH payload', { attachments: normalizedAttachments, removedPaths });
+  // console.log('[PATCH boards: update matchedCount]', r.matchedCount);
+  // console.log('PATCH payload', { attachments: normalizedAttachments, removedPaths });
+  // logInfo({
+  //   msg: 'boards:patch:update_ok',
+  //   status: 200,
+  //   docId: id,
+  //   userId: String(payload.sub),
+  //   durationMs: stop(),
+  //   extra: { matchedCount: r.matchedCount, removedPathsCount: removedPaths.length, attachmentsCount: (normalizedAttachments || []).length },
+  //   ...meta,
+  // });
 
   // 5) 갱신된 문서를 다시 읽어와서 반환(+선택: 최신 updatedAt 헤더 제공)
   const updated = await BoardRepo.findOneById(db, String(post._id));
@@ -305,17 +324,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 // ===================================================================
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const stop = startTimer();
+  const meta = reqMeta(req);
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-
   const db = await getDb();
   const { id } = await params;
+
+  const payload = token ? verifyAccessToken(token) : null;
+  if (!payload) {
+    logInfo({ msg: 'boards:delete:unauthorized', status: 401, docId: id, durationMs: stop(), ...meta });
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+
   const post = await BoardRepo.findOneById(db, id);
-
-  if (!post) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
-
+  if (!post) {
+    logInfo({ msg: 'boards:delete:not_found', status: 404, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
+    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
   const isAdmin = payload.role === 'admin';
   const isOwner = String(payload.sub) === String(post.authorId);
   if (!isAdmin && !isOwner) return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
@@ -325,11 +351,12 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const paths = post.attachments.map((a: any) => a?.storagePath || toStoragePathFromPublicUrl(String(a?.url || ''))).filter((p: string) => !!p);
     if (paths.length > 0) {
       const { error: delErr } = await supabaseAdmin.storage.from(STORAGE_BUCKET).remove(paths);
-      if (delErr) console.warn('Supabase remove on DELETE error:', delErr);
+      if (delErr) logError({ msg: 'boards:delete:storage_remove_failed', status: 200, docId: id, userId: String(payload.sub), durationMs: stop(), error: delErr, extra: { paths }, ...meta });
     }
   }
 
   await BoardRepo.deleteOneById(db, id);
 
+  logInfo({ msg: 'boards:delete:ok', status: 200, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
   return NextResponse.json({ ok: true });
 }

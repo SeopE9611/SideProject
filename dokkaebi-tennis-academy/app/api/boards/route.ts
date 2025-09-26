@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { BoardPost, BoardType, QnaCategory } from '@/lib/types/board';
 import { ObjectId } from 'mongodb';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 
 // 관리자 확인 헬퍼
 async function mustAdmin() {
@@ -155,6 +156,8 @@ const isAllowedHttpUrl = (v: unknown): v is string => {
 
 /* ---------------------------------- GET ---------------------------------- */
 export async function GET(req: NextRequest) {
+  const stop = startTimer();
+  const meta = reqMeta(req);
   const db = await getDb();
   const url = new URL(req.url);
 
@@ -286,6 +289,15 @@ export async function GET(req: NextRequest) {
 
   const items = await col.aggregate(pipeline).toArray();
 
+  logInfo({
+    msg: 'boards:list:query',
+    status: 200,
+    durationMs: 0,
+    extra: { type: typeParam, category: rawCategory, productId, page, limit, q, field: fieldRaw },
+    ...meta,
+  });
+
+  logInfo({ msg: 'boards:list:ok', status: 200, durationMs: stop(), extra: { count: items.length, total }, ...meta });
   return NextResponse.json(
     { ok: true, items, total, page, limit },
     {
@@ -301,15 +313,21 @@ export async function GET(req: NextRequest) {
 
 /* ---------------------------------- POST --------------------------------- */
 export async function POST(req: NextRequest) {
+  const stop = startTimer();
+  const meta = reqMeta(req);
   // 인증
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
 
+  const payload = token ? verifyAccessToken(token) : null;
+  if (!payload) {
+    logInfo({ msg: 'boards:post:unauthorized', status: 401, durationMs: stop(), ...meta });
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
   // 입력 검증
   const bodyRaw = await req.json();
   const parsed = createSchema.safeParse(bodyRaw);
   if (!parsed.success) {
+    logInfo({ msg: 'boards:post:validation_failed', status: 400, durationMs: stop(), extra: { issues: parsed.error.issues }, ...meta });
     return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
   }
   const body = parsed.data;
@@ -375,5 +393,6 @@ export async function POST(req: NextRequest) {
   };
 
   const r = await db.collection('board_posts').insertOne(doc as any);
+  logInfo({ msg: 'boards:post:created', status: 200, durationMs: stop(), extra: { id: r.insertedId.toString() }, ...meta });
   return NextResponse.json({ ok: true, id: r.insertedId.toString() });
 }
