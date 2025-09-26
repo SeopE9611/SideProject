@@ -149,7 +149,15 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     }
   }
 
-  return NextResponse.json({ ok: true, item: post });
+  return NextResponse.json(
+    { ok: true, item: post },
+    {
+      headers: {
+        // 항상 최신
+        'Cache-Control': 'no-store',
+      },
+    }
+  );
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

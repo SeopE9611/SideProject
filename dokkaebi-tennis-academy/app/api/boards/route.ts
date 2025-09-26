@@ -286,7 +286,17 @@ export async function GET(req: NextRequest) {
 
   const items = await col.aggregate(pipeline).toArray();
 
-  return NextResponse.json({ ok: true, items, total, page, limit });
+  return NextResponse.json(
+    { ok: true, items, total, page, limit },
+    {
+      headers: {
+        // 브라우저 캐시는 짧게(or 없음), CDN은 30초, 그리고 SWR 60초
+        'Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
+        'CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
+        'Vercel-CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
+      },
+    }
+  );
 }
 
 /* ---------------------------------- POST --------------------------------- */
