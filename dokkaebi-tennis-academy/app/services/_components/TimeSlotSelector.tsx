@@ -42,7 +42,6 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, dis
     <div className="space-y-2" aria-busy={isLoading ? true : undefined}>
       {/* 에러 문구 */}
       {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
-
       <div className="relative">
         <div className={['grid grid-cols-3 gap-2 transition', isLoading ? 'pointer-events-none blur-[2px] opacity-60' : ''].join(' ')}>
           {slots.map((time) => {

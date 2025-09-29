@@ -35,6 +35,60 @@ export default function StringServiceApplyPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isMember, setIsMember] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+
+  // ===== 유틸 =====
+  const normalizePhone = (s: string) => (s || '').replace(/[^0-9]/g, '');
+  const isValidPhone = (s: string) => /^010\d{8}$/.test(normalizePhone(s));
+
+  // ===== 스텝별 검증 (silent=true면 토스트 없이 true/false만 반환) =====
+  const validateStep = (step: number, silent = false): boolean => {
+    const toast = (msg: string) => {
+      if (!silent) showErrorToast(msg);
+    };
+    const usingPackage = !!(packagePreview?.has && !formData.packageOptOut);
+
+    if (step === 1) {
+      if (!formData.name.trim()) return toast('신청인 이름을 입력해주세요.'), false;
+      if (!formData.email.trim()) return toast('이메일을 입력해주세요.'), false;
+      if (!formData.phone.trim()) return toast('연락처를 입력해주세요.'), false;
+      if (!isValidPhone(formData.phone)) return toast('연락처는 010으로 시작하는 11자리입니다.'), false;
+
+      if (!formData.shippingPostcode.trim()) return toast('우편번호를 입력해주세요.'), false;
+      if (!formData.shippingAddress.trim()) return toast('주소를 입력해주세요.'), false;
+
+      if (!formData.collectionMethod) return toast('수거 방식을 선택해주세요.'), false;
+      if (formData.collectionMethod === 'courier_pickup') {
+        if (!formData.pickupDate) return toast('수거 희망일을 입력해주세요.'), false;
+        if (!formData.pickupTime) return toast('수거 시간대를 입력해주세요.'), false;
+      }
+      return true;
+    }
+
+    if (step === 2) {
+      if (!formData.racketType.trim()) return toast('라켓 종류를 입력해주세요.'), false;
+      if (formData.stringTypes.length === 0) return toast('스트링 종류를 한 개 이상 선택해주세요.'), false;
+      if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) return toast('직접 입력한 스트링명을 적어주세요.'), false;
+
+      if (!formData.preferredDate) return toast('장착 희망일을 선택해주세요.'), false;
+      if (!formData.preferredTime) return toast('희망 시간대를 선택해주세요.'), false;
+      return true;
+    }
+
+    if (step === 3) {
+      if (!usingPackage) {
+        if (!formData.shippingBank) return toast('은행을 선택해주세요.'), false;
+        if (!formData.shippingDepositor.trim()) return toast('입금자명을 입력해주세요.'), false;
+      }
+      return true;
+    }
+
+    // step 4는 자유 입력
+    return true;
+  };
+
+  // “다음” 버튼 disabled 계산용
+  const isStepValid = (step: number) => validateStep(step, true);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -141,6 +195,14 @@ export default function StringServiceApplyPage() {
       setFormData((prev) => ({ ...prev, preferredTime: '' }));
     }
   }, [disabledTimes]);
+
+  // 날짜 바꾸면 시간 자동 초기화
+  useEffect(() => {
+    if (!formData.preferredDate) return;
+    // 날짜 변경 시 선택된 시간 초기화
+    setFormData((prev) => (prev.preferredTime ? { ...prev, preferredTime: '' } : prev));
+    // 캐시에 같은 날짜가 있어도 초기화는 고정 동작
+  }, [formData.preferredDate]);
 
   // 패키지 미리보기 상태 + 패스조회
   const [packagePreview, setPackagePreview] = useState<null | {
@@ -296,60 +358,22 @@ export default function StringServiceApplyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 마지막 단계(5단계)가 아니면 제출하지 않음
-    if (currentStep !== steps.length) {
-      return;
-    }
+    // 마지막 단계(4단계)가 아니면 제출하지 않음
+    if (currentStep !== steps.length) return;
 
-    if (!formData.name || !formData.phone || !formData.racketType || !formData.preferredDate) {
-      showErrorToast('필수 항목을 모두 입력해주세요.');
-      return;
-    }
-
-    // 스트링 종류 선택 여부 검증
-    if (formData.stringTypes.length === 0) {
-      showErrorToast('스트링 종류를 하나 이상 선택해주세요.');
-      return;
-    }
-
-    // 직접입력 선택 시 입력 필드 값도 필수
-    if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) {
-      showErrorToast('스트링 종류를 직접 입력해주세요.');
-      return;
-    }
-
-    // 입금자명 검증
-    if (!usingPackage) {
-      if (!formData.shippingBank) {
-        showErrorToast('은행을 선택해주세요.');
-        return;
-      }
-      if (!formData.shippingDepositor?.trim()) {
-        showErrorToast('입금자명을 입력해주세요.');
+    // 1~3 스텝 전부 재검증: 실패 스텝으로 이동 + 토스트
+    for (let s = 1; s <= 3; s++) {
+      if (!validateStep(s, false)) {
+        setCurrentStep(s);
         return;
       }
     }
 
-    // 연락처 정제
+    // 연락처 정제(전송용)
     const cleaned = formData.phone.replace(/[^0-9]/g, '');
-    if (!/^010\d{8}$/.test(cleaned)) {
-      showErrorToast('연락처는 010으로 시작하는 숫자 11자리로 입력해주세요. 예: 01012345678');
-      return;
-    }
-
-    // [ADD] 수거 방식 유효성
-    if (!formData.collectionMethod) {
-      showErrorToast('수거 방식을 선택해주세요.');
-      return;
-    }
-    if (formData.collectionMethod === 'courier_pickup') {
-      if (!formData.pickupDate || !formData.pickupTime) {
-        showErrorToast('기사 방문 수거 시 수거 희망일과 시간대를 입력해주세요.');
-        return;
-      }
-    }
 
     setIsSubmitting(true);
+    // 이하 payload 생성/POST 로직은 그대로 유지
 
     const payload = {
       name: formData.name,
@@ -407,6 +431,11 @@ export default function StringServiceApplyPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleNext = () => {
+    if (!validateStep(currentStep, false)) return; // 실패 시 토스트 + 스텝 유지
+    setCurrentStep((s) => Math.min(4, s + 1));
   };
 
   const steps = [
@@ -704,7 +733,12 @@ export default function StringServiceApplyPage() {
                   <TimeSlotSelector
                     selected={formData.preferredTime}
                     selectedDate={formData.preferredDate}
-                    onSelect={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))}
+                    onSelect={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        preferredTime: prev.preferredTime === value ? '' : value,
+                      }))
+                    }
                     disabledTimes={disabledTimes}
                     isLoading={slotsLoading && !hasCacheForDate}
                     errorMessage={slotsError}
@@ -957,12 +991,18 @@ export default function StringServiceApplyPage() {
                 {getCurrentStepContent()}
 
                 <div className="flex justify-between mt-12 pt-8 border-t">
+                  {/* 이전 버튼은 setCurrentStep 그대로 사용 */}
                   <Button type="button" variant="outline" onClick={() => setCurrentStep(Math.max(1, currentStep - 1))} disabled={currentStep === 1} className="px-8 py-3 hover:bg-gray-50 transition-colors duration-200">
                     이전
                   </Button>
 
                   {currentStep < 4 ? (
-                    <Button type="button" onClick={() => setCurrentStep(Math.min(4, currentStep + 1))} className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white transition-all duration-200">
+                    <Button
+                      type="button"
+                      onClick={handleNext} // ← 검증 포함
+                      disabled={!isStepValid(currentStep)} // ← 실시간 비활성
+                      className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white transition-all duration-200 disabled:opacity-50"
+                    >
                       다음
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
