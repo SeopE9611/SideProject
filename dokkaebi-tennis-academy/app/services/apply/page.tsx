@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,10 @@ import type { Order } from '@/lib/types/order';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { bankLabelMap } from '@/lib/constants';
 import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
-import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign, SlidersHorizontal, Settings2, Wrench, PanelTopClose, FormInput, ClipboardList, Ticket } from 'lucide-react';
+import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign, SlidersHorizontal, Settings2, Wrench, PanelTopClose, FormInput, ClipboardList, Ticket, Box, Truck, Store } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 declare global {
   interface Window {
@@ -54,7 +55,92 @@ export default function StringServiceApplyPage() {
     shippingRequest: '',
     shippingBank: '',
     packageOptOut: false,
+    collectionMethod: 'self_ship', // 'self_ship' | 'courier_pickup' | 'visit'
+    pickupDate: '',
+    pickupTime: '',
+    pickupNote: '',
   });
+
+  // 예약 슬롯 상태
+  const [disabledTimes, setDisabledTimes] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [slotsError, setSlotsError] = useState<string | null>(null);
+  const slotsCache = useRef<Map<string, string[]>>(new Map());
+
+  // 추가 상태: 캐시 히트 여부 (로딩 중 버튼 비활성화 여부 판단에 사용)
+  const [hasCacheForDate, setHasCacheForDate] = useState(false);
+
+  useEffect(() => {
+    const date = formData.preferredDate;
+    if (!date) {
+      setDisabledTimes([]);
+      setSlotsError(null);
+      setHasCacheForDate(false);
+      return;
+    }
+
+    // 캐시 확인: 있으면 즉시 사용(플리커 방지)
+    const cached = slotsCache.current.get(date);
+    const cacheHit = Array.isArray(cached);
+    setHasCacheForDate(!!cacheHit);
+    if (cacheHit) {
+      setDisabledTimes(cached!);
+      setSlotsError(null);
+      // 캐시가 있으면 버튼 비활성화 없이 조용히 갱신만 진행
+    }
+
+    const controller = new AbortController();
+
+    // 짧은 로딩은 숨기는 디바운스(120ms)
+    let loadingTimer: ReturnType<typeof setTimeout> | null = null;
+    if (!cacheHit) {
+      loadingTimer = setTimeout(() => setSlotsLoading(true), 120);
+    }
+
+    (async () => {
+      try {
+        setSlotsError(null);
+
+        const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=1`, { method: 'GET', signal: controller.signal });
+
+        if (!res.ok) {
+          if (!cacheHit) setDisabledTimes([]);
+          setSlotsError('예약 현황을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+          return;
+        }
+
+        const data = await res.json();
+        const times = Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
+
+        // 캐시에 저장 + 상태 갱신
+        slotsCache.current.set(date, times);
+        setDisabledTimes(times);
+
+        // 사용자가 로딩 중에 선택해둔 시간이 새로 "비활성"이 되면 해제
+        setFormData((prev) => (prev.preferredTime && times.includes(prev.preferredTime) ? { ...prev, preferredTime: '' } : prev));
+      } catch {
+        if (!cacheHit) {
+          setDisabledTimes([]);
+          setSlotsError('예약 현황을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.');
+        }
+      } finally {
+        if (loadingTimer) clearTimeout(loadingTimer);
+        setSlotsLoading(false);
+      }
+    })();
+
+    return () => {
+      if (loadingTimer) clearTimeout(loadingTimer);
+      controller.abort();
+    };
+  }, [formData.preferredDate]);
+
+  // 사용자가 이미 비활성화된 시간을 선택해 둔 경우 자동 해제
+  useEffect(() => {
+    if (formData.preferredTime && disabledTimes.includes(formData.preferredTime)) {
+      setFormData((prev) => ({ ...prev, preferredTime: '' }));
+    }
+  }, [disabledTimes]);
 
   // 패키지 미리보기 상태 + 패스조회
   const [packagePreview, setPackagePreview] = useState<null | {
@@ -251,6 +337,18 @@ export default function StringServiceApplyPage() {
       return;
     }
 
+    // [ADD] 수거 방식 유효성
+    if (!formData.collectionMethod) {
+      showErrorToast('수거 방식을 선택해주세요.');
+      return;
+    }
+    if (formData.collectionMethod === 'courier_pickup') {
+      if (!formData.pickupDate || !formData.pickupTime) {
+        showErrorToast('기사 방문 수거 시 수거 희망일과 시간대를 입력해주세요.');
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     const payload = {
@@ -275,6 +373,15 @@ export default function StringServiceApplyPage() {
         depositor: usingPackage ? undefined : formData.shippingDepositor,
         bank: usingPackage ? undefined : formData.shippingBank,
         deliveryRequest: formData.shippingRequest,
+        collectionMethod: formData.collectionMethod, // 'self_ship' | 'courier_pickup' | 'visit'
+        pickup:
+          formData.collectionMethod === 'courier_pickup'
+            ? {
+                date: formData.pickupDate,
+                time: formData.pickupTime,
+                note: formData.pickupNote || undefined,
+              }
+            : undefined,
       },
     };
 
@@ -423,6 +530,68 @@ export default function StringServiceApplyPage() {
                   placeholder="상세 주소를 입력해주세요"
                 />
               </div>
+              {/* === 수거 방식 선택 === */}
+              <div className="space-y-3 border rounded-lg p-4 bg-muted/40">
+                <Label className="text-sm font-medium">
+                  수거 방식 <span className="text-red-500">*</span>
+                </Label>
+
+                <RadioGroup value={formData.collectionMethod} onValueChange={(v) => setFormData((prev) => ({ ...prev, collectionMethod: v as any }))} className="gap-3">
+                  {/* 자가 발송 */}
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem id="cm-self" value="self_ship" />
+                    <Label htmlFor="cm-self" className="flex items-center gap-2 cursor-pointer">
+                      <Box className="h-4 w-4" />
+                      자가 발송 (편의점/우체국 등)
+                    </Label>
+                  </div>
+
+                  {/* 기사 방문 수거 */}
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem id="cm-pickup" value="courier_pickup" />
+                    <Label htmlFor="cm-pickup" className="flex items-center gap-2 cursor-pointer">
+                      <Truck className="h-4 w-4" />
+                      택배 기사 방문 수거 <span className="text-xs text-muted-foreground">(선택 시 +3,000원 / 후정산)</span>
+                    </Label>
+                  </div>
+
+                  {/* 매장 방문 접수 */}
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem id="cm-visit" value="visit" />
+                    <Label htmlFor="cm-visit" className="flex items-center gap-2 cursor-pointer">
+                      <Store className="h-4 w-4" />
+                      매장 방문 접수
+                    </Label>
+                  </div>
+                </RadioGroup>
+
+                {/* 기사 방문 수거 선택 시에만 추가 입력 노출 */}
+                {formData.collectionMethod === 'courier_pickup' && (
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="pickupDate" className="text-sm font-medium">
+                        수거 희망일
+                      </Label>
+                      <Input id="pickupDate" name="pickupDate" type="date" value={formData.pickupDate} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="pickupTime" className="text-sm font-medium">
+                        수거 시간대
+                      </Label>
+                      <Input id="pickupTime" name="pickupTime" placeholder="예: 10:00~13:00" value={formData.pickupTime} onChange={handleInputChange} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="pickupNote" className="text-sm font-medium">
+                        기사 메모(선택)
+                      </Label>
+                      <Input id="pickupNote" name="pickupNote" placeholder="공동현관 비번/경비실 맡김 등" value={formData.pickupNote} onChange={handleInputChange} />
+                    </div>
+                  </div>
+                )}
+
+                {/* 비용 안내(표시용) */}
+                {formData.collectionMethod === 'courier_pickup' && <p className="text-xs text-muted-foreground">※ 기사 방문 수거 선택 시 수거비 +3,000원이 발생합니다(후정산 / 결제 합산은 관리자 확정 시 반영).</p>}
+              </div>
             </div>
 
             {(orderId || isMember) && (
@@ -529,8 +698,17 @@ export default function StringServiceApplyPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">희망 시간대</Label>
-                  <TimeSlotSelector selected={formData.preferredTime} selectedDate={formData.preferredDate} onSelect={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))} />
+                  <Label className="text-sm font-medium">
+                    희망 시간대<span className="text-red-500">*</span>
+                  </Label>
+                  <TimeSlotSelector
+                    selected={formData.preferredTime}
+                    selectedDate={formData.preferredDate}
+                    onSelect={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))}
+                    disabledTimes={disabledTimes}
+                    isLoading={slotsLoading && !hasCacheForDate}
+                    errorMessage={slotsError}
+                  />
                 </div>
               </div>
             </div>

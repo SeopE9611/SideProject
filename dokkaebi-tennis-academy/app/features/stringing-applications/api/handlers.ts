@@ -473,42 +473,49 @@ export async function handleGetApplicationList() {
 }
 
 // ==== 특정 날짜(preferredDate)에 예약된 시간대(preferredTime) 목록을 반환 ====
+
+// string | null | undefined 모두 허용하는 타입가드 (TS 깔끔)
+const isValidDate = (s: string | null | undefined): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+
 export async function handleGetReservedTimeSlots(req: Request) {
-  // 요청 URL에서 쿼리 파라미터(searchParams)를 추출함
-  const { searchParams } = new URL(req.url);
-
-  // 사용자가 요청한 날짜를 가져옴 (예: 2024-06-20)
-  const date = searchParams.get('date');
-
-  // 날짜가 없을 경우 400 Bad Request 에러 응답
-  if (!date) {
-    return NextResponse.json({ error: '날짜가 누락되었습니다.' }, { status: 400 });
-  }
-
   try {
-    // MongoDB 클라이언트 연결
-    const client = await clientPromise;
-    const db = client.db();
+    const { searchParams } = new URL(req.url);
+    const date = searchParams.get('date'); // string | null
+    const capParam = searchParams.get('cap'); // string | null
+    const capacity = capParam ? Number(capParam) : 1;
 
-    // 'applications' 컬렉션 접근 (스트링 장착 신청서가 저장된 곳)
-    const stringing_applications = db.collection('stringing_applications');
+    if (!isValidDate(date) || !Number.isFinite(capacity) || capacity <= 0) {
+      return NextResponse.json({ error: 'Invalid date or capacity.' }, { status: 400 });
+    }
 
-    // 해당 날짜(date)에 접수된 신청서 중 preferredTime(희망 시간대) 필드만 조회
-    const results = await stringing_applications
-      .find({ 'stringDetails.preferredDate': date }) // preferredDate가 같은 문서 필터
-      .project({ 'stringDetails.preferredTime': 1, _id: 0 }) // preferredTime만 가져오고 _id는 제외
-      .toArray(); // 커서를 배열로 변환
+    const db = (await clientPromise).db();
 
-    // preferredTime 필드만 뽑아서 배열로 정리 (null 등 falsy 값은 필터링)
-    // const reservedSlots = results.map((doc) => doc.preferredTime).filter(Boolean);
-    const reservedSlots = results.map((doc) => doc.stringDetails?.preferredTime).filter(Boolean);
+    // 점유로 보지 않을 상태 (프로젝트 내 상태에 '취소' 존재 확인됨)
+    const EXCLUDE_STATUSES = ['취소'];
 
-    // 예약된 시간대 목록을 JSON으로 응답
-    return NextResponse.json({ reservedTimes: reservedSlots });
+    const rows = await db
+      .collection('stringing_applications')
+      .aggregate([
+        {
+          $match: {
+            'stringDetails.preferredDate': date,
+            ...(EXCLUDE_STATUSES.length ? { status: { $nin: EXCLUDE_STATUSES } } : {}),
+            'stringDetails.preferredTime': { $type: 'string', $ne: '' },
+          },
+        },
+        { $group: { _id: '$stringDetails.preferredTime', count: { $sum: 1 } } },
+        { $match: { count: { $gte: capacity } } }, // capacity 이상 찬 시간만 비활성
+        { $project: { _id: 0, time: '$_id' } },
+        { $sort: { time: 1 } },
+      ])
+      .toArray();
+
+    const reservedTimes = rows.map((r) => String(r.time).trim()).filter(Boolean);
+
+    return NextResponse.json({ reservedTimes, capacity }, { status: 200 });
   } catch (err) {
-    // 서버 오류가 발생하면 로그를 출력하고 500 Internal Server Error 응답
-    console.error('[GET /reserved-slots] Error:', err);
-    return NextResponse.json({ error: '서버 오류' }, { status: 500 });
+    console.error('[GET /applications/stringing/reserved] error:', err);
+    return NextResponse.json({ error: 'Failed to load reserved slots.' }, { status: 500 });
   }
 }
 
