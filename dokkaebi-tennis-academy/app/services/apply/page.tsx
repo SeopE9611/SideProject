@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, Arrow
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import PriceSummaryCard from '@/app/services/_components/PriceSummaryCard';
 
 declare global {
   interface Window {
@@ -35,10 +36,24 @@ export default function StringServiceApplyPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isMember, setIsMember] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isUserLoading, setIsUserLoading] = useState(false);
 
   // ===== 유틸 =====
   const normalizePhone = (s: string) => (s || '').replace(/[^0-9]/g, '');
   const isValidPhone = (s: string) => /^010\d{8}$/.test(normalizePhone(s));
+  const stepsRef = useRef<HTMLDivElement | null>(null);
+  const [stickyTop, setStickyTop] = useState<number>(24);
+
+  useEffect(() => {
+    const calc = () => {
+      const h = stepsRef.current?.offsetHeight ?? 0;
+      // Progress Steps 높이 + 여백(24px)
+      setStickyTop(h + 24);
+    };
+    calc();
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, []);
 
   // ===== 스텝별 검증 (silent=true면 토스트 없이 true/false만 반환) =====
   const validateStep = (step: number, silent = false): boolean => {
@@ -246,6 +261,31 @@ export default function StringServiceApplyPage() {
   // 가격 상태 추가 및 표시
   const [price, setPrice] = useState<number>(0);
 
+  // ===== 가격 표시 계산(표시 전용) =====
+  const PICKUP_FEE = 3000; // 기사 방문 수거 시 후정산 안내용
+
+  const priceView = useMemo(() => {
+    // 패키지 적용 여부(프로젝트 정책에 맞게 보던 값 유지)
+    const usingPackage = !!(packagePreview?.has && !formData.packageOptOut);
+
+    // 교체비(표시용): 커스텀/보유 스트링(미포함) 15,000, 상품 선택(포함) 35,000
+    // 서버의 lib/stringing-prices.ts와 동일하게 맞춤
+    let base = 0;
+    if (formData.stringTypes.includes('custom')) base = 15000;
+    else if (formData.stringTypes.length > 0) base = 35000;
+
+    // 수거비(표시용)
+    const pickupFee = formData.collectionMethod === 'courier_pickup' ? PICKUP_FEE : 0;
+
+    // 총액(표시용): 패키지 적용 시 교체비 0 (수거비는 후정산 안내로 표시만)
+    const total = usingPackage ? 0 : base + pickupFee;
+
+    return { usingPackage, base, pickupFee, total };
+  }, [formData.stringTypes, formData.collectionMethod, formData.packageOptOut, packagePreview]);
+
+  // 통화 포메터
+  const won = (n: number) => n.toLocaleString('ko-KR') + '원';
+
   // 체크박스 변화 콜백
   const handleStringTypesChange = (ids: string[]) => setFormData((prev) => ({ ...prev, stringTypes: ids }));
   const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
@@ -270,6 +310,7 @@ export default function StringServiceApplyPage() {
     if (orderId) return;
 
     const checkUser = async () => {
+      setIsUserLoading(true);
       try {
         const res = await fetch('/api/users/me', { credentials: 'include' });
         const user = await res.json();
@@ -288,10 +329,13 @@ export default function StringServiceApplyPage() {
             shippingAddressDetail: user.addressDetail ?? '',
             shippingPostcode: user.postalCode ?? '',
           }));
+        } else {
+          setIsMember(false);
         }
       } catch {
-        // 비회원인 경우 아무 처리하지 않음
         setIsMember(false);
+      } finally {
+        setIsUserLoading(false);
       }
     };
 
@@ -303,6 +347,7 @@ export default function StringServiceApplyPage() {
     if (!orderId) return;
 
     const fetchOrder = async () => {
+      setIsUserLoading(true);
       try {
         const orderRes = await fetch(`/api/orders/${orderId}`, { credentials: 'include' });
         const orderData = await orderRes.json();
@@ -329,6 +374,8 @@ export default function StringServiceApplyPage() {
         }));
       } catch (err) {
         console.error('정보 fetch 실패:', err);
+      } finally {
+        setIsUserLoading(false);
       }
     };
 
@@ -449,7 +496,7 @@ export default function StringServiceApplyPage() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
+          <div className="relative space-y-6">
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-4">
                 <User className="h-8 w-8 text-white" />
@@ -559,42 +606,63 @@ export default function StringServiceApplyPage() {
                   placeholder="상세 주소를 입력해주세요"
                 />
               </div>
-              {/* === 수거 방식 선택 === */}
-              <div className="space-y-3 border rounded-lg p-4 bg-muted/40">
+              {/* === 수거 방식 선택 (카드 버튼형) === */}
+              <div className="space-y-3">
                 <Label className="text-sm font-medium">
                   수거 방식 <span className="text-red-500">*</span>
                 </Label>
 
-                <RadioGroup value={formData.collectionMethod} onValueChange={(v) => setFormData((prev) => ({ ...prev, collectionMethod: v as any }))} className="gap-3">
+                <RadioGroup value={formData.collectionMethod} onValueChange={(v) => setFormData((prev) => ({ ...prev, collectionMethod: v as any }))} className="grid gap-3 md:grid-cols-3">
                   {/* 자가 발송 */}
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem id="cm-self" value="self_ship" />
-                    <Label htmlFor="cm-self" className="flex items-center gap-2 cursor-pointer">
-                      <Box className="h-4 w-4" />
-                      자가 발송 (편의점/우체국 등)
+                  <div>
+                    <RadioGroupItem id="cm-self" value="self_ship" className="peer sr-only" />
+                    <Label
+                      htmlFor="cm-self"
+                      className="block cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:bg-slate-50 transition
+                   peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Box className="h-4 w-4" />
+                        <span className="font-medium">자가 발송</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">편의점/우체국 등</p>
                     </Label>
                   </div>
 
                   {/* 기사 방문 수거 */}
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem id="cm-pickup" value="courier_pickup" />
-                    <Label htmlFor="cm-pickup" className="flex items-center gap-2 cursor-pointer">
-                      <Truck className="h-4 w-4" />
-                      택배 기사 방문 수거 <span className="text-xs text-muted-foreground">(선택 시 +3,000원 / 후정산)</span>
+                  <div>
+                    <RadioGroupItem id="cm-pickup" value="courier_pickup" className="peer sr-only" />
+                    <Label
+                      htmlFor="cm-pickup"
+                      className="block cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:bg-slate-50 transition
+                   peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-4 w-4" />
+                        <span className="font-medium">택배 기사 방문 수거</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">선택 시 +3,000원 (후정산)</p>
                     </Label>
                   </div>
 
                   {/* 매장 방문 접수 */}
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem id="cm-visit" value="visit" />
-                    <Label htmlFor="cm-visit" className="flex items-center gap-2 cursor-pointer">
-                      <Store className="h-4 w-4" />
-                      매장 방문 접수
+                  <div>
+                    <RadioGroupItem id="cm-visit" value="visit" className="peer sr-only" />
+                    <Label
+                      htmlFor="cm-visit"
+                      className="block cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:bg-slate-50 transition
+                   peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Store className="h-4 w-4" />
+                        <span className="font-medium">매장 방문 접수</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">방문 가능 시간대만 선택</p>
                     </Label>
                   </div>
                 </RadioGroup>
 
-                {/* 기사 방문 수거 선택 시에만 추가 입력 노출 */}
+                {/* 기사 방문 수거 선택 시 추가 입력 */}
                 {formData.collectionMethod === 'courier_pickup' && (
                   <div className="grid gap-3 md:grid-cols-3">
                     <div className="space-y-1">
@@ -618,11 +686,18 @@ export default function StringServiceApplyPage() {
                   </div>
                 )}
 
-                {/* 비용 안내(표시용) */}
                 {formData.collectionMethod === 'courier_pickup' && <p className="text-xs text-muted-foreground">※ 기사 방문 수거 선택 시 수거비 +3,000원이 발생합니다(후정산 / 결제 합산은 관리자 확정 시 반영).</p>}
               </div>
             </div>
-
+            {/* 로딩 오버레이 */}
+            {isUserLoading && (
+              <div className="absolute inset-0 z-10 rounded-2xl bg-white/45 dark:bg-slate-900/40 backdrop-blur-[2px] ring-1 ring-inset ring-slate-200/60 grid place-content-center">
+                <div className="flex items-center gap-3 text-slate-700">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-400 border-t-transparent" />
+                  <span className="text-sm">회원 정보 불러오는 중…</span>
+                </div>
+              </div>
+            )}
             {(orderId || isMember) && (
               <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
@@ -949,7 +1024,7 @@ export default function StringServiceApplyPage() {
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 py-16">
-        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0 bg-black/20" />
         <div className="relative container mx-auto px-4 text-center text-white">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-6">
             <Wrench className="h-10 w-10" />
@@ -959,93 +1034,142 @@ export default function StringServiceApplyPage() {
         </div>
       </div>
 
+      {/* Main */}
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          {/* Progress Steps */}
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-8">
-              {steps.map((step, index) => (
-                <div key={step.id} className="flex items-center">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${
-                        currentStep >= step.id ? 'bg-gradient-to-r from-blue-500 to-purple-600 border-transparent text-white' : 'border-gray-300 text-gray-400 bg-white'
-                      }`}
-                    >
-                      <step.icon className="h-6 w-6" />
+        <div className="mx-auto max-w-7xl">
+          {/* Progress Steps: 폼 폭(800px)에 맞춰 중앙 정렬 */}
+          <div ref={stepsRef} className="mb-8">
+            <div className="max-w-[800px] mx-auto">
+              <div className="flex items-center justify-between mb-8">
+                {steps.map((step, index) => (
+                  <div key={step.id} className="flex items-center">
+                    <div className="flex flex-col items-center">
+                      <div
+                        className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${
+                          currentStep >= step.id ? 'bg-gradient-to-r from-blue-500 to-purple-600 border-transparent text-white' : 'border-gray-300 text-gray-400 bg-white'
+                        }`}
+                      >
+                        <step.icon className="h-6 w-6" />
+                      </div>
+                      <div className="mt-2 text-center">
+                        <p className={`text-sm font-medium ${currentStep >= step.id ? 'text-blue-600' : 'text-gray-400'}`}>{step.title}</p>
+                        <p className="text-xs text-gray-500 mt-1 hidden sm:block">{step.description}</p>
+                      </div>
                     </div>
-                    <div className="mt-2 text-center">
-                      <p className={`text-sm font-medium ${currentStep >= step.id ? 'text-blue-600' : 'text-gray-400'}`}>{step.title}</p>
-                      <p className="text-xs text-gray-500 mt-1 hidden sm:block">{step.description}</p>
-                    </div>
+                    {index < steps.length - 1 && <div className={`flex-1 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.id ? 'bg-gradient-to-r from-blue-500 to-purple-600' : 'bg-gray-300'}`} />}
                   </div>
-                  {index < steps.length - 1 && <div className={`flex-1 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.id ? 'bg-gradient-to-r from-blue-500 to-purple-600' : 'bg-gray-300'}`} />}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
-          <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl">
-            <CardContent className="p-8">
-              <form onSubmit={handleSubmit}>
-                {getCurrentStepContent()}
+          {/* === 폼만 '진짜' 중앙, 요금카드는 오른쪽에 겹쳐 배치 === */}
+          <div className="relative">
+            {/* 중앙 메인 폼 */}
+            <div className="mx-auto w-full md:w-[800px]">
+              <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl">
+                <CardContent className="p-8">
+                  <form onSubmit={handleSubmit}>
+                    {getCurrentStepContent()}
 
-                <div className="flex justify-between mt-12 pt-8 border-t">
-                  {/* 이전 버튼은 setCurrentStep 그대로 사용 */}
-                  <Button type="button" variant="outline" onClick={() => setCurrentStep(Math.max(1, currentStep - 1))} disabled={currentStep === 1} className="px-8 py-3 hover:bg-gray-50 transition-colors duration-200">
-                    이전
-                  </Button>
+                    {/* 모바일/태블릿: 인라인 요금 요약 (xl 미만에서만 노출) */}
+                    <div className="mt-8 xl:hidden">
+                      <PriceSummaryCard
+                        preferredDate={formData.preferredDate}
+                        preferredTime={formData.preferredTime}
+                        collectionMethod={formData.collectionMethod as any}
+                        stringTypes={formData.stringTypes}
+                        usingPackage={priceView.usingPackage}
+                        base={priceView.base}
+                        pickupFee={priceView.pickupFee}
+                        total={priceView.total}
+                      />
+                    </div>
 
-                  {currentStep < 4 ? (
-                    <Button
-                      type="button"
-                      onClick={handleNext} // ← 검증 포함
-                      disabled={!isStepValid(currentStep)} // ← 실시간 비활성
-                      className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white transition-all duration-200 disabled:opacity-50"
-                    >
-                      다음
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
-                      className="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white transition-all duration-200 disabled:opacity-50"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          신청서 제출 중...
-                        </>
+                    {/* 하단 네비게이션 */}
+                    <div className="flex justify-between mt-12 pt-8 border-t">
+                      <Button type="button" variant="outline" onClick={() => setCurrentStep(Math.max(1, currentStep - 1))} disabled={currentStep === 1} className="px-8 py-3 hover:bg-gray-50 transition-colors duration-200">
+                        이전
+                      </Button>
+
+                      {currentStep < 4 ? (
+                        <Button
+                          type="button"
+                          onClick={handleNext}
+                          disabled={!isStepValid(currentStep)}
+                          className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white transition-all duration-200 disabled:opacity-50"
+                        >
+                          다음
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
                       ) : (
-                        <>
-                          신청서 제출하기
-                          <CheckCircle className="ml-2 h-4 w-4" />
-                        </>
+                        <Button
+                          type="button"
+                          disabled={isSubmitting}
+                          onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
+                          className="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white transition-all duration-200 disabled:opacity-50"
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                              신청서 제출 중...
+                            </>
+                          ) : (
+                            <>
+                              신청서 제출하기
+                              <CheckCircle className="ml-2 h-4 w-4" />
+                            </>
+                          )}
+                        </Button>
                       )}
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
 
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
-              <Shield className="h-8 w-8 text-blue-500 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">정품 보장</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">100% 정품 스트링만 사용합니다</p>
+              {/* 하단 3개 카드(소개) */}
+              <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
+                  <Shield className="h-8 w-8 text-blue-500 mx-auto mb-3" />
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">정품 보장</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">100% 정품 스트링만 사용합니다</p>
+                </div>
+                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
+                  <Clock className="h-8 w-8 text-green-500 mx-auto mb-3" />
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">당일 완료</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">빠르고 정확한 장착 서비스</p>
+                </div>
+                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
+                  <Award className="h-8 w-8 text-purple-500 mx-auto mb-3" />
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">전문가 상담</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">15년 경력의 전문가가 직접</p>
+                </div>
+              </div>
             </div>
-            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
-              <Clock className="h-8 w-8 text-green-500 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">당일 완료</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">빠르고 정확한 장착 서비스</p>
-            </div>
-            <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
-              <Award className="h-8 w-8 text-purple-500 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">전문가 상담</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">15년 경력의 전문가가 직접</p>
+
+            <div
+              className="hidden xl:block"
+              style={{
+                position: 'absolute',
+                width: '320px',
+                left: 'calc(50% + 400px + 24px)',
+                top: 0,
+                height: '100%',
+                pointerEvents: 'none',
+              }}
+            >
+              <div className="sticky pointer-events-auto" style={{ top: stickyTop }}>
+                <PriceSummaryCard
+                  preferredDate={formData.preferredDate}
+                  preferredTime={formData.preferredTime}
+                  collectionMethod={formData.collectionMethod as any}
+                  stringTypes={formData.stringTypes}
+                  usingPackage={priceView.usingPackage}
+                  base={priceView.base}
+                  pickupFee={priceView.pickupFee}
+                  total={priceView.total}
+                />
+              </div>
             </div>
           </div>
         </div>
