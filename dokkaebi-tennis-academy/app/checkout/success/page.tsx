@@ -12,6 +12,7 @@ import ContinueShoppingButton from '@/app/checkout/_components/ContinueShoppingB
 import { bankLabelMap } from '@/lib/constants';
 import BackButtonGuard from '@/app/checkout/success/_components/BackButtonGuard';
 import ClearCartOnMount from '@/app/checkout/success/_components/ClearCartOnMount';
+import SetGuestOrderToken from '@/app/checkout/success/_components/SetGuestOrderToken';
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
   const orderId = await searchParams.orderId;
@@ -34,6 +35,8 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       isLoggedIn = true;
     } catch {}
   }
+
+  const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
 
   // 안전한 가격 표시 함수
   const formatPrice = (price: any): string => {
@@ -62,6 +65,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
     <>
       <BackButtonGuard />
       <ClearCartOnMount />
+      <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
       <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white">

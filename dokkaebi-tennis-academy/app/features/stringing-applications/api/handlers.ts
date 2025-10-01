@@ -3,7 +3,7 @@ import clientPromise, { getDb } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { HistoryItem, HistoryRecord } from '@/lib/types/stringing-application-db';
 import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { OrderItem } from '@/lib/types/order';
 import { normalizeEmail } from '@/lib/claims';
@@ -666,5 +666,110 @@ export async function handleSubmitStringingApplication(req: Request) {
   } catch (e) {
     console.error('[POST stringing_application]', e);
     return NextResponse.json({ message: '서버 오류 발생' }, { status: 500 });
+  }
+}
+
+// ================= DRAFT(초안) 생성/재사용 =================
+// 목적: /services/apply?orderId=... 진입 시, 해당 주문에 진행 중 신청서가 "항상 1개" 존재하도록 보장
+// 불변식: 같은 orderId에 status ∈ { 'draft', 'received' } 문서는 동시에 1개만
+export async function handleCreateOrGetDraftApplication(req: Request) {
+  try {
+    const db = await getDb();
+    const jar = await cookies();
+
+    // 1) 로그인 사용자/관리자 페이로드
+    const at = jar.get('accessToken')?.value ?? null;
+    const payload = at ? verifyAccessToken(at) : null;
+    const userId = payload?.sub ?? null;
+    const isAdmin = payload?.role === 'admin';
+
+    // 2) 요청 바디에서 orderId 먼저 파싱 (order를 조회하려면 orderId가 필요)
+    const body = await req.json().catch(() => null);
+    const orderId = body?.orderId as string | undefined;
+    if (!orderId || !ObjectId.isValid(orderId)) {
+      return new Response(JSON.stringify({ message: '유효하지 않은 orderId' }), { status: 400 });
+    }
+
+    // 3) 주문 조회 (이후 권한 판단에서 'order'를 사용하므로 반드시 먼저 조회)
+    const ordersCol = db.collection('orders');
+    const order = await ordersCol.findOne({ _id: new ObjectId(orderId) });
+    if (!order) {
+      return new Response(JSON.stringify({ message: '주문을 찾을 수 없습니다.' }), { status: 404 });
+    }
+
+    // 4) 게스트용 쿠키 토큰(있을 수도/없을 수도) → order 조회 후에 일치 여부 판단
+    const oax = jar.get('orderAccessToken')?.value ?? null;
+    const guestClaims = oax ? verifyOrderAccessToken(oax) : null;
+
+    // 5) 권한: (주문 소유자) or (관리자) or (게스트 토큰의 orderId 일치)
+    const isOwner = !!(order?.userId && String(order.userId) === String(userId));
+    const guestOwnsOrder = !!(guestClaims && guestClaims.orderId === String(order._id));
+
+    if (!isOwner && !isAdmin && !guestOwnsOrder) {
+      return new Response(JSON.stringify({ message: 'forbidden' }), { status: 403 });
+    }
+
+    // 6) 서비스 대상 확인: withStringService / isStringServiceApplied 둘 다 허용
+    const withString = Boolean(order?.shippingInfo?.withStringService) || Boolean(order?.isStringServiceApplied);
+    if (!withString) {
+      return new Response(JSON.stringify({ message: '스트링 서비스 대상 주문이 아닙니다.' }), { status: 400 });
+    }
+
+    const appsCol = db.collection('stringing_applications');
+
+    // 7) 이미 진행중(draft/received) 있으면 재사용
+    const existing = await appsCol.findOne({
+      orderId: String(order._id),
+      status: { $in: ['draft', 'received'] },
+    });
+
+    const link = `/services/apply?orderId=${orderId}`;
+    if (existing) {
+      return new Response(JSON.stringify({ applicationId: String(existing._id), orderId, link, reused: true }), { status: 200 });
+    }
+
+    // 8) 없으면 초안 생성
+    const now = new Date();
+    const doc = {
+      userId: userId ?? null,
+      orderId: String(order._id),
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+
+      racketType: null,
+      preferredDate: null,
+      preferredTime: null,
+      requirements: '',
+
+      shippingInfo: {
+        name: order?.shippingInfo?.name ?? order?.customer?.name ?? '',
+        phone: order?.shippingInfo?.phone ?? order?.customer?.phone ?? '',
+        email: order?.customer?.email ?? undefined,
+        address: order?.shippingInfo?.address ?? '',
+        addressDetail: order?.shippingInfo?.addressDetail ?? '',
+        postalCode: order?.shippingInfo?.postalCode ?? '',
+        depositor: order?.shippingInfo?.depositor ?? null,
+        bank: order?.paymentInfo?.bank ?? null,
+        deliveryRequest: order?.shippingInfo?.deliveryRequest ?? '',
+      },
+
+      collectionMethod: 'self_ship',
+      pickup: null,
+
+      stringItems: [],
+      totalPrice: 0,
+
+      usedPackage: { passId: undefined, consumed: false },
+
+      status: 'draft',
+      history: [{ status: 'draft', date: now.toISOString(), description: '주문 기반 자동 초안 생성' }],
+    };
+
+    const result = await appsCol.insertOne(doc);
+
+    return new Response(JSON.stringify({ applicationId: String(result.insertedId), orderId, link, reused: false }), { status: 201 });
+  } catch (e) {
+    console.error('[stringing drafts] error:', e);
+    return new Response(JSON.stringify({ message: '서버 오류' }), { status: 500 });
   }
 }

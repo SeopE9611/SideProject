@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 
 // .env.local에 정의된 Access Token 서명용 시크릿 키를 불러온다.
 // 이 키는 서버만 알고 있어야 하며, Access Token의 위조 여부를 검증하는 데 사용된다.
@@ -29,6 +29,32 @@ export function verifyAccessToken(token: string) {
     return jwt.verify(token, ACCESS_TOKEN_SECRET) as jwt.JwtPayload;
   } catch (err) {
     // 만료됐거나 위조된 경우 null을 반환한다.
+    return null;
+  }
+}
+
+//  주문 접근 전용 토큰 발급 (게스트용)
+export function signOrderAccessToken(
+  payload: { orderId: string; emailHash?: string },
+  // 7일(초)로 기본값 설정
+  expiresIn: SignOptions['expiresIn'] = 60 * 60 * 24 * 7
+) {
+  const secret: Secret = process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, secret, options);
+}
+
+// 주문 접근 전용 토큰 검증 (게스트용)
+export function verifyOrderAccessToken(token: string) {
+  try {
+    const secret: Secret = process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
+    return jwt.verify(token, secret) as {
+      orderId: string;
+      emailHash?: string;
+      iat: number;
+      exp: number;
+    };
+  } catch {
     return null;
   }
 }

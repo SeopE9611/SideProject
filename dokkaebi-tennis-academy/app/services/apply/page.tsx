@@ -55,6 +55,29 @@ export default function StringServiceApplyPage() {
     return () => window.removeEventListener('resize', calc);
   }, []);
 
+  // 초안 보장: 주문 기반 진입 시, 진행 중 신청서(draft/received)를 "항상" 1개로 맞춘다.
+  // - 이미 있으면 재사용(reused=true), 없으면 자동 생성
+  // - UI에는 영향 없음(프리필/흐름 그대로), 서버/DB 일관성만 강화
+  useEffect(() => {
+    if (!orderId) return;
+
+    (async () => {
+      try {
+        await fetch('/api/applications/stringing/drafts', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId }),
+        });
+        // 응답 데이터(applicationId, reused 등)는 현재 화면 흐름에 직접 필요 없으므로
+        // 별도 상태 저장 없이 "초안 존재"만 보장. (멱등: 여러 번 호출돼도 중복 생성 없음)
+      } catch (err) {
+        // 초안 생성 실패가 화면 진행을 막지는 않도록 '조용히' 로깅만
+        console.error('[draft bootstrap] failed:', err);
+      }
+    })();
+  }, [orderId]);
+
   // ===== 스텝별 검증 (silent=true면 토스트 없이 true/false만 반환) =====
   const validateStep = (step: number, silent = false): boolean => {
     const toast = (msg: string) => {
