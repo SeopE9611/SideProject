@@ -9,6 +9,10 @@ import { OrderItem } from '@/lib/types/order';
 import { normalizeEmail } from '@/lib/claims';
 import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
 
+// 진행(점유)으로 간주하는 상태들 — 프로젝트 정책에 맞게 조정 가능
+// '교체완료'는 점유 해제로 본다는 가정(완료 후 새 신청 허용).
+export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
+
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
@@ -634,32 +638,41 @@ export async function handleSubmitStringingApplication(req: Request) {
     // ====== [패키지 자동 차감] 끝 ======
 
     // 신청서 저장
-    const result = await db.collection('stringing_applications').insertOne({
-      _id: applicationId,
-      orderId: new ObjectId(orderId),
-      name,
-      phone,
-      email,
-      contactEmail, //  자동 귀속용 정규화 이메일
-      contactPhone, // 숫자만 저장한 전화번호
-      shippingInfo,
-      stringDetails,
-      // 금액
-      totalPrice, // 실제 청구 교체비(패키지면 0)
-      serviceFeeBefore, // 패키지 미적용 시 교체비 합계(기록 용도)
-      // 패키지 적용 정보
-      packageApplied,
-      packagePassId,
-      packageRedeemedAt,
-      // 상태/메타
-      status: '검토 중',
-      createdAt: new Date(),
-      userId,
-      guestName: userId ? null : name,
-      guestEmail: userId ? null : email,
-      guestPhone: userId ? null : phone,
-      userSnapshot: userId ? { name, email } : null,
-    });
+    let result;
+    try {
+      result = await db.collection('stringing_applications').insertOne({
+        _id: applicationId,
+        orderId: new ObjectId(orderId),
+        name,
+        phone,
+        email,
+        contactEmail, //  자동 귀속용 정규화 이메일
+        contactPhone, // 숫자만 저장한 전화번호
+        shippingInfo,
+        stringDetails,
+        // 금액
+        totalPrice, // 실제 청구 교체비(패키지면 0)
+        serviceFeeBefore, // 패키지 미적용 시 교체비 합계(기록 용도)
+        // 패키지 적용 정보
+        packageApplied,
+        packagePassId,
+        packageRedeemedAt,
+        // 상태/메타
+        status: '검토 중',
+        createdAt: new Date(),
+        userId,
+        guestName: userId ? null : name,
+        guestEmail: userId ? null : email,
+        guestPhone: userId ? null : phone,
+        userSnapshot: userId ? { name, email } : null,
+      });
+    } catch (err: any) {
+      //  주문당 진행중 1건(Partial Unique Index) 충돌 → 409로 매핑
+      if (err?.code === 11000) {
+        return NextResponse.json({ message: '이미 진행 중인 신청이 있습니다. 기존 신청서를 이어서 완료해주세요.' }, { status: 409 });
+      }
+      throw err;
+    }
 
     // 주문에도 플래그 추가
     await db.collection('orders').updateOne(
@@ -681,7 +694,7 @@ export async function handleSubmitStringingApplication(req: Request) {
 
 // ================= DRAFT(초안) 생성/재사용 =================
 // 목적: /services/apply?orderId=... 진입 시, 해당 주문에 진행 중 신청서가 "항상 1개" 존재하도록 보장
-// 불변식: 같은 orderId에 status ∈ { 'draft', 'received' } 문서는 동시에 1개만
+// 불변식: 같은 orderId에 status ∈ INPROGRESS_STATUSES 문서는 동시에 1개만
 export async function handleCreateOrGetDraftApplication(req: Request) {
   try {
     const db = await getDb();
@@ -730,7 +743,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     // 7) 이미 진행중(draft/received) 있으면 재사용
     const existing = await appsCol.findOne({
       orderId: String(order._id),
-      status: { $in: ['draft', 'received'] },
+      status: { $in: INPROGRESS_STATUSES },
     });
 
     const link = `/services/apply?orderId=${orderId}`;
@@ -775,7 +788,16 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       history: [{ status: 'draft', date: now.toISOString(), description: '주문 기반 자동 초안 생성' }],
     };
 
-    const result = await appsCol.insertOne(doc);
+    let result;
+    try {
+      result = await appsCol.insertOne(doc);
+    } catch (err: any) {
+      // 진행중 초안/신청 중복 생성 시(Partial Unique Index 충돌) → 409로 매핑
+      if (err?.code === 11000) {
+        return new Response(JSON.stringify({ message: '이미 진행 중인 신청이 있습니다. 기존 신청서를 이어서 완료해주세요.' }), { status: 409 });
+      }
+      throw err;
+    }
 
     return new Response(JSON.stringify({ applicationId: String(result.insertedId), orderId, link, reused: false }), { status: 201 });
   } catch (e) {
