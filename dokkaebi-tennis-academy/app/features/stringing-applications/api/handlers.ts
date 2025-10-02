@@ -535,22 +535,32 @@ export async function handleSubmitStringingApplication(req: Request) {
     const contactPhone = (phone ?? '').replace(/\D/g, '') || null;
 
     // 필수 필드 검증
-    if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0 || !preferredDate) {
+    if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0 || !preferredDate || !preferredTime) {
       return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
     }
 
     const client = await clientPromise;
     const db = await getDb();
 
-    // 중복 예약 방지 로직
-    const existing = await db.collection('stringing_applications').findOne({
+    // 예약 점유로 보지 않는 상태들: 운영정책에 맞춰 조정 가능
+    const EXCLUDED_STATUSES = ['취소', 'draft'] as const;
+
+    // 추후 Admin 설정으로 뺄 수 있음
+    const DEFAULT_SLOT_CAPACITY = 1;
+
+    // (상태 제외 + 용량 기반 카운트)
+    const capacity = DEFAULT_SLOT_CAPACITY; // 필요 시 settings에서 가져오도록 변경 가능
+
+    const concurrent = await db.collection('stringing_applications').countDocuments({
       'stringDetails.preferredDate': preferredDate,
       'stringDetails.preferredTime': preferredTime,
+      // 취소/초안 등 점유로 보지 않는 상태는 제외
+      status: { $nin: EXCLUDED_STATUSES },
     });
-    if (existing) {
-      return NextResponse.json({ error: '이미 해당 시간대에 신청이 존재합니다.' }, { status: 409 });
-    }
 
+    if (concurrent >= capacity) {
+      return NextResponse.json({ message: '선택하신 시간대는 방금 전 마감되었습니다. 다른 시간대를 선택해주세요.' }, { status: 409 });
+    }
     // 상품 ID 배열을 실제 상품명과 매핑 (custom 스킵)
     const stringItems = await Promise.all(
       stringTypes.map(async (prodId: string) => {

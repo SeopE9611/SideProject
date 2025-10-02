@@ -425,6 +425,21 @@ export default function StringServiceApplyPage() {
     }).open();
   };
 
+  async function refetchDisabledTimesFor(date: string) {
+    if (!date) return;
+    try {
+      const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=1`, { credentials: 'include' });
+      if (!res.ok) return;
+      const data = await res.json();
+      const times: string[] = Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
+      // 내부 캐시 & 상태와 동일하게 갱신
+      slotsCache.current.set(date, times);
+      setDisabledTimes(times);
+    } catch {
+      // 조용히 실패 무시
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -488,7 +503,23 @@ export default function StringServiceApplyPage() {
       });
 
       if (!res.ok) {
-        const { message } = await res.json();
+        // 409(슬롯 충돌)는 별도 UX 처리
+        if (res.status === 409) {
+          const { message } = await res.json().catch(() => ({ message: '해당 시간대가 마감되었습니다.' }));
+          showErrorToast(message || '해당 시간대가 마감되었습니다.');
+
+          // 선택한 시간 해제
+          setFormData((prev) => ({ ...prev, preferredTime: '' }));
+
+          // 비활성화 시간 재조회(같은 날짜 기준)
+          await refetchDisabledTimesFor(formData.preferredDate);
+
+          setIsSubmitting(false);
+          return; // 더 진행하지 않고 종료
+        }
+
+        // 그 외 일반 오류는 기존 흐름 유지
+        const { message } = await res.json().catch(() => ({ message: '신청 실패' }));
         throw new Error(message || '신청 실패');
       }
 
