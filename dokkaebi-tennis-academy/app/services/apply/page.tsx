@@ -155,6 +155,7 @@ export default function StringServiceApplyPage() {
 
   // 예약 슬롯 상태
   const [disabledTimes, setDisabledTimes] = useState<string[]>([]);
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState<string | null>(null);
   const slotsCache = useRef<Map<string, string[]>>(new Map());
@@ -202,14 +203,27 @@ export default function StringServiceApplyPage() {
         }
 
         const data = await res.json();
-        const times = Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
 
-        // 캐시에 저장 + 상태 갱신
-        slotsCache.current.set(date, times);
-        setDisabledTimes(times);
+        // 휴무/비영업일 처리
+        if (data?.closed === true) {
+          setSlotsError('해당 날짜는 휴무일입니다. 다른 날짜를 선택해주세요.');
+          setTimeSlots([]);
+          setDisabledTimes([]);
+          setFormData((prev) => ({ ...prev, preferredTime: '' }));
+          return;
+        }
+
+        // 서버 슬롯/마감 반영
+        setTimeSlots(Array.isArray(data?.allTimes) ? data.allTimes : []);
+        setDisabledTimes(Array.isArray(data?.reservedTimes) ? data.reservedTimes : []);
+
+        // (선택) 현재 선택된 시간이 사용 불가면 선택 해제
+        if (data?.availableTimes && !data.availableTimes.includes(formData.preferredTime)) {
+          setFormData((prev) => ({ ...prev, preferredTime: '' }));
+        }
 
         // 사용자가 로딩 중에 선택해둔 시간이 새로 "비활성"이 되면 해제
-        setFormData((prev) => (prev.preferredTime && times.includes(prev.preferredTime) ? { ...prev, preferredTime: '' } : prev));
+        setFormData((prev) => (prev.preferredTime && (data?.reservedTimes?.includes(prev.preferredTime) ?? false) ? { ...prev, preferredTime: '' } : prev));
       } catch {
         if (!cacheHit) {
           setDisabledTimes([]);
@@ -868,6 +882,7 @@ export default function StringServiceApplyPage() {
                         preferredTime: prev.preferredTime === value ? '' : value,
                       }))
                     }
+                    times={timeSlots}
                     disabledTimes={disabledTimes}
                     isLoading={slotsLoading && !hasCacheForDate}
                     errorMessage={slotsError}

@@ -1,34 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { isAfter, isToday, parse } from 'date-fns';
+import { useMemo } from 'react';
+import { parse, isToday, isAfter } from 'date-fns';
 
 interface TimeSlotSelectorProps {
   selected: string;
   selectedDate: string;
   onSelect: (value: string) => void;
+  /** 서버에서 내려온 전체 후보 시간대 (예: allTimes) */
+  times: string[];
+  /** 서버에서 내려온 마감 시간대 (예: reservedTimes) */
   disabledTimes?: string[];
   isLoading?: boolean;
   errorMessage?: string | null;
 }
 
-export default function TimeSlotSelector({ selected, selectedDate, onSelect, disabledTimes = [], isLoading = false, errorMessage = null }: TimeSlotSelectorProps) {
-  const [slots, setSlots] = useState<string[]>([]);
-
-  useEffect(() => {
-    const result: string[] = [];
-    const startHour = 10;
-    const endHour = 14; // 14시는 루프 밖에서 수동 추가
-    const interval = 30;
-    for (let h = startHour; h < endHour; h++) {
-      for (let m = 0; m < 60; m += interval) {
-        result.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-      }
-    }
-    result.push('14:00');
-    setSlots(result);
-  }, []);
+export default function TimeSlotSelector({ selected, selectedDate, onSelect, times, disabledTimes = [], isLoading = false, errorMessage = null }: TimeSlotSelectorProps) {
+  const items = useMemo(() => (Array.isArray(times) ? times : []), [times]);
 
   if (!selectedDate) {
     return (
@@ -40,22 +28,21 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, dis
 
   return (
     <div className="space-y-2" aria-busy={isLoading ? true : undefined}>
-      {/* 에러 문구 */}
       {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
       <div className="relative">
         <div className={['grid grid-cols-3 gap-2 transition', isLoading ? 'pointer-events-none blur-[2px] opacity-60' : ''].join(' ')}>
-          {slots.map((time) => {
+          {items.map((time) => {
             const selectedDateTime = parse(`${selectedDate} ${time}`, 'yyyy-MM-dd HH:mm', new Date());
             const now = new Date();
             const isPast = isToday(selectedDateTime) && isAfter(now, selectedDateTime);
             const isReserved = disabledTimes.includes(time);
             const disabled = isPast || isReserved;
 
-            const baseBtn = 'w-full rounded-lg px-3 py-2 text-sm transition-colors ' + 'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40';
+            const baseBtn = 'w-full rounded-lg px-3 py-2 text-sm transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40';
 
             if (disabled) {
               return (
-                <button key={time} type="button" disabled title={isReserved ? '이미 예약된 시간대입니다' : '지난 시간대입니다'} className={baseBtn + ' cursor-not-allowed bg-gray-100 text-gray-400 ' + 'border-gray-100'} aria-disabled>
+                <button key={time} type="button" disabled title={isReserved ? '이미 예약된 시간대입니다' : '지난 시간대입니다'} className={baseBtn + ' cursor-not-allowed bg-gray-100 text-gray-400 border-gray-100'} aria-disabled>
                   {time}
                 </button>
               );
@@ -71,7 +58,6 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, dis
           })}
         </div>
 
-        {/* 로딩 오버레이*/}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="rounded-2xl bg-white/60 backdrop-blur-sm px-4 py-3 shadow-sm">

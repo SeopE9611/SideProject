@@ -484,53 +484,121 @@ const isValidDate = (s: string | null | undefined): s is string => typeof s === 
 export async function handleGetReservedTimeSlots(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const date = searchParams.get('date'); // string | null
-    const capParam = searchParams.get('cap'); // string | null
+    const date = searchParams.get('date'); // YYYY-MM-DD
+
+    // 입력 검증
+    const isValidDate = (s: string | null | undefined): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+    if (!isValidDate(date)) {
+      return NextResponse.json({ message: '유효하지 않은 날짜입니다.' }, { status: 400 });
+    }
 
     const db = (await clientPromise).db();
-    // DB 설정(capacity) 우선, 쿼리 cap가 있으면 설정과의 최솟값 사용
-    // 기존: const settings = await db.collection('settings').findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1 } });
-    type StringingSettings = { _id: 'stringingSlots'; capacity?: number }; // 파일 상단에 이미 있다면 중복 선언 X
-    const settingsCol = db.collection<StringingSettings>('settings');
-    const settings = await settingsCol.findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1 } });
-    const configuredCap = Math.max(1, Math.min(10, Number(settings?.capacity ?? 1)));
-    const capacity = capParam && Number.isFinite(Number(capParam)) && Number(capParam) > 0 ? Math.min(configuredCap, Number(capParam)) : configuredCap;
 
-    try {
-      if (!isValidDate(date) || !Number.isFinite(capacity) || capacity <= 0) {
-        return NextResponse.json({ reservedTimes: [], capacity }, { status: 200 });
+    type ExceptionItem = {
+      date: string;
+      closed?: boolean;
+      start?: string;
+      end?: string;
+      interval?: number;
+      capacity?: number;
+    };
+    type StringingSettings = {
+      _id: 'stringingSlots';
+      capacity?: number;
+      businessDays?: number[];
+      start?: string;
+      end?: string;
+      interval?: number;
+      holidays?: string[];
+      exceptions?: ExceptionItem[];
+    };
+
+    // 1) 설정 로드 (예외일 포함)
+    const s = await db.collection<StringingSettings>('settings').findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1, businessDays: 1, start: 1, end: 1, interval: 1, holidays: 1, exceptions: 1 } });
+
+    // 기본값
+    let capacity = Math.max(1, Math.min(10, Number(s?.capacity ?? 1)));
+    let start = typeof s?.start === 'string' ? s!.start! : '10:00';
+    let end = typeof s?.end === 'string' ? s!.end! : '19:00';
+    let interval = Number.isFinite(s?.interval) ? Number(s!.interval) : 30;
+
+    const bizDays = Array.isArray(s?.businessDays) ? s!.businessDays! : [1, 2, 3, 4, 5];
+    const holidays = Array.isArray(s?.holidays) ? s!.holidays! : [];
+    const exceptions = Array.isArray(s?.exceptions) ? s!.exceptions! : [];
+
+    // 2) 예외일 우선 적용
+    const ex = exceptions.find((e) => e.date === date);
+    const jsDay = new Date(`${date}T00:00:00`).getDay();
+
+    let isOpen: boolean;
+    if (ex) {
+      if (ex.closed) {
+        // 예외일: 휴무
+        isOpen = false;
+      } else {
+        // 예외일: 영업 + 값 오버라이드
+        isOpen = true;
+        if (ex.start) start = ex.start;
+        if (ex.end) end = ex.end;
+        if (typeof ex.interval === 'number') interval = Math.max(5, Math.min(240, Math.floor(ex.interval)));
+        if (typeof ex.capacity === 'number') capacity = Math.max(1, Math.min(10, Math.floor(ex.capacity)));
       }
-
-      // 점유로 보지 않을 상태 (프로젝트 내 상태에 '취소' 존재 확인됨)
-      const EXCLUDE_STATUSES = ['취소'];
-
-      const rows = await db
-        .collection('stringing_applications')
-        .aggregate([
-          {
-            $match: {
-              'stringDetails.preferredDate': date,
-              ...(EXCLUDE_STATUSES.length ? { status: { $nin: EXCLUDE_STATUSES } } : {}),
-              'stringDetails.preferredTime': { $type: 'string', $ne: '' },
-            },
-          },
-          { $group: { _id: '$stringDetails.preferredTime', count: { $sum: 1 } } },
-          { $match: { count: { $gte: capacity } } }, // capacity 이상 찬 시간만 비활성
-          { $project: { _id: 0, time: '$_id' } },
-          { $sort: { time: 1 } },
-        ])
-        .toArray();
-
-      const reservedTimes = rows.map((r) => String(r.time).trim()).filter(Boolean);
-
-      return NextResponse.json({ reservedTimes, capacity }, { status: 200 });
-    } catch (err) {
-      console.error('[GET /applications/stringing/reserved] error:', err);
-      return NextResponse.json({ error: 'Failed to load reserved slots.' }, { status: 500 });
+    } else {
+      // 예외가 없으면: 요일/연휴 정책으로 영업 여부 결정
+      const isHoliday = holidays.includes(date);
+      isOpen = bizDays.includes(jsDay) && !isHoliday;
     }
-  } catch (err) {
-    console.error('[GET /applications/stringing/reserved] error:', err);
-    return NextResponse.json({ error: 'Failed to load reserved slots.' }, { status: 500 });
+
+    // 3) 슬롯 생성
+    const toMin = (hhmm: string) => {
+      const [h, m] = hhmm.split(':').map(Number);
+      return (h || 0) * 60 + (m || 0);
+    };
+    const toHHMM = (mins: number) => {
+      const h = Math.floor(mins / 60),
+        m = mins % 60;
+      const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+      return `${pad(h)}:${pad(m)}`;
+    };
+
+    let allTimes: string[] = [];
+    if (isOpen) {
+      const startMin = toMin(start);
+      const endMin = toMin(end);
+      const step = Math.max(5, Math.min(240, Math.floor(interval)));
+      for (let t = startMin; t <= endMin; t += step) {
+        allTimes.push(toHHMM(t));
+      }
+    } else {
+      return NextResponse.json({ date, capacity, reservedTimes: [], allTimes: [], availableTimes: [], closed: true }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    // 4) 마감 시간 계산 (취소/초안 제외)
+    const EXCLUDED = ['취소', 'draft'];
+    const rows = await db
+      .collection('stringing_applications')
+      .aggregate([
+        {
+          $match: {
+            'stringDetails.preferredDate': date,
+            'stringDetails.preferredTime': { $type: 'string', $ne: '' },
+            status: { $nin: EXCLUDED },
+          },
+        },
+        { $group: { _id: '$stringDetails.preferredTime', count: { $sum: 1 } } },
+        { $match: { count: { $gte: capacity } } },
+        { $project: { _id: 0, time: '$_id' } },
+        { $sort: { time: 1 } },
+      ] as any[])
+      .toArray();
+
+    const reservedTimes = rows.map((r) => String(r.time).trim()).filter(Boolean);
+    const availableTimes = allTimes.filter((t) => !reservedTimes.includes(t));
+
+    return NextResponse.json({ date, capacity, reservedTimes, allTimes, availableTimes, closed: false }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+  } catch (error) {
+    console.error('[handleGetReservedTimeSlots] error', error);
+    return NextResponse.json({ message: '예약 시간 조회 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }
 

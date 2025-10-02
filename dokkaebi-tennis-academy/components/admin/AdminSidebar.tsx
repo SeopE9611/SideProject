@@ -18,6 +18,7 @@ const SECTIONS = [
       { title: '상품 관리', href: '/admin/products', icon: Boxes, key: 'products' as const },
       { title: '패키지 관리', href: '/admin/packages', icon: Package, key: 'packages' as const },
       { title: '패키지 설정', href: '/admin/packages/settings', icon: Cog },
+      { title: '예약 · 영업일 설정', href: '/admin/scheduling', icon: CalendarClock },
     ],
   },
   {
@@ -74,6 +75,11 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
     if (href === '/admin/packages') {
       if (/^\/admin\/packages\/settings(?:\/|$)/.test(path)) return false;
       return under; // '/admin/packages/...' (예: 상세/목록 등)은 활성
+    }
+    // '/admin/settings'도 세부 페이지에선 비활성 처리
+    if (href === '/admin/settings') {
+      if (path.startsWith('/admin/settings/')) return false;
+      return under;
     }
 
     return under;
