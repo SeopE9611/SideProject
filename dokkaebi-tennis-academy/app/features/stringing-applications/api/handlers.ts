@@ -486,37 +486,48 @@ export async function handleGetReservedTimeSlots(req: Request) {
     const { searchParams } = new URL(req.url);
     const date = searchParams.get('date'); // string | null
     const capParam = searchParams.get('cap'); // string | null
-    const capacity = capParam ? Number(capParam) : 1;
-
-    if (!isValidDate(date) || !Number.isFinite(capacity) || capacity <= 0) {
-      return NextResponse.json({ error: 'Invalid date or capacity.' }, { status: 400 });
-    }
 
     const db = (await clientPromise).db();
+    // DB 설정(capacity) 우선, 쿼리 cap가 있으면 설정과의 최솟값 사용
+    // 기존: const settings = await db.collection('settings').findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1 } });
+    type StringingSettings = { _id: 'stringingSlots'; capacity?: number }; // 파일 상단에 이미 있다면 중복 선언 X
+    const settingsCol = db.collection<StringingSettings>('settings');
+    const settings = await settingsCol.findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1 } });
+    const configuredCap = Math.max(1, Math.min(10, Number(settings?.capacity ?? 1)));
+    const capacity = capParam && Number.isFinite(Number(capParam)) && Number(capParam) > 0 ? Math.min(configuredCap, Number(capParam)) : configuredCap;
 
-    // 점유로 보지 않을 상태 (프로젝트 내 상태에 '취소' 존재 확인됨)
-    const EXCLUDE_STATUSES = ['취소'];
+    try {
+      if (!isValidDate(date) || !Number.isFinite(capacity) || capacity <= 0) {
+        return NextResponse.json({ reservedTimes: [], capacity }, { status: 200 });
+      }
 
-    const rows = await db
-      .collection('stringing_applications')
-      .aggregate([
-        {
-          $match: {
-            'stringDetails.preferredDate': date,
-            ...(EXCLUDE_STATUSES.length ? { status: { $nin: EXCLUDE_STATUSES } } : {}),
-            'stringDetails.preferredTime': { $type: 'string', $ne: '' },
+      // 점유로 보지 않을 상태 (프로젝트 내 상태에 '취소' 존재 확인됨)
+      const EXCLUDE_STATUSES = ['취소'];
+
+      const rows = await db
+        .collection('stringing_applications')
+        .aggregate([
+          {
+            $match: {
+              'stringDetails.preferredDate': date,
+              ...(EXCLUDE_STATUSES.length ? { status: { $nin: EXCLUDE_STATUSES } } : {}),
+              'stringDetails.preferredTime': { $type: 'string', $ne: '' },
+            },
           },
-        },
-        { $group: { _id: '$stringDetails.preferredTime', count: { $sum: 1 } } },
-        { $match: { count: { $gte: capacity } } }, // capacity 이상 찬 시간만 비활성
-        { $project: { _id: 0, time: '$_id' } },
-        { $sort: { time: 1 } },
-      ])
-      .toArray();
+          { $group: { _id: '$stringDetails.preferredTime', count: { $sum: 1 } } },
+          { $match: { count: { $gte: capacity } } }, // capacity 이상 찬 시간만 비활성
+          { $project: { _id: 0, time: '$_id' } },
+          { $sort: { time: 1 } },
+        ])
+        .toArray();
 
-    const reservedTimes = rows.map((r) => String(r.time).trim()).filter(Boolean);
+      const reservedTimes = rows.map((r) => String(r.time).trim()).filter(Boolean);
 
-    return NextResponse.json({ reservedTimes, capacity }, { status: 200 });
+      return NextResponse.json({ reservedTimes, capacity }, { status: 200 });
+    } catch (err) {
+      console.error('[GET /applications/stringing/reserved] error:', err);
+      return NextResponse.json({ error: 'Failed to load reserved slots.' }, { status: 500 });
+    }
   } catch (err) {
     console.error('[GET /applications/stringing/reserved] error:', err);
     return NextResponse.json({ error: 'Failed to load reserved slots.' }, { status: 500 });
@@ -549,11 +560,11 @@ export async function handleSubmitStringingApplication(req: Request) {
     // 예약 점유로 보지 않는 상태들: 운영정책에 맞춰 조정 가능
     const EXCLUDED_STATUSES = ['취소', 'draft'] as const;
 
-    // 추후 Admin 설정으로 뺄 수 있음
-    const DEFAULT_SLOT_CAPACITY = 1;
-
-    // (상태 제외 + 용량 기반 카운트)
-    const capacity = DEFAULT_SLOT_CAPACITY; // 필요 시 settings에서 가져오도록 변경 가능
+    // DB 설정에서 수용량(capacity) 로드 (없으면 기본 1)
+    type StringingSettings = { _id: 'stringingSlots'; capacity?: number }; // 위에서 선언했으면 생략
+    const settingsCol = db.collection<StringingSettings>('settings');
+    const sdoc = await settingsCol.findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1 } });
+    const capacity = Math.max(1, Math.min(10, Number(sdoc?.capacity ?? 1)));
 
     const concurrent = await db.collection('stringing_applications').countDocuments({
       'stringDetails.preferredDate': preferredDate,
