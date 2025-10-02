@@ -89,7 +89,7 @@ export async function fetchCombinedOrders() {
 
       // items 배열
       const items = await Promise.all(
-        (app.stringDetails.stringTypes ?? []).map(async (typeId: string) => {
+        (app.stringDetails?.stringTypes ?? []).map(async (typeId: string) => {
           // 커스텀 스트링 처리
           if (typeId === 'custom') {
             return {
