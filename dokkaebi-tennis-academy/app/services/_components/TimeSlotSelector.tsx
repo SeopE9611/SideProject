@@ -15,6 +15,8 @@ interface TimeSlotSelectorProps {
   errorMessage?: string | null;
 }
 
+// 1) 상단 import/props는 그대로 두되, 렌더 조건을 바꾼다.
+
 export default function TimeSlotSelector({ selected, selectedDate, onSelect, times, disabledTimes = [], isLoading = false, errorMessage = null }: TimeSlotSelectorProps) {
   const items = useMemo(() => (Array.isArray(times) ? times : []), [times]);
 
@@ -26,9 +28,21 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
     );
   }
 
+  // 400(예약 가능 기간 초과 등)일 때 부모에서 받은 errorMessage를
+  //    "안내 배너"로 노출하고, 시간대 격자는 렌더하지 않음.
+  if (errorMessage) {
+    return (
+      <div className="space-y-2">
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{errorMessage}</div>
+        {/* 필요하면 이 날짜에서는 선택 불가임을 한번 더 안내 */}
+        <p className="text-xs text-muted-foreground">다른 날짜를 선택해주세요.</p>
+      </div>
+    );
+  }
+
+  //  여기부터는 "정상"일 때만 시간대 격자를 보여준다.
   return (
     <div className="space-y-2" aria-busy={isLoading ? true : undefined}>
-      {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
       <div className="relative">
         <div className={['grid grid-cols-3 gap-2 transition', isLoading ? 'pointer-events-none blur-[2px] opacity-60' : ''].join(' ')}>
           {items.map((time) => {

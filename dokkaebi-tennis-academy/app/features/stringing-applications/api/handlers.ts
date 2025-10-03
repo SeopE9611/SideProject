@@ -345,14 +345,17 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
   };
 
   // 상태 + 이력 함께 업데이트
-  const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, {
-    $set: { status }, // 상태 변경
-    $push: {
-      history: {
-        $each: [historyEntry], // 이력 추가
-      },
-    },
-  } as any);
+  const updateOps: any = {
+    $set: { status },
+    $push: { history: { $each: [historyEntry] } },
+  };
+
+  // draft가 아니면 TTL 필드 제거(삭제 대상에서 제외)
+  if (status !== 'draft') {
+    updateOps.$unset = { expireAt: '' };
+  }
+
+  const result = await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, updateOps);
 
   // 신청서를 찾지 못했을 경우
   if (result.matchedCount === 0) {
@@ -492,6 +495,7 @@ export async function handleGetReservedTimeSlots(req: Request) {
       return NextResponse.json({ message: '유효하지 않은 날짜입니다.' }, { status: 400 });
     }
 
+    // ===== 설정 로드(예약 가능 기간 포함) =====
     const db = (await clientPromise).db();
 
     type ExceptionItem = {
@@ -511,10 +515,25 @@ export async function handleGetReservedTimeSlots(req: Request) {
       interval?: number;
       holidays?: string[];
       exceptions?: ExceptionItem[];
+      bookingWindowDays?: number;
     };
 
-    // 1) 설정 로드 (예외일 포함)
-    const s = await db.collection<StringingSettings>('settings').findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1, businessDays: 1, start: 1, end: 1, interval: 1, holidays: 1, exceptions: 1 } });
+    // 한 번에 필요한 필드들을 projection으로 가져옴
+    const s = await db.collection<StringingSettings>('settings').findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1, businessDays: 1, start: 1, end: 1, interval: 1, holidays: 1, exceptions: 1, bookingWindowDays: 1 } });
+
+    // ===== 예약 가능 기간 제한(설정값 사용, 기본 30일) =====
+    const WINDOW_DAYS = Number(s?.bookingWindowDays ?? 30);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(`${date}T00:00:00`);
+    const max = new Date();
+    max.setHours(0, 0, 0, 0);
+    max.setDate(max.getDate() + WINDOW_DAYS);
+
+    if (target < today || target > max) {
+      return NextResponse.json({ message: `예약 가능 기간을 벗어났습니다. (오늘부터 ${WINDOW_DAYS}일 이내만 예약 가능)` }, { status: 400 });
+    }
 
     // 기본값
     let capacity = Math.max(1, Math.min(10, Number(s?.capacity ?? 1)));
@@ -827,6 +846,10 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
 
     const link = `/services/apply?orderId=${orderId}`;
     if (existing) {
+      // 초안이면 expireAt 24h 연장 (사용자가 계속 작업 중인 경우 자동 연장)
+      if (existing.status === 'draft') {
+        await appsCol.updateOne({ _id: existing._id }, { $set: { expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000), updatedAt: new Date().toISOString() } });
+      }
       return new Response(JSON.stringify({ applicationId: String(existing._id), orderId, link, reused: true }), { status: 200 });
     }
 
@@ -864,6 +887,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       usedPackage: { passId: undefined, consumed: false },
 
       status: 'draft',
+      expireAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // TTL용 만료시각
       history: [{ status: 'draft', date: now.toISOString(), description: '주문 기반 자동 초안 생성' }],
     };
 

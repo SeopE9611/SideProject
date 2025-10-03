@@ -3,15 +3,12 @@
  * - GET  : 현재 설정 조회
  * - PATCH: 설정 저장(업데이트/업서트)
  *
- * 추가되는 기능:
  *  1) businessDays (기본 영업 요일, 0=일 ~ 6=토)
  *  2) holidays     (휴무일 날짜 배열, 'YYYY-MM-DD')
  *  3) exceptions[] (특정 날짜의 예외 정책)
  *     - closed: true       => 그 날짜는 휴무
  *     - closed: false/생략 => 그 날짜는 "영업", start/end/interval/capacity로 기본값을 개별 오버라이드
  *
- * 주의:
- *  - 반드시 관리자만 접근 가능 (requireAdmin() 사용)
  */
 
 import { NextResponse } from 'next/server';
@@ -37,6 +34,7 @@ type StringingSettings = {
   interval?: number; // 5~240 분
   holidays?: string[]; // ['YYYY-MM-DD']
   exceptions?: ExceptionItem[]; // 예외일 정책
+  bookingWindowDays?: number; // 예약 가능 기간 (일)
   updatedAt?: Date;
 };
 
@@ -59,7 +57,7 @@ const isHHMM = (s: any) => typeof s === 'string' && /^\d{2}:\d{2}$/.test(s);
 const isDate = (s: any) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
 export async function GET() {
-  // ✅ 관리자 권한 체크 (기존과 동일)
+  // 관리자 권한 체크
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
@@ -71,7 +69,7 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
-  // ✅ 관리자 권한 체크 (기존과 동일)
+  // 관리자 권한 체크
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
@@ -119,10 +117,58 @@ export async function PATCH(req: Request) {
       .filter((e) => !!e.date) as ExceptionItem[];
   }
 
+  // 예약 가능 기간(일): 1~180 허용
+  if (body.bookingWindowDays !== undefined) {
+    const n = Number(body.bookingWindowDays);
+    if (!Number.isFinite(n)) {
+      return NextResponse.json({ message: '예약 가능 기간은 숫자여야 합니다.' }, { status: 400 });
+    }
+    if (n < 1 || n > 180) {
+      return NextResponse.json({ message: '예약 가능 기간은 1~180일 범위로 설정해주세요.' }, { status: 400 });
+    }
+    update.bookingWindowDays = Math.trunc(n);
+  }
+
   // 공통 업데이트 타임스탬프
   update.updatedAt = new Date();
 
   const db = await getDb();
+
+  // ===== 시간 역전/슬롯 0개 방지 =====
+  const toMin = (hhmm: string) => {
+    const [h, m] = hhmm.split(':').map(Number);
+    return h * 60 + m;
+  };
+  const atLeastOneSlot = (s?: string, e?: string, step?: number) => {
+    if (!s || !e || !step) return true; // 셋 다 있을 때만 검사
+    return toMin(e) - toMin(s) >= step;
+  };
+
+  // 기본(start/end/interval)
+  if (update.start && update.end) {
+    if (toMin(update.start) >= toMin(update.end)) {
+      return NextResponse.json({ message: '영업 시작 시각은 종료 시각보다 이른 시간이어야 합니다.' }, { status: 400 });
+    }
+  }
+  if (update.start && update.end && typeof update.interval === 'number') {
+    if (!atLeastOneSlot(update.start, update.end, update.interval)) {
+      return NextResponse.json({ message: '간격이 너무 큽니다. 최소 1개 이상의 슬롯이 생성되어야 합니다.' }, { status: 400 });
+    }
+  }
+
+  // 예외일(exceptions)도 동일 규칙(오버라이드 값 있을 때만)
+  if (Array.isArray(update.exceptions)) {
+    for (const ex of update.exceptions) {
+      if (ex.start && ex.end && toMin(ex.start) >= toMin(ex.end)) {
+        return NextResponse.json({ message: `[예외일 ${ex.date}] 시작/종료 시각이 올바르지 않습니다.` }, { status: 400 });
+      }
+      if (ex.start && ex.end && typeof ex.interval === 'number') {
+        if (!atLeastOneSlot(ex.start, ex.end, ex.interval)) {
+          return NextResponse.json({ message: `[예외일 ${ex.date}] 간격이 너무 큽니다. 슬롯이 1개 이상 생성되어야 합니다.` }, { status: 400 });
+        }
+      }
+    }
+  }
   // upsert: 문서가 없으면 생성, 있으면 업데이트
   await db.collection<StringingSettings>(COLLECTION).updateOne({ _id: DOC_ID }, { $setOnInsert: { _id: DOC_ID }, $set: update }, { upsert: true });
 

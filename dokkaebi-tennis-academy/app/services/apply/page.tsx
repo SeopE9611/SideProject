@@ -125,7 +125,12 @@ export default function StringServiceApplyPage() {
   };
 
   // “다음” 버튼 disabled 계산용
-  const isStepValid = (step: number) => validateStep(step, true);
+  const isStepValid = (step: number) => {
+    const ok = validateStep(step, true);
+    if (!ok) return false;
+    if (step === 2 && !!slotsError) return false;
+    return true;
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -197,12 +202,26 @@ export default function StringServiceApplyPage() {
         const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=1`, { method: 'GET', signal: controller.signal });
 
         if (!res.ok) {
+          // 30일 초과/미만 등 '정책 위반'은 서버 메시지를 그대로 노출
+          if (res.status === 400) {
+            const j = await res.json().catch(() => null);
+            setSlotsError(j?.message ?? '현재 날짜부터 30일 이내만 예약 가능합니다. 다른 날짜를 선택해주세요.');
+            // 시간대 격자는 감춤
+            setTimeSlots([]);
+            setDisabledTimes([]);
+            // 선택된 시간도 해제
+            setFormData((prev) => ({ ...prev, preferredTime: '' }));
+            return;
+          }
+
+          // 그 외(500/네트워크 등)만 일반 오류로 처리
           if (!cacheHit) setDisabledTimes([]);
           setSlotsError('예약 현황을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
           return;
         }
 
         const data = await res.json();
+        setSlotsError(null); // 성공 시 에러 초기화
 
         // 휴무/비영업일 처리
         if (data?.closed === true) {

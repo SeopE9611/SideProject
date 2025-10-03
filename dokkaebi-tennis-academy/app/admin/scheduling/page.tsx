@@ -43,6 +43,7 @@ type StringingSettings = {
   interval?: number;
   holidays?: string[];
   exceptions?: ExceptionItem[];
+  bookingWindowDays?: number;
   updatedAt?: string;
 };
 
@@ -54,6 +55,7 @@ export default function StringingSettingsPage() {
   const [start, setStart] = useState<string>('10:00');
   const [end, setEnd] = useState<string>('19:00');
   const [interval, setInterval] = useState<number>(30);
+  const [bookingWindowDays, setBookingWindowDays] = useState<number>(30);
 
   // 요일/휴무/예외
   const [businessDays, setBusinessDays] = useState<number[]>([1, 2, 3, 4, 5]);
@@ -82,6 +84,7 @@ export default function StringingSettingsPage() {
           setInterval(Number(data.interval ?? 30));
           setBusinessDays(Array.isArray(data.businessDays) ? data.businessDays : [1, 2, 3, 4, 5]);
           setHolidays(Array.isArray(data.holidays) ? data.holidays : []);
+          setBookingWindowDays(Number((data as any).bookingWindowDays ?? 30));
           setExceptions(Array.isArray(data.exceptions) ? data.exceptions : []);
         }
       } catch (err: any) {
@@ -104,6 +107,7 @@ export default function StringingSettingsPage() {
         businessDays,
         holidays,
         exceptions,
+        bookingWindowDays,
       };
       const res = await fetch('/api/admin/settings/stringing', {
         method: 'PATCH',
@@ -131,6 +135,7 @@ export default function StringingSettingsPage() {
     setBusinessDays([1, 2, 3, 4, 5]);
     setHolidays([]);
     setExceptions([]);
+    setBookingWindowDays(30);
     showInfoToast('기본값으로 되돌렸습니다. 저장 시 적용됩니다.');
   }
 
@@ -264,6 +269,30 @@ export default function StringingSettingsPage() {
                     />
                     <Badge variant="outline" className="border-dashed border-slate-300 text-slate-600">
                       예: 30분 → 10:00, 10:30…
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* 예약 가능 기간(일) */}
+                <div className="space-y-2">
+                  <Label htmlFor="bookingWindowDays" className="text-sm font-medium text-slate-700">
+                    예약 가능 기간(일)
+                  </Label>
+                  <div className="mt-2 flex items-center gap-3">
+                    <Input
+                      id="bookingWindowDays"
+                      type="number"
+                      min={1}
+                      max={180}
+                      value={bookingWindowDays}
+                      onChange={(e) => {
+                        const v = Number(e.target.value || 30);
+                        if (Number.isFinite(v)) setBookingWindowDays(Math.max(1, Math.min(180, v)));
+                      }}
+                      className="w-32 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500"
+                    />
+                    <Badge variant="outline" className="border-dashed border-slate-300 text-slate-600">
+                      예: 30 → 오늘부터 30일 이내만 신청 가능 (최대 180)
                     </Badge>
                   </div>
                 </div>

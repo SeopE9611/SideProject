@@ -32,6 +32,7 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
   const [stringTypes, setStringTypes] = useState<string[]>(initial.stringTypes ?? []);
   const [customStringType, setCustomStringType] = useState(initial.customStringName || '');
   const [racketType, setRacketType] = useState(initial.racketType || '');
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
 
   // 섹션 on off 상태
   const [enableTime, setEnableTime] = useState(false);
@@ -116,7 +117,7 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
           </div>
           <div className={enableTime ? '' : 'opacity-50 pointer-events-none'}>
             <Input id="desiredDate" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-            <TimeSlotSelector selected={time} selectedDate={date} onSelect={setTime} />
+            <TimeSlotSelector selected={time} times={timeSlots} selectedDate={date} onSelect={setTime} />
           </div>
         </>
       )}
