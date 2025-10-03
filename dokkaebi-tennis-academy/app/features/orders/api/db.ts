@@ -76,77 +76,82 @@ export async function fetchCombinedOrders() {
   );
 
   // 스트링 교체 서비스 신청서 불러오기
-  const rawApps = await db.collection('stringing_applications').find().toArray();
-
-  const stringingOrders = await Promise.all(
-    rawApps.map(async (app) => {
-      // 고객 정보 매핑 (
-      const customer = app.customer
-        ? { name: app.customer.name, email: app.customer.email ?? '-', phone: app.customer.phone ?? '-' }
-        : app.userSnapshot?.name
-        ? { name: app.userSnapshot.name, email: app.userSnapshot.email ?? '-', phone: '-' }
-        : { name: `${app.guestName ?? '비회원'} (비회원)`, email: app.guestEmail || '-', phone: app.guestPhone || '-' };
-
-      // items 배열
-      const items = await Promise.all(
-        (app.stringDetails?.stringTypes ?? []).map(async (typeId: string) => {
-          // 커스텀 스트링 처리
-          if (typeId === 'custom') {
-            return {
-              id: 'custom',
-              name: app.stringDetails.customStringName ?? '커스텀 스트링',
-              price: 15000, // POST 핸들러에도 동일한 기본요금 사용
-              quantity: 1,
-            };
-          }
-
-          // DB에서 이름·mountingFee 조회
-          const prod = await db.collection('products').findOne({ _id: new ObjectId(typeId) }, { projection: { name: 1, mountingFee: 1 } });
-          return {
-            id: typeId,
-            name: prod?.name ?? '알 수 없는 상품',
-            price: prod?.mountingFee ?? 0,
-            quantity: 1,
-          };
-        })
-      );
-
-      // 3) totalPrice 재계산 (items 기반)
-      const totalCalculated = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
-
-      return {
-        id: app._id.toString(),
-        linkedOrderId: app.orderId?.toString() ?? null,
-        __type: 'stringing_application' as const,
-        customer,
-        userId: app.userId ? app.userId.toString() : null,
-        date: app.createdAt,
-        status: app.status,
-        paymentStatus: app.paymentStatus ?? (app.status && app.status !== '검토 중' ? '결제완료' : '결제대기'),
-        type: '서비스',
-        total: totalCalculated, // app.totalPrice 대신 재계산된 값
-        items, // 방금 만들어낸 배열
-        shippingInfo: {
-          name: customer.name,
-          phone: customer.phone,
-          address: app.shippingInfo?.address ?? '-',
-          postalCode: app.shippingInfo?.postalCode ?? '-',
-          depositor: app.shippingInfo?.depositor ?? '-',
-          deliveryRequest: app.shippingInfo?.deliveryRequest,
-          shippingMethod: app.shippingInfo?.shippingMethod,
-          estimatedDate: app.shippingInfo?.estimatedDate,
-          withStringService: true,
-          invoice: {
-            courier: app.shippingInfo?.invoice?.courier ?? null,
-            trackingNumber: app.shippingInfo?.invoice?.trackingNumber ?? null,
-          },
-        },
-      };
+  // draft 제외 + 필수 참조(orderId, userId) 없는 고아 문서 제외
+  const rawApps = await db
+    .collection('stringing_applications')
+    .find({
+      status: { $ne: 'draft' },
+      orderId: { $exists: true, $ne: null },
+      userId: { $exists: true, $ne: null },
     })
-  );
+    .toArray();
+  const stringingOrders = (
+    await Promise.all(
+      rawApps.map(async (app) => {
+        // (선택) 최후 방어 — 혹시 누락되면 스킵
+        if (!app?.orderId || !app?.userId) return null;
+
+        // 고객 정보
+        const customer = app.customer
+          ? { name: app.customer.name, email: app.customer.email ?? '-', phone: app.customer.phone ?? '-' }
+          : app.userSnapshot?.name
+          ? { name: app.userSnapshot.name, email: app.userSnapshot.email ?? '-', phone: '-' }
+          : { name: `${app.guestName ?? '비회원'} (비회원)`, email: app.guestEmail || '-', phone: app.guestPhone || '-' };
+
+        // items 계산 (이미 적용한 옵셔널 체이닝 유지)
+        const items = await Promise.all(
+          (app.stringDetails?.stringTypes ?? []).map(async (typeId: string) => {
+            if (typeId === 'custom') {
+              return {
+                id: 'custom',
+                name: app.stringDetails?.customStringName ?? '커스텀 스트링',
+                price: 15000,
+                quantity: 1,
+              };
+            }
+            const prod = await db.collection('products').findOne({ _id: new ObjectId(typeId) }, { projection: { name: 1, mountingFee: 1 } });
+            return { id: typeId, name: prod?.name ?? '알 수 없는 상품', price: prod?.mountingFee ?? 0, quantity: 1 };
+          })
+        );
+
+        const totalCalculated = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+
+        return {
+          id: app._id.toString(),
+          linkedOrderId: app.orderId?.toString() ?? null,
+          __type: 'stringing_application' as const,
+          customer,
+          userId: app.userId ? app.userId.toString() : null,
+          date: app.createdAt,
+          status: app.status,
+          paymentStatus: app.paymentStatus ?? (app.status && app.status !== '검토 중' ? '결제완료' : '결제대기'),
+          type: '서비스',
+          total: totalCalculated,
+          items,
+          shippingInfo: {
+            name: customer.name,
+            phone: customer.phone,
+            address: app.shippingInfo?.address ?? '-',
+            postalCode: app.shippingInfo?.postalCode ?? '-',
+            depositor: app.shippingInfo?.depositor ?? '-',
+            deliveryRequest: app.shippingInfo?.deliveryRequest,
+            shippingMethod: app.shippingInfo?.shippingMethod,
+            estimatedDate: app.shippingInfo?.estimatedDate,
+            withStringService: true,
+            invoice: {
+              courier: app.shippingInfo?.invoice?.courier ?? null,
+              trackingNumber: app.shippingInfo?.invoice?.trackingNumber ?? null,
+            },
+          },
+        };
+      })
+    )
+  ).filter(Boolean); // ← null 제거
 
   // 일반 주문 + 스트링 신청 통합 후 날짜 내림차순 정렬
-  const combined = [...orders, ...stringingOrders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // 날짜 없으면 0으로 간주해서 정렬
+  const toTime = (d: any) => (d ? new Date(d as any).getTime() : 0);
+  const combined = [...orders, ...(stringingOrders as any[])].sort((a: any, b: any) => toTime(b?.date) - toTime(a?.date));
 
   return combined;
 }

@@ -26,7 +26,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 
     // 상품 ID 배열을 실제 상품명과 매핑
     const stringItems = await Promise.all(
-      (app.stringDetails.stringTypes || []).map(async (prodId: string) => {
+      (app.stringDetails?.stringTypes || []).map(async (prodId: string) => {
         if (prodId === 'custom') {
           return {
             id: 'custom',
@@ -856,26 +856,30 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     // 8) 없으면 초안 생성
     const now = new Date();
     const doc = {
-      userId: userId ?? null,
+      userId: userId ? new ObjectId(userId) : null,
       orderId: String(order._id),
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
 
-      racketType: null,
-      preferredDate: null,
-      preferredTime: null,
-      requirements: '',
+      // 최소 스키마 기본값(고아 draft 방지)
+      customer: {
+        name: (order as any)?.customer?.name ?? (order as any)?.userSnapshot?.name ?? (order as any)?.guestInfo?.name ?? '',
+        email: (order as any)?.customer?.email ?? (order as any)?.userSnapshot?.email ?? (order as any)?.guestInfo?.email ?? '',
+        phone: (order as any)?.customer?.phone ?? (order as any)?.shippingInfo?.phone ?? (order as any)?.guestInfo?.phone ?? '',
+      },
+
+      stringDetails: { stringTypes: [], customStringName: '' },
 
       shippingInfo: {
-        name: order?.shippingInfo?.name ?? order?.customer?.name ?? '',
-        phone: order?.shippingInfo?.phone ?? order?.customer?.phone ?? '',
-        email: order?.customer?.email ?? undefined,
-        address: order?.shippingInfo?.address ?? '',
-        addressDetail: order?.shippingInfo?.addressDetail ?? '',
-        postalCode: order?.shippingInfo?.postalCode ?? '',
-        depositor: order?.shippingInfo?.depositor ?? null,
-        bank: order?.paymentInfo?.bank ?? null,
-        deliveryRequest: order?.shippingInfo?.deliveryRequest ?? '',
+        name: (order as any)?.shippingInfo?.name ?? (order as any)?.customer?.name ?? '',
+        phone: (order as any)?.shippingInfo?.phone ?? (order as any)?.customer?.phone ?? '',
+        email: (order as any)?.customer?.email ?? undefined,
+        address: (order as any)?.shippingInfo?.address ?? '',
+        addressDetail: (order as any)?.shippingInfo?.addressDetail ?? '',
+        postalCode: (order as any)?.shippingInfo?.postalCode ?? '',
+        depositor: (order as any)?.shippingInfo?.depositor ?? null,
+        bank: (order as any)?.paymentInfo?.bank ?? null,
+        deliveryRequest: (order as any)?.shippingInfo?.deliveryRequest ?? '',
       },
 
       collectionMethod: 'self_ship',
@@ -887,7 +891,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       usedPackage: { passId: undefined, consumed: false },
 
       status: 'draft',
-      expireAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // TTL용 만료시각
+      expireAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // TTL
       history: [{ status: 'draft', date: now.toISOString(), description: '주문 기반 자동 초안 생성' }],
     };
 
