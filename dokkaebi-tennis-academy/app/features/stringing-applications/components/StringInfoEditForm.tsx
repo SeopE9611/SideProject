@@ -39,6 +39,9 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
   const [enableRacket, setEnableRacket] = useState(false);
   const [enableStrings, setEnableStrings] = useState(false);
 
+  // [추가] 유효 날짜 검사
+  const isValidDate = (s: string | null | undefined): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+
   // 토글 핸들러: OFF 시 초기값 복원
   const handleTimeToggle = (on: boolean) => {
     setEnableTime(on);
@@ -46,6 +49,7 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
       const [origDate, origTime] = initial.desiredDateTime.split('T');
       setDate(origDate);
       setTime(origTime);
+      setTimeSlots([]); // [추가] 비활성화 시 슬롯 클리어
     }
   };
   const handleStringsToggle = (on: boolean) => {
@@ -70,6 +74,47 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
       setTime(timePart);
     }
   }, [initial.desiredDateTime]);
+
+  // [추가] 날짜가 바뀌면 백엔드에서 해당 날짜의 예약 가능 시간을 불러옴
+  useEffect(() => {
+    let abort = false;
+
+    async function loadSlots() {
+      if (!enableTime) {
+        setTimeSlots([]);
+        return;
+      }
+      if (!isValidDate(date)) {
+        setTimeSlots([]);
+        setTime('');
+        return;
+      }
+      try {
+        const res = await fetch(`/api/applications/stringing/reserved?date=${date}`, {
+          cache: 'no-store',
+        });
+        if (!res.ok) throw new Error('시간대 조회 실패');
+        const data = await res.json();
+        if (abort) return;
+        const slots: string[] = Array.isArray(data?.availableTimes) ? data.availableTimes : [];
+        setTimeSlots(slots);
+
+        // 현재 선택된 시간이 유효하지 않으면 초기화
+        if (!slots.includes(time)) setTime('');
+      } catch (e) {
+        console.error('[TimeSlots] load error', e);
+        if (!abort) {
+          setTimeSlots([]);
+          setTime('');
+        }
+      }
+    }
+
+    loadSlots();
+    return () => {
+      abort = true;
+    };
+  }, [date, enableTime]); // [추가]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +163,8 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
           <div className={enableTime ? '' : 'opacity-50 pointer-events-none'}>
             <Input id="desiredDate" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
             <TimeSlotSelector selected={time} times={timeSlots} selectedDate={date} onSelect={setTime} />
+            {/* [추가] 안내 문구 */}
+            {enableTime && isValidDate(date) && timeSlots.length === 0 && <p className="text-xs text-muted-foreground mt-1">선택 가능한 시간이 없습니다. 날짜를 다시 선택해보세요.</p>}
           </div>
         </>
       )}
@@ -141,15 +188,7 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
             <Label htmlFor="racketType">라켓 종류</Label>
             <Switch checked={enableRacket} onCheckedChange={handleRacketToggle} />
           </div>
-          <Input
-            id="racketType"
-            type="text"
-            value={racketType}
-            onChange={(e) => setRacketType(e.target.value)}
-            placeholder="예: Yonex EZONE 98"
-            required
-            disabled={!enableRacket} // disabled prop 직접 추가
-          />
+          <Input id="racketType" type="text" value={racketType} onChange={(e) => setRacketType(e.target.value)} placeholder="예: Yonex EZONE 98" required disabled={!enableRacket} />
         </>
       )}
 

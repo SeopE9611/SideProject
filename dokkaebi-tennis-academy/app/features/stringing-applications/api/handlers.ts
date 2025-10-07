@@ -8,6 +8,7 @@ import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { OrderItem } from '@/lib/types/order';
 import { normalizeEmail } from '@/lib/claims';
 import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
+import { onApplicationSubmitted, onStatusUpdated, onScheduleConfirmed, onScheduleUpdated, onApplicationCanceled, onScheduleCanceled } from '@/app/features/notifications/triggers/stringing';
 
 // 진행(점유)으로 간주하는 상태들 — 프로젝트 정책에 맞게 조정 가능
 // '교체완료'는 점유 해제로 본다는 가정(완료 후 새 신청 허용).
@@ -19,6 +20,10 @@ export async function handleGetStringingApplication(req: Request, id: string) {
   const db = await getDb();
 
   try {
+    // 단일 조회 핸들러의 id 검사
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
     const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
     if (!app) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -65,7 +70,12 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     // total 계산
     const total = items.reduce((sum, x) => sum + x.price * x.quantity, 0);
 
-    const order = await db.collection('orders').findOne({ _id: new ObjectId(app.orderId) }, { projection: { items: 1 } });
+    // 주문 조회 전에 orderId가 없을 수 있는 경우 방어
+    let order: any = null;
+    if (app.orderId && ObjectId.isValid(app.orderId)) {
+      order = await db.collection('orders').findOne({ _id: new ObjectId(app.orderId) }, { projection: { items: 1 } });
+    }
+
     const rawOrderItems = (order?.items ?? []) as { productId: string; quantity: number }[];
 
     const orderStrings = await Promise.all(
@@ -137,19 +147,24 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
   const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
   if (!app) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
 
+  const appDoc = app as NonNullable<typeof app>;
+
+  // PATCH 이전(현재) 문서에 예약 일정이 있었는지 기록
+  const hadScheduleBefore = Boolean(appDoc?.stringDetails?.preferredDate) && Boolean(appDoc?.stringDetails?.preferredTime);
+
   const setFields: any = {};
   const pushHistory: any[] = [];
 
   // 고객정보 변경
   if (name || email || phone || address || addressDetail || postalCode) {
     // 기존 customer 병합
-    const baseCustomer = app.customer ?? {
-      name: app.userSnapshot?.name ?? app.guestName ?? '',
-      email: app.userSnapshot?.email ?? app.guestEmail ?? '',
-      phone: app.guestPhone ?? app.shippingInfo?.phone ?? '',
-      address: app.shippingInfo?.address ?? '',
-      addressDetail: app.shippingInfo?.addressDetail ?? '',
-      postalCode: app.shippingInfo?.postalCode ?? '',
+    const baseCustomer = appDoc.customer ?? {
+      name: appDoc.userSnapshot?.name ?? appDoc.guestName ?? '',
+      email: appDoc.userSnapshot?.email ?? appDoc.guestEmail ?? '',
+      phone: appDoc.guestPhone ?? appDoc.shippingInfo?.phone ?? '',
+      address: appDoc.shippingInfo?.address ?? '',
+      addressDetail: appDoc.shippingInfo?.addressDetail ?? '',
+      postalCode: appDoc.shippingInfo?.postalCode ?? '',
     };
     setFields.customer = {
       ...baseCustomer,
@@ -178,24 +193,28 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
   }
 
   // 스트링 세부정보 변경
+  let hasTimeChange = false; // [추가]
   if (stringDetails) {
     //  스트링 관련 필드 변경 감지
-    const hasTimeChange = typeof stringDetails.desiredDateTime !== 'undefined';
+    hasTimeChange = typeof stringDetails.desiredDateTime !== 'undefined';
     const hasTypesChange = Array.isArray(stringDetails.stringTypes);
     const hasCustomNameChange = 'customStringName' in stringDetails;
     const hasRacketChange = typeof stringDetails.racketType !== 'undefined';
 
     // 날짜/시간
     if (hasTimeChange) {
-      const [date, time] = stringDetails.desiredDateTime!.split('T');
-      setFields['stringDetails.preferredDate'] = date;
-      setFields['stringDetails.preferredTime'] = time;
-      setFields.desiredDateTime = stringDetails.desiredDateTime;
+      const [date, time] = String(stringDetails.desiredDateTime ?? '').split('T');
+      if (date && time) {
+        setFields['stringDetails.preferredDate'] = date;
+        setFields['stringDetails.preferredTime'] = time;
+        setFields.desiredDateTime = stringDetails.desiredDateTime;
+      }
     }
 
     // 스트링 타입 & 커스텀 이름
     if (hasTypesChange) {
-      const types: string[] = Array.isArray(stringDetails.stringTypes) ? stringDetails.stringTypes : app.stringDetails.stringTypes;
+      const prevTypes: string[] = Array.isArray(appDoc?.stringDetails?.stringTypes) ? appDoc.stringDetails.stringTypes : []; // [추가]
+      const types: string[] = Array.isArray(stringDetails.stringTypes) ? stringDetails.stringTypes : prevTypes;
       setFields['stringDetails.stringTypes'] = types;
       setFields['stringDetails.customStringName'] = stringDetails.customStringName ?? null;
     }
@@ -206,13 +225,17 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
     }
 
     // stringItems 재계산
-    if (hasTypesChange || hasCustomNameChange) {
+    if (hasTimeChange || hasTypesChange || hasCustomNameChange) {
+      const typesForItems: string[] = Array.isArray(stringDetails?.stringTypes) ? stringDetails.stringTypes : Array.isArray(appDoc?.stringDetails?.stringTypes) ? appDoc.stringDetails.stringTypes : []; // [추가]
+
       const newItems = await Promise.all(
-        (Array.isArray(stringDetails.stringTypes) ? stringDetails.stringTypes : app.stringDetails.stringTypes).map(async (prodId: any) => {
+        typesForItems.map(async (prodId: any) => {
           if (prodId === 'custom') {
             return {
               id: 'custom',
-              name: stringDetails.customStringName?.trim() || '커스텀 스트링',
+              name: stringDetails?.customStringName?.trim() || appDoc?.stringDetails?.customStringName || '커스텀 스트링',
+              price: getStringingServicePrice('custom', true), // [추가] 커스텀도 price 포함
+              quantity: 1, // [추가]
             };
           }
           const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1, mountingFee: 1 } });
@@ -220,13 +243,14 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
             id: prodId,
             name: prod?.name ?? '알 수 없는 상품',
             price: prod?.mountingFee ?? getStringingServicePrice(prodId, false),
+            quantity: 1, // [추가]
           };
         })
       );
       setFields['stringDetails.stringItems'] = newItems;
 
       // 스트링 요금(newItems) 합산하여 totalPrice 자동 설정
-      const calculatedTotal = newItems.reduce((sum, x) => sum + x.price * (x.quantity ?? 1), 0);
+      const calculatedTotal = newItems.reduce((sum, x) => sum + (Number(x.price) || 0) * (Number(x.quantity) || 1), 0); // [추가] 안전 합산
       setFields.totalPrice = calculatedTotal;
       pushHistory.push({
         status: '결제 금액 자동 업데이트',
@@ -243,7 +267,7 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
       });
     }
 
-    if (typeof stringDetails.requirements !== 'undefined' && stringDetails.requirements !== app.stringDetails?.requirements) {
+    if (typeof stringDetails.requirements !== 'undefined' && stringDetails.requirements !== appDoc.stringDetails?.requirements) {
       setFields['stringDetails.requirements'] = stringDetails.requirements;
       pushHistory.push({
         status: '요청사항 수정',
@@ -264,13 +288,13 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
   }
 
   // 동기화: 연결된 일반 주문서가 있으면 고객 정보 / 입금자명 반영
-  if (app.orderId && ObjectId.isValid(app.orderId)) {
+  if (appDoc.orderId && ObjectId.isValid(appDoc.orderId)) {
     const ordersColl = db.collection('orders');
-    const order = await ordersColl.findOne({ _id: new ObjectId(app.orderId) });
+    const order = await ordersColl.findOne({ _id: new ObjectId(appDoc.orderId) });
     if (order) {
       // 고객 정보 동기화
       if (setFields.customer) {
-        await ordersColl.updateOne({ _id: new ObjectId(app.orderId) }, {
+        await ordersColl.updateOne({ _id: new ObjectId(appDoc.orderId) }, {
           $set: {
             customer: {
               ...((order as any).customer ?? {}),
@@ -294,7 +318,7 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 
       // 입금자명(depositor) 동기화 (스트링 신청서에서 변경된 경우)
       if (typeof depositor !== 'undefined') {
-        await ordersColl.updateOne({ _id: new ObjectId(app.orderId) }, {
+        await ordersColl.updateOne({ _id: new ObjectId(appDoc.orderId) }, {
           $set: { 'shippingInfo.depositor': depositor },
           $push: {
             history: {
@@ -307,8 +331,45 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
       }
     }
   }
+
+  // [교체] 예약 일시가 변경된 경우에만 알림 전송(상태 기반으로 확정/변경 분기)
+  if (hasTimeChange) {
+    const appAfter = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
+    if (appAfter) {
+      const STATUS_VALUES = ['draft', '검토 중', '접수완료', '작업 중', '교체완료', '취소'] as const; // [추가]
+      type AppStatus = (typeof STATUS_VALUES)[number]; // [추가]
+      const toAppStatus = (s: string): AppStatus | null => ((STATUS_VALUES as readonly string[]).includes(s) ? (s as AppStatus) : null); // [추가]
+
+      const userCtx = {
+        name: appAfter?.customer?.name ?? appAfter?.userSnapshot?.name ?? appAfter?.guestName ?? undefined,
+        email: appAfter?.customer?.email ?? appAfter?.userSnapshot?.email ?? appAfter?.guestEmail,
+      };
+      const appStatus: AppStatus = toAppStatus(appAfter.status ?? '') ?? '검토 중'; // [추가]
+      const appCtx = {
+        applicationId: String(appAfter._id),
+        orderId: appAfter?.orderId ? String(appAfter.orderId) : null,
+        status: appStatus,
+        stringDetails: appAfter?.stringDetails,
+        shippingInfo: appAfter?.shippingInfo,
+      };
+
+      // 규칙:
+      // - 접수완료가 아니면 → '예약 변경 안내'
+      // - 접수완료면서 이전 일정이 없었으면 → '예약 확정 안내'
+      // - 접수완료면서 이전 일정이 있었으면 → '예약 변경 안내'
+      if (appStatus !== '접수완료') {
+        await onScheduleUpdated({ user: userCtx, application: appCtx }); // [추가]
+      } else {
+        // 이전 일정 존재 여부 판단을 위해 PATCH 전에 계산한 hadScheduleBefore를 사용
+        if (!hadScheduleBefore) await onScheduleConfirmed({ user: userCtx, application: appCtx }); // [추가]
+        else await onScheduleUpdated({ user: userCtx, application: appCtx }); // [추가]
+      }
+    }
+  }
+
   return NextResponse.json({ success: true });
 }
+
 // ========== 신청서의 상태 업데이트 ==========
 export async function handleUpdateApplicationStatus(req: Request, context: { params: { id: string } }) {
   // 쿠키에서 accessToken 추출
@@ -325,10 +386,20 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
   if (!ObjectId.isValid(id)) return new NextResponse('Invalid ID', { status: 400 }); // MongoDB ObjectId 형식 검증
 
   // 요청 본문에서 status 값 추출
-  const { status } = await req.json();
-  if (!status || typeof status !== 'string') {
+  const { status: statusStr } = await req.json(); // [추가] 변수명 명확화
+  if (!statusStr || typeof statusStr !== 'string') {
     return NextResponse.json({ error: '상태값 누락 또는 형식 오류' }, { status: 400 });
   }
+
+  // [추가] 상태 유니온 타입 보장
+  const STATUS_VALUES = ['draft', '검토 중', '접수완료', '작업 중', '교체완료', '취소'] as const; // [추가]
+  type AppStatus = (typeof STATUS_VALUES)[number]; // [추가]
+  const toAppStatus = (s: string): AppStatus | null => ((STATUS_VALUES as readonly string[]).includes(s) ? (s as AppStatus) : null); // [추가]
+  const status = toAppStatus(statusStr); // [추가]
+  if (!status) {
+    // [추가]
+    return NextResponse.json({ error: '허용되지 않는 상태값입니다.' }, { status: 400 });
+  } // [추가]
 
   // MongoDB 연결
   const client = await clientPromise;
@@ -362,6 +433,50 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
     return NextResponse.json({ error: '신청서를 찾을 수 없습니다.' }, { status: 404 });
   }
 
+  // [추가] 공통 컨텍스트 구성 (아래 분기들에서 재사용)
+  const appDoc = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) }); // [추가]
+  if (!appDoc) {
+    // [추가]
+    return NextResponse.json({ error: '신청서를 찾을 수 없습니다.' }, { status: 404 }); // [추가]
+  } // [추가]
+
+  const userCtx = {
+    // [추가]
+    name: appDoc?.customer?.name ?? appDoc?.userSnapshot?.name ?? appDoc?.guestName ?? undefined,
+    email: appDoc?.customer?.email ?? appDoc?.userSnapshot?.email ?? appDoc?.guestEmail,
+  };
+
+  const appCtx = {
+    // [추가]
+    applicationId: id,
+    orderId: appDoc?.orderId ? String(appDoc.orderId) : null,
+    status, // 위에서 유효성 보장된 유니온
+    stringDetails: appDoc?.stringDetails,
+    shippingInfo: appDoc?.shippingInfo,
+  };
+
+  const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/admin/applications/stringing/${id}`; // [추가]
+
+  // [추가] 알림: 상태 변경 (사용자 메일 + 운영자 슬랙)
+  if (status !== '취소') {
+    await onStatusUpdated({ user: userCtx, application: appCtx, adminDetailUrl });
+  }
+  // '접수완료'로 바뀌었고 일정이 있으면 → 예약 확정 안내(ICS)  [추가]
+  if (status === '접수완료') {
+    // [추가]
+    const hasSchedule = Boolean(appDoc?.stringDetails?.preferredDate) && Boolean(appDoc?.stringDetails?.preferredTime);
+    if (hasSchedule) {
+      await onScheduleConfirmed({ user: userCtx, application: appCtx }); // [추가]
+    }
+  }
+
+  // '취소'로 바뀌었을 때 → "신청 취소 안내" 한 통만 발송하고 종료
+  if (status === '취소') {
+    await onApplicationCanceled({ user: userCtx, application: appCtx }); // 신청 취소 안내 한 통만
+
+    // 상태 업데이트 메일은 생략 (이미 위에서 status !== '취소' 조건으로 막혀있음)
+    return NextResponse.json({ success: true }); // 조기 종료: 아래 로직으로 안 내려가게
+  }
   //  정상 처리 시 성공 응답 반환
   return NextResponse.json({ success: true });
 }
@@ -782,6 +897,22 @@ export async function handleSubmitStringingApplication(req: Request) {
         },
       }
     );
+
+    // [추가] 알림: 접수 완료 (사용자 메일 + 운영자 슬랙)
+    // [추가] 상태 유니온 타입 보장 유틸(로컬)
+    const STATUS_VALUES = ['draft', '검토 중', '접수완료', '작업 중', '교체완료', '취소'] as const; // [추가]
+    type AppStatus = (typeof STATUS_VALUES)[number]; // [추가]
+    const userCtx = { name, email: contactEmail || email }; // [추가]
+    const appCtx = {
+      // [추가]
+      applicationId: String(result.insertedId),
+      orderId: orderId ? String(orderId) : null,
+      status: '검토 중' as AppStatus,
+      stringDetails: { preferredDate, preferredTime, racket: racketType, stringTypes },
+      shippingInfo,
+    };
+    const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/admin/applications/stringing/${String(result.insertedId)}`; // [추가]
+    await onApplicationSubmitted({ user: userCtx, application: appCtx, adminDetailUrl }); // [추가]
 
     return NextResponse.json({ message: 'success', applicationId: result.insertedId }, { status: 201 });
   } catch (e) {
