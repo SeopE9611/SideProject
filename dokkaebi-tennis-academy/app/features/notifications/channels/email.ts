@@ -19,7 +19,7 @@ export async function sendEmail({ to, subject, html, ics, bcc }: SendEmailArgs) 
     throw new Error('SMTP env not set (SMTP_HOST/SMTP_USER/SMTP_PASS)');
   }
 
-  // ===안전밸브: 허용목록 외 수신자 차단 ===
+  // ==안전밸브: 허용목록 외 수신자 차단 ==
   const SAFE_MODE = process.env.SAFE_MODE === 'true';
   const allowSet = new Set(
     (process.env.SAFE_RCPT_ALLOWLIST ?? '')
