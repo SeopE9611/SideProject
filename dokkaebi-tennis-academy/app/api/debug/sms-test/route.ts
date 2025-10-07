@@ -1,34 +1,23 @@
 import { NextResponse } from 'next/server';
-
-// Solapi SDK
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SolapiMessageService } = require('solapi');
 
-export async function GET() {
-  const apiKey = process.env.SOLAPI_API_KEY;
-  const apiSecret = process.env.SOLAPI_API_SECRET;
-  const from = process.env.SOLAPI_SENDER;
+const normalize = (n?: string) => (n || '').replace(/[^\d]/g, '');
 
-  if (!apiKey || !apiSecret || !from) {
-    return NextResponse.json({ ok: false, error: 'Missing SOLAPI env vars' }, { status: 500 });
-  }
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const toParam = normalize(url.searchParams.get('to') || '');
+  const text = url.searchParams.get('text') || '[도깨비] SMS 테스트';
 
-  // 받는 번호: 우선 본인 휴대폰으로 테스트 (숫자만)
-  const to = from;
+  const apiKey = process.env.SOLAPI_API_KEY!;
+  const apiSecret = process.env.SOLAPI_API_SECRET!;
+  const from = normalize(process.env.SOLAPI_SENDER!);
+  const to = toParam || from; // to 없으면 본인에게
 
   try {
-    const messageService = new SolapiMessageService(apiKey, apiSecret);
-
-    // 90자 초과면 LMS로 자동 전환하도록 간단 메시지
-    await messageService.sendOne({
-      to,
-      from,
-      text: '[도깨비 테니스] SMS 테스트입니다. 이 메시지가 도착하면 Solapi 연동 OK!',
-    });
-
-    return NextResponse.json({ ok: true, sentTo: to });
+    const svc = new SolapiMessageService(apiKey, apiSecret);
+    await svc.sendOne({ to, from, text, type: text.length > 90 ? 'LMS' : 'SMS' });
+    return NextResponse.json({ ok: true, sentTo: to, text });
   } catch (e: any) {
-    console.error('[sms-test] error:', e);
     return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
   }
 }
