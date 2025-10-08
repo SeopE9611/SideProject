@@ -125,12 +125,12 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white dark:from-blue-700 dark:via-purple-700 dark:to-teal-700">
+        <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
         <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
         <div className="relative container py-16">
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-full">
+            <div className="p-3 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full">
               <CreditCard className="h-8 w-8" />
             </div>
             <div>

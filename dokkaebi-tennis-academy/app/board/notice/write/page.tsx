@@ -1,9 +1,7 @@
 'use client';
 
-import type React from 'react';
-
 import Link from 'next/link';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -419,7 +417,11 @@ export default function NoticeWritePage() {
                       return (
                         <li key={att.url + idx} className="flex items-center justify-between gap-3 p-3">
                           <div className="flex items-center gap-3 min-w-0">
-                            {isImage ? <img src={att.url} alt={att.name ?? 'image'} className="h-10 w-10 rounded object-cover border" /> : <div className="h-10 w-10 flex items-center justify-center rounded border text-xs text-gray-500">FILE</div>}
+                            {isImage ? (
+                              <img src={att.url || '/placeholder.svg'} alt={att.name ?? 'image'} className="h-10 w-10 rounded object-cover border" />
+                            ) : (
+                              <div className="h-10 w-10 flex items-center justify-center rounded border text-xs text-gray-500">FILE</div>
+                            )}
                             <div className="min-w-0">
                               <div className="truncate text-sm font-medium">{att.name ?? att.url}</div>
                               <div className="text-xs text-gray-500">{att.size ? `${(att.size / 1024).toFixed(0)} KB` : ''}</div>
@@ -594,16 +596,26 @@ export default function NoticeWritePage() {
 
                   {viewerImages.length > 1 && (
                     <>
-                      <button type="button" onClick={prevViewer} className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 hover:bg-white/30" aria-label="이전">
+                      <button
+                        type="button"
+                        onClick={prevViewer}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40"
+                        aria-label="이전"
+                      >
                         <ChevronLeft className="h-5 w-5" />
                       </button>
-                      <button type="button" onClick={nextViewer} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 hover:bg-white/30" aria-label="다음">
+                      <button
+                        type="button"
+                        onClick={nextViewer}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40"
+                        aria-label="다음"
+                      >
                         <ChevronRight className="h-5 w-5" />
                       </button>
                     </>
                   )}
 
-                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 hover:bg-white/30" aria-label="닫기">
+                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40" aria-label="닫기">
                     <X className="h-5 w-5" />
                   </button>
                 </div>

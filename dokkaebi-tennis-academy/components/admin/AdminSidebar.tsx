@@ -17,7 +17,7 @@ const SECTIONS = [
       { title: '주문 관리', href: '/admin/orders', icon: PackageSearch, key: 'orders' as const },
       { title: '상품 관리', href: '/admin/products', icon: Boxes, key: 'products' as const },
       { title: '패키지 관리', href: '/admin/packages', icon: Package, key: 'packages' as const },
-      { title: '패키지 설정', href: '/admin/packages/settings', icon: Cog },
+      // { title: '패키지 설정', href: '/admin/packages/settings', icon: Cog },
       { title: '예약 · 영업일 설정', href: '/admin/scheduling', icon: CalendarClock },
     ],
   },

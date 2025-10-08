@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
-import { ApiResponse, OrderWithType } from '@/lib/types/order';
-import { ArrowUpDown, ChevronDown, Copy, Download, Eye, Filter, MoreHorizontal, Search, Truck, X } from 'lucide-react';
+import type { ApiResponse, OrderWithType } from '@/lib/types/order';
+import { ChevronDown, Copy, Eye, MoreHorizontal, Search, Truck, X } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -11,11 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { shortenId } from '@/lib/shorten';
-import { toast } from 'sonner';
-import { badgeBase, badgeSizeSm, getShippingBadge, orderStatusColors, orderTypeColors, paymentStatusColors, shippingStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, getShippingBadge, orderStatusColors, orderTypeColors, paymentStatusColors } from '@/lib/badge-style';
 import CustomerTypeFilter from '@/app/features/orders/components/order-filters/CustomerTypeFilter';
 import { OrderStatusFilter } from '@/app/features/orders/components/order-filters/OrderStatusFilter';
 import { PaymentStatusFilter } from '@/app/features/orders/components/order-filters/PaymentStatusFilter';
@@ -255,7 +253,7 @@ export default function OrdersClient() {
         </div>
 
         {/* 필터 및 검색 카드 */}
-        <Card className="mb-5 rounded-xl border-gray-200 bg-white shadow-md px-6 py-5">
+        <Card className="mb-5 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-6 py-5">
           <CardHeader className="pb-3">
             <CardTitle>필터 및 검색</CardTitle>
             <CardDescription className="text-xs">주문 상태, 유형, 결제 상태로 필터링하거나 주문 ID, 고객명, 이메일로 검색하세요.</CardDescription>
@@ -282,7 +280,7 @@ export default function OrdersClient() {
                 <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
                 <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
                 <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
-                <Button variant="outline" size="sm" onClick={resetFilters} className="w-full">
+                <Button variant="outline" size="sm" onClick={resetFilters} className="w-full bg-transparent">
                   필터 초기화
                 </Button>
               </div>
@@ -291,7 +289,7 @@ export default function OrdersClient() {
         </Card>
 
         {/* 주문 목록 테이블 */}
-        <Card className="rounded-xl border-gray-200 bg-white shadow-md px-4 py-5">
+        <Card className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-4 py-5">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               {data ? (
@@ -301,8 +299,8 @@ export default function OrdersClient() {
                 </>
               ) : (
                 <>
-                  <Skeleton className="h-5 w-24 rounded bg-gray-200" />
-                  <Skeleton className="h-4 w-36 rounded bg-gray-100" />
+                  <Skeleton className="h-5 w-24 rounded bg-gray-200 dark:bg-gray-700" />
+                  <Skeleton className="h-4 w-36 rounded bg-gray-100 dark:bg-gray-600" />
                 </>
               )}
             </div>
@@ -314,7 +312,7 @@ export default function OrdersClient() {
                   <TableHead className={cn(thClasses, 'w-[140px]')}>주문 ID</TableHead>
                   <TableHead onClick={() => handleSort('customer')} className={cn(thClasses, 'text-center cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'customer' && 'text-primary')}>
                     고객
-                    <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
+                    <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 dark:text-gray-600 transition-transform', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
                   </TableHead>
                   <TableHead className={cn(thClasses, 'w-36')}>
                     <div className="flex items-center justify-center gap-2">
@@ -331,7 +329,7 @@ export default function OrdersClient() {
                   <TableHead className={cn(thClasses, 'text-center')}>유형</TableHead>
                   <TableHead onClick={() => handleSort('total')} className={cn(thClasses, 'text-center cursor-pointer select-none', sortBy === 'total' && 'text-primary')}>
                     금액
-                    <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
+                    <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 dark:text-gray-600 transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
                   </TableHead>
                   <TableHead className={cn(thClasses, 'text-center')}>…</TableHead>
                 </TableRow>
@@ -339,7 +337,7 @@ export default function OrdersClient() {
               <TableBody>
                 {error ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center text-red-500">
+                    <TableCell colSpan={9} className="text-center text-red-500 dark:text-red-400">
                       주문 데이터를 불러오는 중 오류가 발생했습니다.
                     </TableCell>
                   </TableRow>
@@ -367,7 +365,13 @@ export default function OrdersClient() {
                   </TableRow>
                 ) : (
                   groupLinkedOrders(sortedOrders).map((group, groupIdx) => {
-                    const borderColors = ['border-blue-300', 'border-green-300', 'border-purple-300', 'border-pink-300', 'border-orange-300'];
+                    const borderColors = [
+                      'border-blue-300 dark:border-blue-600',
+                      'border-green-300 dark:border-green-600',
+                      'border-purple-300 dark:border-purple-600',
+                      'border-pink-300 dark:border-pink-600',
+                      'border-orange-300 dark:border-orange-600',
+                    ];
                     const borderColor = borderColors[groupIdx % borderColors.length];
                     const isGrouped = group.length > 1;
 
@@ -413,8 +417,8 @@ export default function OrdersClient() {
                         <TableCell className={tdClasses}>
                           <div className="flex flex-col items-center">
                             <span className="flex items-center">
-                              {/* “이름”만 남기기 */}
-                              {order.customer.name.replace(/\s*\(비회원\)$/, '').replace(/\s*\(탈퇴한 회원\)$/, '')}
+                              {/* "이름"만 남기기 */}
+                              {order.customer.name.replace(/\s*$$비회원$$$/, '').replace(/\s*$$탈퇴한 회원$$$/, '')}
                               {/*  탈퇴한 회원 레이블 (기존 getDisplayUserType) */}
                               {getDisplayUserType(order) && <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">{getDisplayUserType(order)}</span>}
                               {/*  비회원 레이블 */}
@@ -505,12 +509,7 @@ export default function OrdersClient() {
 
                 {getPaginationItems(page, totalPages).map((it, idx) =>
                   typeof it === 'number' ? (
-                    <Button
-                      key={`page-${it}`} // ← 고유 key
-                      size="sm"
-                      variant={it === page ? 'default' : 'outline'}
-                      onClick={() => setPage(it)}
-                    >
+                    <Button key={`page-${it}`} size="sm" variant={it === page ? 'default' : 'outline'} onClick={() => setPage(it)}>
                       {it}
                     </Button>
                   ) : (

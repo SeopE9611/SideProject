@@ -1,6 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default function BoardsLoading() {
   return (
@@ -33,7 +33,7 @@ export default function BoardsLoading() {
               <Skeleton className="h-10 w-full sm:w-[300px]" />
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-md border dark:border-gray-700">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -109,5 +109,5 @@ export default function BoardsLoading() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

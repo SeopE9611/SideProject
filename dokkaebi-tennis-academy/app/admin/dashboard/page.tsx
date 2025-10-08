@@ -159,8 +159,8 @@ export default async function AdminDashboardPage() {
             <BarChart3 className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">관리자 대시보드</h1>
-            <p className="mt-2 text-lg text-gray-600">도깨비 테니스 아카데미의 전체 현황을 한눈에 확인하세요</p>
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 md:text-5xl">관리자 대시보드</h1>
+            <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">도깨비 테니스 아카데미의 전체 현황을 한눈에 확인하세요</p>
           </div>
         </div>
       </div>
@@ -168,20 +168,24 @@ export default async function AdminDashboardPage() {
       {/* 주요 통계 카드 */}
       <div className="mb-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="overflow-hidden border-0 bg-white/80 shadow-xl backdrop-blur-sm transition-all duration-200 hover:shadow-2xl hover:scale-105">
+          <Card key={index} className="overflow-hidden border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm transition-all duration-200 hover:shadow-2xl hover:scale-105">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className={`rounded-xl p-3 ${stat.bgColor}`}>
+                <div className={`rounded-xl p-3 ${stat.bgColor} dark:${stat.bgColor.replace('50', '900/30')}`}>
                   <div className={stat.iconColor}>{stat.icon}</div>
                 </div>
-                <div className={`text-sm font-semibold ${stat.trend === 'up' ? 'text-emerald-600' : 'text-red-600'} bg-gradient-to-r ${stat.trend === 'up' ? 'from-emerald-50 to-teal-50' : 'from-red-50 to-pink-50'} px-2 py-1 rounded-full`}>
+                <div
+                  className={`text-sm font-semibold ${stat.trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} bg-gradient-to-r ${
+                    stat.trend === 'up' ? 'from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30' : 'from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30'
+                  } px-2 py-1 rounded-full`}
+                >
                   {stat.change}
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-600 mb-1">{stat.title}</h3>
-                <p className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</p>
-                <p className="text-xs text-gray-500">{stat.description}</p>
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{stat.title}</h3>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">{stat.value}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{stat.description}</p>
               </div>
             </CardContent>
           </Card>
@@ -193,25 +197,29 @@ export default async function AdminDashboardPage() {
         {/* 추가 통계 카드 */}
         <div className="lg:col-span-2">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">상세 통계</h2>
-            <p className="text-gray-600">비즈니스 성과를 자세히 분석해보세요</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">상세 통계</h2>
+            <p className="text-gray-600 dark:text-gray-400">비즈니스 성과를 자세히 분석해보세요</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2">
             {additionalStats.map((stat, index) => (
-              <Card key={index} className="overflow-hidden border-0 bg-white/80 shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+              <Card key={index} className="overflow-hidden border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`rounded-xl p-3 ${stat.bgColor}`}>
+                    <div className={`rounded-xl p-3 ${stat.bgColor} dark:${stat.bgColor.replace('50', '900/30')}`}>
                       <div className={stat.iconColor}>{stat.icon}</div>
                     </div>
-                    <div className={`text-sm font-semibold ${stat.trend === 'up' ? 'text-emerald-600' : 'text-red-600'} bg-gradient-to-r ${stat.trend === 'up' ? 'from-emerald-50 to-teal-50' : 'from-red-50 to-pink-50'} px-2 py-1 rounded-full`}>
+                    <div
+                      className={`text-sm font-semibold ${stat.trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} bg-gradient-to-r ${
+                        stat.trend === 'up' ? 'from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30' : 'from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30'
+                      } px-2 py-1 rounded-full`}
+                    >
                       {stat.change}
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-600 mb-1">{stat.title}</h3>
-                    <p className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</p>
-                    <p className="text-xs text-gray-500">{stat.description}</p>
+                    <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{stat.title}</h3>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">{stat.value}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{stat.description}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -222,24 +230,24 @@ export default async function AdminDashboardPage() {
         {/* 최근 활동 */}
         <div>
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">최근 활동</h2>
-            <p className="text-gray-600">실시간 시스템 활동을 확인하세요</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">최근 활동</h2>
+            <p className="text-gray-600 dark:text-gray-400">실시간 시스템 활동을 확인하세요</p>
           </div>
-          <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-900">활동 로그</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">활동 로그</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="space-y-1">
                 {recentActivities.map((activity, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-4 hover:bg-gray-50/80 transition-colors">
-                    <div className={`rounded-lg p-2 ${activity.bgColor} mt-0.5`}>
+                  <div key={index} className="flex items-start space-x-3 p-4 hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className={`rounded-lg p-2 ${activity.bgColor} dark:${activity.bgColor.replace('50', '900/30')} mt-0.5`}>
                       <div className={activity.color}>{activity.icon}</div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-gray-900">{activity.title}</h4>
-                      <p className="text-sm text-gray-600 mt-0.5">{activity.description}</p>
-                      <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{activity.title}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{activity.description}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{activity.time}</p>
                     </div>
                   </div>
                 ))}
@@ -251,7 +259,7 @@ export default async function AdminDashboardPage() {
 
       {/* 빠른 액션 버튼 */}
       <div className="mt-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">빠른 액션</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">빠른 액션</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="border-0 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl hover:scale-105 cursor-pointer">
             <CardContent className="p-6 text-center">

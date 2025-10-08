@@ -1,5 +1,7 @@
 'use client';
 
+import type React from 'react';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Copy, Eye, Filter, MoreHorizontal, Search, X, Package, Calendar, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
@@ -11,7 +13,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import AuthGuard from '@/components/auth/AuthGuard';
 import useSWR from 'swr';
@@ -149,50 +150,17 @@ export default function PackageOrdersClient() {
   type SortKey = 'customer' | 'purchaseDate' | 'expiryDate' | 'remainingSessions' | 'price' | 'status' | 'payment' | 'package' | 'progress';
   const [sortBy, setSortBy] = useState<SortKey | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const SortIcon = (k: SortKey) => (
-    <ChevronDown
-      className={cn(
-        // 아이콘 크기/정렬
-        'inline-block h-3 w-3 shrink-0 align-middle transition-transform',
-        // 현재 정렬키 여부에 따라 투명도 조절
-        sortBy === k ? 'opacity-80' : 'opacity-50',
-        // 내림차순이면 화살표 뒤집기
-        sortBy === k && sortDirection === 'desc' && 'rotate-180'
-      )}
-      aria-hidden="true" // 스크린리더는 th의 aria-sort를 이용
-    />
-  );
-
-  // 정렬 가능한 TH (키보드 접근/포커스 링/a11y)
-  function SortableTH({ k, className = '', label }: { k: SortKey; className?: string; label: React.ReactNode }) {
-    return (
-      <TableHead
-        className={cn(thClasses, className)}
-        role="columnheader"
-        aria-sort={ariaSort(k)} // 스크린리더가 현재 정렬 상태 파악
-      >
-        <button
-          type="button"
-          onClick={() => handleSort(k)}
-          className={cn('inline-flex w-full items-center justify-center gap-1 cursor-pointer select-none', 'hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded', sortBy === k && 'text-primary')}
-        >
-          {label} {SortIcon(k)}
-          <span className="sr-only">정렬</span>
-        </button>
-      </TableHead>
-    );
-  }
 
   // URL 동기화 훅
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const didInitFromURL = useRef(false); // 초기 URL -> state 적용 완료 플래그
+  const didInitFromURL = useRef(false);
 
   // 기본값(디폴트 상태)
   const DEFAULTS = {
     page: 1 as number,
-    limit: 10 as number, // 이미 limit=10 사용 중
+    limit: 10 as number,
     status: 'all' as 'all' | PassStatus,
     package: 'all' as 'all' | PackageType,
     payment: 'all' as 'all' | PaymentStatus,
@@ -207,33 +175,25 @@ export default function PackageOrdersClient() {
     const params = new URLSearchParams();
     if (searchTerm?.trim()) params.set('q', searchTerm.trim());
     if (statusFilter !== 'all') params.set('status', statusFilter);
-    if (packageTypeFilter !== 'all') params.set('package', packageTypeFilter.replace('회권', '')); // '10' | '30' ...
+    if (packageTypeFilter !== 'all') params.set('package', packageTypeFilter.replace('회권', ''));
     if (paymentFilter !== 'all') params.set('payment', paymentFilter);
     if (serviceTypeFilter !== 'all') params.set('service', serviceTypeFilter);
     if (sortBy) params.set('sort', `${sortBy}:${sortDirection}`);
     if (page !== DEFAULTS.page) params.set('page', String(page));
-    params.set('limit', String(DEFAULTS.limit)); // 명시 유지
+    params.set('limit', String(DEFAULTS.limit));
     return params;
   }
 
   // URLSearchParams -> state 값 파싱
   function parseParamsToState(sp: URLSearchParams) {
-    // page
-    const pageNum = Math.max(1, parseInt(sp.get('page') || String(DEFAULTS.page), 10));
-
-    // q
+    const pageNum = Math.max(1, Number.parseInt(sp.get('page') || String(DEFAULTS.page), 10));
     const q = (sp.get('q') || DEFAULTS.q).trim();
-
-    // status/payment/service
     const status = (sp.get('status') as PassStatus) || DEFAULTS.status;
     const payment = (sp.get('payment') as PaymentStatus) || DEFAULTS.payment;
     const service = (sp.get('service') as ServiceType) || DEFAULTS.service;
-
-    // package: '10' -> '10회권'
     const pkgRaw = sp.get('package');
     const pkg: 'all' | PackageType = pkgRaw && ['10', '30', '50', '100'].includes(pkgRaw) ? ((pkgRaw + '회권') as PackageType) : DEFAULTS.package;
 
-    // sort
     const sortParam = sp.get('sort');
     let sBy: SortKey | null = DEFAULTS.sortBy;
     let sDir: 'asc' | 'desc' = DEFAULTS.sortDirection;
@@ -260,7 +220,6 @@ export default function PackageOrdersClient() {
     const sp = new URLSearchParams(searchParams.toString());
     const parsed = parseParamsToState(sp);
 
-    // 현재 state와 달라야만 setState (루프 방지)
     const needsUpdate =
       parsed.q !== searchTerm ||
       parsed.status !== statusFilter ||
@@ -283,21 +242,21 @@ export default function PackageOrdersClient() {
     }
     didInitFromURL.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]); // URL이 바뀔 때만 동작
+  }, [searchParams]);
 
   // 한 페이지에 보여줄 항목 수
   const limit = 10;
 
   // state가 바뀌면 URL을 갱신(동일하면 noop)
   useEffect(() => {
-    if (!didInitFromURL.current) return; // 초기 URL 반영 끝난 뒤부터 동작
+    if (!didInitFromURL.current) return;
 
     const newParams = buildParamsFromState();
     const newQuery = newParams.toString();
     const currQuery = searchParams.toString();
 
     if (newQuery !== currQuery) {
-      router.replace(`${pathname}?${newQuery}`, { scroll: false }); // 히스토리에 쌓지 않고 교체
+      router.replace(`${pathname}?${newQuery}`, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, searchTerm, statusFilter, packageTypeFilter, paymentFilter, serviceTypeFilter, sortBy, sortDirection, limit]);
@@ -314,9 +273,8 @@ export default function PackageOrdersClient() {
   qs.set('limit', String(limit));
 
   // SWR 요청 전용 쿼리(디바운스만 q에 반영)
-  const swrQs = new URLSearchParams(qs); // 얕은 복사
+  const swrQs = new URLSearchParams(qs);
   if (debouncedSearch !== searchTerm) {
-    // 사용자가 타이핑 중일 때: SWR 키는 디바운스된 값만 사용
     if (debouncedSearch) swrQs.set('q', debouncedSearch);
     else swrQs.delete('q');
   }
@@ -326,6 +284,56 @@ export default function PackageOrdersClient() {
     dedupingInterval: 1000,
     revalidateOnFocus: false,
   });
+
+  // 데이터 준비
+  const packages: PackageListItem[] = data?.items ?? [];
+  const totalPages = useMemo(() => Math.max(1, Math.ceil((data?.total ?? 0) / limit)), [data?.total, limit]);
+
+  const metrics = data?.metrics;
+  const totalCount = data?.total ?? 0;
+
+  // 총 개수 (현재 필터/검색/정렬 조건 기준 전체)
+  const kpiTotal = metrics?.total ?? totalCount;
+
+  // 활성 패키지 수
+  const kpiActive = metrics?.active ?? packages.filter((p) => p.passStatus === '활성').length;
+
+  // 총 매출
+  const kpiRevenue = metrics?.revenue ?? packages.reduce((sum, p) => sum + p.price, 0);
+
+  // 만료 예정
+  const kpiExpSoon = useMemo(() => {
+    if (metrics?.expirySoon !== undefined) return metrics.expirySoon;
+
+    return packages.filter((p) => {
+      const exp = p.expiryDate ?? null;
+      const days = getDaysUntilExpiry(exp);
+      const s = computeListStatus(p.paymentStatus, exp);
+      return s.label !== '취소' && days <= 30 && days > 0;
+    }).length;
+  }, [metrics?.expirySoon, packages]);
+
+  // 페이지 번호 목록(앞·뒤 ... 처리)
+  const pageItems = useMemo<(number | string)[]>(() => {
+    const t = totalPages,
+      c = page;
+    if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
+    const items: (number | string)[] = [1];
+    const start = Math.max(2, c - 1);
+    const end = Math.min(t - 1, c + 1);
+    if (start > 2) items.push('…');
+    for (let i = start; i <= end; i++) items.push(i);
+    if (end < t - 1) items.push('…');
+    items.push(t);
+    return items;
+  }, [page, totalPages]);
+
+  // totalPages가 줄어든 경우 현재 페이지를 자동 보정
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [totalPages, page]);
 
   if (error) {
     return (
@@ -347,48 +355,27 @@ export default function PackageOrdersClient() {
     );
   }
 
-  // 데이터 준비
-  const packages: PackageListItem[] = data?.items ?? [];
-  const totalPages = useMemo(() => Math.max(1, Math.ceil((data?.total ?? 0) / limit)), [data?.total, limit]);
   const goToPage = (p: number) => setPage(Math.min(totalPages, Math.max(1, p)));
 
-  const metrics = data?.metrics;
+  const SortIcon = (k: SortKey) => (
+    <ChevronDown className={cn('inline-block h-3 w-3 shrink-0 align-middle transition-transform', sortBy === k ? 'opacity-80' : 'opacity-50', sortBy === k && sortDirection === 'desc' && 'rotate-180')} aria-hidden="true" />
+  );
 
-  const totalCount = data?.total ?? 0; // 상단 "총 N개의 패키지"에도 이미 사용
-
-  // 총 개수 (현재 필터/검색/정렬 조건 기준 전체)
-  const kpiTotal = metrics?.total ?? totalCount;
-
-  // 활성 패키지 수 (서버가 주면 사용, 아니면 기존 필터)
-  const kpiActive = metrics?.active ?? packages.filter((p) => p.passStatus === '활성').length;
-
-  // 총 매출 (서버는 '결제완료' 합계. 폴백은 기존처럼 페이지 아이템 합)
-  const kpiRevenue = metrics?.revenue ?? packages.reduce((sum, p) => sum + p.price, 0);
-
-  // 만료 예정 (0 < 남은일수 ≤ 30, '취소' 제외)
-  const kpiExpSoon =
-    metrics?.expirySoon ??
-    packages.filter((p) => {
-      const exp = p.expiryDate ?? null;
-      const days = getDaysUntilExpiry(exp);
-      const s = computeListStatus(p.paymentStatus, exp);
-      return s.label !== '취소' && days <= 30 && days > 0;
-    }).length;
-
-  // 페이지 번호 목록(앞·뒤 ... 처리)
-  const pageItems = useMemo<(number | string)[]>(() => {
-    const t = totalPages,
-      c = page;
-    if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
-    const items: (number | string)[] = [1];
-    const start = Math.max(2, c - 1);
-    const end = Math.min(t - 1, c + 1);
-    if (start > 2) items.push('…');
-    for (let i = start; i <= end; i++) items.push(i);
-    if (end < t - 1) items.push('…');
-    items.push(t);
-    return items;
-  }, [page, totalPages]);
+  // 정렬 가능한 TH
+  function SortableTH({ k, className = '', label }: { k: SortKey; className?: string; label: React.ReactNode }) {
+    return (
+      <TableHead className={cn(thClasses, className)} role="columnheader" aria-sort={ariaSort(k)}>
+        <button
+          type="button"
+          onClick={() => handleSort(k)}
+          className={cn('inline-flex w-full items-center justify-center gap-1 cursor-pointer select-none', 'hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded', sortBy === k && 'text-primary')}
+        >
+          {label} {SortIcon(k)}
+          <span className="sr-only">정렬</span>
+        </button>
+      </TableHead>
+    );
+  }
 
   // 날짜 포맷터
   const formatDate = (v?: string | number | Date | null) => {
@@ -404,7 +391,7 @@ export default function PackageOrdersClient() {
     }).format(d);
   };
 
-  // 표용 짧은 날짜 포맷 (한 줄 고정)
+  // 표용 짧은 날짜 포맷
   const formatDateCompact = (v?: string | number | Date | null) => {
     const d = toDateSafe(v);
     if (!d) return '-';
@@ -416,7 +403,7 @@ export default function PackageOrdersClient() {
     return `${yy}.${mm}.${dd} ${hh}:${mi}`;
   };
 
-  // 날짜를 "YY.MM.DD" / "HH:MM" 두 줄로 나눠 쓰기
+  // 날짜를 두 줄로 나눠 쓰기
   const formatDateSplit = (v?: string | number | Date | null) => {
     const d = toDateSafe(v);
     if (!d) return { date: '-', time: '' };
@@ -428,8 +415,7 @@ export default function PackageOrdersClient() {
     return { date: `${yy}.${mm}.${dd}`, time: `${hh}:${mi}` };
   };
 
-  // 날짜 헬퍼
-  // 안전한 Date 변환 유틸 — 함수 선언(호이스팅됨)
+  // 안전한 Date 변환 유틸
   function toDateSafe(v?: string | number | Date | null) {
     if (v == null) return null;
 
@@ -441,7 +427,7 @@ export default function PackageOrdersClient() {
       return Number.isNaN(d.getTime()) ? null : d;
     }
 
-    let s = String(v).trim();
+    const s = String(v).trim();
 
     const direct = new Date(s);
     if (!Number.isNaN(direct.getTime())) return direct;
@@ -455,7 +441,7 @@ export default function PackageOrdersClient() {
       return Number.isNaN(dd.getTime()) ? null : dd;
     }
 
-    const mSep = s.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/);
+    const mSep = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
     if (mSep) {
       const y = Number(mSep[1]);
       const mo = Number(mSep[2]);
@@ -476,7 +462,7 @@ export default function PackageOrdersClient() {
     return null;
   }
 
-  // 만료일까지 남은 일수 — 함수 선언(호이스팅됨)
+  // 만료일까지 남은 일수
   function getDaysUntilExpiry(v?: string | number | Date | null) {
     const d = toDateSafe(v);
     if (!d) return 0;
@@ -491,7 +477,7 @@ export default function PackageOrdersClient() {
   // 금액 포맷터
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
 
-  // 현재 화면이 "필터/검색 적용 중"인지 여부 -> 메시지 분기용
+  // 현재 화면이 "필터/검색 적용 중"인지 여부
   const hasAnyFilter = !!searchTerm || statusFilter !== 'all' || packageTypeFilter !== 'all' || paymentFilter !== 'all' || serviceTypeFilter !== 'all';
 
   // 필터 리셋
@@ -504,13 +490,6 @@ export default function PackageOrdersClient() {
     setPage(1);
   };
 
-  useEffect(() => {
-    // totalPages가 줄어든 경우 현재 페이지를 자동 보정
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [totalPages]);
-
   // 정렬 헤더 클릭 핸들러
   const handleSort = (key: SortKey) => {
     if (sortBy === key) {
@@ -521,16 +500,17 @@ export default function PackageOrdersClient() {
     }
     setPage(1);
   };
+
   // 공통 스타일 상수
   const thClasses =
     'sticky top-0 z-10 whitespace-nowrap px-1.5 py-1.5 text-center align-middle ' +
-    'bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 ' +
-    'border-b border-slate-200 text-slate-600 dark:bg-slate-900/60 dark:border-slate-700 dark:text-slate-300 ' +
+    'bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-slate-900/70 dark:supports-[backdrop-filter]:bg-slate-900/60 ' +
+    'border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 ' +
     'font-semibold text-[11px] leading-[1.05] box-border';
 
   const tdClasses = 'px-3 py-2 align-middle text-center text-[11px] leading-tight tabular-nums';
 
-  // 열별 정렬 (헤더/바디 공통 적용)
+  // 열별 정렬
   const col = {
     id: 'text-center',
     customer: 'text-center',
@@ -545,26 +525,19 @@ export default function PackageOrdersClient() {
     actions: 'text-center',
   } as const;
 
-  // 현재 정렬 상태를 ARIA 규격 문자열로 변환하는 헬퍼
-  // - 인자 k는 정렬 키(이미 존재하는 SortKey 유니온 타입 가정: 'customer' | 'package' | ...)
-  // - 반환값은 스크린리더가 이해하는 정확한 값: 'ascending' | 'descending' | 'none'
+  // ARIA 정렬 상태
   const ariaSort = (k: SortKey) => {
-    // 현재 사용자가 선택한 정렬 키(sortBy)가 이 헤더의 키(k)와 같다면
     if (sortBy === k) {
-      // 정렬 방향이 'asc'면 'ascending', 'desc'면 'descending'을 반환
       return sortDirection === 'asc' ? 'ascending' : 'descending';
     }
-    // 현재 정렬 컬럼이 아니라면 'none'으로 표시
     return 'none';
   };
 
-  // 진행률을 상세 화면과 동일하게 계산: used / (used + remaining)
-  // - 분모가 0인 경우 0%
-  // - 값은 0~100 사이로 클램프
+  // 진행률 계산
   function calcProgressPercent(usedRaw: unknown, remainingRaw: unknown) {
-    const used = Math.max(0, Number(usedRaw) || 0); // 사용횟수(음수 방지)
-    const remaining = Math.max(0, Number(remainingRaw) || 0); // 남은횟수(음수 방지)
-    const total = used + remaining; // 현재 총량(연장/횟수조절 반영)
+    const used = Math.max(0, Number(usedRaw) || 0);
+    const remaining = Math.max(0, Number(remainingRaw) || 0);
+    const total = used + remaining;
     if (total <= 0) return { percent: 0, used, remaining, total };
     const percent = Math.min(100, Math.max(0, Math.round((used / total) * 100)));
     return { percent, used, remaining, total };
@@ -587,7 +560,7 @@ export default function PackageOrdersClient() {
     return { label: '활성', tone: 'success' as const };
   }
 
-  // 상태 뱃지 스타일(필요시 프로젝트 공통 Badge에 맞춰 색상만 바꿔도 됨)
+  // 상태 뱃지 스타일
   function statusBadgeClass(tone: 'destructive' | 'muted' | 'warning' | 'success') {
     switch (tone) {
       case 'destructive':
@@ -607,17 +580,24 @@ export default function PackageOrdersClient() {
     return pkg?.expiryDate ?? null;
   }
 
-  // 스켈레톤 테이블/KPI 숫자 등에 재사용
+  // 스켈레톤
   function SkeletonBox({ className = '' }: { className?: string }) {
     return <div className={cn('animate-pulse rounded bg-slate-200/70 dark:bg-slate-700/50', className)} />;
   }
 
-  // 공통 로딩 플래그 (초기 로딩 or 첫 로딩 중)
+  // 공통 로딩 플래그
   const isInitialLoading = isValidating && !data;
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50">
+      {/* ✅ 그라데이션 충돌 수정: 라이트/다크를 같은 그룹으로 분리 */}
+      <div
+        className="
+          min-h-screen
+          bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50
+          dark:bg-gradient-to-br dark:from-slate-800 dark:via-slate-900 dark:to-black
+        "
+      >
         <div className="container py-6">
           {/* 제목 및 설명 */}
           <div className="flex items-center space-x-3 mb-6">
@@ -625,64 +605,65 @@ export default function PackageOrdersClient() {
               <Package className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold tracking-tight text-gray-900">패키지 관리</h1>
-              <p className="mt-2 text-lg text-gray-600">스트링 교체 서비스 패키지 주문을 관리하고 처리하세요.</p>
+              {/* ✅ 토큰화 */}
+              <h1 className="text-4xl font-bold tracking-tight text-foreground">패키지 관리</h1>
+              <p className="mt-2 text-lg text-muted-foreground">스트링 교체 서비스 패키지 주문을 관리하고 처리하세요.</p>
             </div>
           </div>
 
           {/* 통계 카드 */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-            <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+            <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">총 패키지</p>
-                    <div className="text-3xl font-bold text-gray-900">{isInitialLoading ? <SkeletonBox className="h-7 w-20" /> : kpiTotal}</div>
+                    <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
+                    <div className="text-3xl font-bold text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-20" /> : kpiTotal}</div>
                   </div>
-                  <div className="bg-blue-50 rounded-xl p-3">
-                    <Package className="h-6 w-6 text-blue-600" />
+                  <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3">
+                    <Package className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+            <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">활성 패키지</p>
-                    <div className="text-3xl font-bold text-green-600">{isInitialLoading ? <SkeletonBox className="h-7 w-16" /> : kpiActive}</div>
+                    <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
+                    <div className="text-3xl font-bold text-green-600 dark:text-green-400">{isInitialLoading ? <SkeletonBox className="h-7 w-16" /> : kpiActive}</div>
                   </div>
-                  <div className="bg-green-50 rounded-xl p-3">
-                    <Calendar className="h-6 w-6 text-green-600" />
+                  <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-3">
+                    <Calendar className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+            <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">총 매출</p>
-                    <div className="text-3xl font-bold text-purple-600">{isInitialLoading ? <SkeletonBox className="h-7 w-28" /> : formatCurrency(kpiRevenue)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">총 매출</p>
+                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{isInitialLoading ? <SkeletonBox className="h-7 w-28" /> : formatCurrency(kpiRevenue)}</div>
                   </div>
-                  <div className="bg-purple-50 rounded-xl p-3">
-                    <CreditCard className="h-6 w-6 text-purple-600" />
+                  <div className="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3">
+                    <CreditCard className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+            <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">만료 예정</p>
-                    <div className="text-3xl font-bold text-orange-600">{isInitialLoading ? <SkeletonBox className="h-7 w-14" /> : kpiExpSoon}</div>
+                    <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
+                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{isInitialLoading ? <SkeletonBox className="h-7 w-14" /> : kpiExpSoon}</div>
                   </div>
-                  <div className="bg-orange-50 rounded-xl p-3">
-                    <Calendar className="h-6 w-6 text-orange-600" />
+                  <div className="bg-orange-50 dark:bg-orange-900/30 rounded-xl p-3">
+                    <Calendar className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                   </div>
                 </div>
               </CardContent>
@@ -690,7 +671,7 @@ export default function PackageOrdersClient() {
           </div>
 
           {/* 필터 및 검색 카드 */}
-          <Card className="mb-6 border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+          <Card className="mb-6 border-0 bg-card/80 shadow-lg backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Filter className="h-5 w-5" />
@@ -742,6 +723,7 @@ export default function PackageOrdersClient() {
                       <SelectItem value="취소">취소</SelectItem>
                     </SelectContent>
                   </Select>
+
                   <Select
                     value={packageTypeFilter}
                     onValueChange={(v) => {
@@ -805,7 +787,7 @@ export default function PackageOrdersClient() {
           </Card>
 
           {/* 패키지 목록 테이블 */}
-          <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+          <Card className="border-0 bg-card/80 shadow-lg backdrop-blur-sm">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>패키지 목록</CardTitle>
@@ -815,7 +797,7 @@ export default function PackageOrdersClient() {
               </div>
             </CardHeader>
             <CardContent className="overflow-x-auto md:overflow-x-visible relative px-3 sm:px-4">
-              <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-slate-200 shadow-sm max-h-[60vh] min-w-0">
+              <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm max-h-[60vh] min-w-0">
                 <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs " aria-busy={isValidating && packages.length === 0}>
                   <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-900 shadow-sm">
                     <TableRow>
@@ -913,7 +895,7 @@ export default function PackageOrdersClient() {
                       <TableRow>
                         <TableCell colSpan={11} className="py-12">
                           <div className="flex flex-col items-center gap-3 text-center">
-                            <div className="text-base font-medium text-slate-700">{hasAnyFilter ? '검색 결과가 없습니다.' : '등록된 패키지가 없습니다.'}</div>
+                            <div className="text-base font-medium text-slate-700 dark:text-slate-300">{hasAnyFilter ? '검색 결과가 없습니다.' : '등록된 패키지가 없습니다.'}</div>
                             <div className="text-sm text-muted-foreground">{hasAnyFilter ? '검색어나 필터를 조정해 보세요.' : '첫 패키지를 생성해 보세요.'}</div>
 
                             <div className="mt-2 flex items-center gap-2">
@@ -955,7 +937,8 @@ export default function PackageOrdersClient() {
                           const daysUntilExpiry = getDaysUntilExpiry(expirySource);
 
                           return (
-                            <TableRow key={pkg.id} className="hover:bg-primary/5 transition-colors even:bg-slate-50/60 border-b last:border-0">
+                            // ✅ 라이트/다크 줄 배경 토큰 통일
+                            <TableRow key={pkg.id} className="hover:bg-primary/5 transition-colors even:bg-muted/40 border-b last:border-0">
                               {/* 패키지 ID (복사 토스트 포함) */}
                               <TableCell className={cn(tdClasses)}>
                                 <TooltipProvider>
@@ -990,7 +973,7 @@ export default function PackageOrdersClient() {
                                 {(() => {
                                   const cName = pkg.customer?.name ?? '이름없음';
                                   const cEmail = pkg.customer?.email ?? '';
-                                  const baseName = cName.replace(/\(비회원\)\s*$/, '');
+                                  const baseName = cName.replace(/$$비회원$$\s*$/, '');
                                   const isGuest = cName.includes('(비회원)');
                                   return (
                                     <div className="flex flex-col items-center text-center">
@@ -998,7 +981,7 @@ export default function PackageOrdersClient() {
                                         {baseName}
                                         {isGuest && <span className="ml-1 text-xs text-gray-500">(비회원)</span>}
                                       </span>
-                                      <span className="text-xs text-muted-foreground max-w-[200px] truncate">{cEmail}</span>
+                                      <span className="text-xs text-muted-foreground dark:text-gray-400 max-w-[200px] truncate">{cEmail}</span>
                                     </div>
                                   );
                                 })()}
@@ -1013,14 +996,14 @@ export default function PackageOrdersClient() {
                               <TableCell className={cn(tdClasses, col.remain, 'whitespace-nowrap hidden lg:table-cell')}>
                                 <div className="flex flex-col items-center leading-tight">
                                   <span className="font-bold text-lg">{pkg.remainingSessions}</span>
-                                  <span className="text-xs text-muted-foreground">/ {currentTotal}회</span>
+                                  <span className="text-xs text-muted-foreground">{pkg.totalSessions ?? currentTotal}회</span>
                                 </div>
                               </TableCell>
 
                               {/* 진행률 (바 + %) */}
                               <TableCell className={cn(tdClasses, col.progress, 'whitespace-nowrap')}>
                                 <div className="flex flex-col items-center gap-1">
-                                  <div className="w-[56px] bg-gray-200 rounded-full h-1.5 xl:w-[72px]" role="progressbar" aria-label="진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercentage}>
+                                  <div className="w-[56px] bg-gray-200 rounded-full h-1.5 xl:w-[72px] dark:bg-slate-700" role="progressbar" aria-label="진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercentage}>
                                     <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
                                   </div>
                                   <span className="text-xs font-medium">{progressPercentage}%</span>
@@ -1108,10 +1091,10 @@ export default function PackageOrdersClient() {
                 {/* pagination */}
                 <div className="relative mt-4 h-12">
                   <div className="absolute inset-x-0 top-[55%] -translate-y-1/2 flex items-center justify-center gap-1">
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(1)} disabled={page <= 1} aria-label="첫 페이지">
+                    <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(1)} disabled={page <= 1} aria-label="첫 페이지">
                       <ChevronsLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(page - 1)} disabled={page <= 1} aria-label="이전">
+                    <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(page - 1)} disabled={page <= 1} aria-label="이전">
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     {pageItems.map((it, idx) =>
@@ -1120,15 +1103,15 @@ export default function PackageOrdersClient() {
                           {it}
                         </Button>
                       ) : (
-                        <span key={idx} className="px-2 text-muted-foreground select-none">
+                        <span key={idx} className="px-2 text-muted-foreground dark:text-slate-400 select-none">
                           …
                         </span>
                       )
                     )}
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} aria-label="다음">
+                    <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} aria-label="다음">
                       <ChevronRight className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => goToPage(totalPages)} disabled={page >= totalPages} aria-label="끝 페이지">
+                    <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(totalPages)} disabled={page >= totalPages} aria-label="끝 페이지">
                       <ChevronsRight className="h-4 w-4" />
                     </Button>
                   </div>

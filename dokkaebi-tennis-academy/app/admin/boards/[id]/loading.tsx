@@ -1,6 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 export default function BoardPostDetailLoading() {
   return (
@@ -22,7 +22,7 @@ export default function BoardPostDetailLoading() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          <Card className="md:col-span-2">
+          <Card className="md:col-span-2 dark:bg-gray-800">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
@@ -49,7 +49,7 @@ export default function BoardPostDetailLoading() {
           </Card>
 
           <div className="flex flex-col gap-6">
-            <Card>
+            <Card className="dark:bg-gray-800">
               <CardHeader>
                 <Skeleton className="h-6 w-[120px]" />
               </CardHeader>
@@ -85,7 +85,7 @@ export default function BoardPostDetailLoading() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="dark:bg-gray-800">
               <CardHeader>
                 <Skeleton className="h-6 w-[120px]" />
               </CardHeader>
@@ -114,5 +114,5 @@ export default function BoardPostDetailLoading() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,9 +1,7 @@
 'use client';
 
-import type React from 'react';
-
 import Link from 'next/link';
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -400,7 +398,7 @@ export default function QnaWritePage() {
                               {isImage ? (
                                 previewUrl ? (
                                   // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={previewUrl} alt={file.name} className="w-full h-28 object-cover transition-transform duration-150 group-hover:scale-[1.02]" onClick={() => openViewerFromIndex(index)} role="button" />
+                                  <img src={previewUrl || '/placeholder.svg'} alt={file.name} className="w-full h-28 object-cover transition-transform duration-150 group-hover:scale-[1.02]" onClick={() => openViewerFromIndex(index)} role="button" />
                                 ) : (
                                   <div className="h-28 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
                                 )
@@ -473,22 +471,32 @@ export default function QnaWritePage() {
                 </DialogHeader>
 
                 <div className="relative w-full aspect-video">
-                  {viewerImages[viewerIndex] && <Image src={viewerImages[viewerIndex]} alt={`첨부 이미지 ${viewerIndex + 1}`} fill className="object-contain" priority />}
+                  {viewerImages[viewerIndex] && <Image src={viewerImages[viewerIndex] || '/placeholder.svg'} alt={`첨부 이미지 ${viewerIndex + 1}`} fill className="object-contain" priority />}
 
                   {/* 좌우 이동 */}
                   {viewerImages.length > 1 && (
                     <>
-                      <button type="button" onClick={prevViewer} className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 hover:bg-white/30" aria-label="이전">
+                      <button
+                        type="button"
+                        onClick={prevViewer}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40"
+                        aria-label="이전"
+                      >
                         <ChevronLeft className="h-5 w-5" />
                       </button>
-                      <button type="button" onClick={nextViewer} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 hover:bg-white/30" aria-label="다음">
+                      <button
+                        type="button"
+                        onClick={nextViewer}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40"
+                        aria-label="다음"
+                      >
                         <ChevronRight className="h-5 w-5" />
                       </button>
                     </>
                   )}
 
                   {/* 닫기 */}
-                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 hover:bg-white/30" aria-label="닫기">
+                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40" aria-label="닫기">
                     <X className="h-5 w-5" />
                   </button>
                 </div>
@@ -498,7 +506,7 @@ export default function QnaWritePage() {
                   <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
                     {viewerImages.map((thumb, i) => (
                       <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-blue-400' : ''}`} aria-label={`썸네일 ${i + 1}`}>
-                        <Image src={thumb} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
+                        <Image src={thumb || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
                       </button>
                     ))}
                   </div>

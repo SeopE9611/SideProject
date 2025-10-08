@@ -15,7 +15,7 @@ import type { Order } from '@/lib/types/order';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { bankLabelMap } from '@/lib/constants';
 import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
-import { User, RatIcon as Racquet, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign, SlidersHorizontal, Settings2, Wrench, PanelTopClose, FormInput, ClipboardList, Ticket, Box, Truck, Store } from 'lucide-react';
+import { User, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign, Wrench, ClipboardList, Ticket, Box, Truck, Store } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -60,7 +60,6 @@ export default function StringServiceApplyPage() {
   // - UI에는 영향 없음(프리필/흐름 그대로), 서버/DB 일관성만 강화
   useEffect(() => {
     if (!orderId) return;
-
     (async () => {
       try {
         await fetch('/api/applications/stringing/drafts', {
@@ -194,12 +193,14 @@ export default function StringServiceApplyPage() {
     if (!cacheHit) {
       loadingTimer = setTimeout(() => setSlotsLoading(true), 120);
     }
-
     (async () => {
       try {
         setSlotsError(null);
 
-        const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=1`, { method: 'GET', signal: controller.signal });
+        const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=1`, {
+          method: 'GET',
+          signal: controller.signal,
+        });
 
         if (!res.ok) {
           // 30일 초과/미만 등 '정책 위반'은 서버 메시지를 그대로 노출
@@ -461,7 +462,9 @@ export default function StringServiceApplyPage() {
   async function refetchDisabledTimesFor(date: string) {
     if (!date) return;
     try {
-      const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=1`, { credentials: 'include' });
+      const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=1`, {
+        credentials: 'include',
+      });
       if (!res.ok) return;
       const data = await res.json();
       const times: string[] = Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
@@ -705,8 +708,8 @@ export default function StringServiceApplyPage() {
                     <RadioGroupItem id="cm-self" value="self_ship" className="peer sr-only" />
                     <Label
                       htmlFor="cm-self"
-                      className="block cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:bg-slate-50 transition
-                   peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200"
+                      className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+                   peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800"
                     >
                       <div className="flex items-center gap-2">
                         <Box className="h-4 w-4" />
@@ -721,8 +724,8 @@ export default function StringServiceApplyPage() {
                     <RadioGroupItem id="cm-pickup" value="courier_pickup" className="peer sr-only" />
                     <Label
                       htmlFor="cm-pickup"
-                      className="block cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:bg-slate-50 transition
-                   peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200"
+                      className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+                   peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800"
                     >
                       <div className="flex items-center gap-2">
                         <Truck className="h-4 w-4" />
@@ -737,8 +740,8 @@ export default function StringServiceApplyPage() {
                     <RadioGroupItem id="cm-visit" value="visit" className="peer sr-only" />
                     <Label
                       htmlFor="cm-visit"
-                      className="block cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:bg-slate-50 transition
-                   peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200"
+                      className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+                   peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800"
                     >
                       <div className="flex items-center gap-2">
                         <Store className="h-4 w-4" />
@@ -778,23 +781,23 @@ export default function StringServiceApplyPage() {
             </div>
             {/* 로딩 오버레이 */}
             {isUserLoading && (
-              <div className="absolute inset-0 z-10 rounded-2xl bg-white/45 dark:bg-slate-900/40 backdrop-blur-[2px] ring-1 ring-inset ring-slate-200/60 grid place-content-center">
-                <div className="flex items-center gap-3 text-slate-700">
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-400 border-t-transparent" />
+              <div className="absolute inset-0 z-10 rounded-2xl bg-white/45 dark:bg-slate-900/40 backdrop-blur-[2px] ring-1 ring-inset ring-slate-200/60 dark:ring-slate-700/60 grid place-content-center">
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-400 dark:border-slate-500 border-t-transparent" />
                   <span className="text-sm">회원 정보 불러오는 중…</span>
                 </div>
               </div>
             )}
             {(orderId || isMember) && (
-              <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4">
+              <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
-                  <Shield className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <Shield className="h-5 w-5 text-orange-500 dark:text-orange-400 mt-0.5 flex-shrink-0" />
                   <div className="text-sm">
-                    <p className="font-medium text-orange-800 mb-1">📢 안내사항</p>
-                    <p className="text-orange-700 leading-relaxed">
+                    <p className="font-medium text-orange-800 dark:text-orange-300 mb-1">📢 안내사항</p>
+                    <p className="text-orange-700 dark:text-orange-200 leading-relaxed">
                       신청자 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로 작성됩니다. 회원정보를 수정하셨더라도 <span className="font-semibold">신청자 정보는 변경되지 않습니다.</span>
                       <br />
-                      변경이 필요한 경우, <span className="text-orange-600 font-semibold">추가 요청사항</span>에 기재해주세요.
+                      변경이 필요한 경우, <span className="text-orange-600 dark:text-orange-400 font-semibold">추가 요청사항</span>에 기재해주세요.
                     </p>
                   </div>
                 </div>
@@ -828,10 +831,10 @@ export default function StringServiceApplyPage() {
                     스트링 종류 <span className="text-red-500">*</span>
                   </Label>
                   <div className="mt-2 space-y-2">
-                    <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4">
+                    <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
-                        <Zap className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                        <div className="text-sm text-red-700">
+                        <Zap className="h-5 w-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm text-red-700 dark:text-red-200">
                           <p className="font-medium mb-1">⚠️ 중요 안내</p>
                           <p>• 스트링을 구매하시고 난 후 신청서를 작성하셔야 구매한 스트링 종류가 나옵니다.</p>
                           <p>• 고객님께서 보유하고 계신 스트링으로 단일 신청서를 작성하시려는 경우 "직접 입력하기" 를 클릭하여 신청해주세요.</p>
@@ -855,17 +858,17 @@ export default function StringServiceApplyPage() {
                   onCustomInputChange={handleCustomInputChange}
                 />
 
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <div className="flex items-center space-x-3">
-                    <DollarSign className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                    <DollarSign className="h-5 w-5 text-blue-500 dark:text-blue-400 flex-shrink-0" />
                     <div className="text-sm">
                       {formData.stringTypes.includes('custom') ? (
-                        <div className="text-blue-700">
+                        <div className="text-blue-700 dark:text-blue-200">
                           <p className="font-medium">💡 가격은 접수 후 안내됩니다.</p>
-                          <p className="text-xs text-blue-600 mt-1">기본 장착 금액: 15,000원</p>
+                          <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">기본 장착 금액: 15,000원</p>
                         </div>
                       ) : (
-                        <p className="font-medium text-blue-700">총 장착 금액: {price.toLocaleString()}원</p>
+                        <p className="font-medium text-blue-700 dark:text-blue-200">총 장착 금액: {price.toLocaleString()}원</p>
                       )}
                     </div>
                   </div>
@@ -992,13 +995,14 @@ export default function StringServiceApplyPage() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 dark:bg-slate-900/20 p-5">
+              /* 패키지 없음 카드 다크모드 적용 */
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/20 p-5">
                 <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 shrink-0 rounded-full bg-slate-400/20 grid place-content-center text-slate-500">
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-slate-400/20 dark:bg-slate-600/20 grid place-content-center text-slate-500 dark:text-slate-400">
                     <Ticket className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="font-medium">패키지가 없거나 잔여 횟수가 없습니다.</div>
+                    <div className="font-medium dark:text-white">패키지가 없거나 잔여 횟수가 없습니다.</div>
                     <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">패키지를 보유하면 교체비가 0원으로 처리됩니다. (배송/추가옵션비 제외)</p>
                   </div>
                 </div>
@@ -1016,7 +1020,7 @@ export default function StringServiceApplyPage() {
                     name="shippingBank"
                     value={formData.shippingBank}
                     onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })}
-                    className="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md bg-white dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                   >
                     <option value="" disabled hidden>
                       입금하실 은행을 선택해주세요.
@@ -1030,23 +1034,23 @@ export default function StringServiceApplyPage() {
                 </div>
 
                 {formData.shippingBank && (
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                    <h3 className="font-semibold text-blue-900 mb-4 flex items-center">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+                    <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
                       <CreditCard className="h-5 w-5 mr-2" />
                       계좌 정보
                     </h3>
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                        <span className="text-sm text-gray-600">은행</span>
-                        <span className="font-medium text-gray-900">{bankLabelMap[formData.shippingBank].label}</span>
+                      <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">은행</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{bankLabelMap[formData.shippingBank].label}</span>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                        <span className="text-sm text-gray-600">계좌번호</span>
-                        <span className="font-mono font-medium text-gray-900">{bankLabelMap[formData.shippingBank].account}</span>
+                      <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">계좌번호</span>
+                        <span className="font-mono font-medium text-gray-900 dark:text-white">{bankLabelMap[formData.shippingBank].account}</span>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                        <span className="text-sm text-gray-600">예금주</span>
-                        <span className="font-medium text-gray-900">{bankLabelMap[formData.shippingBank].holder}</span>
+                      <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">예금주</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{bankLabelMap[formData.shippingBank].holder}</span>
                       </div>
                     </div>
                   </div>
@@ -1075,10 +1079,10 @@ export default function StringServiceApplyPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4">
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-amber-700">
+                  <CheckCircle className="h-5 w-5 text-amber-500 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-amber-700 dark:text-amber-200">
                     <p className="font-medium mb-1">안내사항</p>
                     <p>스트링 교체 및 장착 요청 내용을 아래에 자세히 적어주세요.</p>
                   </div>
@@ -1175,8 +1179,8 @@ export default function StringServiceApplyPage() {
                     </div>
 
                     {/* 하단 네비게이션 */}
-                    <div className="flex justify-between mt-12 pt-8 border-t">
-                      <Button type="button" variant="outline" onClick={() => setCurrentStep(Math.max(1, currentStep - 1))} disabled={currentStep === 1} className="px-8 py-3 hover:bg-gray-50 transition-colors duration-200">
+                    <div className="flex justify-between mt-12 pt-8 border-t dark:border-slate-700">
+                      <Button type="button" variant="outline" onClick={() => setCurrentStep(Math.max(1, currentStep - 1))} disabled={currentStep === 1} className="px-8 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200">
                         이전
                       </Button>
 
@@ -1215,19 +1219,18 @@ export default function StringServiceApplyPage() {
                 </CardContent>
               </Card>
 
-              {/* 하단 3개 카드(소개) */}
               <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
+                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/20">
                   <Shield className="h-8 w-8 text-blue-500 mx-auto mb-3" />
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">정품 보장</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">100% 정품 스트링만 사용합니다</p>
                 </div>
-                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
+                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/20">
                   <Clock className="h-8 w-8 text-green-500 mx-auto mb-3" />
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">당일 완료</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">빠르고 정확한 장착 서비스</p>
                 </div>
-                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20">
+                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/20">
                   <Award className="h-8 w-8 text-purple-500 mx-auto mb-3" />
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">전문가 상담</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">15년 경력의 전문가가 직접</p>
