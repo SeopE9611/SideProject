@@ -1,4 +1,15 @@
-export const isHttps = (process.env.NEXT_PUBLIC_SITE_URL ?? '').startsWith('https://') || (process.env.VERCEL_URL ?? '').startsWith('https://');
+import { getBaseUrl } from '@/lib/getBaseUrl';
+
+function computeIsHttps() {
+  try {
+    const url = new URL(getBaseUrl());
+    return url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+export const isHttps = computeIsHttps();
 
 export const baseCookie = {
   httpOnly: true,
