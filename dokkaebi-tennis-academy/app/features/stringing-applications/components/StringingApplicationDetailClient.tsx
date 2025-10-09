@@ -431,14 +431,14 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
           {/* 스트링 정보 */}
           <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b flex flex-col items-center py-4">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 border-b border-gray-200 dark:border-slate-700 flex flex-col items-center py-4">
               <ShoppingCart className="w-6 h-6 text-green-600" />
               <CardTitle className="mt-2 text-lg font-semibold">신청 스트링 정보</CardTitle>
             </CardHeader>
 
-            <CardContent className="px-6 pb-6 space-y-6">
+            <CardContent className="px-6 pb-6 space-y-5 md:space-y-6">
               {/* 희망 일시 */}
-              <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+              <div className="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 pb-3">
                 <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   <Calendar className="w-5 h-5" />
                   <span className="font-medium">희망 일시</span>
@@ -449,28 +449,30 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </div>
 
               {/* 스트링 정보 */}
-              <div className="border-b border-gray-200 pb-3">
+              <div className="border-b border-gray-200 dark:border-slate-700 pb-3">
                 <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-2">
                   <ShoppingCart className="w-5 h-5" />
                   <span className="font-medium">스트링 정보</span>
                 </div>
-                <div className="space-y-3 pl-7">
+                <div className="space-y-3 md:space-y-4 pl-7">
                   {data.items.map((item) => (
-                    <div key={item.id} className="flex justify-between items-start p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      {/* 왼쪽: 이름 + 수량 */}
+                    <div
+                      key={item.id}
+                      className="grid grid-cols-[1fr_auto] items-center gap-3 p-4 rounded-xl bg-white/60 ring-1 ring-slate-200
+               dark:bg-slate-900/50 dark:ring-slate-700"
+                    >
                       <div>
                         <p className="font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">수량: {item.quantity}개</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">수량: {item.quantity}개</p>
                       </div>
-                      {/* 오른쪽: 가격 */}
-                      <span className="font-medium text-gray-900 dark:text-gray-100">{item.price.toLocaleString()}원</span>
+                      <span className="font-semibold tracking-tight text-gray-900 dark:text-gray-100">{item.price.toLocaleString()}원</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* 라켓 종류 */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   <Target className="w-5 h-5" />
                   <span className="font-medium">라켓 종류</span>
