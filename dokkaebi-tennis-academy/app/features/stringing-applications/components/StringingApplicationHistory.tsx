@@ -18,67 +18,68 @@ function getIconProps(status: string) {
     case '접수 완료':
       return {
         Icon: ClipboardCheck,
-        wrapperClasses: 'border-yellow-300 bg-yellow-100',
-        iconClasses: 'text-yellow-600',
+        wrapperClasses: 'border-yellow-300 bg-yellow-100 ' + 'dark:border-yellow-500/40 dark:bg-yellow-500/10',
+        iconClasses: 'text-yellow-700 dark:text-yellow-300',
       };
+
     case '검토 중':
       return {
         Icon: Search,
-        wrapperClasses: 'border-blue-300 bg-blue-100',
-        iconClasses: 'text-blue-600',
+        wrapperClasses: 'border-blue-300 bg-blue-100 ' + 'dark:border-blue-500/40 dark:bg-blue-500/10',
+        iconClasses: 'text-blue-700 dark:text-blue-300',
       };
     case '작업 중':
       return {
         Icon: Edit2,
-        wrapperClasses: 'border-indigo-300 bg-indigo-100',
-        iconClasses: 'text-indigo-600',
+        wrapperClasses: 'border-indigo-300 bg-indigo-100 ' + 'dark:border-indigo-500/40 dark:bg-indigo-500/10',
+        iconClasses: 'text-indigo-700 dark:text-indigo-300',
       };
     case '교체완료':
     case '교체 완료':
       return {
         Icon: CheckCircle,
-        wrapperClasses: 'border-green-300 bg-green-100',
-        iconClasses: 'text-green-600',
+        wrapperClasses: 'border-green-300 bg-green-100 ' + 'dark:border-green-500/40 dark:bg-green-500/10',
+        iconClasses: 'text-green-700 dark:text-green-300',
       };
     case '취소':
       return {
         Icon: XCircle,
-        wrapperClasses: 'border-red-300 bg-red-100',
-        iconClasses: 'text-red-600',
+        wrapperClasses: 'border-red-300 bg-red-100 ' + 'dark:border-red-500/40 dark:bg-red-500/10',
+        iconClasses: 'text-red-700 dark:text-red-300',
       };
 
     // 커스텀 이력 항목
     case '고객정보수정':
       return {
         Icon: User,
-        wrapperClasses: 'border-purple-300 bg-purple-100',
-        iconClasses: 'text-purple-600',
+        wrapperClasses: 'border-purple-300 bg-purple-100 ' + 'dark:border-purple-500/40 dark:bg-purple-500/10',
+        iconClasses: 'text-purple-700 dark:text-purple-300',
       };
     case '요청사항 수정':
       return {
         Icon: MessageSquare,
-        wrapperClasses: 'border-indigo-300 bg-indigo-100',
-        iconClasses: 'text-indigo-600',
+        wrapperClasses: 'border-indigo-300 bg-indigo-100 ' + 'dark:border-indigo-500/40 dark:bg-indigo-500/10',
+        iconClasses: 'text-indigo-700 dark:text-indigo-300',
       };
     case '스트링 정보 수정':
       return {
         Icon: Edit2,
-        wrapperClasses: 'border-blue-300 bg-blue-100',
-        iconClasses: 'text-blue-600',
+        wrapperClasses: 'border-blue-300 bg-blue-100 ' + 'dark:border-blue-500/40 dark:bg-blue-500/10',
+        iconClasses: 'text-blue-700 dark:text-blue-300',
       };
     case '결제 금액 자동 업데이트':
       return {
         Icon: DollarSign,
-        wrapperClasses: 'border-green-300 bg-green-100',
-        iconClasses: 'text-green-600',
+        wrapperClasses: 'border-green-300 bg-green-100 ' + 'dark:border-green-500/40 dark:bg-green-500/10',
+        iconClasses: 'text-green-700 dark:text-green-300',
       };
 
     // default
     default:
       return {
         Icon: Clock,
-        wrapperClasses: 'border-gray-300 bg-gray-100',
-        iconClasses: 'text-gray-600',
+        wrapperClasses: 'border-gray-300 bg-gray-100 ' + 'dark:border-slate-600/50 dark:bg-slate-700/30',
+        iconClasses: 'text-gray-700 dark:text-slate-300',
       };
   }
 }
@@ -117,7 +118,10 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
   return (
-    <Card className="rounded-xl border-gray-200 bg-white shadow-md">
+    <Card
+      className="rounded-xl border border-slate-200 bg-white shadow-md
+                   dark:border-slate-700 dark:bg-slate-900/40"
+    >
       <CardHeader className="pb-3">
         <CardTitle>신청 처리 이력</CardTitle>
       </CardHeader>
@@ -130,7 +134,7 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
           history.map((log, idx) => {
             const { Icon, wrapperClasses, iconClasses } = getIconProps(log.status);
             return (
-              <div key={idx} className="flex space-x-4 py-3">
+              <div key={idx} className="flex space-x-4 py-3 border-b last:border-0 border-slate-200 dark:border-slate-800/60">
                 <div className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}>
                   <Icon className={`h-6 w-6 ${iconClasses}`} />
                 </div>

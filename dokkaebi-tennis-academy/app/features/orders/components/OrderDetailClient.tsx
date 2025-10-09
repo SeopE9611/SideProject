@@ -517,7 +517,10 @@ export default function OrderDetailClient({ orderId }: Props) {
                         </div>
                       </div>
 
-                      <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div
+                        className="rounded-md border border-border bg-card/80 p-4 text-sm shadow-sm
+                dark:bg-slate-800/60"
+                      >
                         <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
                       </div>
 

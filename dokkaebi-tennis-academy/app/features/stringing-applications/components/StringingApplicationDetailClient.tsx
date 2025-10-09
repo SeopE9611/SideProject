@@ -172,7 +172,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <TooltipProvider>
               <div className="flex space-x-2">
                 <Link href={backUrl}>
-                  <Button variant="outline" className="bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50">
+                  <Button
+                    variant="outline"
+                    className="mb-3 bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50
+             dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60"
+                  >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     신청 목록으로 돌아가기
                   </Button>
@@ -183,7 +187,14 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       <Button
                         variant={isEditMode ? 'destructive' : 'outline'}
                         disabled={!isEditableAllowed}
-                        className={!isEditableAllowed ? 'opacity-50 cursor-not-allowed' : isEditMode ? '' : 'bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50'}
+                        className={
+                          !isEditableAllowed
+                            ? 'opacity-50 cursor-not-allowed'
+                            : isEditMode
+                            ? ''
+                            : 'bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50 \
+         dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60'
+                        }
                         onClick={() => {
                           if (!isEditableAllowed) return;
                           setIsEditMode((m) => !m);
@@ -436,48 +447,62 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               <CardTitle className="mt-2 text-lg font-semibold">신청 스트링 정보</CardTitle>
             </CardHeader>
 
-            <CardContent className="px-6 pb-6 space-y-5 md:space-y-6">
-              {/* 희망 일시 */}
-              <div className="flex items-center justify-between border-b border-gray-200 dark:border-slate-700 pb-3">
-                <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  <Calendar className="w-5 h-5" />
-                  <span className="font-medium">희망 일시</span>
+            <CardContent className="px-6 pb-6">
+              {/* 섹션을 하나로 묶고 divide-y로 구분해 가독성/일관성 향상 */}
+              <div className="divide-y divide-gray-200 dark:divide-slate-700">
+                {/* 희망 일시 */}
+                <div className="flex items-center justify-between py-4">
+                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                    <Calendar className="w-5 h-5" />
+                    <span className="font-medium">희망 일시</span>
+                  </div>
+                  <div className="text-gray-900 dark:text-gray-100">
+                    {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
+                  </div>
                 </div>
-                <div className="text-gray-900 dark:text-gray-100">
-                  {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
-                </div>
-              </div>
 
-              {/* 스트링 정보 */}
-              <div className="border-b border-gray-200 dark:border-slate-700 pb-3">
-                <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-2">
-                  <ShoppingCart className="w-5 h-5" />
-                  <span className="font-medium">스트링 정보</span>
-                </div>
-                <div className="space-y-3 md:space-y-4 pl-7">
-                  {data.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="grid grid-cols-[1fr_auto] items-center gap-3 p-4 rounded-xl bg-white/60 ring-1 ring-slate-200
-               dark:bg-slate-900/50 dark:ring-slate-700"
-                    >
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">수량: {item.quantity}개</p>
-                      </div>
-                      <span className="font-semibold tracking-tight text-gray-900 dark:text-gray-100">{item.price.toLocaleString()}원</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                {/* 스트링 정보 */}
+                <div className="py-4">
+                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-3">
+                    <ShoppingCart className="w-5 h-5" />
+                    <span className="font-medium">스트링 정보</span>
+                  </div>
 
-              {/* 라켓 종류 */}
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  <Target className="w-5 h-5" />
-                  <span className="font-medium">라켓 종류</span>
+                  {/* 아이템 카드들: 더 넓은 패딩/대비, 오른쪽 가격 칩으로 시인성 향상 */}
+                  <ul className="space-y-3 md:space-y-4">
+                    {data.items.map((item) => (
+                      <li
+                        key={item.id}
+                        className="flex items-center justify-between gap-4 rounded-xl px-4 py-3
+                     ring-1 ring-slate-200/70 bg-white/70
+                     dark:ring-slate-700 dark:bg-slate-900/40"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">수량: {item.quantity}개</p>
+                        </div>
+
+                        {/* 가격을 칩 형태로; 다크모드 대비 강화 */}
+                        <span
+                          className="shrink-0 rounded-md px-2.5 py-1 text-sm font-semibold
+                           bg-slate-100 text-gray-900
+                           dark:bg-slate-800 dark:text-gray-100"
+                        >
+                          {item.price.toLocaleString()}원
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="text-gray-900 dark:text-gray-100">{data.stringDetails.racketType}</div>
+
+                {/* 라켓 종류 */}
+                <div className="flex items-center justify-between py-4">
+                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                    <Target className="w-5 h-5" />
+                    <span className="font-medium">라켓 종류</span>
+                  </div>
+                  <div className="text-gray-900 dark:text-gray-100">{data.stringDetails.racketType}</div>
+                </div>
               </div>
             </CardContent>
 

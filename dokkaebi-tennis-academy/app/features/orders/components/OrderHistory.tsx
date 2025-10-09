@@ -18,50 +18,50 @@ function getIconProps(status: string) {
     case '대기중':
       return {
         Icon: Clock,
-        wrapperClasses: 'border-gray-300 bg-gray-100',
-        iconClasses: 'text-gray-600',
+        wrapperClasses: 'border-gray-300/70 bg-gray-100/40 dark:border-gray-600/60 dark:bg-gray-900/40',
+        iconClasses: 'text-gray-700 dark:text-gray-200',
       };
     case '결제완료':
       return {
         Icon: CreditCard,
-        wrapperClasses: 'border-purple-300 bg-purple-100',
-        iconClasses: 'text-purple-600',
+        wrapperClasses: 'border-purple-300/70 bg-purple-100/40 dark:border-purple-600/60 dark:bg-purple-900/30',
+        iconClasses: 'text-purple-700 dark:text-purple-300',
       };
     case '배송중':
       return {
         Icon: Truck,
-        wrapperClasses: 'border-blue-300 bg-blue-100',
-        iconClasses: 'text-blue-600',
+        wrapperClasses: 'border-blue-300/70 bg-blue-100/40 dark:border-blue-600/60 dark:bg-blue-900/30',
+        iconClasses: 'text-blue-700 dark:text-blue-300',
       };
     case '배송완료':
       return {
         Icon: PackageCheck,
-        wrapperClasses: 'border-green-300 bg-green-100',
-        iconClasses: 'text-green-600',
+        wrapperClasses: 'border-green-300/70 bg-green-100/40 dark:border-green-600/60 dark:bg-green-900/30',
+        iconClasses: 'text-green-700 dark:text-green-300',
       };
     case '환불':
       return {
         Icon: RotateCcw,
-        wrapperClasses: 'border-red-300 bg-red-100',
-        iconClasses: 'text-red-600',
+        wrapperClasses: 'border-red-300/70 bg-red-100/40 dark:border-red-600/60 dark:bg-red-900/30',
+        iconClasses: 'text-red-700 dark:text-red-300',
       };
     case '취소':
       return {
         Icon: XCircle,
-        wrapperClasses: 'border-red-300 bg-red-100',
-        iconClasses: 'text-red-600',
+        wrapperClasses: 'border-red-300/70 bg-red-100/40 dark:border-red-600/60 dark:bg-red-900/30',
+        iconClasses: 'text-red-700 dark:text-red-300',
       };
     case '배송정보변경':
       return {
         Icon: Pencil,
-        wrapperClasses: 'border-yellow-300 bg-yellow-100',
-        iconClasses: 'text-yellow-600',
+        wrapperClasses: 'border-yellow-300/70 bg-yellow-100/40 dark:border-yellow-600/60 dark:bg-yellow-900/30',
+        iconClasses: 'text-yellow-700 dark:text-yellow-300',
       };
     default:
       return {
         Icon: Package,
-        wrapperClasses: 'border-primary bg-primary/10',
-        iconClasses: 'text-primary-600',
+        wrapperClasses: 'border-primary/50 bg-primary/10 dark:border-primary/40 dark:bg-primary/15',
+        iconClasses: 'text-primary',
       };
   }
 }
@@ -123,8 +123,8 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   const totalPages = Math.max(1, Math.ceil(pageData.total / LIMIT));
 
   return (
-    <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
-      <CardHeader className="pb-3">
+    <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-slate-900/60">
+      <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-slate-900/30 rounded-t-xl">
         <CardTitle>처리 이력</CardTitle>
         <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
       </CardHeader>
@@ -133,7 +133,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
         {pages === undefined ? (
           Array.from({ length: LIMIT }).map((_, i) => (
             <div key={i} className="flex animate-pulse space-x-4 py-3">
-              <div className="h-10 w-10 rounded-full bg-gray-200" />
+              <div className="h-10 w-10 rounded-full bg-muted" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-4 w-1/3" />
                 <Skeleton className="h-4 w-full" />
