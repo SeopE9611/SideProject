@@ -285,32 +285,32 @@ export default function AdminReviewListClient() {
             <Star className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">리뷰 관리</h1>
-            <p className="mt-2 text-base text-gray-600">고객 리뷰를 관리하고 서비스 품질을 향상시키세요</p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">리뷰 관리</h1>
+            <p className="mt-2 text-base text-gray-600 dark:text-gray-300">고객 리뷰를 관리하고 서비스 품질을 향상시키세요</p>
           </div>
         </div>
       </div>
 
       {/* KPI */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-0 bg-white/80 shadow hover:shadow-md transition">
+        <Card className="border-0 bg-white/80 dark:bg-slate-800/80 shadow hover:shadow-md transition">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600">전체 리뷰</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">전체 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.total ?? 0}</p>
               </div>
-              <div className="bg-blue-50 rounded-md p-2">
+              <div className="rounded-md p-2 bg-blue-50 dark:bg-blue-900/30">
                 <MessageSquare className="h-5 w-5 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-white/80 shadow hover:shadow-md transition">
+        <Card className="border-0 bg-white/80 dark:bg-slate-800/80 shadow hover:shadow-md transition">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600">평균 평점</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">평균 평점</p>
                 <p className="text-2xl font-bold">{(metrics?.avg ?? 0).toFixed(1)}</p>
               </div>
               <div className="bg-yellow-50 rounded-md p-2">
@@ -319,11 +319,11 @@ export default function AdminReviewListClient() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-white/80 shadow hover:shadow-md transition">
+        <Card className="border-0 bg-white/80 dark:bg-slate-800/80 shadow hover:shadow-md transition">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600">5점 리뷰</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">5점 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.five ?? 0}</p>
               </div>
               <div className="bg-emerald-50 rounded-md p-2">
@@ -332,11 +332,11 @@ export default function AdminReviewListClient() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-white/80 shadow hover:shadow-md transition">
+        <Card className="border-0 bg-white/80 dark:bg-slate-800/80 shadow hover:shadow-md transition">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600">서비스 리뷰</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">서비스 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.byType?.service ?? 0}</p>
               </div>
               <div className="bg-purple-50 rounded-md p-2">
@@ -345,11 +345,11 @@ export default function AdminReviewListClient() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-white/80 shadow hover:shadow-md transition">
+        <Card className="border-0 bg-white/80 dark:bg-slate-800/80 shadow hover:shadow-md transition">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-600">상품 리뷰</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">상품 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.byType?.product ?? 0}</p>
               </div>
               <div className="bg-indigo-50 rounded-md p-2">
@@ -361,13 +361,19 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 검색/필터 + 전체선택 */}
-      <div className="sticky top-0 z-10 -mt-2 mb-2 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 border border-slate-200 rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-3">
+      <div
+        className="sticky top-0 z-10 -mt-2 mb-2
+  bg-white/70 dark:bg-slate-900/70 backdrop-blur
+  supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60
+  border border-slate-200 dark:border-slate-700
+  rounded-md px-3 py-2  flex flex-wrap items-center justify-between gap-3"
+      >
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             type="search"
             placeholder="리뷰 검색…"
-            className="pl-10 h-9 text-sm border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+            className="pl-10 h-9 text-sm border-gray-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-emerald-500"
             value={qRaw}
             onChange={(e) => setQRaw(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setSize(1)}
@@ -375,13 +381,13 @@ export default function AdminReviewListClient() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 rounded-md border px-2 py-1.5">
+          <div className="flex items-center gap-2 rounded-md border px-2 py-1.5 dark:border-slate-700">
             <Checkbox checked={rows.length > 0 && selected.length === rows.length} onCheckedChange={(val) => toggleSelectAll(!!val)} aria-label="전체 선택" className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
-            <span className="text-xs text-slate-600">전체 선택</span>
+            <span className="text-xs text-slate-600 dark:text-slate-300">전체 선택</span>
           </div>
-          <div className="flex items-center gap-2 rounded-md border px-2 py-1.5">
+          <div className="flex items-center gap-2 rounded-md border px-2 py-1.5 dark:border-slate-700">
             <Checkbox id="show-deleted" checked={showDeleted} onCheckedChange={(v) => setShowDeleted(!!v)} className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
-            <label htmlFor="show-deleted" className="text-xs text-slate-600">
+            <label htmlFor="show-deleted" className="text-xs text-slate-600 dark:text-slate-300">
               삭제 포함 보기
             </label>
           </div>
@@ -405,13 +411,14 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 리스트 카드 */}
-      <div className="rounded-lg ring-1 ring-gray-200 bg-white/95 shadow-sm">
+      <div className="rounded-lg ring-1 ring-gray-200 dark:ring-slate-700 bg-white/95 dark:bg-slate-800/90 shadow-sm">
         <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden">
           {/* 헤더 라벨 */}
           <div
             className={`sticky top-0 z-[1] hidden lg:grid ${GRID}
-                 items-center gap-x-3 bg-white
-                 border-b border-slate-200 px-3 py-3 text-[13px] text-slate-600`}
+  items-center gap-x-3 bg-white dark:bg-slate-900/60
+  border-b border-slate-200 dark:border-slate-700
+  px-3 py-3 text-[13px] text-slate-600 dark:text-slate-300`}
           >
             <div className="opacity-70">선택</div>
             <div>작성자</div>
@@ -442,10 +449,12 @@ export default function AdminReviewListClient() {
                   className={[
                     'grid grid-cols-1 lg:grid',
                     GRID,
-                    'items-center gap-y-2 gap-x-3  px-3',
+                    'items-center gap-y-2 gap-x-3 px-3',
                     compact ? 'py-2' : 'py-3',
-                    'transition-colors even:bg-gray-50/40 hover:bg-emerald-50/30 cursor-pointer',
-                    isSel ? 'shadow-[inset_2px_0_0_0_theme(colors.emerald.500)] bg-emerald-50/40' : '',
+                    'transition-colors cursor-pointer',
+                    'even:bg-gray-50/40 hover:bg-emerald-50/30',
+                    'dark:even:bg-slate-900/40 dark:hover:bg-emerald-400/10',
+                    isSel ? 'shadow-[inset_2px_0_0_0_theme(colors.emerald.500)] bg-emerald-50/40 dark:bg-emerald-900/20' : '',
                   ].join(' ')}
                 >
                   {/* 체크박스 */}
@@ -462,8 +471,8 @@ export default function AdminReviewListClient() {
 
                   {/* 작성자 */}
                   <div className={`min-w-0 ${dim}`}>
-                    <div className="text-gray-900 font-medium truncate">{r.userName || r.userEmail || '-'}</div>
-                    {r.userEmail && r.userName && <div className="text-[12px] text-slate-400 break-all">{r.userEmail}</div>}
+                    <div className="text-gray-900 dark:text-white font-medium truncate">{r.userName || r.userEmail || '-'}</div>
+                    {r.userEmail && r.userName && <div className="text-[12px] text-slate-400 dark:text-slate-400 break-all">{r.userEmail}</div>}
                     {r.isDeleted && (
                       <div className="mt-0.5">
                         <Badge variant="secondary" className="h-5">
@@ -480,7 +489,7 @@ export default function AdminReviewListClient() {
                         <TooltipTrigger asChild>
                           <p className={['text-sm leading-5', expanded[r._id] ? 'whitespace-pre-wrap' : 'line-clamp-2', 'break-words', '[overflow-wrap:anywhere]'].join(' ')}>{r.content}</p>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-md bg-white text-gray-900 border shadow-md rounded-md p-3">
+                        <TooltipContent className="max-w-md bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 border dark:border-slate-700 shadow-md rounded-md p-3">
                           <p className="whitespace-pre-wrap leading-relaxed [overflow-wrap:anywhere]">{r.content}</p>
                         </TooltipContent>
                       </Tooltip>
@@ -505,7 +514,7 @@ export default function AdminReviewListClient() {
                   <div className={`min-w-0 ${dim}`}>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       {renderStars(r.rating)}
-                      <span className="text-[13px] text-gray-700">{r.rating}/5</span>
+                      <span className="text-[13px] text-gray-700 dark:text-gray-300">{r.rating}/5</span>
                       <span className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none bg-white text-slate-700 border-slate-200">
                         <ThumbsUp className="h-3 w-3" />
                         {r.helpfulCount ?? 0}
@@ -515,20 +524,20 @@ export default function AdminReviewListClient() {
 
                   {/* 작성일 */}
                   <div className={`min-w-0 ${dim}`}>
-                    <div className="text-gray-900 text-[13px]">{date}</div>
-                    <div className="text-[12px] text-gray-500">{time}</div>
+                    <div className="text-gray-900 dark:text-white text-[13px]">{date}</div>
+                    <div className="text-[12px] text-gray-500 dark:text-gray-400">{time}</div>
                   </div>
 
                   {/* 타입 */}
                   <div className={`min-w-0 ${dim} flex items-center gap-3 whitespace-nowrap`}>
-                    <Badge variant="outline" className={typeBadgeClass(r.type) + ' ring-1 ring-inset ring-slate-200/80 shrink-0'}>
+                    <Badge variant="outline" className={typeBadgeClass(r.type) + ' ring-1 ring-inset ring-slate-200/80 dark:ring-slate-700 shrink-0'}>
                       {typeLabel(r.type)}
                     </Badge>
                   </div>
 
                   {/* 공개 / 비공개*/}
                   <div className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`} onClick={(e) => e.stopPropagation()}>
-                    <span className="hidden xl:inline text-[12px] text-slate-600">{r.status === 'visible' ? '공개' : '비공개'}</span>
+                    <span className="hidden xl:inline text-[12px] text-slate-600 dark:text-slate-300">{r.status === 'visible' ? '공개' : '비공개'}</span>
                     {r.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
                     <div className="h-6 flex items-center">
                       <Switch checked={r.status === 'visible'} onCheckedChange={() => toggleVisible(r)} />
@@ -577,7 +586,10 @@ export default function AdminReviewListClient() {
 
         {/* 선택 액션 바 */}
         <div className={`transition-all duration-200 ${selected.length ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
-          <div className="w-full border-t border-emerald-200/70 bg-emerald-50/80 backdrop-blur-sm px-4 py-2 flex items-center justify-between rounded-b-lg">
+          <div
+            className="w-full border-t border-emerald-200/70 dark:border-emerald-900/40
+  bg-emerald-50/80 dark:bg-emerald-900/20 backdrop-blur-sm px-4 py-2flex items-center justify-between rounded-b-lg"
+          >
             <span className="inline-flex items-center gap-2 text-emerald-900">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
@@ -624,13 +636,13 @@ export default function AdminReviewListClient() {
                 {(() => {
                   const dt = safeSplitDate(detail.createdAt);
                   return (
-                    <span className="text-sm text-gray-500 inline-flex items-center gap-1">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 inline-flex items-center gap-1">
                       <Calendar className="h-3.5 w-3.5" />
                       {dt.date} {dt.time}
                     </span>
                   );
                 })()}
-                <span className="text-sm text-gray-600 inline-flex items-center gap-1 ml-2">
+                <span className="text-sm text-gray-600 dark:text-gray-300 inline-flex items-center gap-1 ml-2">
                   <ThumbsUp className="h-4 w-4" />
                   도움돼요 {detail?.helpfulCount ?? 0}
                 </span>
@@ -642,7 +654,7 @@ export default function AdminReviewListClient() {
                 {loadingPhotos && (
                   <div aria-hidden className="flex flex-wrap gap-2 min-h-[72px]">
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="w-16 h-16 rounded-md bg-slate-200/80 animate-pulse" />
+                      <div key={i} className="w-16 h-16 rounded-md bg-slate-200/80 dark:bg-slate-700/60 animate-pulse" />
                     ))}
                   </div>
                 )}
@@ -659,7 +671,7 @@ export default function AdminReviewListClient() {
                             setViewerIndex(i);
                             setViewerOpen(true);
                           }}
-                          className="relative w-16 h-16 rounded-md overflow-hidden border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="relative w-16 h-16 rounded-md overflow-hidden border dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
                         >
                           <Image src={src} alt={`review-photo-${i}`} fill className="object-cover" loading="lazy" />
@@ -689,7 +701,7 @@ export default function AdminReviewListClient() {
                 </div>
               </div>
 
-              <div className="rounded-md bg-gray-50 p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-gray-800">{detail.content || ''}</div>
+              <div className="rounded-md bg-gray-50 dark:bg-slate-800/60 p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-gray-800 dark:text-slate-200">{detail.content || ''}</div>
             </div>
           )}
           <DialogFooter className="justify-between">

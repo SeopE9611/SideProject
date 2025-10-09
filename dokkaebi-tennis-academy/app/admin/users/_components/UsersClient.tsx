@@ -54,7 +54,7 @@ const splitDateTime = (iso?: string) => {
 };
 
 // 헤더/셀(컴팩트)
-const th = 'sticky top-0 z-10 whitespace-nowrap px-3.5 py-2 bg-gray-50/90 dark:bg-gray-900/70 shadow-sm border-b border-slate-200 text-[12px] font-semibold text-slate-600 text-center';
+const th = 'sticky top-0 z-10 whitespace-nowrap px-3.5 py-2 bg-gray-50/90 dark:bg-gray-900/70 shadow-sm border-b border-slate-200 dark:border-slate-700 text-[12px] font-semibold text-slate-600 dark:text-slate-300 text-center';
 const td = 'px-3.5 py-2 align-middle text-center text-[13px] leading-tight tabular-nums';
 
 // 배지
@@ -432,7 +432,7 @@ export default function UsersClient() {
   return (
     <AuthGuard>
       {/* 검색/필터 바 */}
-      <div className="border-0 bg-white/80 shadow-lg backdrop-blur-sm rounded-xl p-4 sm:p-6 mb-4">
+      <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl p-4 sm:p-6 mb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -625,14 +625,14 @@ export default function UsersClient() {
       )}
 
       {/* 한눈에 보기: 칼럼 병합 + 고정폭 + dense */}
-      <div className="border-0 bg-white/80 shadow-lg backdrop-blur-sm rounded-xl max-w-[1120px] mx-auto">
+      <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl max-w-[1120px] mx-auto">
         <div className="flex items-center justify-between px-4 sm:px-5 pt-4">
-          <h2 className="text-lg font-semibold">회원 목록</h2>
+          <h2 className="text-lg font-semibold text-foreground">회원 목록</h2>
           <p className="text-sm text-muted-foreground">총 {total}명의 회원</p>
         </div>
 
         <div className="relative overflow-x-hidden px-3 sm:px-4 pb-3">
-          <div className="relative rounded-2xl border border-slate-200 shadow-sm min-w-0">
+          <div className="relative rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm min-w-0">
             <Table className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center" aria-busy={isLoading && rows.length === 0}>
               {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}
               <colgroup>
@@ -703,7 +703,7 @@ export default function UsersClient() {
                     const last = splitDateTime(u.lastLoginAt);
 
                     return (
-                      <TableRow key={u.id} className="odd:bg-white even:bg-slate-50/50 hover:bg-slate-50/80 transition-colors">
+                      <TableRow key={u.id} className="hover:bg-primary/5 transition-colors even:bg-muted/40">
                         {/* 선택 */}
                         <TableCell className={cn(td, 'w-[40px] px-0')}>
                           <Checkbox checked={selectedUsers.includes(u.id)} onCheckedChange={() => handleSelectUser(u.id)} aria-label={`${u.name || '사용자'} 선택`} className="mx-auto" />

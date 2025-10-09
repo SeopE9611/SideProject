@@ -121,14 +121,14 @@ export default function AdminReviewMaintenancePanel() {
   const disabled = loading !== null;
 
   return (
-    <Card className="border-0 shadow-md">
+    <Card className="border-0 shadow-md bg-white/80 dark:bg-slate-800/80">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
           <Wrench className="h-5 w-5" />
           리뷰 유지보수
         </CardTitle>
         <CardContent>
-          <span className="font-bold">개발자 전용입니다 — 관리자는 해당 기능을 개발자 동의 없이 클릭하지마세요!!! </span>
+          <span className="font-bold text-slate-800 dark:text-slate-200">개발자 전용입니다 — 관리자는 해당 기능을 개발자 동의 없이 클릭하지마세요!!! </span>
         </CardContent>
       </CardHeader>
 
