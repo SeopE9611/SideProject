@@ -36,9 +36,21 @@ type StatusKey = (typeof STATUS_KEYS)[number];
 
 // 상태 매핑(아이콘+색)
 const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.ElementType }> = {
-  active: { label: '판매중', color: 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200', Icon: CheckCircle2 },
-  low_stock: { label: '재고 부족', color: 'bg-amber-100 text-amber-800 ring-1 ring-amber-200', Icon: TriangleAlert },
-  out_of_stock: { label: '품절', color: 'bg-rose-100 text-rose-800 ring-1 ring-rose-200', Icon: XCircle },
+  active: {
+    label: '판매중',
+    color: 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200 ' + 'dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-800',
+    Icon: CheckCircle2,
+  },
+  low_stock: {
+    label: '재고 부족',
+    color: 'bg-amber-100 text-amber-800 ring-1 ring-amber-200 ' + 'dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-800',
+    Icon: TriangleAlert,
+  },
+  out_of_stock: {
+    label: '품절',
+    color: 'bg-rose-100 text-rose-800 ring-1 ring-rose-200 ' + 'dark:bg-rose-900/30 dark:text-rose-300 dark:ring-rose-800',
+    Icon: XCircle,
+  },
 };
 
 // 브랜드, 재질 매핑
@@ -191,7 +203,7 @@ export default function ProductsClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20">
+    <div className={['min-h-screen', 'bg-gradient-to-b from-slate-50 via-white to-slate-50', 'dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'].join(' ')}>
       <div className="container py-8 px-6">
         {error && <div className="text-center text-red-500">상품 로드 중 오류가 발생했습니다.</div>}
         <div className="mb-2">
@@ -200,8 +212,8 @@ export default function ProductsClient() {
               <Package className="h-8 w-8 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">상품 관리</h1>
-              <p className="mt-2 text-base text-gray-600">테니스 스트링 상품을 효율적으로 관리하세요</p>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100">상품 관리</h1>
+              <p className="mt-2 text-base text-gray-600 dark:text-gray-400">테니스 스트링 상품을 효율적으로 관리하세요</p>
             </div>
           </div>
         </div>
@@ -254,7 +266,23 @@ export default function ProductsClient() {
                 <CardTitle className="text-xl font-semibold text-blue-800 dark:text-blue-200">스트링 목록</CardTitle>
                 <CardDescription className="text-blue-600 dark:text-blue-400">{total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
               </div>
-              <Button asChild className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white shadow-lg">
+              <Button
+                asChild
+                className={[
+                  // 사이즈/레이아웃
+                  'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
+                  // 색상(라이트/다크 모두 자연스러운 플랫)
+                  'bg-blue-600 hover:bg-blue-700 text-white',
+                  'dark:bg-sky-500 dark:hover:bg-sky-400',
+                  // 경계/그림자: 지나치지 않게만
+                  'border border-white/10 dark:border-white/10 shadow-sm hover:shadow',
+                  // 포커스 접근성
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
+                  'ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900',
+                  // 전환
+                  'transition-colors',
+                ].join(' ')}
+              >
                 <Link href="/admin/products/new">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   스트링 등록
@@ -276,7 +304,10 @@ export default function ProductsClient() {
                       placeholder="스트링명, 브랜드, SKU로 검색"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8 h-9 text-xs border-blue-200 dark:border-blue-700 focus:border-blue-400 dark:focus:border-blue-500"
+                      className="pl-8 h-9 text-xs
+             border-blue-200 focus:border-blue-400
+             dark:border-slate-700 dark:focus:border-blue-500
+             bg-white dark:bg-slate-900"
                     />
                     {searchTerm && (
                       <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-blue-50 dark:hover:bg-blue-950/20" onClick={() => setSearchTerm('')}>
@@ -300,11 +331,18 @@ export default function ProductsClient() {
                       setStatusFilter('all');
                       setSearchTerm('');
                     }}
-                    className="w-full border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                    className="w-full border-blue-200 hover:bg-blue-50
+             dark:border-slate-700 dark:hover:bg-slate-900/40"
                   >
                     필터 초기화
                   </Button>
-                  <Button variant="outline" size="sm" className="w-full border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 bg-transparent" onClick={() => setSort(null)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full bg-transparent border-blue-200 hover:bg-blue-50
+             dark:border-slate-700 dark:hover:bg-slate-900/40"
+                    onClick={() => setSort(null)}
+                  >
                     정렬 초기화
                   </Button>
                 </div>
@@ -315,7 +353,12 @@ export default function ProductsClient() {
             <div className="flex-1">
               <div className="overflow-auto rounded-lg border border-blue-100 dark:border-blue-800/30">
                 <Table className="table-fixed [&_tr]:border-0">
-                  <TableHeader className="sticky top-0 z-10 bg-blue-50/80 dark:bg-blue-950/30 backdrop-blur supports-[backdrop-filter]:bg-blue-50/60 border-b border-blue-100 dark:border-blue-800/30">
+                  <TableHeader
+                    className="sticky top-0 z-10 backdrop-blur
+             bg-blue-50/80 supports-[backdrop-filter]:bg-blue-50/60
+             dark:bg-slate-900/60 dark:supports-[backdrop-filter]:bg-slate-900/50
+             border-b border-blue-100 dark:border-slate-700"
+                  >
                     <TableRow className="border-b border-blue-100 dark:border-blue-800/30">
                       <TableHead className="w-[32%] text-left text-blue-700 dark:text-blue-300">
                         <SortBtn field="name">스트링명</SortBtn>
@@ -388,7 +431,14 @@ export default function ProductsClient() {
                         const statusKey: StatusKey = (s.computedStatus ?? 'active') as StatusKey;
                         const S = STATUS_UI[statusKey];
                         return (
-                          <TableRow key={s._id} className="h-14 border-b border-blue-100 dark:border-blue-800/30 last:border-b-0 hover:bg-blue-50/30 dark:hover:bg-blue-950/10 even:bg-blue-50/20 dark:even:bg-blue-950/5 transition-colors">
+                          <TableRow
+                            key={s._id}
+                            className="h-14 border-b border-blue-100 last:border-b-0
+             dark:border-slate-700
+             hover:bg-blue-50/30 dark:hover:bg-slate-800/40
+             even:bg-blue-50/20 dark:even:bg-slate-900/30
+             transition-colors"
+                          >
                             <TableCell className="text-left align-middle py-3">
                               <Link href={`/products/${s._id}`} className="hover:text-blue-600 dark:hover:text-blue-400">
                                 <div className="space-y-1">
@@ -399,7 +449,11 @@ export default function ProductsClient() {
                             </TableCell>
 
                             <TableCell className="text-center align-middle">
-                              <Badge variant="secondary" className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700">
+                              <Badge
+                                variant="secondary"
+                                className="px-2 py-0.5 rounded-full border bg-blue-100 text-blue-700 border-blue-200
+             dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
+                              >
                                 {brandLabel(s.brand)}
                               </Badge>
                             </TableCell>
@@ -414,7 +468,7 @@ export default function ProductsClient() {
                             </TableCell>
 
                             <TableCell className="text-center align-middle">
-                              <Badge variant="outline" className={cn('inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full', S.color)}>
+                              <Badge variant="secondary" className={cn('inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full border', S.color)}>
                                 <S.Icon className="h-3.5 w-3.5" />
                                 {S.label}
                               </Badge>

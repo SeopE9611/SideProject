@@ -364,22 +364,22 @@ export default function NewStringPage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-green-50 dark:from-blue-950/20 dark:via-blue-950/20 dark:to-green-950/20">
+      <div className="min-h-screen bg-background">
         <div className="container py-8 px-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="bg-gradient-to-r from-blue-50 via-blue-50 to-green-50 dark:from-blue-950/20 dark:via-blue-950/20 dark:to-green-950/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/30 shadow-lg">
+            <div className="rounded-2xl p-8 border border-border bg-card shadow-lg">
               <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <div className="flex items-center space-x-4">
                   <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
                     <Package className="h-8 w-8 text-blue-600" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">스트링 등록</h2>
-                    <p className="text-gray-600 dark:text-gray-400">새로운 테니스 스트링 정보를 입력하고 등록하세요.</p>
+                    <h2 className="text-3xl font-bold tracking-tight">스트링 등록</h2>
+                    <p className="text-muted-foreground">새로운 테니스 스트링 정보를 입력하고 등록하세요.</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" type="button" asChild className="bg-white/60 backdrop-blur-sm border-blue-200 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/20">
+                  <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
                     <Link href="/admin/products">
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       취소
@@ -393,7 +393,7 @@ export default function NewStringPage() {
               </div>
             </div>
 
-            <Separator className="bg-blue-100 dark:bg-blue-800/30" />
+            <Separator className="bg-border" />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30">
@@ -625,7 +625,17 @@ export default function NewStringPage() {
                         <Label htmlFor="power-rating">반발력</Label>
                         <span className="font-medium">{features.power}/5</span>
                       </div>
-                      <Slider id="power-rating" min={1} max={5} step={1} value={[features.power]} onValueChange={(value) => setFeatures({ ...features, power: value[0] })} className="w-full h-4" />
+                      <Slider
+                        id="power-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.power]}
+                        onValueChange={(value) => setFeatures({ ...features, power: value[0] })}
+                        className="w-full h-4 data-[orientation=horizontal]:bg-muted/50
+             [&>[data-slider-track]]:bg-muted
+             [&>[data-slider-range]]:bg-primary"
+                      />
 
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
@@ -681,7 +691,7 @@ export default function NewStringPage() {
                       </div>
                     </div>
 
-                    <Separator className="bg-blue-100 dark:bg-blue-800/30" />
+                    <Separator className="bg-border" />
 
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium text-blue-800 dark:text-blue-200">추천 플레이어 타입</h3>
@@ -917,10 +927,14 @@ export default function NewStringPage() {
             </Tabs>
 
             <div className="flex items-center justify-end space-x-2">
-              <Button variant="outline" type="button" asChild className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 bg-transparent">
-                <Link href="/admin/products">취소</Link>
+              <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
+                <Link href="/admin/products">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  취소
+                </Link>
               </Button>
               <Button type="submit" className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white">
+                <Save className="mr-2 h-4 w-4" />
                 저장
               </Button>
             </div>
