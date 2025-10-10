@@ -21,6 +21,7 @@ export async function sendSMS(toRaw: string, text: string) {
   if (!apiKey || !apiSecret || !from) {
     throw new Error('SOLAPI env missing');
   }
+  console.log('[sms] enabled=', enabled, 'to=', to, 'from=', from, 'allow=', allow);
 
   const svc = new SolapiMessageService(apiKey, apiSecret);
   await svc.sendOne({
