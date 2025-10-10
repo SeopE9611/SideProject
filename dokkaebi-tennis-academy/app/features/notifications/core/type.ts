@@ -25,7 +25,15 @@ export type ApplicationCtx = {
   shippingInfo?: ShippingInfo;
 };
 
-export type EventType = 'stringing.application_submitted' | 'stringing.status_updated' | 'stringing.schedule_confirmed' | 'stringing.schedule_canceled' | 'stringing.schedule_updated' | 'stringing.application_canceled';
+export type EventType =
+  | 'stringing.application_submitted'
+  | 'stringing.status_updated'
+  | 'stringing.schedule_confirmed'
+  | 'stringing.schedule_canceled'
+  | 'stringing.schedule_updated'
+  | 'stringing.application_canceled'
+  | 'stringing.service_completed'
+  | 'stringing.service_in_progress';
 
 export type OutboxDoc = {
   _id?: any;

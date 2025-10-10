@@ -15,10 +15,37 @@ export async function onApplicationSubmitted(params: { user: UserCtx; applicatio
 }
 
 export async function onStatusUpdated(params: { user: UserCtx; application: ApplicationCtx; adminDetailUrl: string }) {
-  const key = `${params.application.applicationId}:status:${params.application.status}`;
-  await fire('stringing.status_updated', { ...params, dedupeKey: key, channels: ['email', 'slack', 'sms'] });
-}
+  const app = params.application;
+  const key = `${app.applicationId}:status:${app.status}`;
 
+  // 상태별로 알맞은 이벤트/채널 전송
+  if (app.status === '교체완료') {
+    // 작업 완료는 문자도 보냄
+    await fire('stringing.service_completed', {
+      ...params,
+      dedupeKey: key,
+      channels: ['email', 'sms'],
+    });
+    return;
+  }
+
+  if (app.status === '작업 중') {
+    // 작업 시작 알림도 원하면 문자 포함(원치 않으면 ['email']만)
+    await fire('stringing.service_in_progress', {
+      ...params,
+      dedupeKey: key,
+      channels: ['email', 'sms'],
+    });
+    return;
+  }
+
+  // 그 외(검토 중/접수완료 등): 이메일만 간단 공지
+  await fire('stringing.status_updated', {
+    ...params,
+    dedupeKey: key,
+    channels: ['email'],
+  });
+}
 export async function onScheduleConfirmed(params: { user: UserCtx; application: ApplicationCtx }) {
   const app = params.application;
   const key = `${app.applicationId}:schedule:${app.stringDetails?.preferredDate}T${app.stringDetails?.preferredTime}`;

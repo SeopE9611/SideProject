@@ -307,5 +307,96 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
     };
   }
 
+  // ✅ 작업 완료(교체완료)
+  if (event === 'stringing.service_completed') {
+    const app = ctx.application;
+    const name = ctx.user?.name || '고객님';
+    const whenPretty = fmtKST(app.stringDetails?.preferredDate, app.stringDetails?.preferredTime);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+    const ADMIN_BCC = process.env.ADMIN_NOTIFY_EMAILS || '';
+    const ref = shortCode(app.applicationId);
+
+    const title = `교체 완료 안내`;
+    const pre = `${whenPretty ?? '미정'} · ${ref}`;
+    const rows: [string, string][] = [
+      ['일정', whenPretty || '미정'],
+      ['신청자', `${name} (${ctx.user?.email || '-'})`],
+      ['라켓', getRacketName(app.stringDetails)],
+      ['스트링', getStringNames(app.stringDetails)],
+      ['신청번호', `#${app.applicationId}`],
+    ];
+    const html = wrapEmail({
+      title,
+      badge: '교체완료',
+      preheader: pre,
+      rows,
+      ctas: [{ label: '신청서 상세 보기', url: `${baseUrl}/my/applications/${app.applicationId}` }],
+    });
+    const subject = `[${THEME.brand}] ${title} · ${whenPretty ?? '미정'}`;
+
+    // 문자
+    const toPhone = pickPhone(app);
+    const sms = toPhone
+      ? {
+          to: toPhone,
+          text: makeSms('교체 완료 안내', {
+            name,
+            when: whenPretty,
+            id: app.applicationId,
+            baseUrl,
+          }),
+        }
+      : undefined;
+
+    return {
+      email: { to: ctx.user!.email, subject, html, bcc: ADMIN_BCC || undefined },
+      ...(sms ? { sms } : {}),
+    };
+  }
+
+  /** (선택) 작업 시작 알림 – 원치 않으면 이 블록은 생략해도 됨 */
+  if (event === 'stringing.service_in_progress') {
+    const app = ctx.application;
+    const name = ctx.user?.name || '고객님';
+    const whenPretty = fmtKST(app.stringDetails?.preferredDate, app.stringDetails?.preferredTime);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+    const ADMIN_BCC = process.env.ADMIN_NOTIFY_EMAILS || '';
+    const ref = shortCode(app.applicationId);
+
+    const title = `작업 진행 안내`;
+    const pre = `${whenPretty ?? '미정'} · ${ref}`;
+    const rows: [string, string][] = [
+      ['현재 상태', '작업 중'],
+      ['일정', whenPretty || '미정'],
+      ['신청번호', `#${app.applicationId}`],
+    ];
+    const html = wrapEmail({
+      title,
+      badge: '작업 중',
+      preheader: pre,
+      rows,
+      ctas: [{ label: '신청서 상세 보기', url: `${baseUrl}/my/applications/${app.applicationId}` }],
+    });
+    const subject = `[${THEME.brand}] ${title} · ${whenPretty ?? '미정'}`;
+
+    const toPhone = pickPhone(app);
+    const sms = toPhone
+      ? {
+          to: toPhone,
+          text: makeSms('작업 진행 안내', {
+            name,
+            when: whenPretty,
+            id: app.applicationId,
+            baseUrl,
+          }),
+        }
+      : undefined;
+
+    return {
+      email: { to: ctx.user!.email, subject, html, bcc: ADMIN_BCC || undefined },
+      ...(sms ? { sms } : {}),
+    };
+  }
+
   throw new Error('Unknown event');
 }
