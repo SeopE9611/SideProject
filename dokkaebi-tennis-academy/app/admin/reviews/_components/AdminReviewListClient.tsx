@@ -253,7 +253,7 @@ export default function AdminReviewListClient() {
   const renderStars = (n: number) => (
     <div className="flex items-center">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={`h-4 w-4 ${i < n ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
+        <Star key={i} className={`h-4 w-4 ${i < n ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300 dark:text-slate-600'}`} />
       ))}
     </div>
   );
@@ -313,7 +313,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-gray-600 dark:text-gray-400">평균 평점</p>
                 <p className="text-2xl font-bold">{(metrics?.avg ?? 0).toFixed(1)}</p>
               </div>
-              <div className="bg-yellow-50 rounded-md p-2">
+              <div className="rounded-md p-2 bg-yellow-50 dark:bg-yellow-900/30">
                 <Star className="h-5 w-5 text-yellow-600" />
               </div>
             </div>
@@ -326,7 +326,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-gray-600 dark:text-gray-400">5점 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.five ?? 0}</p>
               </div>
-              <div className="bg-emerald-50 rounded-md p-2">
+              <div className="rounded-md p-2 bg-emerald-50 dark:bg-emerald-900/30">
                 <Award className="h-5 w-5 text-emerald-600" />
               </div>
             </div>
@@ -339,7 +339,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-gray-600 dark:text-gray-400">서비스 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.byType?.service ?? 0}</p>
               </div>
-              <div className="bg-purple-50 rounded-md p-2">
+              <div className="rounded-md p-2 bg-purple-50 dark:bg-purple-900/30">
                 <TrendingUp className="h-5 w-5 text-purple-600" />
               </div>
             </div>
@@ -352,7 +352,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-gray-600 dark:text-gray-400">상품 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.byType?.product ?? 0}</p>
               </div>
-              <div className="bg-indigo-50 rounded-md p-2">
+              <div className="rounded-md p-2 bg-indigo-50 dark:bg-indigo-900/30">
                 <TrendingUp className="h-5 w-5 text-indigo-600" />
               </div>
             </div>
@@ -381,11 +381,11 @@ export default function AdminReviewListClient() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 rounded-md border px-2 py-1.5 dark:border-slate-700">
+          <div className="flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 px-2 py-1.5">
             <Checkbox checked={rows.length > 0 && selected.length === rows.length} onCheckedChange={(val) => toggleSelectAll(!!val)} aria-label="전체 선택" className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
             <span className="text-xs text-slate-600 dark:text-slate-300">전체 선택</span>
           </div>
-          <div className="flex items-center gap-2 rounded-md border px-2 py-1.5 dark:border-slate-700">
+          <div className="flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 px-2 py-1.5">
             <Checkbox id="show-deleted" checked={showDeleted} onCheckedChange={(v) => setShowDeleted(!!v)} className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
             <label htmlFor="show-deleted" className="text-xs text-slate-600 dark:text-slate-300">
               삭제 포함 보기
@@ -515,7 +515,12 @@ export default function AdminReviewListClient() {
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       {renderStars(r.rating)}
                       <span className="text-[13px] text-gray-700 dark:text-gray-300">{r.rating}/5</span>
-                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none bg-white text-slate-700 border-slate-200">
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none
+  bg-white dark:bg-slate-900/40
+  text-slate-700 dark:text-slate-200
+  border-slate-200 dark:border-slate-700"
+                      >
                         <ThumbsUp className="h-3 w-3" />
                         {r.helpfulCount ?? 0}
                       </span>
@@ -548,9 +553,8 @@ export default function AdminReviewListClient() {
                   <div className="justify-self-end pl-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-slate-700/60">
                           <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">메뉴 열기</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
@@ -588,18 +592,31 @@ export default function AdminReviewListClient() {
         <div className={`transition-all duration-200 ${selected.length ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
           <div
             className="w-full border-t border-emerald-200/70 dark:border-emerald-900/40
-  bg-emerald-50/80 dark:bg-emerald-900/20 backdrop-blur-sm px-4 py-2flex items-center justify-between rounded-b-lg"
+  bg-emerald-50/80 dark:bg-emerald-900/20 backdrop-blur-sm px-4 py-2 flex items-center justify-between rounded-b-lg"
           >
-            <span className="inline-flex items-center gap-2 text-emerald-900">
+            <span className="inline-flex items-center gap-2 text-emerald-900 dark:text-emerald-200">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
               </svg>
-              <span className="inline-flex items-center rounded-full bg-white/70 ring-1 ring-emerald-200 text-emerald-800 text-xs font-medium px-2 py-0.5">{selected.length}개 선택됨</span>
+              <span
+                className="inline-flex items-center rounded-full bg-white/70 dark:bg-white/10
+      ring-1 ring-emerald-200 dark:ring-emerald-800
+      text-emerald-800 dark:text-emerald-200 font-semibold text-xs px-2 py-0.5"
+              >
+                {selected.length}개 선택됨
+              </span>
             </span>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setSelected([])} className="h-8 px-3 text-emerald-900 hover:bg-white/70">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelected([])}
+                className="h-8 px-3 border-emerald-200 text-emerald-800 hover:bg-emerald-100/40
+             dark:border-emerald-800 dark:text-emerald-100 dark:hover:bg-emerald-900/30"
+              >
                 해제
               </Button>
+
               <Button data-cy="bulk-visible" variant="secondary" size="sm" onClick={() => doBulkUpdateStatus('visible')} className="h-8 px-3" aria-label="선택 공개로 변경" title="선택한 리뷰를 공개로 변경">
                 <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 11a4 4 0 110-8 4 4 0 010 8z" />
@@ -622,7 +639,10 @@ export default function AdminReviewListClient() {
 
       {/* 상세 모달 */}
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent
+          className="sm:max-w-2xl border-0 ring-0 outline-none shadow-2xl
+             bg-white/95 dark:bg-slate-900/90"
+        >
           <DialogHeader>
             <DialogTitle>리뷰 상세</DialogTitle>
           </DialogHeader>
@@ -701,7 +721,7 @@ export default function AdminReviewListClient() {
                 </div>
               </div>
 
-              <div className="rounded-md bg-gray-50 dark:bg-slate-800/60 p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-gray-800 dark:text-slate-200">{detail.content || ''}</div>
+              <div className="rounded-md dark:bg-slate-800/70 p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-gray-800 dark:text-slate-200">{detail.content || ''}</div>
             </div>
           )}
           <DialogFooter className="justify-between">
