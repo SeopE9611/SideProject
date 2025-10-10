@@ -15,8 +15,8 @@ const THEME = {
 } as const;
 
 /* ========= Utils ========= */
-function fmtKST(date?: string, time?: string) {
-  if (!date || !time) return null;
+function fmtKST(date?: string, time?: string): string | undefined {
+  if (!date || !time) return undefined;
   const d = new Date(`${date}T${time}:00+09:00`);
   const yoil = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
   return `${date}(${yoil}) ${time}`;
@@ -77,6 +77,23 @@ function buildICS(app: ApplicationCtx): string | undefined {
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');
+}
+
+// 전화번호 고르기: contactPhone 우선, 없으면 배송정보의 phone
+function pickPhone(app: ApplicationCtx) {
+  const anyApp = app as any;
+  const raw =
+    anyApp?.contactPhone ??
+    anyApp?.phone ?? // 혹시 phone 이라는 필드가 들어오는 케이스 대비
+    app.shippingInfo?.phone ??
+    '';
+  return String(raw || '').replace(/[^\d]/g, '');
+}
+
+// SMS 공통 포맷
+function makeSms(prefix: string, ctx: { name?: string; when?: string; id: string; baseUrl: string }) {
+  const lines = [`[도깨비 테니스] ${prefix}`, `${ctx.name ?? ''}님`, `일정: ${ctx.when ?? '미정'}`, `신청번호: ${ctx.id}`, `상세보기: ${ctx.baseUrl}/my/applications/${ctx.id}`];
+  return lines.filter(Boolean).join('\n');
 }
 
 /* ========= Layout ========= */
@@ -166,7 +183,12 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
     const html = wrapEmail({ title, badge: '접수', preheader: pre, rows, ctas });
     const ics = whenPretty ? buildICS(app) : undefined;
     const subject = `[${THEME.brand}] ${title} · ${whenPretty ?? '미정'}`;
-    return { email: { to: ctx.user!.email, subject, html, ics, bcc: ADMIN_BCC || undefined } };
+    const toPhone = pickPhone(app);
+    const sms = toPhone ? { to: toPhone, text: makeSms('신청 접수 완료', { name, when: whenPretty, id: app.applicationId, baseUrl }) } : undefined;
+    return {
+      email: { to: ctx.user!.email, subject, html, ics, bcc: ADMIN_BCC || undefined },
+      ...(sms ? { sms } : {}),
+    };
   }
 
   /* 상태 변경 */
@@ -204,7 +226,12 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
     const html = wrapEmail({ title, badge: '확정', preheader: pre, rows, ctas, note });
     const ics = buildICS(app);
     const subject = `[${THEME.brand}] ${title} · ${whenPretty ?? '미정'}`;
-    return { email: { to: ctx.user!.email, subject, html, ics } };
+    const toPhone = pickPhone(app);
+    const sms = toPhone ? { to: toPhone, text: makeSms('예약 확정 안내', { name, when: whenPretty, id: app.applicationId, baseUrl }) } : undefined;
+    return {
+      email: { to: ctx.user!.email, subject, html, ics, bcc: ADMIN_BCC || undefined },
+      ...(sms ? { sms } : {}),
+    };
   }
 
   /* 예약 변경 */
@@ -227,7 +254,12 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
     });
     const ics = buildICS(app);
     const subject = `[${THEME.brand}] ${title} · ${whenPretty ?? '미정'}`;
-    return { email: { to: ctx.user!.email, subject, html, ics, bcc: ADMIN_BCC || undefined } };
+    const toPhone = pickPhone(app);
+    const sms = toPhone ? { to: toPhone, text: makeSms('예약 변경 안내', { name, when: whenPretty, id: app.applicationId, baseUrl }) } : undefined;
+    return {
+      email: { to: ctx.user!.email, subject, html, ics, bcc: ADMIN_BCC || undefined },
+      ...(sms ? { sms } : {}),
+    };
   }
 
   /* (옵션) 예약 취소 */
@@ -241,7 +273,12 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
     ];
     const html = wrapEmail({ title, badge: '취소(예약)', preheader: pre, rows });
     const subject = `[${THEME.brand}] ${title} · ${whenPretty ?? '미정'}`;
-    return { email: { to: ctx.user!.email, subject, html, bcc: ADMIN_BCC || undefined } };
+    const toPhone = pickPhone(app);
+    const sms = toPhone ? { to: toPhone, text: makeSms('신청 취소 안내', { name, when: whenPretty, id: app.applicationId, baseUrl }) } : undefined;
+    return {
+      email: { to: ctx.user!.email, subject, html, bcc: ADMIN_BCC || undefined },
+      ...(sms ? { sms } : {}),
+    };
   }
 
   /* 신청 취소 (한 통) */
@@ -262,7 +299,12 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
       note: '재신청 시 원하는 날짜/시간을 다시 선택해 주세요. 회신으로 문의 가능합니다.',
     });
     const subject = `[${THEME.brand}] ${title} · ${whenPretty ?? '미정'}`;
-    return { email: { to: ctx.user!.email, subject, html, bcc: ADMIN_BCC || undefined } };
+    const toPhone = pickPhone(app);
+    const sms = toPhone ? { to: toPhone, text: makeSms('신청 취소 안내', { name, when: whenPretty, id: app.applicationId, baseUrl }) } : undefined;
+    return {
+      email: { to: ctx.user!.email, subject, html, bcc: ADMIN_BCC || undefined },
+      ...(sms ? { sms } : {}),
+    };
   }
 
   throw new Error('Unknown event');

@@ -11,18 +11,18 @@ async function fire(eventType: EventType, ctx: { user: UserCtx; application: App
 
 export async function onApplicationSubmitted(params: { user: UserCtx; application: ApplicationCtx; adminDetailUrl: string }) {
   const dedupeKey = `${params.application.applicationId}:submitted`;
-  await fire('stringing.application_submitted', { ...params, dedupeKey, channels: ['email', 'slack'] });
+  await fire('stringing.application_submitted', { ...params, dedupeKey, channels: ['email', 'slack', 'sms'] });
 }
 
 export async function onStatusUpdated(params: { user: UserCtx; application: ApplicationCtx; adminDetailUrl: string }) {
   const key = `${params.application.applicationId}:status:${params.application.status}`;
-  await fire('stringing.status_updated', { ...params, dedupeKey: key, channels: ['email', 'slack'] });
+  await fire('stringing.status_updated', { ...params, dedupeKey: key, channels: ['email', 'slack', 'sms'] });
 }
 
 export async function onScheduleConfirmed(params: { user: UserCtx; application: ApplicationCtx }) {
   const app = params.application;
   const key = `${app.applicationId}:schedule:${app.stringDetails?.preferredDate}T${app.stringDetails?.preferredTime}`;
-  await fire('stringing.schedule_confirmed', { ...params, adminDetailUrl: undefined, dedupeKey: key, channels: ['email'] });
+  await fire('stringing.schedule_confirmed', { ...params, adminDetailUrl: undefined, dedupeKey: key, channels: ['email', 'sms'] });
 }
 
 export async function onScheduleUpdated(params: { user: UserCtx; application: ApplicationCtx }) {
@@ -31,7 +31,7 @@ export async function onScheduleUpdated(params: { user: UserCtx; application: Ap
     ...params,
     adminDetailUrl: undefined,
     dedupeKey: key,
-    channels: ['email'],
+    channels: ['email', 'sms'],
   });
 }
 
@@ -41,7 +41,7 @@ export async function onApplicationCanceled(params: { user: UserCtx; application
     ...params,
     adminDetailUrl: undefined,
     dedupeKey: key,
-    channels: ['email'],
+    channels: ['email', 'sms'],
   });
 }
 
@@ -51,6 +51,6 @@ export async function onScheduleCanceled(params: { user: UserCtx; application: A
     ...params,
     adminDetailUrl: undefined,
     dedupeKey: key,
-    channels: ['email'],
+    channels: ['email', 'sms'],
   });
 }
