@@ -82,11 +82,8 @@ function buildICS(app: ApplicationCtx): string | undefined {
 // 전화번호 고르기: contactPhone 우선, 없으면 배송정보의 phone
 function pickPhone(app: ApplicationCtx) {
   const anyApp = app as any;
-  const raw =
-    anyApp?.contactPhone ??
-    anyApp?.phone ?? // 혹시 phone 이라는 필드가 들어오는 케이스 대비
-    app.shippingInfo?.phone ??
-    '';
+  const raw = anyApp?.contactPhone ?? anyApp?.phone ?? anyApp?.customer?.phone ?? app.shippingInfo?.phone ?? '';
+  ('');
   return String(raw || '').replace(/[^\d]/g, '');
 }
 
