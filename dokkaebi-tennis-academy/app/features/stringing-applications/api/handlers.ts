@@ -9,6 +9,7 @@ import { OrderItem } from '@/lib/types/order';
 import { normalizeEmail } from '@/lib/claims';
 import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
 import { onApplicationSubmitted, onStatusUpdated, onScheduleConfirmed, onScheduleUpdated, onApplicationCanceled, onScheduleCanceled } from '@/app/features/notifications/triggers/stringing';
+import { calcStringingTotal } from '@/lib/pricing';
 
 // 진행(점유)으로 간주하는 상태들 — 프로젝트 정책에 맞게 조정 가능
 // '교체완료'는 점유 해제로 본다는 가정(완료 후 새 신청 허용).
@@ -808,17 +809,9 @@ export async function handleSubmitStringingApplication(req: Request) {
     };
 
     // 금액 계산
-    let totalPrice = 0;
-    for (const id of stringTypes) {
-      if (id === 'custom') {
-        totalPrice += 15000; // 직접입력 기본요금
-      } else {
-        // products 컬렉션에서 mountingFee 조회
-        const prod = await db.collection('products').findOne({ _id: new ObjectId(id) });
-        totalPrice += prod?.mountingFee ?? 0;
-      }
-    }
-    const serviceFeeBefore = totalPrice; // 패키지 적용 전 교체비 합계
+    const totalBefore = await calcStringingTotal(db, stringTypes);
+    let totalPrice = totalBefore; // 패키지 적용 전 교체비 합계
+    const serviceFeeBefore = totalBefore;
 
     // ====== [패키지 자동 차감] 시작 ======
     // 신청 도큐먼트 ID를 미리 만들어 멱등 차감 로그(applicationId)로 사용

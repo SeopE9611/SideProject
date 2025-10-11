@@ -102,19 +102,19 @@ export async function fetchCombinedOrders() {
         const items = await Promise.all(
           (app.stringDetails?.stringTypes ?? []).map(async (typeId: string) => {
             if (typeId === 'custom') {
-              return {
-                id: 'custom',
-                name: app.stringDetails?.customStringName ?? '커스텀 스트링',
-                price: 15000,
-                quantity: 1,
-              };
+              // 프런트 표시와 동일한 규칙(커스텀=1.5만)으로 아이템 렌더
+              return { id: 'custom', name: app.stringDetails?.customStringName ?? '커스텀 스트링', price: 15_000, quantity: 1 };
             }
             const prod = await db.collection('products').findOne({ _id: new ObjectId(typeId) }, { projection: { name: 1, mountingFee: 1 } });
             return { id: typeId, name: prod?.name ?? '알 수 없는 상품', price: prod?.mountingFee ?? 0, quantity: 1 };
           })
         );
 
-        const totalCalculated = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+        // 재계산 값(과거 데이터 호환용)
+        const totalCalculated = items.reduce((sum, it) => sum + (it.price || 0) * (it.quantity || 0), 0);
+
+        // 저장값 우선 원칙: 문서에 totalPrice가 존재하면 그 값을 사용
+        const totalFromDoc = typeof (app as any).totalPrice === 'number' ? (app as any).totalPrice : null;
 
         return {
           id: app._id.toString(),
@@ -126,7 +126,7 @@ export async function fetchCombinedOrders() {
           status: app.status,
           paymentStatus: app.paymentStatus ?? (app.status && app.status !== '검토 중' ? '결제완료' : '결제대기'),
           type: '서비스',
-          total: totalCalculated,
+          total: totalFromDoc ?? totalCalculated,
           items,
           shippingInfo: {
             name: customer.name,
