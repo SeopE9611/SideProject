@@ -150,11 +150,17 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 
   const appDoc = app as NonNullable<typeof app>;
 
-  // PATCH 이전(현재) 문서에 예약 일정이 있었는지 기록
-  const hadScheduleBefore = Boolean(appDoc?.stringDetails?.preferredDate) && Boolean(appDoc?.stringDetails?.preferredTime);
-
   const setFields: any = {};
   const pushHistory: any[] = [];
+
+  const updatePayload = { name, email, phone, address, addressDetail, postalCode, depositor, stringDetails };
+  const updatedTypes: string[] = (updatePayload?.stringDetails?.stringTypes ?? app.stringDetails?.stringTypes ?? []) as string[];
+
+  const recalculated = await calcStringingTotal(db, updatedTypes);
+  setFields.totalPrice = recalculated;
+
+  // PATCH 이전(현재) 문서에 예약 일정이 있었는지 기록
+  const hadScheduleBefore = Boolean(appDoc?.stringDetails?.preferredDate) && Boolean(appDoc?.stringDetails?.preferredTime);
 
   // 고객정보 변경
   if (name || email || phone || address || addressDetail || postalCode) {
@@ -251,12 +257,15 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
       setFields['stringDetails.stringItems'] = newItems;
 
       // 스트링 요금(newItems) 합산하여 totalPrice 자동 설정
-      const calculatedTotal = newItems.reduce((sum, x) => sum + (Number(x.price) || 0) * (Number(x.quantity) || 1), 0); //   안전 합산
-      setFields.totalPrice = calculatedTotal;
+      // 유틸 기준으로 최종 금액 1회 확정
+      const typesForTotal: string[] = Array.isArray(setFields['stringDetails.stringTypes']) ? setFields['stringDetails.stringTypes'] : appDoc.stringDetails?.stringTypes ?? [];
+
+      const recalculated = await calcStringingTotal(db, typesForTotal);
+      setFields.totalPrice = recalculated;
       pushHistory.push({
         status: '결제 금액 자동 업데이트',
         date: new Date(),
-        description: `결제 정보의 결제 금액을 ${calculatedTotal.toLocaleString()}원으로 자동 업데이트했습니다.`,
+        description: `결제 금액을 ${recalculated.toLocaleString()}원으로 업데이트했습니다. (정산 유틸)`,
       });
     }
 
@@ -596,9 +605,6 @@ export async function handleGetApplicationList() {
 }
 
 // ==== 특정 날짜(preferredDate)에 예약된 시간대(preferredTime) 목록을 반환 ====
-
-// string | null | undefined 모두 허용하는 타입가드 (TS 깔끔)
-const isValidDate = (s: string | null | undefined): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
 export async function handleGetReservedTimeSlots(req: Request) {
   try {

@@ -216,7 +216,7 @@ export async function deductPassIfNeeded(db: Db, passId: ObjectId, applicationId
   const used = await db.collection('pass_usages').findOne({ passId, applicationId, type: 'deduct' });
   if (used) return; // 멱등 보장
 
-  await db.collection('service_passes').updateOne({ _id: passId, remaining: { $gt: 0 } }, { $inc: { remaining: -1 } });
+  await db.collection('service_passes').updateOne({ _id: passId, remainingCount: { $gt: 0 } }, { $inc: { remainingCount: -1 } });
   await db.collection('pass_usages').insertOne({
     passId,
     applicationId,
@@ -233,7 +233,7 @@ export async function restorePassIfNeeded(db: Db, passId: ObjectId, applicationI
   const used = await db.collection('pass_usages').findOne({ passId, applicationId, type: 'deduct' });
   if (!used) return;
 
-  await db.collection('service_passes').updateOne({ _id: passId }, { $inc: { remaining: +1 } });
+  await db.collection('service_passes').updateOne({ _id: passId }, { $inc: { remainingCount: +1 } });
   await db.collection('pass_usages').insertOne({
     passId,
     applicationId,
