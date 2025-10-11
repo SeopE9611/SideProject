@@ -210,3 +210,34 @@ export async function issuePassesForPaidPackageOrder(db: Db, packageOrder: any) 
 
   await passes.insertOne(passDoc);
 }
+
+// 이미 차감됐다면 아무것도 안 하는 멱등 차감
+export async function deductPassIfNeeded(db: Db, passId: ObjectId, applicationId: ObjectId) {
+  const used = await db.collection('pass_usages').findOne({ passId, applicationId, type: 'deduct' });
+  if (used) return; // 멱등 보장
+
+  await db.collection('service_passes').updateOne({ _id: passId, remaining: { $gt: 0 } }, { $inc: { remaining: -1 } });
+  await db.collection('pass_usages').insertOne({
+    passId,
+    applicationId,
+    type: 'deduct',
+    createdAt: new Date(),
+  });
+}
+
+// 이미 복원됐다면 아무것도 안 하는 멱등 복원
+export async function restorePassIfNeeded(db: Db, passId: ObjectId, applicationId: ObjectId) {
+  const restored = await db.collection('pass_usages').findOne({ passId, applicationId, type: 'restore' });
+  if (restored) return;
+
+  const used = await db.collection('pass_usages').findOne({ passId, applicationId, type: 'deduct' });
+  if (!used) return;
+
+  await db.collection('service_passes').updateOne({ _id: passId }, { $inc: { remaining: +1 } });
+  await db.collection('pass_usages').insertOne({
+    passId,
+    applicationId,
+    type: 'restore',
+    createdAt: new Date(),
+  });
+}
