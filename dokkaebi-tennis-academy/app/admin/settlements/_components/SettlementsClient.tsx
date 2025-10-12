@@ -41,12 +41,13 @@ function prevMonthRange_KST(base = new Date()) {
 }
 
 export default function SettlementsClient() {
-  const [yyyymm, setYyyymm] = useState<string>(new Date().toISOString().slice(0, 7).replace('-', ''));
+  const [yyyymm, setYyyymm] = useState<string>(() => fmtYMD_KST().slice(0, 7).replace('-', ''));
   const { data, mutate, isLoading } = useSWR('/api/settlements', fetcher);
   const [tab, setTab] = useState<'snapshot' | 'live'>('snapshot');
   const [from, setFrom] = useState(() => firstDayOfMonth_KST());
   const [to, setTo] = useState(() => fmtYMD_KST());
   const [live, setLive] = useState<any | null>(null);
+  const [doing, setDoing] = useState<{ create?: boolean; rebuild?: string; live?: boolean }>({});
 
   // 스냅샷과 현재 값이 다른(=갱신 필요) 월 표시용
   const [staleMap, setStaleMap] = useState<Record<string, boolean>>({});
@@ -104,11 +105,10 @@ export default function SettlementsClient() {
 
     return `${safe}_${ts}.csv`;
   }
-
   const createSnapshot = async () => {
     try {
       await fetch(`/api/settlements/${yyyymm}`, { method: 'POST' });
-      mutate();
+      await mutate();
       showSuccessToast(`${yyyymm} 스냅샷 생성 완료`);
     } catch (e) {
       console.error(e);
@@ -201,7 +201,19 @@ export default function SettlementsClient() {
         <button onClick={() => setTab('snapshot')} className={tab === 'snapshot' ? 'font-bold' : ''}>
           스냅샷
         </button>
-        <button onClick={() => setTab('live')} className={tab === 'live' ? 'font-bold' : ''}>
+        <button
+          onClick={async () => {
+            setTab('live');
+            try {
+              setDoing((d) => ({ ...d, live: true }));
+              await fetchLive();
+            } finally {
+              setDoing((d) => ({ ...d, live: false }));
+            }
+          }}
+          disabled={doing.live}
+          className={tab === 'live' ? 'font-bold' : ''}
+        >
           실시간
         </button>
       </div>
@@ -223,7 +235,18 @@ export default function SettlementsClient() {
                 className="border rounded px-3 py-2"
               />
             </div>
-            <button onClick={createSnapshot} className="px-4 py-2 rounded bg-black text-white">
+            <button
+              onClick={async () => {
+                try {
+                  setDoing((d) => ({ ...d, create: true }));
+                  await createSnapshot();
+                } finally {
+                  setDoing((d) => ({ ...d, create: false }));
+                }
+              }}
+              disabled={doing.create}
+              className="px-4 py-2 rounded bg-black text-white"
+            >
               스냅샷 생성
             </button>
             <button onClick={downloadCSV} className="px-4 py-2 rounded border">
@@ -284,17 +307,20 @@ export default function SettlementsClient() {
                     {/* 갱신 */}
                     <button
                       className="px-2 py-1 border rounded text-sm"
+                      disabled={doing.rebuild === row.yyyymm}
                       onClick={async () => {
                         try {
+                          setDoing((d) => ({ ...d, rebuild: row.yyyymm }));
                           await rebuildSnapshot(String(row.yyyymm));
-                          // 갱신 후 상태 업데이트
-                          await mutate();
+                          await mutate(); // 최신 데이터로 동기화
                           setStatusMap((prev) => ({ ...prev, [String(row.yyyymm)]: 'ok' }));
                           setStaleMap((prev) => ({ ...prev, [String(row.yyyymm)]: false }));
                           showSuccessToast(`${row.yyyymm} 스냅샷을 갱신했습니다.`);
                         } catch (e) {
                           console.error(e);
                           showErrorToast('스냅샷 갱신 중 오류가 발생했습니다.');
+                        } finally {
+                          setDoing((d) => ({ ...d, rebuild: undefined }));
                         }
                       }}
                     >
