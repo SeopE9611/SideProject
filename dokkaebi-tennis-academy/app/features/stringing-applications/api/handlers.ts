@@ -156,8 +156,8 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
   const updatePayload = { name, email, phone, address, addressDetail, postalCode, depositor, stringDetails };
   const updatedTypes: string[] = (updatePayload?.stringDetails?.stringTypes ?? app.stringDetails?.stringTypes ?? []) as string[];
 
-  const recalculated = await calcStringingTotal(db, updatedTypes);
-  setFields.totalPrice = recalculated;
+  // const recalculated = await calcStringingTotal(db, updatedTypes);
+  // setFields.totalPrice = recalculated;
 
   // PATCH 이전(현재) 문서에 예약 일정이 있었는지 기록
   const hadScheduleBefore = Boolean(appDoc?.stringDetails?.preferredDate) && Boolean(appDoc?.stringDetails?.preferredTime);
