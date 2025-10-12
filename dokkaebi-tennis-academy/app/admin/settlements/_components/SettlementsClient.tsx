@@ -6,12 +6,46 @@ import { showErrorToast, showSuccessToast, showInfoToast } from '@/lib/toast';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
+// KST(Asia/Seoul) 기준 YYYY-MM-DD 문자열 포맷터
+const TZ = 'Asia/Seoul';
+function fmtYMD_KST(date = new Date()) {
+  // en-CA는 2025-10-12 형태를 보장
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
+// KST 기준 이번 달 1일 (문자열)
+function firstDayOfMonth_KST(base = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit' }).formatToParts(base).reduce<Record<string, string>>((acc, p) => ((acc[p.type] = p.value), acc), {});
+  return `${parts.year}-${parts.month}-01`;
+}
+
+// KST 기준 지난 달 [from, to] (문자열 범위)
+function prevMonthRange_KST(base = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit' }).formatToParts(base).reduce<Record<string, string>>((acc, p) => ((acc[p.type] = p.value), acc), {});
+  let y = Number(parts.year);
+  let m = Number(parts.month);
+  m -= 1;
+  if (m === 0) {
+    m = 12;
+    y -= 1;
+  }
+  const mm = String(m).padStart(2, '0');
+  // KST는 DST가 없어 월말 계산에 로컬 Date 사용해도 안전
+  const lastDay = new Date(y, m, 0).getDate(); // m은 1-12
+  return { from: `${y}-${mm}-01`, to: `${y}-${mm}-${String(lastDay).padStart(2, '0')}` };
+}
+
 export default function SettlementsClient() {
   const [yyyymm, setYyyymm] = useState<string>(new Date().toISOString().slice(0, 7).replace('-', ''));
   const { data, mutate, isLoading } = useSWR('/api/settlements', fetcher);
   const [tab, setTab] = useState<'snapshot' | 'live'>('snapshot');
-  const [from, setFrom] = useState(() => new Date().toISOString().slice(0, 10)); // yyyy-mm-dd
-  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [from, setFrom] = useState(() => firstDayOfMonth_KST());
+  const [to, setTo] = useState(() => fmtYMD_KST());
   const [live, setLive] = useState<any | null>(null);
 
   // 스냅샷과 현재 값이 다른(=갱신 필요) 월 표시용
@@ -69,22 +103,6 @@ export default function SettlementsClient() {
     const ts = `${parts.year}${parts.month}${parts.day}_${parts.hour}${parts.minute}${parts.second}`;
 
     return `${safe}_${ts}.csv`;
-  }
-
-  // 합계, CSV, 프리셋 유틸
-  function toYYYYMMDD(d: Date) {
-    return d.toISOString().slice(0, 10);
-  }
-  function startOfMonth(d = new Date()) {
-    return new Date(d.getFullYear(), d.getMonth(), 1);
-  }
-  function endOfMonth(d = new Date()) {
-    return new Date(d.getFullYear(), d.getMonth() + 1, 0);
-  }
-  function addDays(d: Date, n: number) {
-    const x = new Date(d);
-    x.setDate(x.getDate() + n);
-    return x;
   }
 
   const createSnapshot = async () => {
@@ -333,22 +351,21 @@ export default function SettlementsClient() {
               <button
                 className="px-3 py-1 border rounded"
                 onClick={() => {
-                  const s = startOfMonth();
-                  const e = endOfMonth();
-                  setFrom(toYYYYMMDD(s));
-                  setTo(toYYYYMMDD(e));
+                  const fromStr = firstDayOfMonth_KST();
+                  const toStr = fmtYMD_KST();
+                  setFrom(fromStr);
+                  setTo(toStr);
                 }}
               >
                 이번 달
               </button>
+
               <button
                 className="px-3 py-1 border rounded"
                 onClick={() => {
-                  const d = new Date();
-                  const s = startOfMonth(addDays(d, -30));
-                  const e = endOfMonth(addDays(d, -30));
-                  setFrom(toYYYYMMDD(s));
-                  setTo(toYYYYMMDD(e));
+                  const r = prevMonthRange_KST();
+                  setFrom(r.from);
+                  setTo(r.to);
                 }}
               >
                 지난 달
@@ -356,14 +373,15 @@ export default function SettlementsClient() {
               <button
                 className="px-3 py-1 border rounded"
                 onClick={() => {
-                  const e = new Date();
-                  const s = addDays(e, -6);
-                  setFrom(toYYYYMMDD(s));
-                  setTo(toYYYYMMDD(e));
+                  const end = new Date();
+                  const start = new Date(end.getTime() - 6 * 24 * 60 * 60 * 1000);
+                  setFrom(fmtYMD_KST(start));
+                  setTo(fmtYMD_KST(end));
                 }}
               >
                 지난 7일
               </button>
+
               <span className="text-xs text-muted-foreground self-center">※ KST 기준 합산</span>
             </div>
             <button onClick={fetchLive} className="px-4 py-2 rounded bg-black text-white">
