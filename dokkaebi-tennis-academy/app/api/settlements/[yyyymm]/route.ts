@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
-import { parse } from 'date-fns';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 // 월 시작/끝(KST) → UTC 경계로 변환
