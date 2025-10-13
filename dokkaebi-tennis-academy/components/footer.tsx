@@ -6,7 +6,8 @@ const Footer = () => {
   const quickLinks = [
     { name: '스트링 쇼핑', href: '/products' },
     { name: '장착 서비스', href: '/services' },
-    { name: '아카데미 신청', href: '/academy' },
+    // { name: '아카데미 신청', href: '/academy' },
+    { name: '패키지', href: '/packages' },
     { name: '주문 조회', href: '/order-lookup' },
   ];
 
@@ -16,33 +17,6 @@ const Footer = () => {
     { name: '마이페이지', href: '/mypage' },
     { name: '이용약관', href: '/terms' },
     { name: '개인정보처리방침', href: '/privacy' },
-  ];
-
-  const features = [
-    {
-      icon: Award,
-      title: '15년 전문 경력',
-      description: '검증된 전문성',
-      color: 'text-yellow-400',
-    },
-    {
-      icon: Shield,
-      title: '품질 보장',
-      description: 'A/S 완벽 지원',
-      color: 'text-blue-400',
-    },
-    {
-      icon: Truck,
-      title: '빠른 배송',
-      description: '당일/익일 배송',
-      color: 'text-slate-400',
-    },
-    {
-      icon: Star,
-      title: '고객 만족',
-      description: '4.9/5 평점',
-      color: 'text-amber-400',
-    },
   ];
 
   return (
@@ -60,8 +34,8 @@ const Footer = () => {
               </div>
             </Link>
 
-            <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed text-sm">15년 전통의 전문 테니스 스트링 서비스로 여러분의 테니스 라이프를 완성해드립니다.</p>
-
+            <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed text-sm">전문 테니스 스트링 서비스로 여러분의 테니스 라이프를 완성해드립니다.</p>
+            {/* 미사용에따른 임시 주석 처리 
             <div className="flex space-x-3 mb-6">
               <Button size="icon" variant="ghost" className="opacity-80 hover:opacity-100 focus:ring-2 ring-blue-500 rounded-md">
                 <Facebook className="h-5 w-5 text-blue-600" />
@@ -72,7 +46,7 @@ const Footer = () => {
               <Button size="icon" variant="ghost" className="opacity-80 hover:opacity-100 focus:ring-2 ring-blue-500 rounded-md">
                 <Youtube className="h-5 w-5 text-red-600" />
               </Button>
-            </div>
+            </div> */}
           </div>
 
           {/* 바로가기 */}
@@ -110,29 +84,31 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-blue-600" />
                 <div>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">02-123-4567</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">0507-1392-3493</span>
                   <p className="text-xs text-slate-500 dark:text-slate-400">24시간 상담 가능</p>
                 </div>
               </div>
 
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4 text-blue-600" />
-                <span className="text-sm text-slate-900 dark:text-white break-all">info@dokkaebi-tennis.com</span>
+                <span className="text-sm text-slate-900 dark:text-white break-all">korgis5813@naver.com</span>
               </div>
 
               <div className="flex items-start space-x-3">
                 <MapPin className="h-4 w-4 text-blue-600 mt-1" />
                 <div>
-                  <span className="text-sm text-slate-900 dark:text-white">서울시 강남구 테니스로 123</span>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">지하철 2호선 강남역 3번 출구</p>
+                  <span className="text-sm text-slate-900 dark:text-white">서울 동작구 노량진로 22 B1</span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">지번: 서울 동작구 대방동 339-15</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">우편번호: 06938</p>
                 </div>
               </div>
 
               <div className="flex items-center space-x-3">
                 <Clock className="h-4 w-4 text-blue-600" />
                 <div>
-                  <div className="text-sm text-slate-900 dark:text-white">평일: 09:00 - 20:00</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">주말: 09:00 - 18:00</div>
+                  <div className="text-sm text-slate-900 dark:text-white">평일: 10:00 - 22:00</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">토요일: 09:00 - 18:00</div>
+                  <div className="text-xs text-red-500 dark:text-red-400">매주 일요일 정기 휴무</div>
                 </div>
               </div>
             </div>
@@ -143,7 +119,7 @@ const Footer = () => {
       <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t mt-8 pt-4 border-slate-200 dark:border-slate-800 max-w-7xl mx-auto px-4 md:px-6 pb-6">
         <div>
           <p className="mb-1">&copy; {new Date().getFullYear()} 도깨비 테니스. All rights reserved.</p>
-          <p>사업자등록번호: 123-45-67890 | 대표: 김재민 | 통신판매업신고: 2024-서울강남-1234</p>
+          <p>사업자등록번호: 등록예정 | 대표: 김재민 | 통신판매업신고: 등록예정</p>
         </div>
       </div>
     </footer>

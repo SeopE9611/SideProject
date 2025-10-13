@@ -55,7 +55,7 @@ export default function AcademyPage() {
       position: '수석 코치',
       image: '/placeholder.svg?height=400&width=400&text=김도깨비+코치',
       experience: '전 국가대표 테니스 선수',
-      description: '15년 이상의 코칭 경력을 가진 테니스 전문가. KTA 공인 코치 자격증 보유.',
+      description: '수년 이상의 코칭 경력을 가진 테니스 전문가. KTA 공인 코치 자격증 보유.',
       specialties: ['초보자 지도', '서브 교정', '경기 전략'],
       achievements: ['국가대표 경력 5년', 'KTA 공인 코치', '주니어 육성 전문가'],
       rating: 4.9,
@@ -161,7 +161,7 @@ export default function AcademyPage() {
             <div className="max-w-4xl mx-auto">
               <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">
                 <Award className="w-4 h-4 mr-2" />
-                15년 전통의 테니스 교육 전문 기관
+                테니스 교육 전문 기관
               </Badge>
 
               <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-green-100 to-white bg-clip-text text-transparent">도깨비 테니스 아카데미</h1>

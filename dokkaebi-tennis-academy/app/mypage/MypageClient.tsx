@@ -331,7 +331,7 @@ export default function MypageClient({ user }: Props) {
                   <Award className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 </div>
                 <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">프리미엄 서비스</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">15년 경력의 전문가가 제공하는 최고 품질의 서비스</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">전문가가 제공하는 최고 품질의 서비스</p>
               </div>
               <div className="text-center">
                 <div className="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-indigo-900 dark:to-blue-900 rounded-2xl p-4 w-16 h-16 mx-auto mb-4 shadow-lg">

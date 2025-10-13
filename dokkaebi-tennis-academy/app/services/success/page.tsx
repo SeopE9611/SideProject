@@ -415,7 +415,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                     <div className="flex items-center p-3 bg-indigo-50 dark:bg-slate-700 rounded-lg">
                       <Clock className="h-6 w-6 text-indigo-500 mr-3" />
                       <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">당일 완료</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">철저한 예약 장착 완료</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">빠르고 정확한 장착 서비스</p>
                       </div>
                     </div>
@@ -423,7 +423,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       <Award className="h-6 w-6 text-purple-500 mr-3" />
                       <div>
                         <p className="font-semibold text-gray-900 dark:text-white">전문가 상담</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">15년 경력의 전문가가 직접</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">전문가가 직접 상담</p>
                       </div>
                     </div>
                   </div>

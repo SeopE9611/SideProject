@@ -118,7 +118,7 @@ export default function StringPackagesPage() {
     {
       icon: <Users className="h-6 w-6" />,
       title: '전문가 상담',
-      description: '15년 경력의 전문가가 직접 상담해드립니다.',
+      description: '전문가가 직접 상담해드립니다.',
       color: 'purple',
     },
     {

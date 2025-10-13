@@ -286,10 +286,10 @@ export default function Home() {
             {[
               {
                 icon: Award,
-                title: '15년 전문 경력',
+                title: '전문 경력',
                 description: '검증된 전문성',
                 color: 'blue',
-                detail: '15년간 축적된 노하우로 최고의 서비스를 제공합니다',
+                detail: '수년 간 축적된 노하우로 최고의 서비스를 제공합니다',
               },
               {
                 icon: Shield,

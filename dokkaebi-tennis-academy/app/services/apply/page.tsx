@@ -1233,7 +1233,7 @@ export default function StringServiceApplyPage() {
                 <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/20">
                   <Award className="h-8 w-8 text-purple-500 mx-auto mb-3" />
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">전문가 상담</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">15년 경력의 전문가가 직접</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">전문가가 직접</p>
                 </div>
               </div>
             </div>

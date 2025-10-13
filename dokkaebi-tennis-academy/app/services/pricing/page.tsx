@@ -204,7 +204,7 @@ export default function PricingPage() {
           <CardContent className="p-8 text-center">
             <Zap className="h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">지금 예약하고 최고의 서비스를 경험하세요</h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto">15년 경험의 전문가가 직접 장착하는 프리미엄 서비스를 합리적인 가격에 만나보세요</p>
+            <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto">전문가가 직접 장착하는 프리미엄 서비스를 합리적인 가격에 만나보세요</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
                 <Link href="/services">장착 서비스 예약</Link>

@@ -204,7 +204,7 @@ export default function LocationsPage() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-                    15년 경력의 전문가 직접 서비스
+                    전문가 직접 서비스
                   </li>
                   <li className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />

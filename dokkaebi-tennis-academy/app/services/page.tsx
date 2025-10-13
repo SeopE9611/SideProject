@@ -188,7 +188,7 @@ export default function ServicesPage() {
           <div className="max-w-4xl mx-auto">
             <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">
               <Award className="w-4 h-4 mr-2" />
-              15년 경력의 전문 스트링 서비스
+              전문 스트링 서비스
             </Badge>
 
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">스트링 장착 서비스</h1>
