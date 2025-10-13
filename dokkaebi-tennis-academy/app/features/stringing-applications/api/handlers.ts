@@ -233,8 +233,7 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 
     // stringItems 재계산
     if (hasTimeChange || hasTypesChange || hasCustomNameChange) {
-      const typesForItems: string[] = Array.isArray(stringDetails?.stringTypes) ? stringDetails.stringTypes : Array.isArray(appDoc?.stringDetails?.stringTypes) ? appDoc.stringDetails.stringTypes : []; //
-
+      const typesForItems: string[] = Array.isArray(stringDetails?.stringTypes) ? stringDetails.stringTypes : Array.isArray(appDoc?.stringDetails?.stringTypes) ? appDoc.stringDetails.stringTypes : [];
       const newItems = await Promise.all(
         typesForItems.map(async (prodId: any) => {
           if (prodId === 'custom') {
@@ -258,17 +257,18 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 
       // 스트링 요금(newItems) 합산하여 totalPrice 자동 설정
       // 유틸 기준으로 최종 금액 1회 확정
-      const typesForTotal: string[] = Array.isArray(setFields['stringDetails.stringTypes']) ? setFields['stringDetails.stringTypes'] : appDoc.stringDetails?.stringTypes ?? [];
+      if (hasTypesChange || hasCustomNameChange) {
+        const typesForTotal: string[] = Array.isArray(setFields['stringDetails.stringTypes']) ? setFields['stringDetails.stringTypes'] : appDoc.stringDetails?.stringTypes ?? [];
 
-      const recalculated = await calcStringingTotal(db, typesForTotal);
-      setFields.totalPrice = recalculated;
-      pushHistory.push({
-        status: '결제 금액 자동 업데이트',
-        date: new Date(),
-        description: `결제 금액을 ${recalculated.toLocaleString()}원으로 업데이트했습니다. (정산 유틸)`,
-      });
+        const recalculated = await calcStringingTotal(db, typesForTotal);
+        setFields.totalPrice = recalculated;
+        pushHistory.push({
+          status: '결제 금액 자동 업데이트',
+          date: new Date(),
+          description: `결제 금액을 ${recalculated.toLocaleString()}원으로 업데이트했습니다. (정산 유틸)`,
+        });
+      }
     }
-
     if (hasTimeChange || hasTypesChange || hasCustomNameChange || hasRacketChange) {
       pushHistory.push({
         status: '스트링 정보 수정',
