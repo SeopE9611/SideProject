@@ -10,7 +10,9 @@ export async function GET(req: Request) {
     if (!from || !to) {
       return NextResponse.json({ error: 'from,to 쿼리 필요(yyyy-mm-dd)' }, { status: 400 });
     }
-
+    if (new Date(from) > new Date(to)) {
+      return NextResponse.json({ error: '시작일이 종료일보다 늦습니다.' }, { status: 400 });
+    }
     // KST 기준으로 하루 경계 잡기 → UTC로 변환
     function kstDayStartUtc(ymd: string) {
       // ymd: 'YYYY-MM-DD'

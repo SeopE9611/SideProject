@@ -71,14 +71,29 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
       .find({ createdAt: { $gte: start, $lt: end } }, { projection: { paymentStatus: 1, totalPrice: 1, refunds: 1 } })
       .toArray();
 
-    const paid = orders.reduce((s, o: any) => s + (o.paidAmount || 0), 0) + apps.reduce((s, a: any) => s + (a.totalPrice || 0), 0);
-    const refund = orders.reduce((s, o: any) => s + (o.refunds || 0), 0) + apps.reduce((s, a: any) => s + (a.refunds || 0), 0);
+    // 3) 패키지 주문 조회 (결제완료만, createdAt 기준)
+    const packages = await db
+      .collection('packageOrders')
+      .find(
+        {
+          createdAt: { $gte: start, $lt: end },
+          paymentStatus: '결제완료',
+        },
+        { projection: { totalPrice: 1 } }
+      )
+      .toArray();
+
+    // 패키지 수금 합계
+    const pkgPaid = packages.reduce((s: number, p: any) => s + (p.totalPrice || 0), 0);
+
+    const paid = orders.reduce((s: number, o: any) => s + (o.paidAmount || 0), 0) + apps.reduce((s: number, a: any) => s + (a.totalPrice || 0), 0) + pkgPaid;
+    const refund = orders.reduce((s: number, o: any) => s + (o.refunds || 0), 0) + apps.reduce((s: number, a: any) => s + (a.refunds || 0), 0);
     const net = paid - refund;
 
     const snapshot = {
       yyyymm,
       totals: { paid, refund, net },
-      breakdown: { orders: orders.length, applications: apps.length },
+      breakdown: { orders: orders.length, applications: apps.length, packages: packages.length },
       // 아래 두 필드는 최초 1회만 기록
       createdAt: new Date(),
       createdBy,
