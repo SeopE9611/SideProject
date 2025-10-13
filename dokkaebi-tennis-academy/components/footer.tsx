@@ -7,7 +7,7 @@ const Footer = () => {
     { name: '스트링 쇼핑', href: '/products' },
     { name: '장착 서비스', href: '/services' },
     // { name: '아카데미 신청', href: '/academy' },
-    { name: '패키지', href: '/packages' },
+    { name: '패키지', href: '/services/packages' },
     { name: '주문 조회', href: '/order-lookup' },
   ];
 
