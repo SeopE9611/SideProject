@@ -655,7 +655,12 @@ export default function SettlementsClient() {
               <div className="hidden md:block overflow-x-auto">
                 <div className="min-w-[980px]">
                   <div className="sticky top-0 z-10 backdrop-blur-sm bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-b border-emerald-100 dark:border-emerald-800/30">
-                    <div className="grid gap-3 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200" style={{ gridTemplateColumns: '56px 90px 110px 110px 110px 90px 90px 90px 90px 56px' }}>
+                    <div
+                      className="grid gap-3 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200"
+                      style={{
+                        gridTemplateColumns: '40px 90px 110px 110px 110px 90px 90px 90px 110px 40px',
+                      }}
+                    >
                       <div className="flex items-center justify-center">
                         <input
                           type="checkbox"
@@ -725,7 +730,12 @@ export default function SettlementsClient() {
                     <div className="divide-y divide-gray-100 dark:divide-gray-800">
                       {(sortedData() ?? []).map((row: any, idx: number) => (
                         <div key={row.yyyymm}>
-                          <div className="grid gap-3 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200" style={{ gridTemplateColumns: '56px 90px 110px 110px 110px 90px 90px 90px 90px 56px' }}>
+                          <div
+                            className="grid gap-3 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200"
+                            style={{
+                              gridTemplateColumns: '40px 90px 110px 110px 110px 90px 90px 90px 110px 40px',
+                            }}
+                          >
                             <div className="flex items-center justify-center">
                               <input
                                 type="checkbox"
