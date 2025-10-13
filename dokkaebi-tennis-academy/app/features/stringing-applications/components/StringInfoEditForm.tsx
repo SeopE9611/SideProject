@@ -16,7 +16,7 @@ interface Props {
     desiredDateTime?: string; // "YYYY-MM-DDThh:mm"
     stringTypes?: string[];
     racketType?: string;
-    customStringName?: string; // 추가
+    customStringName?: string;
   };
   fields?: Array<'desiredDateTime' | 'stringType' | 'racketType'>;
   stringOptions: { id: string; name: string; mountingFee: number }[];

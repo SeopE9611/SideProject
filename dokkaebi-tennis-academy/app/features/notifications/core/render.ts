@@ -304,7 +304,7 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
     };
   }
 
-  // ✅ 작업 완료(교체완료)
+  // 작업 완료(교체완료)
   if (event === 'stringing.service_completed') {
     const app = ctx.application;
     const name = ctx.user?.name || '고객님';

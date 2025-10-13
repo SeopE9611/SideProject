@@ -108,7 +108,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
   }
 }
 
-// 추가: 스냅샷 삭제 API
+// 스냅샷 삭제 API
 export async function DELETE(_req: Request, ctx: { params: Promise<{ yyyymm: string }> }) {
   const origin = _req.headers.get('origin') || '';
   const allow = process.env.NEXT_PUBLIC_SITE_URL || '';

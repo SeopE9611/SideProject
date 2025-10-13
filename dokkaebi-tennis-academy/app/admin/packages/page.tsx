@@ -590,7 +590,6 @@ export default function PackageOrdersClient() {
 
   return (
     <AuthGuard>
-      {/* ✅ 그라데이션 충돌 수정: 라이트/다크를 같은 그룹으로 분리 */}
       <div
         className="
           min-h-screen
@@ -605,7 +604,7 @@ export default function PackageOrdersClient() {
               <Package className="h-6 w-6 text-white" />
             </div>
             <div>
-              {/* ✅ 토큰화 */}
+              {/* 토큰화 */}
               <h1 className="text-4xl font-bold tracking-tight text-foreground">패키지 관리</h1>
               <p className="mt-2 text-lg text-muted-foreground">스트링 교체 서비스 패키지 주문을 관리하고 처리하세요.</p>
             </div>
@@ -937,7 +936,7 @@ export default function PackageOrdersClient() {
                           const daysUntilExpiry = getDaysUntilExpiry(expirySource);
 
                           return (
-                            // ✅ 라이트/다크 줄 배경 토큰 통일
+                            // 라이트/다크 줄 배경 토큰 통일
                             <TableRow key={pkg.id} className="hover:bg-primary/5 transition-colors even:bg-muted/40 border-b last:border-0">
                               {/* 패키지 ID (복사 토스트 포함) */}
                               <TableCell className={cn(tdClasses)}>

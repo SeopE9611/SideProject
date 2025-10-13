@@ -39,14 +39,37 @@ export async function GET(req: Request) {
       .find({ createdAt: { $gte: start, $lt: endExclusive } }, { projection: { totalPrice: 1, refunds: 1 } })
       .toArray();
 
-    const paid = orders.reduce((s, o: any) => s + (o.paidAmount || 0), 0) + apps.reduce((s, a: any) => s + (a.totalPrice || 0), 0);
+    // 패키지 주문 집계용 조회
+    const packages = await db
+      .collection('packageOrders')
+      .find(
+        {
+          // 기간 필터: 현재 구조상 결제완료 시각을 별도로 저장 안 하므로 createdAt 기준 사용
+          createdAt: { $gte: start, $lt: endExclusive },
+          paymentStatus: '결제완료', // 현금 유입 기준
+        },
+        { projection: { totalPrice: 1 } }
+      )
+      .toArray();
+
+    // 패키지 결제합 (수금 기준)
+    const pkgPaid = packages.reduce((s: number, p: any) => s + (p.totalPrice || 0), 0);
+
+    // paid/net 계산
+    const paid = orders.reduce((s, o: any) => s + (o.paidAmount || 0), 0) + apps.reduce((s, a: any) => s + (a.totalPrice || 0), 0) + pkgPaid;
+
     const refund = orders.reduce((s, o: any) => s + (o.refunds || 0), 0) + apps.reduce((s, a: any) => s + (a.refunds || 0), 0);
+    // 패키지 환불은 현재 스키마 미도입 → 0 (향후 추가 시 여기에 반영)
     const net = paid - refund;
 
     return NextResponse.json({
       range: { from, to },
       totals: { paid, refund, net },
-      breakdown: { orders: orders.length, applications: apps.length },
+      breakdown: {
+        orders: orders.length,
+        applications: apps.length,
+        packages: packages.length,
+      },
     });
   } catch (e) {
     console.error('[settlements/live]', e);

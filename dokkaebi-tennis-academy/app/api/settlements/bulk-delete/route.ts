@@ -1,4 +1,4 @@
-// 추가: 스냅샷 일괄 삭제 API
+// 스냅샷 일괄 삭제 API
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { cookies } from 'next/headers';

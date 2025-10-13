@@ -6,7 +6,7 @@ import { showErrorToast, showSuccessToast, showInfoToast } from '@/lib/toast';
 import { useRouter } from 'next/navigation';
 import { FileDown, RefreshCw, CheckCircle2, AlertTriangle, Loader2, Calendar, TrendingUp, Package, DollarSign, TrendingDown, Activity, Trash2, ArrowUpDown, ArrowUp, ArrowDown, BarChartBig as ChartBar, MoreHorizontal } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 // ──────────────────────────────────────────────────────────────
 // 공통 유틸
@@ -88,8 +88,8 @@ function makeCsvFilename(base: string) {
   return `${safe}_${ts}.csv`;
 }
 
-// 추가: 정렬 타입 정의
-type SortField = 'paid' | 'refund' | 'net' | 'orders' | 'applications';
+// 정렬 타입 정의
+type SortField = 'paid' | 'refund' | 'net' | 'orders' | 'applications' | 'packages';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function SettlementsClient() {
@@ -217,7 +217,7 @@ export default function SettlementsClient() {
     }
   }
 
-  // 추가: 전체 선택/해제 토글
+  // 전체 선택/해제 토글
   const toggleSelectAll = () => {
     if (selectedSnapshots.size === (data ?? []).length) {
       setSelectedSnapshots(new Set());
@@ -226,7 +226,7 @@ export default function SettlementsClient() {
     }
   };
 
-  // 추가: 개별 선택/해제 토글
+  // 개별 선택/해제 토글
   const toggleSelect = (yyyymm: string) => {
     const newSet = new Set(selectedSnapshots);
     if (newSet.has(yyyymm)) {
@@ -237,7 +237,7 @@ export default function SettlementsClient() {
     setSelectedSnapshots(newSet);
   };
 
-  // 추가: 선택된 항목 삭제
+  // 선택된 항목 삭제
   const deleteSelected = async () => {
     if (selectedSnapshots.size === 0) {
       showInfoToast('삭제할 항목을 선택하세요.');
@@ -271,7 +271,7 @@ export default function SettlementsClient() {
     }
   };
 
-  // 추가: 단일 항목 삭제
+  // 단일 항목 삭제
   const deleteSingle = async (yyyymm: string) => {
     if (!confirm(`${yyyymm} 스냅샷을 삭제하시겠습니까?`)) {
       return;
@@ -295,7 +295,7 @@ export default function SettlementsClient() {
     }
   };
 
-  // 추가: 정렬 토글
+  // 정렬 토글
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
       // 같은 필드 클릭: asc → desc → null
@@ -312,7 +312,7 @@ export default function SettlementsClient() {
     }
   };
 
-  // 추가: 정렬된 데이터
+  // 정렬된 데이터
   const sortedData = () => {
     if (!data || !sortField || !sortDirection) return data;
 
@@ -341,6 +341,10 @@ export default function SettlementsClient() {
           aVal = a.breakdown?.applications || 0;
           bVal = b.breakdown?.applications || 0;
           break;
+        case 'packages':
+          aVal = a.breakdown?.packages || 0;
+          bVal = b.breakdown?.packages || 0;
+          break;
       }
 
       return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
@@ -349,7 +353,7 @@ export default function SettlementsClient() {
     return sorted;
   };
 
-  // 추가: 정렬 아이콘 렌더링
+  // 정렬 아이콘 렌더링
   const renderSortIcon = (field: SortField) => {
     if (sortField !== field) {
       return <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />;
@@ -380,7 +384,7 @@ export default function SettlementsClient() {
   // 스냅샷 CSV 다운로드
   const downloadCSV = () => {
     const rows = sortedData() ?? [];
-    const header = ['월(YYYYMM)', '매출', '환불', '순익', '주문수', '신청수'];
+    const header = ['월(YYYYMM)', '매출', '환불', '순익', '주문수', '신청수', '패키지수'];
     const csvRows = rows.map((r: any) => [
       `'${String(r.yyyymm)}`, // yyyymm 자동서식 방지
       r.totals?.paid || 0,
@@ -388,6 +392,7 @@ export default function SettlementsClient() {
       r.totals?.net || 0,
       r.breakdown?.orders || 0,
       r.breakdown?.applications || 0,
+      r.breakdown?.packages || 0,
     ]);
 
     // 파일명: 목록 최소~최대 yyyymm
@@ -646,11 +651,11 @@ export default function SettlementsClient() {
             </Card>
 
             <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm overflow-visible max-w-6xl mx-auto">
-              {/* ── 데스크탑(≥md) : 기존 표 그대로 ───────────────────────── */}
+              {/* 데스크탑 */}
               <div className="hidden md:block overflow-x-auto">
                 <div className="min-w-[980px]">
                   <div className="sticky top-0 z-10 backdrop-blur-sm bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-b border-emerald-100 dark:border-emerald-800/30">
-                    <div className="grid gap-4 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200" style={{ gridTemplateColumns: '60px 100px 120px 120px 120px 100px 100px 100px 64px' }}>
+                    <div className="grid gap-3 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200" style={{ gridTemplateColumns: '56px 90px 110px 110px 110px 90px 90px 90px 90px 56px' }}>
                       <div className="flex items-center justify-center">
                         <input
                           type="checkbox"
@@ -681,6 +686,11 @@ export default function SettlementsClient() {
                         신청수
                         {renderSortIcon('applications')}
                       </button>
+                      <button onClick={() => toggleSort('packages')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors">
+                        패키지수
+                        {renderSortIcon('packages')}
+                      </button>
+
                       <div className="text-center">상태</div>
                       <div className="text-center">액션</div>
                     </div>
@@ -689,7 +699,8 @@ export default function SettlementsClient() {
                   {isLoading ? (
                     <div className="divide-y divide-gray-100 dark:divide-gray-800">
                       {[...Array(5)].map((_, i) => (
-                        <div key={i} className="grid gap-4 p-5 animate-pulse" style={{ gridTemplateColumns: '60px 100px 120px 120px 120px 100px 100px 100px 80px' }}>
+                        <div key={i} className="grid gap-3 p-5 animate-pulse" style={{ gridTemplateColumns: '56px 90px 110px 110px 110px 90px 90px 90px 90px 56px' }}>
+                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
                           <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
                           <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
                           <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
@@ -714,10 +725,7 @@ export default function SettlementsClient() {
                     <div className="divide-y divide-gray-100 dark:divide-gray-800">
                       {(sortedData() ?? []).map((row: any, idx: number) => (
                         <div key={row.yyyymm}>
-                          <div
-                            className={`grid gap-4 p-5 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors ${idx === 0 ? 'bg-emerald-50/30 dark:bg-emerald-950/10' : ''}`}
-                            style={{ gridTemplateColumns: '60px 100px 120px 120px 120px 100px 100px 100px 64px' }}
-                          >
+                          <div className="grid gap-3 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200" style={{ gridTemplateColumns: '56px 90px 110px 110px 110px 90px 90px 90px 90px 56px' }}>
                             <div className="flex items-center justify-center">
                               <input
                                 type="checkbox"
@@ -747,6 +755,7 @@ export default function SettlementsClient() {
                             <div className="text-center tabular-nums text-sm font-bold text-emerald-700 dark:text-emerald-300 flex items-center justify-center">{(row.totals?.net || 0).toLocaleString()}</div>
                             <div className="text-center tabular-nums text-sm text-gray-900 dark:text-gray-100 flex items-center justify-center">{row.breakdown?.orders || 0}</div>
                             <div className="text-center tabular-nums text-sm text-gray-900 dark:text-gray-100 flex items-center justify-center">{row.breakdown?.applications || 0}</div>
+                            <div className="text-center tabular-nums text-sm text-gray-900 dark:text-gray-100 flex items-center justify-center">{row.breakdown?.packages || 0}</div>
 
                             <div className="flex items-center justify-center">
                               {statusMap[String(row.yyyymm)] === 'checking' && (
@@ -770,114 +779,106 @@ export default function SettlementsClient() {
                               {!statusMap[String(row.yyyymm)] && <span className="text-xs text-gray-400 dark:text-gray-600">-</span>}
                             </div>
 
-                            {/* 드롭다운 메뉴로 액션 버튼 개선 // 추가 */}
                             <div className="relative flex items-center justify-center">
-                              <DropdownMenu open={openMenuId === String(row.yyyymm)} onOpenChange={(open) => setOpenMenuId(open ? String(row.yyyymm) : null)}>
+                              <DropdownMenu modal={false}>
                                 <DropdownMenuTrigger asChild>
-                                  {/* 주문 목록과 동일하게 버튼 대신 span 사용 */}
-                                  <span
+                                  <button
+                                    type="button"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                     aria-label="작업 메뉴 열기"
-                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-                                    onClick={(e) => e.stopPropagation()} // 행 클릭 이벤트 차단
                                   >
                                     <MoreHorizontal className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                  </span>
+                                  </button>
                                 </DropdownMenuTrigger>
 
-                                <DropdownMenuContent
-                                  align="end"
-                                  sideOffset={8}
-                                  className="z-[1000] w-44"
-                                  onCloseAutoFocus={(e) => e.preventDefault()} // 포커스 점프 방지(깜빡임 예방)
-                                >
-                                  <DropdownMenuLabel>작업</DropdownMenuLabel>
-
-                                  <DropdownMenuItem
-                                    disabled={doing.rebuild === row.yyyymm}
-                                    onClick={async () => {
-                                      try {
-                                        setOpenMenuId(null);
-                                        setDoing((d) => ({ ...d, rebuild: row.yyyymm }));
-                                        await rebuildSnapshot(String(row.yyyymm));
-                                        await mutate();
-                                        setStatusMap((prev) => ({ ...prev, [String(row.yyyymm)]: 'ok' }));
-                                        setStaleMap((prev) => ({ ...prev, [String(row.yyyymm)]: false }));
-                                        showSuccessToast(`${row.yyyymm} 스냅샷을 갱신했습니다.`);
-                                      } catch (e) {
-                                        console.error(e);
-                                        showErrorToast('스냅샷 갱신 중 오류가 발생했습니다.');
-                                      } finally {
-                                        setDoing((d) => ({ ...d, rebuild: undefined }));
-                                      }
-                                    }}
-                                  >
-                                    {doing.rebuild === row.yyyymm ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-                                    갱신
-                                  </DropdownMenuItem>
-
-                                  <DropdownMenuItem
-                                    onClick={async () => {
-                                      setOpenMenuId(null);
-                                      const key = String(row.yyyymm);
-                                      try {
-                                        setStatusMap((prev) => ({ ...prev, [key]: 'checking' }));
-                                        const { ok, live } = await checkStalenessOfRow(row);
-
-                                        const snap = {
-                                          paid: row.totals?.paid || 0,
-                                          refund: row.totals?.refund || 0,
-                                          net: row.totals?.net || 0,
-                                          orders: row.breakdown?.orders || 0,
-                                          applications: row.breakdown?.applications || 0,
-                                        };
-                                        const livePack = {
-                                          paid: live.totals?.paid || 0,
-                                          refund: live.totals?.refund || 0,
-                                          net: live.totals?.net || 0,
-                                          orders: live.breakdown?.orders || 0,
-                                          applications: live.breakdown?.applications || 0,
-                                        };
-                                        setDiffMap((prev) => ({ ...prev, [key]: { live: livePack, snap } }));
-                                        setStatusMap((prev) => ({ ...prev, [key]: ok ? 'ok' : 'stale' }));
-                                        setStaleMap((prev) => ({ ...prev, [key]: !ok }));
-
-                                        if (ok) {
-                                          showSuccessToast('스냅샷이 현재 집계와 일치합니다.');
-                                          setOpenMap((prev) => ({ ...prev, [key]: false }));
-                                        } else {
-                                          showInfoToast(`변경 감지됨: ${key} 스냅샷과 현재 집계가 다릅니다.`);
-                                          setOpenMap((prev) => ({ ...prev, [key]: true }));
+                                <DropdownMenuPortal>
+                                  <DropdownMenuContent align="end" sideOffset={8} collisionPadding={8} className="z-[9999] w-44" onCloseAutoFocus={(e) => e.preventDefault()}>
+                                    {' '}
+                                    <DropdownMenuLabel>작업</DropdownMenuLabel>
+                                    <DropdownMenuItem
+                                      disabled={doing.rebuild === row.yyyymm}
+                                      onSelect={async () => {
+                                        try {
+                                          setOpenMenuId(null);
+                                          setDoing((d) => ({ ...d, rebuild: row.yyyymm }));
+                                          await rebuildSnapshot(String(row.yyyymm));
+                                          await mutate();
+                                          setStatusMap((prev) => ({ ...prev, [String(row.yyyymm)]: 'ok' }));
+                                          setStaleMap((prev) => ({ ...prev, [String(row.yyyymm)]: false }));
+                                          showSuccessToast(`${row.yyyymm} 스냅샷을 갱신했습니다.`);
+                                        } catch (e) {
+                                          console.error(e);
+                                          showErrorToast('스냅샷 갱신 중 오류가 발생했습니다.');
+                                        } finally {
+                                          setDoing((d) => ({ ...d, rebuild: undefined }));
                                         }
-                                      } catch (e) {
-                                        console.error(e);
-                                        setStatusMap((prev) => ({ ...prev, [key]: 'stale' }));
-                                        showErrorToast('검증 중 오류가 발생했습니다.');
-                                      }
-                                    }}
-                                  >
-                                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                                    검증
-                                  </DropdownMenuItem>
+                                      }}
+                                    >
+                                      {doing.rebuild === row.yyyymm ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                                      갱신
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onSelect={async () => {
+                                        setOpenMenuId(null);
+                                        const key = String(row.yyyymm);
+                                        try {
+                                          setStatusMap((prev) => ({ ...prev, [key]: 'checking' }));
+                                          const { ok, live } = await checkStalenessOfRow(row);
 
-                                  <DropdownMenuSeparator />
+                                          const snap = {
+                                            paid: row.totals?.paid || 0,
+                                            refund: row.totals?.refund || 0,
+                                            net: row.totals?.net || 0,
+                                            orders: row.breakdown?.orders || 0,
+                                            applications: row.breakdown?.applications || 0,
+                                          };
+                                          const livePack = {
+                                            paid: live.totals?.paid || 0,
+                                            refund: live.totals?.refund || 0,
+                                            net: live.totals?.net || 0,
+                                            orders: live.breakdown?.orders || 0,
+                                            applications: live.breakdown?.applications || 0,
+                                          };
+                                          setDiffMap((prev) => ({ ...prev, [key]: { live: livePack, snap } }));
+                                          setStatusMap((prev) => ({ ...prev, [key]: ok ? 'ok' : 'stale' }));
+                                          setStaleMap((prev) => ({ ...prev, [key]: !ok }));
 
-                                  <DropdownMenuItem
-                                    className="text-rose-600 focus:text-rose-600"
-                                    onClick={async () => {
-                                      setOpenMenuId(null);
-                                      await deleteSingle(String(row.yyyymm));
-                                    }}
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    삭제
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
+                                          if (ok) {
+                                            showSuccessToast('스냅샷이 현재 집계와 일치합니다.');
+                                            setOpenMap((prev) => ({ ...prev, [key]: false }));
+                                          } else {
+                                            showInfoToast(`변경 감지됨: ${key} 스냅샷과 현재 집계가 다릅니다.`);
+                                            setOpenMap((prev) => ({ ...prev, [key]: true }));
+                                          }
+                                        } catch (e) {
+                                          console.error(e);
+                                          setStatusMap((prev) => ({ ...prev, [key]: 'stale' }));
+                                          showErrorToast('검증 중 오류가 발생했습니다.');
+                                        }
+                                      }}
+                                    >
+                                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                                      검증
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      className="text-rose-600 focus:text-rose-600"
+                                      onSelect={async () => {
+                                        setOpenMenuId(null);
+                                        await deleteSingle(String(row.yyyymm));
+                                      }}
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      삭제
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenuPortal>
                               </DropdownMenu>
                             </div>
                           </div>
 
                           {openMap[String(row.yyyymm)] && statusMap[String(row.yyyymm)] === 'stale' && diffMap[String(row.yyyymm)] && (
-                            <div className="mx-5 mb-5 rounded-2xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 shadow-xl overflow-hidden">
+                            <div className="mx-5 mb-5 rounded-2xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 shadow-xl max-h-[60vh] overflow-auto overscroll-auto">
                               <div className="p-4 border-b border-rose-200 dark:border-rose-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
@@ -975,7 +976,7 @@ export default function SettlementsClient() {
                   )}
                 </div>
               </div>
-              {/* ── 모바일(<md) : 카드형 리스트 추가 ──────────────────────── */}
+              {/* 모바일 */}
               <div className="md:hidden px-3 py-3 space-y-3">
                 {!isLoading && data && data.length > 0 && (
                   <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-lg">
@@ -985,7 +986,6 @@ export default function SettlementsClient() {
                 )}
 
                 {isLoading ? (
-                  // 모바일 스켈레톤 3개 정도
                   [...Array(3)].map((_, i) => <div key={i} className="rounded-xl border border-emerald-100 dark:border-emerald-900/30 bg-white dark:bg-gray-900 p-4 shadow-sm animate-pulse h-32" />)
                 ) : !data || data.length === 0 ? (
                   <div className="rounded-xl border border-emerald-100 dark:border-emerald-900/30 bg-white dark:bg-gray-900 p-6 text-center">
@@ -1019,23 +1019,19 @@ export default function SettlementsClient() {
                           </button>
                         </div>
 
-                        <DropdownMenu open={openMenuId === String(row.yyyymm)} onOpenChange={(open) => setOpenMenuId(open ? String(row.yyyymm) : null)}>
+                        <DropdownMenu modal={false}>
                           <DropdownMenuTrigger asChild>
-                            <span
-                              aria-label="작업 메뉴 열기"
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                            >
+                            <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" aria-label="작업 메뉴 열기">
                               <MoreHorizontal className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                            </span>
+                            </button>
                           </DropdownMenuTrigger>
 
                           <DropdownMenuContent align="end" sideOffset={8} className="z-[1000] w-44" onCloseAutoFocus={(e) => e.preventDefault()}>
+                            {' '}
                             <DropdownMenuLabel>작업</DropdownMenuLabel>
-
                             <DropdownMenuItem
                               disabled={doing.rebuild === row.yyyymm}
-                              onClick={async () => {
+                              onSelect={async () => {
                                 setOpenMenuId(null);
                                 try {
                                   setDoing((d) => ({ ...d, rebuild: row.yyyymm }));
@@ -1052,9 +1048,8 @@ export default function SettlementsClient() {
                               {doing.rebuild === row.yyyymm ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
                               갱신
                             </DropdownMenuItem>
-
                             <DropdownMenuItem
-                              onClick={async () => {
+                              onSelect={async () => {
                                 setOpenMenuId(null);
                                 const key = String(row.yyyymm);
                                 try {
@@ -1088,12 +1083,10 @@ export default function SettlementsClient() {
                               <CheckCircle2 className="w-4 h-4 mr-2" />
                               검증
                             </DropdownMenuItem>
-
                             <DropdownMenuSeparator />
-
                             <DropdownMenuItem
                               className="text-rose-600 focus:text-rose-600"
-                              onClick={async () => {
+                              onSelect={async () => {
                                 setOpenMenuId(null);
                                 await deleteSingle(String(row.yyyymm));
                               }}
@@ -1120,6 +1113,9 @@ export default function SettlementsClient() {
 
                         <div className="text-gray-500 dark:text-gray-400">신청수</div>
                         <div className="text-right tabular-nums text-gray-900 dark:text-gray-100">{row.breakdown?.applications || 0}</div>
+
+                        <div className="text-gray-500 dark:text-gray-400">패키지수</div>
+                        <div className="text-right tabular-nums text-gray-900 dark:text-gray-100">{row.breakdown?.packages || 0}</div>
                       </div>
 
                       <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">

@@ -57,15 +57,41 @@ export async function POST() {
       .find({ createdAt: { $gte: start, $lt: end } }, { projection: { totalPrice: 1, refunds: 1 } })
       .toArray();
 
-    const paid = orders.reduce((s: any, o: any) => s + (o.paidAmount || 0), 0) + apps.reduce((s: any, a: any) => s + (a.totalPrice || 0), 0);
+    // 패키지 주문: 결제완료만 월 범위로 수금 합산
+    const packages = await db
+      .collection('packageOrders')
+      .find(
+        {
+          createdAt: { $gte: start, $lt: end },
+          paymentStatus: '결제완료',
+        },
+        { projection: { totalPrice: 1 } }
+      )
+      .toArray();
+
+    // 패키지 수금 합계
+    const pkgPaid = packages.reduce((s: number, p: any) => s + (p.totalPrice || 0), 0);
+
+    // paid/net 계산
+    const paid = orders.reduce((s: any, o: any) => s + (o.paidAmount || 0), 0) + apps.reduce((s: any, a: any) => s + (a.totalPrice || 0), 0) + pkgPaid;
     const refund = orders.reduce((s: any, o: any) => s + (o.refunds || 0), 0) + apps.reduce((s: any, a: any) => s + (a.refunds || 0), 0);
+
     const net = paid - refund;
 
     await db.collection('settlements').updateOne(
       { yyyymm },
       {
         $setOnInsert: { createdAt: new Date(), createdBy: 'cron' },
-        $set: { totals: { paid, refund, net }, breakdown: { orders: orders.length, applications: apps.length }, lastGeneratedAt: new Date(), lastGeneratedBy: 'cron' },
+        $set: {
+          totals: { paid, refund, net },
+          breakdown: {
+            orders: orders.length,
+            applications: apps.length,
+            packages: packages.length,
+          },
+          lastGeneratedAt: new Date(),
+          lastGeneratedBy: 'cron',
+        },
       },
       { upsert: true }
     );
@@ -73,9 +99,14 @@ export async function POST() {
     console.log('[cron-monthly]', {
       yyyymm,
       totals: { paid, refund, net },
-      counts: { orders: orders.length, apps: apps.length },
+      counts: {
+        orders: orders.length,
+        apps: apps.length,
+        packages: packages.length,
+      },
       at: new Date().toISOString(),
     });
+
     return NextResponse.json({ ok: true, yyyymm });
   } catch (e) {
     console.error('[cron-monthly]', e);
