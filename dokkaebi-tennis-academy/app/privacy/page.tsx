@@ -1,14 +1,12 @@
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import Link from 'next/link';
+import { ArrowLeft, Shield, Eye, Lock, Users, FileText, Bell, Cookie, RefreshCw, Mail, Phone } from 'lucide-react';
 
 export default function PrivacyPage() {
-  // 개인정보처리방침 섹션 데이터
   const privacySections = [
     {
-      id: "collected-items",
-      title: "1. 수집하는 개인정보 항목",
+      id: 'collected-items',
+      title: '1. 수집하는 개인정보 항목',
+      icon: FileText,
       content: `도깨비 테니스 아카데미는 회원 가입, 상담, 서비스 신청 등을 위해 아래와 같은 개인정보를 수집하고 있습니다.
 
 수집항목
@@ -20,8 +18,9 @@ export default function PrivacyPage() {
 - 생성정보 수집 툴을 통한 수집`,
     },
     {
-      id: "collection-method",
-      title: "2. 개인정보 수집 방법",
+      id: 'collection-method',
+      title: '2. 개인정보 수집 방법',
+      icon: Eye,
       content: `도깨비 테니스 아카데미는 다음과 같은 방법으로 개인정보를 수집합니다.
 
 - 홈페이지, 모바일 애플리케이션, 서면양식, 팩스, 전화, 상담 게시판, 이메일, 이벤트 응모
@@ -31,8 +30,9 @@ export default function PrivacyPage() {
 회사는 이용자의 개인정보를 수집할 경우 반드시 사전에 이용자에게 해당 사실을 알리고 동의를 구하고 있습니다. 또한 회사는 이용자의 기본적 인권을 침해할 우려가 있는 민감한 개인정보(인종, 민족, 사상, 신조, 출신지, 정치적 성향, 범죄기록, 건강상태 등)는 수집하지 않습니다.`,
     },
     {
-      id: "purpose",
-      title: "3. 개인정보의 이용 목적",
+      id: 'purpose',
+      title: '3. 개인정보의 이용 목적',
+      icon: Users,
       content: `도깨비 테니스 아카데미는 수집한 개인정보를 다음의 목적을 위해 활용합니다.
 
 서비스 제공에 관한 계약 이행 및 서비스 제공에 따른 요금정산
@@ -45,8 +45,9 @@ export default function PrivacyPage() {
 - 신규 서비스(제품) 개발 및 특화, 이벤트 등 광고성 정보 전달, 인구통계학적 특성에 따른 서비스 제공 및 광고 게재, 접속 빈도 파악 또는 회원의 서비스 이용에 대한 통계`,
     },
     {
-      id: "retention",
-      title: "4. 개인정보의 보유 및 이용 기간",
+      id: 'retention',
+      title: '4. 개인정보의 보유 및 이용 기간',
+      icon: RefreshCw,
       content: `도깨비 테니스 아카데미는 개인정보 수집 및 이용목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다. 단, 다음의 정보에 대해서는 아래의 이유로 명시한 기간 동안 보존합니다.
 
 보존 항목: 이름, 로그인ID, 휴대전화번호, 이메일, 서비스 이용 기록
@@ -61,8 +62,9 @@ export default function PrivacyPage() {
 - 웹사이트 방문기록: 3개월 (통신비밀보호법)`,
     },
     {
-      id: "third-party",
-      title: "5. 개인정보 제3자 제공",
+      id: 'third-party',
+      title: '5. 개인정보 제3자 제공',
+      icon: Users,
       content: `도깨비 테니스 아카데미는 원칙적으로 이용자의 개인정보를 제1조(개인정보의 처리 목적)에서 명시한 범위 내에서 처리하며, 이용자의 사전 동의 없이는 본래의 범위를 초과하여 처리하거나 제3자에게 제공하지 않습니다. 단, 다음의 경우에는 개인정보를 처리할 수 있습니다.
 
 - 이용자가 사전에 제3자 제공 및 공개에 동의한 경우
@@ -73,8 +75,9 @@ export default function PrivacyPage() {
 현재 도깨비 테니스 아카데미는 이용자의 개인정보를 제3자에게 제공하고 있지 않습니다. 향후 제3자 제공이 필요한 경우, 이용자에게 사전 동의를 구하고 관련 법령에 따라 처리하겠습니다.`,
     },
     {
-      id: "user-rights",
-      title: "6. 이용자 권리와 행사 방법",
+      id: 'user-rights',
+      title: '6. 이용자 권리와 행사 방법',
+      icon: Shield,
       content: `이용자는 개인정보주체로서 다음과 같은 권리를 행사할 수 있습니다.
 
 - 개인정보 열람 요구
@@ -89,8 +92,9 @@ export default function PrivacyPage() {
 권리 행사는 이용자의 법정대리인이나 위임을 받은 자 등 대리인을 통하여 하실 수도 있습니다. 이 경우 개인정보 보호법 시행규칙 별지 제11호 서식에 따른 위임장을 제출하셔야 합니다.`,
     },
     {
-      id: "security",
-      title: "7. 개인정보 보호를 위한 기술적/관리적 대책",
+      id: 'security',
+      title: '7. 개인정보 보호를 위한 기술적/관리적 대책',
+      icon: Lock,
       content: `도깨비 테니스 아카데미는 이용자의 개인정보를 취급함에 있어 개인정보가 분실, 도난, 누출, 변조 또는 훼손되지 않도록 안전성 확보를 위하여 다음과 같은 기술적/관리적 대책을 강구하고 있습니다.
 
 기술적 대책
@@ -106,8 +110,9 @@ export default function PrivacyPage() {
 - 개인정보 관련 취급자의 업무 인수인계는 보안이 유지된 상태에서 철저하게 이뤄지고 있으며 입사 및 퇴사 후 개인정보 사고에 대한 책임을 명확화하고 있습니다.`,
     },
     {
-      id: "cookies",
-      title: "8. 쿠키(Cookie)의 운영 및 활용",
+      id: 'cookies',
+      title: '8. 쿠키(Cookie)의 운영 및 활용',
+      icon: Cookie,
       content: `도깨비 테니스 아카데미는 이용자에게 개인화되고 맞춤화된 서비스를 제공하기 위해 쿠키(cookie)를 사용합니다.
 
 쿠키란?
@@ -125,137 +130,118 @@ export default function PrivacyPage() {
 - 웹 브라우저 상단의 도구 > 인터넷 옵션 > 개인정보 > 사이트 차단`,
     },
     {
-      id: "changes",
-      title: "9. 개인정보처리방침 변경",
-      content: `이 개인정보처리방침은 2023년 12월 1일부터 적용됩니다.
+      id: 'changes',
+      title: '9. 개인정보처리방침 변경',
+      icon: Bell,
+      content: `이 개인정보처리방침은 2025년 10월 14일부터 적용됩니다.
 
 법령, 정책 또는 보안기술의 변경에 따라 내용의 추가, 삭제 및 수정이 있을 시에는 변경사항의 시행 7일 전부터 홈페이지의 공지사항을 통하여 고지할 것입니다.
 
 개인정보처리방침 변경 이력
+- 2025년 10월 14일: 개인정보처리방침 개정
 - 2023년 12월 1일: 개인정보처리방침 제정`,
     },
     {
-      id: "contact",
-      title: "10. 개인정보 보호책임자 및 연락처",
+      id: 'contact',
+      title: '10. 개인정보 보호책임자 및 연락처',
+      icon: Mail,
       content: `도깨비 테니스 아카데미는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.
 
-개인정보 보호책임자
-- 성명: 김도깨비
-- 직책: 개인정보보호팀장
-- 연락처: 02-123-4567, privacy@dokkaebi-tennis.com
+책임자
+- 성명: 윤형섭
+- 직책: 개발자
+- 연락처: baxteryhs1118@gmail.com
 
-개인정보 보호 담당부서
-- 부서명: 개인정보보호팀
-- 담당자: 박정보
-- 연락처: 02-123-4567, privacy@dokkaebi-tennis.com
 
 기타 개인정보침해에 대한 신고나 상담이 필요하신 경우에는 아래 기관에 문의하시기 바랍니다.
 - 개인정보침해신고센터 (privacy.kisa.or.kr / 국번없이 118)
 - 대검찰청 사이버수사과 (www.spo.go.kr / 국번없이 1301)
 - 경찰청 사이버안전국 (www.police.go.kr/www/security/cyber.jsp / 국번없이 182)`,
     },
-  ]
+  ];
 
   return (
-    <div className="container py-8">
-      <div className="mb-4">
-        <Link href="/" className="inline-flex items-center text-primary hover:underline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          홈으로 돌아가기
-        </Link>
+    <div className="min-h-screen bg-background">
+      <div className="border-b">
+        <div className="container py-8 max-w-5xl">
+          <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            홈으로 돌아가기
+          </Link>
+
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold tracking-tight">개인정보처리방침</h1>
+            <p className="text-muted-foreground max-w-3xl leading-relaxed">도깨비 테니스 아카데미(이하 '회사')는 이용자의 개인정보를 중요시하며, 「개인정보 보호법」을 준수하기 위하여 노력하고 있습니다.</p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <RefreshCw className="h-4 w-4" />
+              <span>최종 업데이트: 2025년 10월 14일</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="mx-auto max-w-4xl">
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold">개인정보처리방침</CardTitle>
-            <p className="text-muted-foreground">
-              도깨비 테니스 아카데미(이하 '회사')는 이용자의 개인정보를 중요시하며, 「개인정보 보호법」을 준수하기
-              위하여 노력하고 있습니다.
+      <div className="container py-12 max-w-5xl">
+        <div className="space-y-12">
+          {/* Introduction */}
+          <div className="space-y-4">
+            <p className="text-foreground/80 leading-relaxed">
+              회사는 개인정보처리방침을 통하여 회사가 이용자로부터 수집하는 개인정보의 항목, 개인정보의 수집 및 이용목적, 개인정보의 보유 및 이용기간, 개인정보의 제3자 제공 및 취급위탁에 관한 사항을 알려드립니다.
             </p>
-            <p className="text-sm text-muted-foreground">최종 업데이트: 2023년 12월 1일</p>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <p>
-                회사는 개인정보처리방침을 통하여 회사가 이용자로부터 수집하는 개인정보의 항목, 개인정보의 수집 및
-                이용목적, 개인정보의 보유 및 이용기간, 개인정보의 제3자 제공 및 취급위탁에 관한 사항을 알려드립니다.
-              </p>
-              <p>
-                본 개인정보처리방침은 관련 법령 및 지침의 변경이나 회사의 내부 방침 변경 등으로 인하여 변경될 수 있으며,
-                변경 시에는 회사 홈페이지를 통하여 공지하도록 하겠습니다.
+            <p className="text-foreground/80 leading-relaxed">본 개인정보처리방침은 관련 법령 및 지침의 변경이나 회사의 내부 방침 변경 등으로 인하여 변경될 수 있으며, 변경 시에는 회사 홈페이지를 통하여 공지하도록 하겠습니다.</p>
+          </div>
+
+          {/* Privacy Sections */}
+          {privacySections.map((section) => {
+            const Icon = section.icon;
+            return (
+              <div key={section.id} id={section.id} className="scroll-mt-20 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Icon className="h-5 w-5 text-primary flex-shrink-0" />
+                  <h2 className="text-2xl font-semibold">{section.title}</h2>
+                </div>
+                <div className="pl-8">
+                  <div className="whitespace-pre-line text-foreground/80 leading-relaxed">{section.content}</div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Contact Information */}
+          <div className="pt-8 border-t space-y-4">
+            <div className="flex items-center gap-3">
+              <Phone className="h-5 w-5 text-primary flex-shrink-0" />
+              <h2 className="text-2xl font-semibold">개인정보 관련 문의</h2>
+            </div>
+            <div className="pl-8 space-y-3">
+              <p className="text-foreground/80 leading-relaxed">개인정보 보호 관련 문의사항이 있으시면 개인정보 보호책임자에게 연락해 주시기 바랍니다. 회사는 이용자의 개인정보를 보호하기 위해 최선을 다하겠습니다.</p>
+              <p className="text-foreground/80">
+                더 자세한 문의는{' '}
+                <Link href="/board/qna/write" className="text-primary hover:underline">
+                  고객센터
+                </Link>
+                를 통해 문의해 주시기 바랍니다.
               </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-8">
-          {/* 목차 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">목차</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {privacySections.map((section) => (
-                  <li key={section.id}>
-                    <Link href={`#${section.id}`} className="text-primary hover:underline">
-                      {section.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* 개인정보처리방침 내용 */}
-          {privacySections.map((section) => (
-            <Card key={section.id} id={section.id} className="scroll-mt-20">
-              <CardHeader>
-                <CardTitle className="text-xl">{section.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="whitespace-pre-line text-sm leading-relaxed">{section.content}</div>
-              </CardContent>
-            </Card>
-          ))}
-
-          {/* 개인정보 관련 문의 안내 */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="rounded-lg bg-muted p-4 text-sm">
-                <p className="font-medium mb-2">개인정보 관련 문의</p>
-                <p className="mb-2">
-                  개인정보 보호 관련 문의사항이 있으시면 개인정보 보호책임자에게 연락해 주시기 바랍니다. 회사는 이용자의
-                  개인정보를 보호하기 위해 최선을 다하겠습니다.
-                </p>
-                <p>
-                  더 자세한 문의는{" "}
-                  <Link href="/board/qna/write" className="text-primary hover:underline">
-                    고객센터
-                  </Link>
-                  를 통해 문의해 주시기 바랍니다.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
+      </div>
 
-        <div className="mt-8 flex flex-col sm:flex-row justify-between items-center">
-          <p className="text-sm text-muted-foreground mb-4 sm:mb-0">
-            &copy; {new Date().getFullYear()} 도깨비 테니스 아카데미. All rights reserved.
-          </p>
-          <div className="flex gap-4">
-            <Link href="/terms" className="text-sm text-primary hover:underline">
-              이용약관
-            </Link>
-            <Separator orientation="vertical" className="h-4" />
-            <Link href="/privacy" className="text-sm text-primary hover:underline font-medium">
-              개인정보처리방침
-            </Link>
+      <div className="border-t mt-16">
+        <div className="container py-8 max-w-5xl">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} 도깨비 테니스 아카데미. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <Link href="/terms" className="hover:text-foreground transition-colors">
+                이용약관
+              </Link>
+              <span>·</span>
+              <Link href="/privacy" className="text-foreground">
+                개인정보처리방침
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
