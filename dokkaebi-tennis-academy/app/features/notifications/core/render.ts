@@ -89,8 +89,15 @@ function pickPhone(app: ApplicationCtx) {
 
 // SMS 공통 포맷
 function makeSms(prefix: string, ctx: { name?: string; when?: string; id: string; baseUrl: string }) {
-  const lines = [`[도깨비 테니스] ${prefix}`, `${ctx.name ?? ''}님`, `일정: ${ctx.when ?? '미정'}`, `신청번호: ${ctx.id}`, `상세보기: ${ctx.baseUrl}/my/applications/${ctx.id}`];
+  const lines = [`[도깨비 테니스] ${prefix}`, `${ctx.name ?? ''}님`, `일정: ${ctx.when ?? '미정'}`, `신청번호: ${ctx.id}`, `상세보기: ${ctx.baseUrl}/mypage?tab=applications&id=${ctx.id}`];
   return lines.filter(Boolean).join('\n');
+}
+
+// 자가발송이면 운송장 등록 CTA 추가
+function selfShipCta(app: ApplicationCtx, baseUrl: string) {
+  const method = (app as any)?.shippingInfo?.collectionMethod ?? (app as any)?.collectionMethod ?? '';
+  const isSelf = typeof method === 'string' && ['self_ship', 'self', '자가발송'].includes(method.toLowerCase());
+  return isSelf ? { label: '운송장 등록하기', url: `${baseUrl}/services/applications/${app.applicationId}/shipping` } : null;
 }
 
 /* ========= Layout ========= */
@@ -173,10 +180,15 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
       ['스트링', getStringNames(app.stringDetails)],
       ['신청번호', `#${app.applicationId}`],
     ];
-    const ctas = [
-      { label: '신청서 상세 보기', url: `${baseUrl}/my/applications/${app.applicationId}` },
+
+    // 각 이벤트 블록의 CTA 링크+ 자가발송 CTA 병합
+    const ctasBase = [
+      { label: '신청서 상세 보기', url: `${baseUrl}/mypage?tab=applications&id=${app.applicationId}` },
       { label: '일정 변경', url: `${baseUrl}/services/apply?orderId=${app.orderId}` },
     ];
+    const maybeSelfShip = selfShipCta(app, baseUrl);
+    const ctas = maybeSelfShip ? [...ctasBase, maybeSelfShip] : ctasBase;
+
     const html = wrapEmail({ title, badge: '접수', preheader: pre, rows, ctas });
     const ics = whenPretty ? buildICS(app) : undefined;
     const subject = `[${THEME.brand}] ${title} · ${whenPretty ?? '미정'}`;
@@ -193,13 +205,10 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
     const title = `신청 상태 업데이트`;
     const pre = `${app.status} · ${whenPretty ?? '미정'} · ${ref}`;
     const rows: [string, string][] = [['현재 상태', String(app.status)], ...(whenPretty ? ([['일정', whenPretty]] as [string, string][]) : []), ['신청번호', `#${app.applicationId}`]];
-    const html = wrapEmail({
-      title,
-      badge: String(app.status),
-      preheader: pre,
-      rows,
-      ctas: [{ label: '신청서 상세 보기', url: `${baseUrl}/my/applications/${app.applicationId}` }],
-    });
+    const ctasBase = [{ label: '신청서 상세 보기', url: `${baseUrl}/mypage?tab=applications&id=${app.applicationId}` }];
+    const maybeSelfShip = selfShipCta(app, baseUrl);
+    const ctas = maybeSelfShip ? [...ctasBase, maybeSelfShip] : ctasBase;
+    const html = wrapEmail({ title, badge: String(app.status), preheader: pre, rows, ctas });
     const subject = `[${THEME.brand}] ${title}: ${app.status}`;
     return { email: { to: ctx.user!.email, subject, html, bcc: ADMIN_BCC || undefined } };
   }
@@ -215,10 +224,12 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
       ['스트링', getStringNames(app.stringDetails)],
       ['신청번호', `#${app.applicationId}`],
     ];
-    const ctas = [
-      { label: '신청서 상세 보기', url: `${baseUrl}/my/applications/${app.applicationId}` },
+    const ctasBase = [
+      { label: '신청서 상세 보기', url: `${baseUrl}/mypage?tab=applications&id=${app.applicationId}` },
       { label: '일정 변경', url: `${baseUrl}/services/apply?orderId=${app.orderId}` },
     ];
+    const maybeSelfShip = selfShipCta(app, baseUrl);
+    const ctas = maybeSelfShip ? [...ctasBase, maybeSelfShip] : ctasBase;
     const note = '예약 변경/취소는 방문 24시간 전까지 가능합니다. 이후에는 유선 문의 부탁드립니다.';
     const html = wrapEmail({ title, badge: '확정', preheader: pre, rows, ctas, note });
     const ics = buildICS(app);

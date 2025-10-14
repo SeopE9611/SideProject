@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Activity, FileText, Settings, Pencil, MessageSquare, Lock } from 'lucide-react';
+import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Activity, FileText, Settings, Pencil, MessageSquare, Lock, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -151,6 +151,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const qnaTotal = qnaData?.total ?? 0;
 
   const fmtDate = (v?: string | Date) => (v ? new Date(v).toLocaleDateString() : '');
+
+  // 합계 계산
+  const unitPrice = Number(product?.price ?? 0);
+  const qtyTotal = unitPrice * quantity;
+  const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
 
   // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
   type DetailTab = 'description' | 'specifications' | 'reviews' | 'qna';
@@ -397,6 +402,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
   };
 
+  const goToStringingService = () => {
+    const params = new URLSearchParams({
+      productId: String(product?._id ?? ''),
+      mountingFee: String(product?.mountingFee ?? 0),
+    });
+    // 옵션/스트링 선택값이 있으면 여기에 set 해도 됨:
+    // params.set('stringId', selectedStringId);
+    router.push(`/services/apply?${params.toString()}`);
+  };
+
   const handleWishlist = async () => {
     if (busy) return;
     setBusy(true);
@@ -466,7 +481,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </div>
       </div>
 
-      <div className="container py-8">
+      <div className="container py-8 pb-28 md:pb-24">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
           {/* 상품 이미지 - 더 큰 공간 할당 */}
           <div className="lg:col-span-3 space-y-4">
@@ -601,6 +616,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           장바구니에 담기
                         </Button>
                       )}
+
+                      <Button variant="outline" disabled={busy} onClick={goToStringingService} className={`w-full ${isWishlisted ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400' : ''}`}>
+                        <Calendar className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                        교체 서비스 신청하기
+                      </Button>
 
                       <Button variant="outline" disabled={busy} onClick={handleWishlist} className={`w-full ${isWishlisted ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400' : ''}`}>
                         <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
@@ -1242,6 +1262,82 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+        </div>
+      </div>
+      {/* ===== 모바일 전용 하단 Sticky ===== */}
+      <div className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-slate-200 dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
+          <div className="mx-auto max-w-6xl px-4 py-3">
+            {/* 상품 정보 섹션 */}
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+              {/* 썸네일 */}
+              <div className="relative w-14 h-14 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={product.images?.[0] || '/placeholder.svg'} alt={product.name} className="w-full h-full object-cover" />
+              </div>
+
+              {/* 제품명 & 가격 */}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate leading-tight">{product.name}</div>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="text-lg font-bold text-slate-900 dark:text-white">{qtyTotal.toLocaleString()}원</span>
+                  {typeof product?.mountingFee === 'number' && product.mountingFee > 0 && <span className="text-xs text-slate-500 dark:text-slate-400">+서비스 {product.mountingFee.toLocaleString()}원</span>}
+                </div>
+              </div>
+
+              {/* 수량 조절 */}
+              <div className="flex items-center gap-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <button
+                  type="button"
+                  className="h-9 w-9 flex items-center justify-center text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed active:bg-slate-100 dark:active:bg-slate-700 transition-colors"
+                  aria-label="수량 감소"
+                  disabled={!canDec}
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <div className="w-10 text-center">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white tabular-nums">{quantity}</span>
+                </div>
+                <button
+                  type="button"
+                  className="h-9 w-9 flex items-center justify-center text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed active:bg-slate-100 dark:active:bg-slate-700 transition-colors"
+                  aria-label="수량 증가"
+                  disabled={!canInc}
+                  onClick={() => {
+                    if (!canInc) {
+                      showErrorToast(`더 이상 담을 수 없습니다. 재고: ${stock}개`);
+                      return;
+                    }
+                    setQuantity((q) => q + 1);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* 액션 버튼 섹션 */}
+            <div className="pt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={loading || quantity > stock}
+                className="flex-1 h-12 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold text-sm transition-colors shadow-sm disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                장바구니
+              </button>
+              <button
+                type="button"
+                onClick={goToStringingService}
+                className="flex-1 h-12 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 text-slate-900 dark:text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                <Calendar className="h-4 w-4" />
+                교체 서비스
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
