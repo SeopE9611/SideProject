@@ -5,7 +5,7 @@ import clientPromise from '@/lib/mongodb';
 import { bankLabelMap } from '@/lib/constants';
 import jwt from 'jsonwebtoken';
 import Link from 'next/link';
-import { CheckCircle, Calendar, CreditCard, MapPin, Phone, Mail, User, Rocket as Racquet, Clock, Home, FileText, Shield, Award, Zap, Ticket } from 'lucide-react';
+import { CheckCircle, Calendar, CreditCard, MapPin, Phone, Mail, User, Rocket as Racquet, Clock, Home, FileText, Shield, Award, Zap, Ticket, Package, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -30,8 +30,13 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   const client = await clientPromise;
   const db = client.db();
+
   const application = await db.collection('stringing_applications').findOne({ _id: new ObjectId(applicationId) });
 
+  // ✅ 자가발송 여부: 서버가 저장한 실제 필드(= shippingInfo.collectionMethod)를 사용
+  const rawMethod = application?.shippingInfo?.collectionMethod ?? application?.collectionMethod ?? null; // (레거시 대비)
+  const normMethod = typeof rawMethod === 'string' ? rawMethod.toLowerCase() : '';
+  const isSelfShip = normMethod === 'self_ship' || normMethod === 'self' || normMethod === '자가발송';
   // 패키지 정보 조회
   let appliedPass: any = null;
   if (application?.packageApplied && application?.packagePassId) {
@@ -115,6 +120,30 @@ export default async function StringServiceSuccessPage(props: Props) {
               <span className="text-sm font-medium">신청일: {new Date(application.createdAt).toLocaleDateString('ko-KR')}</span>
             </div>
           </div>
+
+          {isSelfShip && (
+            <div className="mt-10 max-w-2xl mx-auto px-4">
+              <div className="bg-gradient-to-r from-blue-400/20 to-indigo-400/20 backdrop-blur-sm border border-blue-300/30 rounded-xl p-6 text-center">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <div className="p-2 bg-blue-400/20 rounded-full">
+                    <Package className="h-6 w-6 text-blue-200" />
+                  </div>
+                  <h3 className="text-xl font-bold text-blue-100">운송장 등록 안내</h3>
+                </div>
+                <p className="text-blue-100 mb-4 leading-relaxed">
+                  <span className="font-semibold">라켓을 발송하신 뒤</span> 아래 버튼을 눌러 운송장을 등록해 주세요.
+                  <br />
+                  <span className="text-sm text-blue-200/80">(건너뛰고 마이페이지에서 등록도 가능합니다)</span>
+                </p>
+                <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg" asChild>
+                  <Link href={`/services/applications/${applicationId}/shipping`} className="flex items-center gap-2">
+                    운송장 등록하기
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="container mx-auto px-4 py-16">
@@ -355,7 +384,7 @@ export default async function StringServiceSuccessPage(props: Props) {
               <CardFooter className="bg-gray-50 dark:bg-slate-700 rounded-b-lg p-8">
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <Button className="flex-1 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white transition-all duration-200" asChild>
-                    <Link href="/mypage?tab=applications">
+                    <Link href={`/mypage?${new URLSearchParams({ tab: 'applications', id: String(application._id) }).toString()}`}>
                       <FileText className="h-5 w-5 mr-2" />
                       신청 내역 보기
                     </Link>

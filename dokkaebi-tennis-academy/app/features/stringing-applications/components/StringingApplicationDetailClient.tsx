@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, Target, Pencil, Settings, Edit3 } from 'lucide-react';
+import { Mail, Phone, MapPin, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, Target, Pencil, Settings, Edit3, Truck } from 'lucide-react';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -72,10 +72,17 @@ interface ApplicationDetail {
     bank?: string;
     deliveryRequest?: string;
     shippingMethod?: string;
+    collectionMethod?: string;
     estimatedDate?: string;
     invoice?: {
       courier: string;
       trackingNumber: string;
+    };
+    selfShip?: {
+      courier?: string;
+      trackingNo?: string;
+      shippedAt?: string;
+      note?: string;
     };
   } | null;
   purchasedStrings: {
@@ -155,6 +162,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const isCancelled = data.status === '취소';
   const isPaid = ['접수완료', '작업 중', '교체완료'].includes(data.status);
   const paymentStatus = isPaid ? '결제완료' : '결제대기';
+
+  // 자가발송/운송장 등록 여부 계산
+  const collectionMethod = data?.shippingInfo?.collectionMethod ?? data?.shippingInfo?.shippingMethod ?? null;
+  const isSelfShip = typeof collectionMethod === 'string' && ['self_ship', 'self', '자가발송'].includes(collectionMethod.toLowerCase());
+
+  const trackingNo = data?.shippingInfo?.selfShip?.trackingNo ?? data?.shippingInfo?.invoice?.trackingNumber ?? null;
+  const hasTracking = Boolean(trackingNo);
+
+  // 일반 사용자도 편집 가능 상태일 때만 노출하고, 완료/취소 등엔 비활성화
+  const completedLikeStatuses = ['교체완료', '반송완료', '완료', 'DONE', '취소'];
+  const canEditSelfShip = (isAdmin || (userEditableStatuses ?? []).includes(data.status)) && !completedLikeStatuses.includes(data.status);
+
   return (
     <div className="container py-10 space-y-8">
       <div className="mx-auto max-w-4xl">
@@ -181,6 +200,31 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     신청 목록으로 돌아가기
                   </Button>
                 </Link>
+                {/* 자가발송일 때만 노출 '운송장 등록/수정' 버튼 */}
+                {isSelfShip && (
+                  <Button
+                    className="mb-3"
+                    variant="outline"
+                    disabled={!canEditSelfShip}
+                    onClick={() => {
+                      // 상세 → 운송장 입력/수정 페이지로 이동
+                      // 경로: /services/applications/[id]/shipping
+                      const id = String(data.id);
+                      // next/navigation 의 router 사용
+                      // 파일 상단에 이미 useRouter import 되어 있음
+                      // 여기서는 링크 이동이므로 push
+                      // (CSR 흐름이므로 문제 없음)
+                      const url = `/services/applications/${id}/shipping`;
+                      // useRouter는 함수 바깥에 선언되어 있으니 그대로 접근
+                      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                      router.push(url);
+                    }}
+                    title={canEditSelfShip ? (hasTracking ? '운송장 정보를 수정합니다' : '운송장을 등록합니다') : '현재 상태에서는 수정할 수 없습니다'}
+                  >
+                    <Truck className="mr-1 h-4 w-4" />
+                    {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
+                  </Button>
+                )}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="inline-block">
@@ -260,7 +304,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <CardDescription>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
               {isAdmin && (
                 <ApplicationStatusSelect
                   applicationId={data.id}
@@ -276,6 +320,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   disabled={isCancelled}
                 />
               )}
+
               {/* 취소된 경우 안내 문구 */}
               {!isCancelled && (
                 <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
