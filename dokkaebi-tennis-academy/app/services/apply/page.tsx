@@ -31,6 +31,10 @@ export default function StringServiceApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+  // PDP 연동용
+  const pdpProductId = searchParams.get('productId');
+  const pdpMountingFee = Number(searchParams.get('mountingFee') ?? NaN);
+  const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(pdpProductId));
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
@@ -77,7 +81,23 @@ export default function StringServiceApplyPage() {
     })();
   }, [orderId]);
 
-  // ===== 스텝별 검증 (silent=true면 토스트 없이 true/false만 반환) =====
+  // PDP에서 넘어오면 STEP2 자동 선택 + 장착비 기억 + 플래그 on
+  useEffect(() => {
+    if (!pdpProductId) return;
+    setFormData((prev) => {
+      if (Array.isArray(prev.stringTypes) && prev.stringTypes.length > 0) return prev;
+      return {
+        ...prev,
+        stringTypes: [pdpProductId], // 자동 선택
+        pdpMountingFee: Number.isFinite(pdpMountingFee) // 요약 패널에서 사용
+          ? pdpMountingFee
+          : undefined,
+      };
+    });
+    setFromPDP(true); // “상품에서 이어짐” 배지용
+  }, [pdpProductId, pdpMountingFee]);
+
+  // 스텝별 검증 (silent=true면 토스트 없이 true/false만 반환)
   const validateStep = (step: number, silent = false): boolean => {
     const toast = (msg: string) => {
       if (!silent) showErrorToast(msg);
@@ -328,9 +348,12 @@ export default function StringServiceApplyPage() {
     // 교체비(표시용): 커스텀/보유 스트링(미포함) 15,000, 상품 선택(포함) 35,000
     // 서버의 lib/stringing-prices.ts와 동일하게 맞춤
     let base = 0;
-    if (formData.stringTypes.includes('custom')) base = 15000;
-    else if (formData.stringTypes.length > 0) base = 35000;
-
+    if (formData.stringTypes.includes('custom')) {
+      base = 15000;
+    } else if (formData.stringTypes.length > 0) {
+      // PDP에서 넘어온 장착비가 있으면 우선 사용
+      base = Number.isFinite((formData as any).pdpMountingFee) ? Number((formData as any).pdpMountingFee) : 35000;
+    }
     // 수거비(표시용)
     const pickupFee = formData.collectionMethod === 'courier_pickup' ? PICKUP_FEE : 0;
 
@@ -338,7 +361,7 @@ export default function StringServiceApplyPage() {
     const total = usingPackage ? 0 : base + pickupFee;
 
     return { usingPackage, base, pickupFee, total };
-  }, [formData.stringTypes, formData.collectionMethod, formData.packageOptOut, packagePreview]);
+  }, [formData.stringTypes, formData.collectionMethod, formData.packageOptOut, packagePreview, (formData as any).pdpMountingFee]);
 
   // 통화 포메터
   const won = (n: number) => n.toLocaleString('ko-KR') + '원';
@@ -843,20 +866,32 @@ export default function StringServiceApplyPage() {
                     </div>
                   </div>
                 </div>
+                {/* PDP에서 이어졌을 때 노출되는 안내 */}
+                {fromPDP && Array.isArray(formData.stringTypes) && formData.stringTypes[0] === pdpProductId && (
+                  <div className="mb-3 flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+                    <span>상품 상세에서 선택한 스트링으로 이어졌습니다.</span>
+                    <button
+                      type="button"
+                      className="underline underline-offset-2"
+                      onClick={() => {
+                        setFromPDP(false); // 잠금 해제
+                        setFormData((prev) => ({ ...prev, stringTypes: [] })); // 초기화
+                      }}
+                    >
+                      변경하기
+                    </button>
+                  </div>
+                )}
 
-                <StringCheckboxes
-                  items={(order?.items ?? [])
-                    .filter((i) => i.mountingFee !== undefined)
-                    .map((i) => ({
-                      id: i.id,
-                      name: i.name,
-                      mountingFee: i.mountingFee!,
-                    }))}
-                  stringTypes={formData.stringTypes}
-                  customInput={formData.customStringType}
-                  onChange={handleStringTypesChange}
-                  onCustomInputChange={handleCustomInputChange}
-                />
+                <div className={fromPDP ? 'pointer-events-none opacity-60' : ''}>
+                  <StringCheckboxes
+                    items={(order?.items ?? []).filter((i) => i.mountingFee !== undefined).map((i) => ({ id: i.id, name: i.name, mountingFee: i.mountingFee! }))}
+                    stringTypes={formData.stringTypes}
+                    customInput={formData.customStringType}
+                    onChange={handleStringTypesChange}
+                    onCustomInputChange={handleCustomInputChange}
+                  />
+                </div>
 
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <div className="flex items-center space-x-3">
