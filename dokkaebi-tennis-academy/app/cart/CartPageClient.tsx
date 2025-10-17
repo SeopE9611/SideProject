@@ -323,7 +323,7 @@ export default function CartPageClient() {
                       size="lg"
                       asChild
                     >
-                      <Link href="/checkout" className="flex items-center gap-3">
+                      <Link href="/checkout?withService=1" className="flex items-center gap-3">
                         <ShoppingBag className="h-5 w-5" />
                         {user ? '주문하기' : '비회원 주문하기'}
                         <ArrowRight className="h-5 w-5" />
@@ -372,7 +372,7 @@ export default function CartPageClient() {
               <span className="tabular-nums text-lg font-bold text-blue-600 dark:text-blue-400">{formatKRW(total)}원</span>
             </div>
             <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
-              <Link href="/checkout">주문하기</Link>
+              <Link href="/checkout?withService=1">주문하기</Link>
             </Button>
           </div>
         </div>

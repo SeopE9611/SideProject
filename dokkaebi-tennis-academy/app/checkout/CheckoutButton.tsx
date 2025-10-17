@@ -25,6 +25,7 @@ export default function CheckoutButton({
   saveAddress,
   deliveryMethod,
   withStringService,
+  servicePickupMethod,
 }: {
   disabled: boolean;
   name: string;
@@ -41,6 +42,7 @@ export default function CheckoutButton({
   saveAddress: boolean;
   deliveryMethod: '택배수령' | '방문수령';
   withStringService: boolean;
+  servicePickupMethod: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
 }) {
   const router = useRouter();
   const { items, clearCart } = useCartStore();
@@ -91,6 +93,7 @@ export default function CheckoutButton({
         shippingFee,
         guestInfo: !user ? { name, phone, email } : undefined,
         isStringServiceApplied: withStringService,
+        servicePickupMethod,
       };
 
       //  아이도임포턴시 키 생성

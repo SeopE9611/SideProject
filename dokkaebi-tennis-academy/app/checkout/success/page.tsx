@@ -14,8 +14,9 @@ import BackButtonGuard from '@/app/checkout/success/_components/BackButtonGuard'
 import ClearCartOnMount from '@/app/checkout/success/_components/ClearCartOnMount';
 import SetGuestOrderToken from '@/app/checkout/success/_components/SetGuestOrderToken';
 
-export default async function CheckoutSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
-  const orderId = await searchParams.orderId;
+export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string }> }) {
+  const sp = await searchParams;
+  const orderId = sp.orderId;
 
   if (!orderId) return notFound();
 
@@ -24,6 +25,23 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId) });
 
   if (!order) return notFound();
+
+  // 주문 조회 직후, 신청서를 서버에서 한 번 조회해 _id가 있으면 그쪽으로 바로 보내기
+  const application = await db.collection('stringing_applications').findOne({ orderId: { $in: [new ObjectId(orderId), orderId] } }, { projection: { _id: 1, meta: 1 } });
+  // 애프터: pickup 별로 목적지 결정
+  let appHref = `/services/apply?orderId=${order._id.toString()}`;
+
+  if (application?._id) {
+    const id = application._id.toString();
+    const pickup = application?.meta?.servicePickupMethod; // 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT'
+
+    appHref =
+      pickup === 'SHOP_VISIT'
+        ? `/services/applications/${id}/visit` // 매장 방문 접수
+        : pickup === 'COURIER_VISIT'
+        ? `/services/applications/${id}/pickup` // 기사 방문 수거
+        : `/services/applications/${id}/shipping`; // 자가 발송(기본)
+  }
 
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refreshToken')?.value;
@@ -79,7 +97,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
               <h1 className="text-4xl md:text-5xl font-bold mb-4">주문이 완료되었습니다! 🎾</h1>
               <p className="text-xl text-green-100 mb-6">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
 
-              <div className="flex flex-wrap justify-center gap-6 text-sm">
+              {/* <div className="flex flex-wrap justify-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-green-400" />
                   <span>안전한 결제 완료</span>
@@ -92,10 +110,11 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   <Star className="h-4 w-4 text-yellow-400" />
                   <span>프리미엄 서비스</span>
                 </div>
-              </div>
+              </div> */}
             </div>
 
-            {order.shippingInfo?.deliveryMethod === '방문수령' && order.shippingInfo?.withStringService && (
+            {/* 서비스 ON이면 항상 노출 */}
+            {order.shippingInfo?.withStringService && (
               <div className="mt-8 max-w-2xl mx-auto">
                 <div className="bg-gradient-to-r from-yellow-400/20 to-orange-400/20 backdrop-blur-sm border border-yellow-300/30 rounded-xl p-6 text-center">
                   <div className="flex items-center justify-center gap-3 mb-4">
@@ -104,9 +123,13 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     </div>
                     <h3 className="text-xl font-bold text-yellow-100">스트링 장착 서비스 포함</h3>
                   </div>
-                  <p className="text-yellow-200 mb-4">방문 수령 시 스트링 장착 서비스를 받으실 수 있습니다.</p>
+
+                  {/* 문구 분기: 방문/택배 */}
+                  <p className="text-yellow-200 mb-4">{order.shippingInfo?.deliveryMethod === '방문수령' ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}</p>
+
                   <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold shadow-lg" asChild>
-                    <Link href={`/services/apply?orderId=${order._id}`} className="flex items-center gap-2">
+                    {/* 신청서로 곧바로 이동 (자동 생성 전제) */}
+                    <Link href={appHref} className="flex items-center gap-2">
                       장착 서비스 신청서 작성하기
                       <ArrowRight className="h-4 w-4" />
                     </Link>

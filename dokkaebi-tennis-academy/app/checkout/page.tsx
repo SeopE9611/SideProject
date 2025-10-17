@@ -16,6 +16,7 @@ import CheckoutButton from '@/app/checkout/CheckoutButton';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
 import { CreditCard, MapPin, Truck, Shield, CheckCircle, UserIcon, Mail, Phone, Home, MessageSquare, Building2, Package, Star } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 declare global {
   interface Window {
@@ -24,6 +25,21 @@ declare global {
 }
 
 export default function CheckoutPage() {
+  const sp = useSearchParams();
+
+  // 1) URL 파라미터로 최초 진입 제어
+  const withServiceParam = sp.get('withService'); // '1' | '0' | null
+
+  // 2) 기존 상태
+  const [withStringService, setWithStringService] = useState(false);
+
+  // 3) 최초 마운트 시 URL 파라미터가 1이면 기본 ON
+  useEffect(() => {
+    if (withServiceParam === '1') {
+      setWithStringService(true);
+    }
+  }, [withServiceParam]);
+
   const { items: orderItems } = useCartStore();
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -39,7 +55,23 @@ export default function CheckoutPage() {
   ];
 
   const [deliveryMethod, setDeliveryMethod] = useState<'택배수령' | '방문수령'>('택배수령');
-  const [withStringService, setWithStringService] = useState(false);
+
+  // 장착 서비스 수거방식(신청서 Step1과 1:1 매핑)
+  type ServicePickup = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
+  const [servicePickupMethod, setServicePickupMethod] = useState<ServicePickup>('SELF_SEND');
+
+  // 안내문구(배송 방법에 따라 분기)
+  const serviceHelpText = deliveryMethod === '방문수령' ? '매장 방문 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하면 수거/반송을 통해 장착 서비스가 진행됩니다.';
+
+  // 동기화: 방문수령이면 SHOP_VISIT 고정, 택배면 기본 SELF_SEND
+  useEffect(() => {
+    if (!withStringService) return;
+    if (deliveryMethod === '방문수령') {
+      setServicePickupMethod('SHOP_VISIT');
+    } else {
+      setServicePickupMethod((prev) => (prev === 'SELF_SEND' || prev === 'COURIER_VISIT' ? prev : 'SELF_SEND'));
+    }
+  }, [deliveryMethod, withStringService]);
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -135,11 +167,11 @@ export default function CheckoutPage() {
             </div>
             <div>
               <h1 className="text-4xl font-bold mb-2">주문/결제</h1>
-              <p className="text-blue-100">안전하고 빠른 결제로 주문을 완료하세요</p>
+              <p className="text-blue-100">고객님의 배송/수령/결제정보를 확인 후 주문을 완료하세요</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 text-sm">
+          {/* <div className="flex items-center gap-6 text-sm">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-green-400" />
               <span>SSL 보안 결제</span>
@@ -152,7 +184,7 @@ export default function CheckoutPage() {
               <Star className="h-4 w-4 text-yellow-400" />
               <span>30,000원 이상 무료배송</span>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -297,17 +329,36 @@ export default function CheckoutPage() {
                   </div>
                 </RadioGroup>
 
-                {deliveryMethod === '방문수령' && (
-                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Checkbox id="withStringService" checked={withStringService} onCheckedChange={(checked) => setWithStringService(!!checked)} />
-                      <Label htmlFor="withStringService" className="font-medium text-orange-700 dark:text-orange-400">
-                        스트링 장착 서비스도 함께 신청할게요
-                      </Label>
-                    </div>
-                    <p className="text-sm text-orange-600 dark:text-orange-400 ml-6">장착 서비스는 방문 시 바로 진행되며, 평균 소요 시간은 15~20분입니다.</p>
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox id="withStringService" checked={withStringService} onCheckedChange={(checked) => setWithStringService(!!checked)} />
+                    <Label htmlFor="withStringService" className="font-medium text-orange-700 dark:text-orange-400">
+                      스트링 장착 서비스도 함께 신청할게요
+                    </Label>
                   </div>
-                )}
+                  <p className="text-sm text-orange-600 dark:text-orange-400 ml-6">{serviceHelpText}</p>
+
+                  {/* ✅ 서비스 ON일 때만 세부 방식 표시 */}
+                  {withStringService &&
+                    (deliveryMethod === '방문수령' ? (
+                      // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
+                      <div className="ml-7 mt-2 text-sm">
+                        <span className="px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">매장 방문 접수로 진행됩니다.</span>
+                      </div>
+                    ) : (
+                      // 택배 수령: 자가 발송 vs 기사 방문 수거 라디오
+                      <div className="ml-7 mt-2 grid gap-2 text-sm">
+                        <label className="flex items-center gap-2">
+                          <input type="radio" name="pickup" checked={servicePickupMethod === 'SELF_SEND'} onChange={() => setServicePickupMethod('SELF_SEND')} />
+                          <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input type="radio" name="pickup" checked={servicePickupMethod === 'COURIER_VISIT'} onChange={() => setServicePickupMethod('COURIER_VISIT')} />
+                          <span>택배 기사 방문 수거 (+3,000원 예상)</span>
+                        </label>
+                      </div>
+                    ))}
+                </div>
               </CardContent>
             </Card>
 
@@ -519,6 +570,7 @@ export default function CheckoutPage() {
                     saveAddress={saveAddress}
                     deliveryMethod={deliveryMethod}
                     withStringService={withStringService}
+                    servicePickupMethod={servicePickupMethod}
                   />
                   <Button variant="outline" className="w-full border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
                     <Link href="/cart">장바구니로 돌아가기</Link>

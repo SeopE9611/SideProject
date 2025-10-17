@@ -92,7 +92,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 
     // 체크박스 옵션으로 그대로 사용
     const purchasedStrings = orderStrings;
-
+    const sd = app.stringDetails || {};
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
@@ -112,15 +112,13 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       memo: app.memo || '',
       photos: app.photos || [],
       stringDetails: {
-        racketType: app.stringDetails.racketType,
-        preferredDate: app.stringDetails.preferredDate,
-        preferredTime: app.stringDetails.preferredTime,
-        requirements: app.stringDetails.requirements,
-        stringTypes: app.stringDetails.stringTypes || [],
+        racketType: sd.racketType ?? '',
+        preferredDate: sd.preferredDate ?? '',
+        preferredTime: sd.preferredTime ?? '',
+        requirements: sd.requirements ?? '',
+        stringTypes: Array.isArray(sd.stringTypes) ? sd.stringTypes : [],
         stringItems,
-        ...(app.stringDetails.customStringName && {
-          customStringName: app.stringDetails.customStringName,
-        }),
+        ...(sd.customStringName ? { customStringName: sd.customStringName } : {}),
       },
       items,
       total,
@@ -1031,9 +1029,20 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     try {
       result = await appsCol.insertOne(doc);
     } catch (err: any) {
-      // 진행중 초안/신청 중복 생성 시(Partial Unique Index 충돌) → 409로 매핑
       if (err?.code === 11000) {
-        return new Response(JSON.stringify({ message: '이미 진행 중인 신청이 있습니다. 기존 신청서를 이어서 완료해주세요.' }), { status: 409 });
+        // 레이스 시 재조회해서 재사용으로 응답
+        const reused = await appsCol.findOne({ orderId: String(order._id), status: { $in: INPROGRESS_STATUSES } }, { projection: { _id: 1 } });
+        if (reused) {
+          return new Response(
+            JSON.stringify({
+              applicationId: String(reused._id),
+              orderId,
+              link,
+              reused: true,
+            }),
+            { status: 200 }
+          );
+        }
       }
       throw err;
     }

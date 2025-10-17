@@ -6,6 +6,7 @@ import type { DBOrder } from '@/lib/types/order-db';
 import { insertOrder, findUserSnapshot } from './db';
 import { fetchCombinedOrders } from './db';
 import clientPromise from '@/lib/mongodb';
+import { createStringingApplicationFromOrder } from '@/app/features/stringing-applications/api/create-from-order';
 // 주문 생성 핸들러
 export async function createOrder(req: Request): Promise<Response> {
   try {
@@ -120,9 +121,10 @@ export async function createOrder(req: Request): Promise<Response> {
       paymentInfo,
       createdAt: new Date(),
       status: '대기중',
-      isStringServiceApplied: false,
+      isStringServiceApplied: !!body.isStringServiceApplied, // 프론트 신호 보존
       idemKey,
     };
+    (order as any).servicePickupMethod = body.servicePickupMethod;
 
     // 회원일 경우 userId, userSnapshot 추가
     if (userId) {
@@ -135,6 +137,20 @@ export async function createOrder(req: Request): Promise<Response> {
 
     // DB에 주문 저장
     const result = await insertOrder(order);
+
+    // "함께 진행" 요청이면 신청서 자동 생성
+    if (order.isStringServiceApplied === true) {
+      const client = await clientPromise;
+      const db = client.db();
+
+      // 방금 저장한 order 문서 재조회(신뢰할 id로)
+      const saved = await db.collection('orders').findOne({ _id: result.insertedId });
+
+      if (saved) {
+        // 주문 → 신청서 변환 유틸 호출(멱등)
+        await createStringingApplicationFromOrder(saved as any);
+      }
+    }
 
     // 성공 응답 반환
     return NextResponse.json({ success: true, orderId: result.insertedId.toString() }, { status: 201 });

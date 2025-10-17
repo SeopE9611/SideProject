@@ -21,6 +21,34 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import PriceSummaryCard from '@/app/services/_components/PriceSummaryCard';
 
+type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  racketType: string;
+  stringTypes: string[];
+  customStringType: string;
+  preferredDate: string;
+  preferredTime: string;
+  requirements: string;
+  shippingName: string;
+  shippingPhone: string;
+  shippingEmail: string;
+  shippingAddress: string;
+  shippingAddressDetail: string;
+  shippingPostcode: string;
+  shippingDepositor: string;
+  shippingRequest: string;
+  shippingBank: string;
+  packageOptOut: boolean;
+  collectionMethod: CollectionMethod;
+  pickupDate: string;
+  pickupTime: string;
+  pickupNote: string;
+}
+
 declare global {
   interface Window {
     daum: any;
@@ -62,8 +90,12 @@ export default function StringServiceApplyPage() {
   // 초안 보장: 주문 기반 진입 시, 진행 중 신청서(draft/received)를 "항상" 1개로 맞춘다.
   // - 이미 있으면 재사용(reused=true), 없으면 자동 생성
   // - UI에는 영향 없음(프리필/흐름 그대로), 서버/DB 일관성만 강화
+  const draftBootRef = useRef(false);
+
   useEffect(() => {
     if (!orderId) return;
+    if (draftBootRef.current) return; // StrictMode 중복 가드
+    draftBootRef.current = true;
     (async () => {
       try {
         await fetch('/api/applications/stringing/drafts', {
@@ -151,7 +183,7 @@ export default function StringServiceApplyPage() {
     return true;
   };
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     phone: '',
@@ -433,6 +465,26 @@ export default function StringServiceApplyPage() {
         const orderData = await orderRes.json();
         setOrder(orderData);
 
+        // 주문 데이터 신청자 정보 불러온 후, 수거 방식 기본값 결정
+        setFormData((prev) => {
+          // 1) 체크아웃에서 넘긴 servicePickupMethod가 있으면 최우선
+          const spm = (orderData as any).servicePickupMethod as 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | undefined;
+
+          let collectionMethod: 'self_ship' | 'courier_pickup' | 'visit' = prev.collectionMethod;
+
+          const isVisitDelivery2 = (orderData?.shippingInfo as any)?.deliveryMethod === '방문수령' || orderData?.shippingInfo?.shippingMethod === 'visit';
+
+          if (spm === 'SHOP_VISIT' || isVisitDelivery2) {
+            collectionMethod = 'visit';
+          } else if (spm === 'COURIER_VISIT') {
+            collectionMethod = 'courier_pickup';
+          } else {
+            collectionMethod = 'self_ship';
+          }
+
+          return { ...prev, collectionMethod };
+        });
+
         // accessToken 꺼내기
         const userRes = await fetch('/api/users/me', { credentials: 'include' });
         const userData = await userRes.json();
@@ -605,6 +657,10 @@ export default function StringServiceApplyPage() {
     { id: 4, title: '추가 요청', icon: CheckCircle, description: '추가 요청사항을 입력해주세요' },
   ];
 
+  const isVisitDelivery = (order?.shippingInfo as any)?.deliveryMethod === '방문수령' || order?.shippingInfo?.shippingMethod === 'visit';
+
+  const lockVisit = !!isVisitDelivery;
+
   const getCurrentStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -725,10 +781,10 @@ export default function StringServiceApplyPage() {
                   수거 방식 <span className="text-red-500">*</span>
                 </Label>
 
-                <RadioGroup value={formData.collectionMethod} onValueChange={(v) => setFormData((prev) => ({ ...prev, collectionMethod: v as any }))} className="grid gap-3 md:grid-cols-3">
+                <RadioGroup value={formData.collectionMethod} onValueChange={(v) => setFormData((prev) => ({ ...prev, collectionMethod: v as CollectionMethod }))} className="grid gap-3 md:grid-cols-3">
                   {/* 자가 발송 */}
                   <div>
-                    <RadioGroupItem id="cm-self" value="self_ship" className="peer sr-only" />
+                    <RadioGroupItem id="cm-self" value="self_ship" disabled={lockVisit} className="peer sr-only" />
                     <Label
                       htmlFor="cm-self"
                       className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
@@ -744,7 +800,7 @@ export default function StringServiceApplyPage() {
 
                   {/* 기사 방문 수거 */}
                   <div>
-                    <RadioGroupItem id="cm-pickup" value="courier_pickup" className="peer sr-only" />
+                    <RadioGroupItem id="cm-pickup" value="courier_pickup" disabled={lockVisit} className="peer sr-only" />
                     <Label
                       htmlFor="cm-pickup"
                       className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
@@ -760,7 +816,7 @@ export default function StringServiceApplyPage() {
 
                   {/* 매장 방문 접수 */}
                   <div>
-                    <RadioGroupItem id="cm-visit" value="visit" className="peer sr-only" />
+                    <RadioGroupItem id="cm-visit" value="visit" disabled={!lockVisit} className="peer sr-only" />
                     <Label
                       htmlFor="cm-visit"
                       className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
