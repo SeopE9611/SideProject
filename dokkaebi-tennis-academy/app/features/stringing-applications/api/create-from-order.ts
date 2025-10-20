@@ -70,7 +70,7 @@ export async function createStringingApplicationFromOrder(order: DBOrderLite) {
     orderId: order._id,
     userId: order.userId ?? null,
     createdAt: new Date(),
-    status: '접수완료', // 프로젝트 규칙에 맞춘 초기상태
+    status: 'draft', // 주문 직후에는 '초안' 상태로만 생성
     servicePaid: false, // 1단계: 공임은 아직 미결로 시작(후속 단계에서 확정)
     serviceAmount: 0,
     paymentSource: `order:${order._id.toString()}`,
@@ -87,13 +87,7 @@ export async function createStringingApplicationFromOrder(order: DBOrderLite) {
           estimatedDate: order.shippingInfo.estimatedDate,
         }
       : undefined,
-    history: [
-      {
-        status: '접수완료',
-        date: new Date(),
-        description: '통합 체크아웃: 주문 성공에 따라 자동 생성됨',
-      },
-    ],
+    history: [{ status: 'draft', date: new Date(), description: '주문 기반 자동 초안 생성' }],
     meta: { fromOrder: true, servicePickupMethod: pickup },
   };
 

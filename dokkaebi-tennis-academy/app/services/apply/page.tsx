@@ -87,6 +87,30 @@ export default function StringServiceApplyPage() {
     return () => window.removeEventListener('resize', calc);
   }, []);
 
+  // 1) 신청서 id 상태
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+
+  // 2) by-order로 신청서 id 조회
+  useEffect(() => {
+    if (!orderId) return;
+    (async () => {
+      try {
+        const res = await fetch(`/api/applications/stringing/by-order/${orderId}`, {
+          cache: 'no-store',
+          credentials: 'include',
+        });
+        if (!res.ok) return; // 404면 초안 생성 루트로 진행
+        const data = await res.json();
+        if (data?.found) {
+          // draft면 현 페이지에서 계속 작성하되 버튼 등에서 applicationId 사용
+          setApplicationId(data.applicationId);
+        }
+      } catch (e) {
+        console.error('[apply] fetch by-order id failed:', e);
+      }
+    })();
+  }, [orderId]);
+
   // 초안 보장: 주문 기반 진입 시, 진행 중 신청서(draft/received)를 "항상" 1개로 맞춘다.
   // - 이미 있으면 재사용(reused=true), 없으면 자동 생성
   // - UI에는 영향 없음(프리필/흐름 그대로), 서버/DB 일관성만 강화
@@ -109,6 +133,17 @@ export default function StringServiceApplyPage() {
       } catch (err) {
         // 초안 생성 실패가 화면 진행을 막지는 않도록 '조용히' 로깅만
         console.error('[draft bootstrap] failed:', err);
+      }
+
+      // 초안 생성이 끝난 뒤 applicationId가 없다면 by-order 재조회
+      if (!applicationId && orderId) {
+        try {
+          const r = await fetch(`/api/applications/stringing/by-order/${orderId}`, { cache: 'no-store', credentials: 'include' });
+          if (r.ok) {
+            const j = await r.json();
+            if (j?.found) setApplicationId(j.applicationId);
+          }
+        } catch {}
       }
     })();
   }, [orderId]);
@@ -614,26 +649,27 @@ export default function StringServiceApplyPage() {
       });
 
       if (!res.ok) {
-        // 409(슬롯 충돌)는 별도 UX 처리
         if (res.status === 409) {
-          const { message } = await res.json().catch(() => ({ message: '해당 시간대가 마감되었습니다.' }));
-          showErrorToast(message || '해당 시간대가 마감되었습니다.');
-
-          // 선택한 시간 해제
-          setFormData((prev) => ({ ...prev, preferredTime: '' }));
-
-          // 비활성화 시간 재조회(같은 날짜 기준)
-          await refetchDisabledTimesFor(formData.preferredDate);
-
+          const data = await res.json().catch(() => ({} as any));
+          if (data?.code === 'APPLICATION_EXISTS' && (data?.applicationId || data?.location)) {
+            // stringing 세그먼트 반영
+            const fallback = data?.applicationId ? `/services/applications/stringing/${data.applicationId}` : '/services/applications';
+            router.replace(data.location ?? fallback);
+            setIsSubmitting(false);
+            return;
+          }
+          // 시간대 마감 → 기존 UX 유지
+          const message = data?.message ?? '해당 시간대가 마감되었습니다.';
+          showErrorToast(message);
+          setFormData((prev) => ({ ...prev, preferredTime: '' })); // 선택 시간 해제
+          await refetchDisabledTimesFor(formData.preferredDate); // 비활성화 시간 재조회
           setIsSubmitting(false);
-          return; // 더 진행하지 않고 종료
+          return;
         }
-
-        // 그 외 일반 오류는 기존 흐름 유지
+        // 그 외 일반 오류
         const { message } = await res.json().catch(() => ({ message: '신청 실패' }));
         throw new Error(message || '신청 실패');
       }
-
       const result = await res.json();
 
       showSuccessToast('신청이 완료되었습니다!');
@@ -657,9 +693,9 @@ export default function StringServiceApplyPage() {
     { id: 4, title: '추가 요청', icon: CheckCircle, description: '추가 요청사항을 입력해주세요' },
   ];
 
+  // 방문 수령 여부(한글/영문 데이터 모두 허용)
   const isVisitDelivery = (order?.shippingInfo as any)?.deliveryMethod === '방문수령' || order?.shippingInfo?.shippingMethod === 'visit';
-
-  const lockVisit = !!isVisitDelivery;
+  const lockVisit = !!isVisitDelivery; // 방문이면 매장만 선택 가능
 
   const getCurrentStepContent = () => {
     switch (currentStep) {
@@ -781,6 +817,43 @@ export default function StringServiceApplyPage() {
                   수거 방식 <span className="text-red-500">*</span>
                 </Label>
 
+                {formData.collectionMethod === 'self_ship' && applicationId && (
+                  <div
+                    className="
+                      block cursor-pointer rounded-xl
+                      border border-slate-200/80 dark:border-slate-700/60
+                      bg-white/90 dark:bg-slate-800/80
+                      px-4 py-3 shadow-sm
+                      hover:bg-slate-50 dark:hover:bg-slate-700/80
+                      transition text-sm
+                      peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+                    "
+                  >
+                    <div className="font-semibold mb-1 text-slate-900 dark:text-slate-100">자가 발송 안내</div>
+                    <p className="mb-3 text-slate-700 dark:text-slate-300">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          // ✅ 초안의 수거방식을 자가발송으로 저장
+                          await fetch(`/api/applications/stringing/${applicationId}/shipping`, {
+                            method: 'PATCH',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              shippingInfo: { collectionMethod: 'self_ship' },
+                            }),
+                          });
+                        } catch {}
+                        // 그리고 안내 페이지로 이동
+                        router.push(`/services/applications/${applicationId}/shipping`);
+                      }}
+                      className="inline-flex items-center rounded-md bg-amber-500 px-3 py-2 text-white hover:bg-amber-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 dark:focus:ring-amber-600"
+                    >
+                      운송장/자가발송 안내 보기
+                    </button>
+                  </div>
+                )}
                 <RadioGroup value={formData.collectionMethod} onValueChange={(v) => setFormData((prev) => ({ ...prev, collectionMethod: v as CollectionMethod }))} className="grid gap-3 md:grid-cols-3">
                   {/* 자가 발송 */}
                   <div>

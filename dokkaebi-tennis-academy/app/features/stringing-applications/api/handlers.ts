@@ -15,6 +15,23 @@ import { calcStringingTotal } from '@/lib/pricing';
 // '교체완료'는 점유 해제로 본다는 가정(완료 후 새 신청 허용).
 export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
 
+// 간단 정규화 헬퍼
+const normalizeCollection = (v: any): 'self_ship' | 'courier_pickup' | 'visit' => {
+  const s = String(v || '').toLowerCase();
+  if (s === 'self_send' || s === 'self-ship' || s === 'self_ship') return 'self_ship';
+  if (s === 'courier_pickup' || s === 'courier-pickup' || s === 'courier' || s === 'pickup') return 'courier_pickup';
+  if (s === 'visit' || s === '방문' || s === '매장') return 'visit';
+  return 'self_ship';
+};
+
+const norm = (v: any): 'self_ship' | 'courier_pickup' | 'visit' => {
+  const s = String(v || '').toLowerCase();
+  if (s === 'self_send' || s === 'self-ship' || s === 'self_ship') return 'self_ship';
+  if (s === 'courier_pickup' || s === 'courier-pickup' || s === 'courier' || s === 'pickup') return 'courier_pickup';
+  if (s === 'visit' || s === '방문' || s === '매장') return 'visit';
+  return 'self_ship';
+};
+
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
@@ -109,6 +126,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       status: app.status,
       paymentStatus: app.paymentStatus,
       shippingInfo: app.shippingInfo || null,
+      collectionMethod: normalizeCollection(app.collectionMethod ?? app.shippingInfo?.collectionMethod ?? 'self_ship'),
       memo: app.memo || '',
       photos: app.photos || [],
       stringDetails: {
@@ -495,38 +513,33 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
     const { id } = await params;
     const body = await req.json();
 
-    const client = await clientPromise;
     const db = await getDb();
-
     const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
-    if (!app) {
-      return new NextResponse('신청서를 찾을 수 없습니다.', { status: 404 });
-    }
+    if (!app) return new NextResponse('신청서를 찾을 수 없습니다.', { status: 404 });
 
     const newShippingInfo = body.shippingInfo;
-    if (!newShippingInfo) {
-      return new NextResponse('배송 정보가 필요합니다.', { status: 400 });
+    if (!newShippingInfo) return new NextResponse('배송 정보가 필요합니다.', { status: 400 });
+
+    // 1) 기존 배송 정보와 병합
+    const mergedShippingInfo = { ...app.shippingInfo, ...newShippingInfo };
+
+    // 2) 업데이트 필드 구성
+    const setFields: any = { shippingInfo: mergedShippingInfo };
+
+    if (typeof newShippingInfo.collectionMethod === 'string') {
+      const normalized = norm(newShippingInfo.collectionMethod);
+      newShippingInfo.collectionMethod = normalized; // shippingInfo 내부도 정규화
+      setFields.collectionMethod = normalized; // 최상위 필드도 동일하게 유지
     }
 
-    // 기존 배송 정보와 병합
-    const mergedShippingInfo = {
-      ...app.shippingInfo, // 기존 값
-      ...newShippingInfo, // 새 값으로 덮어쓰기
-    };
+    // 3) 신청서 업데이트
+    await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, { $set: setFields });
 
-    // 스트링 신청서 업데이트
-    await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, { $set: { shippingInfo: mergedShippingInfo } });
-
-    // 연결된 주문도 업데이트
+    // 4) 연결된 주문에도 동일 병합
     if (app.orderId) {
       const order = await db.collection('orders').findOne({ _id: new ObjectId(app.orderId) });
       const orderShipping = order?.shippingInfo || {};
-
-      const mergedOrderShippingInfo = {
-        ...orderShipping,
-        ...newShippingInfo,
-      };
-
+      const mergedOrderShippingInfo = { ...orderShipping, ...newShippingInfo };
       await db.collection('orders').updateOne({ _id: new ObjectId(app.orderId) }, { $set: { shippingInfo: mergedOrderShippingInfo } });
     }
 
@@ -749,56 +762,88 @@ export async function handleSubmitStringingApplication(req: Request) {
   const userId = payload?.sub ? new ObjectId(payload.sub) : null;
 
   try {
-    // body에서 필요한 값들 추출
-    const { name, phone, email, shippingInfo, racketType, stringTypes, customStringName, preferredDate, preferredTime, requirements, orderId, packageOptOut } = await req.json();
+    // === 0) 요청 파싱 ===
+    const {
+      applicationId: bodyAppId, // 초안 id가 넘어올 수도 있음(없으면 undefined)
+      name,
+      phone,
+      email,
+      shippingInfo,
+      racketType,
+      stringTypes,
+      customStringName,
+      preferredDate,
+      preferredTime,
+      requirements,
+      orderId, // 문자열 형태로 들어옴
+      packageOptOut,
+    } = await req.json();
 
-    //  자동 귀속용 이메일 , 전화번호 정규화(소문자 트림/숫자만)
-    const contactEmail = normalizeEmail(email);
-    const contactPhone = (phone ?? '').replace(/\D/g, '') || null;
-
-    // 필수 필드 검증
+    // === 1) 필수값 검증 ===
     if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0 || !preferredDate || !preferredTime) {
       return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
     }
 
-    const client = await clientPromise;
+    const contactEmail = normalizeEmail(email);
+    const contactPhone = (phone ?? '').replace(/\D/g, '') || null;
+
+    // orderId 유효성 검증 + ObjectId 일원화
+    if (!orderId || !ObjectId.isValid(orderId)) {
+      return NextResponse.json({ message: '유효하지 않은 orderId' }, { status: 400 });
+    }
+    const orderObjectId = new ObjectId(orderId); // 이후 모든 쿼리는 이걸로만
+
     const db = await getDb();
 
-    // 예약 점유로 보지 않는 상태들: 운영정책에 맞춰 조정 가능
+    // === 2) 동일 시간대 수용 인원 체크 (draft/취소 제외) ===
     const EXCLUDED_STATUSES = ['취소', 'draft'] as const;
+    type StringingSettings = { _id: 'stringingSlots'; capacity?: number };
+    const sdoc = await db.collection<StringingSettings>('settings').findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1 } });
 
-    // DB 설정에서 수용량(capacity) 로드 (없으면 기본 1)
-    type StringingSettings = { _id: 'stringingSlots'; capacity?: number }; // 위에서 선언했으면 생략
-    const settingsCol = db.collection<StringingSettings>('settings');
-    const sdoc = await settingsCol.findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1 } });
     const capacity = Math.max(1, Math.min(10, Number(sdoc?.capacity ?? 1)));
 
     const concurrent = await db.collection('stringing_applications').countDocuments({
       'stringDetails.preferredDate': preferredDate,
       'stringDetails.preferredTime': preferredTime,
-      // 취소/초안 등 점유로 보지 않는 상태는 제외
       status: { $nin: EXCLUDED_STATUSES },
     });
-
     if (concurrent >= capacity) {
       return NextResponse.json({ message: '선택하신 시간대는 방금 전 마감되었습니다. 다른 시간대를 선택해주세요.' }, { status: 409 });
     }
-    // 상품 ID 배열을 실제 상품명과 매핑 (custom 스킵)
+
+    // === 3) 같은 주문의 "진행중" 문서 탐지 ===
+    // - 진행중 = 취소를 제외한 모든 상태 (draft 포함)
+    const existingActive = await db.collection('stringing_applications').findOne({ orderId: orderObjectId, status: { $nin: ['취소'] } }, { projection: { _id: 1, status: 1, createdAt: 1 } });
+
+    // 멱등성 정책:
+    // - 이미 제출된 문서(= draft가 아닌 진행중: '검토 중' | '접수완료' | '작업 중')가 있으면 새 제출은 409로 차단
+    //   단, 이어쓰기 안내(applicationId/location)를 함께 내려 UX 보완
+    if (existingActive && existingActive.status !== 'draft') {
+      return NextResponse.json(
+        {
+          code: 'APPLICATION_EXISTS',
+          message: '이미 제출된 신청이 있습니다. 기존 신청서로 이동합니다.',
+          applicationId: String(existingActive._id),
+          status: existingActive.status,
+          location: `/services/applications/${String(existingActive._id)}`,
+        },
+        {
+          status: 409,
+          headers: {
+            Location: `/services/applications/${String(existingActive._id)}`,
+          },
+        }
+      );
+    }
+
+    // === 4) 스트링 아이템 구성 ===
     const stringItems = await Promise.all(
       stringTypes.map(async (prodId: string) => {
         if (prodId === 'custom') {
-          // 직접 입력인 경우 DB 조회 없이 커스텀 이름 사용
-          return {
-            id: 'custom',
-            name: customStringName?.trim() || '커스텀 스트링',
-          };
+          return { id: 'custom', name: customStringName?.trim() || '커스텀 스트링' };
         }
-        // 그 외엔 정상 조회
         const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
-        return {
-          id: prodId,
-          name: prod?.name ?? '알 수 없는 상품',
-        };
+        return { id: prodId, name: prod?.name ?? '알 수 없는 상품' };
       })
     );
 
@@ -806,114 +851,139 @@ export async function handleSubmitStringingApplication(req: Request) {
       racketType,
       stringTypes,
       stringItems,
-      ...(stringTypes.includes('custom') && customStringName ? { customStringName: customStringName.trim() } : {}), // custom 입력이 있으면 customStringName 필드 추가
+      ...(stringTypes.includes('custom') && customStringName ? { customStringName: customStringName.trim() } : {}),
       preferredDate,
       preferredTime,
       requirements,
     };
 
-    // 금액 계산
+    // === 5) collectionMethod 정규화 & 일관 저장 ===
+    const cm = norm(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
+    if (shippingInfo && typeof shippingInfo === 'object') {
+      shippingInfo.collectionMethod = cm; // 내부 필드도 표준화
+    }
+
+    // === 6) 금액 계산 / 패키지 처리 ===
     const totalBefore = await calcStringingTotal(db, stringTypes);
-    let totalPrice = totalBefore; // 패키지 적용 전 교체비 합계
+    let totalPrice = totalBefore;
     const serviceFeeBefore = totalBefore;
 
-    // ====== [패키지 자동 차감] 시작 ======
-    // 신청 도큐먼트 ID를 미리 만들어 멱등 차감 로그(applicationId)로 사용
-    const applicationId = new ObjectId();
+    // 최종 applicationId 결정 — bodyAppId 우선, 없으면 같은 주문의 draft 재사용, 없으면 신규
+    const draftDoc = !bodyAppId
+      ? await db.collection('stringing_applications').findOne({
+          orderId: orderObjectId,
+          status: 'draft',
+        })
+      : null;
 
+    const applicationId = bodyAppId ? new ObjectId(bodyAppId) : draftDoc?._id ? draftDoc._id : new ObjectId();
+
+    // 패키지 자동 차감 (멱등 로그 id = 최종 applicationId)
     let packageApplied = false;
     let packagePassId: ObjectId | null = null;
     let packageRedeemedAt: Date | null = null;
 
     if (userId && !packageOptOut) {
-      // 활성 + 만료 미도래 + 잔여횟수 > 0 인 패스 중 만료 임박 순 1개
       const pass = await findOneActivePassForUser(db, userId);
       if (pass?._id) {
         try {
-          // 패스 1회 차감(원자 조건 + 멱등 로그)
           await consumePass(db, pass._id, applicationId);
           packageApplied = true;
           packagePassId = pass._id;
           packageRedeemedAt = new Date();
-        } catch (e) {
-          // PASS_CONSUME_FAILED 등: 패스 사용 불가 -> 일반 요금 적용(그대로 진행)
+        } catch {
+          // PASS_CONSUME_FAILED 등은 무시하고 유료로 진행
         }
       }
     }
+    if (packageApplied) totalPrice = 0;
 
-    // 패키지 적용 시 교체비 0원 처리 (배송/옵션비는 별도 로직에서 과금한다면 유지)
-    if (packageApplied) {
-      totalPrice = 0;
-    }
-    // ====== [패키지 자동 차감] 끝 ======
+    // === 7) 문서 저장: draft가 있거나 bodyAppId가 있으면 업데이트(승격), 아니면 신규 삽입 ===
+    const baseDoc = {
+      _id: applicationId, // 최종 _id 고정
+      orderId: orderObjectId,
+      name,
+      phone,
+      email,
+      contactEmail,
+      contactPhone,
+      shippingInfo,
+      collectionMethod: cm, // 최상위 필드도 표준화 값으로 저장
+      stringDetails,
+      totalPrice,
+      serviceFeeBefore,
+      packageApplied,
+      packagePassId,
+      packageRedeemedAt,
+      status: '검토 중', // draft → 제출 상태로 승격
+      submittedAt: new Date(),
+      userId,
+      guestName: userId ? null : name,
+      guestEmail: userId ? null : email,
+      guestPhone: userId ? null : phone,
+      userSnapshot: userId ? { name, email } : null,
+    };
 
-    // 신청서 저장
-    let result;
-    try {
-      result = await db.collection('stringing_applications').insertOne({
-        _id: applicationId,
-        orderId: new ObjectId(orderId),
-        name,
-        phone,
-        email,
-        contactEmail, //  자동 귀속용 정규화 이메일
-        contactPhone, // 숫자만 저장한 전화번호
-        shippingInfo,
-        stringDetails,
-        // 금액
-        totalPrice, // 실제 청구 교체비(패키지면 0)
-        serviceFeeBefore, // 패키지 미적용 시 교체비 합계(기록 용도)
-        // 패키지 적용 정보
-        packageApplied,
-        packagePassId,
-        packageRedeemedAt,
-        // 상태/메타
-        status: '검토 중',
+    if (draftDoc || bodyAppId) {
+      // 기존 draft 업데이트: createdAt 유지, _id는 $set 금지
+      await db.collection('stringing_applications').updateOne(
+        { _id: applicationId },
+        {
+          $set: {
+            orderId: baseDoc.orderId,
+            name: baseDoc.name,
+            phone: baseDoc.phone,
+            email: baseDoc.email,
+            contactEmail: baseDoc.contactEmail,
+            contactPhone: baseDoc.contactPhone,
+            shippingInfo: baseDoc.shippingInfo,
+            collectionMethod: baseDoc.collectionMethod,
+            stringDetails: baseDoc.stringDetails,
+            totalPrice: baseDoc.totalPrice,
+            serviceFeeBefore: baseDoc.serviceFeeBefore,
+            packageApplied: baseDoc.packageApplied,
+            packagePassId: baseDoc.packagePassId,
+            packageRedeemedAt: baseDoc.packageRedeemedAt,
+            status: '검토 중',
+            submittedAt: baseDoc.submittedAt,
+            userId: baseDoc.userId,
+            guestName: baseDoc.guestName,
+            guestEmail: baseDoc.guestEmail,
+            guestPhone: baseDoc.guestPhone,
+            userSnapshot: baseDoc.userSnapshot,
+          },
+        }
+      );
+    } else {
+      // 새 문서 삽입 (createdAt 추가)
+      await db.collection('stringing_applications').insertOne({
+        ...baseDoc,
         createdAt: new Date(),
-        userId,
-        guestName: userId ? null : name,
-        guestEmail: userId ? null : email,
-        guestPhone: userId ? null : phone,
-        userSnapshot: userId ? { name, email } : null,
       });
-    } catch (err: any) {
-      //  주문당 진행중 1건(Partial Unique Index) 충돌 → 409로 매핑
-      if (err?.code === 11000) {
-        return NextResponse.json({ message: '이미 진행 중인 신청이 있습니다. 기존 신청서를 이어서 완료해주세요.' }, { status: 409 });
-      }
-      throw err;
     }
 
-    // 주문에도 플래그 추가
-    await db.collection('orders').updateOne(
-      { _id: new ObjectId(orderId) },
-      {
-        $set: {
-          isStringServiceApplied: true,
-          stringingApplicationId: result.insertedId.toString(),
-        },
-      }
-    );
+    // === 8) 주문 플래그 업데이트 ===
+    await db.collection('orders').updateOne({ _id: orderObjectId }, { $set: { isStringServiceApplied: true, stringingApplicationId: applicationId.toString() } });
 
-    //   알림: 접수 완료 (사용자 메일 + 운영자 슬랙)
-    //   상태 유니온 타입 보장 유틸(로컬)
-    const STATUS_VALUES = ['draft', '검토 중', '접수완료', '작업 중', '교체완료', '취소'] as const; //
-    type AppStatus = (typeof STATUS_VALUES)[number]; //
-    const userCtx = { name, email: contactEmail || email }; //
+    // === 9) 알림 ===
+    const STATUS_VALUES = ['draft', '검토 중', '접수완료', '작업 중', '교체완료', '취소'] as const;
+    type AppStatus = (typeof STATUS_VALUES)[number];
+
+    const userCtx = { name, email: contactEmail || email };
     const appCtx = {
-      //
-      applicationId: String(result.insertedId),
+      applicationId: String(applicationId),
       orderId: orderId ? String(orderId) : null,
       status: '검토 중' as AppStatus,
       stringDetails: { preferredDate, preferredTime, racket: racketType, stringTypes },
       shippingInfo,
-      phone, // 원본 입력 번호
-      contactPhone, // 정규화된 숫자만
+      phone,
+      contactPhone,
     };
-    const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/admin/applications/stringing/${String(result.insertedId)}`; //
-    await onApplicationSubmitted({ user: userCtx, application: appCtx, adminDetailUrl }); //
+    const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/admin/applications/stringing/${String(applicationId)}`;
 
-    return NextResponse.json({ message: 'success', applicationId: result.insertedId }, { status: 201 });
+    await onApplicationSubmitted({ user: userCtx, application: appCtx, adminDetailUrl });
+
+    return NextResponse.json({ message: 'success', applicationId }, { status: 201 });
   } catch (e) {
     console.error('[POST stringing_application]', e);
     return NextResponse.json({ message: '서버 오류 발생' }, { status: 500 });
@@ -970,7 +1040,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
 
     // 7) 이미 진행중(draft/received) 있으면 재사용
     const existing = await appsCol.findOne({
-      orderId: String(order._id),
+      orderId: { $in: [order._id, String(order._id)] }, // ✅ ObjectId와 string 모두 매칭
       status: { $in: INPROGRESS_STATUSES },
     });
 
@@ -983,11 +1053,15 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       return new Response(JSON.stringify({ applicationId: String(existing._id), orderId, link, reused: true }), { status: 200 });
     }
 
+    // 주문의 선택에 따라 기본 수거방식 결정
+    const initialCollectionMethod: 'self_ship' | 'courier_pickup' | 'visit' =
+      (order as any)?.servicePickupMethod === 'COURIER_PICKUP' ? 'courier_pickup' : (order as any)?.servicePickupMethod === 'VISIT' || (order as any)?.shippingInfo?.deliveryMethod === '방문수령' ? 'visit' : 'self_ship';
+
     // 8) 없으면 초안 생성
     const now = new Date();
     const doc = {
       userId: userId ? new ObjectId(userId) : null,
-      orderId: String(order._id),
+      orderId: order._id,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
 
@@ -1010,9 +1084,10 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
         depositor: (order as any)?.shippingInfo?.depositor ?? null,
         bank: (order as any)?.paymentInfo?.bank ?? null,
         deliveryRequest: (order as any)?.shippingInfo?.deliveryRequest ?? '',
+        collectionMethod: initialCollectionMethod,
       },
 
-      collectionMethod: 'self_ship',
+      collectionMethod: initialCollectionMethod,
       pickup: null,
 
       stringItems: [],

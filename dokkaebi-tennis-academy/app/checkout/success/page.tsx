@@ -26,22 +26,8 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
   if (!order) return notFound();
 
-  // 주문 조회 직후, 신청서를 서버에서 한 번 조회해 _id가 있으면 그쪽으로 바로 보내기
-  const application = await db.collection('stringing_applications').findOne({ orderId: { $in: [new ObjectId(orderId), orderId] } }, { projection: { _id: 1, meta: 1 } });
-  // 애프터: pickup 별로 목적지 결정
+  // pickup 별로 목적지 결정
   let appHref = `/services/apply?orderId=${order._id.toString()}`;
-
-  if (application?._id) {
-    const id = application._id.toString();
-    const pickup = application?.meta?.servicePickupMethod; // 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT'
-
-    appHref =
-      pickup === 'SHOP_VISIT'
-        ? `/services/applications/${id}/visit` // 매장 방문 접수
-        : pickup === 'COURIER_VISIT'
-        ? `/services/applications/${id}/pickup` // 기사 방문 수거
-        : `/services/applications/${id}/shipping`; // 자가 발송(기본)
-  }
 
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refreshToken')?.value;

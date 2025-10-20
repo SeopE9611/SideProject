@@ -105,8 +105,11 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
     );
   }
 
-  // 2) 자가발송 여부는 실제 스키마 필드 기준
-  const rawMethod = data.shippingInfo?.collectionMethod ?? null;
+  // 자가발송 여부
+  const rawMethod =
+    data.shippingInfo?.collectionMethod ??
+    (data as any)?.collectionMethod ?? // 최상위 값 폴백
+    null;
   const isSelfShip = typeof rawMethod === 'string' && ['self_ship', 'self', '자가발송'].includes(rawMethod.toLowerCase());
 
   if (!isSelfShip) {
@@ -166,6 +169,12 @@ function SelfShipForm({ applicationId, application }: { applicationId: string; a
 
   const mypageUrl = `/mypage?${new URLSearchParams({ tab: 'applications', id: applicationId }).toString()}`;
 
+  // 신청서로 돌아갈 URL (orderId를 응답에 포함시키고 있으니 그걸 사용)
+  const applyUrl = useMemo(() => {
+    const oid = (application as any)?.orderId;
+    return oid ? `/services/apply?orderId=${oid}` : '/services/apply';
+  }, [application]);
+
   const [form, setForm] = useState<FormValues>(initial);
 
   const onChange = (k: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm((prev) => ({ ...prev, [k]: e.target.value }));
@@ -195,7 +204,7 @@ function SelfShipForm({ applicationId, application }: { applicationId: string; a
         id: applicationId,
       }).toString()}`;
 
-      router.push(mypageUrl);
+      router.push(applyUrl);
     } catch (err: any) {
       showErrorToast(err.message || '저장 중 오류가 발생했습니다.');
     } finally {
@@ -329,7 +338,7 @@ function SelfShipForm({ applicationId, application }: { applicationId: string; a
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   돌아가기
                 </Button>
-                <Button type="button" variant="outline" onClick={() => router.push(mypageUrl)} className="flex-1 h-12 text-base border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800">
+                <Button type="button" variant="outline" onClick={() => router.push(applyUrl)} className="flex-1 h-12 text-base border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800">
                   <Clock className="w-4 h-4 mr-2" />
                   나중에 등록할게요
                 </Button>
