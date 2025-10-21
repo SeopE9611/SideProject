@@ -113,6 +113,9 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
     null;
   const isSelfShip = typeof rawMethod === 'string' && normalizeCollection(rawMethod) === 'self_ship';
 
+  // 종료 상태(수정 금지)
+  const CLOSED = ['작업 중', '교체완료'];
+  const isClosed = CLOSED.includes(String(data?.status));
   if (!isSelfShip) {
     return (
       <div className="max-w-3xl mx-auto mt-12 px-4">
@@ -138,6 +141,26 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
                 <Button onClick={() => router.push(`/mypage/applications/${applicationId}`)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500">
                   신청 상세로 이동
                 </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isClosed) {
+    return (
+      <div className="max-w-3xl mx-auto mt-12 px-4">
+        <Card className="border-amber-200 dark:border-amber-800 shadow-lg">
+          <CardContent className="p-12">
+            <div className="flex flex-col items-center gap-6 text-center">
+              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">이미 종료된 신청서입니다</h3>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">작업 중 또는 교체완료 상태에서는 운송장을 수정할 수 없습니다.</p>
               </div>
             </div>
           </CardContent>

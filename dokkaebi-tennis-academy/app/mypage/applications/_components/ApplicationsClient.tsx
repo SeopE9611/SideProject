@@ -10,6 +10,8 @@ import ApplicationStatusBadge from '@/app/features/stringing-applications/compon
 import { useMemo } from 'react';
 import useSWRImmutable from 'swr/immutable';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
+import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { showInfoToast } from '@/lib/toast';
 export interface Application {
   id: string;
   type: '스트링 장착 서비스' | '아카데미 수강 신청';
@@ -112,6 +114,13 @@ export default function ApplicationsClient() {
       ) : (
         applications.map((app) => {
           const isStringService = app.type === '스트링 장착 서비스';
+          // 자가발송 여부(신청서/배송정보 양쪽 필드 중 하나라도 기준 충족 시 true)
+          const isSelfShip = isStringService && normalizeCollection((app as any).collectionMethod ?? (app as any).shippingInfo?.collectionMethod) === 'self_ship';
+          // 운송장 등록 여부
+          const hasTracking = Boolean((app as any).shippingInfo?.trackingNumber);
+          // 종료 상태(수정 금지)
+          const CLOSED = ['작업 중', '교체완료'];
+          const isClosed = CLOSED.includes(String((app as any).status));
 
           return (
             <Card key={app.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -142,9 +151,7 @@ export default function ApplicationsClient() {
                     </div>
                   </div>
 
-                  <div className="ml-auto flex items-center gap-2">
-                    {isStringService && <ServiceReviewCTA applicationId={app.id} status={app.status} />}
-
+                  <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -154,6 +161,16 @@ export default function ApplicationsClient() {
                       상세보기
                       <ArrowRight className="ml-1 h-3 w-3" />
                     </Button>
+                    {isSelfShip &&
+                      (isClosed ? (
+                        <Button variant="outline" size="sm" onClick={() => showInfoToast('이미 종료된 신청서입니다. 운송장 수정이 불가합니다.')}>
+                          운송장 수정하기
+                        </Button>
+                      ) : (
+                        <Button variant="default" size="sm" onClick={() => router.push(`/services/applications/${app.id}/shipping`)}>
+                          {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
+                        </Button>
+                      ))}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
