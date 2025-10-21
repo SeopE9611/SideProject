@@ -226,8 +226,7 @@ export default function OrderList() {
                 </Button>
                 <OrderReviewCTA orderId={order.id} reviewAllDone={order.reviewAllDone} unreviewedCount={order.unreviewedCount} reviewNextTargetProductId={order.reviewNextTargetProductId} orderStatus={order.status} showOnlyWhenCompleted />
                 <TooltipProvider>
-                  {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' &&
-                    order.shippingInfo?.withStringService &&
+                  {order.shippingInfo?.withStringService &&
                     (!order.isStringServiceApplied ? (
                       <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
                         <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">

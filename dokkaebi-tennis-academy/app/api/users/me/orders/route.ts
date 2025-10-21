@@ -46,6 +46,9 @@ type OrderListItem = {
   reviewAllDone: boolean;
   unreviewedCount: number;
   reviewNextTargetProductId: string | null;
+  // 교체 서비스 관련(프런트 CTA/배너 제어용)
+  isStringServiceApplied: boolean;
+  stringingApplicationId: string | null;
 };
 
 /** 전체 응답 */
@@ -91,6 +94,15 @@ export async function GET(req: NextRequest) {
 
     // 내 주문 조회 (최신순)
     const [orders, total] = await Promise.all([db.collection<OrderDoc>('orders').find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(), db.collection('orders').countDocuments({ userId })]);
+
+    // 주문들에 연결된 '실제 신청서'를 한 번에 조회(draft 제외)
+    const orderIds = orders.map((o) => o._id);
+    const apps = await db
+      .collection('stringing_applications')
+      .find({ userId, orderId: { $in: orderIds }, status: { $ne: 'draft' } }, { projection: { _id: 1, orderId: 1 } })
+      .toArray();
+    const appByOrderId = new Map<string, string>();
+    for (const a of apps) appByOrderId.set(String(a.orderId), String(a._id));
 
     // 각 주문별 리뷰 진행상태 계산
     const list: OrderListItem[] = [];
@@ -139,12 +151,19 @@ export async function GET(req: NextRequest) {
           imageUrl: it.imageUrl ?? it.image ?? it.thumbnail ?? it.thumbnailUrl ?? (Array.isArray(it.images) && it.images[0]) ?? null,
         })),
 
-        shippingInfo: order.shippingInfo ?? {},
+        shippingInfo: {
+          ...(order.shippingInfo ?? {}),
+          // 체크아웃에서 온 의사 표시가 없을 때 undefined 방지
+          withStringService: Boolean(order.shippingInfo?.withStringService),
+        },
         paymentStatus: order.paymentStatus ?? '결제대기',
 
         reviewAllDone,
         unreviewedCount,
         reviewNextTargetProductId,
+        // 실제 신청 여부/ID
+        isStringServiceApplied: appByOrderId.has(String(order._id)),
+        stringingApplicationId: appByOrderId.get(String(order._id)) ?? null,
       });
     }
 

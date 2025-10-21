@@ -195,7 +195,7 @@ export default function OrderDetailClient({ orderId }: Props) {
         </div>
       </div>
 
-      {orderDetail.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && orderDetail.shippingInfo?.withStringService && (
+      {orderDetail.shippingInfo?.withStringService && (
         <>
           {!orderDetail.isStringServiceApplied ? (
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border border-yellow-200 dark:border-yellow-800/30 rounded-xl p-6 shadow-lg">
