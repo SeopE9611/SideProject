@@ -1,10 +1,9 @@
-// app/services/applications/[id]/shipping/ShippingFormClient.tsx
 'use client';
 
 import type React from 'react';
 
-import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
+import { useRouter, useSearchParams } from 'next/navigation';
+import useSWR, { mutate as globalMutate } from 'swr';
 import { useMemo, useState } from 'react';
 import { z } from 'zod';
 
@@ -59,6 +58,8 @@ const fetcher = (url: string) =>
 export default function ShippingFormClient({ applicationId }: { applicationId: string }) {
   const router = useRouter();
   const { data, error, isLoading } = useSWR<Application>(`/api/applications/stringing/${applicationId}`, fetcher);
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get('return'); // 예: /mypage?tab=applications
 
   // 1) 로딩/에러(모든 렌더에서 동일한 훅 호출 순서)
   if (isLoading) {
@@ -170,13 +171,11 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
   }
 
   // 3) 자가발송이면 폼 컴포넌트 렌더 (이 아래에서 추가 훅 사용해도 안전)
-  return <SelfShipForm applicationId={applicationId} application={data} />;
+  return <SelfShipForm applicationId={applicationId} application={data} returnTo={returnTo ?? undefined} />;
 }
 
-// ──────────────────────────────────────────────────────────────
-// Child: 실제 폼(여기서 useMemo/useState 등 사용)
-// ──────────────────────────────────────────────────────────────
-function SelfShipForm({ applicationId, application }: { applicationId: string; application: Application }) {
+// 실제 폼
+function SelfShipForm({ applicationId, application, returnTo }: { applicationId: string; application: Application; returnTo?: string }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
 
@@ -223,12 +222,21 @@ function SelfShipForm({ applicationId, application }: { applicationId: string; a
       if (!res.ok) throw new Error((await res.text().catch(() => '')) || '운송장 업데이트 실패');
 
       showSuccessToast('운송장 정보가 저장되었습니다.');
-      const mypageUrl = `/mypage?${new URLSearchParams({
-        tab: 'applications',
-        id: applicationId,
-      }).toString()}`;
+      // 1) 마이페이지 목록 캐시 무효화(페이지네이션 포함)
+      try {
+        await globalMutate((key: any) => typeof key === 'string' && key.startsWith('/api/applications/me'));
+      } catch {}
 
-      router.push(applyUrl);
+      // 2) 돌아갈 경로 우선 사용
+      if (returnTo) {
+        router.replace(returnTo);
+        router.refresh();
+        return;
+      }
+      // 3) fallback: 신청 상세(마이페이지)로 이동
+      const mypageUrlFinal = `/mypage?${new URLSearchParams({ tab: 'applications', id: applicationId }).toString()}`;
+      router.replace(mypageUrlFinal);
+      router.refresh();
     } catch (err: any) {
       showErrorToast(err.message || '저장 중 오류가 발생했습니다.');
     } finally {

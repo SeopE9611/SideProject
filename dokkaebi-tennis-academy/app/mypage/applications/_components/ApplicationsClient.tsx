@@ -117,7 +117,7 @@ export default function ApplicationsClient() {
           // 자가발송 여부(신청서/배송정보 양쪽 필드 중 하나라도 기준 충족 시 true)
           const isSelfShip = isStringService && normalizeCollection((app as any).collectionMethod ?? (app as any).shippingInfo?.collectionMethod) === 'self_ship';
           // 운송장 등록 여부
-          const hasTracking = Boolean((app as any).shippingInfo?.trackingNumber);
+          const hasTracking = Boolean((app as any).shippingInfo?.trackingNumber || (app as any).shippingInfo?.selfShip?.trackingNo);
           // 종료 상태(수정 금지)
           const CLOSED = ['작업 중', '교체완료'];
           const isClosed = CLOSED.includes(String((app as any).status));
@@ -167,7 +167,7 @@ export default function ApplicationsClient() {
                           운송장 수정하기
                         </Button>
                       ) : (
-                        <Button variant="default" size="sm" onClick={() => router.push(`/services/applications/${app.id}/shipping`)}>
+                        <Button variant="default" size="sm" onClick={() => router.push(`/services/applications/${app.id}/shipping?return=${encodeURIComponent('/mypage?tab=applications')}`)}>
                           {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
                         </Button>
                       ))}

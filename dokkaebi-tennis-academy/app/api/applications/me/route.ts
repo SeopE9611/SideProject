@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { getTokenFromHeader, verifyAccessToken } from '@/lib/auth.utils';
 import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
+import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 
 export async function GET(req: Request) {
   // 인증
@@ -45,6 +46,10 @@ export async function GET(req: Request) {
       // createdAt 안전 보정
       const appliedAtISO = doc.createdAt instanceof Date ? doc.createdAt.toISOString() : new Date(doc.createdAt).toISOString();
 
+      // 운송장/수거방식 정보(목록 라벨 전환 근거)
+      const trackingNo = (doc as any)?.shippingInfo?.selfShip?.trackingNo ?? (doc as any)?.shippingInfo?.invoice?.trackingNumber ?? (doc as any)?.shippingInfo?.trackingNumber ?? null;
+      const collectionMethod = normalizeCollection((doc as any)?.shippingInfo?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+
       return {
         id: doc._id.toString(),
         type: '스트링 장착 서비스',
@@ -57,6 +62,10 @@ export async function GET(req: Request) {
         preferredDate: details.preferredDate ?? null,
         preferredTime: details.preferredTime ?? null,
         requests: details.requirements ?? null,
+        shippingInfo: {
+          collectionMethod,
+          selfShip: { trackingNo },
+        },
       };
     })
   );
