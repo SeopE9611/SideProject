@@ -20,6 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import PriceSummaryCard from '@/app/services/_components/PriceSummaryCard';
+import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -422,7 +423,7 @@ export default function StringServiceApplyPage() {
       base = Number.isFinite((formData as any).pdpMountingFee) ? Number((formData as any).pdpMountingFee) : 35000;
     }
     // 수거비(표시용)
-    const pickupFee = formData.collectionMethod === 'courier_pickup' ? PICKUP_FEE : 0;
+    const pickupFee = normalizeCollection(formData.collectionMethod) === 'courier_pickup' ? PICKUP_FEE : 0;
 
     // 총액(표시용): 패키지 적용 시 교체비 0 (수거비는 후정산 안내로 표시만)
     const total = usingPackage ? 0 : base + pickupFee;
@@ -817,7 +818,7 @@ export default function StringServiceApplyPage() {
                   수거 방식 <span className="text-red-500">*</span>
                 </Label>
 
-                {formData.collectionMethod === 'self_ship' && applicationId && (
+                {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
                   <div
                     className="
                       block cursor-pointer rounded-xl
@@ -905,7 +906,7 @@ export default function StringServiceApplyPage() {
                 </RadioGroup>
 
                 {/* 기사 방문 수거 선택 시 추가 입력 */}
-                {formData.collectionMethod === 'courier_pickup' && (
+                {normalizeCollection(formData.collectionMethod) === 'courier_pickup' && (
                   <div className="grid gap-3 md:grid-cols-3">
                     <div className="space-y-1">
                       <Label htmlFor="pickupDate" className="text-sm font-medium">
@@ -928,7 +929,7 @@ export default function StringServiceApplyPage() {
                   </div>
                 )}
 
-                {formData.collectionMethod === 'courier_pickup' && <p className="text-xs text-muted-foreground">※ 기사 방문 수거 선택 시 수거비 +3,000원이 발생합니다(후정산 / 결제 합산은 관리자 확정 시 반영).</p>}
+                {normalizeCollection(formData.collectionMethod) === 'courier_pickup' && <p className="text-xs text-muted-foreground">※ 기사 방문 수거 선택 시 수거비 +3,000원이 발생합니다(후정산 / 결제 합산은 관리자 확정 시 반영).</p>}
               </div>
             </div>
             {/* 로딩 오버레이 */}

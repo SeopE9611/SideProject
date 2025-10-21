@@ -18,6 +18,7 @@ import { AlertTriangle, Truck, Loader2, Check, Package, Calendar, FileText, Arro
 
 // toast
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 
 // ──────────────────────────────────────────────────────────────
 // 타입
@@ -110,7 +111,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
     data.shippingInfo?.collectionMethod ??
     (data as any)?.collectionMethod ?? // 최상위 값 폴백
     null;
-  const isSelfShip = typeof rawMethod === 'string' && ['self_ship', 'self', '자가발송'].includes(rawMethod.toLowerCase());
+  const isSelfShip = typeof rawMethod === 'string' && normalizeCollection(rawMethod) === 'self_ship';
 
   if (!isSelfShip) {
     return (

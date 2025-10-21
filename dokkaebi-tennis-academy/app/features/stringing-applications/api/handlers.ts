@@ -10,27 +10,9 @@ import { normalizeEmail } from '@/lib/claims';
 import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
 import { onApplicationSubmitted, onStatusUpdated, onScheduleConfirmed, onScheduleUpdated, onApplicationCanceled, onScheduleCanceled } from '@/app/features/notifications/triggers/stringing';
 import { calcStringingTotal } from '@/lib/pricing';
+import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 
-// 진행(점유)으로 간주하는 상태들 — 프로젝트 정책에 맞게 조정 가능
-// '교체완료'는 점유 해제로 본다는 가정(완료 후 새 신청 허용).
 export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
-
-// 간단 정규화 헬퍼
-const normalizeCollection = (v: any): 'self_ship' | 'courier_pickup' | 'visit' => {
-  const s = String(v || '').toLowerCase();
-  if (s === 'self_send' || s === 'self-ship' || s === 'self_ship') return 'self_ship';
-  if (s === 'courier_pickup' || s === 'courier-pickup' || s === 'courier' || s === 'pickup') return 'courier_pickup';
-  if (s === 'visit' || s === '방문' || s === '매장') return 'visit';
-  return 'self_ship';
-};
-
-const norm = (v: any): 'self_ship' | 'courier_pickup' | 'visit' => {
-  const s = String(v || '').toLowerCase();
-  if (s === 'self_send' || s === 'self-ship' || s === 'self_ship') return 'self_ship';
-  if (s === 'courier_pickup' || s === 'courier-pickup' || s === 'courier' || s === 'pickup') return 'courier_pickup';
-  if (s === 'visit' || s === '방문' || s === '매장') return 'visit';
-  return 'self_ship';
-};
 
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
@@ -527,7 +509,7 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
     const setFields: any = { shippingInfo: mergedShippingInfo };
 
     if (typeof newShippingInfo.collectionMethod === 'string') {
-      const normalized = norm(newShippingInfo.collectionMethod);
+      const normalized = normalizeCollection(newShippingInfo.collectionMethod);
       newShippingInfo.collectionMethod = normalized; // shippingInfo 내부도 정규화
       setFields.collectionMethod = normalized; // 최상위 필드도 동일하게 유지
     }
@@ -858,7 +840,7 @@ export async function handleSubmitStringingApplication(req: Request) {
     };
 
     // === 5) collectionMethod 정규화 & 일관 저장 ===
-    const cm = norm(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
+    const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
     if (shippingInfo && typeof shippingInfo === 'object') {
       shippingInfo.collectionMethod = cm; // 내부 필드도 표준화
     }
