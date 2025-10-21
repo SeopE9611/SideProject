@@ -133,7 +133,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                 <p className="text-blue-100 mb-4 leading-relaxed">
                   <span className="font-semibold">라켓을 발송하신 뒤</span> 아래 버튼을 눌러 운송장을 등록해 주세요.
                   <br />
-                  <span className="text-sm text-blue-200/80">(건너뛰고 마이페이지에서 등록도 가능합니다)</span>
+                  <span className="text-sm text-blue-200/80">(건너뛰고 마이페이지 → 신청내역 탭에서 등록도 가능합니다)</span>
                 </p>
                 <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg" asChild>
                   <Link href={`/services/applications/${applicationId}/shipping`} className="flex items-center gap-2">
