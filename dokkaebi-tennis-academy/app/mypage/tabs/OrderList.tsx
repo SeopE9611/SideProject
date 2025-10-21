@@ -231,7 +231,7 @@ export default function OrderList() {
                     (!order.isStringServiceApplied ? (
                       <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
                         <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">
-                          스트링 장착 신청
+                          스트링 교체 신청
                           <ArrowRight className="h-3 w-3" />
                         </Link>
                       </Button>
@@ -240,7 +240,7 @@ export default function OrderList() {
                         <TooltipTrigger asChild>
                           <div className="inline-flex h-9 items-center justify-center rounded-md border border-emerald-300 bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-2 text-sm font-semibold text-emerald-700 dark:border-emerald-600 dark:from-emerald-950 dark:to-green-950 dark:text-emerald-300">
                             <CheckCircle className="mr-1 h-3 w-3" />
-                            스트링 신청 완료
+                            교체 신청 완료
                           </div>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="text-sm">
