@@ -115,7 +115,10 @@ export default function ApplicationsClient() {
         applications.map((app) => {
           const isStringService = app.type === '스트링 장착 서비스';
           // 자가발송 여부(신청서/배송정보 양쪽 필드 중 하나라도 기준 충족 시 true)
-          const isSelfShip = isStringService && normalizeCollection((app as any).collectionMethod ?? (app as any).shippingInfo?.collectionMethod) === 'self_ship';
+          const cm = normalizeCollection((app as any).collectionMethod ?? (app as any).shippingInfo?.collectionMethod);
+          const isSelfShip = isStringService && cm === 'self_ship';
+          const isVisit = isStringService && cm === 'visit';
+
           // 운송장 등록 여부
           const hasTracking = Boolean((app as any).shippingInfo?.trackingNumber || (app as any).shippingInfo?.selfShip?.trackingNo);
           // 종료 상태(수정 금지)
@@ -190,7 +193,7 @@ export default function ApplicationsClient() {
                     </div>
                   </div>
 
-                  {app.preferredDate && app.preferredTime ? (
+                  {isVisit && app.preferredDate && app.preferredTime ? (
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
                       <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                       <div>

@@ -56,6 +56,9 @@ export async function GET(req: Request) {
       const trackingNo = (doc as any)?.shippingInfo?.selfShip?.trackingNo ?? (doc as any)?.shippingInfo?.invoice?.trackingNumber ?? (doc as any)?.shippingInfo?.trackingNumber ?? null;
       const collectionMethod = normalizeCollection((doc as any)?.shippingInfo?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
 
+      // 비-방문이면 값 null로 내림
+      const cm = normalizeCollection((doc as any)?.shippingInfo?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+
       return {
         id: doc._id.toString(),
         type: '스트링 장착 서비스',
@@ -65,8 +68,9 @@ export async function GET(req: Request) {
         status: doc.status ?? '접수',
         racketType: details.racketType ?? '-',
         stringType: names.join(', ') || '-',
-        preferredDate: details.preferredDate ?? null,
-        preferredTime: details.preferredTime ?? null,
+        // 방문만 예약 표시, 그 외는 null로 정리
+        preferredDate: cm === 'visit' ? details.preferredDate ?? null : null,
+        preferredTime: cm === 'visit' ? details.preferredTime ?? null : null,
         requests: details.requirements ?? null,
         shippingInfo: {
           collectionMethod,
