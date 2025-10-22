@@ -762,7 +762,7 @@ export async function handleSubmitStringingApplication(req: Request) {
     } = await req.json();
 
     // === 1) 필수값 검증 ===
-    if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0 || !preferredDate || !preferredTime) {
+    if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0) {
       return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
     }
 
@@ -829,18 +829,29 @@ export async function handleSubmitStringingApplication(req: Request) {
       })
     );
 
+    // === 5) collectionMethod 정규화 & 일관 저장 ===
+    const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
+
     const stringDetails: any = {
       racketType,
       stringTypes,
       stringItems,
       ...(stringTypes.includes('custom') && customStringName ? { customStringName: customStringName.trim() } : {}),
-      preferredDate,
-      preferredTime,
+      preferredDate: cm === 'visit' ? preferredDate : null,
+      preferredTime: cm === 'visit' ? preferredTime : null,
       requirements,
     };
 
-    // === 5) collectionMethod 정규화 & 일관 저장 ===
-    const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
+    // 방문만 예약 필수, 그 외는 예약 불필요 → 서버에서 정리
+    if (cm === 'visit') {
+      if (!preferredDate || !preferredTime) {
+        return NextResponse.json({ message: '방문 수령은 예약 일시가 필수입니다.' }, { status: 400 });
+      }
+    } else {
+      // 비-방문: 저장 직전에 예약값 제거
+      (shippingInfo as any) && (stringDetails as any); // 타입 가드용 no-op
+    }
+
     if (shippingInfo && typeof shippingInfo === 'object') {
       shippingInfo.collectionMethod = cm; // 내부 필드도 표준화
     }

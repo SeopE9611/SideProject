@@ -46,9 +46,13 @@ export default function StringingApplicationsClient() {
               <CardContent className="space-y-1 text-sm">
                 <div className="text-muted-foreground">{app._id}</div>
                 <div>{app.phone}</div>
-                <div>
-                  희망일시: {app.stringDetails.preferredDate} {app.stringDetails.preferredTime}
-                </div>
+                {app.stringDetails?.preferredDate && app.stringDetails?.preferredTime ? (
+                  <div>
+                    희망일시: {app.stringDetails.preferredDate} {app.stringDetails.preferredTime}
+                  </div>
+                ) : (
+                  <div>예약: 예약 없음</div>
+                )}
                 <div>스트링 종류: {app.stringDetails.stringType === 'custom' ? app.stringDetails.customStringName : app.stringDetails.stringType}</div>
                 <div className="flex justify-end gap-2 pt-2">
                   <ApplicationStatusBadge status={app.status} />

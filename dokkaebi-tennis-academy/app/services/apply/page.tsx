@@ -194,8 +194,11 @@ export default function StringServiceApplyPage() {
       if (formData.stringTypes.length === 0) return toast('스트링 종류를 한 개 이상 선택해주세요.'), false;
       if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) return toast('직접 입력한 스트링명을 적어주세요.'), false;
 
-      if (!formData.preferredDate) return toast('장착 희망일을 선택해주세요.'), false;
-      if (!formData.preferredTime) return toast('희망 시간대를 선택해주세요.'), false;
+      const isVisit = normalizeCollection(formData.collectionMethod) === 'visit';
+      if (isVisit) {
+        if (!formData.preferredDate) return toast('장착 희망일을 선택해주세요.'), false;
+        if (!formData.preferredTime) return toast('희망 시간대를 선택해주세요.'), false;
+      }
       return true;
     }
 
@@ -855,7 +858,20 @@ export default function StringServiceApplyPage() {
                     </button>
                   </div>
                 )}
-                <RadioGroup value={formData.collectionMethod} onValueChange={(v) => setFormData((prev) => ({ ...prev, collectionMethod: v as CollectionMethod }))} className="grid gap-3 md:grid-cols-3">
+                <RadioGroup
+                  value={formData.collectionMethod}
+                  onValueChange={(v) =>
+                    setFormData((prev) => {
+                      const next = { ...prev, collectionMethod: v as CollectionMethod };
+                      if (normalizeCollection(v) !== 'visit') {
+                        (next as any).preferredDate = '';
+                        (next as any).preferredTime = '';
+                      }
+                      return next;
+                    })
+                  }
+                  className="grid gap-3 md:grid-cols-3"
+                >
                   {/* 자가 발송 */}
                   <div>
                     <RadioGroupItem id="cm-self" value="self_ship" disabled={lockVisit} className="peer sr-only" />
@@ -1040,42 +1056,44 @@ export default function StringServiceApplyPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="preferredDate" className="text-sm font-medium">
-                    장착 희망일 <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="preferredDate"
-                    name="preferredDate"
-                    type="date"
-                    value={formData.preferredDate}
-                    onChange={handleInputChange}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="focus:ring-2 focus:ring-green-500 transition-all duration-200"
-                  />
-                </div>
+              {normalizeCollection(formData.collectionMethod) === 'visit' && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredDate" className="text-sm font-medium">
+                      장착 희망일 <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="preferredDate"
+                      name="preferredDate"
+                      type="date"
+                      value={formData.preferredDate}
+                      onChange={handleInputChange}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="focus:ring-2 focus:ring-green-500 transition-all duration-200"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    희망 시간대<span className="text-red-500">*</span>
-                  </Label>
-                  <TimeSlotSelector
-                    selected={formData.preferredTime}
-                    selectedDate={formData.preferredDate}
-                    onSelect={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        preferredTime: prev.preferredTime === value ? '' : value,
-                      }))
-                    }
-                    times={timeSlots}
-                    disabledTimes={disabledTimes}
-                    isLoading={slotsLoading && !hasCacheForDate}
-                    errorMessage={slotsError}
-                  />
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      희망 시간대<span className="text-red-500">*</span>
+                    </Label>
+                    <TimeSlotSelector
+                      selected={formData.preferredTime}
+                      selectedDate={formData.preferredDate}
+                      onSelect={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          preferredTime: prev.preferredTime === value ? '' : value,
+                        }))
+                      }
+                      times={timeSlots}
+                      disabledTimes={disabledTimes}
+                      isLoading={slotsLoading && !hasCacheForDate}
+                      errorMessage={slotsError}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         );

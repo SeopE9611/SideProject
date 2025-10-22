@@ -190,15 +190,17 @@ export default function ApplicationsClient() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                    <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                    <div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">희망일시</div>
-                      <div className="font-medium text-slate-900 dark:text-slate-100">
-                        {app.preferredDate?.replace(/-/g, '.') ?? '-'} {app.preferredTime ?? ''}
+                  {app.preferredDate && app.preferredTime ? (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
+                      <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                      <div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">희망일시</div>
+                        <div className="font-medium text-slate-900 dark:text-slate-100">
+                          {app.preferredDate.replace(/-/g, '.')} {app.preferredTime}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : null}
 
                   {isStringService ? (
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
