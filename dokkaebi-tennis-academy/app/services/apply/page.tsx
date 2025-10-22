@@ -839,7 +839,7 @@ export default function StringServiceApplyPage() {
                       type="button"
                       onClick={async () => {
                         try {
-                          // ✅ 초안의 수거방식을 자가발송으로 저장
+                          // 초안의 수거방식을 자가발송으로 저장
                           await fetch(`/api/applications/stringing/${applicationId}/shipping`, {
                             method: 'PATCH',
                             credentials: 'include',

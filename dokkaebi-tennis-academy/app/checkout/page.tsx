@@ -338,7 +338,7 @@ export default function CheckoutPage() {
                   </div>
                   <p className="text-sm text-orange-600 dark:text-orange-400 ml-6">{serviceHelpText}</p>
 
-                  {/* ✅ 서비스 ON일 때만 세부 방식 표시 */}
+                  {/* 서비스 ON일 때만 세부 방식 표시 */}
                   {withStringService &&
                     (deliveryMethod === '방문수령' ? (
                       // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)

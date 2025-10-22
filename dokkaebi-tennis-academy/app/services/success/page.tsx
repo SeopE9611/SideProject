@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import BackButtonGuard from '@/app/services/_components/BackButtonGuard';
 import { Badge } from '@/components/ui/badge';
+import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 
 interface Props {
   searchParams: {
@@ -33,11 +34,12 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   const application = await db.collection('stringing_applications').findOne({ _id: new ObjectId(applicationId) });
 
-  // ✅ 자가발송 여부: 서버가 저장한 실제 필드(= shippingInfo.collectionMethod)를 사용
+  // 수거 방식 표준화
   const rawMethod = application?.shippingInfo?.collectionMethod ?? application?.collectionMethod ?? null; // (레거시 대비)
-  const normMethod = typeof rawMethod === 'string' ? rawMethod.toLowerCase() : '';
-  const isSelfShip = normMethod === 'self_ship' || normMethod === 'self' || normMethod === '자가발송';
-  // 패키지 정보 조회
+  const cm = normalizeCollection(typeof rawMethod === 'string' ? rawMethod : 'self_ship'); // 'visit' | 'self_ship' | 'courier_pickup'
+  const isVisit = cm === 'visit';
+  const isSelfShip = cm === 'self_ship';
+  const isCourierPickup = cm === 'courier_pickup'; // 패키지 정보 조회
   let appliedPass: any = null;
   if (application?.packageApplied && application?.packagePassId) {
     try {
@@ -110,7 +112,7 @@ export default async function StringServiceSuccessPage(props: Props) {
           </div>
 
           <div className="relative container mx-auto px-4 text-center text-white">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm mb-8 animate-bounce">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm mb-8">
               <CheckCircle className="h-12 w-12 text-blue-300" />
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">신청이 완료되었습니다!</h1>
@@ -192,8 +194,14 @@ export default async function StringServiceSuccessPage(props: Props) {
                       <Clock className="h-6 w-6 text-purple-600 mr-3" />
                       <h3 className="font-semibold text-gray-900 dark:text-white">희망일</h3>
                     </div>
-                    <p className="text-lg font-bold text-purple-600">{application.stringDetails.preferredDate}</p>
-                    {application.stringDetails.preferredTime && <p className="text-sm text-purple-500 mt-1">{application.stringDetails.preferredTime}</p>}
+                    {isVisit && application.stringDetails?.preferredDate && application.stringDetails?.preferredTime ? (
+                      <>
+                        <p className="text-lg font-bold text-purple-600">{application.stringDetails.preferredDate}</p>
+                        <p className="text-sm text-purple-500 mt-1">{application.stringDetails.preferredTime}</p>
+                      </>
+                    ) : (
+                      <p className="text-lg font-bold text-purple-600">예약 불필요{isSelfShip || isCourierPickup ? ' (자가발송/기사 수거)' : ''}</p>
+                    )}{' '}
                   </div>
                 </div>
 

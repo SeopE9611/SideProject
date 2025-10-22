@@ -1033,7 +1033,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
 
     // 7) 이미 진행중(draft/received) 있으면 재사용
     const existing = await appsCol.findOne({
-      orderId: { $in: [order._id, String(order._id)] }, // ✅ ObjectId와 string 모두 매칭
+      orderId: { $in: [order._id, String(order._id)] }, // ObjectId와 string 모두 매칭
       status: { $in: INPROGRESS_STATUSES },
     });
 
