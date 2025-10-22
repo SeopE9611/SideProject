@@ -102,14 +102,20 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       }
     }
 
+    // 실제 신청서 유무 계산 (draft 제외)
+    const linkedApp = await db.collection('stringing_applications').findOne({ orderId: new ObjectId(order._id), status: { $ne: 'draft' } }, { projection: { _id: 1 } });
+    const isStringServiceApplied = !!linkedApp;
+    const stringingApplicationId = linkedApp?._id?.toString() ?? null;
+
     return NextResponse.json({
-      ...order,
+      ...order, // 원문은 펴주되,
       customer,
       items: enrichedItems,
       shippingInfo: {
         ...order.shippingInfo,
         deliveryMethod: order.shippingInfo?.deliveryMethod ?? '택배수령',
-        withStringService: order.shippingInfo?.withStringService ?? false,
+        withStringService: Boolean(order.shippingInfo?.withStringService), // 의사표시(체크박스)
+
         invoice: {
           courier: order.shippingInfo?.invoice?.courier ?? null,
           trackingNumber: order.shippingInfo?.invoice?.trackingNumber ?? null,
@@ -123,6 +129,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       history: order.history ?? [],
       status: order.status,
       reason: order.cancelReason ?? null,
+      // 의사표시와 '실제 신청 존재'를 분리해 내려줌(여기가 핵심)
+      isStringServiceApplied,
+      stringingApplicationId,
     });
   } catch (error) {
     console.error(' 주문 상세 조회 실패:', error);

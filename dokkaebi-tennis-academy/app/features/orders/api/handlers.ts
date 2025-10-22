@@ -121,7 +121,7 @@ export async function createOrder(req: Request): Promise<Response> {
       paymentInfo,
       createdAt: new Date(),
       status: '대기중',
-      isStringServiceApplied: !!body.isStringServiceApplied, // 프론트 신호 보존
+      // isStringServiceApplied: !!body.isStringServiceApplied, // 프론트 신호 보존
       idemKey,
     };
     (order as any).servicePickupMethod = body.servicePickupMethod;
@@ -138,19 +138,22 @@ export async function createOrder(req: Request): Promise<Response> {
     // DB에 주문 저장
     const result = await insertOrder(order);
 
-    // "함께 진행" 요청이면 신청서 자동 생성
-    if (order.isStringServiceApplied === true) {
-      const client = await clientPromise;
-      const db = client.db();
+    // // "함께 진행" 요청이면 신청서 자동 생성
+    // if (order.isStringServiceApplied === true) {
+    //   const client = await clientPromise;
+    //   const db = client.db();
 
-      // 방금 저장한 order 문서 재조회(신뢰할 id로)
-      const saved = await db.collection('orders').findOne({ _id: result.insertedId });
+    //   // 방금 저장한 order 문서 재조회(신뢰할 id로)
+    //   const saved = await db.collection('orders').findOne({ _id: result.insertedId });
 
-      if (saved) {
-        // 주문 → 신청서 변환 유틸 호출(멱등)
-        await createStringingApplicationFromOrder(saved as any);
-      }
-    }
+    //   if (saved) {
+    //     // 주문 → 신청서 변환 유틸 호출(멱등)
+    //     await createStringingApplicationFromOrder(saved as any);
+    //   }
+    // }
+    // === 자동 생성은 하지 않음.===
+    // 체크박스는 shippingInfo.withStringService 로만 보존하고,
+    // 실제 신청은 마이페이지/주문 상세/주문 목록 CTA를 통해 사용자가 진행.
 
     // 성공 응답 반환
     return NextResponse.json({ success: true, orderId: result.insertedId.toString() }, { status: 201 });
