@@ -23,9 +23,15 @@ export async function GET(req: Request) {
   const client = await clientPromise;
   const db = client.db();
 
-  const total = await db.collection('stringing_applications').countDocuments({ userId });
-
-  const rawList = await db.collection('stringing_applications').find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
+  // draft는 마이페이지 목록/카운트에서 제외
+  const total = await db.collection('stringing_applications').countDocuments({ userId, status: { $ne: 'draft' } });
+  const rawList = await db
+    .collection('stringing_applications')
+    .find({ userId, status: { $ne: 'draft' } })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .toArray();
 
   // sanitize + stringType 매핑
   const items = await Promise.all(
