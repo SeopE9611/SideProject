@@ -22,6 +22,7 @@ import RequirementsEditForm from '@/app/features/stringing-applications/componen
 import StringingApplicationDetailSkeleton from '@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PaymentMethodDetail from '@/app/features/stringing-applications/components/PaymentMethodDetail';
+import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 
 interface Props {
   id: string;
@@ -166,6 +167,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   // 자가발송/운송장 등록 여부 계산
   const collectionMethod = data?.shippingInfo?.collectionMethod ?? data?.shippingInfo?.shippingMethod ?? null;
   const isSelfShip = typeof collectionMethod === 'string' && ['self_ship', 'self', '자가발송'].includes(collectionMethod.toLowerCase());
+  const isVisit = normalizeCollection(collectionMethod ?? 'self_ship') === 'visit';
 
   const trackingNo = data?.shippingInfo?.selfShip?.trackingNo ?? data?.shippingInfo?.invoice?.trackingNumber ?? null;
   const hasTracking = Boolean(trackingNo);
@@ -288,7 +290,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">희망 일시</span>
               </div>
               <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
+                {isVisit && data.stringDetails.preferredDate && data.stringDetails.preferredTime ? `${data.stringDetails.preferredDate} ${data.stringDetails.preferredTime}` : '예약 불필요'}
               </p>
             </div>
           </div>
@@ -501,9 +503,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <Calendar className="w-5 h-5" />
                     <span className="font-medium">희망 일시</span>
                   </div>
-                  <div className="text-gray-900 dark:text-gray-100">
-                    {data.stringDetails.preferredDate} {data.stringDetails.preferredTime}
-                  </div>
+                  <div className="text-gray-900 dark:text-gray-100">{isVisit && data.stringDetails.preferredDate && data.stringDetails.preferredTime ? `${data.stringDetails.preferredDate} ${data.stringDetails.preferredTime}` : '예약 불필요'}</div>
                 </div>
 
                 {/* 스트링 정보 */}
@@ -566,7 +566,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <StringInfoEditForm
                   id={data.id}
                   initial={{
-                    desiredDateTime: `${data.stringDetails.preferredDate}T${data.stringDetails.preferredTime}`,
+                    desiredDateTime: data.stringDetails.preferredDate && data.stringDetails.preferredTime ? `${data.stringDetails.preferredDate}T${data.stringDetails.preferredTime}` : '',
                     stringTypes: data.stringDetails.stringTypes,
                     customStringName: data.stringDetails.customStringName,
                     racketType: data.stringDetails.racketType,
