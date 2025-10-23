@@ -515,8 +515,11 @@ export default function StringServiceApplyPage() {
 
           if (spm === 'SHOP_VISIT' || isVisitDelivery2) {
             collectionMethod = 'visit';
+            // } else if (spm === 'COURIER_VISIT') {
+            //   collectionMethod = 'courier_pickup';
           } else if (spm === 'COURIER_VISIT') {
-            collectionMethod = 'courier_pickup';
+            // 기사 방문 수거 UI는 비노출 → 안전하게 자가발송으로 치환
+            collectionMethod = 'self_ship';
           } else {
             collectionMethod = 'self_ship';
           }
@@ -888,7 +891,7 @@ export default function StringServiceApplyPage() {
                     </Label>
                   </div>
 
-                  {/* 기사 방문 수거 */}
+                  {/* 기사 방문 수거 비노출 
                   <div>
                     <RadioGroupItem id="cm-pickup" value="courier_pickup" disabled={lockVisit} className="peer sr-only" />
                     <Label
@@ -902,7 +905,7 @@ export default function StringServiceApplyPage() {
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">선택 시 +3,000원 (후정산)</p>
                     </Label>
-                  </div>
+                  </div> */}
 
                   {/* 매장 방문 접수 */}
                   <div>

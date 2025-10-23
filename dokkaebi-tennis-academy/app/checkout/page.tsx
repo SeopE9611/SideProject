@@ -57,6 +57,7 @@ export default function CheckoutPage() {
   const [deliveryMethod, setDeliveryMethod] = useState<'택배수령' | '방문수령'>('택배수령');
 
   // 장착 서비스 수거방식(신청서 Step1과 1:1 매핑)
+  // (UI에서는 COURIER_VISIT 선택지를 숨김)
   type ServicePickup = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
   const [servicePickupMethod, setServicePickupMethod] = useState<ServicePickup>('SELF_SEND');
 
@@ -69,7 +70,8 @@ export default function CheckoutPage() {
     if (deliveryMethod === '방문수령') {
       setServicePickupMethod('SHOP_VISIT');
     } else {
-      setServicePickupMethod((prev) => (prev === 'SELF_SEND' || prev === 'COURIER_VISIT' ? prev : 'SELF_SEND'));
+      // setServicePickupMethod((prev) => (prev === 'SELF_SEND' || prev === 'COURIER_VISIT' ? prev : 'SELF_SEND'));
+      setServicePickupMethod('SELF_SEND');
     }
   }, [deliveryMethod, withStringService]);
 
@@ -346,16 +348,18 @@ export default function CheckoutPage() {
                         <span className="px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">매장 방문 접수로 진행됩니다.</span>
                       </div>
                     ) : (
-                      // 택배 수령: 자가 발송 vs 기사 방문 수거 라디오
+                      // 택배 수령: **선택지는 자가 발송만** 노출
                       <div className="ml-7 mt-2 grid gap-2 text-sm">
                         <label className="flex items-center gap-2">
                           <input type="radio" name="pickup" checked={servicePickupMethod === 'SELF_SEND'} onChange={() => setServicePickupMethod('SELF_SEND')} />
                           <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
                         </label>
+                        {/* 기사 방문 수거 옵션은 잠정 비노출
                         <label className="flex items-center gap-2">
                           <input type="radio" name="pickup" checked={servicePickupMethod === 'COURIER_VISIT'} onChange={() => setServicePickupMethod('COURIER_VISIT')} />
                           <span>택배 기사 방문 수거 (+3,000원 예상)</span>
                         </label>
+                        */}
                       </div>
                     ))}
                 </div>
