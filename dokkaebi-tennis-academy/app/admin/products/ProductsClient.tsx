@@ -59,7 +59,7 @@ const BRAND_OPTIONS = [
   { id: 'wilson', label: '윌슨' },
   { id: 'head', label: '헤드' },
   { id: 'yonex', label: '요넥스' },
-  { id: 'luxilon', label: '루키론' },
+  { id: 'luxilon', label: '룩시론' },
   { id: 'technifibre', label: '테크니파이버' },
   { id: 'solinco', label: '솔린코' },
   { id: 'dunlop', label: '던롭' },

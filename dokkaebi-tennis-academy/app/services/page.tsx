@@ -40,7 +40,7 @@ export default function ServicesPage() {
       features: ['파워와 컨트롤의 균형', '중간 정도의 타구감', '다양한 플레이 스타일에 적합', '하이브리드 구성으로 활용 가능'],
       recommended: ['올라운드 플레이 스타일', '다양한 샷을 구사하는 플레이어', '파워와 컨트롤 모두 중요시하는 분', '모든 수준의 플레이어'],
       image: '/placeholder.svg?height=300&width=300&text=Balance+String',
-      examples: ['루키론 프로 스트링', '윌슨 레볼루션', '테크니파이버 멀티필'],
+      examples: ['룩시론 프로 스트링', '윌슨 레볼루션', '테크니파이버 멀티필'],
       color: '#fbbf24',
       icon: <Trophy className="h-8 w-8" />,
       performance: { power: 85, control: 85, spin: 80, durability: 90 },

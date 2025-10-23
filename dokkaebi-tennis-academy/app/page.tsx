@@ -31,11 +31,11 @@ export default function Home() {
     polyester: [
       {
         id: 1,
-        name: '루키론 프로 스트링',
+        name: '룩시론 프로 스트링',
         price: 25000,
         originalPrice: 30000,
         image: '/tennis-string-luxilon-pro.png',
-        brand: '루키론',
+        brand: '룩시론',
         rating: 4.8,
         reviews: 124,
         description: '프로 선수들이 선택하는 최고급 폴리에스터 스트링',
@@ -105,7 +105,7 @@ export default function Home() {
     hybrid: [
       {
         id: 8,
-        name: '루키론 + 윌슨 NXT',
+        name: '룩시론 + 윌슨 NXT',
         price: 35000,
         originalPrice: 40000,
         image: '/hybrid-luxilon-wilson-tennis-string.png',

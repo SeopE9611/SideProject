@@ -26,7 +26,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 // 브랜드 목록
 const brands = [
-  { id: 'luxilon', name: '루키론' },
+  { id: 'luxilon', name: '룩시론' },
   { id: 'technifibre', name: '테크니파이버' },
   { id: 'wilson', name: '윌슨' },
   { id: 'babolat', name: '바볼랏' },
