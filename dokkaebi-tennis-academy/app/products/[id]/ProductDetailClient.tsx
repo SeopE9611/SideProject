@@ -121,6 +121,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
     return display;
   };
 
+  // 하이브리드 스펙 참조 변수
+  const hybridSpec = (product as any)?.specifications?.hybrid;
+
+  //  하이브리드 표시용 로컬 변수
+  const hMain = hybridSpec?.main ?? {};
+  const hCross = hybridSpec?.cross ?? {};
+  const hMainBrand = BRAND_MAP[hMain.brand] ?? hMain.brand;
+  const hCrossBrand = BRAND_MAP[hCross.brand] ?? hCross.brand;
+  const hMainGauge = GAUGE_MAP[hMain.gauge] ?? hMain.gauge;
+  const hCrossGauge = GAUGE_MAP[hCross.gauge] ?? hCross.gauge;
+  const hMainColor = COLOR_MAP[hMain.color] ?? hMain.color;
+  const hCrossColor = COLOR_MAP[hCross.color] ?? hCross.color;
+
   // ====== 추천 태그 추출 ======
   const selectedPlayerTypes = Object.entries(PLAYER_TYPE_MAP)
     .filter(([k]) => product?.tags?.[k])
@@ -797,6 +810,43 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </div>
                       ))}
                   </div>
+                  {product?.material === 'hybrid' && hybridSpec && (
+                    <Card className="mt-6 border-0 shadow-none bg-transparent">
+                      <CardContent className="p-0">
+                        {/* 상세 스펙 그리드(파란 그라데이션 카드)와 톤 통일 */}
+                        <div className="space-y-4 mt-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                              <Settings className="h-5 w-5 text-white" />
+                            </div>
+                            <h4 className="text-xl font-bold text-slate-800 dark:text-slate-200">하이브리드 구성</h4>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* 메인 */}
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                              <div className="text-sm text-muted-foreground mb-1">메인(Mains)</div>
+                              <div className="font-medium">{(hMainBrand || '') + ' ' + (hMain?.name || '')}</div>
+                              <div className="text-sm text-slate-700 dark:text-slate-300">
+                                {hMainGauge ? `게이지: ${hMainGauge}` : null}
+                                {hMainColor ? ` · 색상: ${hMainColor}` : null}
+                              </div>
+                            </div>
+
+                            {/* 크로스 */}
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                              <div className="text-sm text-muted-foreground mb-1">크로스(Crosses)</div>
+                              <div className="font-medium">{(hCrossBrand || '') + ' ' + (hCross?.name || '')}</div>
+                              <div className="text-sm text-slate-700 dark:text-slate-300">
+                                {hCrossGauge ? `게이지: ${hCrossGauge}` : null}
+                                {hCrossColor ? ` · 색상: ${hCrossColor}` : null}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </TabsContent>
 

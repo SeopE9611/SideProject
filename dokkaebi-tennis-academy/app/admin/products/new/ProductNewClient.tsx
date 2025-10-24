@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Save, ArrowLeft, Upload, Info, Package } from 'lucide-react';
@@ -182,6 +182,35 @@ export default function NewStringPage() {
   // 대표 이미지 설정
   const [mainImageIndex, setMainImageIndex] = useState(0);
 
+  // 하이브리드 구성(메인/크로스) 입력값 — material==='hybrid'일 때만 사용
+  const [hybridMain, setHybridMain] = useState({
+    brand: '',
+    name: '',
+    gauge: '',
+    color: '',
+    role: 'mains' as const,
+  });
+  const [hybridCross, setHybridCross] = useState({
+    brand: '',
+    name: '',
+    gauge: '',
+    color: '',
+    role: 'cross' as const,
+  });
+
+  useEffect(() => {
+    // 하이브리드일 때만 동기화
+    if (basicInfo.material !== 'hybrid') return;
+
+    setBasicInfo((prev) => ({
+      ...prev,
+      brand: prev.brand || hybridMain.brand || prev.brand,
+      gauge: prev.gauge || hybridMain.gauge || prev.gauge,
+      color: prev.color || hybridMain.color || prev.color,
+      length: prev.length || '12m',
+    }));
+  }, [basicInfo.material, hybridMain.brand, hybridMain.gauge, hybridMain.color]);
+
   // 대표이미지 설정 핸들러
   const handleSetMainImage = (index: number) => {
     if (index === 0) return; // 이미 대표면 무시
@@ -297,12 +326,23 @@ export default function NewStringPage() {
       return;
     }
     // specifications 영문 키로 미리 구성
-    const specifications = {
+    const specifications: any = {
       material: basicInfo.material,
       gauge: basicInfo.gauge,
       color: basicInfo.color,
       length: basicInfo.length,
     };
+
+    if (basicInfo.material === 'hybrid') {
+      const hasMain = hybridMain.brand || hybridMain.name || hybridMain.gauge || hybridMain.color;
+      const hasCross = hybridCross.brand || hybridCross.name || hybridCross.gauge || hybridCross.color;
+      if (hasMain || hasCross) {
+        specifications.hybrid = {
+          main: { ...hybridMain },
+          cross: { ...hybridCross },
+        };
+      }
+    }
 
     //  product 전체 구성
     const product = {
@@ -532,6 +572,148 @@ export default function NewStringPage() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {basicInfo.material === 'hybrid' && (
+                  <Card
+                    variant="ghost"
+                    className="mt-6 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20
+                border border-blue-100 dark:border-blue-800/30"
+                  >
+                    <CardHeader
+                      className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30
+                           border-b border-blue-100 dark:border-blue-800/30"
+                    >
+                      <CardTitle className="text-blue-800 dark:text-blue-200">하이브리드 구성</CardTitle>
+                      <CardDescription className="text-blue-600 dark:text-blue-400">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* MAIN */}
+                      <div className="space-y-3">
+                        <div className="text-sm font-medium text-muted-foreground">메인 (Mains)</div>
+
+                        {/* 브랜드 */}
+                        <div className="space-y-1.5">
+                          <Label>브랜드</Label>
+                          <Select value={hybridMain.brand} onValueChange={(v) => setHybridMain((s) => ({ ...s, brand: v }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="브랜드 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {brands.map((b) => (
+                                <SelectItem key={b.id} value={b.id}>
+                                  {b.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* 제품명(자유입력 유지: 같은 브랜드라도 모델명이 매우 다양) */}
+                        <div className="space-y-1.5">
+                          <Label>제품명</Label>
+                          <Input placeholder="예: RPM Blast" value={hybridMain.name} onChange={(e) => setHybridMain((s) => ({ ...s, name: e.target.value }))} />
+                        </div>
+
+                        {/* 게이지 */}
+                        <div className="space-y-1.5">
+                          <Label>게이지</Label>
+                          <Select value={hybridMain.gauge} onValueChange={(v) => setHybridMain((s) => ({ ...s, gauge: v }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="게이지 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {gauges.map((g) => (
+                                <SelectItem key={g.id} value={g.id}>
+                                  {g.name /* 예: 17 (1.25mm) */}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* 색상 */}
+                        <div className="space-y-1.5">
+                          <Label>색상</Label>
+                          <Select value={hybridMain.color} onValueChange={(v) => setHybridMain((s) => ({ ...s, color: v }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="색상 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {colors.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>
+                                  {c.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {/* CROSS */}
+                      <div className="space-y-3">
+                        <div className="text-sm font-medium text-muted-foreground">크로스 (Crosses)</div>
+
+                        {/* 브랜드 */}
+                        <div className="space-y-1.5">
+                          <Label>브랜드</Label>
+                          <Select value={hybridCross.brand} onValueChange={(v) => setHybridCross((s) => ({ ...s, brand: v }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="브랜드 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {brands.map((b) => (
+                                <SelectItem key={b.id} value={b.id}>
+                                  {b.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* 제품명(자유입력) */}
+                        <div className="space-y-1.5">
+                          <Label>제품명</Label>
+                          <Input placeholder="예: Touch VS" value={hybridCross.name} onChange={(e) => setHybridCross((s) => ({ ...s, name: e.target.value }))} />
+                        </div>
+
+                        {/* 게이지 */}
+                        <div className="space-y-1.5">
+                          <Label>게이지</Label>
+                          <Select value={hybridCross.gauge} onValueChange={(v) => setHybridCross((s) => ({ ...s, gauge: v }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="게이지 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {gauges.map((g) => (
+                                <SelectItem key={g.id} value={g.id}>
+                                  {g.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* 색상 */}
+                        <div className="space-y-1.5">
+                          <Label>색상</Label>
+                          <Select value={hybridCross.color} onValueChange={(v) => setHybridCross((s) => ({ ...s, color: v }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="색상 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {colors.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>
+                                  {c.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* 가격 정보 카드 */}
                 <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
                   <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-blue-100 dark:border-blue-800/30">
