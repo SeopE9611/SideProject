@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { getHangulInitials } from '@/lib/hangul-utils';
+import { ObjectId } from 'mongodb';
 
 export async function POST(req: NextRequest) {
   //  인증 처리
@@ -91,6 +92,9 @@ export async function GET(req: NextRequest) {
     const comfort = params.get('comfort');
     const q = params.get('q') || '';
     const sort = params.get('sort') || 'latest';
+    const material = params.get('material');
+    const isFeatured = params.get('isFeatured'); // 'true' | 'false'
+    const exclude = params.get('exclude'); // string(ObjectId)
 
     // 페이징
     const page = Math.max(1, Number(params.get('page') || '1'));
@@ -105,6 +109,8 @@ export async function GET(req: NextRequest) {
     if (durability) filter['features.durability'] = { $gte: Number(durability) };
     if (comfort) filter['features.comfort'] = { $gte: Number(comfort) };
     if (q) filter.name = { $regex: q, $options: 'i' };
+    if (material) filter.material = material;
+    if (isFeatured === 'true') filter['inventory.isFeatured'] = true;
 
     const client = await clientPromise;
     const db = client.db();
@@ -115,11 +121,10 @@ export async function GET(req: NextRequest) {
     if (sort === 'price-low') sortObj = { price: 1 };
     else if (sort === 'price-high') sortObj = { price: -1 };
 
-    const [total, itemsRaw] = await Promise.all([
-      collection.countDocuments(filter),
-      // 삭제된 건은 반영되지 않고 페이징
-      collection.find(filter).sort(sortObj).skip(skip).limit(limit).toArray(),
-    ]);
+    const idFilter = exclude ? { _id: { $ne: new ObjectId(exclude) } } : {};
+    const composed = { ...filter, ...idFilter };
+
+    const [total, itemsRaw] = await Promise.all([collection.countDocuments(composed), collection.find(composed).sort(sortObj).skip(skip).limit(limit).toArray()]);
 
     const items = itemsRaw.map((product: any) => ({
       ...product,

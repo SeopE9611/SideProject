@@ -157,6 +157,27 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [loading, setLoading] = useState(true);
   const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then(async (r) => (r.status === 200 ? r.json() : null));
 
+  // 1) 브랜드 기준 1차
+  const { data: byBrand } = useSWR(`/api/products?brand=${encodeURIComponent(product.brand ?? '')}&limit=16&exclude=${product._id}`, fetcher, { revalidateOnFocus: false });
+
+  // 2) 재질 기준 2차 (1차가 빈 경우에만)
+  const { data: byMaterial } = useSWR(!byBrand?.products?.length && product.material ? `/api/products?material=${encodeURIComponent(product.material)}&limit=16&exclude=${product._id}` : null, fetcher, { revalidateOnFocus: false });
+
+  // 3) 전체 백업 3차 (1·2차 둘 다 빈 경우에만)
+  const { data: anyPool } = useSWR(!byBrand?.products?.length && !byMaterial?.products?.length ? `/api/products?limit=16&exclude=${product._id}` : null, fetcher, { revalidateOnFocus: false });
+
+  // 최종 풀 구성
+  const pool = (byBrand?.products?.length ? byBrand.products : byMaterial?.products?.length ? byMaterial.products : anyPool?.products) ?? [];
+
+  const relatedFiltered = useMemo(() => {
+    const base = pool.filter((p: any) => String(p._id) !== String(product._id));
+    const same = base.filter((p: any) => p.brand === product.brand || p.material === product.material);
+    return (same.length ? same : base).slice(0, 4);
+  }, [pool, product]);
+
+  // 로딩 상태(세 요청 모두 아직 없음)
+  const loadingRelated = !byBrand && !byMaterial && !anyPool;
+
   // 상품별 QnA 목록
   const { data: qnaData, error: qnaError, isLoading: qnaLoading } = useSWR(`/api/products/${product._id}/qna?page=1&limit=10`, fetcher, { revalidateOnFocus: false });
 
@@ -1192,49 +1213,52 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">관련 상품</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                {(product.relatedProducts?.length > 0
-                  ? product.relatedProducts
-                  : [
-                      {
-                        id: '1',
-                        name: 'Wilson Pro Staff String',
-                        price: 45000,
-                        image: '/placeholder.svg?height=200&width=200',
-                      },
-                      {
-                        id: '2',
-                        name: 'Babolat RPM Blast',
-                        price: 38000,
-                        image: '/placeholder.svg?height=200&width=200',
-                      },
-                      {
-                        id: '3',
-                        name: 'Luxilon ALU Power',
-                        price: 52000,
-                        image: '/placeholder.svg?height=200&width=200',
-                      },
-                      {
-                        id: '4',
-                        name: 'Head Hawk String',
-                        price: 41000,
-                        image: '/placeholder.svg?height=200&width=200',
-                      },
-                    ]
-                ).map((relatedProduct: any) => (
-                  <Link key={relatedProduct.id} href={`/products/${relatedProduct.id}`}>
-                    <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image src={relatedProduct.image || '/placeholder.svg?height=200&width=200&query=tennis string product'} alt={relatedProduct.name} fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+              {/* 4칸 고정: 상품이 부족하면 플레이스홀더로 채움 */}
+              {loadingRelated ? (
+                // 로딩 스켈레톤
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="rounded-xl p-4 bg-white/80 dark:bg-slate-800/80 shadow-sm">
+                      <div className="aspect-square rounded-lg bg-slate-100 dark:bg-slate-700 animate-pulse mb-3"></div>
+                      <div className="h-4 rounded bg-slate-100 dark:bg-slate-700 animate-pulse mb-2"></div>
+                      <div className="h-4 w-1/2 rounded bg-slate-100 dark:bg-slate-700 animate-pulse"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  {/* 실제 관련 상품 */}
+                  {relatedFiltered.map((rp: any) => (
+                    <Link key={rp._id} href={`/products/${rp._id}`}>
+                      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group border border-slate-200 dark:border-slate-700">
+                        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600">
+                          <img src={rp.images?.[0] || '/placeholder.svg'} alt={rp.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                        </div>
+                        <CardContent className="p-4">
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{rp.brand}</div>
+                          <div className="font-medium line-clamp-2 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{rp.name}</div>
+                          <div className="font-bold text-blue-600 dark:text-blue-400">{Number(rp.price).toLocaleString()}원</div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+
+                  {/* 플레이스홀더로 4칸 채우기 */}
+                  {Array.from({ length: Math.max(0, 4 - relatedFiltered.length) }).map((_, i) => (
+                    <div
+                      key={`rel-ph-${i}`}
+                      className="rounded-xl p-4 border-2 border-dashed border-slate-300/70 dark:border-slate-600/70
+                       bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700
+                       text-center flex flex-col"
+                    >
+                      <div className="aspect-square rounded-lg bg-slate-100 dark:bg-slate-700 mb-3 flex items-center justify-center">
+                        <span className="text-slate-400 dark:text-slate-500 text-sm">준비 중</span>
                       </div>
-                      <CardContent className="p-4">
-                        <div className="font-medium line-clamp-2 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{relatedProduct.name}</div>
-                        <div className="font-bold text-blue-600 dark:text-blue-400">{relatedProduct.price.toLocaleString()}원</div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">곧 업데이트됩니다</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
