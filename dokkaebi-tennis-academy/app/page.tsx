@@ -4,178 +4,49 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, ArrowRight, Play, Phone, MapPin, Target, Shield, Clock, Award, ChevronLeft, ChevronRight, Package } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-interface Product {
-  id: number;
+type ApiProduct = {
+  _id: string;
   name: string;
   price: number;
-  originalPrice?: number;
-  image: string;
-  brand: string;
-  rating: number;
-  reviews: number;
-  description: string;
-}
-
-interface StringProducts {
-  polyester: Product[];
-  hybrid: Product[];
-}
+  images?: string[];
+  brand?: string;
+  material?: 'polyester' | 'hybrid' | string;
+  inventory?: { isFeatured?: boolean };
+};
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState<keyof StringProducts>('polyester');
+  const [activeCategory, setActiveCategory] = useState<'polyester' | 'hybrid'>('polyester');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const stringProducts: StringProducts = {
-    polyester: [
-      {
-        id: 1,
-        name: '룩시론 프로 스트링',
-        price: 25000,
-        originalPrice: 30000,
-        image: '/tennis-string-luxilon-pro.png',
-        brand: '룩시론',
-        rating: 4.8,
-        reviews: 124,
-        description: '프로 선수들이 선택하는 최고급 폴리에스터 스트링',
-      },
-      {
-        id: 2,
-        name: '바볼랏 RPM 블라스트',
-        price: 30000,
-        originalPrice: 35000,
-        image: '/babolat-rpm-blast-tennis-string.png',
-        brand: '바볼랏',
-        rating: 4.7,
-        reviews: 156,
-        description: '강력한 스핀과 컨트롤을 제공하는 폴리에스터',
-      },
-      {
-        id: 3,
-        name: '소링코 투어 바이트',
-        price: 28000,
-        image: '/solinco-tour-bite-tennis-string.png',
-        brand: '소링코',
-        rating: 4.6,
-        reviews: 89,
-        description: '뛰어난 내구성과 파워를 자랑하는 폴리에스터',
-      },
-      {
-        id: 4,
-        name: '헤드 린스 투어',
-        price: 26000,
-        image: '/head-lynx-tour-tennis-string.png',
-        brand: '헤드',
-        rating: 4.5,
-        reviews: 67,
-        description: '부드러운 타구감의 프리미엄 폴리에스터',
-      },
-      {
-        id: 5,
-        name: '윌슨 폴리 프로',
-        price: 24000,
-        image: '/wilson-poly-pro-tennis-string.png',
-        brand: '윌슨',
-        rating: 4.4,
-        reviews: 45,
-        description: '가성비 뛰어난 폴리에스터 스트링',
-      },
-      {
-        id: 6,
-        name: '요넥스 폴리투어 프로',
-        price: 27000,
-        image: '/yonex-polytour-pro-tennis-string.png',
-        brand: '요넥스',
-        rating: 4.6,
-        reviews: 78,
-        description: '일본 기술력의 정밀한 폴리에스터',
-      },
-      {
-        id: 7,
-        name: '테크니파이버 블랙 코드',
-        price: 29000,
-        image: '/tecnifibre-black-code-tennis-string.png',
-        brand: '테크니파이버',
-        rating: 4.7,
-        reviews: 91,
-        description: '독특한 5각형 단면의 혁신적 스트링',
-      },
-    ],
-    hybrid: [
-      {
-        id: 8,
-        name: '룩시론 + 윌슨 NXT',
-        price: 35000,
-        originalPrice: 40000,
-        image: '/hybrid-luxilon-wilson-tennis-string.png',
-        brand: '하이브리드',
-        rating: 4.9,
-        reviews: 78,
-        description: '파워와 컨트롤의 완벽한 조합',
-      },
-      {
-        id: 9,
-        name: '바볼랏 + 테크니파이버',
-        price: 38000,
-        image: '/hybrid-babolat-tecnifibre-tennis-string.png',
-        brand: '하이브리드',
-        rating: 4.8,
-        reviews: 92,
-        description: '프로 선수들이 선호하는 하이브리드 세팅',
-      },
-      {
-        id: 10,
-        name: '소링코 + 헤드 멀티',
-        price: 32000,
-        image: '/hybrid-solinco-head-tennis-string.png',
-        brand: '하이브리드',
-        rating: 4.7,
-        reviews: 56,
-        description: '스핀과 편안함을 동시에 제공',
-      },
-      {
-        id: 11,
-        name: '윌슨 + 바볼랏 멀티',
-        price: 30000,
-        image: '/hybrid-wilson-babolat-tennis-string.png',
-        brand: '하이브리드',
-        rating: 4.6,
-        reviews: 34,
-        description: '초보자부터 중급자까지 추천',
-      },
-      {
-        id: 12,
-        name: '요넥스 + 테크니파이버',
-        price: 36000,
-        image: '/hybrid-yonex-tecnifibre-tennis-string.png',
-        brand: '하이브리드',
-        rating: 4.8,
-        reviews: 65,
-        description: '정밀함과 편안함의 조화',
-      },
-      {
-        id: 13,
-        name: '헤드 + 윌슨 멀티',
-        price: 31000,
-        image: '/hybrid-head-wilson-tennis-string.png',
-        brand: '하이브리드',
-        rating: 4.5,
-        reviews: 43,
-        description: '균형잡힌 성능의 하이브리드',
-      },
-      {
-        id: 14,
-        name: '바볼랏 + 윌슨 NXT',
-        price: 37000,
-        image: '/hybrid-babolat-wilson-tennis-string.png',
-        brand: '하이브리드',
-        rating: 4.7,
-        reviews: 58,
-        description: '클래식한 조합의 하이브리드 세팅',
-      },
-    ],
-  };
+  const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // 서버가 products 혹은 items 키로 내려와도 대응
+        const res = await fetch('/api/products?limit=48', { credentials: 'include' });
+        const json = await res.json();
+        const items: ApiProduct[] = json.products ?? json.items ?? [];
+        setAllProducts(items);
+      } catch {
+        setAllProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // 메인 노출 기준: inventory.isFeatured === true
+  const featured = useMemo(() => allProducts.filter((p) => p?.inventory?.isFeatured), [allProducts]);
+
+  const featuredPolyester = useMemo(() => featured.filter((p) => p.material === 'polyester'), [featured]);
+
+  const featuredHybrid = useMemo(() => featured.filter((p) => p.material === 'hybrid'), [featured]);
+
+  const displayList = activeCategory === 'polyester' ? featuredPolyester : featuredHybrid;
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -381,42 +252,65 @@ export default function Home() {
                 }
               `}</style>
               <div className="flex gap-6 pb-4" style={{ width: 'max-content' }}>
-                {stringProducts[activeCategory].map((product: Product, index: number) => (
-                  <Link
-                    key={product.id}
-                    href={`/products/${product.id}`}
-                    className="group block flex-none w-[320px] bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
-                  >
-                    {/* Product Image Placeholder */}
-                    <div className="relative mb-6 h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-xl flex items-center justify-center overflow-hidden">
-                      <div className="text-4xl font-bold text-slate-400 dark:text-slate-500">{product.brand.charAt(0)}</div>
-                      {product.originalPrice && <Badge className="absolute top-3 right-3 bg-red-500 text-white">할인</Badge>}
-                    </div>
+                {loading ? (
+                  // 스켈레톤 8개
+                  <div className="flex gap-6 pb-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="flex-none w-[320px] rounded-2xl border bg-white dark:bg-slate-800 p-6">
+                        <div className="mb-6 h-48 rounded-xl bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                        <div className="h-4 mb-2 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                        <div className="h-4 w-2/3 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex gap-6 pb-4" style={{ width: 'max-content' }}>
+                    {displayList.slice(0, 12).map((p) => (
+                      <Link
+                        key={p._id}
+                        href={`/products/${p._id}`}
+                        className="group block flex-none w-[320px] bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
+                      >
+                        {/* 이미지 */}
+                        <div className="relative mb-6 h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-xl overflow-hidden">
+                          {/* 실제 이미지가 있으면 표시 */}
+                          {p.images?.[0] ? (
+                            // next/image가 아니라면 img 사용 (현재 파일 구조 유지)
+                            <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="flex items-center justify-center h-full text-4xl font-bold text-slate-400 dark:text-slate-500">{(p.brand ?? 'D').charAt(0)}</div>
+                          )}
+                          {/* 필요 시 할인 뱃지 로직 추가 가능 */}
+                        </div>
 
-                    {/* Product Info */}
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{product.brand}</div>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span className="text-sm text-slate-600 dark:text-slate-300">{product.rating}</span>
+                        {/* 텍스트 */}
+                        <div className="space-y-4">
+                          <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
+                          <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">{p.name}</h3>
+                          <div className="flex items-center justify-between">
+                            <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{Number(p.price).toLocaleString()}원</div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+
+                    {/* 더보기 카드 */}
+                    <Link
+                      href="/products"
+                      className="group flex-none w-[320px] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border-2 border-dashed border-blue-300 dark:border-blue-600 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 flex items-center justify-center"
+                    >
+                      <div className="text-center space-y-4">
+                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
+                          <ArrowRight className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="space-y-2">
+                          <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">더 많은 상품</h3>
+                          <p className="text-sm text-blue-600 dark:text-blue-300">전체 스트링 컬렉션 보기</p>
                         </div>
                       </div>
-
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">{product.name}</h3>
-
-                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{product.description}</p>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{product.price.toLocaleString()}원</div>
-                          {product.originalPrice && <div className="text-sm text-slate-400 line-through">{product.originalPrice.toLocaleString()}원</div>}
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">{product.reviews}개 리뷰</div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  </div>
+                )}
 
                 <Link
                   href="/products"
