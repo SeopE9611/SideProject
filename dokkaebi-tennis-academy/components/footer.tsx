@@ -9,6 +9,7 @@ const Footer = () => {
     // { name: '아카데미 신청', href: '/academy' },
     { name: '패키지', href: '/services/packages' },
     { name: '주문 조회', href: '/order-lookup' },
+    { name: '오프라인 매장 찾기', href: '/services/locations' },
   ];
 
   const customerService = [
