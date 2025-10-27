@@ -12,6 +12,9 @@ import { useCartStore } from '@/app/store/cartStore';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+// 재질 카테고리(스트링 타입) 노출 여부
+const SHOW_MATERIAL_MENU = false;
+
 const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
@@ -445,7 +448,7 @@ const Header = () => {
                                 </div>
                               </div>
                             ) : (
-                              <div className="grid grid-cols-4 gap-6">
+                              <div className={`grid ${SHOW_MATERIAL_MENU ? 'grid-cols-4' : 'grid-cols-3'} gap-6`}>
                                 <div>
                                   <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">브랜드</h3>
                                   <nav>
@@ -464,24 +467,26 @@ const Header = () => {
                                     </ul>
                                   </nav>
                                 </div>
-                                <div>
-                                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">스트링 재질 카테고리</h3>
-                                  <nav>
-                                    <ul className="space-y-2" role="menu">
-                                      {stringTypes.map((type) => (
-                                        <li key={type.name} role="none">
-                                          <Link
-                                            href={type.href}
-                                            className="text-sm text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white transition-colors focus-visible:ring-2 ring-blue-500 rounded px-1 py-0.5 block"
-                                            role="menuitem"
-                                          >
-                                            {type.name}
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </nav>
-                                </div>
+                                {SHOW_MATERIAL_MENU && (
+                                  <div>
+                                    <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">스트링 재질 카테고리</h3>
+                                    <nav>
+                                      <ul className="space-y-2" role="menu">
+                                        {stringTypes.map((type) => (
+                                          <li key={type.name} role="none">
+                                            <Link
+                                              href={type.href}
+                                              className="text-sm text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white transition-colors focus-visible:ring-2 ring-blue-500 rounded px-1 py-0.5 block"
+                                              role="menuitem"
+                                            >
+                                              {type.name}
+                                            </Link>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </nav>
+                                  </div>
+                                )}
                                 <div>
                                   <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">추천/탐색</h3>
                                   <nav>
@@ -669,21 +674,25 @@ const Header = () => {
                               </Button>
                             ))}
 
-                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">스트링 재질 카테고리</div>
-                            {stringTypes.map((type) => (
-                              <Button
-                                key={type.name}
-                                variant="ghost"
-                                size="sm"
-                                className="justify-start text-xs w-full text-left text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white rounded-lg py-2 focus-visible:ring-2 ring-blue-500"
-                                onClick={() => {
-                                  setOpen(false);
-                                  router.push(type.href);
-                                }}
-                              >
-                                {type.name}
-                              </Button>
-                            ))}
+                            {SHOW_MATERIAL_MENU && (
+                              <>
+                                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">스트링 재질 카테고리</div>
+                                {stringTypes.map((type) => (
+                                  <Button
+                                    key={type.name}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="justify-start text-xs w-full text-left text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white rounded-lg py-2 focus-visible:ring-2 ring-blue-500"
+                                    onClick={() => {
+                                      setOpen(false);
+                                      router.push(type.href);
+                                    }}
+                                  >
+                                    {type.name}
+                                  </Button>
+                                ))}
+                              </>
+                            )}
                             <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 mt-3">추천/탐색</div>
                             {recommendedLinks.map((link) => (
                               <Button
