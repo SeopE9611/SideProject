@@ -27,18 +27,14 @@ import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
 
 // 브랜드 목록
 const brands = [
-  { id: 'luxilon', name: '룩시론' },
+  { id: 'luxilon', name: '럭실론' },
   { id: 'technifibre', name: '테크니파이버' },
   { id: 'wilson', name: '윌슨' },
   { id: 'babolat', name: '바볼랏' },
   { id: 'head', name: '헤드' },
   { id: 'yonex', name: '요넥스' },
-  { id: 'solinco', name: '소링크' },
+  { id: 'solinco', name: '솔린코' },
   { id: 'dunlop', name: '던롭' },
-  { id: 'gamma', name: '감마' },
-  { id: 'prince', name: '프린스' },
-  { id: 'kirschbaum', name: '키르쉬바움' },
-  { id: 'gosen', name: '고센' },
 ];
 
 // 게이지 옵션

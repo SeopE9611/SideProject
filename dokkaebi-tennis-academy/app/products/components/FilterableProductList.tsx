@@ -13,18 +13,14 @@ import ProductCard from '@/app/products/components/ProductCard';
 
 // 브랜드 리스트
 const brands = [
-  { label: '룩시론', value: 'luxilon' },
+  { label: '럭실론', value: 'luxilon' },
   { label: '테크니파이버', value: 'technifibre' },
   { label: '윌슨', value: 'wilson' },
   { label: '바볼랏', value: 'babolat' },
   { label: '헤드', value: 'head' },
   { label: '요넥스', value: 'yonex' },
-  { label: '소링크', value: 'solinco' },
+  { label: '솔린코', value: 'solinco' },
   { label: '던롭', value: 'dunlop' },
-  { label: '감마', value: 'gamma' },
-  { label: '프린스', value: 'prince' },
-  { label: '키르쉬바움', value: 'kirschbaum' },
-  { label: '고센', value: 'gosen' },
 ];
 
 // 브랜드 라벨 매핑 (소문자 key)
@@ -109,8 +105,12 @@ export default function FilterableProductList() {
     }
 
     // 뒤로/앞으로 등 URL 변화 동기화 (필터 관련만, 검색은 submittedQuery 기준)
+
     const brand = searchParams.get('brand');
     if ((brand || null) !== selectedBrand) setSelectedBrand(brand || null);
+
+    const material = searchParams.get('material');
+    if ((material || null) !== selectedMaterial) setSelectedMaterial(material || null);
 
     const bounce = searchParams.get('power');
     const bounceVal = bounce ? Number(bounce) : null;
@@ -188,6 +188,7 @@ export default function FilterableProductList() {
   const handleResetAll = useCallback(() => {
     setResetKey((k) => k + 1);
     setSelectedBrand(null);
+    setSelectedMaterial(null);
     setSelectedBounce(null);
     setSelectedDurability(null);
     setSelectedSpin(null);
@@ -207,7 +208,7 @@ export default function FilterableProductList() {
 
   // active filter 개수 계산
   const priceChanged = priceRange[0] > 0 || priceRange[1] < 50000;
-  const activeFiltersCount = [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, priceChanged].filter(Boolean).length;
+  const activeFiltersCount = [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, priceChanged].filter(Boolean).length;
 
   // 상태 -> URL 반영 (검색어는 submittedQuery만)
   useEffect(() => {
@@ -215,6 +216,7 @@ export default function FilterableProductList() {
 
     const params = new URLSearchParams();
     if (selectedBrand) params.set('brand', selectedBrand);
+    if (selectedMaterial) params.set('material', selectedMaterial);
     if (selectedBounce !== null) params.set('power', String(selectedBounce));
     if (selectedControl !== null) params.set('control', String(selectedControl));
     if (selectedSpin !== null) params.set('spin', String(selectedSpin));

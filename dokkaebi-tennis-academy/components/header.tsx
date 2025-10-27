@@ -73,6 +73,17 @@ const Header = () => {
     { name: '게시판', href: '/board', hasMegaMenu: true, isBoardMenu: true },
   ];
 
+  const brandLinks = [
+    { name: '윌슨', href: '/products?brand=wilson' },
+    { name: '바볼랏', href: '/products?brand=babolat' },
+    { name: '룩실론', href: '/products?brand=luxilon' },
+    { name: '요넥스', href: '/products?brand=yonex' },
+    { name: '헤드', href: '/products?brand=head' },
+    { name: '테크니파이버', href: '/products?brand=tecnifibre' },
+    { name: '솔린코', href: '/products?brand=solinco' },
+    { name: '프린스', href: '/products?brand=prince' },
+  ];
+
   const stringTypes = [
     { name: '폴리에스터', href: '/products?material=polyester' },
     { name: '하이브리드', href: '/products?material=hybrid' },
@@ -434,7 +445,25 @@ const Header = () => {
                                 </div>
                               </div>
                             ) : (
-                              <div className="grid grid-cols-3 gap-6">
+                              <div className="grid grid-cols-4 gap-6">
+                                <div>
+                                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">브랜드</h3>
+                                  <nav>
+                                    <ul className="space-y-2" role="menu">
+                                      {brandLinks.map((brand) => (
+                                        <li key={brand.name} role="none">
+                                          <Link
+                                            href={brand.href}
+                                            className="text-sm text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white transition-colors focus-visible:ring-2 ring-blue-500 rounded px-1 py-0.5 block"
+                                            role="menuitem"
+                                          >
+                                            {brand.name}
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </nav>
+                                </div>
                                 <div>
                                   <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">스트링 재질 카테고리</h3>
                                   <nav>
@@ -624,6 +653,22 @@ const Header = () => {
 
                         {item.hasMegaMenu && !item.isBoardMenu && !item.isPackageMenu && (
                           <div className="ml-4 mt-2 space-y-1">
+                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 mt-3">브랜드</div>
+                            {brandLinks.map((l) => (
+                              <Button
+                                key={l.name}
+                                variant="ghost"
+                                size="sm"
+                                className="justify-start text-xs w-full text-left text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white rounded-lg py-2 focus-visible:ring-2 ring-blue-500"
+                                onClick={() => {
+                                  setOpen(false);
+                                  router.push(l.href);
+                                }}
+                              >
+                                {l.name}
+                              </Button>
+                            ))}
+
                             <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">스트링 재질 카테고리</div>
                             {stringTypes.map((type) => (
                               <Button

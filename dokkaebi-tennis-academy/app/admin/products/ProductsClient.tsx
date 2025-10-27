@@ -59,14 +59,10 @@ const BRAND_OPTIONS = [
   { id: 'wilson', label: '윌슨' },
   { id: 'head', label: '헤드' },
   { id: 'yonex', label: '요넥스' },
-  { id: 'luxilon', label: '룩시론' },
+  { id: 'luxilon', label: '럭실론' },
   { id: 'technifibre', label: '테크니파이버' },
   { id: 'solinco', label: '솔린코' },
   { id: 'dunlop', label: '던롭' },
-  { id: 'gamma', label: '감마' },
-  { id: 'prince', label: '프린스' },
-  { id: 'kirschbaum', label: '키르쉬바움' },
-  { id: 'gosen', label: '고센' },
 ] as const;
 
 const MATERIAL_OPTIONS = [

@@ -16,14 +16,10 @@ const BRAND_LABEL: Record<string, string> = {
   wilson: '윌슨',
   head: '헤드',
   yonex: '요넥스',
-  luxilon: '룩시론',
+  luxilon: '럭실론',
   technifibre: '테크니파이버',
   solinco: '솔린코',
   dunlop: '던롭',
-  gamma: '감마',
-  prince: '프린스',
-  kirschbaum: '키르쉬바움',
-  gosen: '고센',
 };
 
 export default function BrandFilter({ value, onChange, options }: Props) {

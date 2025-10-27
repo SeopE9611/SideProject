@@ -27,18 +27,14 @@ import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusCol
 export default function ProductDetailClient({ product }: { product: any }) {
   // ====== 사양/브랜드/색상/게이지 매핑 ======
   const BRAND_MAP: Record<string, string> = {
-    luxilon: '룩시론',
+    luxilon: '럭실론',
     technifibre: '테크니파이버',
     wilson: '윌슨',
     babolat: '바볼랏',
     head: '헤드',
     yonex: '요넥스',
-    solinco: '소링크',
+    solinco: '솔린코',
     dunlop: '던롭',
-    gamma: '감마',
-    prince: '프린스',
-    kirschbaum: '키르쉬바움',
-    gosen: '고센',
   };
 
   const MATERIAL_MAP: Record<string, string> = {
