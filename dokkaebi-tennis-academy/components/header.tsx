@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Menu, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Menu, ChevronDown, ChevronRight } from 'lucide-react';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -14,6 +15,30 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // 재질 카테고리(스트링 타입) 노출 여부
 const SHOW_MATERIAL_MENU = false;
+
+// 보조 컴포넌트 MobileBrandGrid
+function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: string }[]; onPick: (href: string) => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const VISIBLE = 6;
+  const list = expanded ? brands : brands.slice(0, VISIBLE);
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        {list.map((b) => (
+          <Button key={b.name} variant="outline" className="h-9 justify-center rounded-lg border-slate-200 dark:border-slate-700 text-sm" onClick={() => onPick(b.href)}>
+            {b.name}
+          </Button>
+        ))}
+      </div>
+      {brands.length > VISIBLE && (
+        <Button variant="ghost" size="sm" className="w-full justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white" onClick={() => setExpanded((v) => !v)}>
+          {expanded ? '접기' : '더보기'}
+        </Button>
+      )}
+    </div>
+  );
+}
 
 const Header = () => {
   const router = useRouter();
@@ -657,76 +682,79 @@ const Header = () => {
                         )}
 
                         {item.hasMegaMenu && !item.isBoardMenu && !item.isPackageMenu && (
-                          <div className="ml-4 mt-2 space-y-1">
-                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 mt-3">브랜드</div>
-                            {brandLinks.map((l) => (
-                              <Button
-                                key={l.name}
-                                variant="ghost"
-                                size="sm"
-                                className="justify-start text-xs w-full text-left text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white rounded-lg py-2 focus-visible:ring-2 ring-blue-500"
-                                onClick={() => {
-                                  setOpen(false);
-                                  router.push(l.href);
-                                }}
-                              >
-                                {l.name}
-                              </Button>
-                            ))}
-
-                            {SHOW_MATERIAL_MENU && (
-                              <>
-                                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">스트링 재질 카테고리</div>
-                                {stringTypes.map((type) => (
-                                  <Button
-                                    key={type.name}
-                                    variant="ghost"
-                                    size="sm"
-                                    className="justify-start text-xs w-full text-left text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white rounded-lg py-2 focus-visible:ring-2 ring-blue-500"
-                                    onClick={() => {
+                          <div className="ml-2 mt-2">
+                            <Accordion type="multiple" defaultValue={['brand']} className="w-full">
+                              <AccordionItem value="brand">
+                                <AccordionTrigger value="brand" className="text-sm font-semibold">
+                                  브랜드
+                                </AccordionTrigger>
+                                <AccordionContent value="brand">
+                                  <MobileBrandGrid
+                                    brands={brandLinks}
+                                    onPick={(href) => {
                                       setOpen(false);
-                                      router.push(type.href);
+                                      router.push(href);
                                     }}
-                                  >
-                                    {type.name}
-                                  </Button>
-                                ))}
-                              </>
-                            )}
-                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 mt-3">추천/탐색</div>
-                            {recommendedLinks.map((link) => (
-                              <Button
-                                key={link.name}
-                                variant="ghost"
-                                size="sm"
-                                className="justify-start text-xs w-full text-left text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white rounded-lg py-2 focus-visible:ring-2 ring-blue-500"
-                                onClick={() => {
-                                  setOpen(false);
-                                  router.push(link.href);
-                                }}
-                              >
-                                {link.name}
-                              </Button>
-                            ))}
-                            <div className="border-t border-slate-200 dark:border-slate-700 my-2 pt-2">
-                              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">장착 연동</div>
-                              {serviceLinks.map((service) => (
-                                <Button
-                                  key={service.name}
-                                  variant="ghost"
-                                  size="sm"
-                                  className={`justify-start text-xs w-full text-left rounded-lg py-2 focus-visible:ring-2 ring-blue-500 ${
-                                    service.isHighlight ? 'text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300' : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white'
-                                  }`}
-                                  onClick={() => {
-                                    setOpen(false);
-                                    router.push(service.href);
-                                  }}
-                                >
-                                  {service.name}
-                                </Button>
-                              ))}
-                            </div>
+                                  />
+                                </AccordionContent>
+                              </AccordionItem>
+
+                              {/* 추천/탐색 */}
+                              <AccordionItem value="discover">
+                                <AccordionTrigger value="discover" className="text-sm font-semibold">
+                                  추천/탐색
+                                </AccordionTrigger>
+                                <AccordionContent value="discover">
+                                  <ul className="grid grid-cols-1 gap-1">
+                                    {recommendedLinks.map((link) => (
+                                      <li key={link.name}>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="w-full justify-between rounded-lg py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
+                                          onClick={() => {
+                                            setOpen(false);
+                                            router.push(link.href);
+                                          }}
+                                        >
+                                          {link.name}
+                                          <ChevronRight className="h-4 w-4 opacity-60" />
+                                        </Button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </AccordionContent>
+                              </AccordionItem>
+
+                              {/* 장착 연동 */}
+                              <AccordionItem value="service">
+                                <AccordionTrigger value="service" className="text-sm font-semibold">
+                                  장착 연동
+                                </AccordionTrigger>
+                                <AccordionContent value="service">
+                                  <ul className="grid grid-cols-1 gap-1">
+                                    {serviceLinks.map((service) => (
+                                      <li key={service.name}>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className={`w-full justify-between rounded-lg py-2 text-sm focus-visible:ring-2 ring-blue-500 ${
+                                            service.isHighlight ? 'text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300' : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white'
+                                          }`}
+                                          onClick={() => {
+                                            setOpen(false);
+                                            router.push(service.href);
+                                          }}
+                                        >
+                                          {service.name}
+                                          <ChevronRight className="h-4 w-4 opacity-60" />
+                                        </Button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
                           </div>
                         )}
 
