@@ -29,7 +29,13 @@ const brandLabelMap: Record<string, string> = Object.fromEntries(brands.map(({ v
 /**
  * 필터 가능한 상품 리스트 (infinite scroll 포함)
  */
-export default function FilterableProductList() {
+
+type Props = {
+  initialBrand?: string | null;
+  initialMaterial?: string | null;
+};
+
+export default function FilterableProductList({ initialBrand = null, initialMaterial = null }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -39,8 +45,8 @@ export default function FilterableProductList() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // 필터 상태들
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
-  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null); // ⬅ 추가
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(initialBrand);
+  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(initialMaterial);
   const [selectedBounce, setSelectedBounce] = useState<number | null>(null);
   const [selectedDurability, setSelectedDurability] = useState<number | null>(null);
   const [selectedSpin, setSelectedSpin] = useState<number | null>(null);
@@ -233,7 +239,7 @@ export default function FilterableProductList() {
     lastSerializedRef.current = newSearch;
 
     router.replace(`${pathname}?${newSearch}`, { scroll: false });
-  }, [selectedBrand, selectedBounce, selectedDurability, selectedSpin, selectedControl, submittedQuery, sortOption, viewMode, priceRange, router, pathname]);
+  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, submittedQuery, sortOption, viewMode, priceRange, router, pathname]);
 
   // infinite scroll 관찰자
   const observerRef = useRef<IntersectionObserver | null>(null);

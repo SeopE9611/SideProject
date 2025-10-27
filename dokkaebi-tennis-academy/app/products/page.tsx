@@ -1,26 +1,9 @@
-import clientPromise from '@/lib/mongodb';
 import FilterableProductList from '@/app/products/components/FilterableProductList';
 import { Suspense } from 'react';
 
-export default async function ProductsPage() {
-  type Product = {
-    _id: string;
-    name: string;
-    brand: string;
-    price: number;
-    images?: string[];
-    features?: Record<string, number>;
-    isNew?: boolean;
-  };
-
-  const client = await clientPromise;
-  const db = client.db();
-
-  // 런타임에 타입 변환 (ObjectId -> string)
-  const products = (await db.collection('products').find({}).toArray()).map((product) => ({
-    ...product,
-    _id: product._id.toString(),
-  })) as Product[];
+export default function ProductsPage({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
+  const initialBrand = typeof searchParams?.brand === 'string' ? searchParams.brand : null;
+  const initialMaterial = typeof searchParams?.material === 'string' ? searchParams.material : null;
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
@@ -69,7 +52,7 @@ export default async function ProductsPage() {
 
       <div className="container mx-auto px-4 md:px-6 py-8 md:py-12">
         <Suspense>
-          <FilterableProductList />
+          <FilterableProductList initialBrand={initialBrand} initialMaterial={initialMaterial} />
         </Suspense>
       </div>
     </div>
