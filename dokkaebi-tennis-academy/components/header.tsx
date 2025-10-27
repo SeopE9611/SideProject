@@ -74,8 +74,11 @@ const Header = () => {
   ];
 
   const stringTypes = [
-    { name: '폴리에스터', href: '/products/strings/polyester' },
-    { name: '하이브리드', href: '/products/strings/hybrid' },
+    { name: '폴리에스터', href: '/products?material=polyester' },
+    { name: '하이브리드', href: '/products?material=hybrid' },
+    { name: '멀티필라멘트', href: '/products?material=multifilament' },
+    { name: '천연 거트', href: '/products?material=natural_gut' },
+    { name: '합성 거트', href: '/products?material=synthetic_gut' },
   ];
 
   const recommendedLinks = [
@@ -433,7 +436,7 @@ const Header = () => {
                             ) : (
                               <div className="grid grid-cols-3 gap-6">
                                 <div>
-                                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">스트링 카테고리</h3>
+                                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">스트링 재질 카테고리</h3>
                                   <nav>
                                     <ul className="space-y-2" role="menu">
                                       {stringTypes.map((type) => (
@@ -621,7 +624,7 @@ const Header = () => {
 
                         {item.hasMegaMenu && !item.isBoardMenu && !item.isPackageMenu && (
                           <div className="ml-4 mt-2 space-y-1">
-                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">스트링 카테고리</div>
+                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">스트링 재질 카테고리</div>
                             {stringTypes.map((type) => (
                               <Button
                                 key={type.name}

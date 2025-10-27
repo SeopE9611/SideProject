@@ -44,6 +44,7 @@ export default function FilterableProductList() {
 
   // 필터 상태들
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null); // ⬅ 추가
   const [selectedBounce, setSelectedBounce] = useState<number | null>(null);
   const [selectedDurability, setSelectedDurability] = useState<number | null>(null);
   const [selectedSpin, setSelectedSpin] = useState<number | null>(null);
@@ -70,6 +71,9 @@ export default function FilterableProductList() {
     if (isInitializingRef.current) {
       const brand = searchParams.get('brand');
       setSelectedBrand(brand || null);
+
+      const material = searchParams.get('material');
+      if (material && material !== selectedMaterial) setSelectedMaterial(material);
 
       const bounce = searchParams.get('power');
       setSelectedBounce(bounce ? Number(bounce) : null);
@@ -152,6 +156,7 @@ export default function FilterableProductList() {
     reset: resetInfinite,
   } = useInfiniteProducts({
     brand: selectedBrand ?? undefined,
+    material: selectedMaterial ?? undefined,
     power: selectedBounce ?? undefined,
     control: selectedControl ?? undefined,
     spin: selectedSpin ?? undefined,
@@ -252,6 +257,8 @@ export default function FilterableProductList() {
           <FilterPanel
             selectedBrand={selectedBrand}
             setSelectedBrand={setSelectedBrand}
+            selectedMaterial={selectedMaterial}
+            setSelectedMaterial={setSelectedMaterial}
             selectedBounce={selectedBounce}
             setSelectedBounce={setSelectedBounce}
             selectedControl={selectedControl}

@@ -12,6 +12,7 @@ type Product = {
 
 type Filters = {
   brand?: string | null;
+  material?: string | null;
   power?: number | null;
   control?: number | null;
   spin?: number | null;
@@ -37,6 +38,7 @@ type ResponseShape = {
 function buildQueryString(filters: Filters, page: number) {
   const params = new URLSearchParams();
   if (filters.brand) params.set('brand', filters.brand);
+  if (filters.material) params.set('material', filters.material);
   if (filters.power !== null && filters.power !== undefined) params.set('power', String(filters.power));
   if (filters.control !== null && filters.control !== undefined) params.set('control', String(filters.control));
   if (filters.spin !== null && filters.spin !== undefined) params.set('spin', String(filters.spin));

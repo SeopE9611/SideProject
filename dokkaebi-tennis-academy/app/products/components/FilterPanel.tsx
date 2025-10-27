@@ -20,6 +20,8 @@ type PerformanceFilterConfig = {
 type Props = {
   selectedBrand: string | null;
   setSelectedBrand: (v: string | null) => void;
+  selectedMaterial: string | null;
+  setSelectedMaterial: (v: string | null) => void;
   selectedBounce: number | null;
   setSelectedBounce: (v: number | null) => void;
   selectedControl: number | null;
@@ -50,6 +52,8 @@ type Props = {
 export const FilterPanel = React.memo(function FilterPanel({
   selectedBrand,
   setSelectedBrand,
+  selectedMaterial,
+  setSelectedMaterial,
   selectedBounce,
   setSelectedBounce,
   selectedControl,
@@ -181,6 +185,24 @@ export const FilterPanel = React.memo(function FilterPanel({
                     {b.label}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 재질 */}
+          <div className="space-y-1.5 mb-6">
+            <Label>재질</Label>
+            <Select value={selectedMaterial ?? 'all'} onValueChange={(v) => setSelectedMaterial(v === 'all' ? null : v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="전체" />
+              </SelectTrigger>
+              <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="polyester">폴리에스터</SelectItem>
+                <SelectItem value="hybrid">하이브리드</SelectItem>
+                <SelectItem value="multifilament">멀티필라멘트</SelectItem>
+                <SelectItem value="natural_gut">천연 거트</SelectItem>
+                <SelectItem value="synthetic_gut">합성 거트</SelectItem>
               </SelectContent>
             </Select>
           </div>
