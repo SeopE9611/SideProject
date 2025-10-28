@@ -13,21 +13,24 @@ export default function AuthGatePage() {
   const [msg, setMsg] = useState<string | null>(null);
 
   const onSubmit = async (e: React.FormEvent) => {
+    console.log('submit start');
     e.preventDefault();
     setLoading(true);
     setMsg(null);
     try {
+      console.log('before fetch');
       const res = await fetch('/api/auth', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
         credentials: 'include',
+        cache: 'no-store',
         body: JSON.stringify({ password: pw }),
       });
       const data = await res.json();
       if (!res.ok) {
         setMsg(data?.message || '인증에 실패했습니다.');
       } else {
-        router.replace(redirect);
+        window.location.replace(redirect || '/');
       }
     } catch {
       setMsg('네트워크 오류가 발생했습니다.');
