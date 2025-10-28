@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       sameSite: 'lax',
       secure: isProd, // 로컬 false, 배포 true
       path: '/',
-      maxAge: 60 * 60 * 12, // 12h
+      maxAge: 60 * 60 * 12,
     });
 
     return res;

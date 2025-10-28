@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -11,19 +10,13 @@ function getOrCreateReqId(req: NextRequest) {
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // 정적 파일/내부 파일
+  if (pathname.startsWith('/api')) return NextResponse.next();
+
   const isStatic =
     pathname.startsWith('/_next') || pathname.startsWith('/favicon') || pathname.startsWith('/robots.txt') || pathname.startsWith('/sitemap.xml') || pathname.startsWith('/images') || pathname.startsWith('/fonts') || /\.(.*)$/.test(pathname);
 
-  // ✅ 인증 페이지는 예외
   const isAuthPage = pathname.startsWith('/auth');
 
-  // ✅ /api는 전부 제외(여기서 끝) — /api/auth가 절대 막히지 않도록
-  if (pathname.startsWith('/api')) {
-    return NextResponse.next();
-  }
-
-  // ✅ 개발자 게이트: dkb_auth 없으면 /auth로 redirect
   const authed = req.cookies.get('dkb_auth')?.value === '1';
   if (!authed && !isStatic && !isAuthPage) {
     const url = req.nextUrl.clone();
@@ -32,14 +25,13 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // (기존 요청ID 전파/기타 로직 유지)
   const reqId = getOrCreateReqId(req);
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-request-id', reqId);
 
   const res = NextResponse.next({ request: { headers: requestHeaders } });
   res.headers.set('x-request-id', reqId);
-  res.headers.set('x-robots-tag', 'noindex, nofollow');
+  res.headers.set('x-robots-tag', 'noindex, nofollow'); // 개발기간 크롤러 차단
   return res;
 }
 
