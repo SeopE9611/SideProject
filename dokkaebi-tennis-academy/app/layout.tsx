@@ -16,6 +16,7 @@ import GlobalTokenGuard from '@/components/system/GlobalTokenGuard';
 import TokenRefresher from '@/components/system/TokenRefresher';
 import SessionWatcher from '@/components/system/SessionWatcher';
 import ClaimsAutoLinker from '@/components/system/ClaimsAutoLinker';
+import SideMenu from '@/components/nav/SideMenu';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -64,7 +65,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           {/* 클라이언트에게 accessToken 전달 */}
           <div className="flex min-h-screen flex-col">
             <Header />
-            <main className="flex-1">{children}</main>
+            {/* 데스크탑 전용 좌측 사이드 메뉴(고정) */}
+            <SideMenu />
+            {/* 사이드 너비만큼 패딩을 줘서 겹침 방지 */}
+            <main className="flex-1 md:pl-60 lg:pl-64">{children}</main>
             <Footer />
           </div>
           <Toaster />

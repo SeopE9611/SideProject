@@ -366,7 +366,7 @@ const Header = () => {
             </Link>
 
             {/* 메인 내비 (PC) */}
-            <nav className="hidden lg:flex overflow-visible" role="navigation" aria-label="주요 메뉴">
+            <nav className="hidden" role="navigation" aria-label="주요 메뉴">
               <ul className="flex items-center gap-5 2xl:gap-7 overflow-visible">
                 {menuItems.map((item) => (
                   <li key={item.name} className="relative overflow-visible">
