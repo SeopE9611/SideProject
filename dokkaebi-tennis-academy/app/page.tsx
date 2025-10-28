@@ -86,7 +86,7 @@ export default function Home() {
           <div className="w-full h-full bg-[linear-gradient(0deg,transparent_24%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_26%,transparent_27%,transparent_74%,rgba(255,255,255,0.1)_75%,rgba(255,255,255,0.1)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_26%,transparent_27%,transparent_74%,rgba(255,255,255,0.1)_75%,rgba(255,255,255,0.1)_76%,transparent_77%,transparent)] bg-[size:20px_20px]"></div>
         </div>
 
-        <div className="relative z-10 text-center max-w-6xl mx-auto px-4">
+        {/* <div className="relative z-10 text-center max-w-6xl mx-auto px-4">
           <div className="space-y-8 mb-12">
             <div className="relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
@@ -131,7 +131,7 @@ export default function Home() {
               </Link>
             </Button>
           </div>
-        </div>
+        </div> */}
 
         <div className="absolute top-20 left-20 w-3 h-3 bg-yellow-400 rounded-full animate-bounce opacity-60"></div>
         <div className="absolute top-40 right-32 w-2 h-2 bg-yellow-400 rounded-full animate-pulse opacity-40"></div>
@@ -286,7 +286,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 bg-white dark:bg-slate-800 relative">
+      {/* <section className="py-20 bg-white dark:bg-slate-800 relative">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center mb-16">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent to-slate-300 dark:to-slate-600"></div>
@@ -319,19 +319,18 @@ export default function Home() {
                 color: 'purple',
                 detail: '주문 후 24시간 내 빠른 배송으로 만족도를 높입니다',
               },
-              // {
-              //   icon: Star,
-              //   title: '고객 만족',
-              //   description: '4.9/5 평점',
-              //   color: 'blue',
-              //   detail: '5,000명 이상의 고객이 인정한 최고의 서비스',
-              // },
+              {
+                icon: Star,
+                title: '고객 만족',
+                description: '4.9/5 평점',
+                color: 'blue',
+                detail: '5,000명 이상의 고객이 인정한 최고의 서비스',
+              },
             ].map((feature, index) => (
               <div
                 key={index}
                 className="group relative text-center p-8 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-300 hover:shadow-lg"
               >
-                {/* Court corner inspired decoration */}
                 <div className="absolute top-4 left-4 w-6 h-6 border-l-2 border-t-2 border-slate-300 dark:border-slate-500 group-hover:border-blue-400 transition-colors duration-300"></div>
                 <div className="absolute bottom-4 right-4 w-6 h-6 border-r-2 border-b-2 border-slate-300 dark:border-slate-500 group-hover:border-blue-400 transition-colors duration-300"></div>
 
@@ -347,7 +346,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* 추천 섹션 */}
       {/* <section className="py-20 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
