@@ -375,12 +375,12 @@ const Header = () => {
             willChange: 'transform',
           }}
         >
-          {/* ✅ 하나의 수평 그리드로: 로고(좌) / 검색(가운데) / 아이콘(우) */}
+          {/* 하나의 수평 그리드로: 로고(좌) / 검색(가운데) / 아이콘(우) */}
           <div className="flex items-center justify-between w-full gap-3 lg:gap-6">
             {/* 1) 로고 (좌) */}
             <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈">
               <div className="font-black text-lg lg:text-xl tracking-[-0.01em] whitespace-nowrap text-slate-900 dark:text-white">도깨비 테니스</div>
-              <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">PROFESSIONAL STRING SHOP</div>
+              <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
             </Link>
 
             {/* 2) 검색 (가운데, PC 전용 & flex-1로 가변폭) */}
@@ -439,7 +439,7 @@ const Header = () => {
                 <div className="shrink-0 p-6 pb-3 border-b border-slate-200 dark:border-slate-800">
                   <Link href="/" className="flex flex-col" aria-label="도깨비 테니스 홈">
                     <div className="font-bold whitespace-nowrap text-slate-900 dark:text-white">도깨비 테니스</div>
-                    <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">PROFESSIONAL STRING SHOP</div>
+                    <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
                   </Link>
                   <div className="mt-4">
                     <SearchPreview placeholder="스트링 검색..." className="w-full" />
