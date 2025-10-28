@@ -20,26 +20,26 @@ type ApiProduct = {
 const SLIDES = [
   {
     img: 'https://www.nexentire.com/webzine/201803/kr/assets/images/contents/009_01.png',
-    alt: '테니스 라켓과 코트',
-    href: '/products?tag=event',
+    alt: '이벤트',
+    href: '/board/notice',
     caption: '신규 입고 & 이벤트',
   },
   {
     img: 'https://media.istockphoto.com/id/610007642/photo/detail-of-tennis-racket-in-the-stringing-machine.jpg?s=612x612&w=0&k=20&c=AFlkWluNV3MciJWcOrFwQABV6xLGXSAbFic5hZ6ixdM=',
-    alt: '테니스 공',
+    alt: '서비스',
     href: '/services',
     caption: '장착 서비스 예약',
   },
   {
     img: 'https://media.babolat.com/image/upload/f_auto,q_auto,c_scale,w_692,h_364/v1738055514/Web_content/Tennis/Secondary/2025/Pure-Drive/bags_692x364.png',
-    alt: '테니스 코트 전경',
+    alt: '패키지',
     href: '/services/packages',
-    caption: '패키지 할인',
+    caption: '스트링 패키지',
   },
   {
     img: 'https://nickrivettsport.co.uk/cdn/shop/products/image_fe9519a6-64c4-4fe8-8bfb-e99e9a5f8e60.jpg?v=1633608123&width=1445',
     alt: '라켓과 스트링 디테일',
-    href: '/products?filter=featured',
+    href: '/products',
     caption: '추천 스트링',
   },
 ];
