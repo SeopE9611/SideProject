@@ -43,7 +43,6 @@ export function middleware(req: NextRequest) {
   return res;
 }
 
-// ✅ 매처는 안전한 기본형으로 (api 제외)
 export const config = {
   matcher: ['/((?!api|_next|favicon.ico|robots.txt|sitemap.xml|images|fonts).*)'],
 };

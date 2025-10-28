@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 export default function AuthGatePage() {
-  const router = useRouter();
   const sp = useSearchParams();
   const redirect = sp.get('redirect') || '/';
 
@@ -12,27 +11,32 @@ export default function AuthGatePage() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    console.log('submit start');
-    e.preventDefault();
+  const handleClick = async () => {
     setLoading(true);
     setMsg(null);
     try {
-      console.log('before fetch');
-      const res = await fetch('/api/auth', {
+      // ✅ 절대경로 + no-store + include
+      const res = await fetch(`${location.origin}/api/auth`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
         credentials: 'include',
         cache: 'no-store',
         body: JSON.stringify({ password: pw }),
       });
-      const data = await res.json();
+
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        setMsg(data?.message || '인증에 실패했습니다.');
-      } else {
-        window.location.replace(redirect || '/');
+        setMsg(data?.message || `인증 실패 (HTTP ${res.status})`);
+        return;
       }
-    } catch {
+
+      // ✅ 하드 내비게이션으로 쿠키 동반 보장
+      window.location.replace(redirect || '/');
+    } catch (e) {
       setMsg('네트워크 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -41,10 +45,10 @@ export default function AuthGatePage() {
 
   return (
     <div className="fixed inset-0 z-[9999]">
-      {/* 배경: 딤 + 블러 */}
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
       <div className="relative h-full flex items-center justify-center p-4">
-        <form onSubmit={onSubmit} className="w-full max-w-md rounded-2xl bg-white dark:bg-zinc-900 shadow-2xl p-6 space-y-4">
+        {/* ✅ form 태그 제거 (브라우저 기본 submit 가로채기 방지) */}
+        <div className="w-full max-w-md rounded-2xl bg-white dark:bg-zinc-900 shadow-2xl p-6 space-y-4">
           <div className="space-y-1">
             <h1 className="text-xl font-semibold">🔒 아직 개발 단계입니다</h1>
             <p className="text-sm text-zinc-500">접근하려면 개발자 전용 비밀번호를 입력하세요.</p>
@@ -64,12 +68,12 @@ export default function AuthGatePage() {
 
           {msg && <p className="text-sm text-red-500">{msg}</p>}
 
-          <button type="submit" disabled={loading || !pw} className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 font-medium disabled:opacity-60">
+          <button type="button" disabled={loading || !pw} onClick={handleClick} className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 font-medium disabled:opacity-60">
             {loading ? '확인 중…' : '입장하기'}
           </button>
 
           <p className="text-xs text-zinc-400 text-center">인증에 성공하면 {redirect} 로 이동합니다.</p>
-        </form>
+        </div>
       </div>
     </div>
   );
