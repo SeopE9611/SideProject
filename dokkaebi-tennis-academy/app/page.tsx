@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, ArrowRight, Play, Phone, MapPin, Target, Shield, Clock, Award, ChevronLeft, ChevronRight, Package } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import HeroSlider from '@/components/HeroSlider';
 
 type ApiProduct = {
   _id: string;
@@ -15,6 +16,33 @@ type ApiProduct = {
   material?: 'polyester' | 'hybrid' | string;
   inventory?: { isFeatured?: boolean };
 };
+
+const SLIDES = [
+  {
+    img: 'https://www.nexentire.com/webzine/201803/kr/assets/images/contents/009_01.png',
+    alt: '테니스 라켓과 코트',
+    href: '/products?tag=event',
+    caption: '신규 입고 & 이벤트',
+  },
+  {
+    img: 'https://media.istockphoto.com/id/610007642/photo/detail-of-tennis-racket-in-the-stringing-machine.jpg?s=612x612&w=0&k=20&c=AFlkWluNV3MciJWcOrFwQABV6xLGXSAbFic5hZ6ixdM=',
+    alt: '테니스 공',
+    href: '/services',
+    caption: '장착 서비스 예약',
+  },
+  {
+    img: 'https://media.babolat.com/image/upload/f_auto,q_auto,c_scale,w_692,h_364/v1738055514/Web_content/Tennis/Secondary/2025/Pure-Drive/bags_692x364.png',
+    alt: '테니스 코트 전경',
+    href: '/services/packages',
+    caption: '패키지 할인',
+  },
+  {
+    img: 'https://nickrivettsport.co.uk/cdn/shop/products/image_fe9519a6-64c4-4fe8-8bfb-e99e9a5f8e60.jpg?v=1633608123&width=1445',
+    alt: '라켓과 스트링 디테일',
+    href: '/products?filter=featured',
+    caption: '추천 스트링',
+  },
+];
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState<'polyester' | 'hybrid'>('polyester');
@@ -68,75 +96,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
-        <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full" viewBox="0 0 800 600" fill="none">
-            <rect x="100" y="100" width="600" height="400" stroke="white" strokeWidth="4" fill="none" />
-            <line x1="400" y1="100" x2="400" y2="500" stroke="white" strokeWidth="2" />
-            <line x1="100" y1="250" x2="700" y2="250" stroke="white" strokeWidth="2" />
-            <line x1="100" y1="350" x2="700" y2="350" stroke="white" strokeWidth="2" />
-            <line x1="250" y1="250" x2="250" y2="350" stroke="white" strokeWidth="2" />
-            <line x1="550" y1="250" x2="550" y2="350" stroke="white" strokeWidth="2" />
-            <circle cx="100" cy="300" r="4" fill="white" />
-            <circle cx="700" cy="300" r="4" fill="white" />
-          </svg>
-        </div>
-
-        <div className="absolute inset-0 opacity-5">
-          <div className="w-full h-full bg-[linear-gradient(0deg,transparent_24%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_26%,transparent_27%,transparent_74%,rgba(255,255,255,0.1)_75%,rgba(255,255,255,0.1)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(255,255,255,0.1)_25%,rgba(255,255,255,0.1)_26%,transparent_27%,transparent_74%,rgba(255,255,255,0.1)_75%,rgba(255,255,255,0.1)_76%,transparent_77%,transparent)] bg-[size:20px_20px]"></div>
-        </div>
-
-        {/* <div className="relative z-10 text-center max-w-6xl mx-auto px-4">
-          <div className="space-y-8 mb-12">
-            <div className="relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
-              <h1 className="text-6xl lg:text-8xl font-black text-white leading-tight tracking-tight">
-                <span className="block">PRECISION</span>
-                <span className="block text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text">STRINGS</span>
-              </h1>
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
-            </div>
-
-            <p className="text-xl lg:text-2xl text-slate-300 font-medium max-w-3xl mx-auto leading-relaxed">
-              프로 선수들이 신뢰하는 정밀한 스트링 기술로
-              <br />
-              당신의 게임을 한 단계 끌어올리세요
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button
-              asChild
-              size="lg"
-              className="relative bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-blue-400/20"
-            >
-              <Link href="/products" className="flex items-center gap-3">
-                <Target className="h-5 w-5" />
-                스트링 둘러보기
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-            </Button>
-
-            <Button asChild variant="outline" size="lg" className="relative border-2 border-slate-300 text-slate-300 hover:bg-slate-300 hover:text-slate-900 px-8 py-4 text-lg font-semibold bg-transparent rounded-lg transition-all duration-300">
-              <Link href="/services" className="flex items-center gap-3">
-                <Play className="h-5 w-5" />
-                장착 서비스
-              </Link>
-            </Button>
-
-            <Button asChild variant="outline" size="lg" className="relative border-2 border-purple-300 text-purple-300 hover:bg-purple-300 hover:text-purple-900 px-8 py-4 text-lg font-semibold bg-transparent rounded-lg transition-all duration-300">
-              <Link href="/services/packages" className="flex items-center gap-3">
-                <Package className="h-5 w-5" />
-                패키지 상품
-              </Link>
-            </Button>
-          </div>
-        </div> */}
-
-        <div className="absolute top-20 left-20 w-3 h-3 bg-yellow-400 rounded-full animate-bounce opacity-60"></div>
-        <div className="absolute top-40 right-32 w-2 h-2 bg-yellow-400 rounded-full animate-pulse opacity-40"></div>
-        <div className="absolute bottom-32 left-40 w-4 h-4 bg-yellow-400 rounded-full animate-bounce opacity-50" style={{ animationDelay: '1s' }}></div>
-      </section>
+      <HeroSlider slides={SLIDES} />
 
       <section className="py-20 bg-slate-50 dark:bg-slate-900 relative">
         <div className="absolute inset-0 opacity-5">
