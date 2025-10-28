@@ -20,7 +20,7 @@ export default function SideMenu() {
     }
     return false;
   };
-  const linkClass = (href: string) => `block rounded px-3 py-2 text-sm hover:bg-muted ${isActiveHref(href) ? 'font-semibold' : 'text-muted-foreground'}`;
+  const linkClass = (href: string) => `block rounded px-3 py-2.5 text-[16px] leading-6 hover:bg-muted ${isActiveHref(href) ? 'font-semibold text-foreground' : 'text-muted-foreground'}`;
   return (
     <aside
       className="
@@ -37,7 +37,7 @@ export default function SideMenu() {
         <Accordion type="multiple" defaultValue={['strings', 'service']}>
           {/* 스트링 */}
           <AccordionItem value="strings">
-            <AccordionTrigger value="strings" className="text-sm font-semibold">
+            <AccordionTrigger value="strings" className="text-base font-semibold py-3">
               <span className="inline-flex items-center gap-2">
                 <Grid2X2 className="h-4 w-4" /> 스트링
               </span>
@@ -65,7 +65,7 @@ export default function SideMenu() {
 
           {/* 장착 서비스 */}
           <AccordionItem value="service">
-            <AccordionTrigger value="service" className="text-sm font-semibold">
+            <AccordionTrigger value="service" className="text-base font-semibold py-3">
               <span className="inline-flex items-center gap-2">
                 <Wrench className="h-4 w-4" /> 장착 서비스
               </span>
@@ -81,7 +81,7 @@ export default function SideMenu() {
 
           {/* 패키지 */}
           <AccordionItem value="packages">
-            <AccordionTrigger value="packages" className="text-sm font-semibold">
+            <AccordionTrigger value="packages" className="text-base font-semibold py-3">
               <span className="inline-flex items-center gap-2">
                 <Gift className="h-4 w-4" /> 패키지
               </span>
@@ -97,7 +97,7 @@ export default function SideMenu() {
 
           {/* 게시판 */}
           <AccordionItem value="boards">
-            <AccordionTrigger value="boards" className="text-sm font-semibold">
+            <AccordionTrigger value="boards" className="text-base font-semibold py-3">
               <span className="inline-flex items-center gap-2">
                 <MessageSquareText className="h-4 w-4" /> 게시판
               </span>

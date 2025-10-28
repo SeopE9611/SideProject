@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ShoppingCart, Menu, ChevronDown, ChevronRight, Wrench, Gift, MessageSquareText, Grid2X2 } from 'lucide-react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
@@ -43,6 +43,7 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
 
 const Header = () => {
   const router = useRouter();
+  const headerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -75,6 +76,22 @@ const Header = () => {
   const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
   const { user } = useCurrentUser();
   const isAdmin = user?.role === 'admin';
+
+  // 헤더 실제 높이를 CSS 변수로 노출 → 좌측 사이드 top 자동 반영
+  useEffect(() => {
+    const setVar = () => {
+      const h = headerRef.current?.offsetHeight ?? 64;
+      document.documentElement.style.setProperty('--header-h', `${h}px`);
+    };
+    setVar();
+    const ro = new ResizeObserver(setVar);
+    if (headerRef.current) ro.observe(headerRef.current);
+    window.addEventListener('resize', setVar);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', setVar);
+    };
+  }, []);
 
   /** 스크롤/리사이즈 핸들링 */
   useEffect(() => {
