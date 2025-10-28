@@ -27,14 +27,14 @@ export default function SideMenu() {
         hidden md:block
         fixed left-0 z-30
         h-[calc(100vh-var(--header-h,4rem))] w-60 lg:w-64
-        border-r bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60
+        shadow-[inset_-1px_0_0_0_theme(colors.slate.200/50)] dark:shadow-[inset_-1px_0_0_0_theme(colors.slate.700/40)] bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60
         overflow-y-auto
       "
       style={{ top: 'var(--header-h, 4rem)' }} // 헤더 높이 자동 반영(기본 64px)
       aria-label="사이드 내비게이션"
     >
       <div className="p-3">
-        <Accordion type="multiple" defaultValue={['strings', 'service']}>
+        <Accordion type="multiple" defaultValue={['strings']}>
           {/* 스트링 */}
           <AccordionItem value="strings">
             <AccordionTrigger value="strings" className="text-base font-semibold py-3">
