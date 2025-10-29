@@ -383,22 +383,24 @@ const Header = () => {
               <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
             </Link>
 
-            {/* 2) 검색 (가운데, PC 전용 & flex-1로 가변폭) */}
-            <div className="hidden lg:flex flex-1 px-6">
-              <SearchPreview
-                placeholder="스트링 검색..."
-                className="
+            {/* 2) 검색 (PC 전용) */}
+            <div className="hidden lg:flex flex-1 justify-end">
+              <div className="w-full max-w-[560px] min-w-[360px] xl:max-w-[640px]">
+                <SearchPreview
+                  placeholder="스트링 검색..."
+                  className="
         w-full
         rounded-full bg-white/80 dark:bg-slate-800/70
         border border-slate-200 dark:border-slate-700
         focus-within:ring-2 ring-blue-500
         transition-all duration-200
       "
-              />
+                />
+              </div>
             </div>
 
             {/* 3) 아이콘/유저 (우) */}
-            <div className="hidden lg:flex items-center gap-3 xl:gap-4">
+            <div className="hidden lg:flex items-center gap-3 xl:gap-4 pl-2 shrink-0">
               <Link href="/cart">
                 <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 transition-all duration-300 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
                   <ShoppingCart className="h-5 w-5" />
