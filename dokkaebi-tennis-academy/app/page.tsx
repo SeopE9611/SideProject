@@ -95,306 +95,159 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div>
       <HeroSlider slides={SLIDES} />
 
-      <section className="py-20 bg-slate-50 dark:bg-slate-900 relative">
-        <div className="absolute inset-0 opacity-5">
-          <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(59,130,246,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]"></div>
-        </div>
-
-        <div className="relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-4 mb-6">
-              <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></div>
-              <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">프리미엄 스트링</h2>
-              <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400"></div>
-            </div>
-            <p className="text-xl text-slate-600 dark:text-slate-300">프로가 선택하는 최고급 테니스 스트링</p>
+      <div className=" bg-slate-50 dark:bg-slate-900 rounded-2xl m-4">
+        <section className="py-20 bg-slate-550 dark:bg-slate-900 relative">
+          <div className="absolute inset-0 opacity-5">
+            <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(59,130,246,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]"></div>
           </div>
 
-          <div className="flex justify-center mb-12">
-            <div className="inline-flex bg-white dark:bg-slate-800 rounded-2xl p-2 border border-slate-200 dark:border-slate-700 shadow-lg">
-              <button
-                onClick={() => setActiveCategory('polyester')}
-                className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-                  activeCategory === 'polyester' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
-                }`}
-              >
-                폴리에스터
-              </button>
-              <button
-                onClick={() => setActiveCategory('hybrid')}
-                className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-                  activeCategory === 'hybrid' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
-                }`}
-              >
-                하이브리드
-              </button>
+          <div className="relative z-10">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-4 mb-6">
+                <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></div>
+                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">프리미엄 스트링</h2>
+                <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400"></div>
+              </div>
+              <p className="text-xl text-slate-600 dark:text-slate-300">프로가 선택하는 최고급 테니스 스트링</p>
             </div>
-          </div>
 
-          <div className="relative">
-            <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-visible scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              <style jsx>{`
-                .scrollbar-hide::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
-              <div className="flex gap-6 py-3" style={{ width: 'max-content' }}>
-                {loading ? (
-                  // 스켈레톤
-                  <div className="flex gap-6 pb-4">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className="flex-none w-[320px] rounded-2xl bg-white/80 dark:bg-slate-800/80 p-6 shadow-sm">
-                        <div className="mb-6 h-48 rounded-xl bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                        <div className="h-4 mb-2 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                        <div className="h-4 w-2/3 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex gap-6 pb-4" style={{ width: 'max-content' }}>
-                    {visible.map((p) => (
-                      <Link
-                        key={p._id}
-                        href={`/products/${p._id}`}
-                        className={`group block flex-none w-[320px] bg-white dark:bg-slate-800 rounded-2xl p-6
+            <div className="flex justify-center mb-12">
+              <div className="inline-flex bg-white dark:bg-slate-800 rounded-2xl p-2 border border-slate-200 dark:border-slate-700 shadow-lg">
+                <button
+                  onClick={() => setActiveCategory('polyester')}
+                  className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
+                    activeCategory === 'polyester' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
+                  }`}
+                >
+                  폴리에스터
+                </button>
+                <button
+                  onClick={() => setActiveCategory('hybrid')}
+                  className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
+                    activeCategory === 'hybrid' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
+                  }`}
+                >
+                  하이브리드
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-visible scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <style jsx>{`
+                  .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                  }
+                `}</style>
+                <div className="flex gap-6 py-3 w-full justify-start px-4 snap-x snap-mandatory">
+                  {loading ? (
+                    // 스켈레톤
+                    <div className="flex gap-6 pb-4">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="flex-none w-[320px] rounded-2xl bg-white/80 dark:bg-slate-800/80 p-6 shadow-sm">
+                          <div className="mb-6 h-48 rounded-xl bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                          <div className="h-4 mb-2 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                          <div className="h-4 w-2/3 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex gap-6 pb-4">
+                      {visible.map((p) => (
+                        <Link
+                          key={p._id}
+                          href={`/products/${p._id}`}
+                          className={`group block flex-none w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] snap-start bg-white dark:bg-slate-800 rounded-2xl p-6
               border border-slate-200 dark:border-slate-700
               hover:ring-1 hover:ring-blue-300/60 dark:hover:ring-blue-500/50
               transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}
-                      >
-                        {/* 이미지 영역*/}
-                        <div
-                          className={`relative mb-6 aspect-square rounded-xl overflow-hidden
-              bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600`}
                         >
-                          {p.images?.[0] ? (
-                            <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="flex items-center justify-center h-full text-4xl font-bold text-slate-400 dark:text-slate-500">{(p.brand ?? 'D').charAt(0)}</div>
-                          )}
-                        </div>
+                          {/* 이미지 영역*/}
+                          <div
+                            className={`relative mb-6 aspect-square rounded-xl overflow-hidden
+              bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600`}
+                          >
+                            {p.images?.[0] ? (
+                              <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="flex items-center justify-center h-full text-4xl font-bold text-slate-400 dark:text-slate-500">{(p.brand ?? 'D').charAt(0)}</div>
+                            )}
+                          </div>
 
-                        {/* 텍스트 영역 */}
-                        <div className="space-y-3">
-                          <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2">{p.name}</h3>
-                          <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{Number(p.price).toLocaleString()}원</div>
-                        </div>
-                      </Link>
-                    ))}
-                    {/* 플레이스홀더 카드 (준비 중) */}
-                    {Array.from({ length: fillerCount }).map((_, i) => (
-                      <div
-                        key={`placeholder-${i}`}
-                        className={`flex-none w-[320px] rounded-2xl p-6 border-2 border-dashed
+                          {/* 텍스트 영역 */}
+                          <div className="space-y-3">
+                            <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2">{p.name}</h3>
+                            <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{Number(p.price).toLocaleString()}원</div>
+                          </div>
+                        </Link>
+                      ))}
+                      {/* 플레이스홀더 카드 (준비 중) */}
+                      {Array.from({ length: fillerCount }).map((_, i) => (
+                        <div
+                          key={`placeholder-${i}`}
+                          className={`flex-none w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] snap-start rounded-2xl p-6 border-2 border-dashed
               border-slate-300/70 dark:border-slate-600/70
               bg-gradient-to-br from-slate-50 to-slate-100
               dark:from-slate-800 dark:to-slate-700
               text-center flex items-center justify-center`}
-                      >
-                        <div className="space-y-3">
-                          <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-600 mx-auto" />
-                          <div className="text-base font-semibold text-slate-700 dark:text-slate-200">준비 중인 상품</div>
-                          <div className="text-sm text-slate-500 dark:text-slate-400">곧 업데이트됩니다</div>
+                        >
+                          <div className="space-y-3">
+                            <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-600 mx-auto" />
+                            <div className="text-base font-semibold text-slate-700 dark:text-slate-200">준비 중인 상품</div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">곧 업데이트됩니다</div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    {/* 더보기 카드 */}
-                    <Link
-                      href="/products"
-                      className={`group flex-none w-[320px] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700
+                      ))}
+                      {/* 더보기 카드 */}
+                      <Link
+                        href="/products"
+                        className={`group flex-none w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] snap-start bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700
               rounded-2xl p-6 border-2 border-dashed border-blue-300 dark:border-blue-600
               hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1
               flex items-center justify-center`}
-                    >
-                      <div className="text-center space-y-4">
-                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
-                          <ArrowRight className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">더 많은 상품</h3>
-                          <p className="text-sm text-blue-600 dark:text-blue-300">전체 스트링 컬렉션 보기</p>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-center mt-8 gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
-                onClick={scrollLeft}
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
-                onClick={scrollRight}
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-slate-50 dark:bg-slate-900 relative">
-        <div className="absolute inset-0 opacity-5">
-          <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(59,130,246,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]"></div>
-        </div>
-
-        <div className="relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-4 mb-6">
-              <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></div>
-              <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">중고 라켓</h2>
-              <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400"></div>
-            </div>
-            <p className="text-xl text-slate-600 dark:text-slate-300">중고 라켓</p>
-          </div>
-
-          <div className="flex justify-center mb-12">
-            <div className="inline-flex bg-white dark:bg-slate-800 rounded-2xl p-2 border border-slate-200 dark:border-slate-700 shadow-lg">
-              <button
-                onClick={() => setActiveCategory('polyester')}
-                className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-                  activeCategory === 'polyester' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
-                }`}
-              >
-                카테고리는
-              </button>
-              <button
-                onClick={() => setActiveCategory('hybrid')}
-                className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-                  activeCategory === 'hybrid' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
-                }`}
-              >
-                뭘넣을까
-              </button>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-visible scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              <style jsx>{`
-                .scrollbar-hide::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
-              <div className="flex gap-6 py-3" style={{ width: 'max-content' }}>
-                {loading ? (
-                  // 스켈레톤
-                  <div className="flex gap-6 pb-4">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className="flex-none w-[320px] rounded-2xl bg-white/80 dark:bg-slate-800/80 p-6 shadow-sm">
-                        <div className="mb-6 h-48 rounded-xl bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                        <div className="h-4 mb-2 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                        <div className="h-4 w-2/3 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex gap-6 pb-4" style={{ width: 'max-content' }}>
-                    {visible.map((p) => (
-                      <Link
-                        key={p._id}
-                        href={`/products/${p._id}`}
-                        className={`group block flex-none w-[320px] bg-white dark:bg-slate-800 rounded-2xl p-6
-              border border-slate-200 dark:border-slate-700
-              hover:ring-1 hover:ring-blue-300/60 dark:hover:ring-blue-500/50
-              transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}
                       >
-                        {/* 이미지 영역*/}
-                        <div
-                          className={`relative mb-6 aspect-square rounded-xl overflow-hidden
-              bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600`}
-                        >
-                          {p.images?.[0] ? (
-                            <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="flex items-center justify-center h-full text-4xl font-bold text-slate-400 dark:text-slate-500">{(p.brand ?? 'D').charAt(0)}</div>
-                          )}
-                        </div>
-
-                        {/* 텍스트 영역 */}
-                        <div className="space-y-3">
-                          <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2">{p.name}</h3>
-                          <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{Number(p.price).toLocaleString()}원</div>
+                        <div className="text-center space-y-4">
+                          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
+                            <ArrowRight className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="space-y-2">
+                            <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">더 많은 상품</h3>
+                            <p className="text-sm text-blue-600 dark:text-blue-300">전체 스트링 컬렉션 보기</p>
+                          </div>
                         </div>
                       </Link>
-                    ))}
-                    {/* 플레이스홀더 카드 (준비 중) */}
-                    {Array.from({ length: fillerCount }).map((_, i) => (
-                      <div
-                        key={`placeholder-${i}`}
-                        className={`flex-none w-[320px] rounded-2xl p-6 border-2 border-dashed
-              border-slate-300/70 dark:border-slate-600/70
-              bg-gradient-to-br from-slate-50 to-slate-100
-              dark:from-slate-800 dark:to-slate-700
-              text-center flex items-center justify-center`}
-                      >
-                        <div className="space-y-3">
-                          <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-600 mx-auto" />
-                          <div className="text-base font-semibold text-slate-700 dark:text-slate-200">준비 중인 상품</div>
-                          <div className="text-sm text-slate-500 dark:text-slate-400">곧 업데이트됩니다</div>
-                        </div>
-                      </div>
-                    ))}
-                    {/* 더보기 카드 */}
-                    <Link
-                      href="/products"
-                      className={`group flex-none w-[320px] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700
-              rounded-2xl p-6 border-2 border-dashed border-blue-300 dark:border-blue-600
-              hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1
-              flex items-center justify-center`}
-                    >
-                      <div className="text-center space-y-4">
-                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
-                          <ArrowRight className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">더 많은 상품</h3>
-                          <p className="text-sm text-blue-600 dark:text-blue-300">전체 스트링 컬렉션 보기</p>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-center mt-8 gap-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
+                  onClick={scrollLeft}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
+                  onClick={scrollRight}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
               </div>
             </div>
-
-            <div className="flex justify-center mt-8 gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
-                onClick={scrollLeft}
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
-                onClick={scrollRight}
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* <section className="py-20 bg-white dark:bg-slate-800 relative">
+        {/* <section className="py-20 bg-white dark:bg-slate-800 relative">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center mb-16">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent to-slate-300 dark:to-slate-600"></div>
@@ -456,8 +309,8 @@ export default function Home() {
         </div>
       </section> */}
 
-      {/* 추천 섹션 */}
-      {/* <section className="py-20 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
+        {/* 추천 섹션 */}
+        {/* <section className="py-20 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="w-full h-full bg-[repeating-linear-gradient(0deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_11px),repeating-linear-gradient(90deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_11px)]"></div>
         </div>
@@ -546,6 +399,158 @@ export default function Home() {
           </div>
         </div>
       </section> */}
+      </div>
+
+      {/* 중고라켓 */}
+      <div className=" bg-slate-50 dark:bg-slate-900 rounded-2xl m-4">
+        <section className="py-20 bg-slate-550 dark:bg-slate-900 relative">
+          <div className="absolute inset-0 opacity-5">
+            <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(59,130,246,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]"></div>
+          </div>
+
+          <div className="relative z-10">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-4 mb-6">
+                <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></div>
+                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">중고 라켓</h2>
+                <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400"></div>
+              </div>
+              <p className="text-xl text-slate-600 dark:text-slate-300">필요한 중고 라켓이 있다면 확인해보세요</p>
+            </div>
+
+            <div className="flex justify-center mb-12">
+              <div className="inline-flex bg-white dark:bg-slate-800 rounded-2xl p-2 border border-slate-200 dark:border-slate-700 shadow-lg">
+                <button
+                  onClick={() => setActiveCategory('polyester')}
+                  className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
+                    activeCategory === 'polyester' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
+                  }`}
+                >
+                  카테고리는
+                </button>
+                <button
+                  onClick={() => setActiveCategory('hybrid')}
+                  className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
+                    activeCategory === 'hybrid' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
+                  }`}
+                >
+                  뭘로할까?
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-visible scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <style jsx>{`
+                  .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                  }
+                `}</style>
+                <div className="flex gap-6 py-3 w-full justify-start px-4 snap-x snap-mandatory">
+                  {loading ? (
+                    // 스켈레톤
+                    <div className="flex gap-6 pb-4">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="flex-none w-[320px] rounded-2xl bg-white/80 dark:bg-slate-800/80 p-6 shadow-sm">
+                          <div className="mb-6 h-48 rounded-xl bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                          <div className="h-4 mb-2 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                          <div className="h-4 w-2/3 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex gap-6 pb-4">
+                      {visible.map((p) => (
+                        <Link
+                          key={p._id}
+                          href={`/products/${p._id}`}
+                          className={`group block flex-none w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] snap-start bg-white dark:bg-slate-800 rounded-2xl p-6
+              border border-slate-200 dark:border-slate-700
+              hover:ring-1 hover:ring-blue-300/60 dark:hover:ring-blue-500/50
+              transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}
+                        >
+                          {/* 이미지 영역*/}
+                          <div
+                            className={`relative mb-6 aspect-square rounded-xl overflow-hidden
+              bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600`}
+                          >
+                            {p.images?.[0] ? (
+                              <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="flex items-center justify-center h-full text-4xl font-bold text-slate-400 dark:text-slate-500">{(p.brand ?? 'D').charAt(0)}</div>
+                            )}
+                          </div>
+
+                          {/* 텍스트 영역 */}
+                          <div className="space-y-3">
+                            <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2">{p.name}</h3>
+                            <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{Number(p.price).toLocaleString()}원</div>
+                          </div>
+                        </Link>
+                      ))}
+                      {/* 플레이스홀더 카드 (준비 중) */}
+                      {Array.from({ length: fillerCount }).map((_, i) => (
+                        <div
+                          key={`placeholder-${i}`}
+                          className={`flex-none w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] snap-start rounded-2xl p-6 border-2 border-dashed
+              border-slate-300/70 dark:border-slate-600/70
+              bg-gradient-to-br from-slate-50 to-slate-100
+              dark:from-slate-800 dark:to-slate-700
+              text-center flex items-center justify-center`}
+                        >
+                          <div className="space-y-3">
+                            <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-600 mx-auto" />
+                            <div className="text-base font-semibold text-slate-700 dark:text-slate-200">준비 중인 상품</div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">곧 업데이트됩니다</div>
+                          </div>
+                        </div>
+                      ))}
+                      {/* 더보기 카드 */}
+                      <Link
+                        href="/products"
+                        className={`group flex-none w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] snap-start bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700
+              rounded-2xl p-6 border-2 border-dashed border-blue-300 dark:border-blue-600
+              hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-xl hover:-translate-y-1
+              flex items-center justify-center`}
+                      >
+                        <div className="text-center space-y-4">
+                          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
+                            <ArrowRight className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="space-y-2">
+                            <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">더 많은 상품</h3>
+                            <p className="text-sm text-blue-600 dark:text-blue-300">전체 스트링 컬렉션 보기</p>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-center mt-8 gap-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
+                  onClick={scrollLeft}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
+                  onClick={scrollRight}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

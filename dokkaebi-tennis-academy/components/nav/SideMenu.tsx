@@ -24,7 +24,7 @@ export default function SideMenu() {
   return (
     <aside
       className="
-    hidden md:block
+    hidden lg:block
     fixed left-0 z-30
     h-[calc(100vh-var(--header-h,4rem))] w-60 lg:w-64
     shadow-[inset_-1px_0_0_0_theme(colors.slate.200/50)]

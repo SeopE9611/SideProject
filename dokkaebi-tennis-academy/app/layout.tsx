@@ -67,7 +67,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <Header />
             {/* 데스크탑 전용 좌측 사이드 메뉴(고정) */}
             <SideMenu />
-            <main className="flex-1 md:pl-60 lg:pl-64">
+            <main className="flex-1 lg:pl-60 xl:pl-64">
               {/* 
      헤더와 동일한 폭/여백 적용
     - max-w-7xl: 전체 폭 제한(가독성 향상)

@@ -134,7 +134,7 @@ export default function OrderList() {
   //  주문이 없을 경우
   if (!isValidating && items.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20">
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br">
         <CardContent className="p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 shadow-lg">
             <ShoppingBag className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
