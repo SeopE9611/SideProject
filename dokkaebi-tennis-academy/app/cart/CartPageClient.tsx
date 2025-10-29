@@ -301,21 +301,6 @@ export default function CartPageClient() {
                         {subtotal < 30000 && <span className="block mt-1 font-semibold">{(30000 - subtotal).toLocaleString()}원 더 구매하면 무료배송!</span>}
                       </p>
                     </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                      <div className="rounded-lg bg-blue-50 p-2 dark:bg-blue-900/20">
-                        <Shield className="mx-auto mb-1 h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        <span className="text-blue-700 dark:text-blue-400">안전결제</span>
-                      </div>
-                      <div className="rounded-lg bg-indigo-50 p-2 dark:bg-indigo-900/20">
-                        <Truck className="mx-auto mb-1 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                        <span className="text-indigo-700 dark:text-indigo-400">빠른배송</span>
-                      </div>
-                      <div className="rounded-lg bg-slate-50 p-2 dark:bg-slate-900/20">
-                        <Star className="mx-auto mb-1 h-4 w-4 text-slate-600 dark:text-slate-400" />
-                        <span className="text-slate-700 dark:text-slate-400">A/S보장</span>
-                      </div>
-                    </div>
                   </CardContent>
                   <CardFooter className="p-6 pt-0">
                     <Button

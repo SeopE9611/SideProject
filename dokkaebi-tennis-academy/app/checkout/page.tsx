@@ -309,9 +309,9 @@ export default function CheckoutPage() {
               <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-red-500/10 p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Truck className="h-5 w-5 text-purple-600" />
-                  상품 수령 방식
+                  상품 접수 예약 방식
                 </CardTitle>
-                <CardDescription className="mt-2">상품을 어떻게 수령하실지 선택해주세요.</CardDescription>
+                <CardDescription className="mt-2">상품을 어떻게 예약하실지 선택해주세요.</CardDescription>
               </div>
               <CardContent className="p-6 space-y-4">
                 <RadioGroup defaultValue="택배수령" onValueChange={(value) => setDeliveryMethod(value as '택배수령' | '방문수령')}>
