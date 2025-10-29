@@ -103,7 +103,7 @@ export default function Home() {
           <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(59,130,246,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]"></div>
         </div>
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="relative z-10">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-4 mb-6">
               <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></div>
@@ -251,7 +251,7 @@ export default function Home() {
           <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(59,130,246,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]"></div>
         </div>
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="relative z-10">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-4 mb-6">
               <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></div>
@@ -462,7 +462,7 @@ export default function Home() {
           <div className="w-full h-full bg-[repeating-linear-gradient(0deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_11px),repeating-linear-gradient(90deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_11px)]"></div>
         </div>
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="relative z-10">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-4 mb-6">
               <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400"></div>

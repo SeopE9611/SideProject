@@ -368,7 +368,7 @@ const Header = () => {
             border-b border-slate-200 dark:border-slate-700`}
         />
         <div
-          className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
+          className="max-w-9xl mx-auto px-4 md:px-6 lg:px-8 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
           style={{
             transform: isScrolled ? 'translateY(-8px) scale(0.96)' : 'translateY(0) scale(1)',
             transformOrigin: 'center',
