@@ -23,7 +23,7 @@ export default function ServicesPage() {
     },
     {
       id: 2,
-      title: '컨트롤형 스트링',
+      title: '스핀형 스트링',
       description: '정확한 컨트롤과 스핀을 위한 스트링',
       features: ['최대한의 스핀 생성', '정확한 볼 컨트롤', '내구성이 우수함', '중상급자용 하드 히팅에 적합'],
       recommended: ['컨트롤과 스핀 중심의 플레이 스타일', '강한 스트로크로 공격하는 플레이어', '중급자 및 상급자', '정확한 샷 배치를 중요시하는 분'],
@@ -35,7 +35,7 @@ export default function ServicesPage() {
     },
     {
       id: 3,
-      title: '밸런스형 스트링',
+      title: '내구성형 스트링',
       description: '파워와 컨트롤의 균형 잡힌 성능',
       features: ['파워와 컨트롤의 균형', '중간 정도의 타구감', '다양한 플레이 스타일에 적합', '하이브리드 구성으로 활용 가능'],
       recommended: ['올라운드 플레이 스타일', '다양한 샷을 구사하는 플레이어', '파워와 컨트롤 모두 중요시하는 분', '모든 수준의 플레이어'],
@@ -60,7 +60,7 @@ export default function ServicesPage() {
     {
       service: '스트링 장착 (스트링 포함)',
       price: 35000,
-      description: '도깨비 테니스 아카데미의 추천 스트링 포함 가격',
+      description: '도깨비 테니스의 추천 스트링 포함 가격',
       icon: <Shield className="h-6 w-6" />,
       duration: '30-45분',
       popular: true,
@@ -160,7 +160,7 @@ export default function ServicesPage() {
   return (
     <div className="flex flex-col">
       {/* Hero 섹션 */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[120vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500">
           <div className="absolute inset-0 opacity-20">
             <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -184,7 +184,99 @@ export default function ServicesPage() {
         <div className="absolute bottom-20 right-10 w-24 h-24 bg-blue-400/20 rounded-full blur-lg animate-bounce"></div>
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-indigo-400/30 rounded-full blur-md animate-pulse delay-1000"></div>
 
-        <div className="container relative z-10 text-center text-white">
+        <div className="container relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm dark:bg-gray-800/95 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-center text-white">
+                <h2 className="text-4xl font-bold mb-4">예약 안내</h2>
+                <p className="text-xl text-blue-100">
+                  스트링 장착 서비스는 예약제로 운영됩니다.
+                  <br />
+                  아래 방법을 통해 편리하게 예약해 주세요.
+                </p>
+              </div>
+
+              <CardContent className="p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                  <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                      <PhoneCall className="h-10 w-10" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-4">전화 예약</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">가장 빠른 예약은 전화로 문의해 주세요.</p>
+                    <div className="text-3xl font-bold text-blue-600 mb-2">0507-1392-3493</div>
+                    <p className="text-sm text-gray-500">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
+                  </div>
+
+                  <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
+                    <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                      <Calendar className="h-10 w-10" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-4">온라인 신청</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6">
+                      스트링 교체 신청서를 통해 예약 요청을 남겨주세요. <br />
+                    </p>
+                    <Button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700" asChild>
+                      <Link href="/services/apply">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        교체 신청하러 가기
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+
+                <Separator className="my-8" />
+
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6">
+                  <h3 className="text-xl font-bold mb-4 text-center">
+                    <CheckCircle className="w-5 h-5 inline mr-2 text-blue-500" />
+                    알아두세요
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex items-start">
+                      <Clock className="w-5 h-5 text-blue-500 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">예약 시간</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">방문 접수 시 완료 10분 전 도착 권장</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <Shield className="w-5 h-5 text-indigo-500 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">소요 시간</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">30분~1시간</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <Zap className="w-5 h-5 text-purple-500 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">100% 예약제</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">사전 예약 필수</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                  <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent" asChild>
+                    <Link href="/board/qna">
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      자주 묻는 질문
+                    </Link>
+                  </Button>
+                  <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" asChild>
+                    <Link href="/products">
+                      <ArrowRight className="mr-2 h-4 w-4" />
+                      테니스 스트링 쇼핑하기
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* <div className="container relative z-10 text-center text-white">
           <div className="max-w-4xl mx-auto">
             <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">
               <Award className="w-4 h-4 mr-2" />
@@ -199,7 +291,6 @@ export default function ServicesPage() {
               <span className="text-indigo-300 font-semibold">당신의 플레이를 한 단계 업그레이드하세요</span>
             </p>
 
-            {/* 신뢰 배지들 */}
             <div className="flex flex-wrap justify-center gap-6 mb-10">
               <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                 <Shield className="w-5 h-5 text-blue-400" />
@@ -230,7 +321,7 @@ export default function ServicesPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* 스크롤 인디케이터 */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
@@ -478,119 +569,20 @@ export default function ServicesPage() {
       </section>
 
       {/* 예약 안내 섹션 */}
-      <section className="py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500 relative overflow-hidden" id="booking">
-        {/* 배경 장식 */}
+      {/* <section className="py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500 relative overflow-hidden" id="booking">
         <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
         <div className="absolute bottom-10 right-10 w-24 h-24 bg-indigo-400/20 rounded-full blur-lg animate-bounce"></div>
-
-        <div className="container relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm dark:bg-gray-800/95 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-center text-white">
-                <h2 className="text-4xl font-bold mb-4">예약 안내</h2>
-                <p className="text-xl text-blue-100">
-                  스트링 장착 서비스는 예약제로 운영됩니다.
-                  <br />
-                  아래 방법을 통해 편리하게 예약해 주세요.
-                </p>
-              </div>
-
-              <CardContent className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
-                      <PhoneCall className="h-10 w-10" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-4">전화 예약</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">가장 빠른 예약은 전화로 문의해 주세요.</p>
-                    <div className="text-3xl font-bold text-blue-600 mb-2">02-123-4567</div>
-                    <p className="text-sm text-gray-500">운영 시간: 평일 09:00 - 18:00, 토요일 09:00 - 12:00</p>
-                  </div>
-
-                  <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
-                      <Calendar className="h-10 w-10" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-4">온라인 신청</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-6">스트링 교체 신청서를 통해 예약 요청을 남겨주세요.</p>
-                    <Button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700" asChild>
-                      <Link href="/services/apply">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        교체 신청하러 가기
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-
-                <Separator className="my-8" />
-
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6">
-                  <h3 className="text-xl font-bold mb-4 text-center">
-                    <CheckCircle className="w-5 h-5 inline mr-2 text-blue-500" />
-                    알아두세요
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-start">
-                      <Clock className="w-5 h-5 text-blue-500 mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">예약 시간</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">10분 전 도착 권장</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <Shield className="w-5 h-5 text-indigo-500 mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">소요 시간</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">30분~1시간</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <Zap className="w-5 h-5 text-purple-500 mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">급행 서비스</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">사전 예약 필수</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                  <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent" asChild>
-                    <Link href="/board/qna">
-                      <HelpCircle className="mr-2 h-4 w-4" />
-                      자주 묻는 질문
-                    </Link>
-                  </Button>
-                  <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" asChild>
-                    <Link href="/products">
-                      <ArrowRight className="mr-2 h-4 w-4" />
-                      테니스 스트링 쇼핑하기
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      </section> */}
 
       {/* 고객 후기 섹션 */}
       <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <div className="container">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-              <Star className="w-4 h-4 mr-2" />
-              고객 만족도 98%
-            </Badge>
+          <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">고객 후기</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              도깨비 테니스 아카데미 스트링 서비스를 경험한
-              <br />
-              고객들의 생생한 후기입니다.
-            </p>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">도깨비 테니스 스트링 서비스를 경험한 후기를 확인해보세요</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {reviews.map((review, index) => (
               <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white dark:bg-gray-800">
                 <CardContent className="p-8">
@@ -612,13 +604,14 @@ export default function ServicesPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </div> */}
 
           <div className="text-center">
             <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
-              <Link href="/reviews/write?service=stringing">
+              {/* <Link href="/reviews/write?service=stringing"> */}
+              <Link href="/reviews">
                 <Star className="w-5 h-5 mr-2" />
-                서비스 후기 작성
+                서비스 후기 보기
               </Link>
             </Button>
           </div>
