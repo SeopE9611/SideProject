@@ -81,15 +81,15 @@ export async function fetchCombinedOrders() {
     .collection('stringing_applications')
     .find({
       status: { $ne: 'draft' },
-      orderId: { $exists: true, $ne: null },
-      userId: { $exists: true, $ne: null },
+      // orderId: { $exists: true, $ne: null },
+      // userId: { $exists: true, $ne: null },
     })
     .toArray();
   const stringingOrders = (
     await Promise.all(
       rawApps.map(async (app) => {
         // (선택) 최후 방어 — 혹시 누락되면 스킵
-        if (!app?.orderId || !app?.userId) return null;
+        // if (!app?.orderId || !app?.userId) return null;
 
         // 고객 정보
         const customer = app.customer
@@ -98,33 +98,29 @@ export async function fetchCombinedOrders() {
           ? { name: app.userSnapshot.name, email: app.userSnapshot.email ?? '-', phone: '-' }
           : { name: `${app.guestName ?? '비회원'} (비회원)`, email: app.guestEmail || '-', phone: app.guestPhone || '-' };
 
-        // items 계산 (이미 적용한 옵셔널 체이닝 유지)
+        // 상품 아이템
         const items = await Promise.all(
           (app.stringDetails?.stringTypes ?? []).map(async (typeId: string) => {
             if (typeId === 'custom') {
-              // 프런트 표시와 동일한 규칙(커스텀=1.5만)으로 아이템 렌더
               return { id: 'custom', name: app.stringDetails?.customStringName ?? '커스텀 스트링', price: 15_000, quantity: 1 };
             }
             const prod = await db.collection('products').findOne({ _id: new ObjectId(typeId) }, { projection: { name: 1, mountingFee: 1 } });
             return { id: typeId, name: prod?.name ?? '알 수 없는 상품', price: prod?.mountingFee ?? 0, quantity: 1 };
           })
         );
-
-        // 재계산 값(과거 데이터 호환용)
-        const totalCalculated = items.reduce((sum, it) => sum + (it.price || 0) * (it.quantity || 0), 0);
-
-        // 저장값 우선 원칙: 문서에 totalPrice가 존재하면 그 값을 사용
+        // 총액(문서 저장값 우선, 없으면 계산값)
         const totalFromDoc = typeof (app as any).totalPrice === 'number' ? (app as any).totalPrice : null;
+        const totalCalculated = items.reduce((s, it) => s + (it.price || 0) * (it.quantity || 0), 0);
 
         return {
           id: app._id.toString(),
-          linkedOrderId: app.orderId?.toString() ?? null,
+          linkedOrderId: app.orderId?.toString() ?? null, // ← 단독 신청서는 null
           __type: 'stringing_application' as const,
           customer,
-          userId: app.userId ? app.userId.toString() : null,
+          userId: app.userId ? app.userId.toString() : null, // 비회원 null 허용
           date: app.createdAt,
           status: app.status,
-          paymentStatus: app.paymentStatus ?? (app.status && app.status !== '검토 중' ? '결제완료' : '결제대기'),
+          paymentStatus: app.paymentStatus ?? '결제대기',
           type: '서비스',
           total: totalFromDoc ?? totalCalculated,
           items,
@@ -132,6 +128,7 @@ export async function fetchCombinedOrders() {
             name: customer.name,
             phone: customer.phone,
             address: app.shippingInfo?.address ?? '-',
+            addressDetail: app.shippingInfo?.addressDetail ?? '-', // 누락 방어
             postalCode: app.shippingInfo?.postalCode ?? '-',
             depositor: app.shippingInfo?.depositor ?? '-',
             deliveryRequest: app.shippingInfo?.deliveryRequest,
