@@ -1,24 +1,32 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Grid2X2, Wrench, Gift, MessageSquareText } from 'lucide-react';
 import { NAV_FLAGS, NAV_LINKS } from './nav.config';
 
 export default function SideMenu() {
   const pathname = usePathname();
+  const search = useSearchParams();
   const isActiveHref = (href: string) => {
-    if (typeof window === 'undefined') return false;
-    const url = new URL(href, window.location.origin);
-    // 기본: path 동일
-    if (pathname === url.pathname && !url.search) return true;
-    // 브랜드 필터 하이라이트: /products?brand=xxx 형태
-    if (url.pathname === '/products' && url.searchParams.has('brand')) {
-      return pathname === '/products' && new URLSearchParams(window.location.search).get('brand') === url.searchParams.get('brand');
+    // 절대경로 파싱용 더미 베이스
+    const url = new URL(href, 'http://dummy.local');
+
+    // 1) /rackets 브랜드 필터 활성화
+    if (url.pathname === '/rackets' && url.searchParams.has('brand')) {
+      return pathname === '/rackets' && search?.get('brand') === url.searchParams.get('brand');
     }
-    return false;
+
+    // 스트링(기존) 브랜드 활성
+    if (url.pathname === '/products' && url.searchParams.has('brand')) {
+      return pathname === '/products' && search?.get('brand') === url.searchParams.get('brand');
+    }
+
+    // 2) 일반 경로 활성화
+    return pathname === url.pathname;
   };
+
   const linkClass = (href: string) => `block rounded px-3 py-2.5 text-[16px] leading-6 hover:bg-muted ${isActiveHref(href) ? 'font-semibold text-foreground' : 'text-muted-foreground'}`;
   return (
     <aside
