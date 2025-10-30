@@ -148,7 +148,77 @@ export async function fetchCombinedOrders() {
   // 일반 주문 + 스트링 신청 통합 후 날짜 내림차순 정렬
   // 날짜 없으면 0으로 간주해서 정렬
   const toTime = (d: any) => (d ? new Date(d as any).getTime() : 0);
-  const combined = [...orders, ...(stringingOrders as any[])].sort((a: any, b: any) => toTime(b?.date) - toTime(a?.date));
+
+  // rental_orders를 정규화하여 append
+  const rentalDocs = await db.collection('rental_orders').find().toArray();
+
+  const rentalOrders = await Promise.all(
+    rentalDocs.map(async (r: any) => {
+      // 라켓 기본 정보 조회(브랜드/모델명)
+      const rak = await db.collection('used_rackets').findOne({ _id: r.racketId });
+
+      // 고객 표기 (비회원이면 guestInfo 그대로 표시)
+      const customer = r.guestInfo
+        ? {
+            name: `${r.guestInfo.name ?? '비회원'}`,
+            email: r.guestInfo.email ?? '-',
+            phone: r.guestInfo.phone ?? '-',
+          }
+        : await findUserSnapshot(r.userId?.toString());
+
+      // 상태/뱃지 라벨 간단 매핑(기존 팔레트 사용 전제)
+      const mapRentalToBadge = (s: string) => {
+        switch (s) {
+          case 'paid':
+          case 'shipped':
+          case 'in_use':
+            return '진행중';
+          case 'returned':
+            return '반납완료';
+          case 'late':
+            return '연체';
+          case 'lost':
+          case 'damaged':
+            return '이슈';
+          default:
+            return '대기';
+        }
+      };
+
+      return {
+        id: r._id.toString(),
+        __type: 'rental_order' as const,
+
+        customer,
+        userId: r.userId?.toString?.() ?? null,
+
+        // 날짜 정렬 기준: createdAt (출고/수령 기반 정렬은 후속 단계에서)
+        date: r.createdAt ?? null,
+
+        // 기존 목록 컬럼과 호환되는 필드명 유지
+        status: mapRentalToBadge(r.status),
+        paymentStatus: r.status === 'paid' ? '결제완료' : '결제대기',
+        type: '대여',
+
+        // 관리자가 한눈에 보기 쉽게 수수료+보증금 합계(표시용)
+        total: Number(r.fee ?? 0) + Number(r.deposit ?? 0),
+
+        items: [
+          {
+            id: rak?._id?.toString?.() ?? '',
+            name: `${rak?.brand ?? ''} ${rak?.model ?? ''} (대여 ${r.period}일)`,
+            price: Number(r.fee ?? 0),
+            quantity: 1,
+          },
+        ],
+
+        // 운송장/주소 구조는 추후 표준화(지금은 그대로 전달)
+        shippingInfo: r.shipping ?? null,
+      };
+    })
+  );
+
+  const combined = [...orders, ...(stringingOrders as any[]), ...rentalOrders].sort((a: any, b: any) => toTime(b?.date) - toTime(a?.date));
 
   return combined;
 }

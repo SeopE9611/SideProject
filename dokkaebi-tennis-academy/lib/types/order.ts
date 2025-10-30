@@ -48,7 +48,7 @@ export type Order = {
 };
 
 export type OrderWithType = Order & {
-  __type: 'order' | 'stringing_application';
+  __type: 'order' | 'stringing_application' | 'rental_order';
   linkedOrderId?: string | null;
 };
 
