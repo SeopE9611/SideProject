@@ -1,9 +1,22 @@
 import FilterableProductList from '@/app/products/components/FilterableProductList';
 import { Suspense } from 'react';
 
-export default function ProductsPage({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
-  const initialBrand = typeof searchParams?.brand === 'string' ? searchParams.brand : null;
-  const initialMaterial = typeof searchParams?.material === 'string' ? searchParams.material : null;
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function ProductsPage({
+  // Promise 타입으로 선언 (자주 겪는 오류임에 따라 주석유지)
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  // 먼저 풀어서(spread 금지) 로컬 변수로 사용
+  const sp = await searchParams;
+
+  // 유틸: string | string[] | undefined → string | null 로 정리
+  const pickFirst = (v: string | string[] | undefined): string | null => (typeof v === 'string' ? v : Array.isArray(v) ? v[0] ?? null : null);
+
+  const initialBrand = pickFirst(sp.brand);
+  const initialMaterial = pickFirst(sp.material);
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
