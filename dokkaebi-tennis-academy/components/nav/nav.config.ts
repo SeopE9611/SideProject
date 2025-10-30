@@ -19,6 +19,12 @@ export const NAV_LINKS = {
       { name: '프린스', href: '/products?brand=prince' },
     ],
   },
+
+  rackets: {
+    root: '/rackets',
+    /** 브랜드별 링크(초기에는 문자열과 동일한 브랜드 집합 사용, 추후 /api/rackets 필터 키에 맞춰 조정) */
+    brands: [{ name: '준비중', href: '/rackets?brand=wilson' }],
+  },
   services: [
     { name: '장착 서비스 예약', href: '/services' },
     { name: '텐션 가이드', href: '/services/tension-guide' },

@@ -1,4 +1,3 @@
-// components/nav/SideMenu.tsx
 'use client';
 
 import Link from 'next/link';
@@ -36,7 +35,7 @@ export default function SideMenu() {
       aria-label="사이드 내비게이션"
     >
       <div className="p-3">
-        <Accordion type="multiple" defaultValue={['strings']}>
+        <Accordion type="multiple" defaultValue={['strings', 'rackets']}>
           {/* 스트링 */}
           <AccordionItem value="strings">
             <AccordionTrigger value="strings" className="text-base font-semibold py-3">
@@ -55,6 +54,34 @@ export default function SideMenu() {
                   <div className="my-2 h-px bg-border" />
                   <div className="space-y-1">
                     {NAV_LINKS.strings.brands.map((b) => (
+                      <Link key={b.href} href={b.href} className={linkClass(b.href)}>
+                        {b.name}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* 라켓 */}
+          <AccordionItem value="rackets">
+            <AccordionTrigger value="rackets" className="text-base font-semibold py-3">
+              <span className="inline-flex items-center gap-2">
+                <Grid2X2 className="h-4 w-4" /> 중고 라켓
+              </span>
+            </AccordionTrigger>
+            <AccordionContent value="rackets" className="space-y-1">
+              <Link href={NAV_LINKS.rackets.root} className={linkClass(NAV_LINKS.rackets.root)}>
+                전체 보기
+              </Link>
+
+              {/* 브랜드 서브메뉴 */}
+              {NAV_FLAGS.SHOW_BRAND_MENU && NAV_LINKS.rackets.brands?.length ? (
+                <>
+                  <div className="my-2 h-px bg-border" />
+                  <div className="space-y-1">
+                    {NAV_LINKS.rackets.brands.map((b) => (
                       <Link key={b.href} href={b.href} className={linkClass(b.href)}>
                         {b.name}
                       </Link>

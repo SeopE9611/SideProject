@@ -1,4 +1,3 @@
-// components/nav/menuData.ts
 export type MenuLink = { name: string; href: string };
 export type MenuSection = {
   id: 'strings' | 'service' | 'packages' | 'boards';

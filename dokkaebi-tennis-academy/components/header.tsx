@@ -125,7 +125,7 @@ const Header = () => {
   /** 탑 메뉴 항목들 */
   const menuItems = [
     { name: '스트링', href: '/products', hasMegaMenu: true },
-    { name: '라켓', href: '/rackets' },
+    { name: '라켓', href: '/rackets', hasMegaMenu: true },
     { name: '장착 서비스', href: '/services', hasMegaMenu: true, isServiceMenu: true },
     { name: '패키지', href: '/services/packages', hasMegaMenu: true, isPackageMenu: true },
     { name: '게시판', href: '/board', hasMegaMenu: true, isBoardMenu: true },
@@ -383,6 +383,25 @@ const Header = () => {
               <div className="font-black text-lg lg:text-xl tracking-[-0.01em] whitespace-nowrap text-slate-900 dark:text-white">도깨비 테니스</div>
               <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
             </Link>
+
+            {/* 데스크탑 메뉴 (임시용) */}
+            <nav className="hidden lg:flex items-center gap-2 xl:gap-3 ml-2">
+              {menuItems.map((item) => {
+                const active = pathname?.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`px-3 py-2 rounded-lg text-sm transition
+                     ${active ? 'text-blue-600 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/30 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50'}`}
+                    aria-current={active ? 'page' : undefined}
+                    aria-label={`${item.name} 페이지로 이동`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
 
             {/* 2) 검색 (PC 전용) */}
             <div className="hidden lg:flex flex-1 justify-end">
