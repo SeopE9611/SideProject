@@ -24,16 +24,16 @@ export default function RacketsClient() {
   const [brand, setBrand] = useState<string>('');
   const [cond, setCond] = useState<string>(''); // '', 'A', 'B', 'C'
 
-  const { data, isLoading, error } = useSWR<RacketItem[]>('/api/rackets', fetcher);
+  const query = new URLSearchParams();
+  if (brand) query.set('brand', brand);
+  if (cond) query.set('cond', cond);
+  const key = `/api/rackets${query.toString() ? `?${query.toString()}` : ''}`;
+  const { data, isLoading, error } = useSWR<RacketItem[]>(key, fetcher);
 
   // 필터링: 클라에서 1차 처리(서버 쿼리는 추후 확장)
   const items = useMemo(() => {
     const list = Array.isArray(data) ? data : [];
-    return list.filter((it) => {
-      if (brand && !`${it.brand} ${it.model}`.toLowerCase().includes(brand.toLowerCase())) return false;
-      if (cond && it.condition !== cond) return false;
-      return true;
-    });
+    return list;
   }, [data, brand, cond]);
 
   if (error) {
@@ -46,7 +46,7 @@ export default function RacketsClient() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">중고 라켓</h1>
         <div className="flex gap-2">
-          <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="브랜드/모델 검색" className="h-9 w-48 rounded border px-3 text-sm" />
+          <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="라켓 브랜드(예: Yonex)" className="h-9 w-48 rounded border px-3 text-sm" />
           <select value={cond} onChange={(e) => setCond(e.target.value)} className="h-9 rounded border px-2 text-sm">
             <option value="">상태(전체)</option>
             <option value="A">A (최상)</option>

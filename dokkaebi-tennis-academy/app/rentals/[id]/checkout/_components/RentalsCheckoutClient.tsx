@@ -49,7 +49,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         return;
       }
       // 결제 완료 → 마이페이지/주문목록 또는 임시 성공 페이지로 이동
-      router.push('/my/orders'); // 필요 시 /rentals/success 로 교체 가능
+      router.push(`/rentals/success?id=${json.id}`);
     } finally {
       setLoading(false);
     }

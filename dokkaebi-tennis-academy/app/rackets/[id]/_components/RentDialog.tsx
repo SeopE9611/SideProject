@@ -1,11 +1,13 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function RentDialog({ id, rental, brand, model }: { id: string; rental: any; brand: string; model: string }) {
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<7 | 15 | 30>(7);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const fee = period === 7 ? rental.fee.d7 : period === 15 ? rental.fee.d15 : rental.fee.d30;
 
@@ -24,7 +26,7 @@ export default function RentDialog({ id, rental, brand, model }: { id: string; r
       }
       alert(`대여 생성 완료 (id: ${json.id}). 다음 단계에서 결제/주소 입력으로 이동시킬게요.`);
       setOpen(false);
-      // TODO: router.push(`/rentals/${json.id}/checkout`);
+      router.push(`/rentals/${json.id}/checkout`);
     } finally {
       setLoading(false);
     }
