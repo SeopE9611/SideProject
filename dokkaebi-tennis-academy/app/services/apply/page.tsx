@@ -909,7 +909,7 @@ export default function StringServiceApplyPage() {
 
                   {/* 매장 방문 접수 */}
                   <div>
-                    <RadioGroupItem id="cm-visit" value="visit" disabled={!lockVisit} className="peer sr-only" />
+                    <RadioGroupItem id="cm-visit" value="visit" disabled={false} className="peer sr-only" />
                     <Label
                       htmlFor="cm-visit"
                       className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition

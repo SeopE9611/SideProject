@@ -757,7 +757,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       preferredDate,
       preferredTime,
       requirements,
-      orderId, // 문자열 형태로 들어옴
+      orderId, // 문자열 | undefined (단독 신청 허용)
       packageOptOut,
     } = await req.json();
 
@@ -770,10 +770,12 @@ export async function handleSubmitStringingApplication(req: Request) {
     const contactPhone = (phone ?? '').replace(/\D/g, '') || null;
 
     // orderId 유효성 검증 + ObjectId 일원화
-    if (!orderId || !ObjectId.isValid(orderId)) {
-      return NextResponse.json({ message: '유효하지 않은 orderId' }, { status: 400 });
-    }
-    const orderObjectId = new ObjectId(orderId); // 이후 모든 쿼리는 이걸로만
+    // if (!orderId || !ObjectId.isValid(orderId)) {
+    //   return NextResponse.json({ message: '유효하지 않은 orderId' }, { status: 400 });
+    // }
+
+    // orderId 선택값 처리(단독 신청 허용): 유효하면 ObjectId, 아니면 null
+    const orderObjectId = typeof orderId === 'string' && ObjectId.isValid(orderId) ? new ObjectId(orderId) : null;
 
     const db = await getDb();
 
@@ -795,7 +797,8 @@ export async function handleSubmitStringingApplication(req: Request) {
 
     // === 3) 같은 주문의 "진행중" 문서 탐지 ===
     // - 진행중 = 취소를 제외한 모든 상태 (draft 포함)
-    const existingActive = await db.collection('stringing_applications').findOne({ orderId: orderObjectId, status: { $nin: ['취소'] } }, { projection: { _id: 1, status: 1, createdAt: 1 } });
+    // 같은 주문의 진행중 문서 탐지(주문이 있을 때만)
+    const existingActive = orderObjectId ? await db.collection('stringing_applications').findOne({ orderId: orderObjectId, status: { $nin: ['취소'] } }, { projection: { _id: 1, status: 1, createdAt: 1 } }) : null;
 
     // 멱등성 정책:
     // - 이미 제출된 문서(= draft가 아닌 진행중: '검토 중' | '접수완료' | '작업 중')가 있으면 새 제출은 409로 차단
@@ -862,12 +865,13 @@ export async function handleSubmitStringingApplication(req: Request) {
     const serviceFeeBefore = totalBefore;
 
     // 최종 applicationId 결정 — bodyAppId 우선, 없으면 같은 주문의 draft 재사용, 없으면 신규
-    const draftDoc = !bodyAppId
-      ? await db.collection('stringing_applications').findOne({
-          orderId: orderObjectId,
-          status: 'draft',
-        })
-      : null;
+    const draftDoc =
+      !bodyAppId && orderObjectId
+        ? await db.collection('stringing_applications').findOne({
+            orderId: orderObjectId,
+            status: 'draft',
+          })
+        : null;
 
     const applicationId = bodyAppId ? new ObjectId(bodyAppId) : draftDoc?._id ? draftDoc._id : new ObjectId();
 
@@ -956,7 +960,10 @@ export async function handleSubmitStringingApplication(req: Request) {
     }
 
     // === 8) 주문 플래그 업데이트 ===
-    await db.collection('orders').updateOne({ _id: orderObjectId }, { $set: { isStringServiceApplied: true, stringingApplicationId: applicationId.toString() } });
+    // 주문이 있을 때만
+    if (orderObjectId) {
+      await db.collection('orders').updateOne({ _id: orderObjectId }, { $set: { isStringServiceApplied: true, stringingApplicationId: applicationId.toString() } });
+    }
 
     // === 9) 알림 ===
     const STATUS_VALUES = ['draft', '검토 중', '접수완료', '작업 중', '교체완료', '취소'] as const;
@@ -965,7 +972,7 @@ export async function handleSubmitStringingApplication(req: Request) {
     const userCtx = { name, email: contactEmail || email };
     const appCtx = {
       applicationId: String(applicationId),
-      orderId: orderId ? String(orderId) : null,
+      orderId: orderObjectId ? String(orderObjectId) : null,
       status: '검토 중' as AppStatus,
       stringDetails: { preferredDate, preferredTime, racket: racketType, stringTypes },
       shippingInfo,
