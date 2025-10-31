@@ -1,5 +1,6 @@
 'use client';
 
+import PhotosUploader from '@/components/reviews/PhotosUploader';
 import { useState } from 'react';
 
 export type RacketForm = {
@@ -121,23 +122,18 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </div>
       </div>
 
-      {/* 이미지 URL (임시)- 업로더로 교체예정 */}
+      {/* 이미지 업로더 */}
       <div className="space-y-2">
-        <div className="text-sm text-gray-600">이미지 URL(줄바꿈으로 여러 개)</div>
-        <textarea
-          className="w-full border rounded p-2 h-24"
-          value={(form.images ?? []).join('\n')}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              images: e.target.value
-                .split('\n')
-                .map((s) => s.trim())
-                .filter(Boolean),
-            })
-          }
-          placeholder="https://.../img1.jpg\nhttps://.../img2.jpg"
+        <div className="text-sm text-gray-600">이미지</div>
+        <PhotosUploader
+          value={form.images}
+          onChange={(next) => setForm({ ...form, images: next })}
+          max={10} // 필요 시 조절
+          onUploadingChange={(u) => {
+            /* 저장 버튼 비활성화 등 필요하면 사용 */
+          }}
         />
+        <p className="text-xs text-slate-500">첫 번째 이미지가 대표로 사용됩니다. 최대 10장 업로드 가능.</p>
       </div>
 
       <div className="flex justify-end">
