@@ -12,8 +12,9 @@ async function getData(id: string) {
   return res.json();
 }
 
-export default async function RacketDetailPage({ params }: { params: { id: string } }) {
-  const doc = await getData(params.id);
+export default async function RacketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const doc = await getData(id);
   if (!doc) {
     return <div className="max-w-4xl mx-auto p-4">존재하지 않는 라켓입니다.</div>;
   }

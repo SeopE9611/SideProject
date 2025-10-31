@@ -31,7 +31,7 @@ export default function RacketsClient() {
   useEffect(() => {
     setBrand(search.get('brand') || '');
     const c = search.get('cond');
-    setCond(c === 'A' || 'B' || 'C' ? c! : '');
+    setCond(['A', 'B', 'C'].includes(c ?? '') ? (c as string) : '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -58,7 +58,7 @@ export default function RacketsClient() {
         <h1 className="text-2xl font-semibold">중고 라켓</h1>
         <div className="flex gap-2">
           <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="라켓 브랜드(예: Yonex)" className="h-9 w-48 rounded border px-3 text-sm" />
-          <select value={cond} onChange={(e) => setCond(e.target.value)} className="h-9 rounded border px-2 text-sm">
+          <select value={cond ?? ''} onChange={(e) => setCond(e.target.value)} className="h-9 rounded border px-2 text-sm">
             <option value="">상태(전체)</option>
             <option value="A">A (최상)</option>
             <option value="B">B (양호)</option>
