@@ -14,10 +14,10 @@ export default function RentDialog({ id, rental, brand, model }: { id: string; r
   const onSubmit = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/rackets/${id}/rent`, {
+      const res = await fetch('/api/rentals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ period }),
+        body: JSON.stringify({ racketId: id, days: period }),
       });
       const json = await res.json();
       if (!res.ok) {
