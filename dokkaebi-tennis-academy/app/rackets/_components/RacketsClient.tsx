@@ -3,7 +3,8 @@
 import useSWR from 'swr';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 // 간단 fetcher (쿠키 포함 필요 시 credentials 옵션)
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
@@ -20,9 +21,19 @@ type RacketItem = {
 };
 
 export default function RacketsClient() {
+  const search = useSearchParams();
   // 필터(1차: 브랜드, 상태등급만): 내일 가격 슬라이더 추가 예정
+
   const [brand, setBrand] = useState<string>('');
   const [cond, setCond] = useState<string>(''); // '', 'A', 'B', 'C'
+
+  // 최초 1회 쿼리 ->상태 반영
+  useEffect(() => {
+    setBrand(search.get('brand') || '');
+    const c = search.get('cond');
+    setCond(c === 'A' || 'B' || 'C' ? c! : '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const query = new URLSearchParams();
   if (brand) query.set('brand', brand);
