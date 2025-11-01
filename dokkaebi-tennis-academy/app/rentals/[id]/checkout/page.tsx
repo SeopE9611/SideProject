@@ -12,9 +12,9 @@ async function getRentalWithRacket(id: string) {
   const racket = await db.collection('used_rackets').findOne({ _id: r.racketId });
   return {
     id: r._id.toString(),
-    period: r.period,
-    fee: r.fee || 0,
-    deposit: r.deposit || 0,
+    period: r.days ?? r.period ?? 0,
+    fee: r.amount?.fee ?? r.fee ?? 0,
+    deposit: r.amount?.deposit ?? r.deposit ?? 0,
     status: r.status,
     shipping: r.shipping ?? null,
     racket: racket
@@ -29,8 +29,9 @@ async function getRentalWithRacket(id: string) {
   };
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const data = await getRentalWithRacket(params.id);
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const data = await getRentalWithRacket(id);
   if (!data) notFound();
   return <RentalsCheckoutClient initial={data} />;
 }
