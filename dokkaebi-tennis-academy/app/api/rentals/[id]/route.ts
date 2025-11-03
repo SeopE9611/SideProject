@@ -5,7 +5,9 @@ import { ObjectId } from 'mongodb';
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const db = (await clientPromise).db();
-
+  if (!ObjectId.isValid(id)) {
+    return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
+  }
   const doc = await db.collection('rental_orders').findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
 

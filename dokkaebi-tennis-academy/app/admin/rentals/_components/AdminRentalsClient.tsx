@@ -77,11 +77,18 @@ export default function AdminRentalsClient() {
           <tbody>
             {(data?.items ?? []).map((r, idx) => {
               const rid = r.id ?? (r as any)._id ?? '';
-              const canReturn = (r.status === 'paid' || r.status === 'out') && !!rid;
               return (
                 <tr key={rid || `row-${idx}`} className="border-b">
                   <td className="p-2">
-                    {r.brand} {r.model}
+                    {rid ? (
+                      <a href={`/admin/rentals/${rid}`} className="underline-offset-2 hover:underline">
+                        {r.brand} {r.model}
+                      </a>
+                    ) : (
+                      <span>
+                        {r.brand} {r.model}
+                      </span>
+                    )}
                   </td>
                   <td className="p-2">{r.days}일</td>
                   <td className="p-2">
@@ -89,7 +96,7 @@ export default function AdminRentalsClient() {
                   </td>
                   <td className="p-2">{r.status}</td>
                   <td className="p-2 text-right">
-                    <button className="h-8 rounded bg-emerald-600 px-3 text-white disabled:opacity-50" disabled={!canReturn} onClick={() => onReturn(rid)}>
+                    <button className="h-8 rounded bg-emerald-600 px-3 text-white disabled:opacity-50" disabled={!(rid && (r.status === 'paid' || r.status === 'out'))} onClick={() => onReturn(rid)}>
                       반납 처리
                     </button>
                   </td>

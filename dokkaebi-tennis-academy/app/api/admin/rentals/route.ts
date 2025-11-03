@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   const total = await db.collection('rental_orders').countDocuments(q);
 
   const mapped = items.map((r: any) => ({
-    id: r._id.toString(),
+    id: r._id ? r._id.toString() : undefined,
     racketId: r.racketId?.toString(),
     brand: r.brand || '',
     model: r.model || '',
