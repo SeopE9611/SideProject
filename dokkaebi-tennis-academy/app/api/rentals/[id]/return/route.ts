@@ -7,6 +7,11 @@ export const dynamic = 'force-dynamic';
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: rentalId } = await params;
   const db = (await clientPromise).db();
+
+  if (!ObjectId.isValid(rentalId)) {
+    return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
+  }
+
   const rental = await db.collection('rental_orders').findOne({ _id: new ObjectId(rentalId) });
   if (!rental) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
 

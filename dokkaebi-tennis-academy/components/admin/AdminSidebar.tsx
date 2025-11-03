@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, PackageSearch, Boxes, Users, CalendarClock, MessageCircle, Settings, ChevronLeft, ChevronRight, Package, Cog, ChartArea, ChartBar } from 'lucide-react';
+import { LayoutDashboard, PackageSearch, Boxes, Users, CalendarClock, MessageCircle, Settings, ChevronLeft, ChevronRight, Package, Cog, ChartArea, ChartBar, ClipboardList } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
@@ -16,6 +16,7 @@ const SECTIONS = [
       { title: '대시보드', href: '/admin/dashboard', icon: LayoutDashboard },
       { title: '주문 관리', href: '/admin/orders', icon: PackageSearch, key: 'orders' as const },
       { title: '상품 관리', href: '/admin/products', icon: Boxes, key: 'products' as const },
+      { title: '대여 관리', href: '/admin/rentals', icon: ClipboardList },
       { title: '라켓 관리', href: '/admin/rackets', icon: Package, key: 'rackets' as const },
       { title: '패키지 관리', href: '/admin/packages', icon: Package, key: 'packages' as const },
       { title: '패키지 설정', href: '/admin/packages/settings', icon: Cog },
