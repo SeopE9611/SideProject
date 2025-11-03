@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { CalendarCheck, ClipboardList, Heart, MessageCircleQuestion, Star, UserCog, ChevronRight, Ticket, MessageSquare } from 'lucide-react';
+import { CalendarCheck, ClipboardList, Heart, MessageCircleQuestion, Star, UserCog, ChevronRight, Ticket, MessageSquare, RectangleGoggles, Handshake, Signature, Briefcase } from 'lucide-react';
 
 export function UserSidebar() {
   const searchParams = useSearchParams();
@@ -25,6 +25,13 @@ export function UserSidebar() {
       icon: CalendarCheck,
       gradient: 'from-green-500 to-emerald-500',
       bgGradient: 'from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20',
+    },
+    {
+      label: '대여 내역',
+      value: 'rentals',
+      icon: Briefcase,
+      gradient: 'from-blue-500 to-blue-500',
+      bgGradient: 'from-blue-50 to-blue-50 dark:from-blue-950/20 dark:to-blue-950/20',
     },
     {
       label: '위시리스트',

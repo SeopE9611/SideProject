@@ -19,10 +19,13 @@ import { useState, useEffect } from 'react';
 import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
 import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { User, Trophy, Target, Star, MessageSquare, HelpCircle, Award, TrendingUp, UserCheck, Ticket, Heart, MessageCircleQuestion, ClipboardList, CalendarCheck } from 'lucide-react';
+import { User, Trophy, Target, Star, MessageSquare, HelpCircle, Award, TrendingUp, UserCheck, Ticket, Heart, MessageCircleQuestion, ClipboardList, CalendarCheck, ReceiptCent, RectangleGoggles, Briefcase } from 'lucide-react';
 import type { Order } from '@/lib/types/order';
 import PassList from '@/app/mypage/tabs/PassList';
 import PassListSkeleton from '@/app/mypage/tabs/PassListSkeleton';
+import RentalsList from '@/app/mypage/tabs/RentalsList';
+import RentalSkeleton from '@/app/mypage/tabs/RentalSkeleton';
+import RentalsDetailClient from '@/app/mypage/rentals/_components/RentalsDetailClient';
 
 type Props = {
   user: {
@@ -71,7 +74,7 @@ export default function MypageClient({ user }: Props) {
 
   const orderId = searchParams.get('orderId');
   const selectedApplicationId = searchParams.get('id');
-
+  const selectedId = searchParams.get('id');
   return (
     <AuthGuard>
       <div className="min-h-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
@@ -155,7 +158,7 @@ export default function MypageClient({ user }: Props) {
                 {/* 탭 네비게이션 */}
                 <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm mb-8">
                   <CardContent className="p-6">
-                    <TabsList className="grid w-full grid-cols-6 h-auto p-1 bg-slate-100 dark:bg-slate-700">
+                    <TabsList className="grid w-full grid-cols-7 h-auto p-1 bg-slate-100 dark:bg-slate-700">
                       <TabsTrigger value="orders" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                         <ClipboardList className="h-5 w-5" />
                         <span className="text-xs font-medium">주문 내역</span>
@@ -163,6 +166,10 @@ export default function MypageClient({ user }: Props) {
                       <TabsTrigger value="applications" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                         <CalendarCheck className="h-5 w-5" />
                         <span className="text-xs font-medium">신청 내역</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="rentals" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+                        <Briefcase className="h-5 w-5" />
+                        <span className="text-xs font-medium">대여 내역</span>
                       </TabsTrigger>
                       <TabsTrigger value="wishlist" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                         <Heart className="h-5 w-5" />
@@ -224,6 +231,34 @@ export default function MypageClient({ user }: Props) {
                       ) : (
                         <Suspense fallback={<ApplicationsSkeleton />}>
                           <ApplicationsClient />
+                        </Suspense>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* 대여 내역 탭 */}
+                <TabsContent value="rentals" className="mt-0">
+                  <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                    <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 border-b">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-indigo-900 dark:to-blue-900 rounded-2xl p-3 shadow-lg">
+                          <Briefcase className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl">대여 내역</CardTitle>
+                          <CardDescription>라켓 대여 기록을 확인할 수 있습니다.</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      {selectedId ? (
+                        <Suspense fallback={<div className="p-6">불러오는 중…</div>}>
+                          <RentalsDetailClient id={selectedId} />
+                        </Suspense>
+                      ) : (
+                        <Suspense fallback={<RentalSkeleton />}>
+                          <RentalsList />
                         </Suspense>
                       )}
                     </CardContent>
