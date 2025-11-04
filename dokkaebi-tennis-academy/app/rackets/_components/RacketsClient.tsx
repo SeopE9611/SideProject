@@ -94,7 +94,10 @@ export default function RacketsClient() {
                   상태: <span className="font-semibold">{it.condition}</span>
                 </div>
                 <div className="text-base font-semibold">{it.price.toLocaleString()}원</div>
-                {it.rental?.enabled && <div className="text-xs text-emerald-600">대여 가능</div>}
+                {it.rental?.enabled && (
+                  // 라켓별 진행중 대여 수 조회
+                  <RacketAvailBadge id={it.id} />
+                )}
               </div>
             </Link>
           ))}
@@ -102,4 +105,10 @@ export default function RacketsClient() {
       )}
     </div>
   );
+}
+
+function RacketAvailBadge({ id }: { id: string }) {
+  const { data } = useSWR<{ ok: boolean; count: number }>(`/api/rentals/active-count/${id}`, fetcher);
+  const isRented = !!(data?.ok && data.count > 0);
+  return <div className={`text-xs ${isRented ? 'text-rose-600' : 'text-emerald-600'}`}>{isRented ? '대여 중' : '대여 가능'}</div>;
 }
