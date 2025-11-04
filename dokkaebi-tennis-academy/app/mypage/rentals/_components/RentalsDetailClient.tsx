@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { getDepositBanner } from '@/app/features/rentals/utils/ui';
+import { ArrowLeft, Briefcase, Calendar, Clock, CreditCard, Package, CheckCircle, AlertCircle, XCircle, TrendingUp } from 'lucide-react';
 
 type Rental = {
   id: string;
@@ -15,9 +17,70 @@ type Rental = {
   amount?: { fee?: number; deposit?: number; total?: number };
   createdAt?: string;
   dueAt?: string | null;
-  outAt?: string | null; // 출고 시각(표시용)
-  returnedAt?: string | null; // 반납 완료 시각(표시용)
-  depositRefundedAt?: string | null; // 보증금 환불 완료 시각(표시용)
+  outAt?: string | null;
+  returnedAt?: string | null;
+  depositRefundedAt?: string | null;
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'returned':
+      return <CheckCircle className="h-5 w-5 text-emerald-500" />;
+    case 'out':
+      return <Clock className="h-5 w-5 text-blue-500" />;
+    case 'paid':
+      return <Package className="h-5 w-5 text-indigo-500" />;
+    case 'canceled':
+      return <XCircle className="h-5 w-5 text-red-500" />;
+    default:
+      return <AlertCircle className="h-5 w-5 text-slate-500" />;
+  }
+};
+
+const getStatusBadgeColor = (status: string) => {
+  switch (status) {
+    case 'returned':
+      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
+    case 'out':
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+    case 'paid':
+      return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
+    case 'canceled':
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+    default:
+      return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200';
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    created: '생성됨',
+    paid: '결제완료',
+    out: '대여중',
+    returned: '반납완료',
+    canceled: '취소됨',
+  };
+  return labels[status] || status;
+};
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+};
+
+const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
 };
 
 export default function RentalsDetailClient({ id }: { id: string }) {
@@ -39,15 +102,47 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     })();
   }, [id]);
 
-  if (loading) return <div className="p-6">불러오는 중…</div>;
-  if (err) return <div className="p-6 text-red-600">에러: {err}</div>;
-  if (!data) return <div className="p-6">존재하지 않는 대여 건입니다.</div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card className="animate-pulse">
+          <CardContent className="p-8">
+            <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-4"></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-2/3 mb-2"></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (err) {
+    return (
+      <Card className="border-0 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950">
+        <CardContent className="p-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+            <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+          </div>
+          <p className="text-red-600 dark:text-red-400">에러: {err}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Card className="border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <CardContent className="p-8 text-center">
+          <p className="text-slate-600 dark:text-slate-400">존재하지 않는 대여 건입니다.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const fee = data.amount?.fee ?? 0;
   const deposit = data.amount?.deposit ?? 0;
   const total = data.amount?.total ?? fee + deposit;
 
-  // 배너용 계산
   const banner = getDepositBanner({
     status: data.status,
     returnedAt: data.returnedAt ?? undefined,
@@ -55,81 +150,208 @@ export default function RentalsDetailClient({ id }: { id: string }) {
   });
 
   return (
-    <div className="p-6 space-y-4">
-      {/* 보증금 안내 배너(표시 전용) */}
+    <main className="space-y-8">
+      <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-2xl p-8 border border-indigo-100 dark:border-indigo-800/30 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+          <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+            <div className="bg-white dark:bg-slate-800 rounded-full p-3 shadow-md">
+              <Briefcase className="h-8 w-8 text-indigo-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">대여 상세정보</h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">대여번호: {data.id}</p>
+            </div>
+          </div>
+
+          <Button variant="outline" size="sm" asChild className="bg-white/60 backdrop-blur-sm border-indigo-200 hover:bg-indigo-50">
+            <Link href="/mypage?tab=rentals">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              목록으로 돌아가기
+            </Link>
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white/60 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-center space-x-2 mb-2">
+              <Package className="h-4 w-4 text-slate-500" />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">라켓 정보</span>
+            </div>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              {data.brand} {data.model}
+            </p>
+          </div>
+
+          <div className="bg-white/60 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-center space-x-2 mb-2">
+              <Clock className="h-4 w-4 text-slate-500" />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">대여 기간</span>
+            </div>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{data.days}일</p>
+          </div>
+
+          <div className="bg-white/60 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-center space-x-2 mb-2">
+              {getStatusIcon(data.status)}
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">대여 상태</span>
+            </div>
+            <Badge className={`px-3 py-1 text-sm font-medium ${getStatusBadgeColor(data.status)}`}>{getStatusLabel(data.status)}</Badge>
+          </div>
+        </div>
+      </div>
+
       {banner && (
-        <div className={`rounded-xl border p-4 ${banner.tone === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
-          <p className="font-medium">{banner.title}</p>
-          {banner.desc && <p className="text-sm mt-1 opacity-80">{banner.desc}</p>}
+        <div
+          className={`rounded-xl border p-6 ${
+            banner.tone === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-800/30 dark:text-emerald-200'
+              : 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/20 dark:border-blue-800/30 dark:text-blue-200'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-emerald-600 dark:text-emerald-400" /> : <AlertCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />}
+            <div>
+              <p className="font-semibold text-lg">{banner.title}</p>
+              {banner.desc && <p className="text-sm mt-1 opacity-80">{banner.desc}</p>}
+            </div>
+          </div>
         </div>
       )}
-      <Card>
-        <CardContent className="p-4 space-y-2">
-          <div className="text-sm text-muted-foreground">대여 번호</div>
-          <div className="font-mono text-sm">{data.id}</div>
 
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-sm text-muted-foreground">라켓</div>
-              <div className="font-medium">
-                {data.brand} {data.model}
+      <div className="grid gap-8 lg:grid-cols-2">
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <Package className="h-5 w-5 text-indigo-600" />
+              <span>대여 정보</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <Briefcase className="h-4 w-4 text-slate-500" />
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">라켓</p>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    {data.brand} {data.model}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <Clock className="h-4 w-4 text-slate-500" />
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">대여 기간</p>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">{data.days}일</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex-1">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">상태</p>
+                  <Badge className={`mt-1 ${getStatusBadgeColor(data.status)}`}>{getStatusLabel(data.status)}</Badge>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <Calendar className="h-4 w-4 text-slate-500" />
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">반납 예정일</p>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
+                </div>
               </div>
             </div>
-            <div>
-              <div className="text-sm text-muted-foreground">기간</div>
-              <div>{data.days}일</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">상태</div>
-              <div className="uppercase">{data.status}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">반납 예정</div>
-              <div>{data.outAt && data.dueAt ? new Date(data.dueAt).toLocaleDateString('ko-KR') : '-'}</div>
-            </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* 타임라인(표시 전용) */}
-          <div className="mt-4 rounded-lg bg-muted/40 p-3">
-            <div className="text-sm text-muted-foreground mb-1">대여 타임라인</div>
-            <ul className="text-sm space-y-1">
-              <li>
-                대여 시작: <span className="font-medium">{data.outAt ? new Date(data.outAt).toLocaleString() : '-'}</span>
-              </li>
-              <li>
-                반납 예정: <span className="font-medium">{data.outAt && data.dueAt ? new Date(data.dueAt).toLocaleDateString('ko-KR') : '-'}</span>
-              </li>
-              <li>
-                반납 완료: <span className="font-medium">{data.returnedAt ? new Date(data.returnedAt).toLocaleString() : '-'}</span>
-              </li>
-              <li>
-                환불 시각: <span className="font-medium">{data.depositRefundedAt ? new Date(data.depositRefundedAt).toLocaleString('ko-KR') : '-'}</span>
-              </li>
-            </ul>
-          </div>
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <CreditCard className="h-5 w-5 text-purple-600" />
+              <span>결제 정보</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <CreditCard className="h-4 w-4 text-slate-500" />
+                <div className="flex-1">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">대여 수수료</p>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">{fee.toLocaleString()}원</p>
+                </div>
+              </div>
 
-          <div className="mt-4 border-t pt-3 grid grid-cols-3 gap-3 text-right">
-            <div>
-              <div className="text-xs text-muted-foreground">수수료</div>
-              <div>{fee.toLocaleString()}원</div>
+              <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <Package className="h-4 w-4 text-slate-500" />
+                <div className="flex-1">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">보증금</p>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">{deposit.toLocaleString()}원</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-lg border border-indigo-100 dark:border-indigo-800/30">
+                <TrendingUp className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <div className="flex-1">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">총 결제 금액</p>
+                  <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{total.toLocaleString()}원</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <div className="text-xs text-muted-foreground">보증금</div>
-              <div>{deposit.toLocaleString()}원</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
+          <CardTitle className="flex items-center space-x-2">
+            <Calendar className="h-5 w-5 text-blue-600" />
+            <span>대여 타임라인</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">대여 시작</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{data.outAt ? formatDateTime(data.outAt) : '-'}</p>
+              </div>
             </div>
-            <div>
-              <div className="text-xs text-muted-foreground">결제 금액</div>
-              <div className="font-semibold">{total.toLocaleString()}원</div>
+
+            <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
+                <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">반납 예정</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
+                <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">반납 완료</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{data.returnedAt ? formatDateTime(data.returnedAt) : '-'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
+                <CreditCard className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">보증금 환불</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{data.depositRefundedAt ? formatDateTime(data.depositRefundedAt) : '-'}</p>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      <div className="flex justify-between">
-        <Link href="/mypage?tab=rentals">
-          <Button variant="outline">목록으로</Button>
-        </Link>
-      </div>
-    </div>
+    </main>
   );
 }
