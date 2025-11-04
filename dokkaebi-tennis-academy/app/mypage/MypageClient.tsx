@@ -251,7 +251,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-0">
+                    <CardContent className="p-6">
                       {selectedId ? (
                         <Suspense fallback={<div className="p-6">불러오는 중…</div>}>
                           <RentalsDetailClient id={selectedId} />

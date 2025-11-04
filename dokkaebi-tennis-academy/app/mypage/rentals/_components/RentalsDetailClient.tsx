@@ -55,7 +55,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
   });
 
   return (
-    <div className="p-0 space-y-4">
+    <div className="p-6 space-y-4">
       {/* 보증금 안내 배너(표시 전용) */}
       {banner && (
         <div className={`rounded-xl border p-4 ${banner.tone === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
