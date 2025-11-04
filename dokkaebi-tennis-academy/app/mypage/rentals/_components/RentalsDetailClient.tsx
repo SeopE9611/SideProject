@@ -85,7 +85,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
             </div>
             <div>
               <div className="text-sm text-muted-foreground">반납 예정</div>
-              <div>{data.dueAt ? new Date(data.dueAt).toLocaleDateString() : '-'}</div>
+              <div>{data.outAt && data.dueAt ? new Date(data.dueAt).toLocaleDateString('ko-KR') : '-'}</div>
             </div>
           </div>
 
@@ -97,7 +97,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
                 대여 시작: <span className="font-medium">{data.outAt ? new Date(data.outAt).toLocaleString() : '-'}</span>
               </li>
               <li>
-                반납 예정: <span className="font-medium">{data.dueAt ? new Date(data.dueAt).toLocaleDateString() : '-'}</span>
+                반납 예정: <span className="font-medium">{data.outAt && data.dueAt ? new Date(data.dueAt).toLocaleDateString('ko-KR') : '-'}</span>
               </li>
               <li>
                 반납 완료: <span className="font-medium">{data.returnedAt ? new Date(data.returnedAt).toLocaleString() : '-'}</span>
