@@ -60,7 +60,7 @@ export default function RentalsSuccessClient({ data }: Props) {
       </div>
 
       <div className="flex gap-2">
-        <Link href="/my/orders" className="h-10 px-4 rounded-lg border inline-flex items-center">
+        <Link href="/mypage?tab=rentals" className="h-10 px-4 rounded-lg border inline-flex items-center">
           마이페이지로
         </Link>
         <Link href="/rackets" className="h-10 px-4 rounded-lg bg-emerald-600 text-white inline-flex items-center">

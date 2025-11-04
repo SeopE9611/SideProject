@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
   // 반납 예정일
   const now = new Date();
-  const dueAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+  // const dueAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
   // 대여 주문 생성(status: created) — 결제 완료 시에만 used_rackets.status = 'rented' 로 전환됨
   const doc = {
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     status: 'created', // created -> paid -> out -> returned
     createdAt: now,
     updatedAt: now,
-    dueAt,
+    // dueAt,
     userId: userObjectId, // 로그인 사용자면 ObjectId, 아니면 null
   };
 

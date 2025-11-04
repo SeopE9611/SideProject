@@ -18,7 +18,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
-    status: doc.status,
+    status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status,
     amount: doc.amount, // { deposit, fee, total }
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null, // 출고 시각

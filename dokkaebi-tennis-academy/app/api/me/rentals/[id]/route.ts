@@ -37,10 +37,13 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
-    status: doc.status, // created | paid | out | returned
+    status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status, // created | paid | out | returned
     amount: doc.amount, // { fee, deposit, total }
     createdAt: doc.createdAt,
-    dueAt: doc.dueAt ?? null,
+    outAt: doc.outAt ?? null, // 출고 시각
+    dueAt: doc.dueAt ?? null, // 반납 예정
+    returnedAt: doc.returnedAt ?? null, // 반납 완료
+    depositRefundedAt: doc.depositRefundedAt ?? null, // 보증금 환불 시각
   });
 }
 

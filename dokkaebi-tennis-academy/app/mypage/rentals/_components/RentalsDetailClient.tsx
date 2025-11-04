@@ -102,6 +102,9 @@ export default function RentalsDetailClient({ id }: { id: string }) {
               <li>
                 반납 완료: <span className="font-medium">{data.returnedAt ? new Date(data.returnedAt).toLocaleString() : '-'}</span>
               </li>
+              <li>
+                환불 시각: <span className="font-medium">{data.depositRefundedAt ? new Date(data.depositRefundedAt).toLocaleString('ko-KR') : '-'}</span>
+              </li>
             </ul>
           </div>
 
