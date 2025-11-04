@@ -5,6 +5,19 @@ import Link from 'next/link';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
+// 재고 칩 컴포넌트
+function StockChip({ id, total }: { id: string; total: number }) {
+  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/rentals/active-count/${id}`, (u) => fetch(u, { credentials: 'include' }).then((r) => r.json()), { dedupingInterval: 5000 });
+  const qty = Math.max(1, total ?? 1);
+  const avail = Math.max(0, Number(data?.available ?? 0));
+  const soldOut = avail <= 0;
+  return (
+    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs ${soldOut ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
+      {qty > 1 ? (soldOut ? `0/${qty}` : `${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}
+    </span>
+  );
+}
+
 type Item = {
   id: string;
   brand: string;
@@ -14,6 +27,7 @@ type Item = {
   status: 'available' | 'rented' | 'sold' | 'inactive';
   rental?: { enabled: boolean; deposit: number; fee: { d7: number; d15: number; d30: number } };
   images?: string[];
+  quantity?: number;
 };
 
 export default function AdminRacketsClient() {
@@ -44,6 +58,7 @@ export default function AdminRacketsClient() {
                 <th className="p-3 text-right">가격</th>
                 <th className="p-3 text-center">상태</th>
                 <th className="p-3 text-center">대여</th>
+                <th className="p-3 text-center">재고</th>
                 <th className="p-3"></th>
               </tr>
             </thead>
@@ -55,6 +70,9 @@ export default function AdminRacketsClient() {
                   <td className="p-3 text-right">{it.price?.toLocaleString()}원</td>
                   <td className="p-3 text-center">{it.status}</td>
                   <td className="p-3 text-center">{it.rental?.enabled ? '가능' : '—'}</td>
+                  <td className="p-3 text-center">
+                    <StockChip id={it.id} total={it.quantity ?? 1} />
+                  </td>
                   <td className="p-3 text-right">
                     <Link href={`/admin/rackets/${it.id}/edit`} className="text-blue-600 underline">
                       수정
