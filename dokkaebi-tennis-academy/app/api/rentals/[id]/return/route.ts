@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { canTransitIdempotent } from '@/app/features/rentals/utils/status';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,8 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     return NextResponse.json({ ok: true });
   }
   // 상태 보호: 결제 전(created 등)은 반납 불가, 대여중(paid|out)만 허용
-  if (!['paid', 'out'].includes(rental.status)) {
+  // out → returned 만 허용(표준화)
+  if (!canTransitIdempotent(rental.status ?? 'created', 'returned') || rental.status !== 'out') {
     return NextResponse.json({ message: '반납 불가 상태' }, { status: 409 });
   }
   // 대여건 상태 업데이트

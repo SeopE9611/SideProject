@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { canTransitIdempotent } from '@/app/features/rentals/utils/status';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,12 +18,19 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   if (['out', 'returned'].includes(order.status)) {
     return NextResponse.json({ ok: true, id });
   }
-  // 결제 전에는 out 불가
-  if (order.status !== 'paid') {
+  // 결제전 paid → out 만 허용
+  if (!canTransitIdempotent(order.status ?? 'created', 'out') || order.status !== 'paid') {
     return NextResponse.json({ message: '대여 시작 불가 상태' }, { status: 409 });
   }
 
-  await db.collection('rental_orders').updateOne({ _id }, { $set: { status: 'out', outAt: new Date(), updatedAt: new Date() } });
+  // 출고 시간 / 반납 예정일(dueAt) 계산
+  const outAt = new Date();
+  const days = (order as any).days ?? 7;
+  const due = new Date(outAt);
+  due.setDate(due.getDate() + days);
+  const dueAt = due.toISOString();
+
+  await db.collection('rental_orders').updateOne({ _id }, { $set: { status: 'out', outAt, dueAt, updatedAt: new Date() } });
 
   // 라켓은 이미 paid에서 rented로 바뀌어 있음. 혹시 싱크 깨진 경우 보정
   if (order.racketId) {
