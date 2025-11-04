@@ -2,19 +2,29 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { CheckCircle, Package, Clock, ArrowRight, Shield, Truck, Phone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 type Props = {
-  data: { id: string; period: 7 | 15 | 30; fee: number; deposit: number; status: string; racket: { brand: string; model: string; condition: 'A' | 'B' | 'C' } | null };
+  data: {
+    id: string;
+    period: 7 | 15 | 30;
+    fee: number;
+    deposit: number;
+    status: string;
+    racket: { brand: string; model: string; condition: 'A' | 'B' | 'C' } | null;
+  };
 };
 
 export default function RentalsSuccessClient({ data }: Props) {
-  // 뒤로가기 방지(간단 가드) — 기존 /checkout/success 패턴과 유사
   useEffect(() => {
     try {
       sessionStorage.setItem('rentals-success', '1');
       const onPop = (e: PopStateEvent) => {
         if (sessionStorage.getItem('rentals-success') === '1') {
-          history.pushState(null, '', location.href); // 뒤로가기를 중립화
+          history.pushState(null, '', location.href);
         }
       };
       window.addEventListener('popstate', onPop);
@@ -28,44 +38,144 @@ export default function RentalsSuccessClient({ data }: Props) {
   const total = data.fee + data.deposit;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">대여 결제가 완료되었습니다 🎉</h1>
-
-      <div className="rounded-lg border p-4 space-y-2">
-        <div className="text-sm text-gray-500">대여 번호</div>
-        <div className="font-mono text-sm">{data.id}</div>
-
-        <div className="grid grid-cols-2 gap-2 text-sm pt-2">
-          <div className="text-gray-500">라켓</div>
-          <div>{data.racket ? `${data.racket.brand} ${data.racket.model} · ${data.racket.condition}` : '-'}</div>
-          <div className="text-gray-500">대여 기간</div>
-          <div>{data.period}일</div>
-        </div>
-
-        <div className="border-t pt-3 text-sm space-y-1">
-          <div className="flex justify-between">
-            <span>대여 수수료</span>
-            <span>{data.fee.toLocaleString()}원</span>
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white dark:from-green-700 dark:via-emerald-700 dark:to-teal-700">
+        <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
+        <div className="relative container py-16">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full mb-6">
+              <CheckCircle className="h-12 w-12 text-white" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">대여가 완료되었습니다!</h1>
+            <p className="text-xl text-green-100 mb-6">대여해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
           </div>
-          <div className="flex justify-between">
-            <span>보증금</span>
-            <span>{data.deposit.toLocaleString()}원</span>
-          </div>
-          <div className="flex justify-between text-base font-semibold pt-1">
-            <span>결제 금액</span>
-            <span>{total.toLocaleString()}원</span>
-          </div>
-          <div className="text-xs text-gray-500 pt-1">* 반납 완료 후 보증금 환불(연체/파손 시 차감)</div>
         </div>
       </div>
 
-      <div className="flex gap-2">
-        <Link href="/mypage?tab=rentals" className="h-10 px-4 rounded-lg border inline-flex items-center">
-          마이페이지로
-        </Link>
-        <Link href="/rackets" className="h-10 px-4 rounded-lg bg-emerald-600 text-white inline-flex items-center">
-          다른 라켓 보기
-        </Link>
+      <div className="container py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* 대여 정보 카드 */}
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-6">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <Package className="h-6 w-6 text-blue-600" />
+                대여 정보
+              </CardTitle>
+              <CardDescription className="mt-2 text-lg">
+                대여 번호: <span className="font-mono font-semibold text-blue-600">{data.id}</span>
+              </CardDescription>
+            </div>
+            <CardContent className="p-6">
+              {/* 라켓 정보 */}
+              <div className="mb-6">
+                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                  <Package className="h-5 w-5 text-purple-600" /> 대여 라켓
+                </h3>
+                <div className="p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-slate-200/50 dark:border-slate-600/50">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">{data.racket ? `${data.racket.brand} ${data.racket.model}` : '라켓 정보 없음'}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">상태 {data.racket?.condition}</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">대여 기간: {data.period}일</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator className="my-6" />
+
+              {/* 결제 금액 */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 dark:text-slate-400">대여 수수료</span>
+                  <span className="font-semibold text-lg">{data.fee.toLocaleString()}원</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600 dark:text-slate-400">보증금</span>
+                  <span className="font-semibold text-lg">{data.deposit.toLocaleString()}원</span>
+                </div>
+                <Separator />
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+                  <div className="flex justify-between items-center text-2xl font-bold">
+                    <span className="text-slate-800 dark:text-slate-200">총 결제 금액</span>
+                    <span className="text-blue-600">{total.toLocaleString()}원</span>
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">* 반납 완료 후 보증금 환불 (연체/파손 시 차감)</p>
+                </div>
+              </div>
+            </CardContent>
+
+            <CardFooter className="bg-gradient-to-r from-slate-50/50 via-blue-50/30 to-purple-50/30 dark:from-slate-800/50 dark:via-slate-700/30 dark:to-slate-600/30 p-6">
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <Button
+                  className="flex-1 h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:from-blue-700 hover:via-purple-700 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+                  asChild
+                >
+                  <Link href="/mypage?tab=rentals" className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    대여 내역 확인
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button className="flex-1 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300" asChild>
+                  <Link href="/rackets" className="flex items-center gap-2">
+                    다른 라켓 보기
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+
+          {/* 안내사항 */}
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10">
+              <CardTitle className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-indigo-600" />
+                대여 안내사항
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
+                    <Truck className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-1">배송 안내</h4>
+                      <p className="text-sm text-blue-600 dark:text-blue-400">결제 완료 후 배송이 시작됩니다.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
+                    <Clock className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-green-700 dark:text-green-400 mb-1">대여 기간</h4>
+                      <p className="text-sm text-green-600 dark:text-green-400">대여 기간은 {data.period}일입니다. 반납 기한을 꼭 지켜주세요.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
+                    <Shield className="h-5 w-5 text-purple-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-purple-700 dark:text-purple-400 mb-1">보증금 환불</h4>
+                      <p className="text-sm text-purple-600 dark:text-purple-400">반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg">
+                    <Phone className="h-5 w-5 text-orange-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-orange-700 dark:text-orange-400 mb-1">고객 지원</h4>
+                      <p className="text-sm text-orange-600 dark:text-orange-400">대여 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
