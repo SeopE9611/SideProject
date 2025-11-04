@@ -18,11 +18,17 @@ const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 export default function AdminRentalsClient() {
   const [status, setStatus] = useState<string>('');
+  const [brand, setBrand] = useState<string>('');
+  const [from, setFrom] = useState<string>(''); // YYYY-MM-DD
+  const [to, setTo] = useState<string>('');
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
   const qs = new URLSearchParams();
   if (status) qs.set('status', status);
+  if (brand) qs.set('brand', brand);
+  if (from) qs.set('from', from);
+  if (to) qs.set('to', to);
   qs.set('page', String(page));
   qs.set('pageSize', String(pageSize));
   const key = `/api/admin/rentals?${qs.toString()}`;
@@ -46,7 +52,7 @@ export default function AdminRentalsClient() {
     <div className="p-4 max-w-6xl mx-auto space-y-4">
       <h1 className="text-xl font-semibold">대여 주문 관리</h1>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <select
           className="h-9 rounded border px-2"
           value={status}
@@ -60,7 +66,36 @@ export default function AdminRentalsClient() {
           <option value="paid">paid</option>
           <option value="out">out</option>
           <option value="returned">returned</option>
+          <option value="canceled">canceled</option>
         </select>
+        <input
+          className="h-9 rounded border px-2"
+          placeholder="브랜드"
+          value={brand}
+          onChange={(e) => {
+            setPage(1);
+            setBrand(e.target.value);
+          }}
+        />
+        <input
+          type="date"
+          className="h-9 rounded border px-2"
+          value={from}
+          onChange={(e) => {
+            setPage(1);
+            setFrom(e.target.value);
+          }}
+        />
+        <span className="text-sm text-gray-500">~</span>
+        <input
+          type="date"
+          className="h-9 rounded border px-2"
+          value={to}
+          onChange={(e) => {
+            setPage(1);
+            setTo(e.target.value);
+          }}
+        />
       </div>
 
       <div className="rounded-lg border bg-white">
