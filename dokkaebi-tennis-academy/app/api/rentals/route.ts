@@ -62,7 +62,6 @@ export async function POST(req: Request) {
     createdAt: now,
     updatedAt: now,
     dueAt,
-    // (NEW)
     userId: userObjectId, // 로그인 사용자면 ObjectId, 아니면 null
   };
 

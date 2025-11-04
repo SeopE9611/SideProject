@@ -21,6 +21,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     status: doc.status,
     amount: doc.amount, // { deposit, fee, total }
     createdAt: doc.createdAt,
-    dueAt: doc.dueAt,
+    outAt: doc.outAt ?? null, // 출고 시각
+    dueAt: doc.dueAt ?? null, // 반납 예정
+    returnedAt: doc.returnedAt ?? null, // 반납 완료
+    depositRefundedAt: doc.depositRefundedAt ?? null, // 보증금 환불 시각
   });
 }
