@@ -7,10 +7,11 @@ type RentalRow = {
   id: string;
   brand: string;
   model: string;
-  status: 'created' | 'paid' | 'out' | 'returned';
+  status: 'created' | 'paid' | 'out' | 'returned' | 'canceled';
   days: number;
   amount: { fee: number; deposit: number; total: number };
   dueAt?: string;
+  depositRefundedAt?: string; // 환불 완료 시각(표시/토글용)
 };
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
@@ -34,6 +35,22 @@ export default function AdminRentalsClient() {
   const key = `/api/admin/rentals?${qs.toString()}`;
 
   const { data, isLoading, mutate } = useSWR<{ items: RentalRow[]; total: number }>(key, fetcher);
+
+  // 보증금 환불 처리/해제 (멱등)
+  const markRefund = async (id: string, mark: boolean) => {
+    const res = await fetch(`/api/admin/rentals/${encodeURIComponent(id)}/deposit/refund`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action: mark ? 'mark' : 'clear' }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json?.ok) {
+      alert(json?.message || '처리 실패');
+      return;
+    }
+    mutate(); // 목록 재검증
+  };
 
   const onReturn = async (id?: string) => {
     const safe = (id ?? '').trim();
@@ -130,10 +147,23 @@ export default function AdminRentalsClient() {
                     {won(r.amount.fee)} / {won(r.amount.deposit)} / <b>{won(r.amount.total)}</b>
                   </td>
                   <td className="p-2">{r.status}</td>
-                  <td className="p-2 text-right">
+                  <td className="p-2 text-right space-x-2">
+                    {/* 반납 처리 버튼 (paid|out 일 때만) */}
                     <button className="h-8 rounded bg-emerald-600 px-3 text-white disabled:opacity-50" disabled={!(rid && (r.status === 'paid' || r.status === 'out'))} onClick={() => onReturn(rid)}>
                       반납 처리
                     </button>
+                    {/* returned 상태에서만 환불 토글 */}
+                    {r.status === 'returned' &&
+                      rid &&
+                      (r.depositRefundedAt ? (
+                        <button className="h-8 rounded border px-3 hover:bg-gray-50" title="보증금 환불 처리 해제" onClick={() => markRefund(rid, false)}>
+                          환불 해제
+                        </button>
+                      ) : (
+                        <button className="h-8 rounded border px-3 hover:bg-gray-50" title="보증금 환불 처리" onClick={() => markRefund(rid, true)}>
+                          환불 처리
+                        </button>
+                      ))}
                   </td>
                 </tr>
               );
