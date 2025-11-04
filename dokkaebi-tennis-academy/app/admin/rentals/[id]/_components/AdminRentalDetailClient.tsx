@@ -2,6 +2,7 @@
 
 import useSWR from 'swr';
 import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
@@ -12,11 +13,14 @@ export default function AdminRentalDetailClient() {
   const router = useRouter();
 
   const { data, isLoading, mutate } = useSWR(id ? `/api/rentals/${id}` : null, fetcher);
+  const [busy, setBusy] = useState(false); //  전체 상세 화면 처리 중
 
   // 보증금 환불 처리/해제(멱등)
   const onToggleRefund = async (mark: boolean) => {
     const ok = confirm(mark ? '보증금 환불 처리할까요?' : '보증금 환불 처리 해제할까요?');
     if (!ok) return;
+    if (busy) return;
+    setBusy(true);
     const res = await fetch(`/api/admin/rentals/${id}/deposit/refund`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -26,10 +30,12 @@ export default function AdminRentalDetailClient() {
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json?.ok) {
       alert(json?.message || '처리 실패');
+      setBusy(false);
       return;
     }
     await mutate(); // 상세 재검증
     alert(mark ? '환불 처리 완료' : '환불 해제 완료');
+    setBusy(false);
   };
 
   const onOut = async () => {
@@ -85,21 +91,39 @@ export default function AdminRentalDetailClient() {
         </div>
 
         <div className="mt-4 flex gap-2">
-          <button className="h-9 rounded bg-sky-600 px-3 text-white disabled:opacity-50" disabled={!(data.status === 'paid')} onClick={onOut}>
-            대여 시작(out)
+          <button
+            className="h-9 rounded bg-sky-600 px-3 text-white disabled:opacity-50"
+            disabled={busy || !(data.status === 'paid')}
+            onClick={async () => {
+              if (busy) return;
+              setBusy(true);
+              await onOut();
+              setBusy(false);
+            }}
+          >
+            {busy ? '처리중…' : '대여 시작(out)'}
           </button>
-          <button className="h-9 rounded bg-emerald-600 px-3 text-white disabled:opacity-50" disabled={!['paid', 'out'].includes(data.status)} onClick={onReturn}>
-            반납 처리(return)
+          <button
+            className="h-9 rounded bg-emerald-600 px-3 text-white disabled:opacity-50"
+            disabled={busy || !['paid', 'out'].includes(data.status)}
+            onClick={async () => {
+              if (busy) return;
+              setBusy(true);
+              await onReturn();
+              setBusy(false);
+            }}
+          >
+            {busy ? '처리중…' : '반납 처리(return)'}
           </button>
           {/* returned 상태에서만 환불 토글 노출 */}
           {data.status === 'returned' &&
             (data.depositRefundedAt ? (
-              <button className="h-9 rounded border px-3 hover:bg-gray-50" title="보증금 환불 처리 해제" onClick={() => onToggleRefund(false)}>
-                환불 해제
+              <button className="h-9 rounded border px-3 hover:bg-gray-50" title="보증금 환불 처리 해제" disabled={busy} onClick={() => onToggleRefund(false)}>
+                {busy ? '처리중…' : '환불 해제'}
               </button>
             ) : (
-              <button className="h-9 rounded border px-3 hover:bg-gray-50" title="보증금 환불 처리" onClick={() => onToggleRefund(true)}>
-                환불 처리
+              <button className="h-9 rounded border px-3 hover:bg-gray-50" title="보증금 환불 처리" disabled={busy} onClick={() => onToggleRefund(true)}>
+                {busy ? '처리중…' : '환불 처리'}
               </button>
             ))}
         </div>
