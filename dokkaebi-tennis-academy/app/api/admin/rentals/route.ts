@@ -47,13 +47,16 @@ export async function GET(req: Request) {
     days: r.days ?? r.period ?? 0,
     amount: r.amount ?? { fee: r.fee ?? 0, deposit: r.deposit ?? 0, total: (r.fee ?? 0) + (r.deposit ?? 0) },
     createdAt: r.createdAt,
-    dueAt: r.dueAt,
+    outAt: r.outAt ?? null, // (표시용) 출고 시각
+    dueAt: r.dueAt ?? null, // 반납 예정일
+    returnedAt: r.returnedAt ?? null, // 반납 완료 시각
+    depositRefundedAt: r.depositRefundedAt ?? null, // 환불 완료 시각(토글용)
   }));
 
   return NextResponse.json({
     page,
     pageSize,
     total,
-    items,
+    items: mapped,
   });
 }
