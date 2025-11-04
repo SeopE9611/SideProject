@@ -49,6 +49,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         d30: Number(body?.rental?.fee?.d30 ?? 0),
       },
     },
+    quantity: Math.max(1, Number(body.quantity ?? 1)),
     updatedAt: new Date(),
   };
 

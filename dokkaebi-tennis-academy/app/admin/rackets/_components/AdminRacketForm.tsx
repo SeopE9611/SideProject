@@ -13,6 +13,7 @@ export type RacketForm = {
   spec: { weight: number | null; balance: number | null; headSize: number | null; pattern: string; gripSize: string };
   rental: { enabled: boolean; deposit: number; fee: { d7: number; d15: number; d30: number } };
   images: string[]; // Supabase 업로드로 교체 예정
+  quantity: number;
 };
 
 type Props = {
@@ -27,6 +28,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
     model: initial?.model ?? '',
     year: initial?.year ?? null,
     price: initial?.price ?? 0,
+    quantity: 1,
     condition: (initial?.condition as any) ?? 'B',
     status: (initial?.status as any) ?? 'available',
     spec: {
@@ -56,6 +58,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
       ...form,
       year: form.year ? Number(form.year) : null,
       price: Number(form.price || 0),
+      quantity: Math.max(1, Number(form.quantity || 1)),
       spec: {
         weight: form.spec.weight ? Number(form.spec.weight) : null,
         balance: form.spec.balance ? Number(form.spec.balance) : null,
@@ -86,6 +89,10 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         <input className="border rounded h-10 px-3" placeholder="모델" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
         <input className="border rounded h-10 px-3" placeholder="연식(숫자)" value={form.year ?? ''} onChange={(e) => setForm({ ...form, year: e.target.value ? Number(e.target.value) : null })} />
         <input className="border rounded h-10 px-3" placeholder="가격(원)" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value || 0) })} />
+        <label className="block text-sm font-medium">보유 수량</label>
+        <input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Math.max(1, Number(e.target.value || 1)) })} className="mt-1 w-40 rounded border px-2 py-1" />
+        <p className="text-xs text-slate-500">* 최소 1. 다수 보유 시 사용자에게 ‘잔여 n/총 m’로 표시됩니다.</p>
+
         <select className="border rounded h-10 px-3" value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value as any })}>
           <option value="A">A(최상)</option>
           <option value="B">B(양호)</option>

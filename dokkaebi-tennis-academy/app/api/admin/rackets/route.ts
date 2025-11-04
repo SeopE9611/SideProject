@@ -30,7 +30,10 @@ export async function GET(req: Request) {
     .skip((page - 1) * pageSize)
     .limit(pageSize);
 
-  const [items, total] = await Promise.all([cursor.project({ brand: 1, model: 1, price: 1, condition: 1, status: 1, rental: 1, images: 1 }).toArray(), db.collection('used_rackets').countDocuments(q)]);
+  const [items, total] = await Promise.all([
+    cursor.project({ brand: 1, model: 1, price: 1, condition: 1, status: 1, rental: 1, images: 1, quantity: 1 }).toArray(), // ✅ 수량 포함
+    db.collection('used_rackets').countDocuments(q),
+  ]);
 
   const mapped = items.map((r: any) => ({ ...r, id: r._id.toString(), _id: undefined }));
   return NextResponse.json({ items: mapped, total, page, pageSize });
@@ -66,6 +69,7 @@ export async function POST(req: Request) {
         d30: Number(body?.rental?.fee?.d30 ?? 0),
       },
     },
+    quantity: Math.max(1, Number(body.quantity ?? 1)),
     createdAt: new Date(),
     updatedAt: new Date(),
   };
