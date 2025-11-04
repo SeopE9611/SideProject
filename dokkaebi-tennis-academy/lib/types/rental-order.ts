@@ -1,14 +1,11 @@
-// 대여 주문 도메인(기간, 보증금/수수료, 상태추적)
+// 대여 도메인 상태
+// created → paid → out → returned (종결) / canceled(종결)
 export type RentalStatus =
-  | 'pending' // 생성됨(미결제)
+  | 'created' // 생성됨(미결제)
   | 'paid' // 결제완료(출고 전)
-  | 'shipped' // 출고/배송 중
-  | 'in_use' // 수령/사용 중(기간 카운트)
+  | 'out' // 출고/대여중
   | 'returned' // 반납 완료
-  | 'late' // 연체
-  | 'lost' // 분실 처리
-  | 'damaged' // 파손 처리
-  | 'closed'; // 정산 종료
+  | 'canceled'; // 취소(종결)
 
 export type RentalOrder = {
   id: string;
@@ -16,21 +13,33 @@ export type RentalOrder = {
   guestInfo?: { name: string; email?: string; phone?: string };
 
   racketId: string; // used_rackets._id
-  period: 7 | 15 | 30; // 대여 기간
-  deposit: number; // 보증금(결제 시 선결제)
-  fee: number; // 기간별 수수료
+  days: 7 | 15 | 30; // 기간: UI·API에서 실사용하는 7/15/30일 단위
   status: RentalStatus;
+
+  // 금액: 보증금/수수료/총액
+  amount: {
+    fee: number; // 기간별 대여 수수료
+    deposit: number; // 보증금(선결제)
+    total: number; // fee + deposit
+  };
 
   shipping?: any; // 최소형(후속 작업에서 스키마 분리)
   createdAt: string;
   dueDate?: string; // 반납 예정일(배송완료 기준으로 후처리 권장)
-  returnedAt?: string;
+  outAt?: string; // 출고 일시
+  dueAt?: string; // 반납 예정일
+  returnedAt?: string; // 반납 완료 일시
+  canceledAt?: string; // 취소 일시
 
   penalties?: {
-    lateFee?: number;
-    damageFee?: number;
-    note?: string;
+    lateFee?: number; // 연체료
+    damageFee?: number; // 파손 비용
+    note?: string; // 비고
   };
 
-  creditIssued?: { amount: number; expiresAt: string }; // 구매 크레딧(반납 이후)
+  // 보증금 환급 시점
+  depositRefundedAt?: string;
+
+  // 반납 이후 크레딧
+  creditIssued?: { amount: number; expiresAt: string };
 };
