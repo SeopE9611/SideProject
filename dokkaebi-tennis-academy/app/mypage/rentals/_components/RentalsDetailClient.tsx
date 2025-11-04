@@ -4,16 +4,20 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { getDepositBanner } from '@/app/features/rentals/utils/ui';
 
 type Rental = {
   id: string;
   brand: string;
   model: string;
   days: number;
-  status: 'created' | 'paid' | 'out' | 'returned';
+  status: 'created' | 'paid' | 'out' | 'returned' | 'canceled';
   amount?: { fee?: number; deposit?: number; total?: number };
   createdAt?: string;
   dueAt?: string | null;
+  outAt?: string | null; // 출고 시각(표시용)
+  returnedAt?: string | null; // 반납 완료 시각(표시용)
+  depositRefundedAt?: string | null; // 보증금 환불 완료 시각(표시용)
 };
 
 export default function RentalsDetailClient({ id }: { id: string }) {
@@ -43,8 +47,22 @@ export default function RentalsDetailClient({ id }: { id: string }) {
   const deposit = data.amount?.deposit ?? 0;
   const total = data.amount?.total ?? fee + deposit;
 
+  // 배너용 계산
+  const banner = getDepositBanner({
+    status: data.status,
+    returnedAt: data.returnedAt ?? undefined,
+    depositRefundedAt: data.depositRefundedAt ?? undefined,
+  });
+
   return (
     <div className="p-0 space-y-4">
+      {/* 보증금 안내 배너(표시 전용) */}
+      {banner && (
+        <div className={`rounded-xl border p-4 ${banner.tone === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+          <p className="font-medium">{banner.title}</p>
+          {banner.desc && <p className="text-sm mt-1 opacity-80">{banner.desc}</p>}
+        </div>
+      )}
       <Card>
         <CardContent className="p-4 space-y-2">
           <div className="text-sm text-muted-foreground">대여 번호</div>
@@ -69,6 +87,22 @@ export default function RentalsDetailClient({ id }: { id: string }) {
               <div className="text-sm text-muted-foreground">반납 예정</div>
               <div>{data.dueAt ? new Date(data.dueAt).toLocaleDateString() : '-'}</div>
             </div>
+          </div>
+
+          {/* 타임라인(표시 전용) */}
+          <div className="mt-4 rounded-lg bg-muted/40 p-3">
+            <div className="text-sm text-muted-foreground mb-1">대여 타임라인</div>
+            <ul className="text-sm space-y-1">
+              <li>
+                대여 시작: <span className="font-medium">{data.outAt ? new Date(data.outAt).toLocaleString() : '-'}</span>
+              </li>
+              <li>
+                반납 예정: <span className="font-medium">{data.dueAt ? new Date(data.dueAt).toLocaleDateString() : '-'}</span>
+              </li>
+              <li>
+                반납 완료: <span className="font-medium">{data.returnedAt ? new Date(data.returnedAt).toLocaleString() : '-'}</span>
+              </li>
+            </ul>
           </div>
 
           <div className="mt-4 border-t pt-3 grid grid-cols-3 gap-3 text-right">
