@@ -403,6 +403,8 @@ const Header = () => {
               })}
             </nav>
 
+            <div className="border rounded p-3">지역 날씨 들어갈 예정(오늘은 테니스 치기 좋은 날씨네요!등등)</div>
+
             {/* 2) 검색 (PC 전용) */}
             <div className="hidden lg:flex flex-1 justify-end">
               <div className="w-full max-w-[560px] min-w-[360px] xl:max-w-[640px]">
