@@ -13,6 +13,25 @@ export default function AdminRentalDetailClient() {
 
   const { data, isLoading, mutate } = useSWR(id ? `/api/rentals/${id}` : null, fetcher);
 
+  // 보증금 환불 처리/해제(멱등)
+  const onToggleRefund = async (mark: boolean) => {
+    const ok = confirm(mark ? '보증금 환불 처리할까요?' : '보증금 환불 처리 해제할까요?');
+    if (!ok) return;
+    const res = await fetch(`/api/admin/rentals/${id}/deposit/refund`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action: mark ? 'mark' : 'clear' }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json?.ok) {
+      alert(json?.message || '처리 실패');
+      return;
+    }
+    await mutate(); // 상세 재검증
+    alert(mark ? '환불 처리 완료' : '환불 해제 완료');
+  };
+
   const onOut = async () => {
     if (!confirm('대여를 시작(out) 처리하시겠어요?')) return;
     const res = await fetch(`/api/rentals/${id}/out`, { method: 'POST' });
@@ -72,6 +91,35 @@ export default function AdminRentalDetailClient() {
           <button className="h-9 rounded bg-emerald-600 px-3 text-white disabled:opacity-50" disabled={!['paid', 'out'].includes(data.status)} onClick={onReturn}>
             반납 처리(return)
           </button>
+          {/* returned 상태에서만 환불 토글 노출 */}
+          {data.status === 'returned' &&
+            (data.depositRefundedAt ? (
+              <button className="h-9 rounded border px-3 hover:bg-gray-50" title="보증금 환불 처리 해제" onClick={() => onToggleRefund(false)}>
+                환불 해제
+              </button>
+            ) : (
+              <button className="h-9 rounded border px-3 hover:bg-gray-50" title="보증금 환불 처리" onClick={() => onToggleRefund(true)}>
+                환불 처리
+              </button>
+            ))}
+        </div>
+        {/* 타임라인(표시 전용) */}
+        <div className="mt-4 rounded-lg bg-muted/40 p-3">
+          <div className="text-sm text-muted-foreground mb-1">대여 타임라인</div>
+          <ul className="text-sm space-y-1">
+            <li>
+              대여 시작: <span className="font-medium">{data.outAt ? new Date(data.outAt).toLocaleString('ko-KR') : '-'}</span>
+            </li>
+            <li>
+              반납 예정: <span className="font-medium">{data.dueAt ? new Date(data.dueAt).toLocaleDateString('ko-KR') : '-'}</span>
+            </li>
+            <li>
+              반납 완료: <span className="font-medium">{data.returnedAt ? new Date(data.returnedAt).toLocaleString('ko-KR') : '-'}</span>
+            </li>
+            <li>
+              환불 시각: <span className="font-medium">{data.depositRefundedAt ? new Date(data.depositRefundedAt).toLocaleString('ko-KR') : '-'}</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
