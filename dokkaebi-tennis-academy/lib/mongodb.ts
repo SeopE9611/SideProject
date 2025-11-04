@@ -2,6 +2,7 @@ import { MongoClient } from 'mongodb';
 import { ensureReviewIndexes } from '@/lib/reviews.maintenance';
 import { ensurePassIndexes } from '@/lib/passes.indexes';
 import { ensureBoardIndexes } from '@/lib/boards.indexes';
+import { ensureRentalIndexes } from '@/lib/rentals.indexes';
 
 const uri = process.env.MONGODB_URI;
 if (!uri) throw new Error('⛔ MONGODB_URI 환경변수가 설정되지 않았습니다.');
@@ -23,6 +24,9 @@ declare global {
 
   // boards 컬렉션 인덱스 보장 상태
   var _boardsIndexesReady: Promise<void> | null | undefined;
+
+  // rentals 컬렉션 인덱스 보장 상태
+  var _rentalsIndexesReady: Promise<void> | null | undefined;
 }
 
 let client: MongoClient;
@@ -68,6 +72,15 @@ export async function getDb() {
     });
   }
   await global._boardsIndexesReady;
+
+  // rentals 인덱스 보장(1회)
+  if (!global._rentalsIndexesReady) {
+    global._rentalsIndexesReady = ensureRentalIndexes(db).catch((e) => {
+      console.error('[rentals] ensureRentalIndexes failed', e);
+      global._rentalsIndexesReady = null;
+    });
+  }
+  await global._rentalsIndexesReady;
 
   // users.email unique 인덱스 보장
   if (!global._usersIndexesReady) {
