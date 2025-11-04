@@ -26,14 +26,14 @@ export async function POST(req: Request) {
   const racket = await db.collection('used_rackets').findOne({ _id: new ObjectId(racketId) });
   if (!racket) return NextResponse.json({ message: '라켓 없음' }, { status: 404 });
 
-  // 진행 중(active) 대여건 존재 여부 검사
-  // created / paid / out = 아직 반납(returned)되지 않은 상태
-  const active = await db.collection('rental_orders').findOne({
+  // 재고 기반 가드: 보유 수량 대비 진행중(paid|out) 건수
+  const quantity = Number(racket?.quantity ?? 1);
+  const activeCount = await db.collection('rental_orders').countDocuments({
     racketId: racket._id,
-    status: { $in: ['created', 'paid', 'out'] },
+    status: { $in: ['paid', 'out'] }, // 'created'는 예약 대기라 제외(원하면 포함 가능)
   });
-  if (active) {
-    return NextResponse.json({ message: '이미 진행 중인 대여가 있습니다.' }, { status: 409 });
+  if (activeCount >= quantity) {
+    return NextResponse.json({ ok: false, code: 'NO_STOCK', message: '현재 대여 가능 수량이 없습니다.' }, { status: 409 });
   }
 
   // 라켓 자체 상태로도 차단(판매완료/비노출 등)

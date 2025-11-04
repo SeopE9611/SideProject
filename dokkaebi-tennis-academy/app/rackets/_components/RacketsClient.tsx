@@ -108,7 +108,13 @@ export default function RacketsClient() {
 }
 
 function RacketAvailBadge({ id }: { id: string }) {
-  const { data } = useSWR<{ ok: boolean; count: number }>(`/api/rentals/active-count/${id}`, fetcher);
-  const isRented = !!(data?.ok && data.count > 0);
-  return <div className={`text-xs ${isRented ? 'text-rose-600' : 'text-emerald-600'}`}>{isRented ? '대여 중' : '대여 가능'}</div>;
+  const { data } = useSWR<{ ok: boolean; count: number; quantity: number; available: number }>(
+    `/api/rentals/active-count/${id}`,
+    fetcher,
+    { dedupingInterval: 5000 } // (선택) 5초 이내 중복 호출 방지
+  );
+  const qty = Number(data?.quantity ?? 1);
+  const avail = Math.max(0, Number(data?.available ?? qty - Number(data?.count ?? 0)));
+  const soldOut = avail <= 0;
+  return <div className={`text-xs ${soldOut ? 'text-rose-600' : 'text-emerald-600'}`}>{qty > 1 ? (soldOut ? `대여 중 (0/${qty})` : `잔여 ${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}</div>;
 }

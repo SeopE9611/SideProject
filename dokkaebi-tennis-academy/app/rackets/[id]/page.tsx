@@ -12,12 +12,26 @@ async function getData(id: string) {
   return res.json();
 }
 
+// 잔여/총수량 조회 (active-count)
+async function getStock(id: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/api/rentals/active-count/${id}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) return { ok: false, quantity: 1, available: 0 };
+  return res.json();
+}
+
 export default async function RacketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const doc = await getData(id);
   if (!doc) {
     return <div className="max-w-4xl mx-auto p-4">존재하지 않는 라켓입니다.</div>;
   }
+
+  const stock = await getStock(id);
+  const qty = Number(stock?.quantity ?? 1);
+  const avail = Math.max(0, Number(stock?.available ?? 0));
+  const soldOut = avail <= 0;
 
   return (
     <div className="max-w-5xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -47,6 +61,15 @@ export default async function RacketDetailPage({ params }: { params: Promise<{ i
           <h1 className="text-2xl font-semibold">{doc.model}</h1>
           <div className="text-sm">
             상태: <span className="font-semibold">{doc.condition}</span>
+          </div>
+          {/* 잔여/총수량 배지 */}
+          <div className="mt-1">
+            <span
+              className={`inline-flex items-center rounded px-2 py-0.5 text-xs
+              ${soldOut ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}
+            >
+              {qty > 1 ? (soldOut ? `대여 중 (0/${qty})` : `잔여 ${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}
+            </span>
           </div>
         </div>
 
@@ -82,7 +105,13 @@ export default async function RacketDetailPage({ params }: { params: Promise<{ i
 
           {/* 대여: 모달 열기 → 아래 컴포넌트에서 실제 동작 */}
           {doc?.rental?.enabled ? (
-            <RentDialog id={doc.id} rental={doc.rental} brand={doc.brand} model={doc.model} />
+            soldOut ? (
+              <button className="h-10 px-4 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed" disabled title="현재 대여 가능 수량이 없습니다.">
+                품절(대여 불가)
+              </button>
+            ) : (
+              <RentDialog id={doc.id} rental={doc.rental} brand={doc.brand} model={doc.model} />
+            )
           ) : (
             <button className="h-10 px-4 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed" disabled>
               대여 불가
