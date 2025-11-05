@@ -41,7 +41,7 @@ export default async function RacketDetailPage({ params }: { params: Promise<{ i
 
   const stock = await getStock(id);
   const qty = Number(stock?.quantity ?? 1);
-  const avail = Math.max(0, Number(stock?.available ?? 0));
+  const avail = Number.isFinite(stock?.available) ? Math.max(0, Number(stock?.available)) : 0;
 
   return <RacketDetailClient racket={doc} stock={{ quantity: qty, available: avail }} />;
 }

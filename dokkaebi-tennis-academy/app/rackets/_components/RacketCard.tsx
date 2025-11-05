@@ -43,7 +43,8 @@ const conditionColors: Record<string, string> = {
 function RacketAvailBadge({ id }: { id: string }) {
   const { data } = useSWR<{ ok: boolean; count: number; quantity: number; available: number }>(`/api/rentals/active-count/${id}`, fetcher, { dedupingInterval: 5000 });
   const qty = Number(data?.quantity ?? 1);
-  const avail = Math.max(0, Number(data?.available ?? qty - Number(data?.count ?? 0)));
+  // 우선순위: 서버의 available → 없을 때만 count로 보정
+  const avail = Number.isFinite(data?.available) ? Math.max(0, Number(data?.available)) : Math.max(0, qty - Number(data?.count ?? 0));
   const soldOut = avail <= 0;
   return (
     <div className={`text-xs font-medium ${soldOut ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{qty > 1 ? (soldOut ? `대여 중 (0/${qty})` : `잔여 ${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}</div>
@@ -82,8 +83,12 @@ const RacketCard = React.memo(
                   </div>
                 </div>
                 <div className="text-left lg:text-right">
-                  <div className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
-                  {racket.rental?.enabled && <div className="text-sm text-muted-foreground mt-1">대여 가능</div>}
+                  <div className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>+{' '}
+                  {racket.rental?.enabled && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      <RacketAvailBadge id={racket.id} />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -147,9 +152,9 @@ const RacketCard = React.memo(
                 {conditionLabels[racket.condition]}
               </Badge>
               {racket.rental?.enabled && (
-                <Badge variant="outline" className="text-xs border-emerald-200 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400">
-                  대여가능
-                </Badge>
+                <div className="ml-1">
+                  <RacketAvailBadge id={racket.id} />
+                </div>
               )}
             </div>
 
