@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, Heart, ShoppingCart } from 'lucide-react';
+import { Briefcase, Eye, Heart, ShoppingCart } from 'lucide-react';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
@@ -96,9 +96,6 @@ const RacketCard = React.memo(
                 </Link>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon" className="hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:border-red-500 bg-transparent">
-                    <Heart className="w-4 h-4" />
-                  </Button>
                   <Button variant="outline" size="icon" className="hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:border-blue-500 bg-transparent">
                     <ShoppingCart className="w-4 h-4" />
                   </Button>
@@ -137,10 +134,6 @@ const RacketCard = React.memo(
                   <Eye className="w-4 h-4 mr-1" />
                   보기
                 </Button>
-
-                <Button size="sm" variant="outline" className="bg-white/90 dark:bg-slate-700/90 hover:bg-white dark:hover:bg-slate-600 shadow-lg" onClick={(e) => e.stopPropagation()}>
-                  <Heart className="w-4 h-4" />
-                </Button>
               </div>
             </div>
           </div>
@@ -172,8 +165,8 @@ const RacketCard = React.memo(
               <div className="font-bold text-lg text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
             </div>
             <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 shadow-lg">
-              <ShoppingCart className="w-4 h-4 mr-1" />
-              담기
+              <Briefcase className="w-4 h-4 mr-1" />
+              대여하기
             </Button>
           </CardFooter>
         </Card>
