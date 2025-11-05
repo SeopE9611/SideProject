@@ -16,6 +16,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
+import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 
 type RentalRow = {
   id: string;
@@ -191,8 +192,14 @@ export default function AdminRentalsClient() {
   return (
     <div className="container py-6">
       <div className="mx-auto max-w-7xl mb-5">
-        <h1 className="text-4xl font-semibold tracking-tight">대여 관리</h1>
-        <p className="mt-1 text-xs text-muted-foreground">도깨비 테니스 아카데미의 모든 라켓 대여를 관리하고 처리하세요.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-semibold tracking-tight">대여 관리</h1>
+            <p className="mt-1 text-xs text-muted-foreground">도깨비 테니스 아카데미의 모든 라켓 대여를 관리하고 처리하세요.</p>
+          </div>
+          {/* 유지보수: created 청소 버튼 */}
+          <CleanupCreatedButton hours={2} />
+        </div>
       </div>
 
       <Card className="mb-5 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-6 py-5">
