@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { canTransitIdempotent } from '@/app/features/rentals/utils/status';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +51,16 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   if (u.matchedCount === 0) {
     return NextResponse.json({ ok: false, code: 'INVALID_STATE' }, { status: 409 });
   }
+  // 처리 이력 기록(액터: admin 식별 시 sub 사용)
+  const jar = await cookies();
+  const at = jar.get('accessToken')?.value;
+  const payload = at ? verifyAccessToken(at) : null;
+  await writeRentalHistory(db, id, {
+    action: 'out',
+    from: 'paid',
+    to: 'out',
+    actor: { role: payload?.role === 'admin' ? 'admin' : 'system', id: payload?.sub },
+  });
   // 라켓은 이미 paid에서 rented로 바뀌어 있음. 혹시 싱크 깨진 경우 보정
   if (order.racketId) {
     await db.collection('used_rackets').updateOne({ _id: new ObjectId(String(order.racketId)) }, { $set: { status: 'rented', updatedAt: new Date() } });

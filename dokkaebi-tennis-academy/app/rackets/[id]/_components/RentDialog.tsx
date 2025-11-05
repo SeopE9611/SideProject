@@ -14,6 +14,15 @@ export default function RentDialog({ id, rental, brand, model }: { id: string; r
 
   const fee = period === 7 ? rental.fee.d7 : period === 15 ? rental.fee.d15 : rental.fee.d30;
 
+  // JSON 파싱 안전 헬퍼(응답이 HTML이거나 빈 바디여도 안전)
+  const safeJson = async (res: Response) => {
+    try {
+      return await res.json();
+    } catch {
+      return {};
+    }
+  };
+
   const onSubmit = async () => {
     try {
       setLoading(true);
@@ -22,7 +31,7 @@ export default function RentDialog({ id, rental, brand, model }: { id: string; r
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ racketId: id, days: period }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) {
         alert(json?.message ?? '대여 생성에 실패했어요.');
         return;
@@ -94,7 +103,7 @@ export default function RentDialog({ id, rental, brand, model }: { id: string; r
             <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               취소
             </Button>
-            <Button className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white" onClick={onSubmit} disabled={loading}>
+            <Button className="bg-gradient-to-r from-emerald-600 to-green-700 text-white" onClick={onSubmit} disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

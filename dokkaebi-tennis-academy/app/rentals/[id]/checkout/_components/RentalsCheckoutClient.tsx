@@ -50,7 +50,14 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
           shipping: { name, phone, postalCode, address, addressDetail, deliveryRequest },
         }),
       });
-      const json = await res.json();
+      const json = await (async () => {
+        try {
+          return await res.json();
+        } catch {
+          return {};
+        }
+      })();
+
       if (!res.ok) {
         alert(json?.message ?? '결제 처리에 실패했습니다.');
         return;

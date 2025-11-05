@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { canTransitIdempotent } from '@/app/features/rentals/utils/status';
+import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id: rentalId } = await params;
     const db = (await clientPromise).db();
-    const body = await req.json().catch(() => ({} as any)); // 바디 없으면 빈 객체
+    const body = await (async () => {
+      try {
+        return await req.json();
+      } catch {
+        return {};
+      }
+    })();
 
     // 주문 조회
     const _id = new ObjectId(rentalId);
@@ -49,8 +56,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       }
     );
     if (u.matchedCount === 0) {
+      // 경합 등으로 상태가 바뀐 경우
       return NextResponse.json({ ok: false, code: 'INVALID_STATE' }, { status: 409 });
     }
+    // 처리 이력 기록
+    await writeRentalHistory(db, rentalId, {
+      action: 'paid',
+      from: 'created',
+      to: 'paid',
+      actor: { role: 'user' }, // 게스트/회원 모두 사용자 액션으로 분류
+      snapshot: { payment: body?.payment ?? null, shipping: body?.shipping ?? null },
+    });
 
     // 라켓 상태 동기화: 단일 수량일 때만 status 보정(복수 수량이면 status 미변경)
     const updated = await db.collection('rental_orders').findOne({ _id });

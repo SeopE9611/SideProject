@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { canTransitIdempotent } from '@/app/features/rentals/utils/status';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +39,17 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   if (u.matchedCount === 0) {
     return NextResponse.json({ ok: false, code: 'INVALID_STATE' }, { status: 409 });
   }
+  // 처리 이력 기록
+  const jar = await cookies();
+  const at = jar.get('accessToken')?.value;
+  const payload = at ? verifyAccessToken(at) : null;
+  await writeRentalHistory(db, rentalId, {
+    action: 'returned',
+    from: 'out',
+    to: 'returned',
+    actor: { role: payload?.role === 'admin' ? 'admin' : 'system', id: payload?.sub },
+  });
+
   // 라켓 상태 available 로 복구
   if (rental.racketId) {
     const rack = await db.collection('used_rackets').findOne({ _id: new ObjectId(String(rental.racketId)) }, { projection: { quantity: 1 } });

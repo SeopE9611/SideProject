@@ -38,6 +38,13 @@ export default function AdminRentalDetailClient() {
 
   const { data, isLoading, mutate } = useSWR(id ? `/api/rentals/${id}` : null, fetcher);
   const [busy, setBusy] = useState(false);
+  const safeJson = async (r: Response) => {
+    try {
+      return await r.json();
+    } catch {
+      return {};
+    }
+  };
 
   const onToggleRefund = async (mark: boolean) => {
     const ok = confirm(mark ? '보증금 환불 처리할까요?' : '보증금 환불 처리 해제할까요?');
@@ -50,7 +57,7 @@ export default function AdminRentalDetailClient() {
       credentials: 'include',
       body: JSON.stringify({ action: mark ? 'mark' : 'clear' }),
     });
-    const json = await res.json().catch(() => ({}));
+    const json = await safeJson(res);
     if (!res.ok || !json?.ok) {
       showErrorToast(json?.message || '처리 실패');
       setBusy(false); // Corrected variable name from setBusyId to setBusy
@@ -63,20 +70,34 @@ export default function AdminRentalDetailClient() {
 
   const onOut = async () => {
     if (!confirm('대여를 시작(out) 처리하시겠어요?')) return;
+    if (busy) return;
+    setBusy(true);
     const res = await fetch(`/api/rentals/${id}/out`, { method: 'POST' });
-    if (res.ok) {
-      mutate();
-      showSuccessToast('대여 시작 처리 완료');
-    } else showErrorToast('처리 실패');
+    const json = await safeJson(res);
+    if (!res.ok) {
+      showErrorToast(json?.message || '처리 실패');
+      setBusy(false);
+      return;
+    }
+    await mutate();
+    showSuccessToast('대여 시작 처리 완료');
+    setBusy(false);
   };
 
   const onReturn = async () => {
     if (!confirm('반납 처리하시겠어요?')) return;
+    if (busy) return;
+    setBusy(true);
     const res = await fetch(`/api/rentals/${id}/return`, { method: 'POST' });
-    if (res.ok) {
-      mutate();
-      showSuccessToast('반납 처리 완료');
-    } else showErrorToast('처리 실패');
+    const json = await safeJson(res);
+    if (!res.ok) {
+      showErrorToast(json?.message || '처리 실패');
+      setBusy(false);
+      return;
+    }
+    await mutate();
+    showSuccessToast('반납 처리 완료');
+    setBusy(false);
   };
 
   const formatDate = (dateString: string | null | undefined) => {
