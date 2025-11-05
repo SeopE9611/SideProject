@@ -4,13 +4,12 @@ import { ObjectId } from 'mongodb';
 
 type UsedRacketDoc = { _id: ObjectId | string } & Record<string, any>;
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const db = (await clientPromise).db();
   const col = db.collection<UsedRacketDoc>('used_rackets');
-  const { id } = params;
+  const { id } = await params;
 
   const filter = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
-
   const doc = await col.findOne(filter);
 
   if (!doc) {
