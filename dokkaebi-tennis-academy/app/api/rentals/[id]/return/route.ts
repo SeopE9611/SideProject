@@ -38,7 +38,12 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   }
   // 라켓 상태 available 로 복구
   if (rental.racketId) {
-    await db.collection('used_rackets').updateOne({ _id: new ObjectId(String(rental.racketId)) }, { $set: { status: 'available', updatedAt: new Date() } });
+    const rack = await db.collection('used_rackets').findOne({ _id: new ObjectId(String(rental.racketId)) }, { projection: { quantity: 1 } });
+    const qty = Number(rack?.quantity ?? 1);
+    if (qty <= 1) {
+      await db.collection('used_rackets').updateOne({ _id: new ObjectId(String(rental.racketId)) }, { $set: { status: 'available', updatedAt: new Date() } });
+    }
   }
+
   return NextResponse.json({ ok: true });
 }

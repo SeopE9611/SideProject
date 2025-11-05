@@ -22,25 +22,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: '허용되지 않는 대여 기간' }, { status: 400 });
   }
 
-  // 라켓 조회
-  const racket = await db.collection('used_rackets').findOne({ _id: new ObjectId(racketId) });
-  if (!racket) return NextResponse.json({ message: '라켓 없음' }, { status: 404 });
+  //라켓 조회
+  const racket = await db.collection('used_rackets').findOne(
+    { _id: new ObjectId(racketId) },
+    { projection: { brand: 1, model: 1, quantity: 1 } } // ← status는 여기서 안 씁니다
+  );
+  if (!racket) {
+    return NextResponse.json({ message: '라켓 없음' }, { status: 404 });
+  }
 
-  // 재고 기반 가드: 보유 수량 대비 진행중(paid|out) 건수
-  const quantity = Number(racket?.quantity ?? 1);
+  //진행 중 대여 수량 계산: paid|out만 재고 점유
   const activeCount = await db.collection('rental_orders').countDocuments({
-    racketId: racket._id,
-    status: { $in: ['paid', 'out'] }, // 'created'는 예약 대기라 제외(원하면 포함 가능)
+    racketId: new ObjectId(racketId),
+    status: { $in: ['paid', 'out'] },
   });
-  if (activeCount >= quantity) {
-    return NextResponse.json({ ok: false, code: 'NO_STOCK', message: '현재 대여 가능 수량이 없습니다.' }, { status: 409 });
-  }
 
-  // 라켓 자체 상태로도 차단(판매완료/비노출 등)
-  if (['rented', 'sold', 'inactive', '비노출'].includes(racket.status ?? '')) {
-    return NextResponse.json({ message: '대여 불가 상태' }, { status: 409 });
+  // 잔여 수량 체크
+  const quantity = Number(racket.quantity ?? 1);
+  if (quantity - activeCount <= 0) {
+    // 재고가 0이므로 생성 불가
+    return NextResponse.json({ message: '대여 불가 상태(재고 없음)' }, { status: 409 });
   }
-
   // 요금 계산
   const feeMap = { 7: racket.rental?.fee?.d7 ?? 0, 15: racket.rental?.fee?.d15 ?? 0, 30: racket.rental?.fee?.d30 ?? 0 } as const;
   const fee = feeMap[days] ?? 0;
