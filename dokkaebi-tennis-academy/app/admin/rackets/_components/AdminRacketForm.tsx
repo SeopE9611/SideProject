@@ -2,6 +2,14 @@
 
 import PhotosUploader from '@/components/reviews/PhotosUploader';
 import { useState } from 'react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Package, DollarSign, Settings, ImageIcon } from 'lucide-react';
+import Link from 'next/link';
 
 export type RacketForm = {
   brand: string;
@@ -82,71 +90,199 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
   };
 
   return (
-    <div className="space-y-4">
-      {/* 기본 정보 */}
-      <div className="grid grid-cols-2 gap-3">
-        <input className="border rounded h-10 px-3" placeholder="브랜드" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
-        <input className="border rounded h-10 px-3" placeholder="모델" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
-        <input className="border rounded h-10 px-3" placeholder="연식(숫자)" value={form.year ?? ''} onChange={(e) => setForm({ ...form, year: e.target.value ? Number(e.target.value) : null })} />
-        <input className="border rounded h-10 px-3" placeholder="가격(원)" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value || 0) })} />
-        <label className="block text-sm font-medium">보유 수량</label>
-        <input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Math.max(1, Number(e.target.value || 1)) })} className="mt-1 w-40 rounded border px-2 py-1" />
-        <p className="text-xs text-slate-500">* 최소 1. 다수 보유 시 사용자에게 ‘잔여 n/총 m’로 표시됩니다.</p>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Package className="h-5 w-5 text-emerald-600" />
+            <CardTitle>기본 정보</CardTitle>
+          </div>
+          <CardDescription>라켓의 기본 정보를 입력하세요</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="brand">브랜드</Label>
+              <Input id="brand" placeholder="예: Wilson, Babolat" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="model">모델</Label>
+              <Input id="model" placeholder="예: Pro Staff 97" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="year">연식</Label>
+              <Input id="year" type="number" placeholder="예: 2023" value={form.year ?? ''} onChange={(e) => setForm({ ...form, year: e.target.value ? Number(e.target.value) : null })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="price">가격 (원)</Label>
+              <Input id="price" type="number" placeholder="예: 150000" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value || 0) })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quantity">보유 수량</Label>
+              <Input id="quantity" type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Math.max(1, Number(e.target.value || 1)) })} />
+              <p className="text-xs text-slate-500 dark:text-slate-400">최소 1개. 다수 보유 시 사용자에게 '잔여 n/총 m'로 표시됩니다.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="condition">상태 등급</Label>
+              <Select value={form.condition} onValueChange={(value) => setForm({ ...form, condition: value as any })}>
+                <SelectTrigger id="condition">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A">A급 (최상)</SelectItem>
+                  <SelectItem value="B">B급 (양호)</SelectItem>
+                  <SelectItem value="C">C급 (보통)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">판매 상태</Label>
+              <Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value as any })}>
+                <SelectTrigger id="status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">판매가능</SelectItem>
+                  <SelectItem value="rented">대여중</SelectItem>
+                  <SelectItem value="sold">판매완료</SelectItem>
+                  <SelectItem value="inactive">비노출</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <select className="border rounded h-10 px-3" value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value as any })}>
-          <option value="A">A(최상)</option>
-          <option value="B">B(양호)</option>
-          <option value="C">C(보통)</option>
-        </select>
-        <select className="border rounded h-10 px-3" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as any })}>
-          <option value="available">판매가능</option>
-          <option value="rented">대여중</option>
-          <option value="sold">판매완료</option>
-          <option value="inactive">비노출</option>
-        </select>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Settings className="h-5 w-5 text-emerald-600" />
+            <CardTitle>상세 스펙</CardTitle>
+          </div>
+          <CardDescription>라켓의 상세 스펙을 입력하세요</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="weight">무게 (g)</Label>
+              <Input id="weight" type="number" placeholder="예: 305" value={form.spec.weight ?? ''} onChange={(e) => setForm({ ...form, spec: { ...form.spec, weight: e.target.value ? Number(e.target.value) : null } })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="balance">밸런스 (mm)</Label>
+              <Input id="balance" type="number" placeholder="예: 315" value={form.spec.balance ?? ''} onChange={(e) => setForm({ ...form, spec: { ...form.spec, balance: e.target.value ? Number(e.target.value) : null } })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="headSize">헤드 사이즈 (in²)</Label>
+              <Input id="headSize" type="number" placeholder="예: 97" value={form.spec.headSize ?? ''} onChange={(e) => setForm({ ...form, spec: { ...form.spec, headSize: e.target.value ? Number(e.target.value) : null } })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pattern">스트링 패턴</Label>
+              <Input id="pattern" placeholder="예: 16x19" value={form.spec.pattern} onChange={(e) => setForm({ ...form, spec: { ...form.spec, pattern: e.target.value } })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="gripSize">그립 사이즈</Label>
+              <Input id="gripSize" placeholder="예: G2, 4 3/8" value={form.spec.gripSize} onChange={(e) => setForm({ ...form, spec: { ...form.spec, gripSize: e.target.value } })} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* 스펙 */}
-      <div className="grid grid-cols-2 gap-3">
-        <input className="border rounded h-10 px-3" placeholder="무게(g)" value={form.spec.weight ?? ''} onChange={(e) => setForm({ ...form, spec: { ...form.spec, weight: e.target.value ? Number(e.target.value) : null } })} />
-        <input className="border rounded h-10 px-3" placeholder="밸런스(mm)" value={form.spec.balance ?? ''} onChange={(e) => setForm({ ...form, spec: { ...form.spec, balance: e.target.value ? Number(e.target.value) : null } })} />
-        <input className="border rounded h-10 px-3" placeholder="헤드사이즈(in²)" value={form.spec.headSize ?? ''} onChange={(e) => setForm({ ...form, spec: { ...form.spec, headSize: e.target.value ? Number(e.target.value) : null } })} />
-        <input className="border rounded h-10 px-3" placeholder="패턴(예: 16x19)" value={form.spec.pattern} onChange={(e) => setForm({ ...form, spec: { ...form.spec, pattern: e.target.value } })} />
-        <input className="border rounded h-10 px-3" placeholder="그립(G2 등)" value={form.spec.gripSize} onChange={(e) => setForm({ ...form, spec: { ...form.spec, gripSize: e.target.value } })} />
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-emerald-600" />
+            <CardTitle>대여 설정</CardTitle>
+          </div>
+          <CardDescription>대여 가능 여부 및 요금을 설정하세요</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="rental-enabled">대여 가능</Label>
+              <p className="text-sm text-slate-500 dark:text-slate-400">이 라켓을 대여할 수 있도록 설정합니다</p>
+            </div>
+            <Switch id="rental-enabled" checked={form.rental.enabled} onCheckedChange={(checked) => setForm({ ...form, rental: { ...form.rental, enabled: checked } })} />
+          </div>
 
-      {/* 대여 설정 */}
-      <div className="space-y-2">
-        <label className="inline-flex items-center gap-2">
-          <input type="checkbox" checked={form.rental.enabled} onChange={(e) => setForm({ ...form, rental: { ...form.rental, enabled: e.target.checked } })} />
-          대여 가능
-        </label>
-        <div className="grid grid-cols-4 gap-3">
-          <input className="border rounded h-10 px-3" placeholder="보증금" value={form.rental.deposit} onChange={(e) => setForm({ ...form, rental: { ...form.rental, deposit: Number(e.target.value || 0) } })} />
-          <input className="border rounded h-10 px-3" placeholder="7일 수수료" value={form.rental.fee.d7} onChange={(e) => setForm({ ...form, rental: { ...form.rental, fee: { ...form.rental.fee, d7: Number(e.target.value || 0) } } })} />
-          <input className="border rounded h-10 px-3" placeholder="15일 수수료" value={form.rental.fee.d15} onChange={(e) => setForm({ ...form, rental: { ...form.rental, fee: { ...form.rental.fee, d15: Number(e.target.value || 0) } } })} />
-          <input className="border rounded h-10 px-3" placeholder="30일 수수료" value={form.rental.fee.d30} onChange={(e) => setForm({ ...form, rental: { ...form.rental, fee: { ...form.rental.fee, d30: Number(e.target.value || 0) } } })} />
-        </div>
-      </div>
+          {form.rental.enabled && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="space-y-2">
+                <Label htmlFor="deposit">보증금 (원)</Label>
+                <Input id="deposit" type="number" placeholder="예: 100000" value={form.rental.deposit} onChange={(e) => setForm({ ...form, rental: { ...form.rental, deposit: Number(e.target.value || 0) } })} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fee7">7일 대여료 (원)</Label>
+                <Input
+                  id="fee7"
+                  type="number"
+                  placeholder="예: 30000"
+                  value={form.rental.fee.d7}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      rental: { ...form.rental, fee: { ...form.rental.fee, d7: Number(e.target.value || 0) } },
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fee15">15일 대여료 (원)</Label>
+                <Input
+                  id="fee15"
+                  type="number"
+                  placeholder="예: 50000"
+                  value={form.rental.fee.d15}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      rental: { ...form.rental, fee: { ...form.rental.fee, d15: Number(e.target.value || 0) } },
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fee30">30일 대여료 (원)</Label>
+                <Input
+                  id="fee30"
+                  type="number"
+                  placeholder="예: 80000"
+                  value={form.rental.fee.d30}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      rental: { ...form.rental, fee: { ...form.rental.fee, d30: Number(e.target.value || 0) } },
+                    })
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      {/* 이미지 업로더 */}
-      <div className="space-y-2">
-        <div className="text-sm text-gray-600">이미지</div>
-        <PhotosUploader
-          value={form.images}
-          onChange={(next) => setForm({ ...form, images: next })}
-          max={10} // 필요 시 조절
-          onUploadingChange={(u) => {
-            /* 저장 버튼 비활성화 등 필요하면 사용 */
-          }}
-        />
-        <p className="text-xs text-slate-500">첫 번째 이미지가 대표로 사용됩니다. 최대 10장 업로드 가능.</p>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5 text-emerald-600" />
+            <CardTitle>이미지</CardTitle>
+          </div>
+          <CardDescription>라켓 이미지를 업로드하세요 (최대 10장)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PhotosUploader value={form.images} onChange={(next) => setForm({ ...form, images: next })} max={10} onUploadingChange={(u) => {}} />
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">첫 번째 이미지가 대표 이미지로 사용됩니다.</p>
+        </CardContent>
+      </Card>
 
-      <div className="flex justify-end">
-        <button onClick={handleSubmit} disabled={loading} className="h-10 px-5 rounded bg-emerald-600 text-white disabled:opacity-50">
-          {loading ? '저장 중…' : submitLabel}
-        </button>
+      <div className="flex justify-end gap-3">
+        <Link href="/admin/rackets">
+          <Button variant="outline" type="button">
+            취소
+          </Button>
+        </Link>
+        <Button onClick={handleSubmit} disabled={loading} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+          {loading ? '저장 중...' : submitLabel}
+        </Button>
       </div>
     </div>
   );
