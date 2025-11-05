@@ -7,10 +7,16 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
-  const db = (await clientPromise).db();
-  const body = await req.json();
+  const raw = await req.text();
+  if (!raw) return NextResponse.json({ ok: false, message: 'EMPTY_BODY' }, { status: 400 });
+  let body: any;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    return NextResponse.json({ ok: false, message: 'INVALID_JSON' }, { status: 400 });
+  }
   const { racketId, days } = body as { racketId: string; days: 7 | 15 | 30 };
-
+  const db = (await clientPromise).db();
   // 토큰이 있으면 userId 추출
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
@@ -22,11 +28,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: '허용되지 않는 대여 기간' }, { status: 400 });
   }
 
-  //라켓 조회
-  const racket = await db.collection('used_rackets').findOne(
-    { _id: new ObjectId(racketId) },
-    { projection: { brand: 1, model: 1, quantity: 1 } } // ← status는 여기서 안 씁니다
-  );
+  // 라켓 조회(+요금 정보 포함)
+  const racket = await db.collection('used_rackets').findOne({ _id: new ObjectId(racketId) }, { projection: { brand: 1, model: 1, quantity: 1, rental: 1 } });
   if (!racket) {
     return NextResponse.json({ message: '라켓 없음' }, { status: 404 });
   }

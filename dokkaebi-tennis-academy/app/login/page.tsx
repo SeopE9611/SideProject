@@ -224,7 +224,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900/20 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[url('/tennis-court-background.png')] opacity-5 bg-cover bg-center"></div>
       <div className="absolute top-10 left-10 w-20 h-20 bg-emerald-400/20 rounded-full blur-2xl animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-32 h-32 bg-green-400/10 rounded-full blur-3xl animate-pulse"></div>
 
@@ -233,8 +232,7 @@ export default function LoginPage() {
           <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 p-6 text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-              </div>
+              <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg"></div>
               <h1 className="text-2xl sm:text-3xl font-black">도깨비 테니스</h1>
               <p className="text-emerald-100 mt-2 font-medium">프리미엄 테니스 스트링 전문점</p>
             </div>
