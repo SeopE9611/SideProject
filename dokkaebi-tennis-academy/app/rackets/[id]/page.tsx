@@ -1,19 +1,25 @@
 import RacketDetailClient from '@/app/rackets/[id]/_components/RacketDetailClient';
+import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
+async function absoluteUrl(path: string) {
+  const h = await headers();
+  const host = h.get('x-forwarded-host') || h.get('host');
+  const proto = h.get('x-forwarded-proto') || 'https';
+  return host ? `${proto}://${host}${path}` : path; // 드문 케이스 폴백
+}
+
 async function getData(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/api/rackets/${id}`, {
-    cache: 'no-store',
-  });
+  const url = await absoluteUrl(`/api/rackets/${id}`);
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) return null;
   return res.json();
 }
 
 async function getStock(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/api/rentals/active-count/${id}`, {
-    cache: 'no-store',
-  });
+  const url = await absoluteUrl(`/api/rentals/active-count/${id}`);
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) return { ok: false, quantity: 1, available: 0 };
   return res.json();
 }
@@ -21,7 +27,6 @@ async function getStock(id: string) {
 export default async function RacketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const doc = await getData(id);
-
   if (!doc) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
