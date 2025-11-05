@@ -20,17 +20,25 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   if (rental.status === 'returned') {
     return NextResponse.json({ ok: true });
   }
-  // 상태 보호: 결제 전(created 등)은 반납 불가, 대여중(paid|out)만 허용
-  // out → returned 만 허용(표준화)
-  if (!canTransitIdempotent(rental.status ?? 'created', 'returned') || rental.status !== 'out') {
-    return NextResponse.json({ message: '반납 불가 상태' }, { status: 409 });
+  // 멱등 처리: 이미 returned면 OK
+  if ((rental.status ?? 'created') === 'returned') {
+    return NextResponse.json({ ok: true });
   }
-  // 대여건 상태 업데이트
-  await db.collection('rental_orders').updateOne({ _id: new ObjectId(rentalId) }, { $set: { status: 'returned', returnedAt: new Date(), updatedAt: new Date() } });
-
+  // 전이 가능성 선검사(가독)
+  if (!canTransitIdempotent(rental.status ?? 'created', 'returned') || rental.status !== 'out') {
+    return NextResponse.json({ ok: false, code: 'INVALID_STATE', message: '반납 불가 상태' }, { status: 409 });
+  }
+  // 원자적 전이: 현재 status가 'out'인 경우에만 'returned'
+  const u = await db.collection('rental_orders').updateOne(
+    { _id: new ObjectId(rentalId), status: 'out' }, // 상태 조건 포함
+    { $set: { status: 'returned', returnedAt: new Date(), updatedAt: new Date() } }
+  );
+  if (u.matchedCount === 0) {
+    return NextResponse.json({ ok: false, code: 'INVALID_STATE' }, { status: 409 });
+  }
   // 라켓 상태 available 로 복구
   if (rental.racketId) {
-    await db.collection('used_rackets').updateOne({ _id: new ObjectId(rental.racketId) }, { $set: { status: 'available', updatedAt: new Date() } });
+    await db.collection('used_rackets').updateOne({ _id: new ObjectId(String(rental.racketId)) }, { $set: { status: 'available', updatedAt: new Date() } });
   }
   return NextResponse.json({ ok: true });
 }
