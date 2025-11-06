@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import Link from 'next/link';
+import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
@@ -325,6 +326,7 @@ export default function AdminRentalDetailClient() {
           </Card>
         </div>
       </div>
+      <AdminRentalHistory id={id} />
     </div>
   );
 }
