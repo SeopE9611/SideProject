@@ -17,6 +17,7 @@ import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
 import { CreditCard, MapPin, Truck, Shield, CheckCircle, UserIcon, Mail, Phone, Home, MessageSquare, Building2, Package, Star } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { bankLabelMap } from '@/lib/constants';
 
 declare global {
   interface Window {
@@ -397,9 +398,15 @@ export default function CheckoutPage() {
                         <SelectValue placeholder="입금 계좌를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="shinhan">신한은행 123-456-789012 (예금주: 도깨비테니스)</SelectItem>
-                        <SelectItem value="kookmin">국민은행 123-45-6789-012 (예금주: 도깨비테니스)</SelectItem>
-                        <SelectItem value="woori">우리은행 1234-567-890123 (예금주: 도깨비테니스)</SelectItem>
+                        <SelectItem value="shinhan">
+                          신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
+                        </SelectItem>
+                        <SelectItem value="kookmin">
+                          국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
+                        </SelectItem>
+                        <SelectItem value="woori">
+                          우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

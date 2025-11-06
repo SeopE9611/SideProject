@@ -2,10 +2,11 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { CheckCircle, Package, Clock, ArrowRight, Shield, Truck, Phone } from 'lucide-react';
+import { CheckCircle, Package, Clock, ArrowRight, Shield, Truck, Phone, CreditCard, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { bankLabelMap } from '@/lib/constants';
 
 type Props = {
   data: {
@@ -36,6 +37,15 @@ export default function RentalsSuccessClient({ data }: Props) {
   }, []);
 
   const total = data.fee + data.deposit;
+  // 체크아웃에서 sessionStorage로 전달한 무통장 정보 표시(서버 응답에 payment 필드가 없으므로)
+  const bankKey = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-last-bank')) || '';
+  const depositor = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-last-depositor')) || '';
+  const bankInfo = bankKey ? (bankLabelMap as any)[bankKey] : null;
+
+  const refundBankKey = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-bank')) || '';
+  const refundAccount = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-account')) || '';
+  const refundHolder = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-holder')) || '';
+  const refundBankInfo = refundBankKey ? (bankLabelMap as any)[refundBankKey] : null;
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -47,8 +57,8 @@ export default function RentalsSuccessClient({ data }: Props) {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full mb-6">
               <CheckCircle className="h-12 w-12 text-white" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">대여가 완료되었습니다!</h1>
-            <p className="text-xl text-green-100 mb-6">대여해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">대여 신청 접수 완료</h1>
+            <p className="text-xl text-green-100 mb-6">입금 확인 후 결제완료로 상태가 변경되며, 이후 출고가 진행됩니다.</p>
           </div>
         </div>
       </div>
@@ -105,6 +115,39 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">* 반납 완료 후 보증금 환불 (연체/파손 시 차감)</p>
                 </div>
+
+                {/* 무통장 안내 카드 */}
+                <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
+                  <div className="bg-gradient-to-r from-amber-500/10 to-rose-500/10 p-6">
+                    <CardTitle className="flex items-center gap-3 text-2xl">
+                      <CreditCard className="h-6 w-6 text-amber-600" />
+                      무통장 입금 안내
+                    </CardTitle>
+                  </div>
+                  <CardContent className="p-6 text-sm">
+                    <p className="text-muted-foreground">
+                      아래 계좌로 입금해 주세요. 입금 확인 후 <b>결제완료</b>로 상태가 변경됩니다.
+                    </p>
+                    {bankInfo && (
+                      <div className="mt-4 space-y-1">
+                        <div>
+                          은행: <b>{bankInfo.label}</b>
+                        </div>
+                        <div>
+                          계좌: <b>{bankInfo.account}</b>
+                        </div>
+                        <div>
+                          예금주: <b>{bankInfo.holder}</b>
+                        </div>
+                        {depositor && (
+                          <div>
+                            입금자명: <b>{depositor}</b>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
 
@@ -172,6 +215,35 @@ export default function RentalsSuccessClient({ data }: Props) {
                     </div>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-amber-500/10 to-rose-500/10 p-6">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <Undo2 className="h-6 w-6 text-amber-600" />
+                보증금 환급 계좌
+              </CardTitle>
+            </div>
+            <CardContent className="p-6 text-sm">
+              <p className="text-muted-foreground">반납 완료 후 아래 계좌로 보증금을 환급해 드립니다.</p>
+              <div className="mt-4 space-y-1">
+                {refundBankInfo && (
+                  <div>
+                    은행: <b>{refundBankInfo.label}</b>
+                  </div>
+                )}
+                {refundAccount && (
+                  <div>
+                    계좌: <b>{refundAccount}</b>
+                  </div>
+                )}
+                {refundHolder && (
+                  <div>
+                    예금주: <b>{refundHolder}</b>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

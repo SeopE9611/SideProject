@@ -3,7 +3,7 @@
 import useSWR from 'swr';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { ArrowLeft, Calendar, CreditCard, Package, Settings, Truck } from 'lucide-react';
+import { ArrowLeft, Calendar, CreditCard, Loader2, Package, Settings, Truck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +36,7 @@ export default function AdminRentalDetailClient() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
   const router = useRouter();
+  const [confirming, setConfirming] = useState(false);
 
   const { data, isLoading, mutate } = useSWR(id ? `/api/rentals/${id}` : null, fetcher);
   const [busy, setBusy] = useState(false);
@@ -44,6 +45,30 @@ export default function AdminRentalDetailClient() {
       return await r.json();
     } catch {
       return {};
+    }
+  };
+
+  // 무통장 결제확정: created → paid 전이
+  const onConfirmPayment = async () => {
+    if (confirming) return;
+    setConfirming(true);
+    try {
+      const res = await fetch(`/api/admin/rentals/${id}/payment/confirm`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.ok) {
+        showErrorToast(json?.message || '결제확정 실패');
+        return;
+      }
+      await mutate();
+      showSuccessToast('결제완료로 상태 변경');
+    } catch {
+      showErrorToast('서버 오류');
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -138,6 +163,18 @@ export default function AdminRentalDetailClient() {
                   목록으로 돌아가기
                 </Link>
               </Button>
+              {/* created 상태에서만 노출 */}
+              {data?.status === 'created' && (
+                <Button onClick={onConfirmPayment} disabled={confirming} size="sm" className="h-8">
+                  {confirming ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 처리 중…
+                    </>
+                  ) : (
+                    '결제완료 처리(무통장)'
+                  )}
+                </Button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

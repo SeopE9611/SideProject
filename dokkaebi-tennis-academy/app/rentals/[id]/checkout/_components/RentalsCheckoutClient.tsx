@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { CreditCard, MapPin, Package, UserIcon, Phone, Home, MessageSquare, Shield, Truck } from 'lucide-react';
+import { CreditCard, MapPin, Package, UserIcon, Phone, Home, MessageSquare, Shield, Truck, Building2, Undo2, Search, Mail, CheckCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { bankLabelMap } from '@/lib/constants';
+import { getMyInfo } from '@/lib/auth.client';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
+
+declare global {
+  interface Window {
+    daum: any;
+  }
+}
 
 type Initial = {
   id: string;
@@ -26,6 +37,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   const router = useRouter();
 
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [postalCode, setPostal] = useState('');
   const [address, setAddress] = useState('');
@@ -33,7 +45,59 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   const [deliveryRequest, setRequest] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [selectedBank, setSelectedBank] = useState<'shinhan' | 'kookmin' | 'woori' | ''>('');
+  const [depositor, setDepositor] = useState('');
   const total = initial.fee + initial.deposit;
+
+  const [refundBank, setRefundBank] = useState<'shinhan' | 'kookmin' | 'woori' | ''>('');
+  const [refundAccount, setRefundAccount] = useState(''); // 계좌번호
+  const [refundHolder, setRefundHolder] = useState(''); // 예금주
+
+  const [agreeAll, setAgreeAll] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreeRefund, setAgreeRefund] = useState(false);
+
+  // 회원 배송 정보 자동 채움
+  useEffect(() => {
+    let cancelled = false;
+    getMyInfo({ quiet: true })
+      .then(async ({ user }) => {
+        if (!user || cancelled) return;
+        const res = await fetch('/api/users/me', { credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setName(data.name || '');
+        setEmail(data.email || '');
+        setPhone(data.phone || '');
+        setPostal(data.postalCode || '');
+        setAddress(data.address || '');
+        setAddressDetail(data.addressDetail || '');
+      })
+      .catch(() => {
+        /* 게스트/401은 정상, 아무 것도 안 함 */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 우편번호 검색기
+  const openPostcode = () => {
+    if (!window?.daum?.Postcode) {
+      alert('주소 검색기를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+    new window.daum.Postcode({
+      oncomplete: (data: any) => {
+        setPostal(String(data.zonecode || ''));
+        setAddress(String(data.roadAddress || data.address || ''));
+        // 기본주소/우편번호는 readOnly 정책 → 상세주소로 포커스 유도
+        setTimeout(() => document.getElementById('address-detail')?.focus(), 0);
+      },
+    }).open();
+  };
 
   const onPay = async () => {
     if (!name || !phone || !postalCode || !address) {
@@ -41,13 +105,25 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       return;
     }
 
+    if (!selectedBank || !depositor) {
+      alert('입금 은행과 입금자명을 입력해주세요.');
+      return;
+    }
+
+    if (!refundBank || !refundAccount || !refundHolder) {
+      alert('보증금 환급 계좌(은행/계좌번호/예금주)를 모두 입력해주세요.');
+      return;
+    }
+
     try {
       setLoading(true);
-      const res = await fetch(`/api/rentals/${initial.id}/pay`, {
+      const res = await fetch(`/api/rentals/${initial.id}/prepare`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          payment: { method: 'bank_transfer', bank: selectedBank, depositor },
           shipping: { name, phone, postalCode, address, addressDetail, deliveryRequest },
+          refundAccount: { bank: refundBank, account: refundAccount, holder: refundHolder },
         }),
       });
       const json = await (async () => {
@@ -62,6 +138,15 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         alert(json?.message ?? '결제 처리에 실패했습니다.');
         return;
       }
+      // 성공 페이지에서 안내를 위해(서버 응답에 payment 노출이 아직 없으므로)
+      try {
+        sessionStorage.setItem('rentals-last-bank', selectedBank);
+        sessionStorage.setItem('rentals-last-depositor', depositor);
+        sessionStorage.setItem('rentals-refund-bank', refundBank);
+        sessionStorage.setItem('rentals-refund-account', refundAccount);
+        sessionStorage.setItem('rentals-refund-holder', refundHolder);
+        sessionStorage.setItem('rentals-success', '1'); // 뒤로가기 방지
+      } catch {}
       router.push(`/rentals/success?id=${json.id}`);
     } finally {
       setLoading(false);
@@ -73,7 +158,6 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white dark:from-blue-700 dark:via-purple-700 dark:to-teal-700">
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
-        <div className="absolute inset-0 bg-[url('/tennis-court-lines.png')] opacity-10"></div>
         <div className="relative container py-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full">
@@ -89,7 +173,6 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
       <div className="container py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* 좌측: 배송지/요청사항 */}
           <div className="lg:col-span-2 space-y-6">
             {/* 대여 상품 정보 */}
             <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
@@ -145,6 +228,13 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="수령인 이름을 입력하세요" className="border-2 focus:border-blue-500 transition-colors" />
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="email" className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-purple-600" />
+                        이메일
+                      </Label>
+                      <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="예: user@example.com" className="border-2 focus:border-blue-500 transition-colors" />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="phone" className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-teal-600" />
                         연락처
@@ -152,25 +242,27 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외)" className="border-2 focus:border-teal-500 transition-colors" />
                     </div>
                   </div>
-
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="postal" className="flex items-center gap-2">
+                        <Home className="h-4 w-4 text-orange-600" />
+                        우편번호
+                      </Label>
+                      <Button variant="outline" size="sm" onClick={openPostcode} className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 hover:from-blue-600 hover:to-purple-600">
+                        우편번호 찾기
+                      </Button>
+                    </div>
+                    <Input id="postal" readOnly value={postalCode} placeholder="우편번호" className="bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2" />
+                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="postal" className="flex items-center gap-2">
-                      <Home className="h-4 w-4 text-orange-600" />
-                      우편번호
-                    </Label>
-                    <Input id="postal" value={postalCode} onChange={(e) => setPostal(e.target.value)} placeholder="우편번호" className="border-2 focus:border-orange-500 transition-colors max-w-[200px]" />
+                    <Label htmlFor="address-main">기본 주소</Label>
+                    <Input id="address-main" readOnly value={address} placeholder="기본 주소" className="bg-slate-100 dark:bg-slate-700 cursor-not-allowed border-2" />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="addr">기본 주소</Label>
-                    <Input id="addr" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="도로명 주소" className="border-2 focus:border-blue-500 transition-colors" />
+                    <Label htmlFor="address-detail">상세 주소</Label>
+                    <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="동/호수 등" className="border-2 focus:border-blue-500 transition-colors" />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="addr2">상세 주소</Label>
-                    <Input id="addr2" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="동/호수 등" className="border-2 focus:border-blue-500 transition-colors" />
-                  </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="request" className="flex items-center gap-2">
                       <MessageSquare className="h-4 w-4 text-green-600" />
@@ -181,9 +273,191 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                 </div>
               </CardContent>
             </Card>
+            {/* 결제 정보 */}
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 p-6">
+                <CardTitle className="flex items-center gap-3">
+                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                  결제 정보
+                </CardTitle>
+                <CardDescription className="mt-2">결제 방법을 선택하고 필요한 정보를 입력해주세요.</CardDescription>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <Label>결제 방법</Label>
+                    <RadioGroup defaultValue="bank-transfer" className="space-y-3">
+                      <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+                        <RadioGroupItem value="bank-transfer" id="bank-transfer" />
+                        <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
+                          무통장입금
+                        </Label>
+                        <Building2 className="h-5 w-5 text-green-600" />
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="bank-account">입금 계좌 선택</Label>
+                    <Select value={selectedBank} onValueChange={(v) => setSelectedBank(v as any)}>
+                      <SelectTrigger id="bank-account" className="border-2 focus:border-emerald-500">
+                        <SelectValue placeholder="입금 계좌를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="shinhan">
+                          신한은행 {bankLabelMap.shinhan.account} (예금주: {bankLabelMap.shinhan.holder})
+                        </SelectItem>
+                        <SelectItem value="kookmin">
+                          국민은행 {bankLabelMap.kookmin.account} (예금주: {bankLabelMap.kookmin.holder})
+                        </SelectItem>
+                        <SelectItem value="woori">
+                          우리은행 {bankLabelMap.woori.account} (예금주: {bankLabelMap.woori.holder})
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="depositor-name">입금자명</Label>
+                    <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className="border-2 focus:border-emerald-500 transition-colors" />
+                  </div>
+
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Shield className="h-5 w-5 text-blue-600" />
+                      <p className="font-semibold text-blue-700 dark:text-blue-400">무통장입금 안내</p>
+                    </div>
+                    <ul className="space-y-2 text-sm text-blue-600 dark:text-blue-400">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        입금 확인 후 배송이 시작됩니다.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 p-6">
+                <CardTitle className="flex items-center gap-3">
+                  <Undo2 className="h-5 w-5 text-amber-600" />
+                  보증금 환급 계좌
+                </CardTitle>
+                <CardDescription className="mt-2">반납 완료 후 보증금을 환급해 드릴 계좌 정보를 입력해주세요.</CardDescription>
+              </div>
+              <CardContent className="p-6 space-y-4">
+                {/* 환급 은행 */}
+                <div className="space-y-2">
+                  <Label htmlFor="refund-bank">환급 은행</Label>
+                  <Select value={refundBank} onValueChange={(v) => setRefundBank(v as any)}>
+                    <SelectTrigger id="refund-bank" className="border-2 focus:border-amber-500">
+                      <SelectValue placeholder="환급 받을 은행을 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="shinhan">신한은행</SelectItem>
+                      <SelectItem value="kookmin">국민은행</SelectItem>
+                      <SelectItem value="woori">우리은행</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* 계좌번호 */}
+                <div className="space-y-2">
+                  <Label htmlFor="refund-account">환급 계좌번호</Label>
+                  <Input id="refund-account" value={refundAccount} onChange={(e) => setRefundAccount(e.target.value)} placeholder="예: 110-123-456789" className="border-2 focus:border-amber-500" />
+                </div>
+                {/* 예금주 */}
+                <div className="space-y-2">
+                  <Label htmlFor="refund-holder">예금주</Label>
+                  <Input id="refund-holder" value={refundHolder} onChange={(e) => setRefundHolder(e.target.value)} placeholder="예: 홍길동" className="border-2 focus:border-amber-500" />
+                </div>
+                {/* 안내 */}
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4">
+                  <p className="text-sm text-slate-700 dark:text-slate-300">반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 주문자 동의 */}
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-red-500/10 via-pink-500/10 to-rose-500/10 p-6">
+                <CardTitle className="flex items-center gap-3">
+                  <Shield className="h-5 w-5 text-red-600" />
+                  주문자 동의
+                </CardTitle>
+              </div>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-4 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="agree-all"
+                        checked={agreeAll}
+                        onCheckedChange={(checked) => {
+                          const newValue = !!checked;
+                          setAgreeAll(newValue);
+                          setAgreeTerms(newValue);
+                          setAgreePrivacy(newValue);
+                          setAgreeRefund(newValue);
+                        }}
+                      />
+                      <label htmlFor="agree-all" className="font-semibold text-lg text-slate-800 dark:text-slate-200">
+                        전체 동의
+                      </label>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="space-y-3">
+                    {[
+                      { id: 'agree-terms', label: '이용약관 동의 (필수)', state: agreeTerms, setState: setAgreeTerms },
+                      {
+                        id: 'agree-privacy',
+                        label: '개인정보 수집 및 이용 동의 (필수)',
+                        state: agreePrivacy,
+                        setState: setAgreePrivacy,
+                      },
+                      {
+                        id: 'agree-refund',
+                        label: '환불 규정 동의 (필수)',
+                        state: agreeRefund,
+                        setState: setAgreeRefund,
+                      },
+                    ].map((item, index) => (
+                      <div key={item.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={item.id}
+                            checked={item.state}
+                            onCheckedChange={(checked) => {
+                              const value = !!checked;
+                              item.setState(value);
+                              if (!value) setAgreeAll(false);
+                              else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
+                            }}
+                          />
+                          <label htmlFor={item.id} className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {item.label}
+                          </label>
+                        </div>
+                        <Button variant="link" size="sm" className="h-auto p-0 text-blue-600 hover:text-blue-800">
+                          보기
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* 우측: 주문 요약 */}
+          {/* 주문 요약 */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-20">
               <Card className="backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-0 shadow-2xl overflow-hidden">
