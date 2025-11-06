@@ -8,7 +8,7 @@ import { LayoutDashboard, PackageSearch, Boxes, Users, CalendarClock, MessageCir
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
-
+import { MdSportsTennis } from 'react-icons/md';
 const SECTIONS = [
   {
     label: '운영',
@@ -17,7 +17,7 @@ const SECTIONS = [
       { title: '주문 관리', href: '/admin/orders', icon: PackageSearch, key: 'orders' as const },
       { title: '상품 관리', href: '/admin/products', icon: Boxes, key: 'products' as const },
       { title: '대여 관리', href: '/admin/rentals', icon: ClipboardList },
-      { title: '라켓 관리', href: '/admin/rackets', icon: Package, key: 'rackets' as const },
+      { title: '라켓 관리', href: '/admin/rackets', icon: MdSportsTennis, key: 'rackets' as const },
       { title: '패키지 관리', href: '/admin/packages', icon: Package, key: 'packages' as const },
       { title: '패키지 설정', href: '/admin/packages/settings', icon: Cog },
       { title: '예약 · 영업일 설정', href: '/admin/scheduling', icon: CalendarClock },

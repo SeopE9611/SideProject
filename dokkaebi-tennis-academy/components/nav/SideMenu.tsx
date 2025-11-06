@@ -5,6 +5,8 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Grid2X2, Wrench, Gift, MessageSquareText } from 'lucide-react';
 import { NAV_FLAGS, NAV_LINKS } from './nav.config';
+import { GiTennisRacket } from 'react-icons/gi';
+import { MdSportsTennis } from 'react-icons/md';
 
 export default function SideMenu() {
   const pathname = usePathname();
@@ -76,7 +78,7 @@ export default function SideMenu() {
           <AccordionItem value="rackets">
             <AccordionTrigger value="rackets" className="text-base font-semibold py-3">
               <span className="inline-flex items-center gap-2">
-                <Grid2X2 className="h-4 w-4" /> 중고 라켓
+                <MdSportsTennis className="h-4 w-4" /> 중고 라켓
               </span>
             </AccordionTrigger>
             <AccordionContent value="rackets" className="space-y-1">

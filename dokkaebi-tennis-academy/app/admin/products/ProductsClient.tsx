@@ -4,7 +4,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { PlusCircle, Search, MoreHorizontal, Package, AlertTriangle, CheckCircle, X, CheckCircle2, TriangleAlert, XCircle, ArrowUp, ArrowUpDown, ArrowDown } from 'lucide-react';
+import { PlusCircle, Search, MoreHorizontal, Package, AlertTriangle, CheckCircle, X, CheckCircle2, TriangleAlert, XCircle, ArrowUp, ArrowUpDown, ArrowDown, Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -280,7 +280,7 @@ export default function ProductsClient() {
                 ].join(' ')}
               >
                 <Link href="/admin/products/new">
-                  <PlusCircle className="mr-2 h-4 w-4" />
+                  <Plus className="mr-2 h-4 w-4" />
                   스트링 등록
                 </Link>
               </Button>
