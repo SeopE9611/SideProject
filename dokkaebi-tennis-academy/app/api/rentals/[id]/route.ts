@@ -25,5 +25,10 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     dueAt: doc.dueAt ?? null, // 반납 예정
     returnedAt: doc.returnedAt ?? null, // 반납 완료
     depositRefundedAt: doc.depositRefundedAt ?? null, // 보증금 환불 시각
+    shipping: {
+      // 운송장/배송 정보
+      outbound: doc.shipping?.outbound ?? null,
+      return: doc.shipping?.return ?? null,
+    },
   });
 }
