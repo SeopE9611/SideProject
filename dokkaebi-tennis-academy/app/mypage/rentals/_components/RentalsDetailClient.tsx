@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getDepositBanner } from '@/app/features/rentals/utils/ui';
-import { ArrowLeft, Briefcase, Calendar, Clock, CreditCard, Package, CheckCircle, AlertCircle, XCircle, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Briefcase, Calendar, Clock, CreditCard, Package, CheckCircle, AlertCircle, XCircle, TrendingUp, Truck } from 'lucide-react';
 
 type Rental = {
   id: string;
@@ -169,6 +169,11 @@ export default function RentalsDetailClient({ id }: { id: string }) {
               목록으로 돌아가기
             </Link>
           </Button>
+          {data?.status === 'out' && (
+            <Link href={`/mypage/rentals/${data.id}/return-shipping`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90">
+              <Truck className="h-4 w-4 mr-2" /> 반납 운송장 등록
+            </Link>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

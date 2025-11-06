@@ -142,6 +142,9 @@ export default function AdminRentalDetailClient() {
   if (!id) return <div className="p-4">유효하지 않은 ID</div>;
   if (isLoading || !data) return <div className="p-4">불러오는 중…</div>;
 
+  const Outbound = data?.shipping?.outbound;
+  const ReturnShip = data?.shipping?.return;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-black">
       <div className="container py-10 space-y-8">
@@ -157,12 +160,15 @@ export default function AdminRentalDetailClient() {
                   <p className="mt-1 text-gray-600 dark:text-gray-400">대여 ID: {data.id}</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="bg-white/60 backdrop-blur-sm border-purple-200 hover:bg-purple-50 dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60" asChild>
+              <Button variant="outline" size="sm" className="h-8 px-3 bg-white/60 dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60" asChild>
                 <Link href="/admin/rentals">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   목록으로 돌아가기
                 </Link>
               </Button>
+              <Link href={`/admin/rentals/${id}/shipping-update`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90 h-8">
+                <Truck className="h-4 w-4 mr-2" /> 출고 운송장 등록
+              </Link>
               {/* created 상태에서만 노출 */}
               {data?.status === 'created' && (
                 <Button onClick={onConfirmPayment} disabled={confirming} size="sm" className="h-8">
