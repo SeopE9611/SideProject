@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +25,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const rental = await db.collection('rental_orders').findOne({ _id });
     if (!rental) return NextResponse.json({ ok: false, message: 'NOT_FOUND' }, { status: 404 });
 
+    // 1차 보호: 회원 대여건이면 소유자만 수정 가능 (비회원 보류)
+    if (rental.userId) {
+      const jar = await cookies();
+      const at = jar.get('accessToken')?.value;
+      const payload = at ? verifyAccessToken(at) : null;
+      if (!payload || payload.sub !== String(rental.userId)) {
+        return NextResponse.json({ ok: false, message: 'FORBIDDEN' }, { status: 403 });
+      }
+    }
     const body = await (async () => {
       try {
         return await req.json();
