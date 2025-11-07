@@ -54,7 +54,8 @@ export default function AdminRentalDetailClient() {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
 
-  const { data, isLoading, mutate } = useSWR(id ? `/api/rentals/${id}` : null, fetcher);
+  const { data, isLoading, mutate } = useSWR(id ? `/api/admin/rentals/${id}` : null, fetcher);
+
   const [busy, setBusy] = useState(false);
   const safeJson = async (r: Response) => {
     try {
@@ -363,6 +364,42 @@ export default function AdminRentalDetailClient() {
                       <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{won(data.amount?.total)}</p>
                     </div>
                   </div>
+                  <div className="p-4 rounded-lg border bg-gray-50 dark:bg-slate-800/70 dark:border-slate-700/60">
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">보증금 환불 계좌</p>
+                    {data?.refundAccount ? (
+                      <div className="space-y-1 text-sm">
+                        <div>
+                          은행: <b>{data.refundAccount.bank || '-'}</b>
+                        </div>
+                        <div>
+                          예금주: <b>{data.refundAccount.holderMasked || '-'}</b>
+                        </div>
+                        <div>
+                          계좌번호: <b>{data.refundAccount.accountMasked || '-'}</b>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-500">입력된 환불 계좌가 없습니다.</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const r = await fetch(`/api/admin/rentals/${id}/refund-account`, { credentials: 'include' });
+                        const j = await r.json();
+                        if (!r.ok) return showErrorToast(j?.message || '계좌 조회 실패');
+                        const text = `[${j.bank}] ${j.holder} / ${j.account}`;
+                        await navigator.clipboard.writeText(text);
+                        showSuccessToast('계좌 정보를 복사했습니다');
+                      } catch {
+                        showErrorToast('네트워크 오류');
+                      }
+                    }}
+                  >
+                    전체 계좌 보기/복사
+                  </Button>
                 </div>
               </CardContent>
             </Card>
