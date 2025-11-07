@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { requireAdmin } from '@/lib/admin.guard';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
-  const db = (await clientPromise).db();
+  // 관리자 권한
+  const guard = await requireAdmin(req);
+  if (!('ok' in guard) || !guard.ok) return guard.res;
+  const db = guard.db;
+
   const { searchParams } = new URL(req.url);
   const page = Math.max(1, Number(searchParams.get('page') ?? 1));
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)));
