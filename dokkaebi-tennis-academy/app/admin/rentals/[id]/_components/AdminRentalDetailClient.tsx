@@ -32,6 +32,22 @@ const rentalStatusLabels: Record<string, string> = {
   canceled: '취소됨',
 };
 
+const courierLabel: Record<string, string> = {
+  cj: 'CJ대한통운',
+  post: '우체국',
+  logen: '로젠',
+  hanjin: '한진',
+};
+const courierTrackUrl: Record<string, (no: string) => string> = {
+  cj: (no) => `https://trace.cjlogistics.com/web/detail.jsp?slipno=${encodeURIComponent(no)}`,
+  post: (no) => `https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=${encodeURIComponent(no)}`,
+  logen: (no) => `https://www.ilogen.com/m/personal/trace/${encodeURIComponent(no)}`,
+  hanjin: (no) => `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnum=${encodeURIComponent(no)}`,
+};
+
+// 날짜 포맷 보조
+const fmt = (v?: string | Date | null) => (v ? new Date(v).toLocaleString() : '-');
+
 export default function AdminRentalDetailClient() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
@@ -139,6 +155,8 @@ export default function AdminRentalDetailClient() {
     }).format(date);
   };
 
+  const fmtDateOnly = (v?: string | Date | null) => (v ? new Date(v).toLocaleDateString('ko-KR') : '-');
+
   if (!id) return <div className="p-4">유효하지 않은 ID</div>;
   if (isLoading || !data) return <div className="p-4">불러오는 중…</div>;
 
@@ -160,27 +178,32 @@ export default function AdminRentalDetailClient() {
                   <p className="mt-1 text-gray-600 dark:text-gray-400">대여 ID: {data.id}</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="h-8 px-3 bg-white/60 dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60" asChild>
-                <Link href="/admin/rentals">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  목록으로 돌아가기
-                </Link>
-              </Button>
-              <Link href={`/admin/rentals/${id}/shipping-update`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90 h-8">
-                <Truck className="h-4 w-4 mr-2" /> 출고 운송장 등록
-              </Link>
-              {/* created 상태에서만 노출 */}
-              {data?.status === 'created' && (
-                <Button onClick={onConfirmPayment} disabled={confirming} size="sm" className="h-8">
-                  {confirming ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 처리 중…
-                    </>
-                  ) : (
-                    '결제완료 처리(무통장)'
-                  )}
+              <div className="sm:ml-auto flex items-center gap-2">
+                {/* ✅ 오른쪽 버튼 컨테이너 */}
+                {data?.status !== 'canceled' && (
+                  <Link href={`/admin/rentals/${id}/shipping-update`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90 h-8">
+                    <Truck className="h-4 w-4 mr-2" />
+                    {data?.shipping?.outbound?.trackingNumber ? '출고 운송장 수정' : '출고 운송장 등록'}
+                  </Link>
+                )}
+                <Button variant="outline" size="sm" className="h-8 px-3 bg-white/60 dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60" asChild>
+                  <Link href="/admin/rentals">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    목록으로 돌아가기
+                  </Link>
                 </Button>
-              )}
+                {data?.status === 'created' && (
+                  <Button onClick={onConfirmPayment} disabled={confirming} size="sm" className="h-8">
+                    {confirming ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 처리 중…
+                      </>
+                    ) : (
+                      '결제완료 처리(무통장)'
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -262,7 +285,25 @@ export default function AdminRentalDetailClient() {
               </div>
             </CardFooter>
           </Card>
-
+          <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+              <CardTitle>고객 정보</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 text-sm space-y-3">
+              <div>
+                <span className="text-slate-500">이름</span>
+                <div className="font-semibold">{data.user?.name || '-'}</div>
+              </div>
+              <div>
+                <span className="text-slate-500">이메일</span>
+                <div className="font-semibold">{data.user?.email || '-'}</div>
+              </div>
+              <div>
+                <span className="text-slate-500">연락처</span>
+                <div className="font-semibold">{data.user?.phone || '-'}</div>
+              </div>
+            </CardContent>
+          </Card>
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
@@ -326,6 +367,63 @@ export default function AdminRentalDetailClient() {
               </CardContent>
             </Card>
           </div>
+
+          <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <Truck className="h-5 w-5" />
+                운송장 정보
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* 출고 */}
+                <div className="p-4 rounded-lg border bg-gray-50 dark:bg-slate-800/70 dark:border-slate-700/60">
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">출고</p>
+                  {data?.shipping?.outbound?.trackingNumber ? (
+                    <div className="space-y-1 text-sm">
+                      <div>
+                        택배사: <b>{courierLabel[data.shipping.outbound.courier] ?? data.shipping.outbound.courier ?? '-'}</b>
+                      </div>
+                      <div>
+                        운송장:
+                        <a className="underline underline-offset-2" href={courierTrackUrl[data.shipping.outbound.courier]?.(data.shipping.outbound.trackingNumber) ?? '#'} target="_blank" rel="noreferrer">
+                          {data.shipping.outbound.trackingNumber}
+                        </a>
+                      </div>
+                      <div>
+                        출고일: <b>{fmtDateOnly(data.shipping.outbound.shippedAt)}</b>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-slate-400">미등록</div>
+                  )}
+                </div>
+                {/* 반납 */}
+                <div className="p-4 rounded-lg border bg-gray-50 dark:bg-slate-800/70 dark:border-slate-700/60">
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">반납</p>
+                  {data?.shipping?.return?.trackingNumber ? (
+                    <div className="space-y-1 text-sm">
+                      <div>
+                        택배사: <b>{courierLabel[data.shipping.return.courier] ?? data.shipping.return.courier ?? '-'}</b>
+                      </div>
+                      <div>
+                        운송장:
+                        <a className="underline underline-offset-2" href={courierTrackUrl[data.shipping.return.courier]?.(data.shipping.return.trackingNumber) ?? '#'} target="_blank" rel="noreferrer">
+                          {data.shipping.return.trackingNumber}
+                        </a>
+                      </div>
+                      <div>
+                        발송일: <b>{fmtDateOnly(data.shipping.return.shippedAt)}</b>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-slate-400">미등록</div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">

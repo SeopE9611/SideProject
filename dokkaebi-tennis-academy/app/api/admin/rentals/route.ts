@@ -38,20 +38,25 @@ export async function GET(req: Request) {
   const items = await cursor.toArray();
   const total = await db.collection('rental_orders').countDocuments(q);
 
-  const mapped = items.map((r: any) => ({
-    id: r._id ? r._id.toString() : undefined,
-    racketId: r.racketId?.toString(),
-    brand: r.brand || '',
-    model: r.model || '',
-    status: r.status,
-    days: r.days ?? r.period ?? 0,
-    amount: r.amount ?? { fee: r.fee ?? 0, deposit: r.deposit ?? 0, total: (r.fee ?? 0) + (r.deposit ?? 0) },
-    createdAt: r.createdAt,
-    outAt: r.outAt ?? null, // (표시용) 출고 시각
-    dueAt: r.dueAt ?? null, // 반납 예정일
-    returnedAt: r.returnedAt ?? null, // 반납 완료 시각
-    depositRefundedAt: r.depositRefundedAt ?? null, // 환불 완료 시각(토글용)
-  }));
+  const mapped = items.map((r: any) => {
+    const out = r?.shipping?.outbound;
+    const track = out?.trackingNumber || '';
+    return {
+      id: r._id ? r._id.toString() : undefined,
+      racketId: r.racketId?.toString(),
+      brand: r.brand || '',
+      model: r.model || '',
+      status: r.status,
+      days: r.days ?? r.period ?? 0,
+      amount: r.amount ?? { fee: r.fee ?? 0, deposit: r.deposit ?? 0, total: (r.fee ?? 0) + (r.deposit ?? 0) },
+      createdAt: r.createdAt,
+      outAt: r.outAt ?? null, // (표시용) 출고 시각
+      dueAt: r.dueAt ?? null, // 반납 예정일
+      returnedAt: r.returnedAt ?? null, // 반납 완료 시각
+      depositRefundedAt: r.depositRefundedAt ?? null, // 환불 완료 시각(토글용)
+      outboundShippingBrief: track ? { courier: out?.courier || '', trackingLast4: String(track).slice(-4) } : null,
+    };
+  });
 
   return NextResponse.json({
     page,

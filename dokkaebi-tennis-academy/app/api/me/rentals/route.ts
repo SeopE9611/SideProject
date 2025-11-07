@@ -34,16 +34,22 @@ export async function GET(req: Request) {
   const [items, total] = await Promise.all([db.collection('rental_orders').find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(pageSize).toArray(), db.collection('rental_orders').countDocuments({ userId })]);
 
   // 4) 응답 평탄화
-  const rows = items.map((d) => ({
-    id: d._id.toString(),
-    brand: d.brand,
-    model: d.model,
-    days: d.days,
-    status: d.status, // created | paid | out | returned
-    amount: d.amount, // { fee, deposit, total }
-    createdAt: d.createdAt,
-    dueAt: d.dueAt,
-  }));
+  const rows = items.map((d) => {
+    const ret = d?.shipping?.return;
+    const tracking = ret?.trackingNumber || '';
+    return {
+      id: d._id.toString(),
+      brand: d.brand,
+      model: d.model,
+      days: d.days,
+      status: d.status, // created | paid | out | returned
+      amount: d.amount, // { fee, deposit, total }
+      createdAt: d.createdAt,
+      dueAt: d.dueAt,
+      hasReturnShipping: Boolean(tracking),
+      returnShippingBrief: tracking ? { courier: ret?.courier || '', trackingLast4: String(tracking).slice(-4) } : null,
+    };
+  });
 
   return NextResponse.json({
     page,

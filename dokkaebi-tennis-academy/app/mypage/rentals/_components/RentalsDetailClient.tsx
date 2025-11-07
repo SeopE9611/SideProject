@@ -20,6 +20,29 @@ type Rental = {
   outAt?: string | null;
   returnedAt?: string | null;
   depositRefundedAt?: string | null;
+  shipping?: {
+    outbound?: {
+      courier?: string;
+      trackingNumber?: string;
+      shippedAt?: string | Date | null;
+    } | null;
+    return?: {
+      courier?: string;
+      trackingNumber?: string;
+      shippedAt?: string | Date | null;
+      note?: string;
+    } | null;
+  } | null;
+};
+
+// 안전 라벨/URL 헬퍼
+const getCourierLabel = (code?: string) => (code ? courierLabel[code] ?? code : '-');
+
+const getTrackHref = (code?: string, no?: string) => {
+  if (!code || !no) return '#';
+  const key = code as keyof typeof courierTrackUrl;
+  const fn = courierTrackUrl[key];
+  return typeof fn === 'function' ? fn(no) : '#';
 };
 
 const getStatusIcon = (status: string) => {
@@ -63,6 +86,20 @@ const getStatusLabel = (status: string) => {
   return labels[status] || status;
 };
 
+const courierLabel: Record<string, string> = {
+  cj: 'CJ대한통운',
+  post: '우체국',
+  logen: '로젠',
+  hanjin: '한진',
+};
+const courierTrackUrl: Record<string, (no: string) => string> = {
+  cj: (no) => `https://trace.cjlogistics.com/web/detail.jsp?slipno=${encodeURIComponent(no)}`,
+  post: (no) => `https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=${encodeURIComponent(no)}`,
+  logen: (no) => `https://www.ilogen.com/m/personal/trace/${encodeURIComponent(no)}`,
+  hanjin: (no) => `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnum=${encodeURIComponent(no)}`,
+};
+const fmt = (v?: string | Date | null) => (v ? new Date(v).toLocaleString() : '-');
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('ko-KR', {
@@ -82,6 +119,7 @@ const formatDateTime = (dateString: string) => {
     minute: '2-digit',
   }).format(date);
 };
+const fmtDateOnly = (v?: string | Date | null) => (v ? new Date(v).toLocaleDateString('ko-KR') : '-');
 
 export default function RentalsDetailClient({ id }: { id: string }) {
   const [data, setData] = useState<Rental | null>(null);
@@ -163,17 +201,20 @@ export default function RentalsDetailClient({ id }: { id: string }) {
             </div>
           </div>
 
-          <Button variant="outline" size="sm" asChild className="bg-white/60 backdrop-blur-sm border-indigo-200 hover:bg-indigo-50">
-            <Link href="/mypage?tab=rentals">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              목록으로 돌아가기
-            </Link>
-          </Button>
-          {data?.status === 'out' && (
-            <Link href={`/mypage/rentals/${data.id}/return-shipping`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90">
-              <Truck className="h-4 w-4 mr-2" /> 반납 운송장 등록
-            </Link>
-          )}
+          <div className="sm:ml-auto flex items-center gap-2">
+            {data?.status === 'out' && (
+              <Link href={`/mypage/rentals/${data.id}/return-shipping`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90">
+                <Truck className="h-4 w-4 mr-2" />
+                {data?.shipping?.return?.trackingNumber ? '반납 운송장 수정' : '반납 운송장 등록'}
+              </Link>
+            )}
+            <Button variant="outline" size="sm" asChild className="bg-white/60 backdrop-blur-sm border-indigo-200 hover:bg-indigo-50">
+              <Link href="/mypage?tab=rentals">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                목록으로 돌아가기
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -325,6 +366,24 @@ export default function RentalsDetailClient({ id }: { id: string }) {
               </div>
             </div>
 
+            {data?.shipping?.outbound?.trackingNumber && (
+              <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                  <Truck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">출고 운송장 등록</p>
+                  <p className="text-xs text-slate-500">{fmtDateOnly(data.shipping.outbound.shippedAt)}</p>
+                  <p className="text-sm mt-1">
+                    {getCourierLabel(data.shipping.outbound.courier)} ·{' '}
+                    <a className="underline underline-offset-2" href={getTrackHref(data.shipping.outbound.courier, data.shipping.outbound.trackingNumber)} target="_blank" rel="noreferrer">
+                      {data.shipping.outbound.trackingNumber ?? '-'}
+                    </a>
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
                 <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
@@ -334,6 +393,25 @@ export default function RentalsDetailClient({ id }: { id: string }) {
                 <p className="text-sm text-slate-600 dark:text-slate-400">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
               </div>
             </div>
+
+            {/* 반납 운송장 등록(사용자 발송) */}
+            {data?.shipping?.return?.trackingNumber && (
+              <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
+                  <Truck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">반납 운송장 등록</p>
+                  <p className="text-xs text-slate-500">{fmtDateOnly(data.shipping.return.shippedAt)}</p>
+                  <p className="text-sm mt-1">
+                    {getCourierLabel(data.shipping.return.courier)} ·{' '}
+                    <a className="underline underline-offset-2" href={getTrackHref(data.shipping.return.courier, data.shipping.return.trackingNumber)} target="_blank" rel="noreferrer">
+                      {data.shipping.return.trackingNumber ?? '-'}
+                    </a>
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">

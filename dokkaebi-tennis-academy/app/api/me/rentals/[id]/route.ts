@@ -34,6 +34,7 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
   // 응답 평탄화
   return NextResponse.json({
     id: doc._id.toString(),
+    racketId: doc.racketId?.toString?.(),
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
@@ -44,6 +45,11 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     dueAt: doc.dueAt ?? null, // 반납 예정
     returnedAt: doc.returnedAt ?? null, // 반납 완료
     depositRefundedAt: doc.depositRefundedAt ?? null, // 보증금 환불 시각
+    shipping: {
+      // 운송장/배송 정보
+      outbound: doc.shipping?.outbound ?? null,
+      return: doc.shipping?.return ?? null,
+    },
   });
 }
 

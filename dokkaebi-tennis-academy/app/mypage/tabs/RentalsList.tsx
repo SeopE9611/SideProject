@@ -183,6 +183,7 @@ export default function RentalsList() {
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                 <span className="text-lg font-bold text-slate-900 dark:text-slate-100">총 {((r.amount?.fee ?? 0) + (r.amount?.deposit ?? 0)).toLocaleString()}원</span>
+                {r.hasReturnShipping ? <Badge className="bg-emerald-600 text-white">반납 운송장 등록됨</Badge> : <Badge variant="secondary">반납 운송장 미등록</Badge>}
               </div>
 
               <Button size="sm" variant="outline" asChild className="border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent">

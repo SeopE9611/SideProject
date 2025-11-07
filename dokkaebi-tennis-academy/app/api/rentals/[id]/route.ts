@@ -11,7 +11,14 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const doc = await db.collection('rental_orders').findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
 
-  // 응답 정리: 프런트에서 쓰기 좋게 id/amount 평탄화
+  // 고객 정보
+  let user: { name?: string; email?: string; phone?: string } | null = null;
+  if (doc.userId) {
+    const u = await db.collection('users').findOne({ _id: doc.userId });
+    if (u) user = { name: u.name ?? '', email: u.email ?? '', phone: u.phone ?? '' };
+  }
+
+  // 응답 정리
   return NextResponse.json({
     id: doc._id.toString(),
     racketId: doc.racketId?.toString?.(),
@@ -30,5 +37,6 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       outbound: doc.shipping?.outbound ?? null,
       return: doc.shipping?.return ?? null,
     },
+    user,
   });
 }
