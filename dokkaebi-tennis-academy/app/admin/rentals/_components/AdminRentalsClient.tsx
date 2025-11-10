@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
+import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
 
 type RentalRow = {
   id: string;
@@ -60,6 +61,8 @@ export default function AdminRentalsClient() {
   const [from, setFrom] = useState<string>('');
   const [to, setTo] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [payFilter, setPayFilter] = useState<'all' | 'unpaid' | 'paid'>('all');
+  const [shipFilter, setShipFilter] = useState<'all' | 'none' | 'outbound-set' | 'return-set'>('all');
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<'customer' | 'date' | 'total' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -86,7 +89,19 @@ export default function AdminRentalsClient() {
     return searchMatch;
   });
 
-  const sortedRentals = [...filteredRentals].sort((a, b) => {
+  const viewItems = (data?.items ?? []).filter((r) => {
+    const pay = derivePaymentStatus(r);
+    const ship = deriveShippingStatus(r);
+    const okPay = payFilter === 'all' ? true : payFilter === pay;
+    const okShip = shipFilter === 'all' ? true : shipFilter === ship;
+    // 기존 검색어 필터와 결합
+    const q = searchTerm.toLowerCase();
+    const searchMatch =
+      (r.id || '').toLowerCase().includes(q) || (r.brand || '').toLowerCase().includes(q) || (r.model || '').toLowerCase().includes(q) || (r.customer?.name || '').toLowerCase().includes(q) || (r.customer?.email || '').toLowerCase().includes(q);
+    return okPay && okShip && searchMatch;
+  });
+
+  const sortedRentals = [...viewItems].sort((a, b) => {
     if (!sortBy) return 0;
     let aValue: string | number = '';
     let bValue: string | number = '';
@@ -152,6 +167,8 @@ export default function AdminRentalsClient() {
     setBrand('');
     setFrom('');
     setTo('');
+    setPayFilter('all');
+    setShipFilter('all');
   };
 
   const handleSort = (key: 'customer' | 'date' | 'total') => {
@@ -188,6 +205,26 @@ export default function AdminRentalsClient() {
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
   const thClasses = 'px-4 py-2 text-center align-middle border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-700 dark:text-gray-300';
   const tdClasses = 'px-3 py-4 align-middle text-center';
+
+  function PaymentBadge({ item }: { item: any }) {
+    const s = derivePaymentStatus(item);
+    return s === 'paid' ? (
+      <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[11px]">결제확정</span>
+    ) : (
+      <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-[11px]">입금대기</span>
+    );
+  }
+
+  function ShippingBadge({ item }: { item: any }) {
+    const s = deriveShippingStatus(item);
+    const map = {
+      none: ['운송장 없음', 'bg-slate-100 text-slate-700'],
+      'outbound-set': ['출고 운송장', 'bg-indigo-100 text-indigo-700'],
+      'return-set': ['반납 운송장', 'bg-violet-100 text-violet-700'],
+    } as const;
+    const [label, cls] = map[s];
+    return <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] ${cls}`}>{label}</span>;
+  }
 
   return (
     <div className="container py-6">
@@ -237,6 +274,33 @@ export default function AdminRentalsClient() {
                 <option value="returned">반납완료</option>
                 <option value="canceled">취소됨</option>
               </select>
+              <select
+                className="h-9 rounded-md border border-input bg-background px-3 text-xs"
+                value={payFilter}
+                onChange={(e) => {
+                  setPage(1);
+                  setPayFilter(e.target.value as any);
+                }}
+              >
+                <option value="all">결제(전체)</option>
+                <option value="unpaid">입금대기</option>
+                <option value="paid">결제확정</option>
+              </select>
+
+              <select
+                className="h-9 rounded-md border border-input bg-background px-3 text-xs"
+                value={shipFilter}
+                onChange={(e) => {
+                  setPage(1);
+                  setShipFilter(e.target.value as any);
+                }}
+              >
+                <option value="all">배송(전체)</option>
+                <option value="none">운송장 없음</option>
+                <option value="outbound-set">출고 운송장</option>
+                <option value="return-set">반납 운송장</option>
+              </select>
+
               <Input
                 placeholder="브랜드"
                 className="h-9 text-xs"
@@ -304,6 +368,7 @@ export default function AdminRentalsClient() {
                 </TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>기간</TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>상태</TableHead>
+                <TableHead className={cn(thClasses, 'text-center')}>결제/배송</TableHead>
                 <TableHead onClick={() => handleSort('total')} className={cn(thClasses, 'text-center cursor-pointer select-none', sortBy === 'total' && 'text-primary')}>
                   금액
                   <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 dark:text-gray-600 transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
@@ -315,7 +380,7 @@ export default function AdminRentalsClient() {
               {isLoading ? (
                 Array.from({ length: pageSize }).map((_, rowIdx) => (
                   <TableRow key={rowIdx}>
-                    {Array.from({ length: 8 }).map((_, cellIdx) => (
+                    {Array.from({ length: 9 }).map((_, cellIdx) => (
                       <TableCell key={cellIdx}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
@@ -324,13 +389,13 @@ export default function AdminRentalsClient() {
                 ))
               ) : !data || data.items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className={tdClasses}>
+                  <TableCell colSpan={9} className={tdClasses}>
                     불러올 대여가 없습니다.
                   </TableCell>
                 </TableRow>
               ) : sortedRentals.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className={tdClasses}>
+                  <TableCell colSpan={9} className={tdClasses}>
                     검색 결과가 없습니다.
                   </TableCell>
                 </TableRow>
@@ -385,6 +450,12 @@ export default function AdminRentalsClient() {
                       <TableCell className={tdClasses}>{r.days}일</TableCell>
                       <TableCell className={tdClasses}>
                         <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', rentalStatusColors[r.status])}>{rentalStatusLabels[r.status] || r.status}</Badge>
+                      </TableCell>
+                      <TableCell className={tdClasses}>
+                        <div className="flex gap-1 justify-center">
+                          <PaymentBadge item={r} />
+                          <ShippingBadge item={r} />
+                        </div>
                       </TableCell>
                       <TableCell className={tdClasses}>
                         <div className="flex flex-col items-center">

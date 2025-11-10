@@ -12,6 +12,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import Link from 'next/link';
 import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
+import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
@@ -342,6 +343,13 @@ export default function AdminRentalDetailClient() {
                   <CreditCard className="h-5 w-5 text-purple-600" />
                   <span>결제 정보</span>
                 </CardTitle>
+                <div className="ml-auto">
+                  {derivePaymentStatus(data) === 'paid' ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs">결제확정</span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-xs">입금대기</span>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -410,6 +418,15 @@ export default function AdminRentalDetailClient() {
                 <Truck className="h-5 w-5" />
                 운송장 정보
               </CardTitle>
+              <div className="ml-auto">
+                {
+                  {
+                    none: <span className="inline-flex px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs">운송장 없음</span>,
+                    'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-xs">출고 운송장</span>,
+                    'return-set': <span className="inline-flex px-2 py-0.5 rounded bg-violet-100 text-violet-700 text-xs">반납 운송장</span>,
+                  }[deriveShippingStatus(data)]
+                }
+              </div>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid gap-6 md:grid-cols-2">

@@ -21,3 +21,19 @@ export function canTransitIdempotent(current: RentalStatus, to: RentalStatus) {
   if (current === to) return true; // 같은 요청 반복은 OK(멱등)
   return canTransit(current, to);
 }
+
+// 결제 상태 유도: 무통장 예시 기준
+export function derivePaymentStatus(rental: any): 'unpaid' | 'paid' {
+  // paidAt 또는 관리자가 결제확정한 이벤트 시각 사용
+  const paid = Boolean(rental?.payment?.paidAt || rental?.paidAt) || ['paid', 'out', 'returned'].includes(rental?.status);
+  return paid ? 'paid' : 'unpaid';
+}
+
+// 배송 상태 유도: 운송장 존재 여부
+export function deriveShippingStatus(rental: any): 'none' | 'outbound-set' | 'return-set' {
+  const hasOut = Boolean(rental?.shipping?.outbound?.trackingNumber || rental?.shipping?.outbound?.invoice || rental?.shipping?.outbound?.waybill);
+  const hasRet = Boolean(rental?.shipping?.return?.trackingNumber || rental?.shipping?.return?.invoice || rental?.shipping?.return?.waybill);
+  if (hasRet) return 'return-set';
+  if (hasOut) return 'outbound-set';
+  return 'none';
+}
