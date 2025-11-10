@@ -1,9 +1,10 @@
 'use client';
 import AdminRacketForm, { type RacketForm } from '@/app/admin/rackets/_components/AdminRacketForm';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Package } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 export default function AdminRacketNewClient() {
   const r = useRouter();
@@ -23,27 +24,40 @@ export default function AdminRacketNewClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-900 dark:via-teal-900 dark:to-cyan-900">
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Link href="/admin/rackets">
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              목록으로
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Plus className="h-8 w-8 text-white" />
-            <h1 className="text-3xl font-bold text-white">새 라켓 등록</h1>
+    <div className="min-h-screen bg-background">
+      <div className="container py-8 px-6">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+          }}
+          className="space-y-6"
+        >
+          <div className="rounded-2xl p-8 border border-border bg-card shadow-lg">
+            <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+              <div className="flex items-center space-x-4">
+                <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
+                  <Package className="h-8 w-8 text-emerald-600" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold tracking-tight">라켓 등록</h2>
+                  <p className="text-muted-foreground">새로운 중고 라켓 정보를 입력하고 등록하세요.</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
+                  <Link href="/admin/rackets">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    취소
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </div>
-          <p className="text-emerald-100 mt-2">중고 라켓 정보를 입력하여 등록하세요</p>
-        </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-          <AdminRacketForm submitLabel="등록" onSubmit={onSubmit} />
-        </div>
+          <Separator className="bg-border" />
+
+          <AdminRacketForm submitLabel="저장" onSubmit={onSubmit} />
+        </form>
       </div>
     </div>
   );
