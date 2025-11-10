@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronDown, Copy, Eye, MoreHorizontal, Package, Search, Truck, X } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 type RentalRow = {
   id: string;
@@ -55,14 +56,26 @@ const rentalStatusLabels: Record<string, string> = {
 };
 
 export default function AdminRentalsClient() {
+  const router = useRouter();
+  const sp = useSearchParams();
+
   const [busyId, setBusyId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>('');
   const [brand, setBrand] = useState<string>('');
   const [from, setFrom] = useState<string>('');
   const [to, setTo] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [payFilter, setPayFilter] = useState<'all' | 'unpaid' | 'paid'>('all');
-  const [shipFilter, setShipFilter] = useState<'all' | 'none' | 'outbound-set' | 'return-set'>('all');
+
+  const [payFilter, setPayFilter] = useState<'all' | 'unpaid' | 'paid'>((sp.get('pay') as any) ?? 'all');
+  const [shipFilter, setShipFilter] = useState<'all' | 'none' | 'outbound-set' | 'return-set'>((sp.get('ship') as any) ?? 'all');
+  // 쿼리 → 상태 1회 동기화(직접 새로고침 대비)
+  useEffect(() => {
+    const qPay = sp.get('pay') as any;
+    const qShip = sp.get('ship') as any;
+    if (qPay && qPay !== payFilter) setPayFilter(qPay);
+    if (qShip && qShip !== shipFilter) setShipFilter(qShip);
+  }, [sp]);
+
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<'customer' | 'date' | 'total' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -169,6 +182,10 @@ export default function AdminRentalsClient() {
     setTo('');
     setPayFilter('all');
     setShipFilter('all');
+    const u = new URL(window.location.href);
+    u.searchParams.delete('pay');
+    u.searchParams.delete('ship');
+    router.replace(u.pathname + (u.searchParams.toString() ? '?' + u.searchParams.toString() : ''));
   };
 
   const handleSort = (key: 'customer' | 'date' | 'total') => {
@@ -278,8 +295,12 @@ export default function AdminRentalsClient() {
                 className="h-9 rounded-md border border-input bg-background px-3 text-xs"
                 value={payFilter}
                 onChange={(e) => {
+                  const v = e.target.value as any;
                   setPage(1);
-                  setPayFilter(e.target.value as any);
+                  setPayFilter(v);
+                  const u = new URL(window.location.href);
+                  v === 'all' ? u.searchParams.delete('pay') : u.searchParams.set('pay', v);
+                  router.replace(u.pathname + '?' + u.searchParams.toString());
                 }}
               >
                 <option value="all">결제(전체)</option>
@@ -291,8 +312,12 @@ export default function AdminRentalsClient() {
                 className="h-9 rounded-md border border-input bg-background px-3 text-xs"
                 value={shipFilter}
                 onChange={(e) => {
+                  const v = e.target.value as any;
                   setPage(1);
-                  setShipFilter(e.target.value as any);
+                  setShipFilter(v);
+                  const u = new URL(window.location.href);
+                  v === 'all' ? u.searchParams.delete('ship') : u.searchParams.set('ship', v);
+                  router.replace(u.pathname + '?' + u.searchParams.toString());
                 }}
               >
                 <option value="all">배송(전체)</option>
