@@ -3,13 +3,17 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
-import { Package, Search, Filter, MoreVertical, Edit, Eye, Plus } from 'lucide-react';
+import { Package, Search, MoreVertical, Edit, Eye, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MdSportsTennis } from 'react-icons/md';
+import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
 function StockChip({ id, total }: { id: string; total: number }) {
@@ -76,175 +80,254 @@ export default function AdminRacketsClient() {
     });
   }, [data?.items, searchQuery, statusFilter, conditionFilter]);
 
+  const stats = useMemo(() => {
+    const total = filteredItems.length;
+    const available = filteredItems.filter((item) => item.status === 'available').length;
+    const rented = filteredItems.filter((item) => item.status === 'rented').length;
+    const sold = filteredItems.filter((item) => item.status === 'sold').length;
+    return { total, available, rented, sold };
+  }, [filteredItems]);
+
   return (
     <div className={['min-h-screen', 'bg-gradient-to-b from-slate-50 via-white to-slate-50', 'dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'].join(' ')}>
       <div className="container py-8 px-6">
-        <div className="mb-2">
+        <div className="mb-6">
           <div className="flex items-center space-x-3 mb-4">
             <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
-              <MdSportsTennis className="h-8 w-8 text-blue-600" />
+              <MdSportsTennis className="h-8 w-8 text-emerald-600" />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100">중고 라켓 관리</h1>
-              <p className="mt-2 text-base text-gray-600 dark:text-gray-400">중고 라켓 재고 관리페이지 입니다.</p>
+              <p className="mt-2 text-base text-gray-600 dark:text-gray-400">중고 라켓 재고를 효율적으로 관리하세요</p>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Filter className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">필터 및 검색</h2>
-              <Link href="/admin/rackets/new">
-                <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50 shadow-lg">
-                  <Plus className="h-5 w-5 mr-2" />새 라켓 등록
-                </Button>
-              </Link>
-            </div>
+        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
+          {[
+            {
+              label: '전체 라켓',
+              icon: <Package className="h-6 w-6 text-emerald-600" />,
+              value: stats.total,
+              bgColor: 'bg-emerald-50 dark:bg-emerald-950/20',
+            },
+            {
+              label: '판매 가능',
+              icon: <CheckCircle className="h-6 w-6 text-green-600" />,
+              value: stats.available,
+              bgColor: 'bg-green-50 dark:bg-green-950/20',
+            },
+            {
+              label: '대여 중',
+              icon: <AlertTriangle className="h-6 w-6 text-yellow-600" />,
+              value: stats.rented,
+              bgColor: 'bg-yellow-50 dark:bg-yellow-950/20',
+            },
+            {
+              label: '판매 완료',
+              icon: <XCircle className="h-6 w-6 text-rose-600" />,
+              value: stats.sold,
+              bgColor: 'bg-rose-50 dark:bg-rose-950/20',
+            },
+          ].map((c, i) => (
+            <Card key={i} className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-emerald-100 dark:border-emerald-800/30">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{c.label}</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-emerald-200/50 dark:bg-emerald-800/50 animate-pulse align-middle" /> : c.value}</p>
+                  </div>
+                  <div className={`${c.bgColor} rounded-xl p-3 border border-emerald-100 dark:border-emerald-800/30`}>{c.icon}</div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input placeholder="브랜드, 모델 검색..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
+        <Card className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-emerald-100 dark:border-emerald-800/30 flex-1 min-h-0 flex flex-col">
+          <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-b border-emerald-100 dark:border-emerald-800/30 pb-4 shrink-0">
+            <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+              <div>
+                <CardTitle className="text-xl font-semibold text-emerald-800 dark:text-emerald-200">라켓 목록</CardTitle>
+                <CardDescription className="text-emerald-600 dark:text-emerald-400">
+                  {filteredItems.length > 0 ? `총 ${filteredItems.length}개의 라켓이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 라켓이 없습니다.'}
+                </CardDescription>
+              </div>
+              <Button
+                asChild
+                className={[
+                  'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
+                  'bg-emerald-600 hover:bg-emerald-700 text-white',
+                  'dark:bg-emerald-500 dark:hover:bg-emerald-400',
+                  'border border-white/10 dark:border-white/10 shadow-sm hover:shadow',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400',
+                  'ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900',
+                  'transition-colors',
+                ].join(' ')}
+              >
+                <Link href="/admin/rackets/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  라켓 등록
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-6 flex-1 min-h-0 flex flex-col p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-3 md:space-y-0">
+              <div className="w-full space-y-3">
+                <div className="w-full max-w-md">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder="브랜드, 모델 검색..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-8 h-9 text-xs border-emerald-200 focus:border-emerald-400 dark:border-slate-700 dark:focus:border-emerald-500 bg-white dark:bg-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid w-full gap-2 border-t border-emerald-100 dark:border-emerald-800/30 pt-3 sm:grid-cols-2 md:grid-cols-3">
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="border-emerald-200 dark:border-slate-700">
+                      <SelectValue placeholder="상태 필터" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체 상태</SelectItem>
+                      <SelectItem value="available">판매가능</SelectItem>
+                      <SelectItem value="rented">대여중</SelectItem>
+                      <SelectItem value="sold">판매완료</SelectItem>
+                      <SelectItem value="inactive">비노출</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                    <SelectTrigger className="border-emerald-200 dark:border-slate-700">
+                      <SelectValue placeholder="등급 필터" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체 등급</SelectItem>
+                      <SelectItem value="A">A급 (최상)</SelectItem>
+                      <SelectItem value="B">B급 (양호)</SelectItem>
+                      <SelectItem value="C">C급 (보통)</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                      setConditionFilter('all');
+                    }}
+                    className="w-full border-emerald-200 hover:bg-emerald-50 dark:border-slate-700 dark:hover:bg-slate-900/40"
+                  >
+                    필터 초기화
+                  </Button>
                 </div>
               </div>
-
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="상태 필터" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체 상태</SelectItem>
-                  <SelectItem value="available">판매가능</SelectItem>
-                  <SelectItem value="rented">대여중</SelectItem>
-                  <SelectItem value="sold">판매완료</SelectItem>
-                  <SelectItem value="inactive">비노출</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="등급 필터" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체 등급</SelectItem>
-                  <SelectItem value="A">A급 (최상)</SelectItem>
-                  <SelectItem value="B">B급 (양호)</SelectItem>
-                  <SelectItem value="C">C급 (보통)</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
-            <div className="mt-4 flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
-              <span>총 {filteredItems.length}개의 라켓</span>
-              {(searchQuery || statusFilter !== 'all' || conditionFilter !== 'all') && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setStatusFilter('all');
-                    setConditionFilter('all');
-                  }}
-                >
-                  필터 초기화
-                </Button>
+            <div className="flex-1">
+              {isLoading ? (
+                <div className="overflow-auto rounded-lg border border-emerald-100 dark:border-emerald-800/30">
+                  <div className="space-y-4 p-8">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="h-16 bg-emerald-100 dark:bg-emerald-700 rounded animate-pulse" />
+                    ))}
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="overflow-auto rounded-lg border border-red-200 dark:border-red-900">
+                  <div className="p-8 text-center">
+                    <p className="text-red-600 dark:text-red-400">목록을 불러오지 못했습니다.</p>
+                  </div>
+                </div>
+              ) : !filteredItems.length ? (
+                <div className="overflow-auto rounded-lg border border-emerald-100 dark:border-emerald-800/30">
+                  <div className="p-12 text-center">
+                    <Package className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">조건에 맞는 라켓이 없습니다.</div>
+                    <div className="text-xs text-muted-foreground mt-2">필터를 초기화하거나 검색어를 수정해 보세요.</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-auto rounded-lg border border-emerald-100 dark:border-emerald-800/30">
+                  <Table>
+                    <TableHeader className="sticky top-0 z-10 backdrop-blur bg-emerald-50/80 supports-[backdrop-filter]:bg-emerald-50/60 dark:bg-slate-900/60 dark:supports-[backdrop-filter]:bg-slate-900/50 border-b border-emerald-100 dark:border-slate-700">
+                      <TableRow className="border-b border-emerald-100 dark:border-emerald-800/30">
+                        <TableHead className="text-left text-emerald-700 dark:text-emerald-300">라켓 정보</TableHead>
+                        <TableHead className="text-right text-emerald-700 dark:text-emerald-300">가격</TableHead>
+                        <TableHead className="text-center text-emerald-700 dark:text-emerald-300">등급</TableHead>
+                        <TableHead className="text-center text-emerald-700 dark:text-emerald-300">상태</TableHead>
+                        <TableHead className="text-center text-emerald-700 dark:text-emerald-300">대여</TableHead>
+                        <TableHead className="text-center text-emerald-700 dark:text-emerald-300">재고</TableHead>
+                        <TableHead className="text-right text-emerald-700 dark:text-emerald-300">관리</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredItems.map((item) => (
+                        <TableRow key={item.id} className="border-b border-emerald-100 last:border-b-0 dark:border-slate-700 hover:bg-emerald-50/30 dark:hover:bg-slate-800/40 even:bg-emerald-50/20 dark:even:bg-slate-900/30 transition-colors">
+                          <TableCell className="py-4">
+                            <div className="flex items-center gap-3">
+                              {item.images?.[0] && <img src={item.images[0] || '/placeholder.svg'} alt={item.model} className="h-12 w-12 rounded-lg object-cover" />}
+                              <div>
+                                <div className="font-semibold text-slate-900 dark:text-white">{item.brand}</div>
+                                <div className="text-sm text-slate-600 dark:text-slate-400">{item.model}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className="font-semibold text-slate-900 dark:text-white">{item.price?.toLocaleString()}원</span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <ConditionBadge condition={item.condition} />
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <StatusBadge status={item.status} />
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant={item.rental?.enabled ? 'default' : 'outline'}>{item.rental?.enabled ? '가능' : '불가'}</Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <StockChip id={item.id} total={item.quantity ?? 1} />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="p-0 hover:bg-emerald-50 dark:hover:bg-emerald-950/20">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="border-emerald-100 dark:border-emerald-800/30">
+                                <DropdownMenuLabel>작업</DropdownMenuLabel>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/rackets/${item.id}`} className="flex items-center">
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    상세 보기
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/admin/rackets/${item.id}/edit`} className="flex items-center">
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    수정
+                                  </Link>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
-          </div>
-
-          {isLoading ? (
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-16 bg-slate-100 dark:bg-slate-700 rounded animate-pulse" />
-                ))}
-              </div>
-            </div>
-          ) : error ? (
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-red-200 dark:border-red-900 p-8 text-center">
-              <p className="text-red-600 dark:text-red-400">목록을 불러오지 못했습니다.</p>
-            </div>
-          ) : !filteredItems.length ? (
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center">
-              <Package className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-600 dark:text-slate-400">{searchQuery || statusFilter !== 'all' || conditionFilter !== 'all' ? '검색 결과가 없습니다.' : '등록된 라켓이 없습니다.'}</p>
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">라켓 정보</th>
-                      <th className="px-6 py-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">가격</th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">등급</th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">상태</th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">대여</th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">재고</th>
-                      <th className="px-6 py-4 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">작업</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                    {filteredItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            {item.images?.[0] && <img src={item.images[0] || '/placeholder.svg'} alt={item.model} className="h-12 w-12 rounded-lg object-cover" />}
-                            <div>
-                              <div className="font-semibold text-slate-900 dark:text-white">{item.brand}</div>
-                              <div className="text-sm text-slate-600 dark:text-slate-400">{item.model}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="font-semibold text-slate-900 dark:text-white">{item.price?.toLocaleString()}원</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <ConditionBadge condition={item.condition} />
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <StatusBadge status={item.status} />
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <Badge variant={item.rental?.enabled ? 'default' : 'outline'}>{item.rental?.enabled ? '가능' : '불가'}</Badge>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <StockChip id={item.id} total={item.quantity ?? 1} />
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/rackets/${item.id}`} className="flex items-center">
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  상세 보기
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/admin/rackets/${item.id}/edit`} className="flex items-center">
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  수정
-                                </Link>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
