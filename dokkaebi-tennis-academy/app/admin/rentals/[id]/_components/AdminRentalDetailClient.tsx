@@ -180,7 +180,6 @@ export default function AdminRentalDetailClient() {
                 </div>
               </div>
               <div className="sm:ml-auto flex items-center gap-2">
-                {/* ✅ 오른쪽 버튼 컨테이너 */}
                 {data?.status !== 'canceled' && (
                   <Link href={`/admin/rentals/${id}/shipping-update`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90 h-8">
                     <Truck className="h-4 w-4 mr-2" />

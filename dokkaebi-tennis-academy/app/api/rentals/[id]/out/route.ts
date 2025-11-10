@@ -9,6 +9,14 @@ import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 export const dynamic = 'force-dynamic';
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  // 관리자만 허용
+  const jar = await cookies();
+  const at = jar.get('accessToken')?.value;
+  const payload = at ? verifyAccessToken(at) : null;
+  if (payload?.role !== 'admin') {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+
   const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
 
@@ -51,10 +59,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   if (u.matchedCount === 0) {
     return NextResponse.json({ ok: false, code: 'INVALID_STATE' }, { status: 409 });
   }
-  // 처리 이력 기록(액터: admin 식별 시 sub 사용)
-  const jar = await cookies();
-  const at = jar.get('accessToken')?.value;
-  const payload = at ? verifyAccessToken(at) : null;
+
   await writeRentalHistory(db, id, {
     action: 'out',
     from: 'paid',

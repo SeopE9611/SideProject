@@ -9,6 +9,14 @@ import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 export const dynamic = 'force-dynamic';
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  //  관리자만 허용
+  const jar = await cookies();
+  const at = jar.get('accessToken')?.value;
+  const payload = at ? verifyAccessToken(at) : null;
+  if (payload?.role !== 'admin') {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+
   const { id: rentalId } = await params;
   const db = (await clientPromise).db();
 
@@ -39,15 +47,12 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   if (u.matchedCount === 0) {
     return NextResponse.json({ ok: false, code: 'INVALID_STATE' }, { status: 409 });
   }
-  // 처리 이력 기록
-  const jar = await cookies();
-  const at = jar.get('accessToken')?.value;
-  const payload = at ? verifyAccessToken(at) : null;
+
   await writeRentalHistory(db, rentalId, {
     action: 'returned',
     from: 'out',
     to: 'returned',
-    actor: { role: payload?.role === 'admin' ? 'admin' : 'system', id: payload?.sub },
+    actor: { role: 'admin', id: payload?.sub },
   });
 
   // 라켓 상태 available 로 복구
