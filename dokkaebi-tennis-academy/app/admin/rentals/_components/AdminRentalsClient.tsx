@@ -19,6 +19,7 @@ import { shortenId } from '@/lib/shorten';
 import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type RentalRow = {
   id: string;
@@ -67,7 +68,7 @@ export default function AdminRentalsClient() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const [payFilter, setPayFilter] = useState<'all' | 'unpaid' | 'paid'>((sp.get('pay') as any) ?? 'all');
-  const [shipFilter, setShipFilter] = useState<'all' | 'none' | 'outbound-set' | 'return-set'>((sp.get('ship') as any) ?? 'all');
+  const [shipFilter, setShipFilter] = useState<'all' | 'none' | 'outbound-set' | 'return-set' | 'both-set'>((sp.get('ship') as any) ?? 'all');
   // 쿼리 → 상태 1회 동기화(직접 새로고침 대비)
   useEffect(() => {
     const qPay = sp.get('pay') as any;
@@ -83,9 +84,33 @@ export default function AdminRentalsClient() {
 
   const qs = new URLSearchParams();
   if (status) qs.set('status', status);
-  if (brand) qs.set('brand', brand);
+
   if (from) qs.set('from', from);
   if (to) qs.set('to', to);
+  function formatYMD(d: Date) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+  function setPreset(range: 'today' | '7d' | '30d' | 'thisMonth') {
+    const now = new Date();
+    let f = new Date();
+    let t = new Date();
+    if (range === 'today') {
+      // f=t=오늘
+    } else if (range === '7d') {
+      f.setDate(now.getDate() - 6); // 오늘 포함 7일
+    } else if (range === '30d') {
+      f.setDate(now.getDate() - 29);
+    } else if (range === 'thisMonth') {
+      f = new Date(now.getFullYear(), now.getMonth(), 1);
+      t = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    }
+    setFrom(formatYMD(f));
+    setTo(formatYMD(t));
+  }
+
   qs.set('page', String(page));
   qs.set('pageSize', String(pageSize));
   const key = `/api/admin/rentals?${qs.toString()}`;
@@ -234,11 +259,22 @@ export default function AdminRentalsClient() {
 
   function ShippingBadge({ item }: { item: any }) {
     const s = deriveShippingStatus(item);
+
+    if (s === 'both-set') {
+      return (
+        <div className="inline-flex gap-1">
+          <span className="inline-flex items-center px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[11px]">출고</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded bg-violet-100 text-violet-700 text-[11px]">반납</span>
+        </div>
+      );
+    }
+
     const map = {
       none: ['운송장 없음', 'bg-slate-100 text-slate-700'],
       'outbound-set': ['출고 운송장', 'bg-indigo-100 text-indigo-700'],
       'return-set': ['반납 운송장', 'bg-violet-100 text-violet-700'],
     } as const;
+
     const [label, cls] = map[s];
     return <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] ${cls}`}>{label}</span>;
   }
@@ -259,102 +295,142 @@ export default function AdminRentalsClient() {
       <Card className="mb-5 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-6 py-5">
         <CardHeader className="pb-3">
           <CardTitle>필터 및 검색</CardTitle>
-          <CardDescription className="text-xs">대여 상태, 브랜드, 날짜로 필터링하거나 대여 ID, 고객명, 이메일로 검색하세요.</CardDescription>
+          <CardDescription className="text-xs">대여 상태와 날짜로 필터링하거나 대여 ID, 고객명, 이메일, 브랜드, 모델로 검색하세요.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            <div className="w-full max-w-md">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input type="search" placeholder="대여 ID, 고객명, 이메일, 브랜드, 모델 검색..." className="pl-8 text-xs h-9 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                {searchTerm && (
-                  <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => setSearchTerm('')}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+
+        <CardContent className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                value={searchTerm}
+                onChange={(e) => {
+                  setPage(1);
+                  setSearchTerm(e.target.value);
+                }}
+                placeholder="대여 ID, 고객명, 이메일, 브랜드, 모델 검색..."
+                className="pl-8 w-full"
+                aria-label="통합 검색"
+              />
             </div>
 
-            <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-              <select
-                className="h-9 rounded-md border border-input bg-background px-3 text-xs"
-                value={status}
-                onChange={(e) => {
+            <Button
+              variant="outline"
+              className="shrink-0"
+              onClick={() => {
+                resetFilters();
+              }}
+            >
+              필터 초기화
+            </Button>
+          </div>
+
+          <div className="grid w-full gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+            <div className="flex items-center">
+              <Select
+                value={status || 'all'}
+                onValueChange={(v) => {
                   setPage(1);
-                  setStatus(e.target.value);
+                  setStatus(v === 'all' ? '' : (v as string));
                 }}
               >
-                <option value="">상태(전체)</option>
-                <option value="created">생성됨</option>
-                <option value="paid">결제완료</option>
-                <option value="out">대여중</option>
-                <option value="returned">반납완료</option>
-                <option value="canceled">취소됨</option>
-              </select>
-              <select
-                className="h-9 rounded-md border border-input bg-background px-3 text-xs"
+                <SelectTrigger>
+                  <SelectValue placeholder="상태(전체)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">상태(전체)</SelectItem>
+                  <SelectItem value="created">생성됨</SelectItem>
+                  <SelectItem value="paid">결제완료</SelectItem>
+                  <SelectItem value="out">대여중</SelectItem>
+                  <SelectItem value="returned">반납완료</SelectItem>
+                  <SelectItem value="canceled">취소</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center">
+              <Select
                 value={payFilter}
-                onChange={(e) => {
-                  const v = e.target.value as any;
+                onValueChange={(v) => {
                   setPage(1);
-                  setPayFilter(v);
-                  const u = new URL(window.location.href);
-                  v === 'all' ? u.searchParams.delete('pay') : u.searchParams.set('pay', v);
-                  router.replace(u.pathname + '?' + u.searchParams.toString());
+                  setPayFilter(v as any);
                 }}
               >
-                <option value="all">결제(전체)</option>
-                <option value="unpaid">입금대기</option>
-                <option value="paid">결제확정</option>
-              </select>
-
-              <select
-                className="h-9 rounded-md border border-input bg-background px-3 text-xs"
+                <SelectTrigger>
+                  <SelectValue placeholder="결제(전체)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">결제(전체)</SelectItem>
+                  <SelectItem value="pending">결제대기</SelectItem>
+                  <SelectItem value="paid">결제확정</SelectItem>
+                  <SelectItem value="refunded">환불</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center">
+              <Select
                 value={shipFilter}
-                onChange={(e) => {
-                  const v = e.target.value as any;
+                onValueChange={(v) => {
                   setPage(1);
-                  setShipFilter(v);
-                  const u = new URL(window.location.href);
-                  v === 'all' ? u.searchParams.delete('ship') : u.searchParams.set('ship', v);
-                  router.replace(u.pathname + '?' + u.searchParams.toString());
+                  setShipFilter(v as any);
                 }}
               >
-                <option value="all">배송(전체)</option>
-                <option value="none">운송장 없음</option>
-                <option value="outbound-set">출고 운송장</option>
-                <option value="return-set">반납 운송장</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="배송(전체)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">배송(전체)</SelectItem>
+                  <SelectItem value="none">운송장 없음</SelectItem>
+                  <SelectItem value="outbound-set">출고 운송장</SelectItem>
+                  <SelectItem value="return-set">반납 운송장</SelectItem>
+                  <SelectItem value="both-set">출고+반납</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              <Input
-                placeholder="브랜드"
-                className="h-9 text-xs"
-                value={brand}
-                onChange={(e) => {
-                  setPage(1);
-                  setBrand(e.target.value);
-                }}
-              />
-              <Input
-                type="date"
-                className="h-9 text-xs"
-                value={from}
-                onChange={(e) => {
-                  setPage(1);
-                  setFrom(e.target.value);
-                }}
-              />
-              <Input
-                type="date"
-                className="h-9 text-xs"
-                value={to}
-                onChange={(e) => {
-                  setPage(1);
-                  setTo(e.target.value);
-                }}
-              />
-              <Button variant="outline" size="sm" onClick={resetFilters} className="w-full bg-transparent">
-                필터 초기화
+            <div className="hidden lg:block" />
+            <div className="hidden lg:block" />
+            <div className="hidden lg:block" />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              type="date"
+              value={from}
+              onChange={(e) => {
+                setPage(1);
+                setFrom(e.target.value);
+              }}
+              placeholder="시작일"
+              aria-label="시작일(From)"
+              className="h-9 w-[150px]"
+            />
+            <span className="text-xs text-muted-foreground">~</span>
+            <Input
+              type="date"
+              value={to}
+              onChange={(e) => {
+                setPage(1);
+                setTo(e.target.value);
+              }}
+              placeholder="종료일"
+              aria-label="종료일(To)"
+              className="h-9 w-[150px]"
+            />
+
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setPreset('today')}>
+                오늘
+              </Button>
+              <Button variant="outline" onClick={() => setPreset('7d')}>
+                7일
+              </Button>
+              <Button variant="outline" onClick={() => setPreset('30d')}>
+                30일
+              </Button>
+              <Button variant="outline" onClick={() => setPreset('thisMonth')}>
+                이번 달
               </Button>
             </div>
           </div>

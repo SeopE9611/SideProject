@@ -1,6 +1,7 @@
 // 대여 상태 전이 가드(멱등/일관성 보장용)
 // created → paid → out → returned / canceled(종결)
 export type RentalStatus = 'created' | 'paid' | 'out' | 'returned' | 'canceled';
+export type ShippingStatus = 'none' | 'outbound-set' | 'return-set' | 'both-set';
 
 // 전이 가능한 상태맵
 const FLOW: Record<RentalStatus, RentalStatus[]> = {
@@ -30,10 +31,11 @@ export function derivePaymentStatus(rental: any): 'unpaid' | 'paid' {
 }
 
 // 배송 상태 유도: 운송장 존재 여부
-export function deriveShippingStatus(rental: any): 'none' | 'outbound-set' | 'return-set' {
-  const hasOut = Boolean(rental?.shipping?.outbound?.trackingNumber || rental?.shipping?.outbound?.invoice || rental?.shipping?.outbound?.waybill);
-  const hasRet = Boolean(rental?.shipping?.return?.trackingNumber || rental?.shipping?.return?.invoice || rental?.shipping?.return?.waybill);
-  if (hasRet) return 'return-set';
+export function deriveShippingStatus(rental: any): ShippingStatus {
+  const hasOut = Boolean(rental?.shipping?.outbound?.trackingNumber);
+  const hasRet = Boolean(rental?.shipping?.return?.trackingNumber);
+  if (hasOut && hasRet) return 'both-set';
   if (hasOut) return 'outbound-set';
+  if (hasRet) return 'return-set';
   return 'none';
 }
