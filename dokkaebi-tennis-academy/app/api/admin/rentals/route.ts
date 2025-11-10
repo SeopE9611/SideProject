@@ -11,6 +11,26 @@ export async function GET(req: Request) {
   const db = guard.db;
 
   const { searchParams } = new URL(req.url);
+  const pay = searchParams.get('pay'); // 'paid' | 'unpaid' | null
+  const ship = searchParams.get('ship'); // 'outbound-set' | 'return-set' | 'none' | null
+
+  const query: any = {};
+  // 결제 필터: paid = status in ['paid','out','returned'] or payment.paidAt exists
+  if (pay === 'paid') {
+    query.$or = [{ status: { $in: ['paid', 'out', 'returned'] } }, { 'payment.paidAt': { $exists: true } }, { paidAt: { $exists: true } }];
+  } else if (pay === 'unpaid') {
+    query.$and = [{ status: { $nin: ['paid', 'out', 'returned'] } }, { 'payment.paidAt': { $exists: false } }, { paidAt: { $exists: false } }];
+  }
+
+  // 배송 필터: outbound-set / return-set / none
+  if (ship === 'outbound-set') {
+    query['shipping.outbound.trackingNumber'] = { $exists: true, $ne: '' };
+  } else if (ship === 'return-set') {
+    query['shipping.return.trackingNumber'] = { $exists: true, $ne: '' };
+  } else if (ship === 'none') {
+    query.$and = (query.$and ?? []).concat([{ 'shipping.outbound.trackingNumber': { $in: [null, '', undefined] } }, { 'shipping.return.trackingNumber': { $in: [null, '', undefined] } }]);
+  }
+
   const page = Math.max(1, Number(searchParams.get('page') ?? 1));
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)));
   const status = searchParams.get('status') || ''; // '', created, paid, out, returned, canceled
