@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Menu, ChevronDown, ChevronRight, Wrench, Gift, MessageSquareText, Grid2X2 } from 'lucide-react';
+import { ShoppingCart, Menu, ChevronRight, Wrench, Gift, MessageSquareText, Grid2X2, Package } from 'lucide-react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetOverlay, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UserNav } from '@/components/nav/UserNav';
 import { useRouter, usePathname } from 'next/navigation';
@@ -13,6 +13,7 @@ import SearchPreview from '@/components/SearchPreview';
 import { useCartStore } from '@/app/store/cartStore';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MdSportsTennis } from 'react-icons/md';
 
 /** 재질 카테고리(스트링 타입) 노출 온/오프 */
 const SHOW_MATERIAL_MENU = false;
@@ -27,13 +28,27 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-2">
         {list.map((b) => (
-          <Button key={b.name} variant="outline" className="h-9 justify-center rounded-lg border-slate-200 dark:border-slate-700 text-sm" onClick={() => onPick(b.href)}>
+          <Button
+            key={b.name}
+            variant="outline"
+            className="h-9 justify-center rounded-lg border-slate-200 dark:border-slate-700 text-sm
+              hover:bg-gradient-to-r hover:from-blue-50 hover:to-emerald-50 
+              dark:hover:from-blue-950/20 dark:hover:to-emerald-950/20
+              transition-all duration-200 bg-transparent"
+            onClick={() => onPick(b.href)}
+          >
             {b.name}
           </Button>
         ))}
       </div>
       {brands.length > VISIBLE && (
-        <Button variant="ghost" size="sm" className="w-full justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white" onClick={() => setExpanded((v) => !v)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-center rounded-lg text-slate-600 dark:text-slate-400 
+            hover:text-blue-600 dark:hover:text-white transition-colors"
+          onClick={() => setExpanded((v) => !v)}
+        >
           {expanded ? '접기' : '더보기'}
         </Button>
       )}
@@ -52,7 +67,16 @@ const Header = () => {
     if (item.isServiceMenu) return <Wrench className="h-4 w-4" />;
     if (item.isPackageMenu) return <Gift className="h-4 w-4" />;
     if (item.isBoardMenu) return <MessageSquareText className="h-4 w-4" />;
+    if (item.isRacketMenu) return <Package className="h-4 w-4" />;
     return <Grid2X2 className="h-4 w-4" />; // 스트링 기본
+  };
+
+  const itemColor = (item: any) => {
+    if (item.isServiceMenu) return 'from-amber-500 to-amber-600';
+    if (item.isPackageMenu) return 'from-purple-500 to-purple-600';
+    if (item.isBoardMenu) return 'from-rose-500 to-rose-600';
+    if (item.isRacketMenu) return 'from-emerald-500 to-emerald-600';
+    return 'from-blue-500 to-blue-600'; // 스트링
   };
 
   /** 메가메뉴 표시 상태 */
@@ -76,6 +100,49 @@ const Header = () => {
   const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
   const { user } = useCurrentUser();
   const isAdmin = user?.role === 'admin';
+
+  const NAV_LINKS = {
+    strings: {
+      root: '/products',
+      brands: [
+        { name: '윌슨', href: '/products?brand=wilson' },
+        { name: '바볼랏', href: '/products?brand=babolat' },
+        { name: '럭실론', href: '/products?brand=luxilon' },
+        { name: '요넥스', href: '/products?brand=yonex' },
+        { name: '헤드', href: '/products?brand=head' },
+        { name: '테크니화이버', href: '/products?brand=tecnifibre' },
+        { name: '솔린코', href: '/products?brand=solinco' },
+        { name: '프린스', href: '/products?brand=prince' },
+      ],
+    },
+    rackets: {
+      root: '/rackets',
+      brands: [
+        { name: '헤드', href: '/rackets?brand=head' },
+        { name: '윌슨', href: '/rackets?brand=wilson' },
+        { name: '바볼랏', href: '/rackets?brand=babolat' },
+        { name: '테크니화이버', href: '/rackets?brand=tecnifibre' },
+      ],
+    },
+    services: [
+      { name: '장착 서비스 예약', href: '/services' },
+      { name: '텐션 가이드', href: '/services/tension-guide' },
+      { name: '장착 비용 안내', href: '/services/pricing' },
+      { name: '매장/예약 안내', href: '/services/locations' },
+    ],
+    packages: [
+      { name: '패키지 안내', href: '/services/packages' },
+      { name: '10회 패키지', href: '/services/packages?package=10-sessions&target=packages' },
+      { name: '30회 패키지', href: '/services/packages?package=30-sessions&target=packages' },
+      { name: '50회 패키지', href: '/services/packages?package=50-sessions&target=packages' },
+      { name: '100회 패키지', href: '/services/packages?package=100-sessions&target=packages' },
+    ],
+    boards: [
+      { name: '공지사항', href: '/board/notice' },
+      { name: 'QnA', href: '/board/qna' },
+      { name: '리뷰 게시판', href: '/reviews' },
+    ],
+  };
 
   // 헤더 실제 높이를 CSS 변수로 노출 → 좌측 사이드 top 자동 반영
   useEffect(() => {
@@ -125,7 +192,7 @@ const Header = () => {
   /** 탑 메뉴 항목들 */
   const menuItems = [
     { name: '스트링', href: '/products', hasMegaMenu: true },
-    { name: '라켓', href: '/rackets', hasMegaMenu: true },
+    { name: '라켓', href: '/rackets', hasMegaMenu: true, isRacketMenu: true },
     { name: '장착 서비스', href: '/services', hasMegaMenu: true, isServiceMenu: true },
     { name: '패키지', href: '/services/packages', hasMegaMenu: true, isPackageMenu: true },
     { name: '게시판', href: '/board', hasMegaMenu: true, isBoardMenu: true },
@@ -447,6 +514,7 @@ const Header = () => {
             </Link>
 
             <Sheet open={open} onOpenChange={setOpen}>
+              <SheetOverlay className="bg-black/60 backdrop-blur-0" />
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 focus-visible:ring-2 ring-blue-500" aria-label="메뉴 열기">
                   <Menu className="h-5 w-5" />
@@ -454,207 +522,323 @@ const Header = () => {
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="w-[300px] sm:w-[320px] bg-white dark:bg-slate-900 p-0 flex flex-col"
+                className="w-[300px] sm:w-[320px] bg-white dark:bg-slate-900 p-0 flex flex-col border-r border-slate-200 dark:border-slate-800"
                 onOpenAutoFocus={(e) => {
                   if (typeof window !== 'undefined' && window.innerWidth < 768) e.preventDefault();
                 }}
               >
                 {/* 상단 로고/검색 */}
-                <div className="shrink-0 p-6 pb-3 border-b border-slate-200 dark:border-slate-800">
-                  <Link href="/" className="flex flex-col" aria-label="도깨비 테니스 홈">
-                    <div className="font-bold whitespace-nowrap text-slate-900 dark:text-white">도깨비 테니스</div>
-                    <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
+                <div
+                  className="shrink-0 p-6 pb-4 border-b border-slate-200 dark:border-slate-800 
+                  bg-gradient-to-br from-white/50 to-slate-50/50 dark:from-slate-900/50 dark:to-slate-950/50"
+                >
+                  <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈" onClick={() => setOpen(false)}>
+                    <div
+                      className="font-bold text-lg bg-gradient-to-r from-blue-600 to-emerald-600 
+                      bg-clip-text text-transparent"
+                    >
+                      도깨비 테니스
+                    </div>
+                    <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium">DOKKAEBI TENNIS SHOP</div>
                   </Link>
                   <div className="mt-4">
-                    <SearchPreview placeholder="스트링 검색..." className="w-full" />
+                    <SearchPreview
+                      placeholder="스트링 검색..."
+                      className="w-full rounded-lg border-slate-300 dark:border-slate-700 
+                        focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-colors"
+                    />
                   </div>
                 </div>
 
-                {/* 본문 메뉴 */}
-                <div className="flex-1 overflow-y-auto scrollbar-hide p-6">
-                  <nav className="grid gap-2">
-                    {menuItems.map((item) => (
-                      <div key={item.name}>
+                <div className="flex-1 overflow-y-auto scrollbar-hide p-4 bg-white dark:bg-slate-900">
+                  <Accordion type="multiple" defaultValue={['strings', 'rackets', 'service', 'packages', 'boards']}>
+                    {/* 스트링 */}
+                    <AccordionItem value="strings" className="border-none">
+                      <AccordionTrigger
+                        value="strings"
+                        className="py-3 px-3 rounded-lg hover:bg-slate-100 
+                          dark:hover:bg-slate-800 hover:no-underline transition-all group"
+                      >
+                        <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                          <div
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
+                            from-blue-500 to-blue-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                          >
+                            <Grid2X2 className="h-4 w-4" />
+                          </div>
+                          <span
+                            className="bg-gradient-to-r from-blue-700 to-blue-600 dark:from-blue-400 
+                            dark:to-blue-300 bg-clip-text text-transparent"
+                          >
+                            스트링
+                          </span>
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
                         <Button
                           variant="ghost"
-                          className="relative flex items-center gap-3 text-sm font-semibold w-full text-left rounded-xl py-3
-             hover:bg-slate-100/70 dark:hover:bg-slate-800
-             hover:text-blue-600 dark:hover:text-white focus-visible:ring-2 ring-blue-500"
+                          className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                            text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                            hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
                           onClick={() => {
                             setOpen(false);
-                            router.push(item.href);
+                            router.push(NAV_LINKS.strings.root);
                           }}
-                          aria-label={`${item.name} 페이지로 이동`}
                         >
-                          {/* 왼쪽 아이콘 */}
-                          <span
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-full
-                   bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-                          >
-                            {itemIcon(item)}
-                          </span>
-
-                          {/* 이동 화살표 */}
-                          <ChevronRight className="h-4 w-4 opacity-60" />
+                          전체 보기
+                          <ChevronRight className="h-3.5 w-3.5" />
                         </Button>
 
-                        {/* 패키지 섹션(모바일) */}
-                        {item.hasMegaMenu && item.isPackageMenu && (
-                          <div className="ml-4 mt-2 space-y-1">
-                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">스트링 교체 패키지</div>
-                            {packageLinks.map((link) => (
-                              <Button
-                                key={link.name}
-                                variant="ghost"
-                                size="sm"
-                                className={`justify-start text-xs w-full text-left rounded-lg py-2 focus-visible:ring-2 ring-blue-500 ${
-                                  link.isPopular ? 'text-indigo-600 dark:text-indigo-400 font-semibold hover:text-indigo-700 dark:hover:text-indigo-300' : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white'
-                                }`}
-                                onClick={() => {
-                                  setOpen(false);
-                                  router.push(link.href);
-                                }}
-                              >
-                                {link.name} {link.isPopular && '⭐'}
-                              </Button>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* 스트링 섹션(모바일): 브랜드/추천만 남김 */}
-                        {item.hasMegaMenu && !item.isBoardMenu && !item.isPackageMenu && !item.isServiceMenu && (
-                          <div className="ml-2 mt-2">
-                            <div
-                              className="rounded-xl border border-slate-200 dark:border-slate-800
-                    bg-slate-50/60 dark:bg-slate-800/40 p-3"
+                        {/* 브랜드 서브메뉴 */}
+                        <div className="mt-2 pl-2 space-y-0.5">
+                          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1">브랜드</div>
+                          {NAV_LINKS.strings.brands.map((b) => (
+                            <Button
+                              key={b.href}
+                              variant="ghost"
+                              className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] 
+                                text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                                hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                              onClick={() => {
+                                setOpen(false);
+                                router.push(b.href);
+                              }}
                             >
-                              <Accordion type="multiple" defaultValue={['brand']} className="w-full">
-                                <AccordionItem value="brand">
-                                  <AccordionTrigger value="brand" className="text-sm font-semibold">
-                                    브랜드
-                                  </AccordionTrigger>
-                                  <AccordionContent value="brand">
-                                    <MobileBrandGrid
-                                      brands={brandLinks}
-                                      onPick={(href) => {
-                                        setOpen(false);
-                                        router.push(href);
-                                      }}
-                                    />
-                                  </AccordionContent>
-                                </AccordionItem>
+                              {b.name}
+                              <ChevronRight className="h-3 w-3" />
+                            </Button>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
 
-                                <AccordionItem value="discover">
-                                  <AccordionTrigger value="discover" className="text-sm font-semibold">
-                                    추천/탐색
-                                  </AccordionTrigger>
-                                  <AccordionContent value="discover">
-                                    <ul className="grid grid-cols-1 gap-1">
-                                      {recommendedLinks.map((link) => (
-                                        <li key={link.name}>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="w-full justify-between rounded-lg py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
-                                            onClick={() => {
-                                              setOpen(false);
-                                              router.push(link.href);
-                                            }}
-                                          >
-                                            {link.name}
-                                            <ChevronRight className="h-4 w-4 opacity-60" />
-                                          </Button>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </AccordionContent>
-                                </AccordionItem>
-                              </Accordion>
-                            </div>
+                    {/* 중고 라켓 */}
+                    <AccordionItem value="rackets" className="border-none">
+                      <AccordionTrigger
+                        value="rackets"
+                        className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-emerald-50 
+                          hover:to-emerald-100/50 dark:hover:from-emerald-950/30 dark:hover:to-emerald-900/20 
+                          hover:no-underline transition-all group"
+                      >
+                        <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                          <div
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
+                            from-emerald-500 to-emerald-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                          >
+                            <MdSportsTennis className="h-4 w-4" />
                           </div>
-                        )}
+                          <span
+                            className="bg-gradient-to-r from-emerald-700 to-emerald-600 dark:from-emerald-400 
+                            dark:to-emerald-300 bg-clip-text text-transparent"
+                          >
+                            중고 라켓
+                          </span>
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                            text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                            hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+                          onClick={() => {
+                            setOpen(false);
+                            router.push(NAV_LINKS.rackets.root);
+                          }}
+                        >
+                          전체 보기
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Button>
 
-                        {/* 장착 서비스 섹션(모바일) */}
-                        {item.hasMegaMenu && item.isServiceMenu && (
-                          <div className="ml-4 mt-2">
-                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">장착 서비스</div>
-                            <div
-                              className="rounded-xl border border-slate-200 dark:border-slate-800
-                    bg-slate-50/60 dark:bg-slate-800/40 p-2 space-y-1"
+                        {/* 브랜드 서브메뉴 */}
+                        <div className="mt-2 pl-2 space-y-0.5">
+                          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1">브랜드</div>
+                          {NAV_LINKS.rackets.brands.map((b) => (
+                            <Button
+                              key={b.href}
+                              variant="ghost"
+                              className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] 
+                                text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                                hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                              onClick={() => {
+                                setOpen(false);
+                                router.push(b.href);
+                              }}
                             >
-                              {serviceLinks.map((svc) => (
-                                <Button
-                                  key={svc.name}
-                                  variant="ghost"
-                                  size="sm"
-                                  className={`w-full justify-between rounded-lg py-2 text-sm
-                      focus-visible:ring-2 ring-blue-500
-                      ${svc.isHighlight ? 'text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300' : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white'}`}
-                                  onClick={() => {
-                                    setOpen(false);
-                                    router.push(svc.href);
-                                  }}
-                                >
-                                  {svc.name}
-                                  <ChevronRight className="h-4 w-4 opacity-60" />
-                                </Button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                              {b.name}
+                              <ChevronRight className="h-3 w-3" />
+                            </Button>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
 
-                        {/* 게시판 섹션(모바일) */}
-                        {item.hasMegaMenu && item.isBoardMenu && (
-                          <div className="ml-4 mt-2">
-                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">게시판 메뉴</div>
-                            <div
-                              className="rounded-xl border border-slate-200 dark:border-slate-800
-                    bg-slate-50/60 dark:bg-slate-800/40 p-2 space-y-1"
-                            >
-                              {boardLinks.map((link) => (
-                                <Button
-                                  key={link.name}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="justify-start text-xs w-full text-left rounded-lg py-2
-                     text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white
-                     focus-visible:ring-2 ring-blue-500"
-                                  onClick={() => {
-                                    setOpen(false);
-                                    router.push(link.href);
-                                  }}
-                                >
-                                  {link.name}
-                                </Button>
-                              ))}
-                            </div>
+                    {/* 장착 서비스 */}
+                    <AccordionItem value="service" className="border-none">
+                      <AccordionTrigger
+                        value="service"
+                        className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100/50 
+                          dark:hover:from-amber-950/30 dark:hover:to-amber-900/20 hover:no-underline transition-all group"
+                      >
+                        <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                          <div
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
+                            from-amber-500 to-amber-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                          >
+                            <Wrench className="h-4 w-4" />
                           </div>
-                        )}
-                      </div>
-                    ))}
-                  </nav>
+                          <span
+                            className="bg-gradient-to-r from-amber-700 to-amber-600 dark:from-amber-400 
+                            dark:to-amber-300 bg-clip-text text-transparent"
+                          >
+                            장착 서비스
+                          </span>
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent value="service" className="pb-2 pt-1 space-y-0.5">
+                        {NAV_LINKS.services.map((it) => (
+                          <Button
+                            key={it.name}
+                            variant="ghost"
+                            className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                              text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                              hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+                            onClick={() => {
+                              setOpen(false);
+                              router.push(it.href);
+                            }}
+                          >
+                            {it.name}
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </Button>
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* 패키지 */}
+                    <AccordionItem value="packages" className="border-none">
+                      <AccordionTrigger
+                        value="packages"
+                        className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100/50 
+                          dark:hover:from-purple-950/30 dark:hover:to-purple-900/20 hover:no-underline transition-all group"
+                      >
+                        <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                          <div
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
+                            from-purple-500 to-purple-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                          >
+                            <Gift className="h-4 w-4" />
+                          </div>
+                          <span
+                            className="bg-gradient-to-r from-purple-700 to-purple-600 dark:from-purple-400 
+                            dark:to-purple-300 bg-clip-text text-transparent"
+                          >
+                            패키지
+                          </span>
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent value="packages" className="pb-2 pt-1 space-y-0.5">
+                        {NAV_LINKS.packages.map((it) => (
+                          <Button
+                            key={it.name}
+                            variant="ghost"
+                            className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                              text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                              hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+                            onClick={() => {
+                              setOpen(false);
+                              router.push(it.href);
+                            }}
+                          >
+                            {it.name}
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </Button>
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* 게시판 */}
+                    <AccordionItem value="boards" className="border-none">
+                      <AccordionTrigger
+                        value="boards"
+                        className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-rose-50 hover:to-rose-100/50 
+                          dark:hover:from-rose-950/30 dark:hover:to-rose-900/20 hover:no-underline transition-all group"
+                      >
+                        <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                          <div
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
+                            from-rose-500 to-rose-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                          >
+                            <MessageSquareText className="h-4 w-4" />
+                          </div>
+                          <span
+                            className="bg-gradient-to-r from-rose-700 to-rose-600 dark:from-rose-400 
+                            dark:to-rose-300 bg-clip-text text-transparent"
+                          >
+                            게시판
+                          </span>
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
+                        {NAV_LINKS.boards.map((it) => (
+                          <Button
+                            key={it.name}
+                            variant="ghost"
+                            className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                              text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                              hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+                            onClick={() => {
+                              setOpen(false);
+                              router.push(it.href);
+                            }}
+                          >
+                            {it.name}
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </Button>
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
 
                 {/* 하단 고정 영역(모바일) */}
-                <div className="shrink-0 border-t border-slate-200 dark:border-slate-700 p-6">
+                <div className="shrink-0 border-t border-slate-200 dark:border-slate-700 p-5 bg-white dark:bg-slate-900">
                   {user ? (
                     <>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
+                      <div
+                        className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r 
+                        from-blue-50/50 to-emerald-50/50 dark:from-blue-950/20 dark:to-emerald-950/20
+                        border border-slate-200 dark:border-slate-800"
+                      >
+                        <Avatar className="h-10 w-10 border-2 border-white dark:border-slate-700 shadow-sm">
                           <AvatarImage src={user.image || '/placeholder.svg'} />
-                          <AvatarFallback>{user.name?.charAt(0) ?? 'U'}</AvatarFallback>
+                          <AvatarFallback
+                            className="bg-gradient-to-br from-blue-500 to-emerald-500 
+                            text-white font-semibold"
+                          >
+                            {user.name?.charAt(0) ?? 'U'}
+                          </AvatarFallback>
                         </Avatar>
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold truncate">
-                            {user.name} 님{isAdmin && <span className="mt-1 ml-2 inline-block text-[11px] font-semibold px-1.5 py-[2px] rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">관리자</span>}
-                          </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.name} 님</div>
+                          {isAdmin && (
+                            <span
+                              className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full 
+                              bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm mt-1"
+                            >
+                              관리자
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      <div className="mt-4 grid grid-cols-2 gap-2">
+                      <div className="mt-3 grid grid-cols-2 gap-2">
                         <Button
                           variant="outline"
-                          className="w-full justify-center rounded-xl border-slate-200 dark:border-slate-700 bg-transparent"
+                          className="w-full justify-center rounded-xl border-slate-300 dark:border-slate-700 
+                            bg-white dark:bg-slate-800 hover:bg-gradient-to-r hover:from-blue-50 
+                            hover:to-blue-100 dark:hover:from-blue-950 dark:hover:to-blue-900
+                            transition-all duration-200 shadow-sm"
                           onClick={() => {
                             setOpen(false);
                             router.push('/cart');
@@ -666,7 +850,9 @@ const Header = () => {
                         </Button>
 
                         <Button
-                          className="w-full justify-center rounded-xl"
+                          className="w-full justify-center rounded-xl bg-gradient-to-r from-blue-600 
+                            to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white 
+                            shadow-md transition-all duration-200"
                           onClick={() => {
                             setOpen(false);
                             router.push('/mypage');
@@ -679,8 +865,12 @@ const Header = () => {
 
                       {isAdmin && (
                         <Button
-                          variant="ghost"
-                          className="w-full justify-center rounded-xl mt-2"
+                          variant="outline"
+                          className="w-full justify-center rounded-xl mt-2 border-emerald-300 
+                            dark:border-emerald-700 text-emerald-700 dark:text-emerald-300
+                            hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100
+                            dark:hover:from-emerald-950 dark:hover:to-emerald-900
+                            transition-all duration-200 shadow-sm bg-transparent"
                           onClick={() => {
                             setOpen(false);
                             router.push('/admin/dashboard');
@@ -692,7 +882,9 @@ const Header = () => {
 
                       <Button
                         variant="ghost"
-                        className="w-full justify-center rounded-xl mt-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                        className="w-full justify-center rounded-xl mt-2 text-rose-600 
+                          hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30
+                          transition-all duration-200"
                         onClick={async () => {
                           await fetch('/api/logout', { method: 'POST', credentials: 'include' });
                           window.location.href = '/';
@@ -703,7 +895,9 @@ const Header = () => {
                     </>
                   ) : (
                     <Button
-                      className="w-full justify-center rounded-xl"
+                      className="w-full justify-center rounded-xl bg-gradient-to-r from-blue-600 
+                        to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white 
+                        shadow-md transition-all duration-200"
                       onClick={() => {
                         setOpen(false);
                         router.push('/login');
