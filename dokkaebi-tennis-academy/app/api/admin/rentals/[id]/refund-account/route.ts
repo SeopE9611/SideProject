@@ -11,7 +11,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
 
   const doc = await db.collection('rental_orders').findOne({ _id: new ObjectId(id) }, { projection: { refundAccount: 1 } });
-  if (!doc?.refundAccount) return NextResponse.json({ message: 'NO_REFUND_ACCOUNT' }, { status: 404 });
+  if (!doc?.refundAccount) return NextResponse.json({ message: '환불 계좌 정보가 입력되어있지 않습니다.' }, { status: 404 });
 
   // 감사 로그
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || null;

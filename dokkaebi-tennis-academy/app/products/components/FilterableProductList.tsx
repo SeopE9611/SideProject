@@ -14,7 +14,7 @@ import ProductCard from '@/app/products/components/ProductCard';
 // 브랜드 리스트
 const brands = [
   { label: '럭실론', value: 'luxilon' },
-  { label: '테크니파이버', value: 'technifibre' },
+  { label: '테크니화이버', value: 'technifibre' },
   { label: '윌슨', value: 'wilson' },
   { label: '바볼랏', value: 'babolat' },
   { label: '헤드', value: 'head' },

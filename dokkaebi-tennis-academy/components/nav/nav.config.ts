@@ -14,7 +14,7 @@ export const NAV_LINKS = {
       { name: '럭실론', href: '/products?brand=luxilon' },
       { name: '요넥스', href: '/products?brand=yonex' },
       { name: '헤드', href: '/products?brand=head' },
-      { name: '테크니파이버', href: '/products?brand=tecnifibre' },
+      { name: '테크니화이버', href: '/products?brand=tecnifibre' },
       { name: '솔린코', href: '/products?brand=solinco' },
       { name: '프린스', href: '/products?brand=prince' },
     ],
@@ -23,7 +23,12 @@ export const NAV_LINKS = {
   rackets: {
     root: '/rackets',
     /** 브랜드별 링크(초기에는 문자열과 동일한 브랜드 집합 사용, 추후 /api/rackets 필터 키에 맞춰 조정) */
-    brands: [{ name: '준비중', href: '/rackets?brand=wilson' }],
+    brands: [
+      { name: '헤드', href: '/rackets?brand=head' },
+      { name: '윌슨', href: '/rackets?brand=wilson' },
+      { name: '바볼랏', href: '/rackets?brand=babolat' },
+      { name: '테크니화이버', href: '/rackets?brand=tecnifibre' },
+    ],
   },
   services: [
     { name: '장착 서비스 예약', href: '/services' },

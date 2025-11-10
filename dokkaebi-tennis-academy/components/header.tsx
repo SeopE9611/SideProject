@@ -138,7 +138,7 @@ const Header = () => {
     { name: '럭실론', href: '/products?brand=luxilon' },
     { name: '요넥스', href: '/products?brand=yonex' },
     { name: '헤드', href: '/products?brand=head' },
-    { name: '테크니파이버', href: '/products?brand=tecnifibre' },
+    { name: '테크니화이버', href: '/products?brand=tecnifibre' },
     { name: '솔린코', href: '/products?brand=solinco' },
     { name: '프린스', href: '/products?brand=prince' },
   ];

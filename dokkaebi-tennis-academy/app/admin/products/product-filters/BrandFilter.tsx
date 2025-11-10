@@ -17,7 +17,7 @@ const BRAND_LABEL: Record<string, string> = {
   head: '헤드',
   yonex: '요넥스',
   luxilon: '럭실론',
-  technifibre: '테크니파이버',
+  technifibre: '테크니화이버',
   solinco: '솔린코',
   dunlop: '던롭',
 };

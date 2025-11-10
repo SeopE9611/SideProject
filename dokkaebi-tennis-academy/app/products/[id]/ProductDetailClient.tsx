@@ -28,7 +28,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // ====== 사양/브랜드/색상/게이지 매핑 ======
   const BRAND_MAP: Record<string, string> = {
     luxilon: '럭실론',
-    technifibre: '테크니파이버',
+    technifibre: '테크니화이버',
     wilson: '윌슨',
     babolat: '바볼랏',
     head: '헤드',

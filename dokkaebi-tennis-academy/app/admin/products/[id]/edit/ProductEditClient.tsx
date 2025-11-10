@@ -28,7 +28,7 @@ import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
 // 브랜드 목록
 const brands = [
   { id: 'luxilon', name: '럭실론' },
-  { id: 'technifibre', name: '테크니파이버' },
+  { id: 'technifibre', name: '테크니화이버' },
   { id: 'wilson', name: '윌슨' },
   { id: 'babolat', name: '바볼랏' },
   { id: 'head', name: '헤드' },
