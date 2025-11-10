@@ -18,7 +18,7 @@ import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type RentalRow = {
@@ -58,7 +58,8 @@ const rentalStatusLabels: Record<string, string> = {
 
 export default function AdminRentalsClient() {
   const router = useRouter();
-  const sp = useSearchParams();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>('');
@@ -67,15 +68,40 @@ export default function AdminRentalsClient() {
   const [to, setTo] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [payFilter, setPayFilter] = useState<'all' | 'unpaid' | 'paid'>((sp.get('pay') as any) ?? 'all');
-  const [shipFilter, setShipFilter] = useState<'all' | 'none' | 'outbound-set' | 'return-set' | 'both-set'>((sp.get('ship') as any) ?? 'all');
+  const [payFilter, setPayFilter] = useState<'all' | 'unpaid' | 'paid'>((searchParams.get('pay') as any) ?? 'all');
+  const [shipFilter, setShipFilter] = useState<'all' | 'none' | 'outbound-set' | 'return-set' | 'both-set'>((searchParams.get('ship') as any) ?? 'all');
   // 쿼리 → 상태 1회 동기화(직접 새로고침 대비)
+  /** URL 쿼리스트링을 읽어 현재 화면의 필터 상태로 반영 */
+  function applyURLParamsToFilterState() {
+    const get = (k: string) => searchParams.get(k) ?? '';
+
+    // 검색/상태/결제/배송
+    const queryText = get('q');
+    const statusParam = get('status');
+    const payParam = get('pay') as 'all' | 'unpaid' | 'paid' | '';
+    const shipParam = get('ship') as 'all' | 'none' | 'outbound-set' | 'return-set' | 'both-set' | '';
+
+    // 기간/페이지/정렬
+    const fromParam = get('from');
+    const toParam = get('to');
+    const pageParam = Number(searchParams.get('page') ?? 1);
+    const sortByParam = (searchParams.get('sortBy') as 'customer' | 'date' | 'total' | null) ?? null;
+    const orderParam = (searchParams.get('order') as 'asc' | 'desc' | null) ?? null;
+
+    if (queryText) setSearchTerm(queryText);
+    if (statusParam) setStatus(statusParam);
+    if (payParam) setPayFilter(payParam as any);
+    if (shipParam) setShipFilter(shipParam as any);
+    if (fromParam) setFrom(fromParam);
+    if (toParam) setTo(toParam);
+    if (!Number.isNaN(pageParam) && pageParam > 0) setPage(pageParam);
+    if (sortByParam) setSortBy(sortByParam);
+    if (orderParam) setSortDirection(orderParam);
+  }
+
   useEffect(() => {
-    const qPay = sp.get('pay') as any;
-    const qShip = sp.get('ship') as any;
-    if (qPay && qPay !== payFilter) setPayFilter(qPay);
-    if (qShip && qShip !== shipFilter) setShipFilter(qShip);
-  }, [sp]);
+    applyURLParamsToFilterState();
+  }, []);
 
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<'customer' | 'date' | 'total' | null>(null);
@@ -83,6 +109,8 @@ export default function AdminRentalsClient() {
   const pageSize = 20;
 
   const qs = new URLSearchParams();
+  if (payFilter !== 'all') qs.set('pay', payFilter);
+  if (shipFilter !== 'all') qs.set('ship', shipFilter);
   if (status) qs.set('status', status);
 
   if (from) qs.set('from', from);
@@ -114,6 +142,52 @@ export default function AdminRentalsClient() {
   qs.set('page', String(page));
   qs.set('pageSize', String(pageSize));
   const key = `/api/admin/rentals?${qs.toString()}`;
+
+  /** 현재 필터 상태를 URL 쿼리스트링에 기록(히스토리 오염 방지를 위해 replace 사용) */
+  function updateURLFromFilterState() {
+    const url = new URL(window.location.href);
+
+    const setParam = (key: string, value?: string | number | null) => {
+      if (value === undefined || value === null || value === '' || value === 'all') {
+        url.searchParams.delete(key);
+      } else {
+        url.searchParams.set(key, String(value));
+      }
+    };
+
+    setParam('q', searchTerm);
+    setParam('status', status);
+    setParam('pay', payFilter);
+    setParam('ship', shipFilter);
+    setParam('from', from);
+    setParam('to', to);
+    setParam('page', page === 1 ? undefined : page);
+    setParam('sortBy', sortBy ?? undefined);
+    setParam('order', sortDirection ?? undefined);
+
+    router.replace(url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''));
+  }
+
+  /** 화면의 필터 상태를 기본값으로 되돌리고, URL 쿼리도 함께 제거 */
+  function resetAllFiltersAndURL() {
+    setSearchTerm('');
+    setStatus('');
+    setBrand(''); // 사용 중이면 유지, 아니면 제거해도 무방
+    setFrom('');
+    setTo('');
+    setPayFilter('all');
+    setShipFilter('all');
+    setPage(1);
+    setSortBy(null);
+    setSortDirection('asc');
+    router.replace(pathname); // 쿼리 전부 제거
+  }
+
+  // 상태 변경 시 URL 동기화 (200ms 디바운스)
+  useEffect(() => {
+    const timer = setTimeout(updateURLFromFilterState, 200);
+    return () => clearTimeout(timer);
+  }, [searchTerm, status, payFilter, shipFilter, from, to, page, sortBy, sortDirection]);
 
   const { data, isLoading, mutate } = useSWR<{ items: RentalRow[]; total: number }>(key, fetcher);
 
@@ -315,13 +389,7 @@ export default function AdminRentalsClient() {
               />
             </div>
 
-            <Button
-              variant="outline"
-              className="shrink-0"
-              onClick={() => {
-                resetFilters();
-              }}
-            >
+            <Button variant="outline" className="shrink-0" onClick={resetAllFiltersAndURL}>
               필터 초기화
             </Button>
           </div>
