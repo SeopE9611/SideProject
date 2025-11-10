@@ -20,6 +20,20 @@ async function getData(id: string) {
     deposit,
     status: r.status,
     racket: rk ? { brand: rk.brand, model: rk.model, condition: rk.condition } : null,
+    payment: r.payment
+      ? {
+          method: r.payment.method || 'bank',
+          bank: r.payment.bank || null,
+          depositor: r.payment.depositor || null,
+        }
+      : null,
+    refundAccount: r.refundAccount
+      ? {
+          bank: r.refundAccount.bank || null,
+          holder: r.refundAccount.holder || null,
+          account: r.refundAccount.account || null,
+        }
+      : null,
   };
 }
 

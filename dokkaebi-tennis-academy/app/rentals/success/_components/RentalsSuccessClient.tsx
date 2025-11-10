@@ -16,6 +16,16 @@ type Props = {
     deposit: number;
     status: string;
     racket: { brand: string; model: string; condition: 'A' | 'B' | 'C' } | null;
+    payment?: {
+      method?: string;
+      bank?: string | null;
+      depositor?: string | null;
+    } | null;
+    refundAccount?: {
+      bank?: string | null;
+      account?: string | null;
+      holder?: string | null;
+    } | null;
   };
 };
 
@@ -37,16 +47,18 @@ export default function RentalsSuccessClient({ data }: Props) {
   }, []);
 
   const total = data.fee + data.deposit;
-  // 체크아웃에서 sessionStorage로 전달한 무통장 정보 표시(서버 응답에 payment 필드가 없으므로)
-  const bankKey = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-last-bank')) || '';
-  const depositor = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-last-depositor')) || '';
+  const bankKeyFromServer = data.payment?.bank || '';
+  const depositorFromServer = data.payment?.depositor || '';
+  const bankKeyFallback = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-last-bank')) || '';
+  const depositorFallback = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-last-depositor')) || '';
+  const bankKey = bankKeyFromServer || bankKeyFallback;
+  const depositor = depositorFromServer || depositorFallback;
   const bankInfo = bankKey ? (bankLabelMap as any)[bankKey] : null;
 
-  const refundBankKey = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-bank')) || '';
-  const refundAccount = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-account')) || '';
-  const refundHolder = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-holder')) || '';
+  const refundBankKey = data.refundAccount?.bank || (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-bank')) || '';
+  const refundAccount = data.refundAccount?.account || (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-account')) || '';
+  const refundHolder = data.refundAccount?.holder || (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-holder')) || '';
   const refundBankInfo = refundBankKey ? (bankLabelMap as any)[refundBankKey] : null;
-
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
