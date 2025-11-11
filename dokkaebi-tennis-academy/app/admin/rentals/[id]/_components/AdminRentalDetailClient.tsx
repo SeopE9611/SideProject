@@ -425,6 +425,7 @@ export default function AdminRentalDetailClient() {
                     none: <span className="inline-flex px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs">운송장 없음</span>,
                     'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-xs">출고 운송장</span>,
                     'return-set': <span className="inline-flex px-2 py-0.5 rounded bg-violet-100 text-violet-700 text-xs">반납 운송장</span>,
+                    'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs">왕복 운송장</span>,
                   }[deriveShippingStatus(data)]
                 }
               </div>
