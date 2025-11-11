@@ -91,7 +91,7 @@ export const FilterPanel = React.memo(function FilterPanel({
 
   if (isLoadingInitial) {
     return (
-      <div className="rounded-xl border bg-white/70 dark:bg-slate-800/70 p-6 shadow-lg">
+      <div className="rounded-xl bg-white/70 dark:bg-slate-800/70 p-6 shadow-lg">
         <SkeletonFilterDetailed />
       </div>
     );
