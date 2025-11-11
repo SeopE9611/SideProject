@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { CreditCard, MapPin, Package, UserIcon, Phone, Home, MessageSquare, Shield, Truck, Building2, Undo2, Search, Mail, CheckCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { bankLabelMap } from '@/lib/constants';
+import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
 import { getMyInfo } from '@/lib/auth.client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -196,9 +196,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                   </div>
                   <div className="flex-1">
                     <div className="text-sm text-slate-500 dark:text-slate-400">중고 라켓</div>
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-200">
-                      {initial.racket?.brand} {initial.racket?.model}
-                    </h3>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-200">{initial.racket ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}` : ''}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">상태 {initial.racket?.condition}</span>
                       <span className="text-xs text-slate-500 dark:text-slate-400">대여 기간 {initial.period}일</span>

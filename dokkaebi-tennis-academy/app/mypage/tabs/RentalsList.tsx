@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, CreditCard, Package, ArrowRight, Briefcase, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useMemo } from 'react';
+import { racketBrandLabel } from '@/lib/constants';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -138,7 +139,7 @@ export default function RentalsList() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-                    {r.brand} {r.model}
+                    {racketBrandLabel(r.brand)} {r.model}
                   </h3>
                   <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
                     <Calendar className="h-3 w-3" />

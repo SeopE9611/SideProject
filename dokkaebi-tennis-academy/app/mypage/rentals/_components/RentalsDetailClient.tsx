@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getDepositBanner } from '@/app/features/rentals/utils/ui';
 import { ArrowLeft, Briefcase, Calendar, Clock, CreditCard, Package, CheckCircle, AlertCircle, XCircle, TrendingUp, Truck } from 'lucide-react';
+import { racketBrandLabel } from '@/lib/constants';
 
 type Rental = {
   id: string;
@@ -224,7 +225,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">라켓 정보</span>
             </div>
             <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              {data.brand} {data.model}
+              {racketBrandLabel(data.brand)} {data.model}
             </p>
           </div>
 
@@ -279,7 +280,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">라켓</p>
                   <p className="font-semibold text-slate-900 dark:text-slate-100">
-                    {data.brand} {data.model}
+                    {racketBrandLabel(data.brand)} {data.model}
                   </p>
                 </div>
               </div>

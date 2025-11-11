@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MdSportsTennis } from 'react-icons/md';
 import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { racketBrandLabel } from '@/lib/constants';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -275,7 +276,7 @@ export default function AdminRacketsClient() {
                             <div className="flex items-center gap-3">
                               {item.images?.[0] && <img src={item.images[0] || '/placeholder.svg'} alt={item.model} className="h-12 w-12 rounded-lg object-cover" />}
                               <div>
-                                <div className="font-semibold text-slate-900 dark:text-white">{item.brand}</div>
+                                <div className="font-semibold text-slate-900 dark:text-white">{racketBrandLabel(item.brand)}</div>
                                 <div className="text-sm text-slate-600 dark:text-slate-400">{item.model}</div>
                               </div>
                             </div>

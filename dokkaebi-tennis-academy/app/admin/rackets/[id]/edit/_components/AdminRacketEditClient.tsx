@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { racketBrandLabel } from '@/lib/constants';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -101,7 +102,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                 <StockChip id={data.id} total={data.quantity ?? 1} />
               </div>
               <p className="text-emerald-100">
-                {data.brand} {data.model}
+                {racketBrandLabel(data.brand)} {data.model}
               </p>
             </div>
             <AlertDialog>

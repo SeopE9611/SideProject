@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
+import { racketBrandLabel } from '@/lib/constants';
 
 interface RacketDetailClientProps {
   racket: any;
@@ -64,7 +65,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             </Link>
             <span>/</span>
             <span className="text-blue-200">
-              {racket.brand} {racket.model}
+              {racketBrandLabel(racket.brand)} {racket.model}
             </span>
           </div>
           <Button variant="ghost" className="text-white hover:bg-white/10 mb-4 p-0" onClick={() => router.back()}>
@@ -81,7 +82,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             <Card className="overflow-hidden border-0 shadow-2xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
               <div className="relative aspect-square">
                 {images.length > 0 ? (
-                  <Image src={images[selectedImageIndex] || '/placeholder.svg'} alt={`${racket.brand} ${racket.model}`} fill className="object-cover transition-transform duration-300 hover:scale-105" />
+                  <Image src={images[selectedImageIndex] || '/placeholder.svg'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover transition-transform duration-300 hover:scale-105" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500">이미지 없음</div>
                 )}
@@ -113,7 +114,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 {images.slice(0, 5).map((image: string, index: number) => (
                   <Card key={index} className={`overflow-hidden cursor-pointer transition-all duration-200 ${selectedImageIndex === index ? 'ring-2 ring-blue-500 shadow-lg' : 'hover:shadow-md'}`} onClick={() => setSelectedImageIndex(index)}>
                     <div className="aspect-square relative">
-                      <Image src={image || '/placeholder.svg'} alt={`${racket.brand} ${racket.model} ${index + 1}`} fill className="object-cover" />
+                      <Image src={image || '/placeholder.svg'} alt={`${racketBrandLabel(racket.brand)} ${racket.model} ${index + 1}`} fill className="object-cover" />
                     </div>
                   </Card>
                 ))}
@@ -129,7 +130,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {/* 브랜드와 제품명 */}
                   <div>
                     <Badge variant="outline" className="mb-2 text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-800">
-                      {racket.brand}
+                      {racketBrandLabel(racket.brand)}
                     </Badge>
                     <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{racket.model}</h1>
                     <div className="mt-2 flex items-center gap-2">
@@ -170,7 +171,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                             품절(대여 불가)
                           </Button>
                         ) : (
-                          <RentDialog id={racket.id} rental={racket.rental} brand={racket.brand} model={racket.model} />
+                          <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} />
                         )
                       ) : (
                         <Button className="flex-1 bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500" disabled>
@@ -247,7 +248,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   </div>
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-lg">
                     <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
-                      {racket.brand} {racket.model} 중고 라켓입니다. 상태 등급은 {racket.condition}이며, 전문가의 검수를 거쳐 안전하게 사용하실 수 있습니다.
+                      {racketBrandLabel(racket.brand)} {racket.model} 중고 라켓입니다. 상태 등급은 {racket.condition}이며, 전문가의 검수를 거쳐 안전하게 사용하실 수 있습니다.
                       {racket?.rental?.enabled && ' 대여 서비스도 이용 가능합니다.'}
                     </p>
                   </div>
@@ -325,7 +326,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="relative w-14 h-14 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
                 {images[0] ? (
-                  <Image src={images[0] || '/placeholder.svg'} alt={`${racket.brand} ${racket.model}`} fill className="object-cover" />
+                  <Image src={images[0] || '/placeholder.svg'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">이미지 없음</div>
                 )}
@@ -333,7 +334,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate leading-tight">
-                  {racket.brand} {racket.model}
+                  {racketBrandLabel(racket.brand)} {racket.model}
                 </div>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-lg font-bold text-slate-900 dark:text-white">{racket.price?.toLocaleString()}원</span>
@@ -347,7 +348,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 구매(준비중)
               </button>
               {racket?.rental?.enabled && !soldOut ? (
-                <RentDialog id={racket.id} rental={racket.rental} brand={racket.brand} model={racket.model} />
+                <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} />
               ) : (
                 <button
                   type="button"

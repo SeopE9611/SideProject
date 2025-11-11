@@ -6,7 +6,7 @@ import { CheckCircle, Package, Clock, ArrowRight, Shield, Truck, Phone, CreditCa
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { bankLabelMap } from '@/lib/constants';
+import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
 
 type Props = {
   data: {
@@ -97,7 +97,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <div className="p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-slate-200/50 dark:border-slate-600/50">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-semibold text-slate-800 dark:text-slate-200">{data.racket ? `${data.racket.brand} ${data.racket.model}` : '라켓 정보 없음'}</p>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">상태 {data.racket?.condition}</span>
                         <span className="text-sm text-slate-600 dark:text-slate-400">대여 기간: {data.period}일</span>

@@ -20,6 +20,7 @@ import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreated
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { racketBrandLabel } from '@/lib/constants';
 
 type RentalRow = {
   id: string;
@@ -607,11 +608,11 @@ export default function AdminRentalsClient() {
                       <TableCell className={tdClasses}>
                         {rid ? (
                           <Link href={`/admin/rentals/${rid}`} className="underline-offset-2 hover:underline font-medium">
-                            {r.brand} {r.model}
+                            {racketBrandLabel(r.brand)} {r.model}
                           </Link>
                         ) : (
                           <span>
-                            {r.brand} {r.model}
+                            {racketBrandLabel(r.brand)} {r.model}
                           </span>
                         )}
                       </TableCell>

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Briefcase, Eye, Heart, ShoppingCart } from 'lucide-react';
 import useSWR from 'swr';
+import { racketBrandLabel } from '@/lib/constants';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -67,7 +68,7 @@ const RacketCard = React.memo(
 
           <div className="flex flex-col md:flex-row relative z-10">
             <div className="relative w-full md:w-48 h-48 flex-shrink-0">
-              <Image src={racket.images?.[0] || '/placeholder.svg?height=200&width=200&query=tennis+racket'} alt={`${racket.brand} ${racket.model}`} fill className="object-cover" />
+              <Image src={racket.images?.[0] || '/placeholder.svg?height=200&width=200&query=tennis+racket'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" />
               <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 z-10">
                 {racket.rental?.enabled === false && <span className="rounded px-2 py-1 text-xs font-semibold bg-rose-600 text-white shadow">대여 불가</span>}
                 <Badge className={`${conditionColors[racket.condition]} text-white shadow-lg`}>상태 {conditionLabels[racket.condition]}</Badge>
@@ -125,7 +126,7 @@ const RacketCard = React.memo(
           <div className="relative">
             <Image
               src={racket.images?.[0] || '/placeholder.svg?height=300&width=300&query=tennis+racket'}
-              alt={`${racket.brand} ${racket.model}`}
+              alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
               width={300}
               height={300}
               className="h-48 md:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"

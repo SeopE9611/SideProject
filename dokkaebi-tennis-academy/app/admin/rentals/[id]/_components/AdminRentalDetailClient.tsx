@@ -13,6 +13,7 @@ import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import Link from 'next/link';
 import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
+import { racketBrandLabel } from '@/lib/constants';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
@@ -318,7 +319,7 @@ export default function AdminRentalDetailClient() {
                   <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-800/70 rounded-lg border border-gray-100 dark:border-slate-700/60">
                     <div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">브랜드</p>
-                      <p className="font-semibold text-gray-900 dark:text-gray-100">{data.brand}</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{racketBrandLabel(data.brand)}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-800/70 rounded-lg border border-gray-100 dark:border-slate-700/60">
