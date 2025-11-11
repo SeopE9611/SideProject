@@ -45,11 +45,11 @@ export default async function ProductsPage({
           <div className="text-center text-white">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
             <p className="text-lg sm:text-xl md:text-2xl mb-6 md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">
-              도깨비 테니스 스트링으로 \n <br />
+              도깨비 테니스 스트링으로
               플레이를 한 단계 업그레이드하세요
             </p>
-            <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-sm md:text-base">
-              {/* <div className="flex items-center gap-2 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-full px-4 py-2">
+            {/* <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-sm md:text-base">
+              <div className="flex items-center gap-2 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-full px-4 py-2">
                 <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse" />
                 <span>100% 정품 보장</span>
               </div>
@@ -60,8 +60,8 @@ export default async function ProductsPage({
               <div className="flex items-center gap-2 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-full px-4 py-2">
                 <div className="w-3 h-3 bg-indigo-400 rounded-full animate-pulse" />
                 <span>전문가 상담</span>
-              </div> */}
-            </div>
+              </div>
+            </div> */}
           </div>
         </div>
       </div>
