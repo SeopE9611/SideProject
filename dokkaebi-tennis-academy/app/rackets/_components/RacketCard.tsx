@@ -10,6 +10,8 @@ import { Briefcase, Eye, Heart, ShoppingCart } from 'lucide-react';
 import useSWR from 'swr';
 import { racketBrandLabel } from '@/lib/constants';
 import StatusBadge from '@/components/badges/StatusBadge';
+import { useRouter } from 'next/navigation';
+import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -30,18 +32,6 @@ type Props = {
   brandLabel: string;
 };
 
-const conditionLabels: Record<string, string> = {
-  A: '최상',
-  B: '양호',
-  C: '보통',
-};
-
-const conditionColors: Record<string, string> = {
-  A: 'bg-gradient-to-r from-green-600 to-emerald-600',
-  B: 'bg-gradient-to-r from-blue-600 to-cyan-600',
-  C: 'bg-gradient-to-r from-orange-600 to-amber-600',
-};
-
 function RacketAvailBadge({ id }: { id: string }) {
   const { data } = useSWR<{ ok: boolean; count: number; quantity: number; available: number }>(`/api/rentals/active-count/${id}`, fetcher, { dedupingInterval: 5000 });
   const qty = Number(data?.quantity ?? 1);
@@ -55,6 +45,7 @@ function RacketAvailBadge({ id }: { id: string }) {
 
 const RacketCard = React.memo(
   function RacketCard({ racket, viewMode, brandLabel }: Props) {
+    const router = useRouter();
     if (viewMode === 'list') {
       return (
         <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 relative">
@@ -72,9 +63,7 @@ const RacketCard = React.memo(
               <Image src={racket.images?.[0] || '/placeholder.svg?height=200&width=200&query=tennis+racket'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" />
               <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 z-10">
                 <div className="flex items-center gap-2">
-                  {/* 대여 가용성: enabled=false일 때만 노출(= 불가) */}
                   {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
-                  {/* 상태 등급: A/B/C/D */}
                   <StatusBadge kind="condition" state={racket.condition} />
                 </div>
               </div>
@@ -88,7 +77,6 @@ const RacketCard = React.memo(
                     {/* 상태 등급 */}
                     <StatusBadge kind="condition" state={racket.condition} />
 
-                    {/* 가용성: 가능이면 잔여/총 유지, 불가면 통일 뱃지 */}
                     {racket.rental?.enabled ? <RacketAvailBadge id={racket.id} /> : <StatusBadge kind="rental" state="unavailable" />}
                   </div>
                 </div>
@@ -102,19 +90,22 @@ const RacketCard = React.memo(
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2">
-                {racket.rental?.enabled === false ? (
-                  <Button className="w-full bg-gray-300 text-gray-600 cursor-not-allowed" disabled aria-disabled title="대여 불가 상태입니다">
-                    <Eye className="w-4 h-4 mr-2" />
+              <div className="mt-2 flex justify-end gap-2">
+                <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
+                  <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg">
+                    <Eye className="w-4 h-4 mr-1" />
                     상세보기
                   </Button>
+                </Link>
+
+                {/* 대여하기: 목록형에서도 모달 직접 오픈 (상세로 이동 X) */}
+                {racket.rental?.enabled ? (
+                  <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
                 ) : (
-                  <Link href={`/rackets/${racket.id}`} className="flex-1">
-                    <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 shadow-lg">
-                      <Eye className="w-4 h-4 mr-2" />
-                      상세보기
-                    </Button>
-                  </Link>
+                  <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400" disabled aria-disabled title="대여 불가 상태입니다">
+                    <Briefcase className="w-4 h-4 mr-1" />
+                    대여 불가
+                  </Button>
                 )}
               </div>
             </div>
@@ -125,74 +116,66 @@ const RacketCard = React.memo(
 
     // grid view
     return (
-      <Link href={`/rackets/${racket.id}`}>
-        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 group relative">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 group relative">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          <div className="relative">
-            <Image
-              src={racket.images?.[0] || '/placeholder.svg?height=300&width=300&query=tennis+racket'}
-              alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
-              width={300}
-              height={300}
-              className="h-48 md:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
-              <div className="flex items-center gap-2">
-                {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
-                <StatusBadge kind="condition" state={racket.condition} />
-              </div>
-            </div>
-
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                >
-                  <Eye className="w-4 h-4 mr-1" />
-                  상세보기
-                </Button>
-              </div>
+        <div className="relative">
+          <Image
+            src={racket.images?.[0] || '/placeholder.svg?height=300&width=300&query=tennis+racket'}
+            alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
+            width={300}
+            height={300}
+            className="h-48 md:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
+            <div className="flex items-center gap-2">
+              {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
+              <StatusBadge kind="condition" state={racket.condition} />
             </div>
           </div>
 
-          <CardContent className="p-4 md:p-5">
-            <div className="text-sm text-muted-foreground mb-2 font-medium">{brandLabel}</div>
-            <CardTitle className="text-base md:text-lg mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
-
-            <div className="flex items-center gap-2 mb-3">
-              <StatusBadge kind="condition" state={racket.condition} />
-              {racket.rental?.enabled ? (
-                <div className="ml-1">
-                  <RacketAvailBadge id={racket.id} />
-                </div>
-              ) : (
-                <StatusBadge kind="rental" state="unavailable" />
-              )}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <div className="flex gap-2">
+              <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
+                <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg">
+                  <Eye className="w-4 h-4 mr-1" />
+                  상세보기
+                </Button>
+              </Link>
             </div>
-          </CardContent>
+          </div>
+        </div>
+        <CardContent className="p-4 md:p-5">
+          <div className="text-sm text-muted-foreground mb-2 font-medium">{brandLabel}</div>
+          <CardTitle className="text-base md:text-lg mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
 
-          <CardFooter className="p-4 md:p-5 pt-0 flex justify-between items-center">
-            <div>
-              <div className="font-bold text-lg text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
-            </div>
-            <Button
-              size="sm"
-              className={`shadow-lg ${racket.rental?.enabled ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
-              disabled={racket.rental?.enabled === false}
-              aria-disabled={racket.rental?.enabled === false}
-              title={racket.rental?.enabled === false ? '대여 불가 상태입니다' : '대여하기'}
-            >
+          <div className="flex items-center gap-2 mb-3">
+            <StatusBadge kind="condition" state={racket.condition} />
+            {racket.rental?.enabled ? (
+              <div className="ml-1">
+                <RacketAvailBadge id={racket.id} />
+              </div>
+            ) : (
+              <StatusBadge kind="rental" state="unavailable" />
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className="p-4 md:p-5 pt-0 flex justify-between items-center">
+          <div>
+            <div className="font-bold text-lg text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+          </div>
+
+          {racket.rental?.enabled ? (
+            <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
+          ) : (
+            <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400" disabled aria-disabled>
               <Briefcase className="w-4 h-4 mr-1" />
-              {racket.rental?.enabled === false ? '대여 불가' : '대여하기'}
+              대여 불가
             </Button>
-          </CardFooter>
-        </Card>
-      </Link>
+          )}
+        </CardFooter>
+      </Card>
     );
   },
   (prev, next) => prev.racket.id === next.racket.id && prev.viewMode === next.viewMode && prev.brandLabel === next.brandLabel

@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
 import { racketBrandLabel } from '@/lib/constants';
 import StatusBadge from '@/components/badges/StatusBadge';
@@ -23,11 +23,23 @@ interface RacketDetailClientProps {
 
 export default function RacketDetailClient({ racket, stock }: RacketDetailClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rentSectionRef = useRef<HTMLDivElement>(null);
+  const [autoOpen, setAutoOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications'>('description');
 
   const soldOut = stock.available <= 0;
   const images = racket.images || [];
+  const open = searchParams.get('open'); // 'rent' 면 자동 오픈
+
+  useEffect(() => {
+    if (open === 'rent' && racket?.rental?.enabled) {
+      setAutoOpen(true);
+      // 가격/CTA 카드로 부드럽게 스크롤
+      rentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [open, racket?.rental?.enabled]);
 
   const nextImage = () => {
     setSelectedImageIndex((prev) => (prev + 1) % images.length);
@@ -150,7 +162,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   </div>
 
                   {/* CTA 영역 */}
-                  <div className="space-y-3 pt-4 border-t">
+                  <div ref={rentSectionRef} className="space-y-3 pt-4 border-t">
                     <div className="flex gap-2">
                       <Button className="flex-1 bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600" disabled title="다음 단계에서 연결 예정">
                         <ShoppingCart className="mr-2 h-4 w-4" />
@@ -164,7 +176,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                             품절(대여 불가)
                           </Button>
                         ) : (
-                          <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} />
+                          <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} />
                         )
                       ) : (
                         <Button className="flex-1 bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500" disabled>
@@ -341,7 +353,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 구매(준비중)
               </button>
               {racket?.rental?.enabled && !soldOut ? (
-                <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} />
+                <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} />
               ) : (
                 <button
                   type="button"

@@ -1,20 +1,40 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Calendar, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export default function RentDialog({ id, rental, brand, model }: { id: string; rental: any; brand: string; model: string }) {
+type Props = {
+  id: string;
+  rental: any;
+  brand: string;
+  model: string;
+  autoOpen?: boolean;
+  /** 리스트/그리드에서 버튼 크기 맞추기용 */
+  size?: 'sm' | 'default';
+  /** 외부에서 톤 보정이 필요할 때 */
+  className?: string;
+  /** 카드가 <Link>로 감싸진 경우 네비게이션 막기 */
+  preventCardNav?: boolean;
+  /** 버튼을 가로로 꽉 채울지 여부(리스트/그리드에선 false, 상세/모바일 스티키에선 true) */
+  full?: boolean;
+};
+
+export default function RentDialog({ id, rental, brand, model, autoOpen, size = 'default', className = '', preventCardNav = true, full = false }: Props) {
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<7 | 15 | 30>(7);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    if (autoOpen) setOpen(true);
+  }, [autoOpen]);
+
   const fee = period === 7 ? rental.fee.d7 : period === 15 ? rental.fee.d15 : rental.fee.d30;
 
-  // JSON 파싱 안전 헬퍼(응답이 HTML이거나 빈 바디여도 안전)
   const safeJson = async (res: Response) => {
     try {
       return await res.json();
@@ -36,7 +56,7 @@ export default function RentDialog({ id, rental, brand, model }: { id: string; r
         alert(json?.message ?? '대여 생성에 실패했어요.');
         return;
       }
-      alert(`대여 생성 완료 (id: ${json.id}). 다음 단계에서 결제/주소 입력으로 이동시킬게요.`);
+      alert(`대여 생성 완료 (id: ${json.id}). 다음 단계로 이동합니다.`);
       setOpen(false);
       router.push(`/rentals/${json.id}/checkout`);
     } finally {
@@ -46,7 +66,17 @@ export default function RentDialog({ id, rental, brand, model }: { id: string; r
 
   return (
     <>
-      <Button className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg" onClick={() => setOpen(true)}>
+      <Button
+        size={size}
+        className={cn(full ? 'flex-1' : '', 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg', className)}
+        onClick={(e) => {
+          if (preventCardNav) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          setOpen(true);
+        }}
+      >
         <Calendar className="mr-2 h-4 w-4" />
         대여하기
       </Button>
