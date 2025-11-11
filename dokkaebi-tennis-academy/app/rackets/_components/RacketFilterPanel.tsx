@@ -15,8 +15,10 @@ type Props = {
   setSelectedCondition: (v: string | null) => void;
   searchQuery: string;
   setSearchQuery: (v: string) => void;
-  priceRange: [number, number];
-  setPriceRange: (v: [number, number]) => void;
+  priceMin: number | null;
+  priceMax: number | null;
+  onChangePriceMin: (v: number | null) => void;
+  onChangePriceMax: (v: number | null) => void;
   resetKey: number;
   activeFiltersCount: number;
   onReset: () => void;
@@ -37,8 +39,10 @@ export default function RacketFilterPanel({
   setSelectedCondition,
   searchQuery,
   setSearchQuery,
-  priceRange,
-  setPriceRange,
+  priceMin,
+  priceMax,
+  onChangePriceMin,
+  onChangePriceMax,
   resetKey,
   activeFiltersCount,
   onReset,
@@ -159,23 +163,29 @@ export default function RacketFilterPanel({
             <div className="flex gap-2 items-center">
               <Input
                 type="number"
-                value={priceRange[0]}
-                onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                value={priceMin ?? ''}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, '');
+                  onChangePriceMin(raw === '' ? null : Number(raw));
+                }}
                 placeholder="최소"
                 className="rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400"
               />
               <span className="text-muted-foreground">~</span>
               <Input
                 type="number"
-                value={priceRange[1]}
-                onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                value={priceMax ?? ''}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, '');
+                  onChangePriceMax(raw === '' ? null : Number(raw));
+                }}
                 placeholder="최대"
                 className="rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400"
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              <span>₩{priceRange[0].toLocaleString()}</span>
-              <span>₩{priceRange[1].toLocaleString()}</span>
+              <span>{priceMin !== null ? `₩${priceMin.toLocaleString()}` : '최소 미설정'}</span>
+              <span>{priceMax !== null ? `₩${priceMax.toLocaleString()}` : '최대 미설정'}</span>
             </div>
           </div>
         </motion.div>

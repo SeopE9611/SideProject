@@ -54,7 +54,8 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   // 필터 상태들
   const [selectedBrand, setSelectedBrand] = useState<string | null>(initialBrand);
   const [selectedCondition, setSelectedCondition] = useState<string | null>(initialCondition);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
+  const [priceMin, setPriceMin] = useState<number | null>(null);
+  const [priceMax, setPriceMax] = useState<number | null>(null);
 
   // 검색어
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,8 +82,8 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
 
       const minPrice = searchParams.get('minPrice');
       const maxPrice = searchParams.get('maxPrice');
-      setPriceRange([minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 500000]);
-
+      setPriceMin(minPrice ? Number(minPrice) : null);
+      setPriceMax(maxPrice ? Number(maxPrice) : null);
       setSortOption(searchParams.get('sort') || 'latest');
 
       const view = searchParams.get('view');
@@ -106,9 +107,10 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
 
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
-    const pr: [number, number] = [minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 500000];
-    if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
-
+    const nextMin = minPrice ? Number(minPrice) : null;
+    const nextMax = maxPrice ? Number(maxPrice) : null;
+    if (nextMin !== priceMin) setPriceMin(nextMin);
+    if (nextMax !== priceMax) setPriceMax(nextMax);
     const sort = searchParams.get('sort') || 'latest';
     if (sort !== sortOption) setSortOption(sort);
 
@@ -130,8 +132,8 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     let list = Array.isArray(data) ? [...data] : [];
 
     // 가격 필터
-    list = list.filter((r) => r.price >= priceRange[0] && r.price <= priceRange[1]);
-
+    if (priceMin !== null) list = list.filter((r) => r.price >= priceMin);
+    if (priceMax !== null) list = list.filter((r) => r.price <= priceMax);
     // 정렬
     if (sortOption === 'price-low') {
       list.sort((a, b) => a.price - b.price);
@@ -140,7 +142,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     }
 
     return list;
-  }, [data, priceRange, sortOption]);
+  }, [data, sortOption, priceMin, priceMax]);
 
   const products = racketsList();
 
@@ -162,7 +164,8 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     setResetKey((k) => k + 1);
     setSelectedBrand(null);
     setSelectedCondition(null);
-    setPriceRange([0, 500000]);
+    setPriceMin(null);
+    setPriceMax(null);
     setSortOption('latest');
     setViewMode('grid');
     setSearchQuery('');
@@ -175,7 +178,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   }, []);
 
   // active filter 개수
-  const priceChanged = priceRange[0] > 0 || priceRange[1] < 500000;
+  const priceChanged = priceMin !== null || priceMax !== null;
   const activeFiltersCount = [selectedBrand, selectedCondition, submittedQuery, priceChanged].filter(Boolean).length;
 
   // 상태 -> URL 반영
@@ -188,15 +191,15 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     if (submittedQuery) params.set('q', submittedQuery);
     if (sortOption && sortOption !== 'latest') params.set('sort', sortOption);
     if (viewMode !== 'grid') params.set('view', viewMode);
-    if (priceRange[0] > 0) params.set('minPrice', String(priceRange[0]));
-    if (priceRange[1] < 500000) params.set('maxPrice', String(priceRange[1]));
+    if (priceMin !== null) params.set('minPrice', String(priceMin));
+    if (priceMax !== null) params.set('maxPrice', String(priceMax));
 
     const newSearch = params.toString();
     if (newSearch === lastSerializedRef.current) return;
     lastSerializedRef.current = newSearch;
 
     router.replace(`${pathname}?${newSearch}`, { scroll: false });
-  }, [selectedBrand, selectedCondition, submittedQuery, sortOption, viewMode, priceRange, router, pathname]);
+  }, [selectedBrand, selectedCondition, submittedQuery, sortOption, viewMode, priceMin, priceMax, router, pathname]);
 
   return (
     <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-4">
@@ -210,8 +213,10 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
             setSelectedCondition={setSelectedCondition}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
+            priceMin={priceMin}
+            priceMax={priceMax}
+            onChangePriceMin={setPriceMin}
+            onChangePriceMax={setPriceMax}
             resetKey={resetKey}
             activeFiltersCount={activeFiltersCount}
             onReset={handleResetAll}

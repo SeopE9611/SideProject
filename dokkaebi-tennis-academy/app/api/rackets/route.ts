@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 
+export const dynamic = 'force-dynamic';
+
 // - 관리자/사용자 공용 목록(최소형): status !== 'inactive' 만 노출
 // - 쿼리 파라미터(brand/condition/min/max)는 후속 단계에서 확장 가능
 export async function GET(req: Request) {
