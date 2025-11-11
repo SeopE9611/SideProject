@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Briefcase, Eye, Heart, ShoppingCart } from 'lucide-react';
 import useSWR from 'swr';
 import { racketBrandLabel } from '@/lib/constants';
+import StatusBadge from '@/components/badges/StatusBadge';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -70,8 +71,12 @@ const RacketCard = React.memo(
             <div className="relative w-full md:w-48 h-48 flex-shrink-0">
               <Image src={racket.images?.[0] || '/placeholder.svg?height=200&width=200&query=tennis+racket'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" />
               <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 z-10">
-                {racket.rental?.enabled === false && <span className="rounded px-2 py-1 text-xs font-semibold bg-rose-600 text-white shadow">대여 불가</span>}
-                <Badge className={`${conditionColors[racket.condition]} text-white shadow-lg`}>상태 {conditionLabels[racket.condition]}</Badge>
+                <div className="flex items-center gap-2">
+                  {/* 대여 가용성: enabled=false일 때만 노출(= 불가) */}
+                  {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
+                  {/* 상태 등급: A/B/C/D */}
+                  <StatusBadge kind="condition" state={racket.condition} />
+                </div>
               </div>
             </div>
             <div className="flex-1 p-4 md:p-6">
@@ -79,11 +84,12 @@ const RacketCard = React.memo(
                 <div className="flex-1">
                   <div className="text-sm text-muted-foreground mb-1 font-medium">{brandLabel}</div>
                   <h3 className="text-lg md:text-xl font-bold mb-2 dark:text-white">{racket.model}</h3>
-                  <div className="flex items-center gap-3 mb-3">
-                    <Badge variant="outline" className="border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400">
-                      {conditionLabels[racket.condition]}
-                    </Badge>
-                    {racket.rental?.enabled && <RacketAvailBadge id={racket.id} />}
+                  <div className="flex items-center gap-2 mb-3">
+                    {/* 상태 등급 */}
+                    <StatusBadge kind="condition" state={racket.condition} />
+
+                    {/* 가용성: 가능이면 잔여/총 유지, 불가면 통일 뱃지 */}
+                    {racket.rental?.enabled ? <RacketAvailBadge id={racket.id} /> : <StatusBadge kind="rental" state="unavailable" />}
                   </div>
                 </div>
                 <div className="text-left lg:text-right">
@@ -132,8 +138,10 @@ const RacketCard = React.memo(
               className="h-48 md:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
             <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
-              {racket.rental?.enabled === false && <span className="rounded px-2 py-1 text-xs font-semibold bg-rose-600 text-white shadow">대여 불가</span>}
-              <Badge className={`${conditionColors[racket.condition]} text-white shadow-lg`}>상태 {conditionLabels[racket.condition]}</Badge>
+              <div className="flex items-center gap-2">
+                {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
+                <StatusBadge kind="condition" state={racket.condition} />
+              </div>
             </div>
 
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -157,13 +165,13 @@ const RacketCard = React.memo(
             <CardTitle className="text-base md:text-lg mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
 
             <div className="flex items-center gap-2 mb-3">
-              <Badge variant="outline" className="text-xs border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400">
-                {conditionLabels[racket.condition]}
-              </Badge>
-              {racket.rental?.enabled && (
+              <StatusBadge kind="condition" state={racket.condition} />
+              {racket.rental?.enabled ? (
                 <div className="ml-1">
                   <RacketAvailBadge id={racket.id} />
                 </div>
+              ) : (
+                <StatusBadge kind="rental" state="unavailable" />
               )}
             </div>
           </CardContent>

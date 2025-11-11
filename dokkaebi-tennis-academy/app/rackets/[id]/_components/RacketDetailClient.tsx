@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
 import { racketBrandLabel } from '@/lib/constants';
+import StatusBadge from '@/components/badges/StatusBadge';
 
 interface RacketDetailClientProps {
   racket: any;
@@ -98,13 +99,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 )}
                 <div className="absolute top-4 left-4 flex gap-2">
                   <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">중고</Badge>
-                  {racket?.rental?.enabled === false ? (
-                    <Badge className="bg-rose-600 text-white">대여 불가</Badge>
-                  ) : soldOut ? (
-                    <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400">대여 중</Badge>
-                  ) : (
-                    <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">대여 가능</Badge>
-                  )}
+                  {racket?.rental?.enabled === false ? <StatusBadge kind="rental" state="unavailable" /> : soldOut ? <StatusBadge kind="rental" state="rented" /> : <StatusBadge kind="rental" state="available" />}
                 </div>
               </div>
             </Card>
@@ -134,12 +129,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     </Badge>
                     <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{racket.model}</h1>
                     <div className="mt-2 flex items-center gap-2">
-                      <Badge variant="outline" className="text-slate-700 dark:text-slate-300">
-                        상태: {racket.condition}
-                      </Badge>
+                      <StatusBadge kind="condition" state={racket.condition} />
 
                       {racket?.rental?.enabled === false ? (
-                        <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400">대여 불가</Badge>
+                        <StatusBadge kind="rental" state="unavailable" />
                       ) : (
                         <Badge className={`${soldOut ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
                           {stock.quantity > 1 ? (soldOut ? `대여 중 (0/${stock.quantity})` : `잔여 ${stock.available}/${stock.quantity}`) : soldOut ? '대여 중' : '대여 가능'}

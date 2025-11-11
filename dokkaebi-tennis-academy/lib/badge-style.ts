@@ -133,3 +133,32 @@ export function getNoticeCategoryColor(label?: string | null) {
 /** 첨부(이미지/파일) 배지 색 */
 export const attachImageColor = 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800';
 export const attachFileColor = 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-950/40 dark:text-slate-300 dark:border-slate-800';
+
+/** ---------------------- Used Rackets 배지(대여/상태) ---------------------- */
+// 도메인(kind)과 상태(state) 조합으로 라벨/스타일을 반환하는 메타
+export type UsedBadgeKind = 'rental' | 'condition';
+
+const USED_BADGE_META: Record<UsedBadgeKind, Record<string, { label: string; className: string }>> = {
+  rental: {
+    available: { label: '대여 가능', className: 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800' },
+    unavailable: { label: '대여 불가', className: 'bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800' },
+    rented: { label: '대여 중', className: 'bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800' },
+    pending: { label: '예약 대기', className: 'bg-indigo-100 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800' },
+  },
+  condition: {
+    A: { label: '최상', className: 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800' },
+    B: { label: '양호', className: 'bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800' },
+    C: { label: '보통', className: 'bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800' },
+    D: { label: '하', className: 'bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-950/40 dark:text-zinc-300 dark:border-zinc-800' },
+  },
+};
+
+/** 라켓 배지 메타 조회: 알 수 없는 state가 들어오면 안전한 기본값으로 */
+export function usedBadgeMeta(kind: UsedBadgeKind, state: string) {
+  return (
+    USED_BADGE_META[kind]?.[state] ?? {
+      label: state,
+      className: 'bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-950/40 dark:text-slate-300 dark:border-slate-800',
+    }
+  );
+}
