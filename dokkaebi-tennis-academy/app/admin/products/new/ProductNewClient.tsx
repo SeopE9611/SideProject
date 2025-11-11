@@ -23,6 +23,7 @@ import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import ImageUploader from '@/components/admin/ImageUploader';
 
 // 브랜드 목록
 const brands = [
@@ -354,11 +355,7 @@ export default function NewStringPage() {
 
       additionalFeatures, // 추가 설명
 
-      images: [
-        // 이미지 배열
-        ...images.slice(mainImageIndex, mainImageIndex + 1), // 대표 이미지 먼저
-        ...images.filter((_, i) => i !== mainImageIndex), // 나머지
-      ],
+      images,
       inventory, // 재고 관리 정보
     };
 
@@ -1055,37 +1052,13 @@ export default function NewStringPage() {
                     <CardDescription className="text-blue-600 dark:text-blue-400">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                      {images.map((image, index) => (
-                        <div key={index} className={`relative rounded-md border ${index === 0 ? 'ring-2 ring-primary' : 'bg-muted/40'}`}>
-                          <img src={image || '/placeholder.svg'} alt={`스트링 이미지 ${index + 1}`} className="aspect-square h-full w-full rounded-md object-cover" />
-
-                          {/* 삭제 버튼 */}
-                          <Button type="button" variant="destructive" size="icon" className="absolute right-1 top-1 h-6 w-6" onClick={() => handleRemoveImage(index)}>
-                            <span className="sr-only">이미지 삭제</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                              <path d="M18 6 6 18" />
-                              <path d="m6 6 12 12" />
-                            </svg>
-                          </Button>
-
-                          {/* 대표 이미지 표시 */}
-                          {index === 0 && <span className="absolute left-1 top-1 rounded-md bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">대표</span>}
-
-                          {/* 대표로 지정 버튼 (대표 아닐 때만) */}
-                          {index !== 0 && (
-                            <Button type="button" variant="outline" size="sm" className="absolute bottom-1 left-1 h-6 text-xs px-1.5 py-0.5 bg-transparent" onClick={() => handleSetMainImage(index)}>
-                              대표로 지정
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                      <label className={`flex aspect-square h-full w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed ${isMaxReached ? 'pointer-events-none opacity-50' : ''}`}>
-                        {uploading ? <Loader2 className="mb-2 h-6 w-6 animate-spin text-muted-foreground" /> : <Upload className="mb-2 h-6 w-6" />}
-                        <span className="text-sm">이미지 추가</span>
-                        <input type="file" accept="image/*" multiple onChange={handleAddImage} className="hidden" disabled={isMaxReached} />
-                      </label>
-                    </div>
+                    <ImageUploader
+                      value={images}
+                      onChange={setImages}
+                      max={4}
+                      variant="string" // 저장 경로: products/strings/...
+                      enablePrimary // 배열 0번 = 대표, "대표로" 버튼 제공
+                    />
                     <div className="text-sm text-muted-foreground">
                       <TooltipProvider>
                         <Tooltip>

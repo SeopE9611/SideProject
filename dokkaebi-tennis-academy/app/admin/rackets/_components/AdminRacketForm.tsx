@@ -10,9 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Package, DollarSign, Settings, ImageIcon, Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import ImageUploader from '@/components/admin/ImageUploader';
+import { RACKET_BRANDS, racketBrandLabel, type RacketBrand } from '@/lib/constants';
+type BrandState = RacketBrand | ''; // 폼 상태에서만 '' 허용
 
 export type RacketForm = {
-  brand: string;
+  brand: BrandState;
   model: string;
   year: number | null;
   price: number;
@@ -32,7 +35,7 @@ type Props = {
 
 export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Props) {
   const [form, setForm] = useState<RacketForm>({
-    brand: initial?.brand ?? '',
+    brand: (initial?.brand as BrandState) ?? '',
     model: initial?.model ?? '',
     year: initial?.year ?? null,
     price: initial?.price ?? 0,
@@ -331,8 +334,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
               <CardDescription className="text-emerald-600 dark:text-emerald-400">라켓 이미지를 업로드하세요 (최대 10장)</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <PhotosUploader value={form.images} onChange={(next) => setForm({ ...form, images: next })} max={10} onUploadingChange={(u) => {}} />
-              <p className="text-xs text-muted-foreground mt-2">첫 번째 이미지가 대표 이미지로 사용됩니다.</p>
+              <ImageUploader value={form.images} onChange={(next) => setForm({ ...form, images: next })} max={10} variant="racket" enablePrimary />
             </CardContent>
           </Card>
         </TabsContent>

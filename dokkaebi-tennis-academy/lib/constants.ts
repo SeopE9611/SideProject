@@ -23,3 +23,15 @@ export const bankLabelMap: Record<string, { label: string; account: string; hold
     holder: '도깨비테니스',
   },
 };
+
+// 라켓 브랜드
+export type RacketBrand = 'head' | 'wilson' | 'babolat' | 'tecnifibre';
+
+export const RACKET_BRANDS = [
+  { value: 'head', label: '헤드' },
+  { value: 'wilson', label: '윌슨' },
+  { value: 'babolat', label: '바볼랏' },
+  { value: 'tecnifibre', label: '테크니화이버' },
+] as const;
+
+export const racketBrandLabel = (v?: string) => RACKET_BRANDS.find((b) => b.value === v)?.label ?? v ?? '';
