@@ -97,7 +97,13 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 )}
                 <div className="absolute top-4 left-4 flex gap-2">
                   <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">중고</Badge>
-                  {!soldOut && <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">대여 가능</Badge>}
+                  {racket?.rental?.enabled === false ? (
+                    <Badge className="bg-rose-600 text-white">대여 불가</Badge>
+                  ) : soldOut ? (
+                    <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400">대여 중</Badge>
+                  ) : (
+                    <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">대여 가능</Badge>
+                  )}
                 </div>
               </div>
             </Card>
@@ -130,9 +136,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       <Badge variant="outline" className="text-slate-700 dark:text-slate-300">
                         상태: {racket.condition}
                       </Badge>
-                      <Badge className={`${soldOut ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
-                        {stock.quantity > 1 ? (soldOut ? `대여 중 (0/${stock.quantity})` : `잔여 ${stock.available}/${stock.quantity}`) : soldOut ? '대여 중' : '대여 가능'}
-                      </Badge>
+
+                      {racket?.rental?.enabled === false ? (
+                        <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400">대여 불가</Badge>
+                      ) : (
+                        <Badge className={`${soldOut ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
+                          {stock.quantity > 1 ? (soldOut ? `대여 중 (0/${stock.quantity})` : `잔여 ${stock.available}/${stock.quantity}`) : soldOut ? '대여 중' : '대여 가능'}
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
@@ -168,6 +179,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         </Button>
                       )}
                     </div>
+                    {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <div className="mt-3 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3">대여 불가 사유: {racket.rental.disabledReason}</div>}
                   </div>
 
                   {/* 배송 정보 */}
@@ -343,10 +355,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   className="flex-1 h-12 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <Calendar className="h-4 w-4" />
-                  {soldOut ? '품절' : '대여 불가'}
+                  {racket?.rental?.enabled === false ? '대여 불가' : soldOut ? '품절' : '대여 불가'}
                 </button>
               )}
             </div>
+            {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <p className="mt-3 text-sm text-red-600 bg-red-50 rounded px-3 py-2">대여 불가 사유: {racket.rental.disabledReason}</p>}
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { RACKET_BRANDS } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,9 +48,9 @@ export async function POST(req: Request) {
     model: String(body.model ?? '').trim(),
     year: Number(body.year ?? 0) || null,
     spec: {
-      weight: Number(body.spec?.weight ?? null),
-      balance: Number(body.spec?.balance ?? null),
-      headSize: Number(body.spec?.headSize ?? null),
+      weight: body.spec?.weight != null && body.spec?.weight !== '' ? Number(body.spec.weight) : null,
+      balance: body.spec?.balance != null && body.spec?.balance !== '' ? Number(body.spec.balance) : null,
+      headSize: body.spec?.headSize != null && body.spec?.headSize !== '' ? Number(body.spec.headSize) : null,
       pattern: String(body.spec?.pattern ?? ''),
       gripSize: String(body.spec?.gripSize ?? ''),
     },
@@ -65,15 +66,19 @@ export async function POST(req: Request) {
         d15: Number(body?.rental?.fee?.d15 ?? 0),
         d30: Number(body?.rental?.fee?.d30 ?? 0),
       },
+      disabledReason: String(body?.rental?.disabledReason ?? '').trim(),
     },
     quantity: Math.max(1, Number(body.quantity ?? 1)),
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
-  if (!doc.brand || !doc.model) {
-    return NextResponse.json({ message: '브랜드/모델은 필수입니다.' }, { status: 400 });
+  if (doc.rental.enabled === false && !doc.rental.disabledReason) {
+    return NextResponse.json({ message: '대여 불가 시 사유 입력이 필요합니다.' }, { status: 400 });
   }
+
+  const brandOk = RACKET_BRANDS.some((b) => b.value === String(body.brand ?? ''));
+  if (!brandOk) return NextResponse.json({ message: '브랜드 값이 유효하지 않습니다.' }, { status: 400 });
 
   const res = await db.collection('used_rackets').insertOne(doc as any);
   return NextResponse.json({ ok: true, id: res.insertedId.toString() });

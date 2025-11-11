@@ -86,6 +86,7 @@ export default function RacketsClient() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">이미지 준비중</div>
                 )}
+                {it.rental?.enabled === false && <span className="absolute top-2 left-2 rounded px-2 py-0.5 text-xs font-medium bg-rose-600 text-white shadow">대여 불가</span>}
               </div>
               <div className="p-3 space-y-1">
                 <div className="text-sm text-gray-500">{it.brand}</div>
@@ -94,9 +95,11 @@ export default function RacketsClient() {
                   상태: <span className="font-semibold">{it.condition}</span>
                 </div>
                 <div className="text-base font-semibold">{it.price.toLocaleString()}원</div>
-                {it.rental?.enabled && (
+                {it.rental?.enabled ? (
                   // 라켓별 진행중 대여 수 조회
                   <RacketAvailBadge id={it.id} />
+                ) : (
+                  <div className="text-xs text-rose-600">대여 불가</div>
                 )}
               </div>
             </Link>

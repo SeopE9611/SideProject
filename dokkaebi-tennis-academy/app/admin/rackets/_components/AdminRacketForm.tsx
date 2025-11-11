@@ -12,6 +12,8 @@ import { Package, DollarSign, Settings, ImageIcon, Save, ArrowLeft } from 'lucid
 import Link from 'next/link';
 import ImageUploader from '@/components/admin/ImageUploader';
 import { RACKET_BRANDS, racketBrandLabel, type RacketBrand } from '@/lib/constants';
+import { Textarea } from '@/components/ui/textarea';
+import { showErrorToast } from '@/lib/toast';
 type BrandState = RacketBrand | ''; // 폼 상태에서만 '' 허용
 
 export type RacketForm = {
@@ -22,7 +24,12 @@ export type RacketForm = {
   condition: 'A' | 'B' | 'C';
   status: 'available' | 'rented' | 'sold' | 'inactive';
   spec: { weight: number | null; balance: number | null; headSize: number | null; pattern: string; gripSize: string };
-  rental: { enabled: boolean; deposit: number; fee: { d7: number; d15: number; d30: number } };
+  rental: {
+    enabled: boolean;
+    deposit: number;
+    fee: { d7: number; d15: number; d30: number };
+    disabledReason?: string;
+  };
   images: string[];
   quantity: number;
 };
@@ -57,6 +64,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         d15: initial?.rental?.fee?.d15 ?? 0,
         d30: initial?.rental?.fee?.d30 ?? 0,
       },
+      disabledReason: initial?.rental?.disabledReason ?? '',
     },
     images: Array.isArray(initial?.images) ? initial!.images! : [],
   });
@@ -64,6 +72,16 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
   const [activeTab, setActiveTab] = useState('basic');
 
   const handleSubmit = async () => {
+    if (!form.brand) {
+      showErrorToast('브랜드를 선택하세요.');
+      return;
+    }
+
+    if (form.rental.enabled === false && !form.rental.disabledReason?.trim()) {
+      showErrorToast('대여 불가 사유를 입력하세요.');
+      return;
+    }
+
     setLoading(true);
     const normalized: RacketForm = {
       ...form,
@@ -85,6 +103,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
           d15: Number(form.rental.fee.d15 || 0),
           d30: Number(form.rental.fee.d30 || 0),
         },
+        // ON이면 공백으로, OFF면 사용자가 입력한 사유 보냄
+        disabledReason: form.rental.enabled ? '' : form.rental.disabledReason?.trim() || '',
       },
       images: form.images || [],
     };
@@ -125,7 +145,18 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                   <Label htmlFor="brand">
                     브랜드 <span className="text-destructive">*</span>
                   </Label>
-                  <Input id="brand" placeholder="예: Wilson, Babolat" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
+                  <Select value={form.brand} onValueChange={(v: RacketBrand) => setForm({ ...form, brand: v })}>
+                    <SelectTrigger id="brand" className="w-56">
+                      <SelectValue placeholder="브랜드 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RACKET_BRANDS.map((b) => (
+                        <SelectItem key={b.value} value={b.value}>
+                          {b.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="model">
@@ -266,6 +297,21 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 </div>
                 <Switch id="rental-enabled" checked={form.rental.enabled} onCheckedChange={(checked) => setForm({ ...form, rental: { ...form.rental, enabled: checked } })} />
               </div>
+
+              {!form.rental.enabled && (
+                <div className="gap-4 pt-4 border-t border-emerald-100 dark:border-emerald-800/30">
+                  <div className="space-y-2">
+                    <Label htmlFor="disabledReason">대여 불가 사유</Label>
+                    <Textarea
+                      id="disabledReason"
+                      placeholder="예: 그립 파손 / 프레임 크랙 등"
+                      value={form.rental.disabledReason}
+                      onChange={(e) => setForm({ ...form, rental: { ...form.rental, disabledReason: e.target.value } })}
+                      className="min-h-[84px]"
+                    />
+                  </div>
+                </div>
+              )}
 
               {form.rental.enabled && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-emerald-100 dark:border-emerald-800/30">

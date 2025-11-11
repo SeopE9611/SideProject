@@ -24,6 +24,12 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const body = await req.json();
   const { id } = await ctx.params;
 
+  const enabled = !!body?.rental?.enabled;
+  const disabledReason = String(body?.rental?.disabledReason ?? '').trim();
+  if (enabled === false && !disabledReason) {
+    return NextResponse.json({ message: '대여 불가 사유가 필요합니다.' }, { status: 400 });
+  }
+
   // 서버측 최소 정규화 (폼에서 문자열로 온 숫자들을 숫자로 변환)
   const set: any = {
     brand: String(body.brand ?? '').trim(),
@@ -41,13 +47,14 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     images: Array.isArray(body.images) ? body.images : [],
     status: body.status ?? 'available',
     rental: {
-      enabled: !!body?.rental?.enabled,
+      enabled,
       deposit: Number(body?.rental?.deposit ?? 0),
       fee: {
         d7: Number(body?.rental?.fee?.d7 ?? 0),
         d15: Number(body?.rental?.fee?.d15 ?? 0),
         d30: Number(body?.rental?.fee?.d30 ?? 0),
       },
+      disabledReason: enabled ? '' : disabledReason,
     },
     quantity: Math.max(1, Number(body.quantity ?? 1)),
     updatedAt: new Date(),
