@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import type { Sort } from 'mongodb';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,8 +31,38 @@ export async function GET(req: Request) {
     if (!Number.isNaN(max)) q.price = { ...(q.price || {}), $lte: max };
   }
 
-  const docs = await db.collection('used_rackets').find(q).project({ brand: 1, model: 1, price: 1, condition: 1, images: 1, status: 1, rental: 1 }).toArray();
+  // 정렬 & 개수 제한
+  const sortParam = searchParams.get('sort');
+  const limitParam = Number(searchParams.get('limit') ?? 0);
 
-  const items = docs.map((r: any) => ({ ...r, id: r._id.toString(), _id: undefined }));
+  // createdAt 내림차순만 우선 지원 (필요 시 확장 가능)
+  let sort: Sort | undefined;
+  if (sortParam === 'createdAt_desc') sort = { createdAt: -1 };
+
+  const limit = Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, 50) : undefined;
+
+  const col = db.collection('used_rackets');
+
+  let cursor = col.find(q).project({
+    brand: 1,
+    model: 1,
+    price: 1,
+    condition: 1,
+    images: 1,
+    status: 1,
+    rental: 1,
+  });
+
+  if (sort) cursor = cursor.sort(sort);
+  if (limit) cursor = cursor.limit(limit);
+
+  const docs = await cursor.toArray();
+
+  const items = docs.map((r: any) => ({
+    ...r,
+    id: String(r._id),
+    _id: undefined, // 클라이언트에서 id만 쓰도록 정규화
+  }));
+
   return NextResponse.json(items);
 }

@@ -11,6 +11,7 @@ export type HItem = {
   price: number;
   images?: string[];
   brand?: string;
+  href?: string;
 };
 
 type HorizontalProductsProps = {
@@ -137,7 +138,7 @@ export default function HorizontalProducts({
                   {firstPageProducts.map((p, idx) => (
                     <Link
                       key={p._id}
-                      href={`/products/${p._id}`}
+                      href={p.href ?? `/products/${p._id}`}
                       ref={idx === 0 ? (firstCardRef as any) : undefined}
                       className={`group block flex-none ${cardWidthClass} snap-start
                         bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700
@@ -222,7 +223,7 @@ export default function HorizontalProducts({
                       {restProducts.map((p) => (
                         <Link
                           key={p._id}
-                          href={`/products/${p._id}`}
+                          href={p.href ?? `/products/${p._id}`}
                           className={`group block flex-none ${cardWidthClass} snap-start
                             bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700
                             hover:ring-1 hover:ring-blue-300/60 dark:hover:ring-blue-500/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}

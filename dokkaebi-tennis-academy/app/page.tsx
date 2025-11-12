@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import HeroSlider from '@/components/HeroSlider';
 import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
+import { racketBrandLabel } from '@/lib/constants';
 
 // ──────────────────────────────────────────────────────────────
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
@@ -111,18 +112,37 @@ export default function Home() {
     [premiumItemsSource]
   );
 
-  // 중고 라켓 섹션 데이터
+  const [usedRackets, setUsedRackets] = useState<{ id: string; brand: string; model: string; price: number; images?: string[] }[]>([]);
+
+  // 데이터 로드 (최신 등록 순 12개)
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/rackets?sort=createdAt_desc&limit=12', { credentials: 'include' });
+        const list = await res.json();
+        setUsedRackets(Array.isArray(list) ? list : []);
+      } catch {
+        setUsedRackets([]);
+      }
+    })();
+  }, []);
+
+  // 중고라켓 데이터- HorizontalProducts가 요구하는 HItem으로 매핑
   const usedRacketsItems: HItem[] = useMemo(
     () =>
-      ([] as ApiProduct[]).map((p) => ({
-        _id: p._id,
-        name: p.name,
-        price: p.price,
-        images: p.images ?? [],
-        brand: p.brand ?? '',
+      usedRackets.map((r) => ({
+        _id: r.id, // HItem은 _id 키 사용
+        name: r.model ?? '',
+        price: r.price ?? 0,
+        images: r.images ?? [],
+        brand: racketBrandLabel?.(r.brand) ?? r.brand ?? '',
+        href: `/rackets/${r.id}`,
       })),
-    []
+    [usedRackets]
   );
+
+  // 섹션 렌더 — moreHref를 /rackets로
+  <HorizontalProducts title="중고 라켓" subtitle="최근 등록 순으로 미리보기" items={usedRacketsItems} moreHref="/rackets" firstPageSlots={4} moveMoreToSecondWhen5Plus={true} loading={loading} />;
 
   return (
     <div>
@@ -145,7 +165,7 @@ export default function Home() {
                 <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">프리미엄 스트링</h2>
                 <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400" />
               </div>
-              <p className="text-xl text-slate-600 dark:text-slate-300">프로가 선택하는 최고급 테니스 스트링</p>
+              {/* <p className="text-xl text-slate-600 dark:text-slate-300">프로가 선택하는 테니스 스트링</p> */}
             </div>
 
             {/* 카테고리 탭(폴리/하이브리드) */}
@@ -201,7 +221,7 @@ export default function Home() {
                 <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">중고 라켓</h2>
                 <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400" />
               </div>
-              <p className="text-xl text-slate-600 dark:text-slate-300">필요한 중고 라켓이 있다면 확인해보세요</p>
+              {/* <p className="text-xl text-slate-600 dark:text-slate-300">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p> */}
             </div>
 
             {/* 가로 캐러셀: 재사용 (items만 교체) */}
