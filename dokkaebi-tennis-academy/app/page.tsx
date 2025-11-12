@@ -159,10 +159,10 @@ export default function Home() {
 
           <div className="relative z-10">
             {/* 타이틀 */}
-            <div className="text-center mb-16">
+            <div className="text-center">
               <div className="inline-flex items-center gap-4 mb-6">
                 <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400" />
-                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">프리미엄 스트링</h2>
+                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">스트링</h2>
                 <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400" />
               </div>
               {/* <p className="text-xl text-slate-600 dark:text-slate-300">프로가 선택하는 테니스 스트링</p> */}
@@ -215,7 +215,7 @@ export default function Home() {
 
           <div className="relative z-10">
             {/* 타이틀 */}
-            <div className="text-center mb-16">
+            <div className="text-center">
               <div className="inline-flex items-center gap-4 mb-6">
                 <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400" />
                 <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">중고 라켓</h2>
