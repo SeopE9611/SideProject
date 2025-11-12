@@ -15,11 +15,10 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import HeroSlider from '@/components/HeroSlider';
 import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
-import { racketBrandLabel } from '@/lib/constants';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from '@/lib/constants';
 
-// ──────────────────────────────────────────────────────────────
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
-// ──────────────────────────────────────────────────────────────
 type ApiProduct = {
   _id: string;
   name: string;
@@ -30,9 +29,7 @@ type ApiProduct = {
   inventory?: { isFeatured?: boolean };
 };
 
-// ──────────────────────────────────────────────────────────────
-// 상단 배너 슬라이드 데이터 (기존 유지)
-// ──────────────────────────────────────────────────────────────
+// 상단 배너 슬라이드 데이터
 const SLIDES = [
   {
     img: 'https://www.nexentire.com/webzine/201803/kr/assets/images/contents/009_01.png',
@@ -61,6 +58,12 @@ const SLIDES = [
 ];
 
 export default function Home() {
+  // 브랜드 탭 키(전체 + 상수)
+  const STRING_BRAND_KEYS = ['all', ...STRING_BRANDS.map((b) => b.value)] as const;
+  type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
+
+  const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>('all');
+
   // 카테고리 탭(프리미엄 섹션에서 사용)
   const [activeCategory, setActiveCategory] = useState<'polyester' | 'hybrid'>('polyester');
 
@@ -68,10 +71,19 @@ export default function Home() {
   const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ──────────────────────────────────────────────────────────
+  //  'all' + constants 기반 브랜드 키
+  const BRAND_KEYS = ['all', ...RACKET_BRANDS.map((b) => b.value as string)] as const;
+  type BrandKey = (typeof BRAND_KEYS)[number];
+
+  // 활성 탭
+  const [activeBrand, setActiveBrand] = useState<BrandKey>('all');
+
+  // 탭별 데이터 캐시: brand -> items
+  type RItem = { id: string; brand?: string; model?: string; price?: number; images?: string[] };
+  const [rackByBrand, setRackByBrand] = useState<Record<string, RItem[]>>({});
+
   // 데이터 로딩: /api/products?limit=48
   // 서버가 products 혹은 items 키로 내려와도 대응
-  // ──────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -87,19 +99,21 @@ export default function Home() {
     })();
   }, []);
 
-  // ──────────────────────────────────────────────────────────
   // 홈 노출 대상: inventory.isFeatured === true
-  // ──────────────────────────────────────────────────────────
   const featured = useMemo(() => allProducts.filter((p) => p?.inventory?.isFeatured), [allProducts]);
 
   // 소재별 필터링(프리미엄 섹션에서 사용할 두 그룹)
   const featuredPolyester = useMemo(() => featured.filter((p) => p.material === 'polyester'), [featured]);
   const featuredHybrid = useMemo(() => featured.filter((p) => p.material === 'hybrid'), [featured]);
 
-  // 현재 탭에 따른 프리미엄 섹션 데이터
-  const premiumItemsSource = activeCategory === 'polyester' ? featuredPolyester : featuredHybrid;
+  // ② 현재 탭 기준의 리스트 소스 (브랜드 필터)
+  const premiumItemsSource = useMemo(() => {
+    const base = featured; // 기존 featured 그대로 사용
+    if (activeStringBrand === 'all') return base;
+    return base.filter((p) => (p.brand ?? '').toLowerCase() === activeStringBrand);
+  }, [featured, activeStringBrand]);
 
-  // HorizontalProducts가 요구하는 HItem 형태로 매핑
+  // ③ HorizontalProducts 매핑 (브랜드 라벨 표시)
   const premiumItems: HItem[] = useMemo(
     () =>
       premiumItemsSource.map((p) => ({
@@ -107,39 +121,39 @@ export default function Home() {
         name: p.name,
         price: p.price,
         images: p.images ?? [],
-        brand: p.brand ?? '',
+        brand: stringBrandLabel(p.brand),
+        href: `/products/${p._id}`,
       })),
     [premiumItemsSource]
   );
 
   const [usedRackets, setUsedRackets] = useState<{ id: string; brand: string; model: string; price: number; images?: string[] }[]>([]);
 
-  // 데이터 로드 (최신 등록 순 12개)
+  // 탭 변경 시 해당 브랜드만 최초 1회 로드
   useEffect(() => {
     (async () => {
-      try {
-        const res = await fetch('/api/rackets?sort=createdAt_desc&limit=12', { credentials: 'include' });
-        const list = await res.json();
-        setUsedRackets(Array.isArray(list) ? list : []);
-      } catch {
-        setUsedRackets([]);
-      }
+      if (rackByBrand[activeBrand]) return; // 캐시 있으면 스킵
+
+      const qs = activeBrand === 'all' ? '?sort=createdAt_desc&limit=12' : `?brand=${activeBrand}&sort=createdAt_desc&limit=12`;
+
+      const res = await fetch(`/api/rackets${qs}`, { credentials: 'include' });
+      const list = await res.json();
+      setRackByBrand((prev) => ({ ...prev, [activeBrand]: Array.isArray(list) ? list : [] }));
     })();
-  }, []);
+  }, [activeBrand, rackByBrand]);
 
   // 중고라켓 데이터- HorizontalProducts가 요구하는 HItem으로 매핑
-  const usedRacketsItems: HItem[] = useMemo(
-    () =>
-      usedRackets.map((r) => ({
-        _id: r.id, // HItem은 _id 키 사용
-        name: r.model ?? '',
-        price: r.price ?? 0,
-        images: r.images ?? [],
-        brand: racketBrandLabel?.(r.brand) ?? r.brand ?? '',
-        href: `/rackets/${r.id}`,
-      })),
-    [usedRackets]
-  );
+  const usedRacketsItems: HItem[] = useMemo(() => {
+    const src = rackByBrand[activeBrand] ?? []; // 탭별 소스 선택
+    return src.map((r) => ({
+      _id: r.id,
+      name: r.model ?? '',
+      price: r.price ?? 0,
+      images: r.images ?? [],
+      brand: racketBrandLabel?.(r.brand) ?? r.brand ?? '',
+      href: `/rackets/${r.id}`,
+    }));
+  }, [rackByBrand, activeBrand]);
 
   // 섹션 렌더 — moreHref를 /rackets로
   <HorizontalProducts title="중고 라켓" subtitle="최근 등록 순으로 미리보기" items={usedRacketsItems} moreHref="/rackets" firstPageSlots={4} moveMoreToSecondWhen5Plus={true} loading={loading} />;
@@ -168,39 +182,28 @@ export default function Home() {
               {/* <p className="text-xl text-slate-600 dark:text-slate-300">프로가 선택하는 테니스 스트링</p> */}
             </div>
 
-            {/* 카테고리 탭(폴리/하이브리드) */}
-            <div className="flex justify-center mb-12">
-              <div className="inline-flex bg-white dark:bg-slate-800 rounded-2xl p-2 border border-slate-200 dark:border-slate-700 shadow-lg">
-                <button
-                  onClick={() => setActiveCategory('polyester')}
-                  className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-                    activeCategory === 'polyester' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
-                  }`}
-                >
-                  브랜드로
-                </button>
-                <button
-                  onClick={() => setActiveCategory('hybrid')}
-                  className={`px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-                    activeCategory === 'hybrid' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
-                  }`}
-                >
-                  교체할거야 그러니까 쉿
-                </button>
-              </div>
-            </div>
+            {/* 스트링(브랜드 탭) */}
+            <Tabs value={activeStringBrand} onValueChange={(v) => setActiveStringBrand(v as StringBrandKey)}>
+              <TabsList className="mb-4 flex gap-2 overflow-x-auto">
+                <TabsTrigger value="all">전체</TabsTrigger>
+                {STRING_BRANDS.map((b) => (
+                  <TabsTrigger key={b.value} value={b.value}>
+                    {b.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
 
-            {/* 가로 캐러셀: HorizontalProducts(내부에서 가운데정렬/스냅/페이지스크롤/더보기 처리) */}
-            <HorizontalProducts
-              title="프리미엄 스트링"
-              subtitle="프로가 선택하는 최고급 테니스 스트링"
-              items={premiumItems}
-              moreHref="/products"
-              firstPageSlots={4} // 4칸(상품 3 + 더보기 1)
-              moveMoreToSecondWhen5Plus={true} // 상품 5개 이상이면 '더보기'를 2페이지(5번째)로 이동
-              loading={loading}
-              showHeader={false}
-            />
+              <HorizontalProducts
+                title="스트링"
+                subtitle={activeStringBrand === 'all' ? '브랜드로 골라보기' : `${stringBrandLabel(activeStringBrand)} 추천`}
+                items={premiumItems}
+                moreHref={activeStringBrand === 'all' ? '/products' : `/products?brand=${activeStringBrand}`}
+                firstPageSlots={4}
+                moveMoreToSecondWhen5Plus={true}
+                loading={loading}
+                showHeader={false}
+              />
+            </Tabs>
           </div>
         </section>
       </div>
@@ -225,16 +228,26 @@ export default function Home() {
             </div>
 
             {/* 가로 캐러셀: 재사용 (items만 교체) */}
-            <HorizontalProducts
-              title="중고 라켓"
-              subtitle="필요한 중고 라켓이 있다면 확인해보세요"
-              items={usedRacketsItems} // 실제 중고 라켓 데이터로 교체
-              moreHref="/products?tag=used"
-              firstPageSlots={4}
-              moveMoreToSecondWhen5Plus={true}
-              loading={loading}
-              showHeader={false}
-            />
+            <Tabs value={activeBrand} onValueChange={(v) => setActiveBrand(v as BrandKey)}>
+              <TabsList className="mb-4 flex gap-2 overflow-x-auto">
+                {BRAND_KEYS.map((b) => (
+                  <TabsTrigger key={b} value={b}>
+                    {b === 'all' ? '전체' : racketBrandLabel(b)}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              <HorizontalProducts
+                title="중고 라켓"
+                subtitle={activeBrand === 'all' ? '최근 등록 순 미리보기' : `${racketBrandLabel(activeBrand)} 라켓`}
+                items={usedRacketsItems}
+                moreHref={activeBrand === 'all' ? '/rackets' : `/rackets?brand=${activeBrand}`}
+                firstPageSlots={4}
+                moveMoreToSecondWhen5Plus={true}
+                loading={!rackByBrand[activeBrand]} // 탭 최초 로딩 시만 true
+                showHeader={false}
+              />
+            </Tabs>
           </div>
         </section>
       </div>

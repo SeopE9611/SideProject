@@ -35,3 +35,17 @@ export const RACKET_BRANDS = [
 ] as const;
 
 export const racketBrandLabel = (v?: string) => RACKET_BRANDS.find((b) => b.value === v)?.label ?? v ?? '';
+
+// 스트링 브랜드
+export const STRING_BRANDS = [
+  { value: 'luxilon', label: '럭실론' },
+  { value: 'technifibre', label: '테크니화이버' },
+  { value: 'wilson', label: '윌슨' },
+  { value: 'babolat', label: '바볼랏' },
+  { value: 'head', label: '헤드' },
+  { value: 'yonex', label: '요넥스' },
+  { value: 'solinco', label: '솔린코' },
+  { value: 'dunlop', label: '던롭' },
+] as const;
+
+export const stringBrandLabel = (v?: string) => STRING_BRANDS.find((b) => b.value === (v ?? '').toLowerCase())?.label ?? v ?? '';
