@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import StatusBadge from '@/components/badges/StatusBadge';
 
 export type HItem = {
   _id: string;
@@ -12,6 +13,8 @@ export type HItem = {
   images?: string[];
   brand?: string;
   href?: string;
+  condition?: 'A' | 'B' | 'C' | 'D';
+  rentalEnabled?: boolean;
 };
 
 type HorizontalProductsProps = {
@@ -149,6 +152,13 @@ export default function HorizontalProducts({
                           <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                         ) : (
                           <div className="flex items-center justify-center h-full text-4xl font-bold text-slate-400 dark:text-slate-500">{(p.brand ?? 'D').charAt(0)}</div>
+                        )}
+
+                        {(typeof p.rentalEnabled === 'boolean' || p.condition) && (
+                          <div className="absolute top-3 left-3 right-3 flex items-center gap-2 z-10">
+                            {typeof p.rentalEnabled === 'boolean' && !p.rentalEnabled && <StatusBadge kind="rental" state="unavailable" />}
+                            {p.condition && <StatusBadge kind="condition" state={p.condition} />}
+                          </div>
                         )}
                       </div>
                       <div className="space-y-3">

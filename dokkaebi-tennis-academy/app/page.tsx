@@ -79,7 +79,15 @@ export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>('all');
 
   // 탭별 데이터 캐시: brand -> items
-  type RItem = { id: string; brand?: string; model?: string; price?: number; images?: string[] };
+  type RItem = {
+    id: string;
+    brand: string;
+    model: string;
+    price: number;
+    images?: string[];
+    condition?: 'A' | 'B' | 'C' | 'D';
+    rental?: { enabled: boolean; deposit?: number; fee?: { d7?: number; d15?: number; d30?: number } };
+  };
   const [rackByBrand, setRackByBrand] = useState<Record<string, RItem[]>>({});
 
   // 데이터 로딩: /api/products?limit=48
@@ -152,6 +160,9 @@ export default function Home() {
       images: r.images ?? [],
       brand: racketBrandLabel?.(r.brand) ?? r.brand ?? '',
       href: `/rackets/${r.id}`,
+      // ✅ 배지에 사용할 원본값 그대로 전달
+      condition: r.condition as 'A' | 'B' | 'C' | 'D' | undefined,
+      rentalEnabled: r?.rental?.enabled ?? undefined,
     }));
   }, [rackByBrand, activeBrand]);
 
