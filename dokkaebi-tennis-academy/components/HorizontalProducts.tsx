@@ -57,6 +57,7 @@ export default function HorizontalProducts({
   const listRef = useRef<HTMLDivElement>(null);
   const firstCardRef = useRef<HTMLAnchorElement | HTMLDivElement | null>(null);
   const [isCentered, setIsCentered] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
 
   // 슬롯 계산
   const PRODUCT_SLOTS = firstPageSlots - 1; // 마지막 1칸은 기본적으로 '더보기'
@@ -88,14 +89,18 @@ export default function HorizontalProducts({
       const cw = first.getBoundingClientRect().width;
       const firstPageCount = firstPageProducts.length + fillerCount + (showMoreOnSecond ? 0 : 1);
       const contentWidth = firstPageCount * cw + (firstPageCount - 1) * gap;
+
+      // 가운데 정렬 여부
       setIsCentered(contentWidth + 0.5 < container.clientWidth);
+
+      // 스크롤 필요 여부(컨텐츠 폭 > 컨테이너 폭 ?)
+      setHasOverflow(container.scrollWidth > container.clientWidth + 4);
     });
 
     if (scrollRef.current) ro.observe(scrollRef.current);
     if (listRef.current) ro.observe(listRef.current);
     return () => ro.disconnect();
   }, [firstPageProducts.length, fillerCount, showMoreOnSecond]);
-
   return (
     <section className="py-20 bg-slate-50 dark:bg-slate-900 relative rounded-2xl">
       <div className="absolute inset-0 opacity-5">
@@ -259,25 +264,29 @@ export default function HorizontalProducts({
             </div>
           </div>
 
-          {/* 페이지 스크롤 버튼 */}
-          <div className="flex justify-center mt-8 gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
-              onClick={() => scrollByPage('left')}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
-              onClick={() => scrollByPage('right')}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-          </div>
+          {/* 페이지 스크롤 버튼 – 리스트가 넘칠 때만 노출 */}
+          {hasOverflow && (
+            <div className="flex justify-center mt-8 gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label="이전 상품 보기"
+                className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
+                onClick={() => scrollByPage('left')}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label="다음 상품 보기"
+                className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500"
+                onClick={() => scrollByPage('right')}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </section>

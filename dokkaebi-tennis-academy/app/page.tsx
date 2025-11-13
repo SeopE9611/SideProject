@@ -29,6 +29,14 @@ type ApiProduct = {
   inventory?: { isFeatured?: boolean };
 };
 
+//  'all' + constants 기반 브랜드 키
+const BRAND_KEYS = ['all', ...RACKET_BRANDS.map((b) => b.value as string)] as const;
+type BrandKey = (typeof BRAND_KEYS)[number];
+
+// 브랜드 탭 키(전체 + 상수)
+const STRING_BRAND_KEYS = ['all', ...STRING_BRANDS.map((b) => b.value)] as const;
+type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
+
 // 상단 배너 슬라이드 데이터
 const SLIDES = [
   {
@@ -58,25 +66,38 @@ const SLIDES = [
 ];
 
 export default function Home() {
-  // 브랜드 탭 키(전체 + 상수)
-  const STRING_BRAND_KEYS = ['all', ...STRING_BRANDS.map((b) => b.value)] as const;
-  type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
-
+  const [activeBrand, setActiveBrand] = useState<BrandKey>('all');
   const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>('all');
 
-  // 카테고리 탭(프리미엄 섹션에서 사용)
-  const [activeCategory, setActiveCategory] = useState<'polyester' | 'hybrid'>('polyester');
+  // 마운트 후 URL에서 초깃값 한 번만 읽기
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const rb = params.get('racketBrand') as BrandKey | null;
+    const sb = params.get('stringBrand') as StringBrandKey | null;
+
+    if (rb && BRAND_KEYS.includes(rb)) {
+      setActiveBrand(rb);
+    }
+    if (sb && STRING_BRAND_KEYS.includes(sb)) {
+      setActiveStringBrand(sb);
+    }
+  }, []);
+
+  // 상태 → URL 반영
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('racketBrand', activeBrand);
+    url.searchParams.set('stringBrand', activeStringBrand);
+    window.history.replaceState(null, '', url.toString());
+  }, [activeBrand, activeStringBrand]);
 
   // 전체 상품 + 로딩
   const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
-
-  //  'all' + constants 기반 브랜드 키
-  const BRAND_KEYS = ['all', ...RACKET_BRANDS.map((b) => b.value as string)] as const;
-  type BrandKey = (typeof BRAND_KEYS)[number];
-
-  // 활성 탭
-  const [activeBrand, setActiveBrand] = useState<BrandKey>('all');
 
   // 탭별 데이터 캐시: brand -> items
   type RItem = {
@@ -109,10 +130,6 @@ export default function Home() {
 
   // 홈 노출 대상: inventory.isFeatured === true
   const featured = useMemo(() => allProducts.filter((p) => p?.inventory?.isFeatured), [allProducts]);
-
-  // 소재별 필터링(프리미엄 섹션에서 사용할 두 그룹)
-  const featuredPolyester = useMemo(() => featured.filter((p) => p.material === 'polyester'), [featured]);
-  const featuredHybrid = useMemo(() => featured.filter((p) => p.material === 'hybrid'), [featured]);
 
   // ② 현재 탭 기준의 리스트 소스 (브랜드 필터)
   const premiumItemsSource = useMemo(() => {
