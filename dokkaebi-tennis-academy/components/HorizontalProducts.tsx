@@ -133,10 +133,22 @@ export default function HorizontalProducts({
               {loading ? (
                 <div className="flex gap-6 pb-4">
                   {Array.from({ length: skeletonCount }).map((_, i) => (
-                    <div key={i} className={`flex-none ${cardWidthClass} rounded-2xl bg-white/80 dark:bg-slate-800/80 p-6 shadow-sm`}>
-                      <div className="mb-6 h-48 rounded-xl bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                      <div className="h-4 mb-2 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
-                      <div className="h-4 w-2/3 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                    <div
+                      key={i}
+                      className={`flex-none ${cardWidthClass} snap-start
+          bg-white dark:bg-slate-800 rounded-2xl p-6
+          border border-slate-200 dark:border-slate-700`}
+                    >
+                      <div className="relative mb-6 aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600">
+                        <div className="w-full h-full bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="h-4 w-20 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                        <div className="h-4 w-3/4 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
+                      </div>
+
+                      <div className="mt-3 h-5 w-1/2 rounded bg-slate-100 dark:bg-slate-700 animate-pulse" />
                     </div>
                   ))}
                 </div>
