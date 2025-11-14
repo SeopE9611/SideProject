@@ -149,7 +149,14 @@ export async function fetchCombinedOrders() {
   // 날짜 없으면 0으로 간주해서 정렬
   const toTime = (d: any) => (d ? new Date(d as any).getTime() : 0);
 
-  // rental_orders를 정규화하여 append
+  // 현재 관리자/사용자 주문 목록에서는
+  // "일반 주문 + 스트링 교체 서비스 신청(stringing_applications)"만 통합해서 사용한다.
+  // 라켓 대여 주문(rental_orders)은 전용 관리자 페이지(/admin/rentals) 및
+  // 관련 API(/api/admin/rentals, /api/me/rentals 등)에서 별도로 관리하므로
+  // 여기서는 포함하지 않는다.
+  // 혹시라도 통합 관리기능이 도입될 방지를 위해 주석처리
+
+  /*  // rental_orders를 정규화하여 append
   const rentalDocs = await db.collection('rental_orders').find().toArray();
 
   const rentalOrders = await Promise.all(
@@ -217,8 +224,7 @@ export async function fetchCombinedOrders() {
       };
     })
   );
-
-  const combined = [...orders, ...(stringingOrders as any[]), ...rentalOrders].sort((a: any, b: any) => toTime(b?.date) - toTime(a?.date));
-
+*/
+  const combined = [...orders, ...(stringingOrders as any[])].sort((a: any, b: any) => toTime(b?.date) - toTime(a?.date));
   return combined;
 }
