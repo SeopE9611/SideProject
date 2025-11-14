@@ -38,86 +38,84 @@ const Trophy = ({ className }: { className: string }) => (
   </svg>
 );
 
+// 하드코딩 값(임시)
+const STATIC_PACKAGES: PackageOption[] = [
+  {
+    id: '10-sessions',
+    title: '스타터 패키지',
+    sessions: 10,
+    price: 100000,
+    originalPrice: 120000,
+    discount: 17,
+    features: ['10회 스트링 교체', '무료 장력 상담', '기본 스트링 포함'],
+    benefits: ['회당 10,000원', '2만원 절약', '3개월 유효'],
+    color: 'blue',
+    icon: <Target className="h-8 w-8" />,
+    description: '테니스를 시작하는 분들에게 적합한 기본 패키지',
+    validityPeriod: '3개월',
+    popular: false,
+  },
+  {
+    id: '30-sessions',
+    title: '레귤러 패키지',
+    sessions: 30,
+    price: 300000,
+    originalPrice: 360000,
+    discount: 17,
+    popular: true,
+    features: ['30회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약'],
+    benefits: ['회당 10,000원', '6만원 절약', '6개월 유효', '우선 예약 혜택'],
+    color: 'indigo',
+    icon: <Star className="h-8 w-8" />,
+    description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지',
+    validityPeriod: '6개월',
+  },
+  {
+    id: '50-sessions',
+    title: '프로 패키지',
+    sessions: 50,
+    price: 500000,
+    originalPrice: 600000,
+    discount: 17,
+    features: ['50회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 5회'],
+    benefits: ['회당 10,000원', '10만원 절약', '9개월 유효', '그립 교체 혜택'],
+    color: 'purple',
+    icon: <Award className="h-8 w-8" />,
+    description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
+    validityPeriod: '9개월',
+    popular: false,
+  },
+  {
+    id: '100-sessions',
+    title: '챔피언 패키지',
+    sessions: 100,
+    price: 1000000,
+    originalPrice: 1200000,
+    discount: 17,
+    features: ['100회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 10회', '전용 상담사 배정'],
+    benefits: ['회당 10,000원', '20만원 절약', '12개월 유효', '전용 서비스'],
+    color: 'emerald',
+    icon: <Trophy className="h-8 w-8" />,
+    description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
+    validityPeriod: '12개월',
+    popular: false,
+  },
+];
+
 export default function StringPackagesPage() {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const packagesSectionRef = useRef<HTMLElement | null>(null);
 
-  // 1) 기본 패키지 목록 (지금까지 쓰던 하드코딩 값 그대로)
-  const [packages, setPackages] = useState<PackageOption[]>(() => [
-    {
-      id: '10-sessions',
-      title: '스타터 패키지',
-      sessions: 10,
-      price: 100000,
-      originalPrice: 120000,
-      discount: 17,
-      features: ['10회 스트링 교체', '무료 장력 상담', '기본 스트링 포함'],
-      benefits: ['회당 10,000원', '2만원 절약', '3개월 유효'],
-      color: 'blue',
-      icon: <Target className="h-8 w-8" />,
-      description: '테니스를 시작하는 분들에게 적합한 기본 패키지',
-      validityPeriod: '3개월',
-      popular: false,
-    },
-    {
-      id: '30-sessions',
-      title: '레귤러 패키지',
-      sessions: 30,
-      price: 300000,
-      originalPrice: 360000,
-      discount: 17,
-      popular: true,
-      features: ['30회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약'],
-      benefits: ['회당 10,000원', '6만원 절약', '6개월 유효', '우선 예약 혜택'],
-      color: 'indigo',
-      icon: <Star className="h-8 w-8" />,
-      description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지',
-      validityPeriod: '6개월',
-    },
-    {
-      id: '50-sessions',
-      title: '프로 패키지',
-      sessions: 50,
-      price: 500000,
-      originalPrice: 600000,
-      discount: 17,
-      features: ['50회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 5회'],
-      benefits: ['회당 10,000원', '10만원 절약', '9개월 유효', '그립 교체 혜택'],
-      color: 'purple',
-      icon: <Award className="h-8 w-8" />,
-      description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
-      validityPeriod: '9개월',
-      popular: false,
-    },
-    {
-      id: '100-sessions',
-      title: '챔피언 패키지',
-      sessions: 100,
-      price: 1000000,
-      originalPrice: 1200000,
-      discount: 17,
-      features: ['100회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 10회', '전용 상담사 배정'],
-      benefits: ['회당 10,000원', '20만원 절약', '12개월 유효', '전용 서비스'],
-      color: 'emerald',
-      icon: <Trophy className="h-8 w-8" />,
-      description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
-      validityPeriod: '12개월',
-      popular: false,
-    },
-  ]);
+  // 처음에는 비어있는 상태 + 로딩 중
+  const [packages, setPackages] = useState<PackageOption[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // 로딩 플래그: 값 자체는 사용하지 않고, effect 안에서만 토글
-  const [, setIsLoading] = useState(false);
-
-  // 2) 서버에서 패키지 설정 불러와서 덮어쓰기
   useEffect(() => {
     let mounted = true;
 
     const fetchPackages = async () => {
       try {
-        setIsLoading(true);
-
         const res = await fetch('/api/packages/settings', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
@@ -125,7 +123,10 @@ export default function StringPackagesPage() {
 
         if (!res.ok) {
           console.error('패키지 설정 조회 실패', await res.text());
-          // 실패하면 그냥 하드코딩 기본값 유지
+          // 실패 시: 기본 STATIC_PACKAGES로 대체
+          if (mounted) {
+            setPackages(STATIC_PACKAGES);
+          }
           return;
         }
 
@@ -133,8 +134,10 @@ export default function StringPackagesPage() {
         if (!mounted) return;
 
         const serverPackages = Array.isArray(data.packages) ? data.packages : [];
+
         if (!serverPackages.length) {
-          // 설정이 비어 있으면 기본값 유지
+          // 서버 설정이 없으면 기본값 사용
+          setPackages(STATIC_PACKAGES);
           return;
         }
 
@@ -143,7 +146,7 @@ export default function StringPackagesPage() {
           const price = Number(pkg.price || 0);
           const originalPrice = Number(pkg.originalPrice != null ? pkg.originalPrice : pkg.price || 0);
 
-          const discount = originalPrice > 0 && price > 0 ? Math.round((1 - price / originalPrice) * 100) : undefined;
+          const discount = originalPrice > 0 && price > 0 && price < originalPrice ? Math.round((1 - price / originalPrice) * 100) : undefined;
 
           const perSession = sessions > 0 && price > 0 ? Math.round(price / sessions) : undefined;
 
@@ -151,7 +154,6 @@ export default function StringPackagesPage() {
           const validityMonths = validityDays > 0 ? Math.round(validityDays / 30) : undefined;
           const validityPeriod = validityMonths != null ? `${validityMonths}개월` : '유효기간 설정 없음';
 
-          // 기존 카드 스타일을 유지하기 위해 index 기준으로 색/아이콘 매핑
           let color = 'blue';
           let icon: React.ReactNode = <Target className="h-8 w-8" />;
 
@@ -167,15 +169,9 @@ export default function StringPackagesPage() {
           }
 
           const benefits: string[] = [];
-          if (perSession) {
-            benefits.push(`회당 ${perSession.toLocaleString()}원`);
-          }
-          if (discount) {
-            benefits.push(`${discount}% 할인`);
-          }
-          if (validityMonths) {
-            benefits.push(`${validityMonths}개월 유효`);
-          }
+          if (perSession) benefits.push(`회당 ${perSession.toLocaleString()}원`);
+          if (discount) benefits.push(`${discount}% 할인`);
+          if (validityMonths) benefits.push(`${validityMonths}개월 유효`);
 
           return {
             id: pkg.id || `package-${index + 1}`,
@@ -197,6 +193,9 @@ export default function StringPackagesPage() {
         setPackages(mapped);
       } catch (error) {
         console.error('패키지 안내용 설정 조회 중 오류', error);
+        if (mounted) {
+          setPackages(STATIC_PACKAGES);
+        }
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -259,6 +258,26 @@ export default function StringPackagesPage() {
     return () => window.clearTimeout(id);
   }, [searchParams]);
 
+  if (isLoading && packages.length === 0) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-6xl mx-auto px-4 py-16">
+          <div className="h-6 w-48 mb-6 bg-slate-200 rounded animate-pulse" />
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="rounded-3xl bg-white p-6 shadow-sm flex flex-col gap-4 animate-pulse">
+                <div className="h-4 w-24 bg-slate-200 rounded" />
+                <div className="h-8 w-32 bg-slate-200 rounded" />
+                <div className="h-4 w-20 bg-slate-200 rounded" />
+                <div className="h-24 w-full bg-slate-100 rounded" />
+                <div className="h-10 w-full bg-slate-200 rounded mt-4" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
