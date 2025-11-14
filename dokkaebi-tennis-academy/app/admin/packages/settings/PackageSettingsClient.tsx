@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, Package, Settings, Plus, Trash2, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,136 +14,133 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-
-// 패키지 설정 타입
-interface PackageConfig {
-  id: string;
-  name: string;
-  sessions: number;
-  price: number;
-  originalPrice?: number;
-  description: string;
-  features: string[];
-  isActive: boolean;
-  isPopular: boolean;
-  validityDays: number;
-  sortOrder: number;
-}
-
-// 더미 패키지 설정 데이터
-const dummyPackageConfigs: PackageConfig[] = [
-  {
-    id: 'package-10',
-    name: '10회권',
-    sessions: 10,
-    price: 100000,
-    originalPrice: 120000,
-    description: '스트링 교체 서비스 10회 이용권',
-    features: ['10회 스트링 교체', '3개월 유효기간', '방문/출장 서비스'],
-    isActive: true,
-    isPopular: false,
-    validityDays: 90,
-    sortOrder: 1,
-  },
-  {
-    id: 'package-30',
-    name: '30회권',
-    sessions: 30,
-    price: 300000,
-    originalPrice: 360000,
-    description: '스트링 교체 서비스 30회 이용권',
-    features: ['30회 스트링 교체', '6개월 유효기간', '방문/출장 서비스', '우선 예약'],
-    isActive: true,
-    isPopular: true,
-    validityDays: 180,
-    sortOrder: 2,
-  },
-  {
-    id: 'package-50',
-    name: '50회권',
-    sessions: 50,
-    price: 500000,
-    originalPrice: 600000,
-    description: '스트링 교체 서비스 50회 이용권',
-    features: ['50회 스트링 교체', '9개월 유효기간', '방문/출장 서비스', '우선 예약', '전용 상담'],
-    isActive: true,
-    isPopular: false,
-    validityDays: 270,
-    sortOrder: 3,
-  },
-  {
-    id: 'package-100',
-    name: '100회권',
-    sessions: 100,
-    price: 1000000,
-    originalPrice: 1200000,
-    description: '스트링 교체 서비스 100회 이용권',
-    features: ['100회 스트링 교체', '12개월 유효기간', '방문/출장 서비스', '우선 예약', '전용 상담', 'VIP 혜택'],
-    isActive: true,
-    isPopular: false,
-    validityDays: 365,
-    sortOrder: 4,
-  },
-];
-
-// 일반 설정 타입
-interface GeneralSettings {
-  enablePackages: boolean;
-  maxValidityDays: number;
-  minSessions: number;
-  maxSessions: number;
-  defaultServiceType: '방문' | '출장';
-  autoExpireNotificationDays: number;
-  allowExtension: boolean;
-  extensionFeePercentage: number;
-}
-
-// 더미 일반 설정 데이터
-const dummyGeneralSettings: GeneralSettings = {
-  enablePackages: true,
-  maxValidityDays: 365,
-  minSessions: 5,
-  maxSessions: 200,
-  defaultServiceType: '방문',
-  autoExpireNotificationDays: 7,
-  allowExtension: true,
-  extensionFeePercentage: 10,
-};
+import { type PackageConfig, type GeneralSettings, DEFAULT_PACKAGE_CONFIGS, DEFAULT_GENERAL_SETTINGS } from '@/lib/package-settings';
 
 export default function PackageSettingsClient() {
-  const [packageConfigs, setPackageConfigs] = useState<PackageConfig[]>(dummyPackageConfigs);
-  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(dummyGeneralSettings);
-  const [isLoading, setIsLoading] = useState(false);
+  // 서버에서 가져온 패키지 설정
+  const [packageConfigs, setPackageConfigs] = useState<PackageConfig[]>(DEFAULT_PACKAGE_CONFIGS);
+
+  // 서버에서 가져온 일반 설정
+  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(DEFAULT_GENERAL_SETTINGS);
+
+  // 초기 로딩 상태 (GET /api/admin/packages/settings)
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // 저장 중 여부 (PUT /api/admin/packages/settings)
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
   const [editingPackage, setEditingPackage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchSettings = async () => {
+      try {
+        setIsLoading(true);
+
+        const res = await fetch('/api/admin/packages/settings', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!res.ok) {
+          console.error('패키지 설정 조회 실패', await res.text());
+          showErrorToast('패키지 설정 조회에 실패했습니다.');
+          return;
+        }
+
+        const data = await res.json();
+
+        if (!mounted) return;
+
+        const serverPackages: PackageConfig[] = Array.isArray(data.packageConfigs) ? data.packageConfigs : DEFAULT_PACKAGE_CONFIGS;
+
+        const serverGeneral: GeneralSettings = {
+          ...DEFAULT_GENERAL_SETTINGS,
+          ...(data.generalSettings ?? {}),
+        };
+
+        setPackageConfigs(serverPackages);
+        setGeneralSettings(serverGeneral);
+      } catch (error) {
+        console.error('패키지 설정 조회 중 오류', error);
+        showErrorToast('패키지 설정 조회 중 오류가 발생했습니다.');
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchSettings();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // 금액 포맷터
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
 
-  // 패키지 설정 저장
+  // 패키지 설정 저장 (패키지 탭에서 호출)
   const handleSavePackages = async () => {
-    setIsLoading(true);
     try {
-      // 실제 구현에서는 API 호출
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setIsSaving(true);
+
+      const body = {
+        packageConfigs,
+        generalSettings,
+      };
+
+      const res = await fetch('/api/admin/packages/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        console.error('패키지 설정 저장 실패', await res.text());
+        showErrorToast('패키지 설정 저장에 실패했습니다.');
+        return;
+      }
+
       showSuccessToast('패키지 설정이 저장되었습니다.');
     } catch (error) {
+      console.error('패키지 설정 저장 중 오류', error);
       showErrorToast('저장 중 오류가 발생했습니다.');
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
-  // 일반 설정 저장
+  // 일반 설정 저장 (일반 설정 탭에서 호출)
   const handleSaveGeneralSettings = async () => {
-    setIsLoading(true);
     try {
-      // 실제 구현에서는 API 호출
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setIsSaving(true);
+
+      const body = {
+        packageConfigs,
+        generalSettings,
+      };
+
+      const res = await fetch('/api/admin/packages/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        console.error('일반 설정 저장 실패', await res.text());
+        showErrorToast('일반 설정 저장에 실패했습니다.');
+        return;
+      }
+
       showSuccessToast('일반 설정이 저장되었습니다.');
     } catch (error) {
+      console.error('일반 설정 저장 중 오류', error);
       showErrorToast('저장 중 오류가 발생했습니다.');
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -196,6 +193,14 @@ export default function PackageSettingsClient() {
       updatePackage(packageId, { features: newFeatures });
     }
   };
+
+  if (isLoading) {
+    return (
+      <AuthGuard>
+        <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">패키지 설정을 불러오는 중입니다...</div>
+      </AuthGuard>
+    );
+  }
 
   return (
     <AuthGuard>
@@ -392,9 +397,9 @@ export default function PackageSettingsClient() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button onClick={handleSavePackages} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={handleSavePackages} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700">
                     <Save className="mr-2 h-4 w-4" />
-                    {isLoading ? '저장 중...' : '패키지 설정 저장'}
+                    {isSaving ? '저장 중...' : '패키지 설정 저장'}
                   </Button>
                 </div>
               </div>
@@ -513,9 +518,9 @@ export default function PackageSettingsClient() {
                   </div>
 
                   <div className="flex justify-end pt-4">
-                    <Button onClick={handleSaveGeneralSettings} disabled={isLoading} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={handleSaveGeneralSettings} disabled={isSaving} className="bg-green-600 hover:bg-green-700">
                       <Save className="mr-2 h-4 w-4" />
-                      {isLoading ? '저장 중...' : '일반 설정 저장'}
+                      {isSaving ? '저장 중...' : '일반 설정 저장'}
                     </Button>
                   </div>
                 </CardContent>
