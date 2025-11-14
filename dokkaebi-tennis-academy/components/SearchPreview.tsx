@@ -18,7 +18,8 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/products?preview=1&query=${encodeURIComponent(query)}`);
+        // 통합 검색 API (스트링 + 중고 라켓)
+        const res = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
         const data = await res.json();
         setResults(data);
         setIsOpen(true);
@@ -79,24 +80,34 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
       "
         >
           {results.length > 0 ? (
-            results.map((item) => (
-              <Link
-                key={item._id}
-                href={`/products/${item._id}`}
-                className="
-              flex items-center gap-4 px-4 py-3
-              hover:bg-cyan-50 dark:hover:bg-cyan-900/30
-              transition-all group
-            "
-                onClick={() => setIsOpen(false)}
-              >
-                {item.image ? <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl shadow group-hover:ring-2 group-hover:ring-cyan-400/60" /> : <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-xl" />}
-                <div>
-                  <div className="text-base font-semibold text-gray-800 dark:text-white group-hover:text-cyan-500">{item.name}</div>
-                  <div className="text-xs text-cyan-600 dark:text-cyan-300">{item.price.toLocaleString()}원</div>
-                </div>
-              </Link>
-            ))
+            results.map((item) => {
+              // type 에 따라 이동 경로 분기
+              const href = item.type === 'racket' ? `/rackets/${item._id}` : `/products/${item._id}`;
+
+              return (
+                <Link
+                  key={item._id}
+                  href={href}
+                  className="
+          flex items-center gap-4 px-4 py-3
+          hover:bg-cyan-50 dark:hover:bg-cyan-900/30
+          transition-all group
+        "
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.image ? <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl shadow" /> : <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-xl" />}
+
+                  <div className="flex flex-col gap-1">
+                    <div className="text-base font-semibold text-gray-800 dark:text-white group-hover:text-cyan-500">{item.name}</div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-300">
+                      {/* 타입 뱃지: 라켓 / 스트링 구분 */}
+                      <span className="inline-flex items-center rounded-full border border-cyan-300 px-2 py-0.5 text-[11px] text-cyan-700 dark:text-cyan-200">{item.type === 'racket' ? '중고 라켓' : '스트링'}</span>
+                      {typeof item.price === 'number' && item.price > 0 && <span className="text-cyan-600 dark:text-cyan-300">{item.price.toLocaleString()}원</span>}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })
           ) : (
             <div className="flex flex-col items-center justify-center py-7 px-4 text-gray-400 dark:text-gray-300 text-base min-h-[120px]">
               <SearchX className="w-10 h-10 text-cyan-400 dark:text-cyan-300 mb-2" />
