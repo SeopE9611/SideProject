@@ -64,6 +64,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       images: body.images,
       inventory: body.inventory,
 
+      // 검색 키워드
+      searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
+
       // 검색용 이니셜
       searchInitials: getHangulInitials(body.name),
       brandInitials: getHangulInitials(body.brand),

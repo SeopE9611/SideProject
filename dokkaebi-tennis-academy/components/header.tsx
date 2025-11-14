@@ -472,11 +472,11 @@ const Header = () => {
 
             <div className="border rounded p-3">지역 날씨 들어갈 예정(오늘은 테니스 치기 좋은 날씨네요!등등)</div>
 
-            {/* 2) 검색 (PC 전용) */}
+            {/* 검색 (PC 전용) */}
             <div className="hidden lg:flex flex-1 justify-end">
               <div className="w-full max-w-[560px] min-w-[360px] xl:max-w-[640px]">
                 <SearchPreview
-                  placeholder="스트링 검색..."
+                  placeholder="스트링 / 라켓 검색..."
                   className="
         w-full
         rounded-full bg-white/80 dark:bg-slate-800/70
@@ -543,7 +543,7 @@ const Header = () => {
                   </Link>
                   <div className="mt-4">
                     <SearchPreview
-                      placeholder="스트링 검색..."
+                      placeholder="스트링 / 라켓 검색..."
                       className="w-full rounded-lg border-slate-300 dark:border-slate-700 
                         focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-colors"
                     />

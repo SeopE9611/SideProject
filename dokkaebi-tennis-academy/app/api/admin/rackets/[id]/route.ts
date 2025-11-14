@@ -46,6 +46,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     price: Number(body.price ?? 0),
     images: Array.isArray(body.images) ? body.images : [],
     status: body.status ?? 'available',
+    searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords.map((k: any) => String(k).trim()).filter((k: string) => k.length > 0) : [],
     rental: {
       enabled,
       deposit: Number(body?.rental?.deposit ?? 0),

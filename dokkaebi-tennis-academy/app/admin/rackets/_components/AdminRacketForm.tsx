@@ -32,6 +32,8 @@ export type RacketForm = {
   };
   images: string[];
   quantity: number;
+
+  searchKeywords?: string[];
 };
 
 type Props = {
@@ -68,6 +70,26 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
     },
     images: Array.isArray(initial?.images) ? initial!.images! : [],
   });
+
+  // 검색 키워드 입력 상태
+  const [searchKeywordsText, setSearchKeywordsText] = useState(Array.isArray(initial?.searchKeywords) ? initial!.searchKeywords!.join(', ') : '');
+
+  const handleGenerateKeywords = () => {
+    const base = `${form.brand ?? ''} ${form.model ?? ''}`.trim();
+    if (!base) {
+      alert('브랜드와 모델명을 먼저 입력해 주세요.');
+      return;
+    }
+
+    const tokens = base
+      .split(/[\s,()\/+]+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length > 1);
+
+    const unique = Array.from(new Set(tokens.map((t) => t.toLowerCase())));
+    setSearchKeywordsText(unique.join(', '));
+  };
+
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
 
@@ -107,6 +129,11 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         disabledReason: form.rental.enabled ? '' : form.rental.disabledReason?.trim() || '',
       },
       images: form.images || [],
+
+      searchKeywords: searchKeywordsText
+        .split(',')
+        .map((k) => k.trim())
+        .filter((k) => k.length > 0),
     };
     await onSubmit(normalized);
     setLoading(false);
@@ -205,6 +232,17 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                       <SelectItem value="inactive">비노출</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                {/* 검색 키워드 입력 */}
+                <div className="space-y-2">
+                  <Label htmlFor="racket-search-keywords">검색 키워드 (쉼표로 구분)</Label>
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                    <Input id="racket-search-keywords" placeholder="예: 윌슨 프로스태프, 블레이드, RF97" value={searchKeywordsText} onChange={(e) => setSearchKeywordsText(e.target.value)} />
+                    <Button type="button" variant="outline" className="md:ml-2 shrink-0" onClick={handleGenerateKeywords}>
+                      브랜드/모델 기준 자동 생성
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">검색창에서 이 키워드들로도 라켓을 찾을 수 있습니다.</p>
                 </div>
               </div>
             </CardContent>

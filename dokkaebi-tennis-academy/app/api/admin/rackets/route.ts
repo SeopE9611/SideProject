@@ -47,6 +47,8 @@ export async function POST(req: Request) {
     brand: String(body.brand ?? '').trim(),
     model: String(body.model ?? '').trim(),
     year: Number(body.year ?? 0) || null,
+    // 검색 키워드
+    searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords.map((k: any) => String(k).trim()).filter((k: string) => k.length > 0) : [],
     spec: {
       weight: body.spec?.weight != null && body.spec?.weight !== '' ? Number(body.spec.weight) : null,
       balance: body.spec?.balance != null && body.spec?.balance !== '' ? Number(body.spec.balance) : null,

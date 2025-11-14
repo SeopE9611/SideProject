@@ -119,6 +119,9 @@ export default function NewStringPage() {
     salePrice: 0,
   });
 
+  // 검색 키워드 입력값 (쉼표로 구분)
+  const [searchKeywordsInput, setSearchKeywordsInput] = useState('');
+
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState('');
 
@@ -223,6 +226,26 @@ export default function NewStringPage() {
     const newImages = [...images];
     newImages.splice(index, 1);
     setImages(newImages);
+  };
+
+  // 상품명 + 브랜드 기준으로 간단한 검색 키워드 자동 생성
+  const handleGenerateKeywords = () => {
+    const base = `${basicInfo.name ?? ''} ${basicInfo.brand ?? ''}`.trim();
+    if (!base) {
+      alert('먼저 스트링명과 브랜드를 입력해 주세요.');
+      return;
+    }
+
+    // 공백 / 괄호 / 슬래시 / + 기준으로 토큰 분리
+    const tokens = base
+      .split(/[\s,()\/+]+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length > 1);
+
+    // 중복 제거 + 소문자 통일
+    const unique = Array.from(new Set(tokens.map((t) => t.toLowerCase())));
+
+    setSearchKeywordsInput(unique.join(', '));
   };
 
   const router = useRouter(); // 페이지 이동을 위한 라우터
@@ -341,9 +364,18 @@ export default function NewStringPage() {
       }
     }
 
+    // 검색 키워드: 쉼표 기준으로 잘라 배열로 변환
+    const searchKeywords = searchKeywordsInput
+      .split(',')
+      .map((k) => k.trim())
+      .filter((k) => k.length > 0);
+
     //  product 전체 구성
     const product = {
       ...basicInfo, // name, brand, price 등 기본 항목
+
+      // 검색 키워드 (통합 검색에서 사용)
+      searchKeywords,
 
       features: {
         ...features, // power, control, spin 등 성능 항목
@@ -463,6 +495,17 @@ export default function NewStringPage() {
                         <Label htmlFor="string-sku">SKU (재고 관리 코드)</Label>
                         <Input id="string-sku" placeholder="예: STR-LUX-001" value={basicInfo.sku} onChange={(e) => setBasicInfo({ ...basicInfo, sku: e.target.value })} />
                       </div>
+                    </div>
+                    {/* 검색 키워드 입력 */}
+                    <div className="space-y-2">
+                      <Label htmlFor="string-search-keywords">검색 키워드 (쉼표로 구분)</Label>
+                      <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                        <Input id="string-search-keywords" placeholder="예: 챔피언, 챔피언스 초이스, 듀오, ALU, 내추럴 거트" value={searchKeywordsInput} onChange={(e) => setSearchKeywordsInput(e.target.value)} />
+                        <Button type="button" variant="outline" className="md:ml-2 shrink-0" onClick={handleGenerateKeywords}>
+                          상품명 기준 자동 생성
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">검색창에서 이 키워드들로도 상품을 찾을 수 있게 설정합니다. 쉼표(,)로 구분해서 입력하거나 자동 생성 버튼을 사용하세요.</p>
                     </div>
 
                     <div className="space-y-2">
