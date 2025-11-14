@@ -134,8 +134,21 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
 
   useEffect(() => {
     if (!emblaApi) return;
-    emblaApi.on('select', () => onSelect(emblaApi));
-    onSelect(emblaApi);
+    // 공통 핸들러
+    const handleSelect = () => {
+      onSelect(emblaApi);
+    };
+    // 초기 상태 계산
+    handleSelect();
+    // 슬라이드가 선택될 때마다
+    emblaApi.on('select', handleSelect);
+    // 슬라이드가 reInit(초기화/재계산) 될 때마다
+    emblaApi.on('reInit', handleSelect);
+    // 클린업 – 타입 에러나면 이 부분은 빼도 동작은 함
+    // return () => {
+    //   emblaApi.off('select', handleSelect);
+    //   emblaApi.off('reInit', handleSelect);
+    // };
   }, [emblaApi]);
 
   const scrollByPage = (dir: 'left' | 'right') => {
