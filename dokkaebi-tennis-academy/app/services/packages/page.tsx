@@ -42,7 +42,9 @@ export default function StringPackagesPage() {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const packagesSectionRef = useRef<HTMLElement | null>(null);
-  const packages: PackageOption[] = [
+
+  // 1) 기본 패키지 목록 (지금까지 쓰던 하드코딩 값 그대로)
+  const [packages, setPackages] = useState<PackageOption[]>(() => [
     {
       id: '10-sessions',
       title: '스타터 패키지',
@@ -56,6 +58,7 @@ export default function StringPackagesPage() {
       icon: <Target className="h-8 w-8" />,
       description: '테니스를 시작하는 분들에게 적합한 기본 패키지',
       validityPeriod: '3개월',
+      popular: false,
     },
     {
       id: '30-sessions',
@@ -85,6 +88,7 @@ export default function StringPackagesPage() {
       icon: <Award className="h-8 w-8" />,
       description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
       validityPeriod: '9개월',
+      popular: false,
     },
     {
       id: '100-sessions',
@@ -99,8 +103,113 @@ export default function StringPackagesPage() {
       icon: <Trophy className="h-8 w-8" />,
       description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
       validityPeriod: '12개월',
+      popular: false,
     },
-  ];
+  ]);
+
+  // 로딩 플래그: 값 자체는 사용하지 않고, effect 안에서만 토글
+  const [, setIsLoading] = useState(false);
+
+  // 2) 서버에서 패키지 설정 불러와서 덮어쓰기
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchPackages = async () => {
+      try {
+        setIsLoading(true);
+
+        const res = await fetch('/api/packages/settings', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!res.ok) {
+          console.error('패키지 설정 조회 실패', await res.text());
+          // 실패하면 그냥 하드코딩 기본값 유지
+          return;
+        }
+
+        const data = await res.json();
+        if (!mounted) return;
+
+        const serverPackages = Array.isArray(data.packages) ? data.packages : [];
+        if (!serverPackages.length) {
+          // 설정이 비어 있으면 기본값 유지
+          return;
+        }
+
+        const mapped: PackageOption[] = serverPackages.map((pkg: any, index: number) => {
+          const sessions = Number(pkg.sessions || 0);
+          const price = Number(pkg.price || 0);
+          const originalPrice = Number(pkg.originalPrice != null ? pkg.originalPrice : pkg.price || 0);
+
+          const discount = originalPrice > 0 && price > 0 ? Math.round((1 - price / originalPrice) * 100) : undefined;
+
+          const perSession = sessions > 0 && price > 0 ? Math.round(price / sessions) : undefined;
+
+          const validityDays = Number(pkg.validityDays || 0);
+          const validityMonths = validityDays > 0 ? Math.round(validityDays / 30) : undefined;
+          const validityPeriod = validityMonths != null ? `${validityMonths}개월` : '유효기간 설정 없음';
+
+          // 기존 카드 스타일을 유지하기 위해 index 기준으로 색/아이콘 매핑
+          let color = 'blue';
+          let icon: React.ReactNode = <Target className="h-8 w-8" />;
+
+          if (index === 1) {
+            color = 'indigo';
+            icon = <Star className="h-8 w-8" />;
+          } else if (index === 2) {
+            color = 'purple';
+            icon = <Award className="h-8 w-8" />;
+          } else if (index === 3) {
+            color = 'emerald';
+            icon = <Trophy className="h-8 w-8" />;
+          }
+
+          const benefits: string[] = [];
+          if (perSession) {
+            benefits.push(`회당 ${perSession.toLocaleString()}원`);
+          }
+          if (discount) {
+            benefits.push(`${discount}% 할인`);
+          }
+          if (validityMonths) {
+            benefits.push(`${validityMonths}개월 유효`);
+          }
+
+          return {
+            id: pkg.id || `package-${index + 1}`,
+            title: pkg.name || `${sessions}회 패키지`,
+            sessions,
+            price,
+            originalPrice,
+            discount,
+            popular: !!pkg.isPopular,
+            features: Array.isArray(pkg.features) ? pkg.features : [],
+            benefits,
+            color,
+            icon,
+            description: pkg.description || '',
+            validityPeriod,
+          };
+        });
+
+        setPackages(mapped);
+      } catch (error) {
+        console.error('패키지 안내용 설정 조회 중 오류', error);
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchPackages();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const additionalBenefits = [
     {
