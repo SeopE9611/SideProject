@@ -12,7 +12,7 @@
  */
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import HeroSlider from '@/components/HeroSlider';
 import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -86,8 +86,17 @@ export default function Home() {
   }, []);
 
   // 상태 → URL 반영
+  //  첫 렌더링 여부
+  const firstRender = useRef(true);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // 첫 렌더링이면 URL 수정하지 않음
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
 
     const url = new URL(window.location.href);
     url.searchParams.set('racketBrand', activeBrand);
