@@ -128,17 +128,37 @@ export default function Home() {
     })();
   }, []);
 
-  // 홈 노출 대상: inventory.isFeatured === true
-  const featured = useMemo(() => allProducts.filter((p) => p?.inventory?.isFeatured), [allProducts]);
+  // 홈 노출 대상: 전체 스트링 상품 (등록 순으로)
+  const homeStringProducts = useMemo(() => {
+    // 필요하면 여기서 category === 'string' 으로 한 번 더 거를 수도 있음
+    // 예: return allProducts.filter((p) => p.category === 'string');
+    return allProducts;
+  }, [allProducts]);
 
-  // ② 현재 탭 기준의 리스트 소스 (브랜드 필터)
+  /* 추천 상품은 위에 먼저, 나머지는 그 뒤에 같은 우선 순위 정렬할경우 주석해제하기.
+    const homeStringProducts = useMemo(() => {
+    const list = [...allProducts];
+
+     return list.sort((a, b) => {
+      const fa = a?.inventory?.isFeatured ? 1 : 0;
+      const fb = b?.inventory?.isFeatured ? 1 : 0;
+
+      if (fa !== fb) return fb - fa; // 추천상품 먼저
+      // createdAt 기준 최신 순 정렬 (필드 이름에 맞게 조정)
+      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return db - da;
+    });
+   }, [allProducts]);
+*/
+  // 현재 탭 기준의 리스트 소스 (브랜드 필터)
   const premiumItemsSource = useMemo(() => {
-    const base = featured; // 기존 featured 그대로 사용
+    const base = homeStringProducts;
     if (activeStringBrand === 'all') return base;
     return base.filter((p) => (p.brand ?? '').toLowerCase() === activeStringBrand);
-  }, [featured, activeStringBrand]);
+  }, [homeStringProducts, activeStringBrand]);
 
-  // ③ HorizontalProducts 매핑 (브랜드 라벨 표시)
+  // HorizontalProducts 매핑 (브랜드 라벨 표시)
   const premiumItems: HItem[] = useMemo(
     () =>
       premiumItemsSource.map((p) => ({
@@ -177,7 +197,7 @@ export default function Home() {
       images: r.images ?? [],
       brand: racketBrandLabel?.(r.brand) ?? r.brand ?? '',
       href: `/rackets/${r.id}`,
-      // ✅ 배지에 사용할 원본값 그대로 전달
+      // 배지에 사용할 원본값 그대로 전달
       condition: r.condition as 'A' | 'B' | 'C' | 'D' | undefined,
       rentalEnabled: r?.rental?.enabled ?? undefined,
     }));

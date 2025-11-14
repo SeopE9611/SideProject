@@ -561,7 +561,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {/* 브랜드와 제품명 */}
                   <div>
                     <Badge variant="outline" className="mb-2 text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-800">
-                      {product.brand}
+                      {BRAND_MAP[(product?.brand ?? '').toLowerCase()] ?? product.brand}
                     </Badge>
                     <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{product.name}</h1>
                     <div className="mt-2 flex items-center gap-3">
