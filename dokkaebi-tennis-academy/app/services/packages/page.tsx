@@ -151,8 +151,28 @@ export default function StringPackagesPage() {
           const perSession = sessions > 0 && price > 0 ? Math.round(price / sessions) : undefined;
 
           const validityDays = Number(pkg.validityDays || 0);
-          const validityMonths = validityDays > 0 ? Math.round(validityDays / 30) : undefined;
-          const validityPeriod = validityMonths != null ? `${validityMonths}개월` : '유효기간 설정 없음';
+
+          let validityPeriod: string;
+
+          if (!validityDays || validityDays <= 0) {
+            // 0 또는 음수 → 설정 안 된 것으로 취급
+            validityPeriod = '유효기간 설정 없음';
+          } else if (validityDays < 30) {
+            // 1~29일 → 그대로 일 단위 표시
+            validityPeriod = `${validityDays}일`;
+          } else {
+            // 30일 이상 → 개월 + 일 조합
+            const months = Math.floor(validityDays / 30); // 63일 → 2
+            const daysRemainder = validityDays % 30; // 63일 → 3
+
+            if (daysRemainder === 0) {
+              // 딱 떨어지는 경우: 90일 → 3개월
+              validityPeriod = `${months}개월`;
+            } else {
+              // 나머지가 있으면: 63일 → 2개월 3일
+              validityPeriod = `${months}개월 ${daysRemainder}일`;
+            }
+          }
 
           let color = 'blue';
           let icon: React.ReactNode = <Target className="h-8 w-8" />;
@@ -167,12 +187,22 @@ export default function StringPackagesPage() {
             color = 'emerald';
             icon = <Trophy className="h-8 w-8" />;
           }
-
           const benefits: string[] = [];
-          if (perSession) benefits.push(`회당 ${perSession.toLocaleString()}원`);
-          if (discount) benefits.push(`${discount}% 할인`);
-          if (validityMonths) benefits.push(`${validityMonths}개월 유효`);
 
+          if (perSession) {
+            benefits.push(`회당 ${perSession.toLocaleString()}원`);
+          }
+          if (discount) {
+            benefits.push(`${discount}% 할인`);
+          }
+          if (validityDays > 0) {
+            if (validityDays < 30) {
+              benefits.push(`${validityDays}일 유효`);
+            } else {
+              const months = Math.floor(validityDays / 30);
+              benefits.push(`${months}개월 이상 유효`);
+            }
+          }
           return {
             id: pkg.id || `package-${index + 1}`,
             title: pkg.name || `${sessions}회 패키지`,

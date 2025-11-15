@@ -3,9 +3,7 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-
-const ALLOWED = new Set([10, 30, 50, 100]);
-const PRICE: Record<number, number> = { 10: 100000, 30: 300000, 50: 500000, 100: 1000000 };
+import { getPackagePricingInfo } from '@/app/features/packages/api/db';
 
 function s(v: unknown) {
   return typeof v === 'string' ? v : v == null ? '' : String(v);
@@ -35,23 +33,43 @@ export async function POST(req: Request) {
     const body: any = await req.json().catch(() => ({}));
     const pkg = body?.packageInfo ?? {};
 
-    // sessions 확보 경로: packageInfo.sessions -> packageId / package -> sessions
-    let sessions = num(pkg?.sessions) || sessionsFromId(pkg?.id) || sessionsFromId(body?.packageId) || sessionsFromId(body?.package) || num(body?.sessions);
+    // ✅ 관리자 패키지 설정(허용 회수 / 가격 / 이름) 로드
+    const { allowedSessions, priceBySessions, configById } = await getPackagePricingInfo();
 
-    if (!Number.isFinite(sessions) || !ALLOWED.has(sessions)) {
+    // 클라이언트가 보낸 패키지 ID 후보
+    const rawPlanId = str(pkg?.id) || str(body?.packageId) || str(body?.package);
+
+    // 설정에서 해당 ID를 찾아본다 (없으면 undefined)
+    const config = rawPlanId ? configById[rawPlanId] : undefined;
+
+    // 세션 수 계산
+    let sessions = NaN;
+
+    if (config) {
+      // 설정에 ID가 있으면, 그 설정의 sessions를 신뢰
+      sessions = config.sessions;
+    } else {
+      // 설정에 ID가 없으면, 기존 fallback 로직으로 세션 추론
+      // (packageInfo.sessions -> ID 파싱 -> body.sessions)
+      sessions = num(pkg?.sessions) || sessionsFromId(rawPlanId) || sessionsFromId(body?.packageId) || sessionsFromId(body?.package) || num(body?.sessions);
+    }
+
+    // 허용된 세션(활성 패키지)만 주문 가능
+    if (!Number.isFinite(sessions) || !allowedSessions.has(sessions)) {
       return NextResponse.json({ error: '잘못된 패키지(회수)입니다.' }, { status: 400 });
     }
 
-    // 서버 권위로 금액/메타 구성
-    const price = PRICE[sessions];
-    if (typeof price !== 'number') {
+    // 서버 권위로 금액 결정 (클라이언트 price는 무시)
+    const price = config?.price ?? priceBySessions[sessions];
+
+    if (!Number.isFinite(price) || price <= 0) {
       return NextResponse.json({ error: '가격 정보를 확인할 수 없습니다.' }, { status: 400 });
     }
 
-    const planId = str(pkg?.id) || str(body?.packageId) || `${sessions}-sessions`;
+    // 최종 planId / 이름 구성
+    const planId = config?.id || rawPlanId || `${sessions}-sessions`;
 
-    const planTitle = str(pkg?.title) || str(body?.packageTitle) || `${sessions}회권`;
-
+    const planTitle = config?.name || str(pkg?.title) || str(body?.packageTitle) || `${sessions}회권`;
     const serviceMethod = str(body?.serviceInfo?.serviceMethod ?? body?.serviceMethod ?? '방문이용');
     if (/출장/.test(serviceMethod)) {
       return NextResponse.json({ error: '현재 출장 서비스는 이용하실 수 없습니다.' }, { status: 400 });
@@ -75,12 +93,14 @@ export async function POST(req: Request) {
       depositor: serviceInfo.depositor || undefined,
     };
 
+    const validityPeriod = config?.validityDays != null ? config.validityDays : Number(body?.validityDays ?? body?.validityPeriod ?? 365);
+
     const packageInfo = {
       id: planId,
       title: planTitle,
       sessions,
       price,
-      validityPeriod: Number(body?.validityDays ?? body?.validityPeriod ?? 365),
+      validityPeriod,
     };
 
     const now = new Date();
