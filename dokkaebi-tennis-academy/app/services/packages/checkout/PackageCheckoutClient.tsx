@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
@@ -41,6 +41,23 @@ interface PackageInfo {
   validityPeriod: string;
 }
 
+type PackageOption = {
+  id: string;
+  title: string;
+  sessions: number;
+  price: number;
+  originalPrice?: number;
+  discount?: number;
+  features: string[];
+  benefits: string[];
+  validityPeriod: string;
+};
+
+const STATIC_PACKAGES: PackageOption[] = [
+  // 기존에 쓰던 더미 패키지 4개가 있다면 그대로 옮겨 두세요
+  // (서버에서 설정 못 불러올 때만 fallback 용으로 사용)
+];
+
 const Trophy = ({ className }: { className: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
@@ -54,9 +71,9 @@ const Trophy = ({ className }: { className: string }) => (
 
 export default function PackageCheckoutClient({ initialUser, initialQuery }: { initialUser: UserLite; initialQuery?: { package?: string } }) {
   const searchParams = useSearchParams();
-  const packageId = searchParams.get('package');
+  const packageId = searchParams.get('package') ?? initialQuery?.package ?? null;
 
-  const packages: Record<string, PackageInfo> = {
+  const TEMPLATE_PACKAGES: Record<string, PackageInfo> = {
     '10-sessions': {
       id: '10-sessions',
       title: '스타터 패키지',
@@ -112,8 +129,15 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
     },
   };
 
-  const selectedPackage = packageId ? packages[packageId] : null;
+  // 선택된 패키지 정보 (DB 설정 + 템플릿 병합 결과)
+  const [selectedPackage, setSelectedPackage] = useState<PackageInfo | null>(() => {
+    if (!packageId) return null;
+    // 옛날 URL (?package=10-sessions)로 들어올 수도 있으니 일단 템플릿에서 한 번 찾아봄
+    return TEMPLATE_PACKAGES[packageId] ?? null;
+  });
 
+  // 패키지 설정 로딩 상태
+  const [isPackageLoading, setIsPackageLoading] = useState(true);
   const [selectedBank, setSelectedBank] = useState('shinhan');
   const [serviceMethod, setServiceMethod] = useState<'방문이용' | '출장서비스'>('방문이용');
 
@@ -154,6 +178,111 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
 
+  // 패키지 설정 로딩 & 선택된 패키지 매핑
+  useEffect(() => {
+    const fetchPackage = async () => {
+      // 쿼리에 packageId가 없으면 그냥 종료
+      if (!packageId) {
+        setSelectedPackage(null);
+        setIsPackageLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/packages/settings', { cache: 'no-store' });
+        if (!res.ok) {
+          throw new Error('패키지 설정 API 응답 오류');
+        }
+
+        const data = await res.json();
+        const configs: any[] = Array.isArray(data.packages) ? data.packages : [];
+
+        // DB에 저장된 패키지 설정 중, 현재 선택된 ID와 같은 것 찾기 (예: 'package-10')
+        const config = configs.find((pkg) => pkg.id === packageId);
+
+        if (config) {
+          const sessions = Number(config.sessions || 0);
+          const price = Number(config.price || 0);
+          const originalPrice = Number(config.originalPrice != null ? config.originalPrice : price);
+
+          const discount = originalPrice > 0 && price > 0 ? Math.round((1 - price / originalPrice) * 100) : undefined;
+
+          // 유효기간(일) → "X개월 Y일" 문자열로 변환
+          const validityDays = Number(config.validityDays || 0);
+          const months = Math.floor(validityDays / 30);
+          const days = validityDays % 30;
+          let validityPeriod = '';
+          if (months > 0) validityPeriod += `${months}개월`;
+          if (days > 0) validityPeriod += (validityPeriod ? ' ' : '') + `${days}일`;
+          if (!validityPeriod) validityPeriod = '유효기간 설정 없음';
+
+          // 세션 수(10/30/50/100)에 따라 기존 템플릿(색상, 아이콘, 기본 문구)을 찾아서 병합
+          const templateKey = sessions === 10 ? '10-sessions' : sessions === 30 ? '30-sessions' : sessions === 50 ? '50-sessions' : sessions === 100 ? '100-sessions' : undefined;
+
+          const base = templateKey ? TEMPLATE_PACKAGES[templateKey] : null;
+
+          const merged: PackageInfo = {
+            // 색상 / 아이콘 / 레이아웃 등은 템플릿 우선
+            ...(base ?? {
+              id: config.id,
+              title: config.name,
+              sessions,
+              price,
+              originalPrice,
+              discount,
+              features: [],
+              benefits: [],
+              color: 'blue',
+              description: '',
+              validityPeriod,
+            }),
+            // 숫자·텍스트 정보는 DB 설정으로 덮어쓰기
+            id: config.id,
+            title: config.name || base?.title || '',
+            sessions,
+            price,
+            originalPrice,
+            discount,
+            description: config.description || base?.description || '',
+            validityPeriod,
+            // 특징 리스트는 설정에 있으면 그걸 쓰고, 없으면 템플릿 사용
+            features: Array.isArray(config.features) && config.features.length > 0 ? config.features : base?.features ?? [],
+            // 혜택은 "회당 가격 / 할인율"을 앞에 붙이고, 템플릿에서 겹치지 않는 문구만 뒤에 추가
+            benefits: (() => {
+              const result: string[] = [];
+              if (sessions && price) {
+                result.push(`회당 ${Math.round(price / sessions).toLocaleString()}원`);
+              }
+              if (discount) {
+                result.push(`${discount}% 할인`);
+              }
+              const baseBenefits = base?.benefits ?? [];
+              for (const b of baseBenefits) {
+                if (!result.includes(b)) {
+                  result.push(b);
+                }
+              }
+              return result;
+            })(),
+          };
+
+          setSelectedPackage(merged);
+        } else {
+          // DB에서 못 찾으면 옛날 방식 (?package=10-sessions 같은)으로 템플릿에서 바로 조회
+          setSelectedPackage(TEMPLATE_PACKAGES[packageId] ?? null);
+        }
+      } catch (error) {
+        console.error('패키지 설정 불러오기 실패', error);
+        // 에러일 때도 최소한 템플릿으로는 동작하도록
+        setSelectedPackage(TEMPLATE_PACKAGES[packageId] ?? null);
+      } finally {
+        setIsPackageLoading(false);
+      }
+    };
+
+    fetchPackage();
+  }, [packageId]);
+
   useEffect(() => {
     let cancelled = false;
     getMyInfo({ quiet: true })
@@ -191,7 +320,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
     fetchUserInfo();
   }, [user]);
 
-  if (loading) {
+  if (loading || isPackageLoading) {
     return (
       <div className="grid min-h-[100svh] place-items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
