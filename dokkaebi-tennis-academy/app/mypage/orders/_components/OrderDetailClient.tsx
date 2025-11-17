@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, Mail, MapPin, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
@@ -98,6 +98,9 @@ export default function OrderDetailClient({ orderId }: Props) {
   // 배송 요청사항 편집
   const [editingRequest, setEditingRequest] = useState(false);
 
+  // 취소 철회 로딩
+  const [isWithdrawingCancelRequest, setIsWithdrawingCancelRequest] = useState(false);
+
   // 주문 상세를 SWR로 가져오기
   const { data: orderDetail, error: orderError, mutate: mutateOrderDetail } = useSWR<OrderDetail>(`/api/orders/${orderId}`, fetcher);
 
@@ -162,6 +165,45 @@ export default function OrderDetailClient({ orderId }: Props) {
   // 취소 요청 상태/라벨 계산
   const cancelLabel = getCancelRequestLabel(orderDetail);
   const cancelStatus = (orderDetail as any)?.cancelRequest?.status;
+  const canWithdrawCancelRequest = cancelStatus === 'requested';
+
+  const handleWithdrawCancelRequest = async () => {
+    if (!orderDetail?._id) return;
+
+    if (!window.confirm('이미 제출한 취소 요청을 취소하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      setIsWithdrawingCancelRequest(true);
+
+      const res = await fetch(`/api/orders/${orderDetail._id}/cancel-request-withdraw`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const message = await res.text().catch(() => '');
+        throw new Error(message || '취소 요청을 취소하는 중 오류가 발생했습니다.');
+      }
+
+      // SWR 캐시 갱신: 상태, 이력, 마이페이지 목록, 상세 모두 재검증
+      await Promise.all([
+        mutate(`/api/orders/${orderDetail._id}/status`, undefined, { revalidate: true }),
+        mutate(`/api/orders/${orderDetail._id}/history`, undefined, { revalidate: true }),
+        mutate('/api/users/me/orders', undefined, { revalidate: true }),
+        mutate(`/api/orders/${orderDetail._id}`, undefined, { revalidate: true }),
+      ]);
+
+      // UX는 프로젝트 기존 패턴에 맞게 토스트/alert 중 하나 사용
+      alert('취소 요청이 정상적으로 취소되었습니다.');
+    } catch (err) {
+      console.error(err);
+      alert((err as Error).message || '취소 요청을 취소하는 중 오류가 발생했습니다.');
+    } finally {
+      setIsWithdrawingCancelRequest(false);
+    }
+  };
 
   return (
     <main className="container mx-auto p-6 space-y-8">
@@ -217,7 +259,17 @@ export default function OrderDetailClient({ orderId }: Props) {
         </div>
       </div>
       {/* 취소 요청 상태 안내 배너 */}
-      {cancelLabel && <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">{cancelLabel}</div>}
+      {cancelLabel && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <span>{cancelLabel}</span>
+
+          {canWithdrawCancelRequest && (
+            <Button size="sm" variant="outline" onClick={handleWithdrawCancelRequest} disabled={isWithdrawingCancelRequest} className="ml-4 border-amber-300 bg-white/70 text-amber-800 hover:bg-amber-100 hover:text-amber-900">
+              {isWithdrawingCancelRequest ? '취소 철회 중...' : '취소 철회하기'}
+            </Button>
+          )}
+        </div>
+      )}
       {orderDetail.shippingInfo?.withStringService && (
         <>
           {!orderDetail.isStringServiceApplied ? (
