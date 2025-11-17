@@ -345,6 +345,15 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
     );
   }
 
+  // 할인 존재 여부 (정가 > 판매가 이고, 할인율도 0보다 클 때만 true)
+  const hasDiscount = typeof selectedPackage.originalPrice === 'number' && selectedPackage.originalPrice > selectedPackage.price && typeof selectedPackage.discount === 'number' && selectedPackage.discount > 0;
+
+  // 안전한 회당 가격 헬퍼
+  const perSessionPrice = selectedPackage.sessions > 0 && selectedPackage.price > 0 ? Math.round(selectedPackage.price / selectedPackage.sessions) : 0;
+
+  // 할인 금액 (없으면 0)
+  const discountAmount = hasDiscount ? selectedPackage.originalPrice! - selectedPackage.price : 0;
+
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
@@ -453,7 +462,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                       <div className="text-sm text-gray-600 dark:text-gray-400">유효기간</div>
                     </div>
                     <div className="text-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">{(selectedPackage.price / selectedPackage.sessions).toLocaleString()}원</div>
+                      <div className="text-2xl font-bold text-purple-600">{perSessionPrice.toLocaleString()}원</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">회당 가격</div>
                     </div>
                   </div>
@@ -789,19 +798,23 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                       <span className="text-slate-600 dark:text-slate-400">패키지 금액</span>
                       <span className="font-semibold text-lg">{selectedPackage.price.toLocaleString()}원</span>
                     </div>
-                    {selectedPackage.originalPrice && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-600 dark:text-slate-400">정가</span>
-                        <span className="text-slate-400 line-through">{selectedPackage.originalPrice.toLocaleString()}원</span>
-                      </div>
+
+                    {hasDiscount && (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-600 dark:text-slate-400">정가</span>
+                          <span className="text-slate-400 line-through">{selectedPackage.originalPrice!.toLocaleString()}원</span>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-600 dark:text-slate-400">할인 금액</span>
+                          <span className="text-red-600 font-semibold">-{discountAmount.toLocaleString()}원</span>
+                        </div>
+                      </>
                     )}
-                    {selectedPackage.discount && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-600 dark:text-slate-400">할인 금액</span>
-                        <span className="text-red-600 font-semibold">-{((selectedPackage.originalPrice || 0) - selectedPackage.price).toLocaleString()}원</span>
-                      </div>
-                    )}
+
                     <Separator />
+
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>총 결제 금액</span>
                       <span className="text-blue-600">{selectedPackage.price.toLocaleString()}원</span>
@@ -816,7 +829,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     <div className="text-sm text-green-600 dark:text-green-400 space-y-1">
                       <p>• {selectedPackage.sessions}회 스트링 교체 서비스</p>
                       <p>• 유효기간: {selectedPackage.validityPeriod}</p>
-                      <p>• 회당 {(selectedPackage.price / selectedPackage.sessions).toLocaleString()}원</p>
+                      <p>• 회당 {perSessionPrice.toLocaleString()}원</p>
                       {selectedPackage.discount && <p>• {selectedPackage.discount}% 할인 적용</p>}
                     </div>
                   </div>
