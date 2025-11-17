@@ -49,6 +49,9 @@ type OrderListItem = {
   // 교체 서비스 관련(프런트 CTA/배너 제어용)
   isStringServiceApplied: boolean;
   stringingApplicationId: string | null;
+  // 취소 요청 요약 정보(마이페이지 카드용)
+  cancelStatus?: string; // 'none' | 'requested' | 'approved' | 'rejected' 등
+  cancelReasonSummary?: string | null;
 };
 
 /** 전체 응답 */
@@ -136,6 +139,19 @@ export async function GET(req: NextRequest) {
       // 총액 계산
       const totalPrice = calcOrderTotal(order);
 
+      // 취소 요청 정보 정리
+      const cancel: any = (order as any).cancelRequest ?? {};
+      const rawCancelStatus = cancel.status ?? 'none';
+
+      let cancelReasonSummary: string | null = null;
+      if (rawCancelStatus && rawCancelStatus !== 'none') {
+        if (cancel.reasonCode) {
+          cancelReasonSummary = cancel.reasonCode + (cancel.reasonText ? ` (${cancel.reasonText})` : '');
+        } else if (cancel.reasonText) {
+          cancelReasonSummary = cancel.reasonText;
+        }
+      }
+
       list.push({
         id: String(order._id),
         date: order.createdAt ? new Date(order.createdAt).toISOString() : '',
@@ -164,6 +180,10 @@ export async function GET(req: NextRequest) {
         // 실제 신청 여부/ID
         isStringServiceApplied: appByOrderId.has(String(order._id)),
         stringingApplicationId: appByOrderId.get(String(order._id)) ?? null,
+
+        // 취소 요청 요약(마이페이지용)
+        cancelStatus: rawCancelStatus,
+        cancelReasonSummary,
       });
     }
 

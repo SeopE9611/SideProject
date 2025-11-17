@@ -69,6 +69,24 @@ interface Props {
   orderId: string;
 }
 
+// 주문 취소 요청 상태 텍스트를 계산하는 헬퍼
+function getCancelRequestLabel(order: any): string | null {
+  const cancel = order?.cancelRequest;
+  if (!cancel || !cancel.status || cancel.status === 'none') return null;
+
+  switch (cancel.status) {
+    case 'requested':
+      return '취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.';
+    case 'approved':
+      // 보통 status === '취소'랑 함께 가겠지만, 혹시 모를 비동기 어긋남에 대비해서 안내
+      return '취소 요청이 승인되어 주문이 취소되었습니다.';
+    case 'rejected':
+      return '취소 요청이 거절되었습니다. 상세 사유는 관리자에게 문의해주세요.';
+    default:
+      return null;
+  }
+}
+
 export default function OrderDetailClient({ orderId }: Props) {
   const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
   const router = useRouter();
@@ -141,6 +159,10 @@ export default function OrderDetailClient({ orderId }: Props) {
     return <OrderDetailSkeleton />;
   }
 
+  // 취소 요청 상태/라벨 계산
+  const cancelLabel = getCancelRequestLabel(orderDetail);
+  const cancelStatus = (orderDetail as any)?.cancelRequest?.status;
+
   return (
     <main className="container mx-auto p-6 space-y-8">
       <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/30 shadow-lg">
@@ -194,7 +216,8 @@ export default function OrderDetailClient({ orderId }: Props) {
           </div>
         </div>
       </div>
-
+      {/* 취소 요청 상태 안내 배너 */}
+      {cancelLabel && <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">{cancelLabel}</div>}
       {orderDetail.shippingInfo?.withStringService && (
         <>
           {!orderDetail.isStringServiceApplied ? (
@@ -548,7 +571,7 @@ export default function OrderDetailClient({ orderId }: Props) {
         </CardContent>
       </Card>
 
-      {['대기중', '결제완료'].includes(orderDetail.status) && (
+      {['대기중', '결제완료'].includes(orderDetail.status) && (!cancelStatus || cancelStatus === 'none' || cancelStatus === 'rejected') && (
         <div className="flex justify-center">
           <CancelOrderDialog orderId={orderDetail._id.toString()} />
         </div>

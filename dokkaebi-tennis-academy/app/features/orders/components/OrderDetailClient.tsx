@@ -67,6 +67,41 @@ interface OrderDetail {
   cancelReasonDetail?: string;
 }
 
+// 관리자용 취소 요청 상태 정보 헬퍼
+function getAdminCancelRequestInfo(order: any): {
+  label: string;
+  badge: string;
+  reason?: string;
+} | null {
+  const cancel = order?.cancelRequest;
+  if (!cancel || !cancel.status || cancel.status === 'none') return null;
+
+  const reasonSummary = cancel.reasonCode ? `${cancel.reasonCode}${cancel.reasonText ? ` (${cancel.reasonText})` : ''}` : cancel.reasonText || '';
+
+  switch (cancel.status) {
+    case 'requested':
+      return {
+        label: '고객이 주문 취소를 요청했습니다.',
+        badge: '요청됨',
+        reason: reasonSummary,
+      };
+    case 'approved':
+      return {
+        label: '취소 요청이 승인되어 주문이 취소되었습니다.',
+        badge: '승인',
+        reason: reasonSummary,
+      };
+    case 'rejected':
+      return {
+        label: '취소 요청이 거절되었습니다.',
+        badge: '거절',
+        reason: reasonSummary,
+      };
+    default:
+      return null;
+  }
+}
+
 //  메인 컴포넌트
 interface Props {
   orderId: string;
@@ -111,6 +146,9 @@ export default function OrderDetailClient({ orderId }: Props) {
   if (!orderDetail) {
     return <Loading />;
   }
+
+  // 취소 요청 상태 정보 계산
+  const cancelInfo = getAdminCancelRequestInfo(orderDetail);
 
   // 페이지네이션 없이 가져온 모든 이력 합치기
   const allHistory: any[] = historyPages ? historyPages.flatMap((page) => page.history) : [];
@@ -250,6 +288,18 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
               </div>
             </div>
+            {/* 취소 요청 상태 안내 (관리자용) */}
+            {cancelInfo && (
+              <div className="mt-4 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-medium text-amber-900">취소 요청 상태: {cancelInfo.badge}</p>
+                    <p className="mt-1">{cancelInfo.label}</p>
+                    {cancelInfo.reason && <p className="mt-1 text-xs text-amber-900/80">사유: {cancelInfo.reason}</p>}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 주문 상태 및 요약 */}

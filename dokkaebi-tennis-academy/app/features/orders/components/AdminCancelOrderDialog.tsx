@@ -51,47 +51,49 @@ export default function AdminCancelOrderDialog({
 
     setLoading(true);
     try {
-      // 서버에 PATCH 요청 (status: '취소', cancelReason, cancelReasonDetail)
-      const res = await fetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
+      // 서버에 관리자 취소 승인 요청
+      const res = await fetch(`/api/orders/${orderId}/cancel-approve`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          status: '취소',
-          cancelReason: selectedReason,
-          cancelReasonDetail: selectedReason === '기타' ? detail : undefined,
+          // 관리자 선택 사유 → reasonCode
+          reasonCode: selectedReason,
+          // 기타 선택 시만 상세 사유 전달
+          reasonText: selectedReason === '기타' ? detail : undefined,
         }),
       });
 
       if (!res.ok) {
-        throw new Error('서버 오류');
+        const message = await res.text().catch(() => '');
+        throw new Error(message || '서버 오류');
       }
 
-      showSuccessToast('주문이 취소되었습니다.');
+      showSuccessToast('주문 취소 처리가 완료되었습니다.');
 
-      // SWR 캐시 재검증
-      //  주문 상태 뱃지(`/api/orders/${orderId}/status`) 다시 불러오기
+      // ─ SWR 캐시 재검증 ─
+      // 주문 상태 뱃지
       await mutate(`/api/orders/${orderId}/status`);
-      // 상태 전용 엔드포인트 재검증 ──
+      // 주문 상세
       await mutate(`/api/orders/${orderId}`);
-      //  처리 이력(`/api/orders/${orderId}/history?…`) 전체 다시 불러오기
+      // 처리 이력 (무한스크롤 키 전체)
       await mutate((key: string) => typeof key === 'string' && key.startsWith(`/api/orders/${orderId}/history`));
-      //  주문 목록 전체(`/api/orders`)를 다시 불러오고 싶다면
+      // 관리자 주문 목록
       await mutate('/api/orders');
 
-      //  onCancelSuccess 콜백 호출 (OrderDetailClient의 로컬 상태 갱신)
+      // OrderDetailClient 쪽에서 넘겨 준 옵티미스틱 콜백이 있다면 호출
       if (onCancelSuccess) {
         await onCancelSuccess(selectedReason, detail);
       }
 
-      //  “이력 페이지 번호 리셋” 이벤트 송출 (OrderHistory에서 받아서 page=1로 리셋)
+      // 이력 페이지 번호 리셋 이벤트 (이미 사용 중인 패턴 유지)
       window.dispatchEvent(new Event('order-history-page-reset'));
 
       // 모달 닫기
       setOpen(false);
     } catch (err: any) {
-      console.error('취소 중 오류:', err);
-      showErrorToast(`주문 취소에 실패했습니다: ${err.message}`);
+      console.error('취소 처리 중 오류:', err);
+      showErrorToast(`주문 취소 처리에 실패했습니다: ${err.message}`);
     } finally {
       setLoading(false);
     }
