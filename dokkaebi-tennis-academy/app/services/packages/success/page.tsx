@@ -86,6 +86,9 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
   const serviceInfo = packageOrder.serviceInfo;
   const paymentInfo = packageOrder.paymentInfo;
 
+  // 회당 가격 (안전 계산: 0/NaN 방지)
+  const perSessionPrice = packageInfo.sessions > 0 && packageInfo.price > 0 ? Math.round(packageInfo.price / packageInfo.sessions) : 0;
+
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
@@ -210,7 +213,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                       <div className="text-sm text-gray-600 dark:text-gray-400">유효기간</div>
                     </div>
                     <div className="text-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">{(packageInfo.price / packageInfo.sessions).toLocaleString()}원</div>
+                      <div className="text-2xl font-bold text-purple-600">{perSessionPrice.toLocaleString()}원</div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">회당 가격</div>
                     </div>
                     <div className="text-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-lg">
