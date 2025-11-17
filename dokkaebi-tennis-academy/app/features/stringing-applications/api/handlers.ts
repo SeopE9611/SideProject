@@ -123,6 +123,17 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       items,
       total,
       totalPrice: app.totalPrice ?? 0,
+      // 신청 취소 요청 정보
+      cancelRequest: app.cancelRequest
+        ? {
+            status: app.cancelRequest.status ?? 'requested',
+            reasonCode: app.cancelRequest.reasonCode ?? undefined,
+            reasonText: app.cancelRequest.reasonText ?? undefined,
+            requestedAt: app.cancelRequest.requestedAt ?? null,
+            handledAt: app.cancelRequest.handledAt ?? null,
+          }
+        : { status: 'none' },
+
       history: (app.history ?? []).map((record: HistoryRecord) => ({
         status: record.status,
         date: record.date,
@@ -563,6 +574,375 @@ export async function handleGetApplicationHistory(req: NextRequest, context: { p
     history: paginated,
     total: allLogs.length,
   });
+}
+// ================= 신청 취소 "요청" =================
+export async function handleApplicationCancelRequest(req: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+
+    // 1) ID 검증
+    if (!ObjectId.isValid(id)) {
+      return new NextResponse('유효하지 않은 신청 ID입니다.', { status: 400 });
+    }
+    const _id = new ObjectId(id);
+
+    // 2) DB/신청서 조회
+    const db = await getDb();
+    const applications = db.collection('stringing_applications');
+    const existing: any = await applications.findOne({ _id });
+
+    if (!existing) {
+      return new NextResponse('신청서를 찾을 수 없습니다.', { status: 404 });
+    }
+
+    // 3) 인증 (accessToken 기반) – 마이페이지 신청 목록과 동일 패턴
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    if (!token) {
+      return new NextResponse('인증이 필요합니다.', { status: 401 });
+    }
+
+    const payload = verifyAccessToken(token);
+    if (!payload?.sub) {
+      return new NextResponse('인증이 필요합니다.', { status: 401 });
+    }
+
+    // 4) 권한 체크
+    //    - userId 가 있는 신청서: 해당 사용자만 취소 요청 가능
+    //    - guest 신청( userId 없음 ): 마이페이지에서 보이지 않으므로 여기서는 차단
+    if (existing.userId) {
+      const isOwner = payload.sub === existing.userId.toString();
+      if (!isOwner) {
+        return new NextResponse('신청서를 취소할 권한이 없습니다.', { status: 403 });
+      }
+    } else {
+      // userId 없는 신청서는 여기서 취소 요청 허용하지 않음 (운영 정책에 따라 조정 가능)
+      return new NextResponse('게스트 신청서는 마이페이지에서 취소 요청을 할 수 없습니다.', { status: 403 });
+    }
+
+    // 5) 비즈니스 룰 체크
+    // 5-1) 이미 취소된 신청이면 추가 요청 불가
+    if (existing.status === '취소') {
+      return new NextResponse('이미 취소된 신청입니다.', { status: 400 });
+    }
+
+    // 5-2) 운송장(배송) 정보가 이미 있는 경우 취소 요청 불가
+    //      - selfShip.trackingNumber
+    //      - shippingInfo.trackingNumber
+    const shippingInfo: any = existing.shippingInfo ?? {};
+    const trackingCandidates: string[] = [];
+
+    const t1 = shippingInfo?.trackingNumber;
+    const t2 = shippingInfo?.selfShip?.trackingNumber ?? shippingInfo?.selfShip?.trackingNo;
+
+    if (typeof t1 === 'string') trackingCandidates.push(t1.trim());
+    if (typeof t2 === 'string') trackingCandidates.push(t2.trim());
+
+    const hasTracking = trackingCandidates.some((v) => v.length > 0);
+
+    if (hasTracking) {
+      return new NextResponse('이미 배송이 진행 중이어서 취소 요청을 할 수 없습니다.', { status: 400 });
+    }
+
+    // 6) 요청 body 에서 사유 파싱
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
+    const reasonCode: string | undefined = typeof body.reasonCode === 'string' ? body.reasonCode.trim() : undefined;
+    const reasonText: string | undefined = typeof body.reasonText === 'string' ? body.reasonText.trim() : undefined;
+
+    const now = new Date();
+
+    // 7) cancelRequest 필드 구성 (DB에는 Date 타입으로 저장)
+    const cancelRequest = {
+      status: 'requested' as const,
+      reasonCode: reasonCode || '기타',
+      reasonText: reasonText || '',
+      requestedAt: now,
+      // handledAt / handledByAdminId 등은 승인/거절 시 채움 예정
+    };
+
+    // 8) history 한 줄 추가 (신청서 도메인에 맞는 문구 사용)
+    const descBase = reasonCode || '사유 미입력';
+    const descDetail = reasonText ? ` (${reasonText})` : '';
+
+    const historyEntry: HistoryRecord = {
+      status: '취소요청',
+      date: now,
+      description: `고객이 스트링 교체 서비스 신청 취소를 요청했습니다. 사유: ${descBase}${descDetail}`,
+    };
+
+    // 9) DB 업데이트
+    await applications.updateOne({ _id }, {
+      $set: { cancelRequest },
+      $push: { history: historyEntry },
+    } as any);
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('POST /api/applications/stringing/[id]/cancel-request 오류:', err);
+    return new NextResponse('서버 오류가 발생했습니다.', { status: 500 });
+  }
+}
+
+// ================= 신청 취소 "요청 철회" =================
+export async function handleApplicationCancelRequestWithdraw(req: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+
+    if (!ObjectId.isValid(id)) {
+      return new NextResponse('유효하지 않은 신청 ID입니다.', { status: 400 });
+    }
+    const _id = new ObjectId(id);
+
+    const db = await getDb();
+    const applications = db.collection('stringing_applications');
+    const existing: any = await applications.findOne({ _id });
+
+    if (!existing) {
+      return new NextResponse('신청서를 찾을 수 없습니다.', { status: 404 });
+    }
+
+    // ── 인증 + 권한: 취소 요청과 동일하게 "본인 신청"만 철회 가능 ──
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    if (!token) {
+      return new NextResponse('인증이 필요합니다.', { status: 401 });
+    }
+
+    const payload = verifyAccessToken(token);
+    if (!payload?.sub) {
+      return new NextResponse('인증이 필요합니다.', { status: 401 });
+    }
+
+    if (existing.userId) {
+      const isOwner = payload.sub === existing.userId.toString();
+      if (!isOwner) {
+        return new NextResponse('신청서를 취소할 권한이 없습니다.', { status: 403 });
+      }
+    } else {
+      return new NextResponse('게스트 신청서는 마이페이지에서 취소 요청을 철회할 수 없습니다.', { status: 403 });
+    }
+
+    // ── 비즈니스 룰 ──
+    // 1) 이미 취소된 신청은 철회 의미 없음
+    if (existing.status === '취소') {
+      return new NextResponse('이미 취소된 신청입니다.', { status: 400 });
+    }
+
+    // 2) 운송장 정보가 이미 있으면 철회 불가 (요청 때와 동일 룰)
+    const shippingInfo: any = existing.shippingInfo ?? {};
+    const trackingCandidates: string[] = [];
+
+    const t1 = shippingInfo?.trackingNumber;
+    const t2 = shippingInfo?.selfShip?.trackingNumber ?? shippingInfo?.selfShip?.trackingNo;
+
+    if (typeof t1 === 'string') trackingCandidates.push(t1.trim());
+    if (typeof t2 === 'string') trackingCandidates.push(t2.trim());
+
+    const hasTracking = trackingCandidates.some((v) => v.length > 0);
+
+    if (hasTracking) {
+      return new NextResponse('이미 배송이 진행 중이어서 취소 요청을 철회할 수 없습니다.', { status: 400 });
+    }
+
+    // 3) 현재 cancelRequest 상태 확인
+    const currentCancel = existing.cancelRequest ?? {};
+    if (currentCancel.status !== 'requested') {
+      return new NextResponse('현재는 취소 요청 상태가 아니어서 철회할 수 없습니다.', { status: 400 });
+    }
+
+    const now = new Date();
+
+    const updatedCancelRequest = {
+      ...currentCancel,
+      status: 'none' as const,
+      handledAt: now, // 철회 시각을 handledAt 으로 기록
+    };
+
+    const historyEntry: HistoryRecord = {
+      status: '취소요청철회',
+      date: now,
+      description: '고객이 스트링 교체 서비스 신청 취소 요청을 철회했습니다.',
+    };
+
+    await applications.updateOne({ _id }, {
+      $set: { cancelRequest: updatedCancelRequest },
+      $push: { history: historyEntry },
+    } as any);
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('POST /api/applications/stringing/[id]/cancel-request-withdraw 오류:', err);
+    return new NextResponse('서버 오류가 발생했습니다.', { status: 500 });
+  }
+}
+
+// ================= 신청 취소 "승인" (관리자) =================
+export async function handleApplicationCancelApprove(req: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+
+    if (!ObjectId.isValid(id)) {
+      return new NextResponse('유효하지 않은 신청 ID입니다.', { status: 400 });
+    }
+    const _id = new ObjectId(id);
+
+    const db = await getDb();
+    const applications = db.collection('stringing_applications');
+    const existing: any = await applications.findOne({ _id });
+
+    if (!existing) {
+      return new NextResponse('신청서를 찾을 수 없습니다.', { status: 404 });
+    }
+
+    // ── 관리자 인증/권한 ──
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    if (!token) {
+      return new NextResponse('인증이 필요합니다.', { status: 401 });
+    }
+
+    const payload = verifyAccessToken(token);
+    if (!payload?.sub) {
+      return new NextResponse('인증이 필요합니다.', { status: 401 });
+    }
+
+    const adminList = (process.env.ADMIN_EMAIL_WHITELIST || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const isAdmin = payload.role === 'admin' || (payload.email && adminList.includes(payload.email));
+    if (!isAdmin) {
+      return new NextResponse('관리자만 신청 취소를 승인할 수 있습니다.', { status: 403 });
+    }
+
+    // ── 비즈니스 룰 ──
+    if (existing.status === '취소') {
+      return new NextResponse('이미 취소된 신청입니다.', { status: 400 });
+    }
+
+    const currentCancel = existing.cancelRequest ?? {};
+    if (currentCancel.status !== 'requested') {
+      return new NextResponse('현재는 취소 요청 상태가 아니어서 승인할 수 없습니다.', { status: 400 });
+    }
+
+    const now = new Date();
+
+    const updatedCancelRequest = {
+      ...currentCancel,
+      status: 'approved' as const,
+      handledAt: now,
+    };
+
+    const historyEntry: HistoryRecord = {
+      status: '취소승인',
+      date: now,
+      description: '관리자가 신청 취소 요청을 승인했습니다.',
+    };
+
+    await applications.updateOne({ _id }, {
+      $set: {
+        cancelRequest: updatedCancelRequest,
+        status: '취소', // 신청 자체 상태를 "취소"로 전환
+      },
+      $push: { history: historyEntry },
+    } as any);
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('POST /api/applications/stringing/[id]/cancel-approve 오류:', err);
+    return new NextResponse('서버 오류가 발생했습니다.', { status: 500 });
+  }
+}
+
+// ================= 신청 취소 "거절" (관리자) =================
+export async function handleApplicationCancelReject(req: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+
+    if (!ObjectId.isValid(id)) {
+      return new NextResponse('유효하지 않은 신청 ID입니다.', { status: 400 });
+    }
+    const _id = new ObjectId(id);
+
+    const db = await getDb();
+    const applications = db.collection('stringing_applications');
+    const existing: any = await applications.findOne({ _id });
+
+    if (!existing) {
+      return new NextResponse('신청서를 찾을 수 없습니다.', { status: 404 });
+    }
+
+    // ── 관리자 인증/권한 ──
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    if (!token) {
+      return new NextResponse('인증이 필요합니다.', { status: 401 });
+    }
+
+    const payload = verifyAccessToken(token);
+    if (!payload?.sub) {
+      return new NextResponse('인증이 필요합니다.', { status: 401 });
+    }
+
+    const adminList = (process.env.ADMIN_EMAIL_WHITELIST || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const isAdmin = payload.role === 'admin' || (payload.email && adminList.includes(payload.email));
+    if (!isAdmin) {
+      return new NextResponse('관리자만 신청 취소를 거절할 수 있습니다.', { status: 403 });
+    }
+
+    // ── 비즈니스 룰 ──
+    const currentCancel = existing.cancelRequest ?? {};
+    if (currentCancel.status !== 'requested') {
+      return new NextResponse('현재는 취소 요청 상태가 아니어서 거절할 수 없습니다.', { status: 400 });
+    }
+
+    const now = new Date();
+
+    // body 에서 관리자 메모(거절 사유)를 받을 수도 있음 (선택)
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
+    const adminMemo: string | undefined = typeof body.adminMemo === 'string' ? body.adminMemo.trim() : undefined;
+
+    const updatedCancelRequest = {
+      ...currentCancel,
+      status: 'rejected' as const,
+      handledAt: now,
+    };
+
+    const reasonSuffix = adminMemo ? ` (관리자 메모: ${adminMemo})` : '';
+
+    const historyEntry: HistoryRecord = {
+      status: '취소거절',
+      date: now,
+      description: `관리자가 신청 취소 요청을 거절했습니다.${reasonSuffix}`,
+    };
+
+    await applications.updateOne({ _id }, {
+      $set: { cancelRequest: updatedCancelRequest },
+      $push: { history: historyEntry },
+    } as any);
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('POST /api/applications/stringing/[id]/cancel-reject 오류:', err);
+    return new NextResponse('서버 오류가 발생했습니다.', { status: 500 });
+  }
 }
 
 // ========== 로그인한 사용자의 스트링 신청서 전체 목록 조회 ==========

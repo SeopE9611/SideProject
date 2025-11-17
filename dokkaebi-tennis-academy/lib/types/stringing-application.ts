@@ -75,7 +75,22 @@ export interface StringingApplication {
     consumed?: boolean;
   };
 
+  // 현재 신청 상태
   status: ApplicationStatus;
+
+  // 신청 취소 요청 정보 (주문 cancelRequest 와 동일한 개념)
+  cancelRequest?: {
+    /** none: 취소 요청 없음 */
+    status: 'none' | 'requested' | 'approved' | 'rejected';
+    /** 사유 코드 (예: 'change_mind', 'wrong_info' 등 필요 시 확장) */
+    reasonCode?: string;
+    /** 사용자가 직접 입력한 상세 사유 */
+    reasonText?: string;
+    /** 취소 요청 시각 (ISO 문자열) */
+    requestedAt?: string;
+    /** 관리자 승인/거절 처리 시각 (ISO 문자열) */
+    handledAt?: string;
+  };
 
   // 이력
   history?: Array<{
