@@ -181,7 +181,7 @@ export default function ServicesPage() {
 
         {/* 장식 요소 */}
         <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-24 h-24 bg-blue-400/20 rounded-full blur-lg animate-bounce"></div>
+        <div className="absolute bottom-20 right-10 w-24 h-24 bg-blue-400/20 rounded-full blur-lg  "></div>
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-indigo-400/30 rounded-full blur-md animate-pulse delay-1000"></div>
 
         <div className="container relative z-10">
@@ -324,7 +324,7 @@ export default function ServicesPage() {
         </div> */}
 
         {/* 스크롤 인디케이터 */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2  ">
           <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
             <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-pulse"></div>
           </div>
@@ -571,7 +571,7 @@ export default function ServicesPage() {
       {/* 예약 안내 섹션 */}
       {/* <section className="py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500 relative overflow-hidden" id="booking">
         <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-10 right-10 w-24 h-24 bg-indigo-400/20 rounded-full blur-lg animate-bounce"></div>
+        <div className="absolute bottom-10 right-10 w-24 h-24 bg-indigo-400/20 rounded-full blur-lg  "></div>
       </section> */}
 
       {/* 고객 후기 섹션 */}

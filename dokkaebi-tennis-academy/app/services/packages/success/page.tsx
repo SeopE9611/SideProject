@@ -108,7 +108,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
         </div>
         <div className="relative container py-16">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6 animate-bounce">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mb-6  ">
               <CheckCircle className="h-12 w-12 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">패키지 구매가 완료되었습니다!</h1>

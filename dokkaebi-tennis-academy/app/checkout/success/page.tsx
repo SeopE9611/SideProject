@@ -77,7 +77,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
           <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
           <div className="relative container py-16">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full mb-6 animate-bounce">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full mb-6  ">
                 <CheckCircle className="h-12 w-12 text-white" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">주문이 완료되었습니다! 🎾</h1>

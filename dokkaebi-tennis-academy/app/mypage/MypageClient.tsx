@@ -90,7 +90,7 @@ export default function MypageClient({ user }: Props) {
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute inset-0">
             <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full animate-pulse" />
-            <div className="absolute top-32 right-20 w-16 h-16 bg-white/5 rounded-full animate-bounce" />
+            <div className="absolute top-32 right-20 w-16 h-16 bg-white/5 rounded-full  " />
             <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-white/10 rounded-full animate-pulse" />
           </div>
 
