@@ -500,6 +500,86 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
   return NextResponse.json({ success: true });
 }
 
+// ======== 스트링 신청서 취소 요청 (마이페이지) ========
+export async function handleStringingCancelRequest(req: Request, { params }: { params: { id: string } }) {
+  try {
+    // 1) 인증 체크 (주문/신청 공통 패턴과 동일)
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+
+    if (!token) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    const payload = verifyAccessToken(token);
+    if (!payload) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    // 2) 파라미터 검증
+    const { id } = params;
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
+
+    const db = await getDb();
+    const col = db.collection('stringing_applications');
+
+    const appDoc = await col.findOne({ _id: new ObjectId(id) });
+    if (!appDoc) {
+      return NextResponse.json({ error: '신청서를 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    // 3) 현재 상태가 취소 요청 가능한 상태인지 체크
+    //    (완료/반송/취소는 요청 불가)
+    if (['교체완료', '반송완료', '취소'].includes(appDoc.status)) {
+      return NextResponse.json({ error: '이미 처리된 신청은 취소 요청을 할 수 없습니다.' }, { status: 400 });
+    }
+
+    // 4) 요청 바디에서 사유 코드/자유 입력값 받기 (없으면 기본값)
+    const body = await req.json().catch(() => ({}));
+    const { reasonCode, reasonText } = (body ?? {}) as {
+      reasonCode?: string;
+      reasonText?: string;
+    };
+
+    const reasonLabelMap: Record<string, string> = {
+      CHANGE_MIND: '단순 변심',
+      WRONG_INFO: '신청 정보와 다름',
+      SHIPPING_ISSUE: '배송 관련 문제',
+      OTHER: '기타',
+    };
+
+    const reasonLabel = reasonLabelMap[reasonCode ?? 'OTHER'] ?? '기타';
+    const extra = reasonText?.trim() ? ` (${reasonText.trim()})` : '';
+
+    const historyEntry: HistoryRecord = {
+      status: '취소요청',
+      date: new Date(),
+      description: `고객이 신청 취소를 요청했습니다. 사유: ${reasonLabel}${extra}`,
+    };
+
+    // 5) 신청서 문서에 취소 요청 정보 + 히스토리 추가
+    await col.updateOne({ _id: new ObjectId(id) }, {
+      $set: {
+        cancelRequest: {
+          status: '요청',
+          reasonCode: reasonCode ?? 'OTHER',
+          reasonText: reasonText ?? '',
+          requestedAt: new Date(),
+        },
+      },
+      // history 타입이 any라서 push에 as any 한 번 감싸줌
+      $push: { history: historyEntry as any },
+    } as any);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('[handleStringingCancelRequest] error', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
 // ========== 배송 정보 수정 (스트링 신청서 + 연결된 주문서) ==========
 export async function handleUpdateShippingInfo(req: Request, { params }: { params: { id: string } }) {
   try {

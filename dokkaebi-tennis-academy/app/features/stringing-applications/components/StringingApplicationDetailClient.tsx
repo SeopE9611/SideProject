@@ -116,22 +116,36 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const [editingRequirements, setEditingRequirements] = useState(false);
 
   const [isPending, startTransition] = useTransition();
+
   const handleCancel = () => {
-    if (!confirm('정말로 이 신청서를 취소하시겠습니까?')) return;
+    if (!confirm('정말로 이 신청 취소를 요청하시겠습니까?\n관리자 확인 후 최종 반영됩니다.')) return;
+
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/applications/stringing/${applicationId}/status`, {
-          method: 'PATCH',
+        const res = await fetch(`/api/applications/stringing/${applicationId}/cancel-request`, {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: '취소' }),
+          // 지금은 사유 선택 UI가 없으니 기본값만 전송
+          body: JSON.stringify({
+            reasonCode: 'OTHER',
+            reasonText: '',
+          }),
           credentials: 'include',
         });
-        if (!res.ok) throw new Error();
-        showSuccessToast('신청서가 취소되었습니다.');
+
+        if (!res.ok) {
+          const msg = await res.text().catch(() => '');
+          console.error('cancel-request failed', res.status, msg);
+          throw new Error('취소 요청 실패');
+        }
+
+        showSuccessToast('취소 요청이 정상적으로 접수되었습니다. 관리자 확인 후 결과가 반영됩니다.');
         mutate();
-        if (historyMutateRef.current) historyMutateRef.current();
+        if (historyMutateRef.current) {
+          historyMutateRef.current();
+        }
       } catch (err) {
-        showErrorToast('취소 중 오류가 발생했습니다.');
+        showErrorToast('취소 요청 중 오류가 발생했습니다.');
       }
     });
   };
@@ -324,7 +338,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               )}
 
               {/* 취소된 경우 안내 문구 */}
-              {!isCancelled && (
+              {!isAdmin && !isCancelled && (
                 <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
                   <XCircle className="mr-2 h-4 w-4" />
                   신청 취소
