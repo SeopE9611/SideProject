@@ -6,7 +6,6 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, CheckCircle, XCircle, Search, ClipboardCheck, Edit2, MessageSquare, DollarSign, User } from 'lucide-react';
-import { HistorySkeleton } from '@/app/features/orders/components/HistorySkeleton';
 
 const LIMIT = 5;
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -117,24 +116,32 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
   const total = res?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
+  const historyItems = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
   return (
-    <Card
-      className="rounded-xl border border-slate-200 bg-white shadow-md
-                   dark:border-slate-700 dark:bg-slate-900/40"
-    >
-      <CardHeader className="pb-3">
-        <CardTitle>신청 처리 이력</CardTitle>
+    <Card className="md:col-span-3 rounded-xl border border-border/60 bg-card text-card-foreground shadow-md dark:bg-slate-900/60">
+      <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-slate-900/30 rounded-t-xl">
+        <CardTitle>처리 이력</CardTitle>
+        <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <HistorySkeleton />
-        ) : history.length === 0 ? (
+          Array.from({ length: LIMIT }).map((_, i) => (
+            <div key={i} className="flex animate-pulse space-x-4 py-3">
+              <div className="h-10 w-10 rounded-full bg-muted" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            </div>
+          ))
+        ) : historyItems.length === 0 ? (
           <div className="py-10 text-center text-muted-foreground">아직 처리 이력이 없습니다.</div>
         ) : (
-          history.map((log, idx) => {
+          historyItems.map((log, idx) => {
             const { Icon, wrapperClasses, iconClasses } = getIconProps(log.status);
             return (
-              <div key={idx} className="flex space-x-4 py-3 border-b last:border-0 border-slate-200 dark:border-slate-800/60">
+              <div key={idx} className="flex space-x-4 py-3">
                 <div className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}>
                   <Icon className={`h-6 w-6 ${iconClasses}`} />
                 </div>
