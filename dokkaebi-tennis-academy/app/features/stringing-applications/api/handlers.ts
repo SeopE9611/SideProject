@@ -580,6 +580,130 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
   }
 }
 
+// ======== 스트링 신청서 취소 요청 "승인" (관리자) ========
+export async function handleStringingCancelApprove(req: Request, { params }: { params: { id: string } }) {
+  try {
+    // 관리자 인증
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    //  관리자 권한이 없는 경우 (로그인 안 했거나 role이 admin이 아닌 경우)
+    if (!token) {
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+    const payload = verifyAccessToken(token);
+    if (!payload || payload.role !== 'admin') {
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+
+    // 파라미터 검증
+    const { id } = params;
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
+
+    const db = await getDb();
+    const col = db.collection('stringing_applications');
+    const _id = new ObjectId(id);
+
+    const appDoc: any = await col.findOne({ _id });
+    if (!appDoc) {
+      return NextResponse.json({ error: '신청서를 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    // 취소 요청이 없는 경우 / 이미 처리된 경우 방어
+    if (!appDoc.cancelRequest || appDoc.cancelRequest.status !== '요청') {
+      return NextResponse.json({ error: '처리할 취소 요청이 없습니다.' }, { status: 400 });
+    }
+
+    const now = new Date();
+
+    // 히스토리 한 줄 구성
+    const historyEntry: HistoryRecord = {
+      status: '취소',
+      date: now,
+      description: '관리자가 신청 취소를 승인했습니다.',
+    };
+
+    // 신청 상태를 "취소"로 변경 + cancelRequest 상태 업데이트
+    await col.updateOne({ _id }, {
+      $set: {
+        status: '취소',
+        'cancelRequest.status': '승인',
+        'cancelRequest.approvedAt': now,
+      },
+      $push: { history: historyEntry as any },
+    } as any);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('[handleStringingCancelApprove] error', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// ======== 스트링 신청서 취소 요청 "거절" (관리자) ========
+export async function handleStringingCancelReject(req: Request, { params }: { params: { id: string } }) {
+  try {
+    // 관리자 인증
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    //  관리자 권한이 없는 경우 (로그인 안 했거나 role이 admin이 아닌 경우)
+    if (!token) {
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+    const payload = verifyAccessToken(token);
+    if (!payload || payload.role !== 'admin') {
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+
+    const { id } = params;
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
+
+    const db = await getDb();
+    const col = db.collection('stringing_applications');
+    const _id = new ObjectId(id);
+
+    const appDoc: any = await col.findOne({ _id });
+    if (!appDoc) {
+      return NextResponse.json({ error: '신청서를 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    if (!appDoc.cancelRequest || appDoc.cancelRequest.status !== '요청') {
+      return NextResponse.json({ error: '처리할 취소 요청이 없습니다.' }, { status: 400 });
+    }
+
+    // 관리자 거절 사유(선택)를 body에서 받기
+    const body = await req.json().catch(() => ({}));
+    const { reason }: { reason?: string } = body ?? {};
+    const trimmed = reason?.trim();
+
+    const now = new Date();
+    const descSuffix = trimmed ? ` 사유: ${trimmed}` : '';
+
+    const historyEntry: HistoryRecord = {
+      status: '취소거절',
+      date: now,
+      description: `관리자가 신청 취소 요청을 거절했습니다.${descSuffix}`,
+    };
+
+    await col.updateOne({ _id }, {
+      $set: {
+        'cancelRequest.status': '거절',
+        'cancelRequest.rejectedAt': now,
+        'cancelRequest.rejectReason': trimmed ?? '',
+      },
+      $push: { history: historyEntry as any },
+    } as any);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('[handleStringingCancelReject] error', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
 // ========== 배송 정보 수정 (스트링 신청서 + 연결된 주문서) ==========
 export async function handleUpdateShippingInfo(req: Request, { params }: { params: { id: string } }) {
   try {

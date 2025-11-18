@@ -44,10 +44,19 @@ interface ApplicationDetail {
     postalCode: string;
   };
   requestedAt: string;
+  submittedAt?: string;
   status: string;
-  // totalPrice?: number;
   totalPrice: number;
   history?: { status: string; date: string; description: string }[];
+  cancelRequest?: {
+    status: '요청' | '승인' | '거절';
+    reasonCode?: string;
+    reasonText?: string;
+    requestedAt?: string;
+    approvedAt?: string;
+    rejectedAt?: string;
+    rejectedReason?: string;
+  } | null;
   items: Array<{
     id: string;
     name: string;
@@ -150,6 +159,68 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     });
   };
 
+  // 관리자: 취소 요청 승인
+  const handleAdminApproveCancel = () => {
+    if (!confirm('이 신청의 취소 요청을 승인하시겠습니까?')) return;
+
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/applications/stringing/${applicationId}/cancel-approve`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          const msg = await res.text().catch(() => '');
+          console.error('cancel-approve failed', res.status, msg);
+          throw new Error('취소 승인 실패');
+        }
+
+        showSuccessToast('취소 요청을 승인했습니다.');
+        await mutate();
+        if (historyMutateRef.current) {
+          await historyMutateRef.current();
+        }
+      } catch (err) {
+        console.error(err);
+        showErrorToast('취소 승인 중 오류가 발생했습니다.');
+      }
+    });
+  };
+
+  // 관리자: 취소 요청 거절
+  const handleAdminRejectCancel = () => {
+    const reason = window.prompt('취소 요청을 거절하는 사유를 입력하세요. (선택 입력)', '');
+
+    if (!confirm('이 신청의 취소 요청을 거절하시겠습니까?')) return;
+
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/applications/stringing/${applicationId}/cancel-reject`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason }),
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          const msg = await res.text().catch(() => '');
+          console.error('cancel-reject failed', res.status, msg);
+          throw new Error('취소 거절 실패');
+        }
+
+        showSuccessToast('취소 요청을 거절했습니다.');
+        await mutate();
+        if (historyMutateRef.current) {
+          await historyMutateRef.current();
+        }
+      } catch (err) {
+        console.error(err);
+        showErrorToast('취소 거절 중 오류가 발생했습니다.');
+      }
+    });
+  };
+
   // // 기존 store 아이디
   // const storeId = useStringingStore((state) => state.selectedApplicationId);
   // // 새로고침 대비 fallback: prop 으로 내려준 id 를 쓰거나, storeId 사용
@@ -177,6 +248,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const isCancelled = data.status === '취소';
   const isPaid = ['접수완료', '작업 중', '교체완료'].includes(data.status);
   const paymentStatus = isPaid ? '결제완료' : '결제대기';
+
+  const cancelStatus = data.cancelRequest?.status ?? null;
+  const isCancelRequested = cancelStatus === '요청';
+  const isCancelApproved = cancelStatus === '승인';
+  const isCancelRejected = cancelStatus === '거절';
 
   // 자가발송/운송장 등록 여부 계산
   const collectionMethod = data?.shippingInfo?.collectionMethod ?? data?.shippingInfo?.shippingMethod ?? null;
@@ -320,35 +396,56 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <CardDescription>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-              {isAdmin && (
-                <ApplicationStatusSelect
-                  applicationId={data.id}
-                  currentStatus={data.status}
-                  onUpdated={async () => {
-                    // 상세 데이터 갱신
-                    await mutate();
-                    // 이력 컴포넌트 캐시 갱신
-                    if (historyMutateRef.current) {
-                      await historyMutateRef.current();
-                    }
-                  }}
-                  disabled={isCancelled}
-                />
-              )}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              {/* 왼쪽: 안내 문구 */}
+              <div className="text-sm text-muted-foreground">
+                {isCancelled && <span className="italic">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</span>}
 
-              {/* 취소된 경우 안내 문구 */}
-              {!isAdmin && !isCancelled && (
-                <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
-                  <XCircle className="mr-2 h-4 w-4" />
-                  신청 취소
-                </Button>
-              )}
+                {!isCancelled && isCancelRequested && <span className="italic">취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.</span>}
+
+                {!isCancelled && !isCancelRequested && <span>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</span>}
+              </div>
+
+              {/* 오른쪽: 버튼 영역 */}
+              <div className="flex flex-wrap gap-2 justify-end">
+                {/* 관리자: 상태 드롭다운 */}
+                {isAdmin && (
+                  <ApplicationStatusSelect
+                    applicationId={data.id}
+                    currentStatus={data.status}
+                    onUpdated={async () => {
+                      await mutate();
+                      if (historyMutateRef.current) {
+                        await historyMutateRef.current();
+                      }
+                    }}
+                    disabled={isCancelled}
+                  />
+                )}
+
+                {/* 사용자: 취소 요청 버튼 */}
+                {!isAdmin && !isCancelled && !isCancelRequested && (
+                  <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
+                    <XCircle className="mr-2 h-4 w-4" />
+                    신청 취소 요청
+                  </Button>
+                )}
+                {/* 관리자: 취소 요청이 들어온 경우에만 승인/거절 버튼 노출 */}
+                {isAdmin && isCancelRequested && !isCancelled && (
+                  <>
+                    <Button size="sm" variant="destructive" onClick={handleAdminApproveCancel} disabled={isPending}>
+                      <XCircle className="mr-1 h-4 w-4" />
+                      취소 승인
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={handleAdminRejectCancel} disabled={isPending}>
+                      취소 거절
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
-
-            {/* 취소 안내 메시지는 하단 별도로 */}
-            {isCancelled && <p className="text-sm text-muted-foreground italic mt-2">취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.</p>}
           </CardContent>
+
           {/* 연결된 주문 링크 */}
           {data?.orderId && (
             <Card className="border border-muted text-sm text-muted-foreground m-4">
@@ -357,7 +454,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <LinkIcon className="w-4 h-4" />
                   <span>이 신청은 상품 주문서와 연결되어 있습니다.</span>
                 </div>
-                <Link href={isAdmin ? `/admin/orders//${data.orderId}` : `/mypage?tab=orders&orderId=${data.orderId}`}>
+                <Link href={isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&orderId=${data.orderId}`}>
                   <Button variant="ghost" size="sm">
                     주문 상세 보기
                   </Button>
