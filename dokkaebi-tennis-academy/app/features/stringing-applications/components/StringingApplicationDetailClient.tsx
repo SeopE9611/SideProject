@@ -110,6 +110,46 @@ interface ApplicationDetail {
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
+function getAdminApplicationCancelRequestInfo(app: any): {
+  label: string;
+  badge: string;
+  reason?: string;
+} | null {
+  const cancel = app?.cancelRequest;
+  if (!cancel || !cancel.status || cancel.status === 'none') return null;
+
+  const reasonSummary = cancel.reasonCode ? `${cancel.reasonCode}${cancel.reasonText ? ` (${cancel.reasonText})` : ''}` : cancel.reasonText || '';
+
+  // 한글/영문 상태 모두 허용
+  const status = cancel.status;
+
+  switch (status) {
+    case 'requested':
+    case '요청':
+      return {
+        label: '고객이 신청 취소를 요청했습니다.',
+        badge: '요청됨',
+        reason: reasonSummary,
+      };
+    case 'approved':
+    case '승인':
+      return {
+        label: '취소 요청이 승인되어 신청이 취소되었습니다.',
+        badge: '승인',
+        reason: reasonSummary,
+      };
+    case 'rejected':
+    case '거절':
+      return {
+        label: '취소 요청이 거절되었습니다.',
+        badge: '거절',
+        reason: reasonSummary,
+      };
+    default:
+      return null;
+  }
+}
+
 export default function StringingApplicationDetailClient({ id, baseUrl, backUrl = '/admin/orders', isAdmin = true, userEditableStatuses = ['검토 중', '접수완료'] }: Props) {
   const router = useRouter();
 
@@ -301,18 +341,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const isPaid = ['접수완료', '작업 중', '교체완료'].includes(data.status);
   const paymentStatus = isPaid ? '결제완료' : '결제대기';
 
-  // 서버에서 내려오는 취소 상태(raw)
-  //   - 과거: 'requested' | 'approved' | 'rejected' (영문)
-  //   - 현재: '요청' | '승인' | '거절' (한글)
-  //   타입 정의는 한글로 되어 있지만, 과거 데이터까지 대비해서 string으로 완화해준다.
+  // 취소 요청 상태 (한글/영문 모두 허용)
   const rawCancelStatus = (data.cancelRequest?.status ?? null) as string | null;
 
-  // 한글/영문 상태를 모두 허용
   const isCancelRequested = rawCancelStatus === '요청' || rawCancelStatus === 'requested';
-
   const isCancelApproved = rawCancelStatus === '승인' || rawCancelStatus === 'approved';
-
   const isCancelRejected = rawCancelStatus === '거절' || rawCancelStatus === 'rejected';
+
+  // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
+  const cancelInfo = getAdminApplicationCancelRequestInfo(data);
 
   // 자가발송/운송장 등록 여부 계산
   const collectionMethod = data?.shippingInfo?.collectionMethod ?? data?.shippingInfo?.shippingMethod ?? null;
@@ -444,6 +481,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </p>
             </div>
           </div>
+          {/* 취소 요청 상태 안내 (관리자용) */}
+          {isAdmin && cancelInfo && (
+            <div className="mt-4 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-medium text-amber-900">취소 요청 상태: {cancelInfo.badge}</p>
+                  <p className="mt-1">{cancelInfo.label}</p>
+                  {cancelInfo.reason && <p className="mt-1 text-xs text-amber-900/80">사유: {cancelInfo.reason}</p>}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 상태 카드 */}
