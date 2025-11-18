@@ -130,6 +130,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   // 신청 취소 요청 모달 상태
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
+  // 취소 요청 철회 로딩 상태
+  const [isWithdrawingCancel, setIsWithdrawingCancel] = useState(false);
+
   // 1) 버튼에서 모달 여는 함수
   const handleOpenCancelDialog = () => {
     if (isCancelled || isCancelRequested) return;
@@ -169,6 +172,43 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         showErrorToast('취소 요청 중 오류가 발생했습니다.');
       }
     });
+  };
+
+  // 사용자: 이미 넣어둔 취소 요청을 철회
+  const handleWithdrawCancelRequest = async () => {
+    if (!data?.id) return;
+
+    if (!window.confirm('이미 제출한 취소 요청을 철회하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      setIsWithdrawingCancel(true);
+
+      const res = await fetch(`/api/applications/${data.id}/cancel-request-withdraw`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        console.error('cancel-request-withdraw failed', res.status, msg);
+        throw new Error('취소 요청 철회 실패');
+      }
+
+      showSuccessToast('취소 요청을 철회했습니다.');
+
+      // 상세 + 이력 모두 갱신
+      await mutate();
+      if (historyMutateRef.current) {
+        await historyMutateRef.current();
+      }
+    } catch (err) {
+      console.error(err);
+      showErrorToast('취소 요청 철회 중 오류가 발생했습니다.');
+    } finally {
+      setIsWithdrawingCancel(false);
+    }
   };
 
   // 관리자: 취소 요청 승인
@@ -261,10 +301,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const isPaid = ['접수완료', '작업 중', '교체완료'].includes(data.status);
   const paymentStatus = isPaid ? '결제완료' : '결제대기';
 
-  const cancelStatus = data.cancelRequest?.status ?? null;
-  const isCancelRequested = cancelStatus === '요청';
-  const isCancelApproved = cancelStatus === '승인';
-  const isCancelRejected = cancelStatus === '거절';
+  // 서버에서 내려오는 취소 상태(raw)
+  //   - 과거: 'requested' | 'approved' | 'rejected' (영문)
+  //   - 현재: '요청' | '승인' | '거절' (한글)
+  //   타입 정의는 한글로 되어 있지만, 과거 데이터까지 대비해서 string으로 완화해준다.
+  const rawCancelStatus = (data.cancelRequest?.status ?? null) as string | null;
+
+  // 한글/영문 상태를 모두 허용
+  const isCancelRequested = rawCancelStatus === '요청' || rawCancelStatus === 'requested';
+
+  const isCancelApproved = rawCancelStatus === '승인' || rawCancelStatus === 'approved';
+
+  const isCancelRejected = rawCancelStatus === '거절' || rawCancelStatus === 'rejected';
 
   // 자가발송/운송장 등록 여부 계산
   const collectionMethod = data?.shippingInfo?.collectionMethod ?? data?.shippingInfo?.shippingMethod ?? null;
@@ -418,7 +466,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 {!isCancelled && !isCancelRequested && <span>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</span>}
               </div>
 
-              {/* 오른쪽: 버튼 영역 */}
               <div className="flex flex-wrap gap-2 justify-end">
                 {/* 관리자: 상태 드롭다운 */}
                 {isAdmin && (
@@ -435,11 +482,18 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   />
                 )}
 
-                {/* 사용자: 취소 요청 버튼 */}
+                {/* 사용자: 아직 취소 요청 전 → "신청 취소 요청" 버튼 */}
                 {!isAdmin && !isCancelled && !isCancelRequested && (
                   <Button variant="destructive" onClick={handleOpenCancelDialog} disabled={isPending}>
                     <XCircle className="mr-2 h-4 w-4" />
                     신청 취소 요청
+                  </Button>
+                )}
+
+                {/* 사용자: 이미 취소 요청 상태 → "취소 요청 철회" 버튼 */}
+                {!isAdmin && !isCancelled && isCancelRequested && (
+                  <Button variant="outline" size="sm" onClick={handleWithdrawCancelRequest} disabled={isWithdrawingCancel} className="border-amber-300 text-amber-800 hover:bg-amber-50 hover:text-amber-900">
+                    {isWithdrawingCancel ? '취소 요청 철회 중...' : '취소 요청 철회'}
                   </Button>
                 )}
 

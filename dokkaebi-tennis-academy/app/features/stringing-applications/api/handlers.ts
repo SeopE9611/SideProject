@@ -954,9 +954,11 @@ export async function handleApplicationCancelRequestWithdraw(req: Request, { par
       return new NextResponse('이미 배송이 진행 중이어서 취소 요청을 철회할 수 없습니다.', { status: 400 });
     }
 
-    // 3) 현재 cancelRequest 상태 확인
+    // 현재 cancelRequest 상태 확인
     const currentCancel = existing.cancelRequest ?? {};
-    if (currentCancel.status !== 'requested') {
+    const currentStatus = currentCancel.status;
+
+    if (currentStatus !== 'requested' && currentStatus !== '요청') {
       return new NextResponse('현재는 취소 요청 상태가 아니어서 철회할 수 없습니다.', { status: 400 });
     }
 
