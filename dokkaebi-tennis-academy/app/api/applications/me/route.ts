@@ -59,6 +59,20 @@ export async function GET(req: Request) {
       // 비-방문이면 값 null로 내림
       const cm = normalizeCollection((doc as any)?.shippingInfo?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
 
+      // 취소 요청 정보 정리
+      const cancel: any = (doc as any).cancelRequest ?? {};
+      // DB에는 '요청' | '승인' | '거절' | undefined 이런 값들이 들어감
+      const rawCancelStatus: string = cancel.status ?? 'none';
+
+      let cancelReasonSummary: string | null = null;
+      if (rawCancelStatus && rawCancelStatus !== 'none') {
+        if (cancel.reasonCode) {
+          // 예: "CHANGE_MIND (다른 상품 구매)" 식으로 한 줄 요약
+          cancelReasonSummary = cancel.reasonCode + (cancel.reasonText ? ` (${cancel.reasonText})` : '');
+        } else if (cancel.reasonText) {
+          cancelReasonSummary = cancel.reasonText;
+        }
+      }
       return {
         id: doc._id.toString(),
         type: '스트링 장착 서비스',
@@ -76,6 +90,10 @@ export async function GET(req: Request) {
           collectionMethod,
           selfShip: { trackingNo },
         },
+
+        // 마이페이지 목록 카드용 취소 요청 정보
+        cancelStatus: rawCancelStatus, //'요청' | '승인' | '거절' | 'none'
+        cancelReasonSummary, // 한 줄 요약
       };
     })
   );

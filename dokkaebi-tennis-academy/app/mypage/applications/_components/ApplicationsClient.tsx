@@ -12,6 +12,7 @@ import useSWRImmutable from 'swr/immutable';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { showInfoToast } from '@/lib/toast';
+import { Badge } from '@/components/ui/badge';
 export interface Application {
   id: string;
   type: '스트링 장착 서비스' | '아카데미 수강 신청';
@@ -25,6 +26,9 @@ export interface Application {
   preferredTime?: string;
   course?: string;
   schedule?: string;
+
+  cancelStatus?: string; // '요청' | '승인' | '거절' | 'none'
+  cancelReasonSummary?: string | null;
 }
 
 type AppResponse = { items: Application[]; total: number };
@@ -232,6 +236,17 @@ export default function ApplicationsClient() {
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-slate-500 dark:text-slate-400">상태:</span>
                     <ApplicationStatusBadge status={app.status} />
+
+                    {/* 취소 요청이 들어간 신청이면 뱃지 표시 */}
+                    {app.cancelStatus === '요청' && (
+                      <Badge
+                        variant="outline"
+                        className="ml-1 border-amber-200/60 bg-amber-50/80 text-[11px] font-medium text-amber-800
+                   dark:border-amber-400/50 dark:bg-amber-950/40 dark:text-amber-200"
+                      >
+                        취소 요청됨
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </CardContent>
