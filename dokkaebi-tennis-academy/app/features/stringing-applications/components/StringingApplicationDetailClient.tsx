@@ -170,6 +170,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   // 신청 취소 요청 모달 상태
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
+  // 관리자: 취소 요청 거절 모달 상태
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [isRejectSubmitting, setIsRejectSubmitting] = useState(false);
+
   // 취소 요청 철회 로딩 상태
   const [isWithdrawingCancel, setIsWithdrawingCancel] = useState(false);
 
@@ -280,14 +285,23 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     });
   };
 
-  // 관리자: 취소 요청 거절
+  // 관리자: 취소 요청 거절 버튼 클릭
   const handleAdminRejectCancel = () => {
-    const reason = window.prompt('취소 요청을 거절하는 사유를 입력하세요. (선택 입력)', '');
+    if (!isCancelRequested || isCancelled) return;
 
-    if (!confirm('이 신청의 취소 요청을 거절하시겠습니까?')) return;
+    // 이전에 입력한 내용 초기화
+    setRejectReason('');
+    setIsRejectDialogOpen(true);
+  };
+
+  // 모달 안에서 "거절 확정" 버튼 클릭 시 실제 API 호출
+  const handleConfirmRejectCancel = () => {
+    const reason = rejectReason.trim();
 
     startTransition(async () => {
       try {
+        setIsRejectSubmitting(true);
+
         const res = await fetch(`/api/applications/stringing/${applicationId}/cancel-reject`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -306,9 +320,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         if (historyMutateRef.current) {
           await historyMutateRef.current();
         }
+
+        // 모달 닫기 + 입력값 초기화
+        setIsRejectDialogOpen(false);
+        setRejectReason('');
       } catch (err) {
         console.error(err);
         showErrorToast('취소 거절 중 오류가 발생했습니다.');
+      } finally {
+        setIsRejectSubmitting(false);
       }
     });
   };
@@ -873,6 +893,43 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </CardContent>
         </Card>
       </div>
+      {/* 관리자: 취소 요청 거절 모달 */}
+      {isAdmin && (
+        <Dialog
+          open={isRejectDialogOpen}
+          onOpenChange={(open) => {
+            setIsRejectDialogOpen(open);
+            if (!open) {
+              setRejectReason('');
+            }
+          }}
+        >
+          <DialogContent className="max-w-md">
+            <DialogTitle className="text-lg font-semibold">취소 요청 거절</DialogTitle>
+            <p className="mt-2 text-sm text-muted-foreground">고객의 신청 취소 요청을 거절하는 사유를 입력해 주세요. 이 내용은 처리 이력에 기록되어 나중에 참고할 수 있습니다.</p>
+
+            <div className="mt-4 space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">거절 사유 (선택 입력)</label>
+              <textarea
+                className="mt-1 w-full min-h-[90px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder="예: 이미 작업이 진행되어 취소가 불가능한 상태입니다."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+              />
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)} disabled={isRejectSubmitting}>
+                닫기
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmRejectCancel} disabled={isRejectSubmitting}>
+                {isRejectSubmitting ? '처리 중...' : '거절 확정'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       <CancelStringingDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen} onConfirm={handleConfirmCancelRequest} isSubmitting={isPending} />
     </div>
   );
