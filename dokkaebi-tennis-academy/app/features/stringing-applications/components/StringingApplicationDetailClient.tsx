@@ -23,6 +23,7 @@ import StringingApplicationDetailSkeleton from '@/app/features/stringing-applica
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PaymentMethodDetail from '@/app/features/stringing-applications/components/PaymentMethodDetail';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import CancelStringingDialog from '@/app/mypage/applications/_components/CancelStringingDialog';
 
 interface Props {
   id: string;
@@ -126,18 +127,27 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   const [isPending, startTransition] = useTransition();
 
-  const handleCancel = () => {
-    if (!confirm('정말로 이 신청 취소를 요청하시겠습니까?\n관리자 확인 후 최종 반영됩니다.')) return;
+  // 신청 취소 요청 모달 상태
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+
+  // 1) 버튼에서 모달 여는 함수
+  const handleOpenCancelDialog = () => {
+    if (isCancelled || isCancelRequested) return;
+    setIsCancelDialogOpen(true);
+  };
+
+  // 2) 모달에서 "취소 요청하기" 눌렀을 때 실제 요청
+  const handleConfirmCancelRequest = (params: { reasonCode: string; reasonText?: string }) => {
+    const { reasonCode, reasonText } = params;
 
     startTransition(async () => {
       try {
         const res = await fetch(`/api/applications/stringing/${applicationId}/cancel-request`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          // 지금은 사유 선택 UI가 없으니 기본값만 전송
           body: JSON.stringify({
-            reasonCode: 'OTHER',
-            reasonText: '',
+            reasonCode,
+            reasonText,
           }),
           credentials: 'include',
         });
@@ -149,11 +159,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         }
 
         showSuccessToast('취소 요청이 정상적으로 접수되었습니다. 관리자 확인 후 결과가 반영됩니다.');
-        mutate();
+        await mutate();
         if (historyMutateRef.current) {
-          historyMutateRef.current();
+          await historyMutateRef.current();
         }
+        setIsCancelDialogOpen(false);
       } catch (err) {
+        console.error(err);
         showErrorToast('취소 요청 중 오류가 발생했습니다.');
       }
     });
@@ -425,11 +437,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                 {/* 사용자: 취소 요청 버튼 */}
                 {!isAdmin && !isCancelled && !isCancelRequested && (
-                  <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
+                  <Button variant="destructive" onClick={handleOpenCancelDialog} disabled={isPending}>
                     <XCircle className="mr-2 h-4 w-4" />
                     신청 취소 요청
                   </Button>
                 )}
+
                 {/* 관리자: 취소 요청이 들어온 경우에만 승인/거절 버튼 노출 */}
                 {isAdmin && isCancelRequested && !isCancelled && (
                   <>
@@ -757,6 +770,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </CardContent>
         </Card>
       </div>
+      <CancelStringingDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen} onConfirm={handleConfirmCancelRequest} isSubmitting={isPending} />
     </div>
   );
 }
