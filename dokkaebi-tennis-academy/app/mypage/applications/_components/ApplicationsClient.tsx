@@ -3,16 +3,18 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Phone, User, RatIcon as Racquet, Zap, GraduationCap, ArrowRight, FileText, Target, LayoutGrid, RocketIcon, Gauge } from 'lucide-react';
+import { Calendar, Clock, Phone, User, RatIcon as Racquet, Zap, GraduationCap, ArrowRight, FileText, Target, LayoutGrid, RocketIcon, Gauge, CheckCircle, Delete, Ban } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useSWRInfinite from 'swr/infinite';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import useSWRImmutable from 'swr/immutable';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
-import { showInfoToast } from '@/lib/toast';
+import { showInfoToast, showSuccessToast, showErrorToast } from '@/lib/toast';
 import { Badge } from '@/components/ui/badge';
+import CancelStringingDialog from './CancelStringingDialog';
+import { MdSportsTennis } from 'react-icons/md';
 export interface Application {
   id: string;
   type: '스트링 장착 서비스' | '아카데미 수강 신청';
@@ -52,6 +54,19 @@ const fetcher = async (url: string) => {
 
 const LIMIT = 5;
 
+// 신청 상태별 아이콘
+const getApplicationStatusIcon = (status: Application['status']) => {
+  switch (status) {
+    case '완료':
+      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
+    case '검토 중':
+      return <Clock className="h-4 w-4 text-yellow-500" />;
+    case '접수완료':
+    default:
+      return <Ban className="h-4 w-4 text-red-500" />;
+  }
+};
+
 export default function ApplicationsClient() {
   const router = useRouter();
 
@@ -73,9 +88,54 @@ export default function ApplicationsClient() {
     return `/api/applications/me?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error } = useSWRInfinite<AppResponse>(getKey, fetcher, {
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<AppResponse>(getKey, fetcher, {
     revalidateFirstPage: true,
   });
+
+  // 취소 요청 Dialog 제어용 상태
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [targetId, setTargetId] = useState<string | null>(null);
+  const [isCancelSubmitting, setIsCancelSubmitting] = useState(false);
+
+  const handleOpenCancel = (id: string) => {
+    setTargetId(id);
+    setCancelDialogOpen(true);
+  };
+
+  const handleConfirmCancel = async (params: { reasonCode: string; reasonText?: string }) => {
+    if (!targetId) return;
+
+    try {
+      setIsCancelSubmitting(true);
+
+      const res = await fetch(`/api/applications/stringing/${targetId}/cancel-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const msg = data?.message || '취소 요청 처리 중 오류가 발생했습니다.';
+        showErrorToast(msg);
+        return;
+      }
+
+      showSuccessToast('취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.');
+
+      // Dialog 닫기 + 선택된 ID 초기화
+      setCancelDialogOpen(false);
+      setTargetId(null);
+
+      // 🔄 목록 재검증(취소 요청 뱃지/버튼 상태 갱신)
+      await mutate();
+    } catch (error) {
+      console.error(error);
+      showErrorToast('취소 요청 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsCancelSubmitting(false);
+    }
+  };
 
   // 누적 리스트
   const applications = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
@@ -122,12 +182,16 @@ export default function ApplicationsClient() {
           const cm = normalizeCollection((app as any).collectionMethod ?? (app as any).shippingInfo?.collectionMethod);
           const isSelfShip = isStringService && cm === 'self_ship';
           const isVisit = isStringService && cm === 'visit';
-
+          const collectionLabel = !isStringService ? null : cm === 'self_ship' ? '수령 방법: 자가 발송(택배)' : cm === 'visit' ? '수령 방법: 매장 방문' : '수령 방법: 기타';
           // 운송장 등록 여부
           const hasTracking = Boolean((app as any).shippingInfo?.trackingNumber || (app as any).shippingInfo?.selfShip?.trackingNo);
           // 종료 상태(수정 금지)
           const CLOSED = ['작업 중', '교체완료'];
           const isClosed = CLOSED.includes(String((app as any).status));
+
+          // 취소 요청 가능 여부
+          const cancelStatus = app.cancelStatus ?? 'none';
+          const isCancelable = isStringService && ['접수완료', '검토 중'].includes(app.status) && (cancelStatus === 'none' || cancelStatus === '거절' || cancelStatus === 'rejected');
 
           return (
             <Card key={app.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -155,19 +219,109 @@ export default function ApplicationsClient() {
                         <Calendar className="h-3 w-3" />
                         {formatDateTime(app.appliedAt)}
                       </div>
+
+                      {collectionLabel && <div className="mt-1 inline-flex items-center rounded-full bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{collectionLabel}</div>}
                     </div>
                   </div>
 
+                  <div className="flex items-center gap-2">
+                    {getApplicationStatusIcon(app.status)}
+                    <ApplicationStatusBadge status={app.status} />
+
+                    {(() => {
+                      const raw = app.cancelStatus ?? 'none';
+                      const isRequested = raw === '요청' || raw === 'requested';
+                      if (!isRequested) return null;
+
+                      return (
+                        <Badge
+                          variant="outline"
+                          className="ml-1 border-amber-200/60 bg-amber-50/80 text-[11px] font-medium text-amber-800
+        dark:border-amber-400/50 dark:bg-amber-950/40 dark:text-amber-200"
+                        >
+                          취소 요청됨
+                        </Badge>
+                      );
+                    })()}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  {isStringService ? (
+                    <>
+                      {/* 방문 수령(매장 방문)일 때만 희망일시 카드 표시 */}
+                      {isVisit && app.preferredDate && app.preferredTime && (
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
+                          <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                          <div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">매장 방문 희망일시</div>
+                            <div className="font-medium text-slate-900 dark:text-slate-100">
+                              {app.preferredDate.replace(/-/g, '.')} {app.preferredTime}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 라켓 & 스트링 정보 (핵심 정보만 표시) */}
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
+                        <MdSportsTennis className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                        <div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">라켓 & 스트링</div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">
+                            {app.racketType ?? '-'} / {app.stringType ?? '-'}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
+                        <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                        <div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">이름</div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">{app.applicantName}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
+                        <Phone className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                        <div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">연락처</div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">{app.phone}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
+                        <GraduationCap className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                        <div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">코스 & 일정</div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">
+                            {app.course ?? '-'} / {app.schedule ?? '-'}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  {/* 왼쪽: 간단한 신청 정보 요약 */}
+                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <FileText className="h-4 w-4" />
+                    <span>{app.type}</span>
+                  </div>
+
+                  {/* 오른쪽: 상세/운송장/취소 요청 버튼들 */}
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/mypage?tab=applications&id=${app.id}`)}
-                      className="border-slate-200 hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:hover:border-blue-600 dark:hover:bg-blue-950 transition-colors"
+                      className="border-slate-200 hover:border-blue-500 hover:bg-blue-50 dark:border-slate-700 dark:hover:border-blue-600 dark:hover:bg-blue-950 transition-colors"
                     >
                       상세보기
                       <ArrowRight className="ml-1 h-3 w-3" />
                     </Button>
+
                     {isSelfShip &&
                       (isClosed ? (
                         <Button variant="outline" size="sm" onClick={() => showInfoToast('이미 종료된 신청서입니다. 운송장 수정이 불가합니다.')}>
@@ -178,74 +332,11 @@ export default function ApplicationsClient() {
                           {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
                         </Button>
                       ))}
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                    <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                    <div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">이름</div>
-                      <div className="font-medium text-slate-900 dark:text-slate-100">{app.applicantName}</div>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                    <Phone className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                    <div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">연락처</div>
-                      <div className="font-medium text-slate-900 dark:text-slate-100">{app.phone}</div>
-                    </div>
-                  </div>
-
-                  {isVisit && app.preferredDate && app.preferredTime ? (
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                      <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">희망일시</div>
-                        <div className="font-medium text-slate-900 dark:text-slate-100">
-                          {app.preferredDate.replace(/-/g, '.')} {app.preferredTime}
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {isStringService ? (
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                      <Zap className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">라켓 & 스트링</div>
-                        <div className="font-medium text-slate-900 dark:text-slate-100">
-                          {app.racketType ?? '-'} / {app.stringType ?? '-'}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                      <GraduationCap className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">코스 & 일정</div>
-                        <div className="font-medium text-slate-900 dark:text-slate-100">
-                          {app.course ?? '-'} / {app.schedule ?? '-'}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-500 dark:text-slate-400">상태:</span>
-                    <ApplicationStatusBadge status={app.status} />
-
-                    {/* 취소 요청이 들어간 신청이면 뱃지 표시 */}
-                    {app.cancelStatus === '요청' && (
-                      <Badge
-                        variant="outline"
-                        className="ml-1 border-amber-200/60 bg-amber-50/80 text-[11px] font-medium text-amber-800
-                   dark:border-amber-400/50 dark:bg-amber-950/40 dark:text-amber-200"
-                      >
-                        취소 요청됨
-                      </Badge>
+                    {isCancelable && (
+                      <Button variant="outline" size="sm" onClick={() => handleOpenCancel(app.id)} className="border-destructive/40 text-destructive hover:bg-destructive/5">
+                        취소 요청
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -265,6 +356,19 @@ export default function ApplicationsClient() {
           <span className="text-sm text-slate-500">마지막 페이지입니다</span>
         ) : null}
       </div>
+
+      {/* 목록 전용 스트링 취소 요청 Dialog (선택된 신청서 기준) */}
+      <CancelStringingDialog
+        open={cancelDialogOpen}
+        onOpenChange={(open) => {
+          setCancelDialogOpen(open);
+          if (!open) {
+            setTargetId(null);
+          }
+        }}
+        onConfirm={handleConfirmCancel}
+        isSubmitting={isCancelSubmitting}
+      />
     </div>
   );
 }

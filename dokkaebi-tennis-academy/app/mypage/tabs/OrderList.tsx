@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { orderStatusColors } from '@/lib/badge-style';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck, MessageSquarePlus } from 'lucide-react';
+import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck, MessageSquarePlus, Ban } from 'lucide-react';
 import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
 import CancelOrderDialog from '@/app/mypage/orders/_components/CancelOrderDialog';
 
@@ -52,7 +52,7 @@ const getStatusIcon = (status: string) => {
     case '대기중':
       return <Clock className="h-4 w-4 text-yellow-500" />;
     default:
-      return <Package className="h-4 w-4 text-slate-500" />;
+      return <Ban className="h-4 w-4 text-red-500" />;
   }
 };
 
@@ -156,6 +156,8 @@ export default function OrderList() {
       {items.map((order) => {
         // 이 주문이 현재 "취소 요청 버튼"을 보여줄 수 있는 상태인지 계산
         const isCancelable = ['대기중', '결제완료'].includes(order.status) && (!order.cancelStatus || order.cancelStatus === 'none' || order.cancelStatus === 'rejected');
+        // 스트링 관련 주문 여부 (스트링 서비스 가능 주문)
+        const isStringOrder = order.shippingInfo?.withStringService === true;
         return (
           <Card key={order.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
@@ -170,7 +172,7 @@ export default function OrderList() {
                     <ShoppingBag className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">주문 #{order.id}</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">{isStringOrder ? '스트링 주문 + 교체 서비스 신청' : `스트링 단일 주문 #${order.id}`}</h3>
                     <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
                       <Calendar className="h-3 w-3" />
                       {formatDate(order.date)}
@@ -178,7 +180,7 @@ export default function OrderList() {
                   </div>
                 </div>
 
-                {/* 🔹 상태/취소 관련 영역 */}
+                {/* 상태/취소 관련 영역 */}
                 <div className="flex items-center gap-2">
                   {getStatusIcon(order.status)}
                   <Badge className={`px-3 py-1 text-xs font-medium ${orderStatusColors[order.status]}`}>{order.status}</Badge>
