@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { getDepositBanner } from '@/app/features/rentals/utils/ui';
 import { ArrowLeft, Briefcase, Calendar, Clock, CreditCard, Package, CheckCircle, AlertCircle, XCircle, TrendingUp, Truck } from 'lucide-react';
 import { racketBrandLabel } from '@/lib/constants';
+import CancelRentalDialog from '@/app/mypage/rentals/_components/CancelRentalDialog';
 
 type Rental = {
   id: string;
@@ -33,6 +34,14 @@ type Rental = {
       shippedAt?: string | Date | null;
       note?: string;
     } | null;
+  } | null;
+  // 취소 요청 정보 (상세 화면에서 상태 판단용)
+  cancelRequest?: {
+    status: 'requested' | 'approved' | 'rejected';
+    reasonCode?: string;
+    reasonText?: string;
+    requestedAt?: string;
+    processedAt?: string;
   } | null;
 };
 
@@ -188,6 +197,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     depositRefundedAt: data.depositRefundedAt ?? undefined,
   });
 
+  const canRequestCancel = (data.status === 'created' || data.status === 'paid') && data.cancelRequest?.status !== 'requested';
+
   return (
     <main className="space-y-8">
       <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-2xl p-8 border border-indigo-100 dark:border-indigo-800/30 shadow-lg">
@@ -203,12 +214,16 @@ export default function RentalsDetailClient({ id }: { id: string }) {
           </div>
 
           <div className="sm:ml-auto flex items-center gap-2">
+            {/* 생성됨/결제완료 + 아직 취소요청이 아닌 경우에만 버튼 노출 */}
+            {canRequestCancel && <CancelRentalDialog rentalId={data.id} />}
+
             {data?.status === 'out' && (
-              <Link href={`/mypage/rentals/${data.id}/return-shipping`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90">
+              <Link href={`/mypage/rentals/${data.id}/return-shipping`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90 h-8">
                 <Truck className="h-4 w-4 mr-2" />
                 {data?.shipping?.return?.trackingNumber ? '반납 운송장 수정' : '반납 운송장 등록'}
               </Link>
             )}
+
             <Button variant="outline" size="sm" asChild className="bg-white/60 backdrop-blur-sm border-indigo-200 hover:bg-indigo-50">
               <Link href="/mypage?tab=rentals">
                 <ArrowLeft className="mr-2 h-4 w-4" />

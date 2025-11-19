@@ -7,6 +7,19 @@ export type RentalStatus =
   | 'returned' // 반납 완료
   | 'canceled'; // 취소(종결)
 
+// 대여 취소 요청 상태 타입
+export type RentalCancelRequestStatus = 'requested' | 'approved' | 'rejected';
+
+// 대여 취소 요청 객체 타입
+export type RentalCancelRequest = {
+  status: RentalCancelRequestStatus;
+  reasonCode: string; // ex) '단순 변심', '일정 변경' 등
+  reasonText?: string; // 기타 상세 사유
+  requestedAt: string; // ISO 문자열
+  processedAt?: string; // 승인/거절 시각
+  processedByAdminId?: string; // 처리한 관리자 ID (선택)
+};
+
 export type RentalOrder = {
   id: string;
   userId?: string; // 비회원 대여 지원 시 undefined 가능
@@ -42,4 +55,7 @@ export type RentalOrder = {
 
   // 반납 이후 크레딧
   creditIssued?: { amount: number; expiresAt: string };
+
+  // 취소 요청 정보
+  cancelRequest?: RentalCancelRequest;
 };

@@ -48,6 +48,7 @@ export async function GET(req: Request) {
       dueAt: d.dueAt,
       hasReturnShipping: Boolean(tracking),
       returnShippingBrief: tracking ? { courier: ret?.courier || '', trackingLast4: String(tracking).slice(-4) } : null,
+      cancelStatus: d.cancelRequest?.status ?? null,
     };
   });
 

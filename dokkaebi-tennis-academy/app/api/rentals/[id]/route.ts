@@ -18,6 +18,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     if (u) user = { name: u.name ?? '', email: u.email ?? '', phone: u.phone ?? '' };
   }
 
+  const cancelReq = doc.cancelRequest ?? null;
+
   // 응답 정리
   return NextResponse.json({
     id: doc._id.toString(),
@@ -37,6 +39,16 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       outbound: doc.shipping?.outbound ?? null,
       return: doc.shipping?.return ?? null,
     },
+    // 취소 요청 정보
+    cancelRequest: cancelReq
+      ? {
+          status: cancelReq.status ?? 'requested',
+          reasonCode: cancelReq.reasonCode ?? '',
+          reasonText: cancelReq.reasonText ?? '',
+          requestedAt: cancelReq.requestedAt ?? null,
+          processedAt: cancelReq.processedAt ?? null,
+        }
+      : null,
     user,
   });
 }

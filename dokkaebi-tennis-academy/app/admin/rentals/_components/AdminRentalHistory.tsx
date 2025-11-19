@@ -15,7 +15,7 @@ const fetcher = (url: string) =>
 
 type HistoryItem = {
   _id: string;
-  action: 'paid' | 'out' | 'returned';
+  action: 'paid' | 'out' | 'returned' | 'cancel-request' | 'cancel-approved' | 'cancel-rejected';
   from: string;
   to: string;
   at: string;
@@ -23,7 +23,7 @@ type HistoryItem = {
   snapshot?: any;
 };
 
-const ACTIONS = ['all', 'paid', 'out', 'returned'] as const;
+const ACTIONS = ['all', 'paid', 'out', 'returned', 'cancel-request', 'cancel-approved', 'cancel-rejected'] as const;
 type ActionFilter = (typeof ACTIONS)[number];
 
 function ActionBadge({ action }: { action: HistoryItem['action'] }) {
@@ -31,8 +31,21 @@ function ActionBadge({ action }: { action: HistoryItem['action'] }) {
     paid: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
     out: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
     returned: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+    'cancel-request': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    'cancel-approved': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    'cancel-rejected': 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-200',
   };
-  const label = action.toUpperCase();
+
+  const labelMap: Record<HistoryItem['action'], string> = {
+    paid: 'PAID',
+    out: 'OUT',
+    returned: 'RETURNED',
+    'cancel-request': 'CANCEL_REQ',
+    'cancel-approved': 'CANCEL_OK',
+    'cancel-rejected': 'CANCEL_REJ',
+  };
+
+  const label = labelMap[action];
   return <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${map[action]}`}>{label}</span>;
 }
 
