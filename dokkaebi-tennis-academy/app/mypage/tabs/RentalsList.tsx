@@ -189,7 +189,7 @@ export default function RentalsList() {
               </div>
 
               <Button size="sm" variant="outline" asChild className="border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent">
-                <Link href={`/mypage?tab=rentals&id=${r.id}`} className="inline-flex items-center gap-1">
+                <Link href={`/mypage?tab=rentals&rentalId=${r.id}`} className="inline-flex items-center gap-1">
                   상세보기
                   <ArrowRight className="h-3 w-3" />
                 </Link>

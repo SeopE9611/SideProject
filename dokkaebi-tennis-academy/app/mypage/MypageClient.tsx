@@ -68,13 +68,27 @@ export default function MypageClient({ user }: Props) {
 
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
+
+    // 현재 탭 변경
     newParams.set('tab', value);
+
+    // 탭 전환 시, 다른 도메인의 상세 id는 정리
+    if (value !== 'orders') {
+      newParams.delete('orderId');
+    }
+    if (value !== 'applications') {
+      newParams.delete('applicationId');
+    }
+    if (value !== 'rentals') {
+      newParams.delete('rentalId');
+    }
+
     router.push(`/mypage?${newParams.toString()}`, { scroll: false });
   };
 
   const orderId = searchParams.get('orderId');
-  const selectedApplicationId = searchParams.get('id');
-  const selectedId = searchParams.get('id');
+  const selectedApplicationId = searchParams.get('applicationId'); // 신청용
+  const selectedRentalId = searchParams.get('rentalId'); // 대여용
   return (
     <AuthGuard>
       <div className="min-h-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
@@ -252,9 +266,10 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </CardHeader>
                     <CardContent className="p-6">
-                      {selectedId ? (
+                      {selectedRentalId ? (
                         <Suspense fallback={<div className="p-6">불러오는 중…</div>}>
-                          <RentalsDetailClient id={selectedId} />
+                          {/* rentalId로만 상세를 염 */}
+                          <RentalsDetailClient id={selectedRentalId} />
                         </Suspense>
                       ) : (
                         <Suspense fallback={<RentalSkeleton />}>
