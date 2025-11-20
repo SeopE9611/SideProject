@@ -304,18 +304,18 @@ export default function ApplicationsClient() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                  {/* 왼쪽: 간단한 신청 정보 요약 */}
+                  {/* 간단한 신청 정보 요약 */}
                   <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <FileText className="h-4 w-4" />
                     <span>{app.type}</span>
                   </div>
 
-                  {/* 오른쪽: 상세/운송장/취소 요청 버튼들 */}
+                  {/* 상세/운송장/취소 요청 버튼들 */}
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => router.push(`/mypage?tab=applications&id=${app.id}`)}
+                      onClick={() => router.push(`/mypage?tab=applications&applicationId=${app.id}`)}
                       className="border-slate-200 hover:border-blue-500 hover:bg-blue-50 dark:border-slate-700 dark:hover:border-blue-600 dark:hover:bg-blue-950 transition-colors"
                     >
                       상세보기

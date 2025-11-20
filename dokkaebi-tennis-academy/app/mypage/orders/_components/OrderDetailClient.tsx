@@ -302,7 +302,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </div>
                 </div>
                 {orderDetail.stringingApplicationId && (
-                  <Link href={`/mypage?tab=applications&id=${orderDetail.stringingApplicationId}`}>
+                  <Link href={`/mypage?tab=applications&applicationId=${orderDetail.stringingApplicationId}`}>
                     <Button variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-950/20 bg-transparent">
                       신청 상세 보기
                     </Button>

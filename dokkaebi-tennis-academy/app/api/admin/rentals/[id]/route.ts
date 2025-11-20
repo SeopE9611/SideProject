@@ -60,6 +60,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       outbound: doc.shipping?.outbound ?? null,
       return: doc.shipping?.return ?? null,
     },
+    cancelRequest: doc.cancelRequest ?? null, // 취소 요청 정보(있으면 그대로, 없으면 null)
     refundAccount, // 관리자만 확인 가능(마스킹)
     user,
   });

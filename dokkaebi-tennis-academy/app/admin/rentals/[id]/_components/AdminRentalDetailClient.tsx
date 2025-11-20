@@ -50,6 +50,44 @@ const courierTrackUrl: Record<string, (no: string) => string> = {
 // 날짜 포맷 보조
 const fmt = (v?: string | Date | null) => (v ? new Date(v).toLocaleString() : '-');
 
+// 관리자용 취소 요청 상태 정보 헬퍼
+function getAdminRentalCancelInfo(rental: any): {
+  label: string;
+  badge: string;
+  reason?: string;
+  status: 'requested' | 'approved' | 'rejected';
+} | null {
+  const cancel = rental?.cancelRequest;
+  if (!cancel || !cancel.status) return null;
+
+  const reasonSummary = cancel.reasonCode ? `${cancel.reasonCode}${cancel.reasonText ? ` (${cancel.reasonText})` : ''}` : cancel.reasonText || '';
+
+  switch (cancel.status) {
+    case 'requested':
+      return {
+        status: 'requested',
+        label: '고객이 대여 취소를 요청했습니다.',
+        badge: '요청됨',
+        reason: reasonSummary,
+      };
+    case 'approved':
+      return {
+        status: 'approved',
+        label: '취소 요청이 승인되어 대여가 취소되었습니다.',
+        badge: '승인',
+        reason: reasonSummary,
+      };
+    case 'rejected':
+      return {
+        status: 'rejected',
+        label: '취소 요청이 거절되었습니다.',
+        badge: '거절',
+        reason: reasonSummary,
+      };
+    default:
+      return null;
+  }
+}
 export default function AdminRentalDetailClient() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
@@ -145,6 +183,56 @@ export default function AdminRentalDetailClient() {
     setBusy(false);
   };
 
+  // 대여 취소 요청 승인
+  const onApproveCancel = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/rentals/${id}/cancel-approve`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const json = await safeJson(res);
+      if (!res.ok || !json?.ok) {
+        showErrorToast(json?.detail || json?.message || '취소 요청 승인에 실패했습니다.');
+        setBusy(false);
+        return;
+      }
+      await mutate();
+      showSuccessToast('대여 취소 요청을 승인했습니다.');
+    } catch (err) {
+      console.error('[AdminRentalDetail] onApproveCancel error', err);
+      showErrorToast('취소 요청 승인 중 오류가 발생했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // 대여 취소 요청 거절
+  const onRejectCancel = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/rentals/${id}/cancel-reject`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const json = await safeJson(res);
+      if (!res.ok || !json?.ok) {
+        showErrorToast(json?.detail || json?.message || '취소 요청 거절에 실패했습니다.');
+        setBusy(false);
+        return;
+      }
+      await mutate();
+      showSuccessToast('대여 취소 요청을 거절했습니다.');
+    } catch (err) {
+      console.error('[AdminRentalDetail] onRejectCancel error', err);
+      showErrorToast('취소 요청 거절 중 오류가 발생했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return '날짜 없음';
     const date = new Date(dateString);
@@ -165,6 +253,9 @@ export default function AdminRentalDetailClient() {
 
   const Outbound = data?.shipping?.outbound;
   const ReturnShip = data?.shipping?.return;
+
+  // 취소 요청 상태 정보
+  const cancelInfo = getAdminRentalCancelInfo(data);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-black">
@@ -207,6 +298,31 @@ export default function AdminRentalDetailClient() {
                 )}
               </div>
             </div>
+
+            {/* 취소 요청 상태 안내 (관리자용) */}
+            {cancelInfo && (
+              <div className="mb-4 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="font-medium text-amber-900">취소 요청 상태: {cancelInfo.badge}</p>
+                    <p className="mt-1">{cancelInfo.label}</p>
+                    {cancelInfo.reason && <p className="mt-1 text-xs text-amber-900/80">사유: {cancelInfo.reason}</p>}
+                  </div>
+
+                  {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
+                  {cancelInfo.status === 'requested' && (
+                    <div className="mt-2 flex gap-2 sm:mt-0 sm:flex-col sm:items-end">
+                      <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={busy} onClick={onApproveCancel}>
+                        {busy ? '처리중…' : '요청 승인'}
+                      </Button>
+                      <Button size="sm" variant="outline" className="border-amber-300 text-amber-900 hover:bg-amber-100" disabled={busy} onClick={onRejectCancel}>
+                        {busy ? '처리중…' : '요청 거절'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 backdrop-blur-sm">

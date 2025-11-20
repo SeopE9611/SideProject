@@ -50,6 +50,7 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
       outbound: doc.shipping?.outbound ?? null,
       return: doc.shipping?.return ?? null,
     },
+    cancelRequest: doc.cancelRequest ?? null,
   });
 }
 

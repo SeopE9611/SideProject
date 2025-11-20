@@ -136,6 +136,39 @@ export default function RentalsDetailClient({ id }: { id: string }) {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [withdrawing, setWithdrawing] = useState(false);
+
+  const handleWithdrawCancelRequest = async () => {
+    if (!data) return;
+    if (!data.cancelRequest || data.cancelRequest.status !== 'requested') return;
+
+    try {
+      setWithdrawing(true);
+      const res = await fetch(`/api/rentals/${data.id}/cancel-withdraw`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        const msg = body?.message ?? '대여 취소 요청 철회 중 오류가 발생했습니다.';
+        // 프로젝트에서 사용하는 토스트 유틸 있으면 그걸 사용해도 됨
+        alert(msg);
+        return;
+      }
+
+      // 성공 시 상세 상태에서만 cancelRequest 제거
+      setData((prev) => (prev ? { ...prev, cancelRequest: null } : prev));
+
+      alert('대여 취소 요청을 철회했습니다.');
+    } catch (e) {
+      console.error(e);
+      alert('대여 취소 요청 철회 중 오류가 발생했습니다.');
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
   useEffect(() => {
     (async () => {
       try {
@@ -197,8 +230,17 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     depositRefundedAt: data.depositRefundedAt ?? undefined,
   });
 
+  // 생성됨/결제완료 + 아직 취소요청이 아닌 경우에만 버튼 노출
   const canRequestCancel = (data.status === 'created' || data.status === 'paid') && data.cancelRequest?.status !== 'requested';
 
+  // 취소 상태 배너용 데이터
+  const cancelBanner = data.cancelRequest?.status
+    ? {
+        status: data.cancelRequest.status as 'requested' | 'approved' | 'rejected',
+        title: data.cancelRequest.status === 'requested' ? '대여 취소 요청이 접수되었습니다.' : data.cancelRequest.status === 'approved' ? '대여 취소 요청이 승인되어 대여가 취소되었습니다.' : '대여 취소 요청이 거절되었습니다.',
+        reason: data.cancelRequest.reasonCode ? `${data.cancelRequest.reasonCode}${data.cancelRequest.reasonText ? ` (${data.cancelRequest.reasonText})` : ''}` : data.cancelRequest.reasonText || '',
+      }
+    : null;
   return (
     <main className="space-y-8">
       <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-2xl p-8 border border-indigo-100 dark:border-indigo-800/30 shadow-lg">
@@ -261,6 +303,28 @@ export default function RentalsDetailClient({ id }: { id: string }) {
           </div>
         </div>
       </div>
+      {/* 대여 취소 상태 안내 배너 */}
+      {cancelBanner && (
+        <div
+          className={`mb-4 flex items-center justify-between rounded-lg border px-4 py-3 text-sm ${
+            cancelBanner.status === 'requested'
+              ? 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/60 dark:bg-amber-950/40 dark:text-amber-100'
+              : 'border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-100'
+          }`}
+        >
+          <div>
+            <p className="font-medium">{cancelBanner.title}</p>
+
+            {cancelBanner.reason && <p className="mt-1 text-xs opacity-80">사유: {cancelBanner.reason}</p>}
+          </div>
+
+          {cancelBanner.status === 'requested' && (
+            <Button variant="outline" size="sm" onClick={handleWithdrawCancelRequest} disabled={withdrawing} className="ml-4 whitespace-nowrap">
+              {withdrawing ? '철회 중…' : '취소 요청 철회'}
+            </Button>
+          )}
+        </div>
+      )}
 
       {banner && (
         <div

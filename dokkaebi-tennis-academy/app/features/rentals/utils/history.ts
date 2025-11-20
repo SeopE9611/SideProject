@@ -1,6 +1,6 @@
 import { Db, ObjectId } from 'mongodb';
 
-type HistoryAction = 'paid' | 'out' | 'returned' | 'cancel-request' | 'cancel-approved' | 'cancel-rejected';
+type HistoryAction = 'paid' | 'out' | 'returned' | 'cancel-request' | 'cancel-approved' | 'cancel-rejected' | 'cancel-withdrawn';
 type Actor = { role: 'user' | 'admin' | 'system'; id?: string };
 
 export async function writeRentalHistory(

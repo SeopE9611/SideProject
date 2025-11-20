@@ -15,7 +15,7 @@ const fetcher = (url: string) =>
 
 type HistoryItem = {
   _id: string;
-  action: 'paid' | 'out' | 'returned' | 'cancel-request' | 'cancel-approved' | 'cancel-rejected';
+  action: 'paid' | 'out' | 'returned' | 'cancel-request' | 'cancel-approved' | 'cancel-rejected' | 'cancel-withdrawn';
   from: string;
   to: string;
   at: string;
@@ -23,7 +23,7 @@ type HistoryItem = {
   snapshot?: any;
 };
 
-const ACTIONS = ['all', 'paid', 'out', 'returned', 'cancel-request', 'cancel-approved', 'cancel-rejected'] as const;
+const ACTIONS = ['all', 'paid', 'out', 'returned', 'cancel-request', 'cancel-approved', 'cancel-rejected', 'cancel-withdrawn'] as const;
 type ActionFilter = (typeof ACTIONS)[number];
 
 function ActionBadge({ action }: { action: HistoryItem['action'] }) {
@@ -34,6 +34,7 @@ function ActionBadge({ action }: { action: HistoryItem['action'] }) {
     'cancel-request': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
     'cancel-approved': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
     'cancel-rejected': 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-200',
+    'cancel-withdrawn': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300', // ✅ 새 액션
   };
 
   const labelMap: Record<HistoryItem['action'], string> = {
@@ -43,6 +44,7 @@ function ActionBadge({ action }: { action: HistoryItem['action'] }) {
     'cancel-request': 'CANCEL_REQ',
     'cancel-approved': 'CANCEL_OK',
     'cancel-rejected': 'CANCEL_REJ',
+    'cancel-withdrawn': 'CANCEL_WD',
   };
 
   const label = labelMap[action];
