@@ -356,7 +356,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                         <div>
                           <CardTitle className="text-xl">패키지</CardTitle>
-                          <CardDescription>패키지를 확인하실 수 있습니다.</CardDescription>
+                          <CardDescription>잔여 횟수와 만료일을 확인하세요.</CardDescription>
                         </div>
                       </div>
                     </CardHeader>

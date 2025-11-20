@@ -28,19 +28,7 @@ export default function PassList() {
   const { data, isLoading, error, mutate } = useSWR<Res>('/api/passes/me', fetcher);
 
   if (isLoading) {
-    return (
-      <Card className="border-0 shadow-2xl">
-        <CardHeader>
-          <CardTitle>패키지 이용권</CardTitle>
-          <CardDescription>보유 중인 교체 서비스 패키지 목록</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="h-6 w-1/2 bg-slate-200 dark:bg-slate-700 rounded" />
-          <div className="h-20 w-full bg-slate-100 dark:bg-slate-800 rounded" />
-          <div className="h-20 w-full bg-slate-100 dark:bg-slate-800 rounded" />
-        </CardContent>
-      </Card>
-    );
+    return <div className="text-center py-8 text-muted-foreground">패키지 내역을 불러오는 중입니다...</div>;
   }
 
   if (error || !data) {
@@ -62,18 +50,7 @@ export default function PassList() {
 
   const items = data.items ?? [];
   return (
-    <Card className="border-0 shadow-2xl">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
-            <Ticket className="h-6 w-6" />
-          </div>
-          <div>
-            <CardTitle>패키지 이용권</CardTitle>
-            <CardDescription>잔여 횟수와 만료일을 확인하세요.</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
+    <Card className="border-0">
       <CardContent className="space-y-4">
         {items.length === 0 && <div className="text-slate-500 dark:text-slate-400">보유 중인 패키지 이용권이 없습니다.</div>}
         {items.map((p) => {

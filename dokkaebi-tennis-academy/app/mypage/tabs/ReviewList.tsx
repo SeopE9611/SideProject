@@ -325,6 +325,11 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     );
   }
 
+  // 첫 로딩
+  if (!data && isValidating) {
+    return <div className="text-center py-8 text-muted-foreground">리뷰 내역을 불러오는 중입니다...</div>;
+  }
+
   return (
     <div className="space-y-6">
       {/* 필터 */}

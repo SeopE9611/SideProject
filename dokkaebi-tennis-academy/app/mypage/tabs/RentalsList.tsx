@@ -93,20 +93,9 @@ export default function RentalsList() {
     );
   }
 
+  // 첫 로딩
   if (!data && isValidating) {
-    return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-4"></div>
-              <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-2"></div>
-              <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
+    return <div className="text-center py-8 text-muted-foreground">대여 내역을 불러오는 중입니다...</div>;
   }
 
   if (!isValidating && flat.length === 0) {
