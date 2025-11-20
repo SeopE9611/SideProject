@@ -3,6 +3,8 @@
 import useSWR from 'swr';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { CreditCard, Play, RotateCcw, XCircle, Undo2, Clock } from 'lucide-react';
 
 const fetcher = (url: string) =>
   fetch(url, { credentials: 'include' }).then(async (r) => {
@@ -24,37 +26,113 @@ type HistoryItem = {
 };
 
 const ACTIONS = ['all', 'paid', 'out', 'returned', 'cancel-request', 'cancel-approved', 'cancel-rejected', 'cancel-withdrawn'] as const;
+
 type ActionFilter = (typeof ACTIONS)[number];
 
-function ActionBadge({ action }: { action: HistoryItem['action'] }) {
-  const map: Record<HistoryItem['action'], string> = {
-    paid: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-    out: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
-    returned: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
-    'cancel-request': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-    'cancel-approved': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-    'cancel-rejected': 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-200',
-    'cancel-withdrawn': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300', // ✅ 새 액션
-  };
+const FILTER_LABELS: Record<ActionFilter, string> = {
+  all: '전체',
+  paid: '결제 확인',
+  out: '대여 시작',
+  returned: '반납 완료',
+  'cancel-request': '취소 요청',
+  'cancel-approved': '취소 승인',
+  'cancel-rejected': '취소 거절',
+  'cancel-withdrawn': '취소 철회',
+};
 
-  const labelMap: Record<HistoryItem['action'], string> = {
-    paid: 'PAID',
-    out: 'OUT',
-    returned: 'RETURNED',
-    'cancel-request': 'CANCEL_REQ',
-    'cancel-approved': 'CANCEL_OK',
-    'cancel-rejected': 'CANCEL_REJ',
-    'cancel-withdrawn': 'CANCEL_WD',
-  };
-
-  const label = labelMap[action];
-  return <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${map[action]}`}>{label}</span>;
+function getActionMeta(action: HistoryItem['action']) {
+  switch (action) {
+    case 'paid':
+      return {
+        label: '결제 확인',
+        Icon: CreditCard,
+        wrapperClasses: 'border-emerald-300/70 bg-emerald-100/40 dark:border-emerald-600/60 dark:bg-emerald-900/30',
+        iconClasses: 'text-emerald-700 dark:text-emerald-300',
+      };
+    case 'out':
+      return {
+        label: '대여 시작',
+        Icon: Play,
+        wrapperClasses: 'border-sky-300/70 bg-sky-100/40 dark:border-sky-600/60 dark:bg-sky-900/30',
+        iconClasses: 'text-sky-700 dark:text-sky-300',
+      };
+    case 'returned':
+      return {
+        label: '반납 완료',
+        Icon: RotateCcw,
+        wrapperClasses: 'border-violet-300/70 bg-violet-100/40 dark:border-violet-600/60 dark:bg-violet-900/30',
+        iconClasses: 'text-violet-700 dark:text-violet-300',
+      };
+    case 'cancel-request':
+      return {
+        label: '취소 요청',
+        Icon: Clock,
+        wrapperClasses: 'border-amber-300/70 bg-amber-100/40 dark:border-amber-600/60 dark:bg-amber-900/30',
+        iconClasses: 'text-amber-700 dark:text-amber-300',
+      };
+    case 'cancel-approved':
+      return {
+        label: '취소 승인',
+        Icon: XCircle,
+        wrapperClasses: 'border-red-300/70 bg-red-100/40 dark:border-red-600/60 dark:bg-red-900/30',
+        iconClasses: 'text-red-700 dark:text-red-300',
+      };
+    case 'cancel-rejected':
+      return {
+        label: '취소 거절',
+        Icon: XCircle,
+        wrapperClasses: 'border-slate-300/70 bg-slate-100/40 dark:border-slate-600/60 dark:bg-slate-900/30',
+        iconClasses: 'text-slate-700 dark:text-slate-200',
+      };
+    case 'cancel-withdrawn':
+      return {
+        label: '취소 철회',
+        Icon: Undo2,
+        wrapperClasses: 'border-orange-300/70 bg-orange-100/40 dark:border-orange-600/60 dark:bg-orange-900/30',
+        iconClasses: 'text-orange-700 dark:text-orange-300',
+      };
+  }
 }
 
-export default function AdminRentalHistory({ id }: { id: string }) {
+/** 처리 주체 한글 라벨 */
+function getActorLabel(actor?: HistoryItem['actor']) {
+  if (!actor) return '시스템';
+  if (actor.role === 'admin') return '관리자';
+  if (actor.role === 'user') return '회원/고객';
+  return '시스템';
+}
+
+/** 한 줄 설명 문구 생성 */
+function getDescription(item: HistoryItem) {
+  const actor = getActorLabel(item.actor);
+  const base = `${actor}가 상태를 ${item.from} → ${item.to}로 변경했습니다.`;
+
+  if (item.action === 'cancel-request') {
+    const reason = item.snapshot?.cancelRequest?.reasonText || item.snapshot?.cancelRequest?.reasonCode || '사유 미입력';
+    return `${actor}가 대여 취소를 요청했습니다. 사유: ${reason}`;
+  }
+  if (item.action === 'cancel-approved') {
+    return `${actor}가 대여 취소 요청을 승인했습니다.`;
+  }
+  if (item.action === 'cancel-rejected') {
+    return `${actor}가 대여 취소 요청을 거절했습니다.`;
+  }
+  if (item.action === 'cancel-withdrawn') {
+    return `${actor}가 대여 취소 요청을 철회했습니다.`;
+  }
+
+  // paid / out / returned 등은 기본 문구 사용
+  return base;
+}
+
+interface Props {
+  id: string;
+}
+
+export default function AdminRentalHistory({ id }: Props) {
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<ActionFilter>('all');
-  const pageSize = 10;
+  const pageSize = 5;
 
   const { data, isLoading } = useSWR<{
     ok: boolean;
@@ -64,7 +142,9 @@ export default function AdminRentalHistory({ id }: { id: string }) {
     total: number;
     hasPrev: boolean;
     hasNext: boolean;
-  }>(`/api/rentals/${id}/history?page=${page}&pageSize=${pageSize}`, fetcher, { keepPreviousData: true });
+  }>(`/api/rentals/${id}/history?page=${page}&pageSize=${pageSize}`, fetcher, {
+    keepPreviousData: true,
+  });
 
   const items = useMemo(() => {
     const raw = data?.items ?? [];
@@ -72,64 +152,61 @@ export default function AdminRentalHistory({ id }: { id: string }) {
     return raw.filter((h) => h.action === filter);
   }, [data?.items, filter]);
 
+  const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
+
   return (
-    <Card className="mt-4">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between gap-4">
-          <CardTitle>처리 이력</CardTitle>
-          <div className="flex items-center gap-2">
-            {/* 액션 필터 */}
-            {ACTIONS.map((a) => (
-              <button key={a} onClick={() => setFilter(a)} className={`px-2 py-1 rounded text-xs border ${filter === a ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-muted-foreground'}`} title={`필터: ${a}`}>
-                {a.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="text-xs text-muted-foreground mt-1">{data ? `총 ${data.total}건 / 페이지 ${data.page}` : '불러오는 중…'}</div>
+    <Card className="mt-8 border-0 shadow-xl ring-1 ring-slate-200/70 dark:ring-slate-800/70 bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
+      <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5 text-indigo-600" />
+          <span>처리 이력</span>
+        </CardTitle>
+        <p className="mt-1 text-xs text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {isLoading && <div className="text-sm text-muted-foreground">불러오는 중…</div>}
 
-        {items.length === 0 && !isLoading && <div className="text-sm text-muted-foreground">이력이 없습니다.</div>}
+      <CardContent className="pt-2">
+        {isLoading && <div className="py-6 text-center text-sm text-muted-foreground">불러오는 중…</div>}
 
-        {items.map((h) => (
-          <div key={h._id} className="border rounded p-3 text-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ActionBadge action={h.action} />
-                <div className="font-medium">
-                  <span className="text-xs text-muted-foreground">
-                    ({h.from} → {h.to})
-                  </span>
+        {!isLoading && items.length === 0 && <div className="py-6 text-center text-sm text-muted-foreground">아직 처리 이력이 없습니다.</div>}
+
+        {/* 실제 이력 리스트 */}
+        <div className="space-y-3">
+          {items.map((h) => {
+            const meta = getActionMeta(h.action);
+            const dateStr = new Intl.DateTimeFormat('ko-KR', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+            }).format(new Date(h.at));
+
+            return (
+              <div key={h._id} className="flex space-x-4 py-3 border-b last:border-none">
+                <div className={`h-10 w-10 flex items-center justify-center rounded-full border ${meta.wrapperClasses}`}>
+                  <meta.Icon className={`h-6 w-6 ${meta.iconClasses}`} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between gap-4">
+                    <span className="font-semibold">{meta.label}</span>
+                    <span className="text-xs text-muted-foreground">{dateStr}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">{getDescription(h)}</p>
                 </div>
               </div>
-              <div className="text-xs text-muted-foreground">{new Date(h.at).toLocaleString()}</div>
-            </div>
-            {h.actor?.role && (
-              <div className="mt-1 text-xs">
-                actor: {h.actor.role}
-                {h.actor?.id ? ` (${h.actor.id})` : ''}
-              </div>
-            )}
-            {/* 스냅샷이 존재할 때만 보이도록 */}
-            {h.snapshot?.shipping?.name && (
-              <div className="mt-1 text-xs text-muted-foreground">
-                수령인: {h.snapshot.shipping.name} / {h.snapshot.shipping.address ?? ''} {h.snapshot.shipping.addressDetail ?? ''}
-              </div>
-            )}
-          </div>
-        ))}
+            );
+          })}
+        </div>
 
         {/* 페이지 이동 */}
-        <div className="flex items-center justify-between pt-2">
-          <button className="px-3 py-1 rounded border text-sm disabled:opacity-50" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={!data?.hasPrev}>
+        <div className="mt-4 flex items-center justify-between">
+          <Button size="sm" variant="outline" disabled={!data?.hasPrev} onClick={() => setPage((p) => Math.max(1, p - 1))}>
             이전
-          </button>
-          <div className="text-xs text-muted-foreground">{data ? `${data.page} / ${Math.max(1, Math.ceil(data.total / data.pageSize))}` : '-'}</div>
-          <button className="px-3 py-1 rounded border text-sm disabled:opacity-50" onClick={() => setPage((p) => (data?.hasNext ? p + 1 : p))} disabled={!data?.hasNext}>
+          </Button>
+          <span className="text-sm text-muted-foreground">{data ? `${page} / ${totalPages}` : '-'}</span>
+          <Button size="sm" variant="outline" disabled={!data?.hasNext} onClick={() => setPage((p) => (data?.hasNext ? p + 1 : p))}>
             다음
-          </button>
+          </Button>
         </div>
       </CardContent>
     </Card>

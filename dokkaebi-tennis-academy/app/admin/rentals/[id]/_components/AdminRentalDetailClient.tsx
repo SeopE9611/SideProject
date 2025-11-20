@@ -96,7 +96,9 @@ export default function AdminRentalDetailClient() {
 
   const { data, isLoading, mutate } = useSWR(id ? `/api/admin/rentals/${id}` : null, fetcher);
 
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<null | 'approveCancel' | 'rejectCancel' | 'out' | 'return' | 'refundMark' | 'refundClear'>(null);
+
+  const isBusy = busyAction !== null;
   const safeJson = async (r: Response) => {
     try {
       return await r.json();
@@ -132,8 +134,7 @@ export default function AdminRentalDetailClient() {
   const onToggleRefund = async (mark: boolean) => {
     const ok = confirm(mark ? '보증금 환불 처리할까요?' : '보증금 환불 처리 해제할까요?');
     if (!ok) return;
-    if (busy) return;
-    setBusy(true);
+
     const res = await fetch(`/api/admin/rentals/${id}/deposit/refund`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -143,94 +144,66 @@ export default function AdminRentalDetailClient() {
     const json = await safeJson(res);
     if (!res.ok || !json?.ok) {
       showErrorToast(json?.message || '처리 실패');
-      setBusy(false); // Corrected variable name from setBusyId to setBusy
       return;
     }
     await mutate();
-    showSuccessToast(mark ? '환불 처리 완료' : '환불 해제 완료');
-    setBusy(false);
+    showSuccessToast(mark ? '보증금 환불 처리 완료' : '보증금 환불 처리 해제 완료');
   };
 
   const onOut = async () => {
     if (!confirm('대여를 시작(out) 처리하시겠어요?')) return;
-    if (busy) return;
-    setBusy(true);
+
     const res = await fetch(`/api/rentals/${id}/out`, { method: 'POST' });
     const json = await safeJson(res);
     if (!res.ok) {
       showErrorToast(json?.message || '처리 실패');
-      setBusy(false);
       return;
     }
     await mutate();
     showSuccessToast('대여 시작 처리 완료');
-    setBusy(false);
   };
 
   const onReturn = async () => {
     if (!confirm('반납 처리하시겠어요?')) return;
-    if (busy) return;
-    setBusy(true);
+
     const res = await fetch(`/api/rentals/${id}/return`, { method: 'POST' });
     const json = await safeJson(res);
     if (!res.ok) {
       showErrorToast(json?.message || '처리 실패');
-      setBusy(false);
       return;
     }
     await mutate();
     showSuccessToast('반납 처리 완료');
-    setBusy(false);
   };
 
   // 대여 취소 요청 승인
   const onApproveCancel = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const res = await fetch(`/api/rentals/${id}/cancel-approve`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      const json = await safeJson(res);
-      if (!res.ok || !json?.ok) {
-        showErrorToast(json?.detail || json?.message || '취소 요청 승인에 실패했습니다.');
-        setBusy(false);
-        return;
-      }
-      await mutate();
-      showSuccessToast('대여 취소 요청을 승인했습니다.');
-    } catch (err) {
-      console.error('[AdminRentalDetail] onApproveCancel error', err);
-      showErrorToast('취소 요청 승인 중 오류가 발생했습니다.');
-    } finally {
-      setBusy(false);
+    const res = await fetch(`/api/rentals/${id}/cancel-approve`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    const json = await safeJson(res);
+    if (!res.ok || !json?.ok) {
+      showErrorToast(json?.detail || json?.message || '취소 요청 승인에 실패했습니다.');
+      return;
     }
+    await mutate();
+    showSuccessToast('대여 취소 요청을 승인했습니다.');
   };
 
   // 대여 취소 요청 거절
   const onRejectCancel = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const res = await fetch(`/api/rentals/${id}/cancel-reject`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      const json = await safeJson(res);
-      if (!res.ok || !json?.ok) {
-        showErrorToast(json?.detail || json?.message || '취소 요청 거절에 실패했습니다.');
-        setBusy(false);
-        return;
-      }
-      await mutate();
-      showSuccessToast('대여 취소 요청을 거절했습니다.');
-    } catch (err) {
-      console.error('[AdminRentalDetail] onRejectCancel error', err);
-      showErrorToast('취소 요청 거절 중 오류가 발생했습니다.');
-    } finally {
-      setBusy(false);
+    const res = await fetch(`/api/rentals/${id}/cancel-reject`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    const json = await safeJson(res);
+    if (!res.ok || !json?.ok) {
+      showErrorToast(json?.detail || json?.message || '취소 요청 거절에 실패했습니다.');
+      return;
     }
+    await mutate();
+    showSuccessToast('대여 취소 요청을 거절했습니다.');
   };
 
   const formatDate = (dateString: string | null | undefined) => {
@@ -259,8 +232,8 @@ export default function AdminRentalDetailClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-black">
-      <div className="container py-10 space-y-8">
-        <div className="mx-auto max-w-4xl">
+      <div className="container py-10">
+        <div className="mx-auto max-w-4xl space-y-8">
           <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-950/20 dark:via-blue-950/20 dark:to-indigo-950/20 rounded-2xl p-8 border border-purple-100 dark:border-purple-800/30 shadow-lg mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center space-x-4">
@@ -272,57 +245,24 @@ export default function AdminRentalDetailClient() {
                   <p className="mt-1 text-gray-600 dark:text-gray-400">대여 ID: {data.id}</p>
                 </div>
               </div>
-              <div className="sm:ml-auto flex items-center gap-2">
-                {data?.status !== 'canceled' && (
-                  <Link href={`/admin/rentals/${id}/shipping-update`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90 h-8">
-                    <Truck className="h-4 w-4 mr-2" />
-                    {data?.shipping?.outbound?.trackingNumber ? '출고 운송장 수정' : '출고 운송장 등록'}
-                  </Link>
-                )}
-                <Button variant="outline" size="sm" className="h-8 px-3 bg-white/60 dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60" asChild>
+              <div className="sm:ml-auto flex flex-wrap items-center justify-end gap-2">
+                <Button variant="outline" size="sm" className="h-8 border-slate-300 text-slate-900 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-50 dark:hover:bg-slate-700/60" asChild>
                   <Link href="/admin/rentals">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     목록으로 돌아가기
                   </Link>
                 </Button>
-                {data?.status === 'created' && (
-                  <Button onClick={onConfirmPayment} disabled={confirming} size="sm" className="h-8">
-                    {confirming ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 처리 중…
-                      </>
-                    ) : (
-                      '결제완료 처리(무통장)'
-                    )}
+
+                {data?.status !== 'canceled' && (
+                  <Button asChild variant="outline" size="sm" className="h-8 border-slate-300 text-slate-900 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-50 dark:hover:bg-slate-700/60 whitespace-nowrap">
+                    <Link href={`/admin/rentals/${id}/shipping-update`}>
+                      <Truck className="h-4 w-4 mr-2" />
+                      {data?.shipping?.outbound?.trackingNumber ? '출고 운송장 수정' : '출고 운송장 등록'}
+                    </Link>
                   </Button>
                 )}
               </div>
             </div>
-
-            {/* 취소 요청 상태 안내 (관리자용) */}
-            {cancelInfo && (
-              <div className="mb-4 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="font-medium text-amber-900">취소 요청 상태: {cancelInfo.badge}</p>
-                    <p className="mt-1">{cancelInfo.label}</p>
-                    {cancelInfo.reason && <p className="mt-1 text-xs text-amber-900/80">사유: {cancelInfo.reason}</p>}
-                  </div>
-
-                  {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
-                  {cancelInfo.status === 'requested' && (
-                    <div className="mt-2 flex gap-2 sm:mt-0 sm:flex-col sm:items-end">
-                      <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={busy} onClick={onApproveCancel}>
-                        {busy ? '처리중…' : '요청 승인'}
-                      </Button>
-                      <Button size="sm" variant="outline" className="border-amber-300 text-amber-900 hover:bg-amber-100" disabled={busy} onClick={onRejectCancel}>
-                        {busy ? '처리중…' : '요청 거절'}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 backdrop-blur-sm">
@@ -357,6 +297,58 @@ export default function AdminRentalDetailClient() {
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{data.days}일</p>
               </div>
             </div>
+            {/* 취소 요청 상태 안내 (관리자용) */}
+            {cancelInfo && (
+              <div className="mt-4 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="font-medium text-amber-900">취소 요청 상태: {cancelInfo.badge}</p>
+                    <p className="mt-1">{cancelInfo.label}</p>
+                    {cancelInfo.reason && <p className="mt-1 text-xs text-amber-900/80">사유: {cancelInfo.reason}</p>}
+                  </div>
+
+                  {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
+                  {cancelInfo.status === 'requested' && (
+                    <div className="mt-2 flex flex-col gap-2 sm:mt-0 sm:flex-row sm:items-center sm:justify-end">
+                      <Button
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        disabled={isBusy}
+                        onClick={async () => {
+                          if (isBusy) return;
+                          setBusyAction('approveCancel');
+                          try {
+                            await onApproveCancel();
+                          } finally {
+                            setBusyAction(null);
+                          }
+                        }}
+                      >
+                        {busyAction === 'approveCancel' ? '승인 처리중…' : '요청 승인'}
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-amber-300 text-amber-900 hover:bg-amber-100"
+                        disabled={isBusy}
+                        onClick={async () => {
+                          if (isBusy) return;
+                          setBusyAction('rejectCancel');
+                          try {
+                            await onRejectCancel();
+                          } finally {
+                            setBusyAction(null);
+                          }
+                        }}
+                      >
+                        {busyAction === 'rejectCancel' ? '거절 처리중…' : '요청 거절'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden mb-8">
@@ -366,44 +358,97 @@ export default function AdminRentalDetailClient() {
             </CardHeader>
             <CardFooter className="pt-4">
               <div className="flex gap-2 flex-wrap">
+                {/* 결제완료 처리(무통장) – created 상태에서만 노출 */}
+                {data.status === 'created' && (
+                  <Button size="sm" className="h-9 bg-slate-900 text-white hover:bg-slate-800" disabled={isBusy || confirming} onClick={onConfirmPayment}>
+                    {confirming ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        결제 처리중…
+                      </>
+                    ) : (
+                      '결제완료 처리(무통장)'
+                    )}
+                  </Button>
+                )}
+
+                {/* 대여 시작(out) */}
                 <Button
-                  className="bg-sky-600 hover:bg-sky-700"
-                  disabled={busy || !(data.status === 'paid')}
+                  size="sm"
+                  className="h-9 bg-sky-600 hover:bg-sky-700"
+                  disabled={isBusy || data.status !== 'paid'}
                   onClick={async () => {
-                    if (busy) return;
-                    setBusy(true);
-                    await onOut();
-                    setBusy(false);
+                    if (isBusy) return;
+                    setBusyAction('out');
+                    try {
+                      await onOut();
+                    } finally {
+                      setBusyAction(null);
+                    }
                   }}
                 >
-                  {busy ? '처리중…' : '대여 시작(out)'}
+                  {busyAction === 'out' ? '대여 시작 처리중…' : '대여 시작(out)'}
                 </Button>
+
+                {/* 반납 처리(return) */}
                 <Button
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                  disabled={busy || !['paid', 'out'].includes(data.status)}
+                  size="sm"
+                  className="h-9 bg-emerald-600 hover:bg-emerald-700"
+                  disabled={isBusy || !['paid', 'out'].includes(data.status)}
                   onClick={async () => {
-                    if (busy) return;
-                    setBusy(true);
-                    await onReturn();
-                    setBusy(false);
+                    if (isBusy) return;
+                    setBusyAction('return');
+                    try {
+                      await onReturn();
+                    } finally {
+                      setBusyAction(null);
+                    }
                   }}
                 >
-                  {busy ? '처리중…' : '반납 처리(return)'}
+                  {busyAction === 'return' ? '반납 처리중…' : '반납 처리(return)'}
                 </Button>
+
+                {/* 환불/해제 버튼 (아래는 기존 코드 그대로) */}
                 {data.status === 'returned' &&
                   (data.depositRefundedAt ? (
-                    <Button variant="outline" disabled={busy} onClick={() => onToggleRefund(false)}>
-                      {busy ? '처리중…' : '환불 해제'}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isBusy}
+                      onClick={async () => {
+                        if (isBusy) return;
+                        setBusyAction('refundClear');
+                        try {
+                          await onToggleRefund(false);
+                        } finally {
+                          setBusyAction(null);
+                        }
+                      }}
+                    >
+                      {busyAction === 'refundClear' ? '환불 해제 중…' : '환불 해제'}
                     </Button>
                   ) : (
-                    <Button variant="outline" disabled={busy} onClick={() => onToggleRefund(true)}>
-                      {busy ? '처리중…' : '환불 처리'}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isBusy}
+                      onClick={async () => {
+                        if (isBusy) return;
+                        setBusyAction('refundMark');
+                        try {
+                          await onToggleRefund(true);
+                        } finally {
+                          setBusyAction(null);
+                        }
+                      }}
+                    >
+                      {busyAction === 'refundMark' ? '환불 처리 중…' : '환불 처리'}
                     </Button>
                   ))}
               </div>
             </CardFooter>
           </Card>
-          <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
+          <Card className="mt-8 border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
               <CardTitle>고객 정보</CardTitle>
             </CardHeader>
@@ -636,9 +681,9 @@ export default function AdminRentalDetailClient() {
               </div>
             </CardContent>
           </Card>
+          <AdminRentalHistory id={id} />
         </div>
       </div>
-      <AdminRentalHistory id={id} />
     </div>
   );
 }
