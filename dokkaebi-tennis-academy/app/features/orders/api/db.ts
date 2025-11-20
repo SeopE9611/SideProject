@@ -44,6 +44,8 @@ export async function fetchCombinedOrders() {
         ? { name: `${order.guestInfo.name} (비회원)`, email: order.guestInfo.email ?? '-', phone: order.guestInfo.phone ?? '-' }
         : { name: '(고객 정보 없음)', email: '-', phone: '-' };
 
+      const cancelStatus = order.cancelRequest && order.cancelRequest.status ? (order.cancelRequest.status as 'requested' | 'approved' | 'rejected') : undefined;
+
       return {
         id: order._id.toString(),
         __type: 'order' as const,
@@ -71,6 +73,7 @@ export async function fetchCombinedOrders() {
             trackingNumber: order.shippingInfo.invoice?.trackingNumber ?? null,
           },
         },
+        cancelStatus,
       };
     })
   );
@@ -112,6 +115,8 @@ export async function fetchCombinedOrders() {
         const totalFromDoc = typeof (app as any).totalPrice === 'number' ? (app as any).totalPrice : null;
         const totalCalculated = items.reduce((s, it) => s + (it.price || 0) * (it.quantity || 0), 0);
 
+        const cancelStatus = app.cancelRequest && app.cancelRequest.status ? (app.cancelRequest.status as 'requested' | 'approved' | 'rejected') : undefined;
+
         return {
           id: app._id.toString(),
           linkedOrderId: app.orderId?.toString() ?? null, // ← 단독 신청서는 null
@@ -140,6 +145,7 @@ export async function fetchCombinedOrders() {
               trackingNumber: app.shippingInfo?.invoice?.trackingNumber ?? null,
             },
           },
+          cancelStatus,
         };
       })
     )

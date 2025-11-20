@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import type { ApiResponse, OrderWithType } from '@/lib/types/order';
-import { ChevronDown, Copy, Eye, MoreHorizontal, Search, Truck, X } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Search, Truck, X } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -382,7 +382,12 @@ export default function OrdersClient() {
                           <TooltipProvider delayDuration={10}>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="inline-block max-w-[140px] truncate cursor-pointer">{shortenId(order.id)}</span>
+                                <span className="inline-flex items-center gap-1 max-w-[140px] truncate cursor-pointer">
+                                  {/* 취소요청 상태일 때만 아이콘 노출 */}
+                                  {order.cancelStatus === 'requested' && <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" aria-hidden="true" />}
+                                  {/* 실제 표시되는 주문 ID (짧게) */}
+                                  <span className="truncate">{shortenId(order.id)}</span>
+                                </span>
                               </TooltipTrigger>
                               <TooltipContent
                                 side="top"
@@ -394,20 +399,24 @@ export default function OrdersClient() {
                                 }}
                                 className="px-5 py-2.5 rounded-lg shadow-lg border text-base min-w-[240px]"
                               >
-                                <div className="flex items-center gap-2">
-                                  <span className="font-mono">{order.id}</span>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-6 w-6"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(order.id);
-                                      showSuccessToast('주문 ID가 클립보드에 복사되었습니다.');
-                                    }}
-                                  >
-                                    <Copy className="w-4 h-4" />
-                                    <span className="sr-only">복사</span>
-                                  </Button>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-mono">{order.id}</span>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-6 w-6"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(order.id);
+                                        showSuccessToast('주문 ID가 클립보드에 복사되었습니다.');
+                                      }}
+                                    >
+                                      <Copy className="w-4 h-4" />
+                                      <span className="sr-only">복사</span>
+                                    </Button>
+                                  </div>
+
+                                  {order.cancelStatus === 'requested' && <p className="mt-2 text-sm text-amber-500">취소 요청이 접수된 주문입니다.</p>}
                                 </div>
                               </TooltipContent>
                             </Tooltip>

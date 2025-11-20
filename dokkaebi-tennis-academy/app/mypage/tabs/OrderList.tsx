@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { orderStatusColors } from '@/lib/badge-style';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck, MessageSquarePlus, Ban } from 'lucide-react';
+import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck, MessageSquarePlus, Ban, Undo2 } from 'lucide-react';
 import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
 import CancelOrderDialog from '@/app/mypage/orders/_components/CancelOrderDialog';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 //  주문 데이터 타입 정의
 type OrderResponse = {
@@ -90,9 +91,35 @@ export default function OrderList() {
     return `/api/users/me/orders?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error } = useSWRInfinite<OrderResponse>(getKey, fetcher, {
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<OrderResponse>(getKey, fetcher, {
     revalidateFirstPage: true,
   });
+
+  const handleWithdrawCancelRequest = async (orderId: string) => {
+    if (!confirm('이 주문의 취소 요청을 철회하시겠습니까?')) return;
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel-request-withdraw`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const msg = data?.message || '취소 요청 철회 중 오류가 발생했습니다.';
+        showErrorToast(msg);
+        return;
+      }
+
+      showSuccessToast('주문 취소 요청을 철회했습니다.');
+
+      // 무한스크롤 주문 목록 전체 다시 조회
+      await mutate();
+    } catch (e) {
+      console.error(e);
+      showErrorToast('취소 요청 철회 중 오류가 발생했습니다.');
+    }
+  };
 
   // 누적 아이템
   const items = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
@@ -255,7 +282,14 @@ export default function OrderList() {
                         </Tooltip>
                       ))}
                   </TooltipProvider>
-                  {isCancelable && <CancelOrderDialog orderId={order.id} />}
+                  {order.cancelStatus === 'requested' ? (
+                    <Button size="sm" variant="destructive" onClick={() => handleWithdrawCancelRequest(order.id)} className="gap-2">
+                      <Undo2 className="h-4 w-4" />
+                      주문 취소 요청 철회
+                    </Button>
+                  ) : (
+                    isCancelable && <CancelOrderDialog orderId={order.id} />
+                  )}
                 </div>
               </div>
             </CardContent>

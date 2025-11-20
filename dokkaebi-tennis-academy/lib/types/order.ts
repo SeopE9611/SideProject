@@ -45,6 +45,8 @@ export type Order = {
   total: number;
 
   items: OrderItem[];
+
+  cancelStatus?: 'requested' | 'approved' | 'rejected';
 };
 
 export type OrderWithType = Order & {

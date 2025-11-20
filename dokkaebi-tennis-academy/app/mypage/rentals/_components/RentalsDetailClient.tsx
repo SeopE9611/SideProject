@@ -133,6 +133,17 @@ const fmtDateOnly = (v?: string | Date | null) => (v ? new Date(v).toLocaleDateS
 
 export default function RentalsDetailClient({ id }: { id: string }) {
   const [data, setData] = useState<Rental | null>(null);
+  const refreshRental = async () => {
+    try {
+      const res = await fetch(`/api/me/rentals/${id}`, { credentials: 'include' });
+      if (!res.ok) return;
+      const json = await res.json();
+      setData(json); // 최신 상태로 덮어쓰기
+    } catch (e) {
+      console.error('대여 상세 재조회 실패', e);
+    }
+  };
+
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -237,7 +248,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
   const cancelBanner = data.cancelRequest?.status
     ? {
         status: data.cancelRequest.status as 'requested' | 'approved' | 'rejected',
-        title: data.cancelRequest.status === 'requested' ? '대여 취소 요청이 접수되었습니다.' : data.cancelRequest.status === 'approved' ? '대여 취소 요청이 승인되어 대여가 취소되었습니다.' : '대여 취소 요청이 거절되었습니다.',
+        title: data.cancelRequest.status === 'requested' ? '대여 취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.' : '대여 취소 요청이 거절되었습니다.',
         reason: data.cancelRequest.reasonCode ? `${data.cancelRequest.reasonCode}${data.cancelRequest.reasonText ? ` (${data.cancelRequest.reasonText})` : ''}` : data.cancelRequest.reasonText || '',
       }
     : null;
@@ -257,7 +268,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
           <div className="sm:ml-auto flex items-center gap-2">
             {/* 생성됨/결제완료 + 아직 취소요청이 아닌 경우에만 버튼 노출 */}
-            {canRequestCancel && <CancelRentalDialog rentalId={data.id} />}
+            {canRequestCancel && <CancelRentalDialog rentalId={data.id} onSuccess={refreshRental} />}
 
             {data?.status === 'out' && (
               <Link href={`/mypage/rentals/${data.id}/return-shipping`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90 h-8">
@@ -314,8 +325,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
         >
           <div>
             <p className="font-medium">{cancelBanner.title}</p>
-
-            {cancelBanner.reason && <p className="mt-1 text-xs opacity-80">사유: {cancelBanner.reason}</p>}
+            {/* {cancelBanner.reason && <p className="mt-1 text-xs opacity-80">사유: {cancelBanner.reason}</p>} */}
           </div>
 
           {cancelBanner.status === 'requested' && (

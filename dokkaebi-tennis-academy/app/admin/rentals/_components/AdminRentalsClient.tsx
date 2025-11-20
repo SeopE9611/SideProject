@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
-import { ChevronDown, Copy, Eye, MoreHorizontal, Package, Search, Truck, X } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Package, Search, Truck, X } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -36,6 +36,9 @@ type RentalRow = {
     email: string;
   };
   createdAt?: string;
+  cancelRequest?: {
+    status?: 'requested' | 'approved' | 'rejected';
+  } | null;
 };
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
@@ -578,27 +581,55 @@ export default function AdminRentalsClient() {
                         <TooltipProvider delayDuration={10}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="inline-block max-w-[140px] truncate cursor-pointer">{shortenId(rid)}</span>
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 max-w-[140px] truncate cursor-pointer"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(rid);
+                                  showSuccessToast('대여 ID가 클립보드에 복사되었습니다.');
+                                }}
+                              >
+                                {/* 취소요청 들어온 대여만 경고 아이콘 표시 */}
+                                {r.cancelRequest?.status === 'requested' && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" aria-label="취소 요청된 대여" />}
+
+                                <span className="inline-block truncate">{shortenId(rid)}</span>
+                              </button>
                             </TooltipTrigger>
-                            <TooltipContent side="top" align="center" sideOffset={6} className="px-5 py-2.5 rounded-lg shadow-lg border text-base min-w-[240px]">
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono">{rid}</span>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-6 w-6"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(rid);
-                                    showSuccessToast('대여 ID가 클립보드에 복사되었습니다.');
-                                  }}
-                                >
-                                  <Copy className="w-4 h-4" />
-                                </Button>
+
+                            <TooltipContent
+                              side="top"
+                              align="center"
+                              sideOffset={6}
+                              style={{
+                                backgroundColor: 'rgb(var(--popover))',
+                                color: 'rgb(var(--popover-foreground))',
+                              }}
+                              className="px-5 py-2.5 rounded-lg shadow-lg border text-base min-w-[240px]"
+                            >
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono">{rid}</span>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(rid);
+                                      showSuccessToast('대여 ID가 클립보드에 복사되었습니다.');
+                                    }}
+                                  >
+                                    <Copy className="w-4 h-4" />
+                                    <span className="sr-only">복사</span>
+                                  </Button>
+                                </div>
+
+                                {r.cancelRequest?.status === 'requested' && <p className="mt-2 text-sm text-amber-500">취소 요청이 접수된 대여입니다.</p>}
                               </div>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
+
                       <TableCell className={tdClasses}>
                         <div className="flex flex-col items-center">
                           <span>{r.customer?.name || '-'}</span>

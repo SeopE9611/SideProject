@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Phone, User, RatIcon as Racquet, Zap, GraduationCap, ArrowRight, FileText, Target, LayoutGrid, RocketIcon, Gauge, CheckCircle, Delete, Ban } from 'lucide-react';
+import { Calendar, Clock, Phone, User, RatIcon as Racquet, Zap, GraduationCap, ArrowRight, FileText, Target, LayoutGrid, RocketIcon, Gauge, CheckCircle, Delete, Ban, XCircle, Undo2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useSWRInfinite from 'swr/infinite';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
@@ -127,13 +127,39 @@ export default function ApplicationsClient() {
       setCancelDialogOpen(false);
       setTargetId(null);
 
-      // 🔄 목록 재검증(취소 요청 뱃지/버튼 상태 갱신)
+      // 목록 재검증(취소 요청 뱃지/버튼 상태 갱신)
       await mutate();
     } catch (error) {
       console.error(error);
       showErrorToast('취소 요청 처리 중 오류가 발생했습니다.');
     } finally {
       setIsCancelSubmitting(false);
+    }
+  };
+
+  const handleWithdrawCancelRequest = async (applicationId: string) => {
+    if (!confirm('이 신청의 취소 요청을 철회하시겠습니까?')) return;
+
+    try {
+      const res = await fetch(`/api/applications/${applicationId}/cancel-request-withdraw`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const msg = data?.message || '취소 요청 철회 중 오류가 발생했습니다.';
+        showErrorToast(msg);
+        return;
+      }
+
+      showSuccessToast('신청 취소 요청을 철회했습니다.');
+
+      // 신청 목록 전체 재검증 → 취소 요청 뱃지/버튼 상태 갱신
+      await mutate();
+    } catch (e) {
+      console.error(e);
+      showErrorToast('취소 요청 철회 중 오류가 발생했습니다.');
     }
   };
 
@@ -189,10 +215,13 @@ export default function ApplicationsClient() {
           const CLOSED = ['작업 중', '교체완료'];
           const isClosed = CLOSED.includes(String((app as any).status));
 
-          // 취소 요청 가능 여부
-          const cancelStatus = app.cancelStatus ?? 'none';
-          const isCancelable = isStringService && ['접수완료', '검토 중'].includes(app.status) && (cancelStatus === 'none' || cancelStatus === '거절' || cancelStatus === 'rejected');
+          // 취소 상태 계산 (한글/영문 둘 다 대응)
+          const rawCancelStatus = app.cancelStatus ?? 'none';
+          const isCancelRequested = rawCancelStatus === '요청' || rawCancelStatus === 'requested';
+          const isCancelRejected = rawCancelStatus === '거절' || rawCancelStatus === 'rejected';
 
+          // 취소 요청 가능 여부
+          const isCancelable = isStringService && ['접수완료', '검토 중'].includes(app.status) && !isCancelRequested; // 요청 상태가 아니면 언제든 다시 취소 요청 가능
           return (
             <Card key={app.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
@@ -328,15 +357,23 @@ export default function ApplicationsClient() {
                           운송장 수정하기
                         </Button>
                       ) : (
-                        <Button variant="default" size="sm" onClick={() => router.push(`/services/applications/${app.id}/shipping?return=${encodeURIComponent('/mypage?tab=applications')}`)}>
+                        <Button variant="outline" size="sm" onClick={() => router.push(`/services/applications/${app.id}/shipping?return=${encodeURIComponent('/mypage?tab=applications')}`)}>
                           {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
                         </Button>
                       ))}
 
-                    {isCancelable && (
-                      <Button variant="outline" size="sm" onClick={() => handleOpenCancel(app.id)} className="border-destructive/40 text-destructive hover:bg-destructive/5">
-                        취소 요청
+                    {isCancelRequested ? (
+                      <Button variant="destructive" size="sm" onClick={() => handleWithdrawCancelRequest(app.id)} className="gap-2">
+                        <Undo2 className="h-4 w-4" />
+                        신청 취소 요청 철회
                       </Button>
+                    ) : (
+                      isCancelable && (
+                        <Button variant="destructive" size="sm" onClick={() => handleOpenCancel(app.id)} className="gap-2">
+                          <XCircle className="h-4 w-4" />
+                          신청 취소 요청
+                        </Button>
+                      )
                     )}
                   </div>
                 </div>

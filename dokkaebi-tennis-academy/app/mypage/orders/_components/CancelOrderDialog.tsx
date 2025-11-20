@@ -66,7 +66,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
         throw new Error(message || '취소 요청 처리 중 오류가 발생했습니다.');
       }
 
-      // ✅ 이제는 "바로 취소"가 아니라, 취소 요청이 접수된 상태
+      // 이제는 "바로 취소"가 아니라, 취소 요청이 접수된 상태
       showSuccessToast('취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.');
 
       // status 전용 버튼/Badge 갱신 (OrderStatusBadge가 /api/orders/{orderId}/status 를 SWR로 가져오는 경우)
@@ -95,7 +95,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm">
           <XCircle className="mr-2 h-4 w-4" />
-          주문 취소
+          주문 취소 요청
         </Button>
       </DialogTrigger>
 

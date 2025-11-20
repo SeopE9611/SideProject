@@ -12,11 +12,17 @@ import { XCircle } from 'lucide-react';
 
 interface CancelRentalDialogProps {
   rentalId: string;
+  onSuccess?: () => void | Promise<void>;
 }
 
-const CancelRentalDialog = ({ rentalId }: CancelRentalDialogProps) => {
+const CancelRentalDialog = ({ rentalId, onSuccess }: CancelRentalDialogProps) => {
+  // 모달 열림/닫힘 상태
+  const [open, setOpen] = useState(false);
+  // 선택된 기본 사유
   const [selectedReason, setSelectedReason] = useState<string | undefined>();
+  // "기타" 선택 시 추가 입력 사유
   const [otherReason, setOtherReason] = useState('');
+  // API 호출 중 여부
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -39,8 +45,8 @@ const CancelRentalDialog = ({ rentalId }: CancelRentalDialogProps) => {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          reasonCode: selectedReason,
-          reasonText: selectedReason === '기타' ? otherReason.trim() : undefined,
+          reason: selectedReason === '기타' ? '기타' : selectedReason,
+          detail: selectedReason === '기타' ? otherReason.trim() : selectedReason,
         }),
       });
 
@@ -51,10 +57,21 @@ const CancelRentalDialog = ({ rentalId }: CancelRentalDialogProps) => {
 
       showSuccessToast('대여 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.');
 
-      // 상세 데이터 갱신
+      // 상세 데이터 갱신 (혹시 다른 곳에서 SWR로 쓰고 있을 수도 있으니 유지)
       await mutate(`/api/rentals/${rentalId}`, undefined, { revalidate: true });
+      // ✅ 마이페이지 상세에 맞춰주려면 이 줄도 추가해 두면 좋음
+      await mutate(`/api/me/rentals/${rentalId}`, undefined, { revalidate: true });
+
       // 마이페이지 목록 갱신
       await mutate((key: string) => key?.startsWith('/api/me/rentals'), undefined, { revalidate: true });
+
+      // 모달 닫기
+      setOpen(false);
+
+      // ✅ 부모에게 "성공했어" 알려주기 → 부모가 다시 fetch 해서 state 갱신
+      if (onSuccess) {
+        await onSuccess();
+      }
     } catch (e) {
       console.error(e);
       showErrorToast('대여 취소 요청 중 오류가 발생했습니다.');
@@ -64,7 +81,14 @@ const CancelRentalDialog = ({ rentalId }: CancelRentalDialogProps) => {
   };
 
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        // 제출 중에는 강제로 닫히지 않도록 보호
+        if (isSubmitting) return;
+        setOpen(next);
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm" disabled={isSubmitting}>
           <XCircle className="mr-2 h-4 w-4" />
@@ -76,6 +100,7 @@ const CancelRentalDialog = ({ rentalId }: CancelRentalDialogProps) => {
         <DialogHeader>
           <DialogTitle>대여 취소 요청</DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label>취소 사유</Label>
@@ -101,7 +126,7 @@ const CancelRentalDialog = ({ rentalId }: CancelRentalDialogProps) => {
         </div>
 
         <DialogFooter>
-          <Button variant="outline" type="button" disabled={isSubmitting}>
+          <Button variant="outline" type="button" disabled={isSubmitting} onClick={() => setOpen(false)}>
             닫기
           </Button>
           <Button variant="destructive" type="button" onClick={handleSubmit} disabled={isSubmitting}>

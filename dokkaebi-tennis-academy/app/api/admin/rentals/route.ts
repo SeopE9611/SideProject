@@ -144,6 +144,20 @@ export async function GET(req: Request) {
       //   ? { courier: out.courier ?? '', trackingLast4: String(out.trackingNumber).slice(-4) }
       //   : null,
 
+      // 취소 요청 정보(한글/영문 상태 모두 정규화)
+      cancelRequest: r.cancelRequest
+        ? {
+            status:
+              r.cancelRequest.status === '요청' || r.cancelRequest.status === 'requested'
+                ? 'requested'
+                : r.cancelRequest.status === '승인' || r.cancelRequest.status === 'approved'
+                ? 'approved'
+                : r.cancelRequest.status === '거절' || r.cancelRequest.status === 'rejected'
+                ? 'rejected'
+                : 'requested',
+          }
+        : null,
+
       customer: {
         name: cust?.name || '',
         email: cust?.email || '',

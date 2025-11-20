@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, CreditCard, Package, ArrowRight, Briefcase, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, CreditCard, Package, ArrowRight, Briefcase, CheckCircle, AlertCircle, XCircle, Undo2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { racketBrandLabel } from '@/lib/constants';
+import CancelRentalDialog from '@/app/mypage/rentals/_components/CancelRentalDialog';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -70,7 +72,32 @@ const formatDate = (dateString: string) => {
 };
 
 export default function RentalsList() {
-  const { data, size, setSize, isValidating, error } = useSWRInfinite(getKey, fetcher);
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite(getKey, fetcher);
+
+  const handleWithdrawCancelRequest = async (rentalId: string) => {
+    if (!confirm('대여 취소 요청을 철회하시겠습니까?')) return;
+    try {
+      const res = await fetch(`/api/rentals/${rentalId}/cancel-withdraw`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        const msg = body?.message || '대여 취소 요청 철회 중 오류가 발생했습니다.';
+        showErrorToast(msg);
+        return;
+      }
+
+      showSuccessToast('대여 취소 요청을 철회했습니다.');
+
+      // 목록 전체를 다시 불러와서 해당 카드의 cancelStatus를 최신으로 맞춤
+      await mutate();
+    } catch (e) {
+      console.error(e);
+      showErrorToast('대여 취소 요청 철회 중 오류가 발생했습니다.');
+    }
+  };
 
   const flat = useMemo(() => (data ?? []).flatMap((d: any) => d.items ?? []), [data]);
 
@@ -174,15 +201,32 @@ export default function RentalsList() {
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                 <span className="text-lg font-bold text-slate-900 dark:text-slate-100">총 {((r.amount?.fee ?? 0) + (r.amount?.deposit ?? 0)).toLocaleString()}원</span>
-                {r.hasReturnShipping ? <Badge className="bg-emerald-600 text-white">반납 운송장 등록됨</Badge> : <Badge variant="secondary">반납 운송장 미등록</Badge>}
+                {r.hasReturnShipping ? <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200">반납 운송장 등록됨</Badge> : <Badge variant="secondary">반납 운송장 미등록</Badge>}
               </div>
 
-              <Button size="sm" variant="outline" asChild className="border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent">
-                <Link href={`/mypage?tab=rentals&rentalId=${r.id}`} className="inline-flex items-center gap-1">
-                  상세보기
-                  <ArrowRight className="h-3 w-3" />
-                </Link>
-              </Button>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <Button size="sm" variant="outline" asChild className="hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent">
+                  <Link href={`/mypage?tab=rentals&rentalId=${r.id}`} className="inline-flex items-center gap-1">
+                    상세보기
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </Button>
+
+                {r.cancelStatus === 'requested' && (
+                  <Button size="sm" variant="destructive" onClick={() => handleWithdrawCancelRequest(r.id)} className="gap-2">
+                    <Undo2 className="h-4 w-4" />
+                    대여 취소 요청 철회
+                  </Button>
+                )}
+                {['created', 'paid'].includes(r.status) && r.cancelStatus !== 'requested' && (
+                  <CancelRentalDialog
+                    rentalId={r.id}
+                    onSuccess={async () => {
+                      await mutate(); // 목록 다시 불러오기
+                    }}
+                  />
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
