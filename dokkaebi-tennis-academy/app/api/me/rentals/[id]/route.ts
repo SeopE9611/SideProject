@@ -38,7 +38,7 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
-    status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status, // created | paid | out | returned
+    status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status, // pending | paid | out | returned
     amount: doc.amount, // { fee, deposit, total }
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null, // 출고 시각
@@ -80,7 +80,7 @@ export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> 
   });
   if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
 
-  const current = (doc as any).status ?? 'created';
+  const current = (doc as any).status ?? 'pending';
 
   // 멱등: 이미 취소 상태면 200 그대로
   if (current === 'canceled') {
@@ -88,7 +88,7 @@ export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   // 전이 가능 여부 + created 상태에서만 허용
-  if (!canTransitIdempotent(current, 'canceled') || current !== 'created') {
+  if (!canTransitIdempotent(current, 'canceled') || current !== 'pending') {
     return NextResponse.json({ message: '현재 상태에서는 취소할 수 없습니다.', status: current }, { status: 409 });
   }
 

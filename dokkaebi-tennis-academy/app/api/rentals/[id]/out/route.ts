@@ -24,18 +24,18 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   const _id = new ObjectId(id);
   const order = await db.collection('rental_orders').findOne({ _id });
   if (!order) return NextResponse.json({ message: 'NOT_FOUND' }, { status: 404 });
-
+  const currentStatus = (order.status ?? 'paid') as any;
   // already out/returned → 멱등 성공
   if (['out', 'returned'].includes(order.status)) {
     return NextResponse.json({ ok: true, id });
   }
   // 결제전 paid → out 만 허용
-  if (!canTransitIdempotent(order.status ?? 'created', 'out') || order.status !== 'paid') {
+  if (!canTransitIdempotent(currentStatus, 'out') || currentStatus !== 'paid') {
     return NextResponse.json({ message: '대여 시작 불가 상태' }, { status: 409 });
   }
 
   // 이미 'out'이면 멱등 처리
-  if ((order.status ?? 'created') === 'out') {
+  if (currentStatus === 'out') {
     return NextResponse.json({ ok: true, id });
   }
 
@@ -47,8 +47,8 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   const dueAt = due.toISOString();
 
   // 전이 가능성 선검사(가독), 실보호는 updateOne
-  if (!canTransitIdempotent(order.status ?? 'created', 'out') || (order.status ?? 'created') !== 'paid') {
-    return NextResponse.json({ ok: false, code: 'INVALID_STATE', message: '출고 불가 상태', status: order.status }, { status: 409 });
+  if (!canTransitIdempotent(currentStatus, 'out') || currentStatus !== 'paid') {
+    return NextResponse.json({ ok: false, code: 'INVALID_STATE', message: '대여 시작 불가 상태' }, { status: 409 });
   }
 
   // 원자적 전이: 현재 status가 'paid'인 경우에만 'out'

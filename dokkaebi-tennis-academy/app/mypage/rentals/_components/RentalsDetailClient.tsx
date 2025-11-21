@@ -15,7 +15,7 @@ type Rental = {
   brand: string;
   model: string;
   days: number;
-  status: 'created' | 'paid' | 'out' | 'returned' | 'canceled';
+  status: 'pending' | 'paid' | 'out' | 'returned' | 'canceled';
   amount?: { fee?: number; deposit?: number; total?: number };
   createdAt?: string;
   dueAt?: string | null;
@@ -87,7 +87,7 @@ const getStatusBadgeColor = (status: string) => {
 
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
-    created: '생성됨',
+    pending: '대기중',
     paid: '결제완료',
     out: '대여중',
     returned: '반납완료',
@@ -241,9 +241,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     depositRefundedAt: data.depositRefundedAt ?? undefined,
   });
 
-  // 생성됨/결제완료 + 아직 취소요청이 아닌 경우에만 버튼 노출
-  const canRequestCancel = (data.status === 'created' || data.status === 'paid') && data.cancelRequest?.status !== 'requested';
-
+  // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 버튼 노출
+  const canRequestCancel = (data.status === 'pending' || data.status === 'paid') && (!data.cancelRequest || data.cancelRequest.status !== 'requested');
   // 취소 상태 배너용 데이터
   const cancelBanner = data.cancelRequest?.status
     ? {

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { canTransitIdempotent } from '@/app/features/rentals/utils/status';
+import { canTransitIdempotent, RentalStatus } from '@/app/features/rentals/utils/status';
 import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +26,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // 멱등 처리: 이미 paid면 OK
-    if ((order.status ?? 'created') === 'paid') {
+    if ((order.status ?? 'pending') === 'paid') {
       return NextResponse.json({ ok: true, id: rentalId });
     }
 
@@ -37,14 +37,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ ok: false, code: 'INVALID_AMOUNT', message: '0원 결제는 허용되지 않습니다.' }, { status: 409 });
     }
 
-    // 상태 전이 가능성 선검사(가독) - 진짜 보호는 조건부 updateOne
-    if (!canTransitIdempotent(order.status ?? 'created', 'paid') || (order.status ?? 'created') !== 'created') {
+    // 금액 가드 아래쪽에, 상태 전이 가드 정리
+    const currentStatus = (order.status ?? 'pending') as RentalStatus;
+
+    // 상태 전이 가능성 선검사(가독용) - 진짜 보호는 조건부 updateOne
+    if (!canTransitIdempotent(currentStatus, 'paid') || currentStatus !== 'pending') {
       return NextResponse.json({ ok: false, code: 'INVALID_STATE', message: '결제 불가 상태', status: order.status }, { status: 409 });
     }
-
-    // 원자 전이: created → paid (경합 시 1건만 성공)
+    // 원자 전이: pending → paid (경합 시 1건만 성공)
     const u = await db.collection('rental_orders').updateOne(
-      { _id, status: 'created' },
+      { _id, status: 'pending' },
       {
         $set: {
           status: 'paid',
@@ -55,16 +57,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         },
       }
     );
+
     if (u.matchedCount === 0) {
-      // 경합 등으로 상태가 바뀐 경우
       return NextResponse.json({ ok: false, code: 'INVALID_STATE' }, { status: 409 });
     }
+
     // 처리 이력 기록
     await writeRentalHistory(db, rentalId, {
       action: 'paid',
-      from: 'created',
+      from: 'pending',
       to: 'paid',
-      actor: { role: 'user' }, // 게스트/회원 모두 사용자 액션으로 분류
+      actor: { role: 'user' },
       snapshot: { payment: body?.payment ?? null, shipping: body?.shipping ?? null },
     });
 

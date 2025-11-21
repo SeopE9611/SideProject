@@ -16,7 +16,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
-import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
+// import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,7 +26,7 @@ type RentalRow = {
   id: string;
   brand: string;
   model: string;
-  status: 'created' | 'paid' | 'out' | 'returned' | 'canceled';
+  status: 'pending' | 'paid' | 'out' | 'returned' | 'canceled';
   days: number;
   amount: { fee: number; deposit: number; total: number };
   dueAt?: string;
@@ -45,15 +45,14 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
-  created: 'bg-gray-500/10 text-gray-500 dark:bg-gray-500/20',
+  pending: 'bg-gray-500/10 text-gray-500 dark:bg-gray-500/20',
   paid: 'bg-blue-500/10 text-blue-500 dark:bg-blue-500/20',
   out: 'bg-purple-500/10 text-purple-500 dark:bg-purple-500/20',
   returned: 'bg-green-500/10 text-green-500 dark:bg-green-500/20',
-  canceled: 'bg-red-500/10 text-red-500 dark:bg-red-500/20',
 };
 
 const rentalStatusLabels: Record<string, string> = {
-  created: '생성됨',
+  pending: '대기중',
   paid: '결제완료',
   out: '대여중',
   returned: '반납완료',
@@ -366,7 +365,7 @@ export default function AdminRentalsClient() {
             <p className="mt-1 text-xs text-muted-foreground">도깨비 테니스 아카데미의 모든 라켓 대여를 관리하고 처리하세요.</p>
           </div>
           {/* 유지보수: created 청소 버튼 */}
-          <CleanupCreatedButton hours={2} />
+          {/* <CleanupCreatedButton hours={2} /> */}
         </div>
       </div>
 
@@ -412,7 +411,7 @@ export default function AdminRentalsClient() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">상태(전체)</SelectItem>
-                  <SelectItem value="created">생성됨</SelectItem>
+                  <SelectItem value="pending">대기중</SelectItem>
                   <SelectItem value="paid">결제완료</SelectItem>
                   <SelectItem value="out">대여중</SelectItem>
                   <SelectItem value="returned">반납완료</SelectItem>

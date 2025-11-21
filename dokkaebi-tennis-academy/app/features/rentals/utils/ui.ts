@@ -1,4 +1,4 @@
-export function getDepositBanner(opts: { status: 'created' | 'paid' | 'out' | 'returned' | 'canceled'; returnedAt?: string; depositRefundedAt?: string }) {
+export function getDepositBanner(opts: { status: 'pending' | 'paid' | 'out' | 'returned' | 'canceled'; returnedAt?: string; depositRefundedAt?: string }) {
   const { status, returnedAt, depositRefundedAt } = opts;
   if (status !== 'returned') return null;
 

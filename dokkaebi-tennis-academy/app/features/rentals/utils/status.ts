@@ -1,17 +1,16 @@
 // 대여 상태 전이 가드(멱등/일관성 보장용)
-// created → paid → out → returned / canceled(종결)
-export type RentalStatus = 'created' | 'paid' | 'out' | 'returned' | 'canceled';
+// pending → paid → out → returned / canceled(종결)
+export type RentalStatus = 'pending' | 'paid' | 'out' | 'returned' | 'canceled';
 export type ShippingStatus = 'none' | 'outbound-set' | 'return-set' | 'both-set';
 
 // 전이 가능한 상태맵
 const FLOW: Record<RentalStatus, RentalStatus[]> = {
-  created: ['paid', 'canceled'],
+  pending: ['paid', 'canceled'],
   paid: ['out', 'canceled'],
   out: ['returned'],
-  returned: [], // 종결
-  canceled: [], // 종결
+  returned: [],
+  canceled: [],
 };
-
 // 전이 가능 여부 검사
 export function canTransit(from: RentalStatus, to: RentalStatus) {
   return FLOW[from]?.includes(to) ?? false;

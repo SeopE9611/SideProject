@@ -24,13 +24,17 @@ declare global {
 }
 
 type Initial = {
-  id: string;
+  racketId: string;
   period: 7 | 15 | 30;
   fee: number;
   deposit: number;
-  status: string;
-  shipping: any;
-  racket: { id: string; brand: string; model: string; image: string | null; condition: 'A' | 'B' | 'C' } | null;
+  racket: {
+    id: string;
+    brand: string;
+    model: string;
+    image: string | null;
+    condition: 'A' | 'B' | 'C';
+  } | null;
 };
 
 export default function RentalsCheckoutClient({ initial }: { initial: Initial }) {
@@ -115,30 +119,49 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       return;
     }
 
+    if (!agreeTerms || !agreePrivacy || !agreeRefund) {
+      alert('필수 약관에 모두 동의해주세요.');
+      return;
+    }
+
     try {
       setLoading(true);
-      const res = await fetch(`/api/rentals/${initial.id}/prepare`, {
+
+      const res = await fetch('/api/rentals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          payment: { method: 'bank_transfer', bank: selectedBank, depositor },
-          shipping: { name, phone, postalCode, address, addressDetail, deliveryRequest },
-          refundAccount: { bank: refundBank, account: refundAccount, holder: refundHolder },
+          racketId: initial.racketId,
+          days: initial.period,
+          payment: {
+            method: 'bank_transfer',
+            bank: selectedBank,
+            depositor,
+          },
+          shipping: {
+            name,
+            phone,
+            postalCode,
+            address,
+            addressDetail,
+            deliveryRequest,
+          },
+          refundAccount: {
+            bank: refundBank,
+            account: refundAccount,
+            holder: refundHolder,
+          },
         }),
       });
-      const json = await (async () => {
-        try {
-          return await res.json();
-        } catch {
-          return {};
-        }
-      })();
+
+      const json: any = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         alert(json?.message ?? '결제 처리에 실패했습니다.');
         return;
       }
-      // 성공 페이지에서 안내를 위해(서버 응답에 payment 노출이 아직 없으므로)
+
+      // 성공 페이지에서 안내를 위해(기존 로직 유지)
       try {
         sessionStorage.setItem('rentals-last-bank', selectedBank);
         sessionStorage.setItem('rentals-last-depositor', depositor);
@@ -147,6 +170,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         sessionStorage.setItem('rentals-refund-holder', refundHolder);
         sessionStorage.setItem('rentals-success', '1'); // 뒤로가기 방지
       } catch {}
+
       router.push(`/rentals/success?id=${json.id}`);
     } finally {
       setLoading(false);

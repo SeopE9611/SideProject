@@ -19,7 +19,7 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
-  created: 'bg-gray-500/10 text-gray-500 dark:bg-gray-500/20',
+  pending: 'bg-gray-500/10 text-gray-500 dark:bg-gray-500/20',
   paid: 'bg-blue-500/10 text-blue-500 dark:bg-blue-500/20',
   out: 'bg-purple-500/10 text-purple-500 dark:bg-purple-500/20',
   returned: 'bg-green-500/10 text-green-500 dark:bg-green-500/20',
@@ -27,7 +27,7 @@ const rentalStatusColors: Record<string, string> = {
 };
 
 const rentalStatusLabels: Record<string, string> = {
-  created: '생성됨',
+  pending: '대기중',
   paid: '결제완료',
   out: '대여중',
   returned: '반납완료',
@@ -358,8 +358,8 @@ export default function AdminRentalDetailClient() {
             </CardHeader>
             <CardFooter className="pt-4">
               <div className="flex gap-2 flex-wrap">
-                {/* 결제완료 처리(무통장) – created 상태에서만 노출 */}
-                {data.status === 'created' && (
+                {/* 결제완료 처리(무통장) – pending 상태에서만 노출 */}
+                {data.status === 'pending' && (
                   <Button size="sm" className="h-9 bg-slate-900 text-white hover:bg-slate-800" disabled={isBusy || confirming} onClick={onConfirmPayment}>
                     {confirming ? (
                       <>

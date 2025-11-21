@@ -29,54 +29,29 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (autoOpen) setOpen(true);
-  }, [autoOpen]);
+  // useEffect(() => {
+  //   if (autoOpen) setOpen(true);
+  // }, [autoOpen]);
 
   const fee = period === 7 ? rental.fee.d7 : period === 15 ? rental.fee.d15 : rental.fee.d30;
 
-  const safeJson = async (res: Response) => {
-    try {
-      return await res.json();
-    } catch {
-      return {};
-    }
-  };
+  // const safeJson = async (res: Response) => {
+  //   try {
+  //     return await res.json();
+  //   } catch {
+  //     return {};
+  //   }
+  // };
 
-  const onSubmit = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/rentals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ racketId: id, days: period }),
-      });
-      const json = await safeJson(res);
-      if (!res.ok) {
-        alert(json?.message ?? '대여 생성에 실패했어요.');
-        return;
-      }
-      alert(`대여 생성 완료 (id: ${json.id}). 다음 단계로 이동합니다.`);
-      setOpen(false);
-      router.push(`/rentals/${json.id}/checkout`);
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = () => {
+    setLoading(true);
+    setOpen(false);
+    router.push(`/rentals/${id}/checkout?period=${period}`);
   };
 
   return (
     <>
-      <Button
-        size={size}
-        className={cn(full ? 'flex-1' : '', 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg', className)}
-        onClick={(e) => {
-          if (preventCardNav) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-          setOpen(true);
-        }}
-      >
+      <Button size={size} className={cn(full ? 'flex-1' : '', 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg', className)} onClick={() => setOpen(true)}>
         <Calendar className="mr-2 h-4 w-4" />
         대여하기
       </Button>

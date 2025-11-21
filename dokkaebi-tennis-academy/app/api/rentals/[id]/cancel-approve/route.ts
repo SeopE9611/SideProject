@@ -56,7 +56,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // ───────── 비즈니스 로직 ─────────
-    const currentStatus = String(existing.status ?? 'created');
+    const currentStatus = String(existing.status ?? 'pending');
     const cancel = existing.cancelRequest;
 
     // 취소 요청이 없거나, 요청 상태가 아니라면 승인 불가

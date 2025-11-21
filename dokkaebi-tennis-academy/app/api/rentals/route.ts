@@ -15,9 +15,23 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ ok: false, message: 'INVALID_JSON' }, { status: 400 });
   }
-  const { racketId, days } = body as { racketId: string; days: 7 | 15 | 30 };
+
+  const { racketId, days, payment, shipping, refundAccount } = body as {
+    racketId: string;
+    days: 7 | 15 | 30;
+    payment?: { method: 'bank_transfer'; bank?: string; depositor?: string };
+    shipping?: {
+      name?: string;
+      phone?: string;
+      postalCode?: string;
+      address?: string;
+      addressDetail?: string;
+      deliveryRequest?: string;
+    };
+    refundAccount?: { bank: 'shinhan' | 'kookmin' | 'woori'; account: string; holder: string };
+  };
+
   const db = (await clientPromise).db();
-  // 토큰이 있으면 userId 추출
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
   const payload = at ? verifyAccessToken(at) : null;
@@ -63,13 +77,15 @@ export async function POST(req: Request) {
     model: racket.model,
     days,
     amount,
-    status: 'created', // created -> paid -> out -> returned
+    status: 'pending' as const, // pending -> paid -> out -> returned
     createdAt: now,
     updatedAt: now,
     // dueAt,
     userId: userObjectId, // 로그인 사용자면 ObjectId, 아니면 null
+    payment: payment ?? null, // 무통장 입금 은행/입금자
+    shipping: shipping ?? null, // 배송지 정보
+    refundAccount: refundAccount ?? null, // 보증금 환불 계좌
   };
-
   const res = await db.collection('rental_orders').insertOne(doc);
   return NextResponse.json({ ok: true, id: res.insertedId.toString() });
 }

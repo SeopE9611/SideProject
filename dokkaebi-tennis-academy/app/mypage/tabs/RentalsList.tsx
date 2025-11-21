@@ -53,7 +53,7 @@ const getStatusBadgeColor = (status: string) => {
 
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
-    created: '생성됨',
+    pending: '대기중',
     paid: '결제완료',
     out: '대여중',
     returned: '반납완료',
@@ -218,7 +218,7 @@ export default function RentalsList() {
                     대여 취소 요청 철회
                   </Button>
                 )}
-                {['created', 'paid'].includes(r.status) && r.cancelStatus !== 'requested' && (
+                {['pending', 'paid'].includes(r.status) && r.cancelStatus !== 'requested' && (
                   <CancelRentalDialog
                     rentalId={r.id}
                     onSuccess={async () => {

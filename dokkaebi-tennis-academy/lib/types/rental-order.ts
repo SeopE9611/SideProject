@@ -1,7 +1,7 @@
 // 대여 도메인 상태
-// created → paid → out → returned (종결) / canceled(종결)
+// pending → paid → out → returned (종결) / canceled(종결)
 export type RentalStatus =
-  | 'created' // 생성됨(미결제)
+  | 'pending' // 대기중(신청 완료, 결제 전)
   | 'paid' // 결제완료(출고 전)
   | 'out' // 출고/대여중
   | 'returned' // 반납 완료

@@ -43,7 +43,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       return NextResponse.json({ message: 'Not Found' }, { status: 404 });
     }
 
-    const currentStatus = (doc as any).status ?? 'created';
+    const currentStatus = (doc as any).status ?? 'pending';
     const cancelRequest = (doc as any).cancelRequest ?? null;
 
     // 5) 철회 가능 조건
@@ -66,7 +66,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     );
 
     // 7) 히스토리 기록
-    const prevStatus = String((doc as any).status ?? 'created');
+    const prevStatus = String((doc as any).status ?? 'pending');
 
     await writeRentalHistory(db, doc._id, {
       action: 'cancel-withdrawn', // HistoryAction 중 하나

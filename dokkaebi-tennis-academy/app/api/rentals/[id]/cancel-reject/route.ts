@@ -56,7 +56,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // ───────── 비즈니스 로직 ─────────
-    const currentStatus = String(existing.status ?? 'created');
+    const currentStatus = String(existing.status ?? 'pending');
     const cancel = existing.cancelRequest;
 
     if (!cancel || cancel.status !== 'requested') {

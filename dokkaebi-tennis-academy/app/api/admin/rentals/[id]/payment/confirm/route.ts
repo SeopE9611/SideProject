@@ -14,7 +14,6 @@ async function requireAdmin() {
   return payload;
 }
 
-/** [관리자 전용] created → paid 전이 (멱등) */
 export async function POST(_: Request, { params }: { params: { id: string } }) {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
@@ -27,11 +26,11 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
   const doc = await db.collection('rental_orders').findOne({ _id });
   if (!doc) return NextResponse.json({ ok: false, message: 'NOT_FOUND' }, { status: 404 });
 
-  const current = String(doc.status ?? 'created');
-  if (current === 'paid') return NextResponse.json({ ok: true, id }); // 멱등
+  const current = String(doc.status ?? 'pending');
+  if (current === 'paid') return NextResponse.json({ ok: true, id });
 
-  // created 상태에서만 전이 허용
-  const u = await db.collection('rental_orders').updateOne({ _id, status: 'created' }, { $set: { status: 'paid', paidAt: new Date(), updatedAt: new Date() } });
+  // pending 상태에서만 전이 허용
+  const u = await db.collection('rental_orders').updateOne({ _id, status: 'pending' }, { $set: { status: 'paid', paidAt: new Date(), updatedAt: new Date() } });
   if (!u.matchedCount) {
     return NextResponse.json({ ok: false, message: `INVALID_STATE(${current})` }, { status: 409 });
   }

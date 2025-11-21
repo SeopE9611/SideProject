@@ -32,11 +32,11 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     return NextResponse.json({ ok: true });
   }
   // 멱등 처리: 이미 returned면 OK
-  if ((rental.status ?? 'created') === 'returned') {
+  if ((rental.status ?? 'pending') === 'returned') {
     return NextResponse.json({ ok: true });
   }
   // 전이 가능성 선검사(가독)
-  if (!canTransitIdempotent(rental.status ?? 'created', 'returned') || rental.status !== 'out') {
+  if (!canTransitIdempotent(rental.status ?? 'pending', 'returned') || rental.status !== 'out') {
     return NextResponse.json({ ok: false, code: 'INVALID_STATE', message: '반납 불가 상태' }, { status: 409 });
   }
   // 원자적 전이: 현재 status가 'out'인 경우에만 'returned'

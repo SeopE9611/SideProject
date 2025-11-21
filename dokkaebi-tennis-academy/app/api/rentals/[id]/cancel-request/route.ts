@@ -41,7 +41,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // 2) 비즈니스 룰
-    const currentStatus: string = rental.status ?? 'created';
+    const currentStatus: string = rental.status ?? 'pending';
 
     // 이미 취소된 건에 대한 추가 요청 차단
     if (currentStatus === 'canceled') {
@@ -53,11 +53,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ ok: false, message: 'INVALID_STATE', detail: '출고 이후에는 취소 요청이 불가합니다.' }, { status: 409 });
     }
 
-    // created / paid 이외 상태는 모두 막기
-    if (!(currentStatus === 'created' || currentStatus === 'paid')) {
-      return NextResponse.json({ ok: false, message: 'INVALID_STATE', detail: '대여 취소 요청이 불가능한 상태입니다.' }, { status: 409 });
+    // pending / paid 이외 상태는 모두 막기
+    if (!(currentStatus === 'pending' || currentStatus === 'paid')) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'INVALID_STATE',
+          detail: '대여 취소 요청이 불가능한 상태입니다.',
+        },
+        { status: 409 }
+      );
     }
-
     // 이미 취소 요청이 걸려있으면 중복 요청 차단
     const existingReq = rental.cancelRequest ?? null;
     if (existingReq && existingReq.status === 'requested') {
