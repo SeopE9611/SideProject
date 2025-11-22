@@ -40,14 +40,18 @@ const CancelRentalDialog = ({ rentalId, onSuccess }: CancelRentalDialogProps) =>
     try {
       setIsSubmitting(true);
 
+      const payload = {
+        // DB에는 사용자가 선택한 옵션 그대로 저장 (단순 변심 / 배송 지연 / 기타 …)
+        reasonCode: selectedReason,
+        // "기타"일 때만 입력한 텍스트 저장, 나머지는 공란
+        reasonText: selectedReason === '기타' ? otherReason.trim() : '',
+      };
+
       const res = await fetch(`/api/rentals/${rentalId}/cancel-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          reason: selectedReason === '기타' ? '기타' : selectedReason,
-          detail: selectedReason === '기타' ? otherReason.trim() : selectedReason,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -59,7 +63,7 @@ const CancelRentalDialog = ({ rentalId, onSuccess }: CancelRentalDialogProps) =>
 
       // 상세 데이터 갱신 (혹시 다른 곳에서 SWR로 쓰고 있을 수도 있으니 유지)
       await mutate(`/api/rentals/${rentalId}`, undefined, { revalidate: true });
-      // ✅ 마이페이지 상세에 맞춰주려면 이 줄도 추가해 두면 좋음
+      // 마이페이지 상세에 맞춰주려면 이 줄도 추가해 두면 좋음
       await mutate(`/api/me/rentals/${rentalId}`, undefined, { revalidate: true });
 
       // 마이페이지 목록 갱신
@@ -67,8 +71,6 @@ const CancelRentalDialog = ({ rentalId, onSuccess }: CancelRentalDialogProps) =>
 
       // 모달 닫기
       setOpen(false);
-
-      // ✅ 부모에게 "성공했어" 알려주기 → 부모가 다시 fetch 해서 state 갱신
       if (onSuccess) {
         await onSuccess();
       }

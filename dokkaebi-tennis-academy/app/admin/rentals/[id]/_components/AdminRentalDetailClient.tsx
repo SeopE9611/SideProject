@@ -226,6 +226,7 @@ export default function AdminRentalDetailClient() {
 
   const Outbound = data?.shipping?.outbound;
   const ReturnShip = data?.shipping?.return;
+  const canConfirmPayment = data.status === 'pending' && (!data.cancelRequest || data.cancelRequest.status === 'rejected');
 
   // 취소 요청 상태 정보
   const cancelInfo = getAdminRentalCancelInfo(data);
@@ -359,7 +360,7 @@ export default function AdminRentalDetailClient() {
             <CardFooter className="pt-4">
               <div className="flex gap-2 flex-wrap">
                 {/* 결제완료 처리(무통장) – pending 상태에서만 노출 */}
-                {data.status === 'pending' && (
+                {canConfirmPayment && (
                   <Button size="sm" className="h-9 bg-slate-900 text-white hover:bg-slate-800" disabled={isBusy || confirming} onClick={onConfirmPayment}>
                     {confirming ? (
                       <>

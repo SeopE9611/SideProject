@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 /**
  * 대여 취소 "요청" API
  * - 실제 status 를 'canceled'로 바꾸지 않고, cancelRequest 필드와 history 만 남긴다.
- * - 출고 전(status = paid)까지만 취소 요청 가능.
+ * -  출고 전(status = pending/paid 이면서 출고 운송장 미등록)까지만 취소 요청 가능.
  * - 대여 소유자만 호출 가능.
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -51,6 +51,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // 출고 이후(out/returned)는 취소가 아니라 반납/정산 영역이므로 차단
     if (currentStatus === 'out' || currentStatus === 'returned') {
       return NextResponse.json({ ok: false, message: 'INVALID_STATE', detail: '출고 이후에는 취소 요청이 불가합니다.' }, { status: 409 });
+    }
+
+    // 출고 운송장 등록 여부 확인
+    const outbound = (rental.shipping as any)?.outbound ?? null;
+    const outboundTracking = typeof outbound?.trackingNumber === 'string' ? outbound.trackingNumber.trim() : '';
+
+    if (outboundTracking) {
+      // 출고가 시작된 이후에는 취소 요청 불가
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'INVALID_STATE',
+          detail: '출고 운송장이 등록된 이후에는 취소 요청이 불가합니다.',
+        },
+        { status: 409 }
+      );
     }
 
     // pending / paid 이외 상태는 모두 막기

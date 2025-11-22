@@ -241,8 +241,16 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     depositRefundedAt: data.depositRefundedAt ?? undefined,
   });
 
+  const hasOutboundShipping = !!data.shipping?.outbound?.trackingNumber;
+
   // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 버튼 노출
-  const canRequestCancel = (data.status === 'pending' || data.status === 'paid') && (!data.cancelRequest || data.cancelRequest.status !== 'requested');
+  const canRequestCancel =
+    // 상태는 pending 또는 paid만 허용
+    (data.status === 'pending' || data.status === 'paid') &&
+    // 출고 운송장이 아직 없을 때만
+    !hasOutboundShipping &&
+    // 이미 취소 요청이 들어가 있지 않은 경우만
+    (!data.cancelRequest || data.cancelRequest.status !== 'requested');
   // 취소 상태 배너용 데이터
   const cancelBanner = data.cancelRequest?.status
     ? {

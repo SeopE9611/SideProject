@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Truck } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
   const [courier, setCourier] = useState('');
@@ -13,6 +14,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
   const [date, setDate] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
+  const [hasExisting, setHasExisting] = useState(false);
 
   // 프리필(수정 모드 지원)
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
         setTracking(ret.trackingNumber || '');
         setDate(ret.shippedAt ? String(ret.shippedAt).slice(0, 10) : '');
         setNote(ret.note || '');
+        setHasExisting(true); // 기존 반납 운송장 여부 플래그
       }
     })();
   }, [rentalId]);
@@ -55,14 +58,25 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Truck className="h-5 w-5" /> 반납 운송장 {tracking ? '수정' : '등록'}
+            <Truck className="h-5 w-5" /> 반납 운송장 {hasExisting ? '수정' : '등록'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>택배사</Label>
-            <Input value={courier} onChange={(e) => setCourier(e.target.value)} placeholder="예: CJ대한통운" />
+            <Select value={courier} onValueChange={setCourier}>
+              <SelectTrigger>
+                <SelectValue placeholder="택배사를 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cj">CJ대한통운</SelectItem>
+                <SelectItem value="post">우체국</SelectItem>
+                <SelectItem value="logen">로젠</SelectItem>
+                <SelectItem value="hanjin">한진</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
           <div className="space-y-2">
             <Label>운송장 번호</Label>
             <Input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="예: 1234-5678-..." />
