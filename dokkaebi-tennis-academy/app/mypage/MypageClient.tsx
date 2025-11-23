@@ -228,10 +228,11 @@ export default function MypageClient({ user }: Props) {
                 {/* 신청 내역 탭 */}
                 <TabsContent value="applications" className="mt-0">
                   <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
-                    <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 border-b">
+                    {/* bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-950/20 dark:via-emerald-950/20 dark:to-teal-950/20 rounded-2xl p-8 border border-green-100 dark:border-green-800/30 shadow-lg mb-8" */}
+                    <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:via-emerald-950/20 dark:to-teal-950/20 border-b">
                       <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-indigo-900 dark:to-blue-900 rounded-2xl p-3 shadow-lg">
-                          <CalendarCheck className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        <div className="bg-gradient-to-r from-green-100 to-teal-100 dark:from-emerald-900 dark:to-emerald-900 rounded-2xl p-3 shadow-lg">
+                          <CalendarCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div>
                           <CardTitle className="text-xl">신청 내역</CardTitle>
