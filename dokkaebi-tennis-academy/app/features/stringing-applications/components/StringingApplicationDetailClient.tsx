@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, Target, Pencil, Settings, Edit3, Truck } from 'lucide-react';
+import { Mail, Phone, MapPin, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, Target, Pencil, Settings, Edit3, Truck, CheckCircle2, Clock } from 'lucide-react';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -58,6 +58,7 @@ interface ApplicationDetail {
     rejectedAt?: string;
     rejectedReason?: string;
   } | null;
+  updatedAt?: string;
   items: Array<{
     id: string;
     name: string;
@@ -88,6 +89,7 @@ interface ApplicationDetail {
     invoice?: {
       courier: string;
       trackingNumber: string;
+      shippedAt?: string;
     };
     selfShip?: {
       courier?: string;
@@ -872,6 +874,71 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             )}
           </Card>
         </div>
+
+        {/* 신청 타임라인 */}
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-slate-50/80 via-slate-50/60 to-indigo-50/80 dark:from-slate-900 dark:via-slate-900/60 dark:to-slate-800/80 overflow-hidden mb-8">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <span>신청 타임라인</span>
+            </CardTitle>
+            <CardDescription>신청 접수부터 운송장 등록까지의 주요 진행 상태입니다.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {/* 1) 신청 접수 */}
+              <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                  <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">신청 접수</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-300">{data?.requestedAt ? new Date(data.requestedAt).toLocaleString('ko-KR') : '-'}</p>
+                </div>
+              </div>
+
+              {/* 2) 자가 발송(사용자 → 매장) */}
+              {data?.shippingInfo?.selfShip?.trackingNo && (
+                <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900">
+                    <Truck className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">자가 발송 완료</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">{data.shippingInfo?.selfShip?.shippedAt ? new Date(data.shippingInfo.selfShip.shippedAt).toLocaleDateString('ko-KR') : '운송장 번호가 등록되었습니다.'}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* 3) 매장 발송(매장 → 사용자) */}
+              {data?.shippingInfo?.invoice?.trackingNumber && (
+                <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
+                    <Truck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">매장 발송</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      {data.shippingInfo?.invoice?.shippedAt ? new Date(data.shippingInfo.invoice.shippedAt).toLocaleDateString('ko-KR') : '고객에게 발송을 위한 운송장 번호가 등록되었습니다.'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* 4) 전체 상태 요약 */}
+              <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">현재 상태</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-300">{data?.status ? `현재 상태: ${data.status}` : '상태 정보가 없습니다.'}</p>
+                  {data?.updatedAt && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">마지막 변경: {new Date(data.updatedAt).toLocaleString('ko-KR')}</p>}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 처리 이력 */}
         <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">

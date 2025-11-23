@@ -717,11 +717,66 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
     const newShippingInfo = body.shippingInfo;
     if (!newShippingInfo) return new NextResponse('배송 정보가 필요합니다.', { status: 400 });
 
-    // 1) 기존 배송 정보와 병합
+    // 기존 배송 정보와 병합
     const mergedShippingInfo = { ...app.shippingInfo, ...newShippingInfo };
 
-    // 2) 업데이트 필드 구성
+    // 이력 작성을 위한 이전/이후 값 준비
+    const prevShippingInfo: any = app.shippingInfo || {};
+    const prevSelfShip: any = prevShippingInfo.selfShip || {};
+    const prevInvoice: any = prevShippingInfo.invoice || {};
+
+    const nextSelfShip: any = mergedShippingInfo.selfShip || {};
+    const nextInvoice: any = mergedShippingInfo.invoice || {};
+
+    const now = new Date();
+    const historyEntries: HistoryRecord[] = [];
+
+    // 업데이트 필드 구성
     const setFields: any = { shippingInfo: mergedShippingInfo };
+
+    // 자가 발송(사용자 → 매장) 운송장 등록/수정 감지
+    if (newShippingInfo.selfShip) {
+      const prevTracking = (prevSelfShip.trackingNo || '').trim();
+      const nextTracking = (nextSelfShip.trackingNo || '').trim();
+
+      if (nextTracking && !prevTracking) {
+        // 최초 등록
+        historyEntries.push({
+          status: '자가발송 운송장 등록',
+          date: now,
+          description: `사용자가 자가 발송 운송장을 등록했습니다. (택배사: ${nextSelfShip.courier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+        });
+      } else if (nextTracking && prevTracking && nextTracking !== prevTracking) {
+        // 운송장 번호 변경 (수정)
+        historyEntries.push({
+          status: '자가발송 운송장 수정',
+          date: now,
+          description: `사용자가 자가 발송 운송장을 수정했습니다. (택배사: ${nextSelfShip.courier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+        });
+      }
+    }
+
+    // 매장 발송(매장 → 사용자) 운송장 등록/수정 감지
+    if (newShippingInfo.invoice) {
+      const prevTracking = (prevInvoice.trackingNumber || '').trim();
+      const nextTracking = (nextInvoice.trackingNumber || '').trim();
+
+      if (nextTracking && !prevTracking) {
+        // 최초 등록
+        historyEntries.push({
+          status: '매장 발송 운송장 등록',
+          date: now,
+          description: `관리자가 매장 발송 운송장을 등록했습니다. (택배사: ${nextInvoice.courier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+        });
+      } else if (nextTracking && prevTracking && nextTracking !== prevTracking) {
+        // 운송장 번호 변경 (수정)
+        historyEntries.push({
+          status: '매장 발송 운송장 수정',
+          date: now,
+          description: `관리자가 매장 발송 운송장을 수정했습니다. (택배사: ${nextInvoice.courier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+        });
+      }
+    }
 
     if (typeof newShippingInfo.collectionMethod === 'string') {
       const normalized = normalizeCollection(newShippingInfo.collectionMethod);
@@ -729,10 +784,22 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
       setFields.collectionMethod = normalized; // 최상위 필드도 동일하게 유지
     }
 
-    // 3) 신청서 업데이트
-    await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, { $set: setFields });
+    // 신청서 업데이트 (배송 정보 + history 동시 반영)
+    const updateDoc: any = {
+      $set: setFields,
+    };
 
-    // 4) 연결된 주문에도 동일 병합
+    if (historyEntries.length > 0) {
+      updateDoc.$push = {
+        history: {
+          $each: historyEntries as any[],
+        },
+      };
+    }
+
+    await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, updateDoc);
+
+    // 연결된 주문에도 동일 병합
     if (app.orderId) {
       const order = await db.collection('orders').findOne({ _id: new ObjectId(app.orderId) });
       const orderShipping = order?.shippingInfo || {};

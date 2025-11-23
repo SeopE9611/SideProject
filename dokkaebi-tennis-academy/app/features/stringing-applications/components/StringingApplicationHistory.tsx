@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, CheckCircle, XCircle, Search, ClipboardCheck, Edit2, MessageSquare, DollarSign, User } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Search, ClipboardCheck, Edit2, MessageSquare, DollarSign, User, Truck, Package } from 'lucide-react';
 
 const LIMIT = 5;
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -48,6 +48,7 @@ function getIconProps(status: string) {
       };
 
     // 커스텀 이력 항목
+    // 커스텀 이력 항목
     case '고객정보수정':
       return {
         Icon: User,
@@ -71,6 +72,24 @@ function getIconProps(status: string) {
         Icon: DollarSign,
         wrapperClasses: 'border-green-300 bg-green-100 ' + 'dark:border-green-500/40 dark:bg-green-500/10',
         iconClasses: 'text-green-700 dark:text-green-300',
+      };
+
+    // 자가 발송(사용자 → 매장) 운송장 관련
+    case '자가발송 운송장 등록':
+    case '자가발송 운송장 수정':
+      return {
+        Icon: Truck,
+        wrapperClasses: 'border-teal-300 bg-teal-100 ' + 'dark:border-teal-500/40 dark:bg-teal-500/10',
+        iconClasses: 'text-teal-700 dark:text-teal-300',
+      };
+
+    // 매장 발송(매장 → 사용자) 운송장 관련
+    case '매장 발송 운송장 등록':
+    case '매장 발송 운송장 수정':
+      return {
+        Icon: Package,
+        wrapperClasses: 'border-blue-300 bg-blue-100 ' + 'dark:border-blue-500/40 dark:bg-blue-500/10',
+        iconClasses: 'text-blue-700 dark:text-blue-300',
       };
 
     // default

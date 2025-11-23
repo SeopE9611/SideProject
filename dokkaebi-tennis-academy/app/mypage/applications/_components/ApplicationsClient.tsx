@@ -191,12 +191,12 @@ export default function ApplicationsClient() {
       {applications.length === 0 ? (
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
           <CardContent className="p-12 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900">
-              <FileText className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900">
+              <FileText className="h-10 w-10 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">신청 내역이 없습니다</h3>
             <p className="mb-6 text-slate-600 dark:text-slate-400">아직 신청하신 서비스가 없습니다. 지금 바로 신청해보세요!</p>
-            <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+            <Button asChild className="bg-gradient-to-r from-green-600 to-element-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
               <Link href="/services" className="inline-flex items-center gap-2">
                 서비스 신청하러 가기
                 <ArrowRight className="h-4 w-4" />
@@ -227,7 +227,7 @@ export default function ApplicationsClient() {
           const isCancelable = isStringService && ['접수완료', '검토 중'].includes(app.status) && !isCancelRequested; // 요청 상태가 아니면 언제든 다시 취소 요청 가능
           return (
             <Card key={app.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-500 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
                 <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
               </div>
 
@@ -348,7 +348,7 @@ export default function ApplicationsClient() {
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/mypage?tab=applications&applicationId=${app.id}`)}
-                      className="border-slate-200 hover:border-blue-500 hover:bg-blue-50 dark:border-slate-700 dark:hover:border-blue-600 dark:hover:bg-blue-950 transition-colors"
+                      className="border-slate-200 hover:border-green-500 hover:bg-green-50 dark:border-slate-700 dark:hover:border-green-600 dark:hover:bg-green-950 transition-colors"
                     >
                       상세보기
                       <ArrowRight className="ml-1 h-3 w-3" />
