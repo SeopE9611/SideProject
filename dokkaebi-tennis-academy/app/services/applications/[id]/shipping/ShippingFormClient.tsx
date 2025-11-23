@@ -6,16 +6,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR, { mutate as globalMutate } from 'swr';
 import { useMemo, useState } from 'react';
 import { z } from 'zod';
-
-// UI
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertTriangle, Truck, Loader2, Check, Package, Calendar, FileText, ArrowLeft, Clock } from 'lucide-react';
-
-// toast
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 
@@ -28,6 +25,8 @@ type SelfShipInfo = {
   shippedAt?: string;
   note?: string;
 };
+
+const COURIER_OPTIONS = ['CJ대한통운', '우체국택배', '한진택배', '롯데택배', '로젠택배', '경동택배', '기타'];
 
 type Application = {
   _id: string;
@@ -294,20 +293,32 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
               </div>
 
               <div className="space-y-6">
-                {/* Courier Field */}
                 <div className="space-y-2">
                   <Label htmlFor="courier" className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Truck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     택배사
                     <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="courier"
+                  <Select
                     value={form.courier}
-                    onChange={onChange('courier')}
-                    placeholder="예) CJ대한통운, 우체국택배, 롯데택배"
-                    className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20"
-                  />
+                    onValueChange={(value) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        courier: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger id="courier" className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20">
+                      <SelectValue placeholder="택배사를 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COURIER_OPTIONS.map((label) => (
+                        <SelectItem key={label} value={label}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Tracking Number Field */}

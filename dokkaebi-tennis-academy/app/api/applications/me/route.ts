@@ -55,7 +55,7 @@ export async function GET(req: Request) {
       // 운송장/수거방식 정보(목록 라벨 전환 근거)
       const trackingNo = (doc as any)?.shippingInfo?.selfShip?.trackingNo ?? (doc as any)?.shippingInfo?.invoice?.trackingNumber ?? (doc as any)?.shippingInfo?.trackingNumber ?? null;
       const collectionMethod = normalizeCollection((doc as any)?.shippingInfo?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
-
+      const hasTracking = Boolean(trackingNo);
       // 비-방문이면 값 null로 내림
       const cm = normalizeCollection((doc as any)?.shippingInfo?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
 
@@ -90,7 +90,7 @@ export async function GET(req: Request) {
           collectionMethod,
           selfShip: { trackingNo },
         },
-
+        hasTracking,
         // 마이페이지 목록 카드용 취소 요청 정보
         cancelStatus: rawCancelStatus, //'요청' | '승인' | '거절' | 'none'
         cancelReasonSummary, // 한 줄 요약

@@ -319,14 +319,14 @@ export default function CheckoutPage() {
                   <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <RadioGroupItem value="택배수령" id="택배수령" />
                     <Label htmlFor="택배수령" className="flex-1 cursor-pointer font-medium">
-                      택배 수령 (자택 또는 지정 장소로 배송)
+                      택배 발송/수령 (자택 또는 지정 장소로 배송)
                     </Label>
                     <Truck className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
                     <RadioGroupItem value="방문수령" id="방문수령" />
                     <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
-                      방문 수령 (도깨비 테니스 샵에서 직접 수령)
+                      오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
                     </Label>
                     <Building2 className="h-5 w-5 text-purple-600" />
                   </div>

@@ -28,7 +28,7 @@ export interface Application {
   preferredTime?: string;
   course?: string;
   schedule?: string;
-
+  hasTracking: boolean;
   cancelStatus?: string; // '요청' | '승인' | '거절' | 'none'
   cancelReasonSummary?: string | null;
 }
@@ -195,13 +195,7 @@ export default function ApplicationsClient() {
               <FileText className="h-10 w-10 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">신청 내역이 없습니다</h3>
-            <p className="mb-6 text-slate-600 dark:text-slate-400">아직 신청하신 서비스가 없습니다. 지금 바로 신청해보세요!</p>
-            <Button asChild className="bg-gradient-to-r from-green-600 to-element-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-              <Link href="/services" className="inline-flex items-center gap-2">
-                서비스 신청하러 가기
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+            <p className="mb-6 text-slate-600 dark:text-slate-400">아직 신청하신 서비스가 없습니다.</p>
           </CardContent>
         </Card>
       ) : (
@@ -213,7 +207,7 @@ export default function ApplicationsClient() {
           const isVisit = isStringService && cm === 'visit';
           const collectionLabel = !isStringService ? null : cm === 'self_ship' ? '수령 방법: 자가 발송(택배)' : cm === 'visit' ? '수령 방법: 매장 방문' : '수령 방법: 기타';
           // 운송장 등록 여부
-          const hasTracking = Boolean((app as any).shippingInfo?.trackingNumber || (app as any).shippingInfo?.selfShip?.trackingNo);
+          const hasTracking = app.hasTracking;
           // 종료 상태(수정 금지)
           const CLOSED = ['작업 중', '교체완료'];
           const isClosed = CLOSED.includes(String((app as any).status));

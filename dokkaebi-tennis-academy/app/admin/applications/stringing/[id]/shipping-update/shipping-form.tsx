@@ -117,8 +117,8 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
           <div className="bg-white dark:bg-gray-800 rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
             <Truck className="h-8 w-8 text-blue-600 mx-auto" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">배송 정보 수정</h1>
-          <p className="text-gray-600 dark:text-gray-400">스트링 신청의 배송 정보를 업데이트합니다</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">배송 정보 등록</h1>
+          <p className="text-gray-600 dark:text-gray-400">고객에게 배송할 장착완료된 라켓 배송 정보를 업데이트합니다</p>
         </div>
 
         <Card className="border-0 shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">

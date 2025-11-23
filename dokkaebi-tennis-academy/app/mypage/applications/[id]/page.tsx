@@ -16,5 +16,5 @@ export default async function ApplicationDetailPage({ params }: Props) {
 
   const host = (await headers()).get('host');
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
-  return <StringingApplicationDetailClient id={params.id} baseUrl={baseUrl} />;
+  return <StringingApplicationDetailClient id={params.id} baseUrl={baseUrl} isAdmin={false} backUrl="/mypage?tab=applications" />;
 }

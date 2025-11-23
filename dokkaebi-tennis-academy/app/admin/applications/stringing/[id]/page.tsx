@@ -14,5 +14,5 @@ export default async function StringingApplicationDetailPage({ params }: { param
   const host = (await headers()).get('host');
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
 
-  return <StringingApplicationDetailClient id={id} baseUrl={baseUrl} />;
+  return <StringingApplicationDetailClient id={id} baseUrl={baseUrl} isAdmin={true} backUrl="/admin/applications/stringing" />;
 }

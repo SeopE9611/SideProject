@@ -738,20 +738,22 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
     if (newShippingInfo.selfShip) {
       const prevTracking = (prevSelfShip.trackingNo || '').trim();
       const nextTracking = (nextSelfShip.trackingNo || '').trim();
+      const prevCourier = (prevSelfShip.courier || '').trim();
+      const nextCourier = (nextSelfShip.courier || '').trim();
 
       if (nextTracking && !prevTracking) {
         // 최초 등록
         historyEntries.push({
           status: '자가발송 운송장 등록',
           date: now,
-          description: `사용자가 자가 발송 운송장을 등록했습니다. (택배사: ${nextSelfShip.courier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+          description: `사용자가 자가 발송 운송장을 등록했습니다. (택배사: ${nextCourier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
         });
-      } else if (nextTracking && prevTracking && nextTracking !== prevTracking) {
-        // 운송장 번호 변경 (수정)
+      } else if (nextTracking && prevTracking && (nextTracking !== prevTracking || nextCourier !== prevCourier)) {
+        // 번호 또는 택배사 변경
         historyEntries.push({
           status: '자가발송 운송장 수정',
           date: now,
-          description: `사용자가 자가 발송 운송장을 수정했습니다. (택배사: ${nextSelfShip.courier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+          description: `사용자가 자가 발송 운송장을 수정했습니다. (택배사: ${nextCourier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
         });
       }
     }
@@ -760,20 +762,20 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
     if (newShippingInfo.invoice) {
       const prevTracking = (prevInvoice.trackingNumber || '').trim();
       const nextTracking = (nextInvoice.trackingNumber || '').trim();
+      const prevCourier = (prevInvoice.courier || '').trim();
+      const nextCourier = (nextInvoice.courier || '').trim();
 
       if (nextTracking && !prevTracking) {
-        // 최초 등록
         historyEntries.push({
           status: '매장 발송 운송장 등록',
           date: now,
-          description: `관리자가 매장 발송 운송장을 등록했습니다. (택배사: ${nextInvoice.courier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+          description: `관리자가 매장 발송 운송장을 등록했습니다. (택배사: ${nextCourier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
         });
-      } else if (nextTracking && prevTracking && nextTracking !== prevTracking) {
-        // 운송장 번호 변경 (수정)
+      } else if (nextTracking && prevTracking && (nextTracking !== prevTracking || nextCourier !== prevCourier)) {
         historyEntries.push({
           status: '매장 발송 운송장 수정',
           date: now,
-          description: `관리자가 매장 발송 운송장을 수정했습니다. (택배사: ${nextInvoice.courier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+          description: `관리자가 매장 발송 운송장을 수정했습니다. (택배사: ${nextCourier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
         });
       }
     }
