@@ -46,12 +46,14 @@ const fetcher = async (url: string): Promise<any> => {
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case '완료':
-      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
     case '배송중':
       return <Truck className="h-4 w-4 text-blue-500" />;
+    case '배송완료':
+      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
     case '대기중':
       return <Clock className="h-4 w-4 text-yellow-500" />;
+    case '결제완료':
+      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
     default:
       return <Ban className="h-4 w-4 text-red-500" />;
   }

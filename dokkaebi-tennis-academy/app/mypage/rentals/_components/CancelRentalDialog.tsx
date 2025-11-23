@@ -13,9 +13,11 @@ import { XCircle } from 'lucide-react';
 interface CancelRentalDialogProps {
   rentalId: string;
   onSuccess?: () => void | Promise<void>;
+  // 버튼을 노출하되 클릭만 막고 싶을 때 사용
+  disabled?: boolean;
 }
 
-const CancelRentalDialog = ({ rentalId, onSuccess }: CancelRentalDialogProps) => {
+const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRentalDialogProps) => {
   // 모달 열림/닫힘 상태
   const [open, setOpen] = useState(false);
   // 선택된 기본 사유
@@ -86,13 +88,13 @@ const CancelRentalDialog = ({ rentalId, onSuccess }: CancelRentalDialogProps) =>
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        // 제출 중에는 강제로 닫히지 않도록 보호
-        if (isSubmitting) return;
+        // 제출 중에는 강제로 닫히지 않도록 보호 + 비활성 상태에서는 열리지 않음
+        if (isSubmitting || disabled) return;
         setOpen(next);
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="destructive" size="sm" disabled={isSubmitting}>
+        <Button variant="destructive" size="sm" disabled={isSubmitting || disabled} className={`gap-2 ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}>
           <XCircle className="mr-2 h-4 w-4" />
           대여 취소 요청
         </Button>

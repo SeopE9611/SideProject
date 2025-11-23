@@ -21,7 +21,7 @@ export interface Application {
   applicantName: string;
   phone: string;
   appliedAt: string;
-  status: '접수완료' | '검토 중' | '완료';
+  status: '접수완료' | '검토 중' | '작업 중' | '교체완료';
   racketType?: string;
   stringType?: string;
   preferredDate?: string;
@@ -57,11 +57,14 @@ const LIMIT = 5;
 // 신청 상태별 아이콘
 const getApplicationStatusIcon = (status: Application['status']) => {
   switch (status) {
-    case '완료':
-      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
     case '검토 중':
       return <Clock className="h-4 w-4 text-yellow-500" />;
     case '접수완료':
+      return <CheckCircle className="h-4 w-4 text-blue-500" />;
+    case '작업 중':
+      return <Clock className="h-4 w-4 text-sky-500" />;
+    case '교체완료':
+      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
     default:
       return <Ban className="h-4 w-4 text-red-500" />;
   }

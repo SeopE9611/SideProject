@@ -218,7 +218,7 @@ export default function RentalsList() {
                     대여 취소 요청 철회
                   </Button>
                 )}
-                {['pending', 'paid'].includes(r.status) && r.cancelStatus !== 'requested' && (
+                {['pending', 'paid'].includes(r.status) && !r.hasOutboundShipping && r.cancelStatus !== 'requested' && (
                   <CancelRentalDialog
                     rentalId={r.id}
                     onSuccess={async () => {

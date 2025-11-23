@@ -13,7 +13,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   const [tracking, setTracking] = useState('');
   const [date, setDate] = useState('');
   const [busy, setBusy] = useState(false);
-
+  const [hasExisting, setHasExisting] = useState(false);
   // 프리필(수정용): GET /api/rentals/[id] 읽어서 shipping.outbound 있으면 기본값 세팅
   useEffect(() => {
     (async () => {
@@ -25,6 +25,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
         setTracking(out.trackingNumber || '');
         setDate(out.shippedAt ? String(out.shippedAt).slice(0, 10) : '');
       }
+      setHasExisting(true);
     })();
   }, [rentalId]);
 
@@ -48,7 +49,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
     <div className="max-w-xl mx-auto p-6">
       <Card>
         <CardHeader>
-          <CardTitle>출고 운송장 {tracking ? '수정' : '등록'}</CardTitle>
+          <CardTitle>출고 운송장 {hasExisting ? '수정' : '등록'}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

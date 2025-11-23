@@ -32,7 +32,7 @@ const brands = [
   { label: '헤드', value: 'head' },
   { label: '던롭', value: 'dunlop' },
   { label: '프린스', value: 'prince' },
-  { label: '테크니화이버', value: 'technifibre' },
+  { label: '테크니화이버', value: 'tecnifibre' },
 ];
 
 const brandLabelMap: Record<string, string> = Object.fromEntries(brands.map(({ value, label }) => [value.toLowerCase(), label]));

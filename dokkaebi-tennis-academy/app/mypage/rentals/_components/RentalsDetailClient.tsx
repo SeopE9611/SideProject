@@ -243,7 +243,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
   const hasOutboundShipping = !!data.shipping?.outbound?.trackingNumber;
 
-  // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 버튼 노출
+  // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 '활성화' 허용 (버튼 자체는 항상 노출)
   const canRequestCancel =
     // 상태는 pending 또는 paid만 허용
     (data.status === 'pending' || data.status === 'paid') &&
@@ -274,8 +274,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
           </div>
 
           <div className="sm:ml-auto flex items-center gap-2">
-            {/* 생성됨/결제완료 + 아직 취소요청이 아닌 경우에만 버튼 노출 */}
-            {canRequestCancel && <CancelRentalDialog rentalId={data.id} onSuccess={refreshRental} />}
+            {/* 버튼은 항상 노출하되, 조건을 만족하지 않으면 비활성화 */}
+            <CancelRentalDialog rentalId={data.id} onSuccess={refreshRental} disabled={!canRequestCancel} />
 
             {data?.status === 'out' && (
               <Link href={`/mypage/rentals/${data.id}/return-shipping`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90 h-8">

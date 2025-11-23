@@ -36,7 +36,11 @@ export async function GET(req: Request) {
   // 4) 응답 평탄화
   const rows = items.map((d) => {
     const ret = d?.shipping?.return;
-    const tracking = ret?.trackingNumber || '';
+    const outbound = d?.shipping?.outbound;
+
+    const returnTracking = ret?.trackingNumber || '';
+    const outboundTracking = outbound?.trackingNumber || '';
+
     return {
       id: d._id.toString(),
       brand: d.brand,
@@ -46,8 +50,15 @@ export async function GET(req: Request) {
       amount: d.amount, // { fee, deposit, total }
       createdAt: d.createdAt,
       dueAt: d.dueAt,
-      hasReturnShipping: Boolean(tracking),
-      returnShippingBrief: tracking ? { courier: ret?.courier || '', trackingLast4: String(tracking).slice(-4) } : null,
+      // 출고/반납 운송장 등록 여부를 별도 플래그로 내려서 마이페이지 카드에서 쉽게 사용
+      hasOutboundShipping: Boolean(outboundTracking),
+      hasReturnShipping: Boolean(returnTracking),
+      returnShippingBrief: returnTracking
+        ? {
+            courier: ret?.courier || '',
+            trackingLast4: String(returnTracking).slice(-4),
+          }
+        : null,
       cancelStatus: d.cancelRequest?.status ?? null,
     };
   });
