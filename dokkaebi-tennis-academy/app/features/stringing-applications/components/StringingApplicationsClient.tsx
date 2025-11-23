@@ -30,7 +30,7 @@ export default function StringingApplicationsClient() {
       .then(setApplications)
       .catch((err) => console.error('신청 목록 불러오기 실패', err));
   }, []);
-
+  // http://localhost:3000/admin/applications/stringing
   return (
     <div className="space-y-6 px-6 py-10">
       <Card>

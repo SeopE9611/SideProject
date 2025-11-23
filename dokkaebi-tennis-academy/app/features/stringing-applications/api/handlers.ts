@@ -13,6 +13,20 @@ import { calcStringingTotal } from '@/lib/pricing';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 
 export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
+function mapCourierLabel(raw?: string | null): string {
+  if (!raw) return '택배사 미입력';
+  const c = raw.toLowerCase();
+
+  if (c.includes('cj')) return 'CJ대한통운';
+  if (c.includes('우체국') || c.includes('post')) return '우체국택배';
+  if (c.includes('한진') || c.includes('hanjin')) return '한진택배';
+  if (c.includes('로젠') || c.includes('logen')) return '로젠택배';
+  if (c.includes('롯데') || c.includes('lotte')) return '롯데택배';
+  if (c.includes('경동') || c.includes('kd')) return '경동택배';
+  if (c.includes('기타') || c.includes('etc')) return '기타';
+
+  return raw;
+}
 
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
@@ -707,21 +721,43 @@ export async function handleStringingCancelReject(req: Request, { params }: { pa
 // ========== 배송 정보 수정 (스트링 신청서 + 연결된 주문서) ==========
 export async function handleUpdateShippingInfo(req: Request, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const body = await req.json();
 
     const db = await getDb();
     const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
-    if (!app) return new NextResponse('신청서를 찾을 수 없습니다.', { status: 404 });
+
+    if (!app) {
+      return new NextResponse('신청서를 찾을 수 없습니다.', { status: 404 });
+    }
 
     const newShippingInfo = body.shippingInfo;
-    if (!newShippingInfo) return new NextResponse('배송 정보가 필요합니다.', { status: 400 });
+    if (!newShippingInfo) {
+      return new NextResponse('배송 정보가 필요합니다.', { status: 400 });
+    }
 
-    // 기존 배송 정보와 병합
-    const mergedShippingInfo = { ...app.shippingInfo, ...newShippingInfo };
+    // 기존 배송 정보와 병합 (신청서 기준)
+    const mergedShippingInfo: any = {
+      ...(app as any).shippingInfo,
+      ...newShippingInfo,
+    };
+
+    // 실제 DB $set 에 사용할 필드
+    const setFields: any = {
+      shippingInfo: mergedShippingInfo,
+    };
+
+    // estimatedDate 가 있으면 invoice.shippedAt 이 비어있는 경우 채워주기
+    if (typeof mergedShippingInfo.estimatedDate === 'string') {
+      const est = mergedShippingInfo.estimatedDate;
+      if (!mergedShippingInfo.invoice) mergedShippingInfo.invoice = {};
+      if (!mergedShippingInfo.invoice.shippedAt) {
+        mergedShippingInfo.invoice.shippedAt = est;
+      }
+    }
 
     // 이력 작성을 위한 이전/이후 값 준비
-    const prevShippingInfo: any = app.shippingInfo || {};
+    const prevShippingInfo: any = (app as any).shippingInfo || {};
     const prevSelfShip: any = prevShippingInfo.selfShip || {};
     const prevInvoice: any = prevShippingInfo.invoice || {};
 
@@ -731,62 +767,93 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
     const now = new Date();
     const historyEntries: HistoryRecord[] = [];
 
-    // 업데이트 필드 구성
-    const setFields: any = { shippingInfo: mergedShippingInfo };
+    // 매장 발송 정보(방식/예정일/운송장) 통합 로그
+    const prevMethod = (prevShippingInfo.shippingMethod ?? null) as string | null;
+    const nextMethod = (mergedShippingInfo.shippingMethod ?? null) as string | null;
 
-    // 자가 발송(사용자 → 매장) 운송장 등록/수정 감지
+    const prevEst = (prevShippingInfo.estimatedDate ?? null) as string | null;
+    const nextEst = (mergedShippingInfo.estimatedDate ?? null) as string | null;
+
+    const prevTrackingStore = ((prevInvoice.trackingNumber as string | undefined) || '').trim() || null;
+    const nextTrackingStore = ((nextInvoice.trackingNumber as string | undefined) || '').trim() || null;
+
+    const prevCourierStore = ((prevInvoice.courier as string | undefined) || '').trim() || null;
+    const nextCourierStore = ((nextInvoice.courier as string | undefined) || '').trim() || null;
+
+    const changedMethod = prevMethod !== nextMethod;
+    const changedEst = prevEst !== nextEst;
+    const changedTracking = prevTrackingStore !== nextTrackingStore;
+    const changedCourier = prevCourierStore !== nextCourierStore;
+
+    // "처음 등록인지" 여부: 이전에는 아무 정보도 없었는데 이번에 뭔가 생긴 경우
+    const isStoreRegister = !prevMethod && !prevEst && !prevTrackingStore && !prevCourierStore && (changedMethod || changedEst || changedTracking || changedCourier);
+
+    const storeChanges: string[] = [];
+
+    if (changedMethod && nextMethod) {
+      const methodLabel = nextMethod === 'delivery' ? '택배' : nextMethod === 'quick' ? '퀵배송' : nextMethod === 'visit' ? '매장 방문 수령' : nextMethod;
+      storeChanges.push(`방식: ${methodLabel}`);
+    }
+
+    if (changedEst) {
+      storeChanges.push(`예정일: ${nextEst ?? '-'}`);
+    }
+
+    if (changedCourier && nextCourierStore) {
+      const courierLabel = mapCourierLabel(nextCourierStore);
+      storeChanges.push(`택배사: ${courierLabel}`);
+    }
+
+    if (changedTracking && nextTrackingStore) {
+      storeChanges.push(`운송장번호 끝자리 ${nextTrackingStore.slice(-4)}`);
+    }
+
+    if (storeChanges.length > 0) {
+      historyEntries.push({
+        status: isStoreRegister ? '매장 발송 정보 등록' : '매장 발송 정보 수정',
+        date: now,
+        description: `관리자가 매장 발송 정보를 ${isStoreRegister ? '등록' : '수정'}했습니다. (${storeChanges.join(', ')})`,
+      });
+    }
+
+    // 자가 발송(사용자 → 매장) 운송장 등록/수정 로그
     if (newShippingInfo.selfShip) {
       const prevTracking = (prevSelfShip.trackingNo || '').trim();
       const nextTracking = (nextSelfShip.trackingNo || '').trim();
       const prevCourier = (prevSelfShip.courier || '').trim();
       const nextCourier = (nextSelfShip.courier || '').trim();
+      const courierLabel = mapCourierLabel(nextCourier);
 
       if (nextTracking && !prevTracking) {
         // 최초 등록
         historyEntries.push({
           status: '자가발송 운송장 등록',
           date: now,
-          description: `사용자가 자가 발송 운송장을 등록했습니다. (택배사: ${nextCourier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+          description: `사용자가 자가 발송 운송장을 등록했습니다. (택배사: ${courierLabel}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
         });
       } else if (nextTracking && prevTracking && (nextTracking !== prevTracking || nextCourier !== prevCourier)) {
         // 번호 또는 택배사 변경
         historyEntries.push({
           status: '자가발송 운송장 수정',
           date: now,
-          description: `사용자가 자가 발송 운송장을 수정했습니다. (택배사: ${nextCourier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
+          description: `사용자가 자가 발송 운송장을 수정했습니다. (택배사: ${courierLabel}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
         });
       }
     }
 
-    // 매장 발송(매장 → 사용자) 운송장 등록/수정 감지
-    if (newShippingInfo.invoice) {
-      const prevTracking = (prevInvoice.trackingNumber || '').trim();
-      const nextTracking = (nextInvoice.trackingNumber || '').trim();
-      const prevCourier = (prevInvoice.courier || '').trim();
-      const nextCourier = (nextInvoice.courier || '').trim();
-
-      if (nextTracking && !prevTracking) {
-        historyEntries.push({
-          status: '매장 발송 운송장 등록',
-          date: now,
-          description: `관리자가 매장 발송 운송장을 등록했습니다. (택배사: ${nextCourier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
-        });
-      } else if (nextTracking && prevTracking && (nextTracking !== prevTracking || nextCourier !== prevCourier)) {
-        historyEntries.push({
-          status: '매장 발송 운송장 수정',
-          date: now,
-          description: `관리자가 매장 발송 운송장을 수정했습니다. (택배사: ${nextCourier || '미입력'}, 운송장번호 끝자리 ${nextTracking.slice(-4)})`,
-        });
-      }
-    }
-
+    // collectionMethod 정규화 (신청서 최상위 + shippingInfo 모두 반영)
     if (typeof newShippingInfo.collectionMethod === 'string') {
       const normalized = normalizeCollection(newShippingInfo.collectionMethod);
-      newShippingInfo.collectionMethod = normalized; // shippingInfo 내부도 정규화
-      setFields.collectionMethod = normalized; // 최상위 필드도 동일하게 유지
+
+      // 주문 병합용
+      newShippingInfo.collectionMethod = normalized;
+      // 신청서 shippingInfo 저장용
+      mergedShippingInfo.collectionMethod = normalized;
+      // 신청서 문서 최상위 필드
+      setFields.collectionMethod = normalized;
     }
 
-    // 신청서 업데이트 (배송 정보 + history 동시 반영)
+    // 신청서 업데이트 (배송 정보 + history)
     const updateDoc: any = {
       $set: setFields,
     };
@@ -802,11 +869,21 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
     await db.collection('stringing_applications').updateOne({ _id: new ObjectId(id) }, updateDoc);
 
     // 연결된 주문에도 동일 병합
-    if (app.orderId) {
-      const order = await db.collection('orders').findOne({ _id: new ObjectId(app.orderId) });
-      const orderShipping = order?.shippingInfo || {};
-      const mergedOrderShippingInfo = { ...orderShipping, ...newShippingInfo };
-      await db.collection('orders').updateOne({ _id: new ObjectId(app.orderId) }, { $set: { shippingInfo: mergedOrderShippingInfo } });
+    if ((app as any).orderId) {
+      const order = await db.collection('orders').findOne({ _id: new ObjectId((app as any).orderId) });
+
+      const orderShipping = (order as any)?.shippingInfo || {};
+      const mergedOrderShippingInfo = {
+        ...orderShipping,
+        ...newShippingInfo,
+      };
+
+      await db.collection('orders').updateOne(
+        { _id: new ObjectId((app as any).orderId) },
+        {
+          $set: { shippingInfo: mergedOrderShippingInfo },
+        }
+      );
     }
 
     return NextResponse.json({ success: true });

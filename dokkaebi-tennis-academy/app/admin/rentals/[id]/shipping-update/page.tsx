@@ -1,10 +1,16 @@
 import { Suspense } from 'react';
 import ShippingForm from './shipping-form';
 
-export default function Page({ params }: { params: { id: string } }) {
+type RentalShippingUpdatePageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function Page({ params }: RentalShippingUpdatePageProps) {
+  const { id } = await params;
+
   return (
     <Suspense fallback={<div className="p-6">불러오는 중…</div>}>
-      <ShippingForm rentalId={params.id} />
+      <ShippingForm rentalId={id} />
     </Suspense>
   );
 }

@@ -32,7 +32,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
   const [trackingNumber, setTrackingNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-
+  const isEdit = Boolean(initialShippingMethod || initialEstimatedDelivery || initialCourier || initialTrackingNumber);
   useEffect(() => {
     setCourier(initialCourier || '');
   }, [initialCourier]);
@@ -125,7 +125,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
           <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-500 text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-2 text-xl">
               <Package className="h-6 w-6" />
-              <span>배송 정보 입력</span>
+              <span>{isEdit ? '배송 정보 수정' : '배송 정보 입력'}</span>
             </CardTitle>
           </CardHeader>
 
@@ -223,7 +223,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
                 ) : (
                   <>
                     <Package className="mr-2 h-5 w-5" />
-                    배송 정보 저장
+                    {isEdit ? '배송 정보 수정' : '배송 정보 저장'}
                   </>
                 )}
               </Button>

@@ -189,6 +189,8 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
     [application]
   );
 
+  const isEdit = Boolean(initial.trackingNo);
+
   const mypageUrl = `/mypage?${new URLSearchParams({ tab: 'applications', id: applicationId }).toString()}`;
 
   // 신청서로 돌아갈 URL (orderId를 응답에 포함시키고 있으니 그걸 사용)
@@ -255,8 +257,8 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
             </div>
             <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400"></div>
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-3">자가발송 운송장 입력</h1>
-          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">라켓을 발송하신 뒤, 택배사와 송장번호를 입력해 주세요.</p>
+          <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-3">{isEdit ? '자가발송 운송장 수정' : '자가발송 운송장 입력'}</h1>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{isEdit ? '이미 등록된 운송장 정보를 수정할 수 있습니다.' : '라켓을 발송하신 뒤, 택배사와 송장번호를 입력해 주세요.'}</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-6">
@@ -398,7 +400,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                   ) : (
                     <>
                       <Check className="w-4 h-4 mr-2" />
-                      저장하기
+                      {submitting ? '저장 중…' : isEdit ? '수정하기' : '저장하기'}
                     </>
                   )}
                 </Button>

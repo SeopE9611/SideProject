@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, CheckCircle, XCircle, Search, ClipboardCheck, Edit2, MessageSquare, DollarSign, User, Truck, Package } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Search, ClipboardCheck, Edit2, MessageSquare, DollarSign, User, Truck, Package, Calendar } from 'lucide-react';
 
 const LIMIT = 5;
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -91,6 +91,14 @@ function getIconProps(status: string) {
         wrapperClasses: 'border-blue-300 bg-blue-100 ' + 'dark:border-blue-500/40 dark:bg-blue-500/10',
         iconClasses: 'text-blue-700 dark:text-blue-300',
       };
+    // 매장 발송 정보(방식/예정일/운송장 통합 로그)
+    case '매장 발송 정보 등록':
+    case '매장 발송 정보 수정':
+      return {
+        Icon: Clock,
+        wrapperClasses: 'border-slate-300 bg-slate-100 ' + 'dark:border-slate-500/40 dark:bg-slate-700/20',
+        iconClasses: 'text-slate-700 dark:text-slate-200',
+      };
 
     // default
     default:
@@ -140,9 +148,14 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
   return (
     <Card className="md:col-span-3 rounded-xl border border-border/60 bg-card text-card-foreground shadow-md dark:bg-slate-900/60">
       <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-slate-900/30 rounded-t-xl">
-        <CardTitle>처리 이력</CardTitle>
-        <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
+        <div className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-indigo-600" />
+          <CardTitle className="text-2xl font-semibold">처리 이력</CardTitle>
+        </div>
+
+        <p className="mt-1 text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
       </CardHeader>
+
       <CardContent>
         {isLoading ? (
           Array.from({ length: LIMIT }).map((_, i) => (
@@ -160,7 +173,7 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
           historyItems.map((log, idx) => {
             const { Icon, wrapperClasses, iconClasses } = getIconProps(log.status);
             return (
-              <div key={idx} className="flex space-x-4 py-3">
+              <div key={idx} className={`flex space-x-4 py-3 ${idx === 0 ? 'rounded-lg bg-slate-50/80 dark:bg-slate-900/40 px-3 -mx-3' : ''}`}>
                 <div className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}>
                   <Icon className={`h-6 w-6 ${iconClasses}`} />
                 </div>
@@ -177,7 +190,18 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
                       }).format(new Date(log.date))}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{log.description}</p>
+                  {(() => {
+                    // "문장 (추가정보...)" 형태를 앞/뒤로 나누기
+                    const [main, detailWithParen] = log.description.split('(', 2);
+                    const detail = detailWithParen ? detailWithParen.replace(/\)$/, '') : '';
+
+                    return (
+                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                        {main?.trim()}
+                        {detail && <span className="ml-1 font-medium text-blue-600 dark:text-blue-300">({detail})</span>}
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
             );

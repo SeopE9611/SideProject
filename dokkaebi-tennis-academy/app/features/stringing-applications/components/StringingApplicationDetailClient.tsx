@@ -431,6 +431,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const selfShip = data.shippingInfo?.selfShip;
   const invoice = data.shippingInfo?.invoice;
 
+  const shippingMethod = data.shippingInfo?.shippingMethod;
+  const hasStoreShippingInfo = Boolean(shippingMethod) || Boolean(invoice?.trackingNumber) || Boolean(invoice?.shippedAt);
+
   // 일반 사용자도 편집 가능 상태일 때만 노출하고, 완료/취소 등엔 비활성화
   const completedLikeStatuses = ['교체완료', '반송완료', '완료', 'DONE', '취소'];
   const canEditSelfShip = (isAdmin || (userEditableStatuses ?? []).includes(data.status)) && !completedLikeStatuses.includes(data.status);
@@ -448,13 +451,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <p className="mt-1 text-gray-600 dark:text-gray-400">신청 ID: {data.id}</p>
               </div>
             </div>
-
             <TooltipProvider>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end">
                 <Link href={backUrl}>
                   <Button
                     variant="outline"
-                    className="mb-3 bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50
+                    size="sm"
+                    className="bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50
              dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -462,14 +465,33 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   </Button>
                 </Link>
 
+                {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
+                {!isAdmin && isSelfShip && (
+                  <Link
+                    href={`/services/applications/${data.id}/shipping?${new URLSearchParams({
+                      return: `/mypage/applications/${data.id}`,
+                    }).toString()}`}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50
+       dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60"
+                    >
+                      <Truck className="w-4 h-4 mr-2" />
+                      {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
+                    </Button>
+                  </Link>
+                )}
+
                 {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
                 {isAdmin && (
                   <Button
                     asChild
                     variant="outline"
                     size="sm"
-                    className="mb-3 bg-white/60 backdrop-blur-sm border-blue-200 hover:bg-blue-50
-      dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60 whitespace-nowrap"
+                    className="bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50
+       dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60"
                   >
                     <Link href={`/admin/applications/stringing/${data.id}/shipping-update`}>
                       <Truck className="mr-1 h-4 w-4" />
@@ -477,11 +499,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </Link>
                   </Button>
                 )}
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="inline-block">
                       <Button
                         variant={isEditMode ? 'destructive' : 'outline'}
+                        size="sm"
                         disabled={!isEditableAllowed}
                         className={
                           !isEditableAllowed
@@ -914,151 +938,155 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
         </div>
         {/* 관리자 전용 운송장 정보 카드 */}
-        {isAdmin && (
-          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur mb-8">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 border-b border-gray-200 dark:border-slate-700 flex flex-col items-center py-4">
-              <Truck className="h-5 w-5 text-indigo-500" />
-              <CardTitle className="mt-2 text-lg font-semibold">운송장 정보</CardTitle>
-            </CardHeader>
+        <div className="mt-8 space-y-6">
+          {isAdmin && (
+            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur mb-8">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 border-b border-gray-200 dark:border-slate-700 flex flex-col items-center py-4">
+                <Truck className="h-5 w-5 text-indigo-500" />
+                <CardTitle className="mt-2 text-lg font-semibold">운송장 정보</CardTitle>
+              </CardHeader>
 
-            <CardContent className="grid gap-4 p-6 md:grid-cols-2">
-              {/* 자가 발송(사용자 → 매장) */}
-              <div className="rounded-lg border border-dashed border-slate-200 p-4 dark:border-slate-700">
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">자가 발송</p>
-                {data.shippingInfo?.selfShip?.trackingNo ? (
-                  <div className="mt-2 space-y-1 text-sm text-slate-700 dark:text-slate-200">
-                    <p>택배사: {data.shippingInfo.selfShip.courier || '미입력'}</p>
-                    <p>
-                      운송장:
-                      <a href={buildTrackingUrl(data.shippingInfo.selfShip.courier, data.shippingInfo.selfShip.trackingNo) ?? '#'} target="_blank" rel="noreferrer" className="underline underline-offset-2">
-                        {data.shippingInfo.selfShip.trackingNo}
-                      </a>
-                    </p>
-                    <p>발송일: {data.shippingInfo.selfShip.shippedAt ? new Date(data.shippingInfo.selfShip.shippedAt).toLocaleDateString('ko-KR') : '-'}</p>
-                  </div>
-                ) : (
-                  <p className="mt-2 text-sm text-slate-500">등록된 자가 발송 운송장이 없습니다.</p>
-                )}
-              </div>
-
-              {/* 매장 발송(매장 → 사용자) */}
-              <div className="rounded-lg border border-dashed border-slate-200 p-4 dark:border-slate-700">
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">매장 발송</p>
-                {data.shippingInfo?.invoice?.trackingNumber ? (
-                  <div className="mt-2 space-y-1 text-sm text-slate-700 dark:text-slate-200">
-                    <p>택배사: {getCourierLabel(data.shippingInfo.invoice.courier)}</p>
-                    <p>
-                      운송장:
-                      <a href={buildTrackingUrl(data.shippingInfo.invoice.courier, data.shippingInfo.invoice.trackingNumber) ?? '#'} target="_blank" rel="noreferrer" className="underline underline-offset-2">
-                        {data.shippingInfo.invoice.trackingNumber}
-                      </a>
-                    </p>
-                    <p>발송일: {data.shippingInfo.invoice.shippedAt ? new Date(data.shippingInfo.invoice.shippedAt).toLocaleDateString('ko-KR') : '-'}</p>
-                  </div>
-                ) : (
-                  <p className="mt-2 text-sm text-slate-500">등록된 매장 발송 운송장이 없습니다.</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 신청 타임라인: 마이페이지 전용 */}
-        {!isAdmin && (
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-slate-50/80 via-slate-50/60 to-indigo-50/80 dark:from-slate-900 dark:via-slate-900/60 dark:to-slate-800/80 overflow-hidden mb-8">
-            <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
-              <CardTitle className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <span>신청 타임라인</span>
-              </CardTitle>
-              <CardDescription>신청 접수부터 운송장 등록까지의 주요 진행 상태입니다.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {/* 1) 신청 접수 */}
-                <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                    <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">신청 접수</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">{data?.requestedAt ? new Date(data.requestedAt).toLocaleString('ko-KR') : '-'}</p>
-                  </div>
-                </div>
-
-                {/* 2) 자가 발송(사용자 → 매장) */}
-                {selfShip?.trackingNo && (
-                  <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900">
-                      <Truck className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">자가 발송 완료</p>
-                      {/* 날짜: 날짜만 표기 */}
-                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{selfShip.shippedAt ? new Date(selfShip.shippedAt).toLocaleDateString('ko-KR') : '운송장 번호가 등록되었습니다.'}</p>
-                      {/* 택배사 + 운송장번호 + 조회 링크 */}
-                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                        {(selfShip.courier || '택배사 미입력') + ' · '}
-                        <a href={buildTrackingUrl(selfShip.courier, selfShip.trackingNo) ?? '#'} target="_blank" rel="noreferrer" className="underline underline-offset-2">
-                          {selfShip.trackingNo}
+              <CardContent className="grid gap-4 p-6 md:grid-cols-2">
+                {/* 자가 발송(사용자 → 매장) */}
+                <div className="rounded-lg border border-dashed border-slate-200 p-4 dark:border-slate-700">
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">자가 발송</p>
+                  {data.shippingInfo?.selfShip?.trackingNo ? (
+                    <div className="mt-2 space-y-1 text-sm text-slate-700 dark:text-slate-200">
+                      <p>택배사: {data.shippingInfo.selfShip.courier || '미입력'}</p>
+                      <p>
+                        운송장:
+                        <a href={buildTrackingUrl(data.shippingInfo.selfShip.courier, data.shippingInfo.selfShip.trackingNo) ?? '#'} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                          {data.shippingInfo.selfShip.trackingNo}
                         </a>
                       </p>
+                      <p>발송일: {data.shippingInfo.selfShip.shippedAt ? new Date(data.shippingInfo.selfShip.shippedAt).toLocaleDateString('ko-KR') : '-'}</p>
                     </div>
-                  </div>
-                )}
-                {/* 3) 매장 발송(매장 → 사용자) */}
-                {invoice?.trackingNumber && (
+                  ) : (
+                    <p className="mt-2 text-sm text-slate-500">등록된 자가 발송 운송장이 없습니다.</p>
+                  )}
+                </div>
+
+                {/* 매장 발송(매장 → 사용자) */}
+                <div className="rounded-lg border border-dashed border-slate-200 p-4 dark:border-slate-700">
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">매장 발송</p>
+                  {hasStoreShippingInfo ? (
+                    <div className="mt-2 space-y-1 text-sm text-slate-700 dark:text-slate-200">
+                      {shippingMethod === 'delivery' && invoice?.trackingNumber ? (
+                        <>
+                          <p>택배사: {getCourierLabel(invoice.courier)}</p>
+                          <p>
+                            운송장:
+                            <a href={buildTrackingUrl(invoice.courier, invoice.trackingNumber) ?? undefined} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                              {invoice.trackingNumber}
+                            </a>
+                          </p>
+                          <p>발송일: {invoice.shippedAt ? new Date(invoice.shippedAt).toLocaleDateString('ko-KR') : '-'}</p>
+                        </>
+                      ) : (
+                        <>
+                          <p>배송 방식: {shippingMethod === 'quick' ? '퀵배송' : shippingMethod === 'visit' ? '매장 방문 수령' : '기타'}</p>
+                          <p>예정일: {data.shippingInfo?.estimatedDate ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString('ko-KR') : '-'}</p>
+                          <p className="text-xs text-slate-500">운송장 번호는 발급되지 않는 배송 방식입니다.</p>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-slate-500">등록된 매장 발송 운송장이 없습니다.</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 신청 타임라인: 마이페이지 전용 */}
+          {!isAdmin && (
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-slate-50/80 via-slate-50/60 to-indigo-50/80 dark:from-slate-900 dark:via-slate-900/60 dark:to-slate-800/80 overflow-hidden mb-8">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
+                <CardTitle className="flex items-center space-x-2">
+                  <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <span>신청 타임라인</span>
+                </CardTitle>
+                <CardDescription>신청 접수부터 운송장 등록까지의 주요 진행 상태입니다.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {/* 신청 접수 */}
                   <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
-                      <Truck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                      <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">매장 발송</p>
-                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{invoice.shippedAt ? new Date(invoice.shippedAt).toLocaleDateString('ko-KR') : '고객에게 발송을 위한 운송장 번호가 등록되었습니다.'}</p>
-                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                        {getCourierLabel(invoice.courier) + ' · '}
-                        <a href={buildTrackingUrl(invoice.courier, invoice.trackingNumber) ?? '#'} target="_blank" rel="noreferrer" className="underline underline-offset-2">
-                          {invoice.trackingNumber}
-                        </a>
-                      </p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">신청 접수</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300">{data?.requestedAt ? new Date(data.requestedAt).toLocaleString('ko-KR') : '-'}</p>
                     </div>
                   </div>
-                )}
 
-                {/* 4) 전체 상태 요약 */}
-                <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">현재 상태</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">{data?.status ? `현재 상태: ${data.status}` : '상태 정보가 없습니다.'}</p>
-                    {data?.updatedAt && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">마지막 변경: {new Date(data.updatedAt).toLocaleString('ko-KR')}</p>}
+                  {/* 자가 발송(사용자 → 매장) */}
+                  {selfShip?.trackingNo && (
+                    <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900">
+                        <Truck className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">자가 발송 완료</p>
+                        {/* 날짜 */}
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{selfShip.shippedAt ? new Date(selfShip.shippedAt).toLocaleDateString('ko-KR') : '운송장 번호가 등록되었습니다.'}</p>
+                        {/* 택배사 + 운송장번호 + 조회 링크 */}
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                          {(selfShip.courier || '택배사 미입력') + ' · '}
+                          <a href={buildTrackingUrl(selfShip.courier, selfShip.trackingNo) ?? '#'} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                            {selfShip.trackingNo}
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {/* 매장 발송(매장 → 사용자) */}
+                  {invoice?.trackingNumber && (
+                    <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
+                        <Truck className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">매장 발송</p>
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{invoice.shippedAt ? new Date(invoice.shippedAt).toLocaleDateString('ko-KR') : '고객에게 발송을 위한 운송장 번호가 등록되었습니다.'}</p>
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                          {getCourierLabel(invoice.courier) + ' · '}
+                          <a href={buildTrackingUrl(invoice.courier, invoice.trackingNumber) ?? '#'} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                            {invoice.trackingNumber}
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 전체 상태 요약 */}
+                  <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">현재 상태</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300">{data?.status ? `현재 상태: ${data.status}` : '상태 정보가 없습니다.'}</p>
+                      {data?.updatedAt && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">마지막 변경: {new Date(data.updatedAt).toLocaleString('ko-KR')}</p>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        {/* 처리 이력 */}
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-indigo-600" />
-              <span>처리 이력</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {applicationId && (
+              </CardContent>
+            </Card>
+          )}
+          {/* 처리 이력 */}
+          {applicationId && (
+            <div className="mt-6">
               <StringingApplicationHistory
                 applicationId={applicationId}
                 onHistoryMutate={(mutateFn) => {
                   historyMutateRef.current = mutateFn;
                 }}
               />
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          )}
+        </div>
       </div>
       {/* 관리자: 취소 요청 거절 모달 */}
       {isAdmin && (

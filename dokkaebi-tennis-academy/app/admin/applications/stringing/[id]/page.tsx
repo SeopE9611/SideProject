@@ -4,7 +4,11 @@ import { redirect } from 'next/navigation';
 import StringingApplicationDetailClient from '@/app/features/stringing-applications/components/StringingApplicationDetailClient';
 import AccessDenied from '@/components/system/AccessDenied';
 
-export default async function StringingApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
+type StringingDetailPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function StringingApplicationDetailPage({ params }: StringingDetailPageProps) {
   const user = await getCurrentUser();
   if (!user || user.role !== 'admin') {
     return <AccessDenied />;
@@ -14,5 +18,5 @@ export default async function StringingApplicationDetailPage({ params }: { param
   const host = (await headers()).get('host');
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
 
-  return <StringingApplicationDetailClient id={id} baseUrl={baseUrl} isAdmin={true} backUrl="/admin/applications/stringing" />;
+  return <StringingApplicationDetailClient id={id} baseUrl={baseUrl} isAdmin={true} />;
 }
