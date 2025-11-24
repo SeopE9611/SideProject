@@ -1606,7 +1606,7 @@ export default function StringServiceApplyPage() {
                 </CardContent>
               </Card>
 
-              <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/20">
                   <Shield className="h-8 w-8 text-blue-500 mx-auto mb-3" />
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">정품 보장</h3>
@@ -1622,7 +1622,7 @@ export default function StringServiceApplyPage() {
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">전문가 상담</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">전문가가 직접</p>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div
