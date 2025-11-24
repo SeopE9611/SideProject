@@ -374,7 +374,7 @@ export default function MypageClient({ user }: Props) {
         </div>
 
         {/* 하단 신뢰 지표 */}
-        <div className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-t">
+        {/* <div className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-t">
           <div className="container mx-auto px-4 py-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
               <div className="text-center">
@@ -400,7 +400,7 @@ export default function MypageClient({ user }: Props) {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </AuthGuard>
   );
