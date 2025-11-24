@@ -433,12 +433,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const goToStringingService = () => {
+    if (!product?._id) return;
+    const mountingFee = typeof product.mountingFee === 'number' ? product.mountingFee : 0;
+
     const params = new URLSearchParams({
-      productId: String(product?._id ?? ''),
-      mountingFee: String(product?.mountingFee ?? 0),
+      productId: String(product._id),
+      mountingFee: String(mountingFee),
     });
-    // 옵션/스트링 선택값이 있으면 여기에 set 해도 됨:
-    // params.set('stringId', selectedStringId);
+
     router.push(`/services/apply?${params.toString()}`);
   };
 
