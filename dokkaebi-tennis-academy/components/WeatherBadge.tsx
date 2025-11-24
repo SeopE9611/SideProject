@@ -1,12 +1,18 @@
 'use client';
 
 import { useWeather } from '@/lib/hooks/useWeather';
+import { Loader2 } from 'lucide-react';
 
 export function WeatherBadge() {
   const { weather, isLoading, isError } = useWeather();
 
   if (isLoading) {
-    return <div className="rounded-lg px-4 py-2 text-sm text-slate-500">오늘 테니스 치기 좋은지 확인 중이에요…</div>;
+    return (
+      <div className="rounded-lg px-4 py-2 text-sm text-slate-500">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+        오늘 테니스 치기 좋은지 확인 중이에요
+      </div>
+    );
   }
 
   if (isError || !weather || !weather.ok) {
