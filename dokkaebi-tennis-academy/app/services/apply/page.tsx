@@ -24,6 +24,18 @@ import { normalizeCollection } from '@/app/features/stringing-applications/lib/c
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
+// 앞으로 "라켓 1자루 + 사용할 스트링 1개"를 나타낼 라인 단위 타입
+type ApplicationLine = {
+  id: string; // 프론트에서 key 용으로 사용할 임시 ID (uuid 등)
+  racketType: string; // 라켓 종류/모델명
+  stringProductId: string; // 사용할 스트링 상품 ID ('custom' 포함)
+  stringName: string; // 화면 표시용 스트링 이름
+  tensionMain: string; // 메인 텐션
+  tensionCross: string; // 크로스 텐션
+  note: string; // 라켓별 요청사항(선택)
+  mountingFee: number; // 이 라인에 대한 장착비
+};
+
 interface FormData {
   name: string;
   email: string;
@@ -48,6 +60,7 @@ interface FormData {
   pickupDate: string;
   pickupTime: string;
   pickupNote: string;
+  lines: ApplicationLine[];
 }
 
 declare global {
@@ -246,6 +259,7 @@ export default function StringServiceApplyPage() {
     pickupDate: '',
     pickupTime: '',
     pickupNote: '',
+    lines: [],
   });
 
   // 예약 슬롯 상태
@@ -416,15 +430,40 @@ export default function StringServiceApplyPage() {
     // 패키지 적용 여부(프로젝트 정책에 맞게 보던 값 유지)
     const usingPackage = !!(packagePreview?.has && !formData.packageOptOut);
 
-    // 교체비(표시용): 커스텀/보유 스트링(미포함) 15,000, 상품 선택(포함) 35,000
-    // 서버의 lib/stringing-prices.ts와 동일하게 맞춤
+    // 교체비(표시용)
+    // - 커스텀/보유 스트링: 15,000 (스트링 미포함 작업비)
+    // - 주문(orderId) 기반: 선택한 주문 항목의 mountingFee
+    // - PDP 기반: pdpMountingFee
+    // - 그 외(완전 단독 신청): 35,000 fallback
     let base = 0;
+
+    // 1) 커스텀/보유 스트링 선택 시: 항상 15,000
     if (formData.stringTypes.includes('custom')) {
       base = 15000;
-    } else if (formData.stringTypes.length > 0) {
-      // PDP에서 넘어온 장착비가 있으면 우선 사용
-      base = Number.isFinite((formData as any).pdpMountingFee) ? Number((formData as any).pdpMountingFee) : 35000;
     }
+    // 2) 그 외 스트링 상품이 선택된 경우
+    else if (formData.stringTypes.length > 0) {
+      const firstId = formData.stringTypes[0];
+
+      // 2-1) 주문(orderId)에서 넘어온 경우: 주문 항목의 mountingFee 사용
+      if (orderId && order && firstId) {
+        const selected = order.items.find((it) => it.id === firstId);
+        if (selected?.mountingFee != null) {
+          base = selected.mountingFee;
+        }
+      }
+
+      // 2-2) PDP에서 넘어온 경우: pdpMountingFee 우선 사용
+      if (!base && Number.isFinite((formData as any).pdpMountingFee)) {
+        base = Number((formData as any).pdpMountingFee);
+      }
+
+      // 2-3) 그 외(완전 단독 신청 등): 기존 35,000 fallback 유지
+      if (!base) {
+        base = 35000;
+      }
+    }
+
     // 수거비(표시용)
     const pickupFee = normalizeCollection(formData.collectionMethod) === 'courier_pickup' ? PICKUP_FEE : 0;
 
@@ -432,15 +471,115 @@ export default function StringServiceApplyPage() {
     const total = usingPackage ? 0 : base + pickupFee;
 
     return { usingPackage, base, pickupFee, total };
-  }, [formData.stringTypes, formData.collectionMethod, formData.packageOptOut, packagePreview, (formData as any).pdpMountingFee]);
+  }, [
+    formData.stringTypes,
+    formData.collectionMethod,
+    formData.packageOptOut,
+    packagePreview,
+    (formData as any).pdpMountingFee,
+    orderId,
+    order, // 주문 기반 진입 시 mountingFee 반영을 위해 추가
+  ]);
+
+  // 선택된 스트링 상품 정보 (orderId 기반 진입용)
+  const selectedOrderItem = useMemo(() => {
+    // 주문 기반이 아니면 없음
+    if (!orderId || !order) return null;
+    if (!formData.stringTypes.length) return null;
+
+    const firstId = formData.stringTypes[0];
+    if (!firstId || firstId === 'custom') return null;
+
+    // 주문 항목에서 현재 선택된 스트링 찾기
+    const found = order.items.find((it) => it.id === firstId);
+    return found ?? null;
+  }, [orderId, order, formData.stringTypes]);
+
+  // 이 신청에서 실제로 전송할 "라인" 목록
+  // - 1순위: formData.lines가 채워져 있으면 그대로 사용
+  // - 2순위: stringTypes 배열에 있는 스트링 개수만큼 라인 자동 생성
+  const linesForSubmit: ApplicationLine[] = useMemo(() => {
+    // 1) 이미 라인 배열이 세팅된 경우 (향후 UI에서 직접 편집하는 경우)
+    if (Array.isArray(formData.lines) && formData.lines.length > 0) {
+      return formData.lines;
+    }
+
+    // 2) 아직 라인이 없다면, stringTypes 기반으로 자동 생성
+    const stringIds = (formData.stringTypes || []).filter(Boolean);
+    if (!stringIds.length) {
+      return [];
+    }
+
+    // 이 신청 전체에 적용되는 기본 장착비 (지금은 "1자루 기준" 금액)
+    const baseFee = priceView.base ?? 0;
+
+    // 주문 기반 진입 여부
+    const isOrderMode = !!orderId && !!order;
+
+    // 주어진 stringId에 대해 표시용 이름을 계산하는 헬퍼
+    const getStringName = (prodId: string): string => {
+      // 1) 주문 기반이라면, 주문 항목 이름 우선
+      if (isOrderMode && order) {
+        const found = order.items.find((it) => it.id === prodId);
+        if (found?.name) return found.name;
+      }
+
+      // 2) 커스텀/보유 스트링
+      if (prodId === 'custom') {
+        return formData.customStringType || '커스텀 스트링';
+      }
+
+      // 3) 그래도 없으면 기본값
+      return '선택한 스트링';
+    };
+
+    // stringTypes에 담긴 각 상품 ID마다 라인 하나씩 생성
+    return stringIds.map((prodId, index) => {
+      const stringName = getStringName(prodId);
+
+      const line: ApplicationLine = {
+        // 간단한 프론트용 임시 ID (리스트 key 용)
+        id: `${Date.now()}-${index}`,
+        racketType: formData.racketType,
+        stringProductId: prodId,
+        stringName,
+        // 텐션은 현재 단일 필드 구조라, 추후 필드 분리 시 연결 예정
+        tensionMain: '',
+        tensionCross: '',
+        // 라켓별 요청사항: 현재는 전체 requirements를 그대로 사용
+        note: formData.requirements,
+        // 한 라켓당 장착비 (여러 개 선택 시, 장착비 * 라인 수)
+        mountingFee: baseFee,
+      };
+
+      return line;
+    });
+  }, [formData.lines, formData.stringTypes, formData.customStringType, formData.racketType, formData.requirements, priceView.base, order, orderId]);
 
   // 통화 포메터
   const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
   // 체크박스 변화 콜백
-  const handleStringTypesChange = (ids: string[]) => setFormData((prev) => ({ ...prev, stringTypes: ids }));
-  const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
+  const handleStringTypesChange = (ids: string[]) => {
+    // PDP에서 넘어온 경우: 이미 상품에서 선택한 스트링으로 고정이므로, 변경 허용하지 않음
+    if (fromPDP) return;
 
+    // 주문(orderId) 기반 진입인 경우: 항상 "하나만" 선택되도록 강제
+    if (orderId) {
+      // 마지막으로 클릭한 항목만 남기고 나머지는 제거
+      const last = ids[ids.length - 1];
+      setFormData((prev) => ({
+        ...prev,
+        stringTypes: last ? [last] : [],
+      }));
+      return;
+    }
+
+    // 3) 그 외(직접 /services/apply 진입 등): 기존처럼 여러 개 선택 허용
+    setFormData((prev) => ({ ...prev, stringTypes: ids }));
+  };
+
+  const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
   useEffect(() => {
     if (!order) return;
     let total = 0;
@@ -645,6 +784,7 @@ export default function StringServiceApplyPage() {
               }
             : undefined,
       },
+      lines: linesForSubmit,
     };
 
     try {
@@ -1031,6 +1171,12 @@ export default function StringServiceApplyPage() {
                     </button>
                   </div>
                 )}
+                {/* 주문 기반 진입 시 안내 문구 */}
+                {orderId && (
+                  <p className="mb-2 text-xs text-muted-foreground">
+                    이번 신청서는 <span className="font-semibold">라켓 1자루 기준</span>으로 처리됩니다. 구매하신 스트링 중 <span className="font-semibold">한 가지만</span> 선택해 주세요. (여러 라켓이라면 신청서를 여러 번 작성해 주세요)
+                  </p>
+                )}
 
                 <div className={fromPDP ? 'pointer-events-none opacity-60' : ''}>
                   <StringCheckboxes
@@ -1052,7 +1198,35 @@ export default function StringServiceApplyPage() {
                           <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">기본 장착 금액: 15,000원</p>
                         </div>
                       ) : (
-                        <p className="font-medium text-blue-700 dark:text-blue-200">총 장착 금액: {price.toLocaleString()}원</p>
+                        <>
+                          {/* 공통: 이번 신청의 교체비 요약 */}
+                          <p className="font-medium text-blue-700 dark:text-blue-200">
+                            총 장착 금액:
+                            {/* 
+              - 주문(orderId) 기반이면 price (주문 항목 mountingFee 합계)
+              - 그 외(PDP/단독 진입 등)에는 priceView.base (pdpMountingFee 또는 기본값)
+            */}
+                            {(order ? price : priceView.base).toLocaleString('ko-KR')}원
+                          </p>
+
+                          {/* 주문 기반 진입 + 스트링 선택 완료 시 상세 안내 */}
+                          {orderId && selectedOrderItem && (
+                            <div className="mt-2 space-y-1 text-xs text-blue-700/90 dark:text-blue-100/90">
+                              <p>
+                                선택한 스트링 상품 가격(이미 결제): <span className="font-semibold text-foreground">{selectedOrderItem.price.toLocaleString('ko-KR')}원</span>
+                              </p>
+                              <p>
+                                이번 신청으로 추가 납부할 교체비: <span className="font-semibold text-foreground">{priceView.base.toLocaleString('ko-KR')}원</span>
+                              </p>
+                              <p>
+                                예상 총 장착 비용(참고): <span className="font-semibold text-blue-600 dark:text-blue-300">{(selectedOrderItem.price + priceView.base).toLocaleString('ko-KR')}원</span>
+                              </p>
+                              <p className="text-[11px] text-muted-foreground">
+                                스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
+                              </p>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

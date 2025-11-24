@@ -14,6 +14,7 @@ import { useCartStore } from '@/app/store/cartStore';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MdSportsTennis } from 'react-icons/md';
+import { WeatherBadge } from '@/components/WeatherBadge';
 
 /** 재질 카테고리(스트링 타입) 노출 온/오프 */
 const SHOW_MATERIAL_MENU = false;
@@ -470,7 +471,9 @@ const Header = () => {
               })}
             </nav>
 
-            <div className="border rounded p-3">지역 날씨 들어갈 예정(오늘은 테니스 치기 좋은 날씨네요!등등)</div>
+            <div className="max-w-md w-full">
+              <WeatherBadge />
+            </div>
 
             {/* 검색 (PC 전용) */}
             <div className="hidden lg:flex flex-1 justify-end">

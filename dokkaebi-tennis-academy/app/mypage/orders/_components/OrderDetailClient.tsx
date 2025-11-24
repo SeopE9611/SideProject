@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
@@ -30,6 +30,15 @@ const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) 
   return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
 };
 
+interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  imageUrl?: string | null;
+  mountingFee?: number; // 장착 서비스 대상 스트링이면 서버에서 내려오는 필드 (없으면 undefined)
+}
+
 interface OrderDetail {
   _id: string;
   status: string;
@@ -58,7 +67,7 @@ interface OrderDetail {
   paymentMethod: string;
   paymentBank: string;
   total: number;
-  items: Array<{ id: string; name: string; quantity: number; price: number; imageUrl?: string | null }>;
+  items: OrderItem[];
   history: Array<any>;
   cancelReason?: string;
   cancelReasonDetail?: string;
@@ -158,9 +167,13 @@ export default function OrderDetailClient({ orderId }: Props) {
   if (orderError) {
     return <div className="text-center text-destructive">주문을 불러오는 중 오류가 발생했습니다.</div>;
   }
+
   if (!orderDetail) {
     return <OrderDetailSkeleton />;
   }
+  // 이 주문에서 '장착 서비스 대상 스트링' 개수
+  // mountingFee가 설정된 상품을 기준으로 계산한다.
+  const stringServiceItemCount = (orderDetail.items ?? []).filter((item) => item.mountingFee != null && item.mountingFee > 0).length;
 
   // 취소 요청 상태/라벨 계산
   const cancelLabel = getCancelRequestLabel(orderDetail);
@@ -282,6 +295,14 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <div>
                     <p className="font-semibold text-yellow-900 dark:text-yellow-100">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
                     <p className="text-sm text-yellow-700 dark:text-yellow-300">아래 버튼을 클릭하여 스트링 장착 서비스를 신청해주세요.</p>
+
+                    {/* 스트링을 여러 개 산 주문에만 추가 안내 출력 */}
+                    {stringServiceItemCount > 1 && (
+                      <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
+                        이번 주문에서 스트링을 여러 개 구매하신 경우,
+                        <span className="font-semibold"> 라켓 1자루당 신청서를 한 번씩</span> 작성해 주세요. 신청서 안에서 사용할 스트링을 선택할 수 있습니다.
+                      </p>
+                    )}
                   </div>
                 </div>
                 <Link href={`/services/apply?orderId=${orderDetail._id}`}>

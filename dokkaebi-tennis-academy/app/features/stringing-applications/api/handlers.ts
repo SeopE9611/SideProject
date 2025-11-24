@@ -43,22 +43,32 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
-    // 상품 ID 배열을 실제 상품명과 매핑
-    const stringItems = await Promise.all(
-      (app.stringDetails?.stringTypes || []).map(async (prodId: string) => {
-        if (prodId === 'custom') {
+    // 1순위: 새 표준 필드(app.stringItems)가 있으면 그대로 사용
+    let stringItems: { id: string; name: string }[] = [];
+
+    if (Array.isArray((app as any).stringItems) && (app as any).stringItems.length > 0) {
+      stringItems = (app as any).stringItems.map((it: any) => ({
+        id: it.productId ?? it.id ?? 'custom',
+        name: it.name ?? '알 수 없는 상품',
+      }));
+    } else {
+      // 2순위: 과거 구조(stringDetails.stringTypes + customStringName) 기반으로 복원
+      stringItems = await Promise.all(
+        (app.stringDetails?.stringTypes || []).map(async (prodId: string) => {
+          if (prodId === 'custom') {
+            return {
+              id: 'custom',
+              name: app.stringDetails?.customStringName ?? '커스텀 스트링',
+            };
+          }
+          const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
           return {
-            id: 'custom',
-            name: app.stringDetails.customStringName ?? '커스텀 스트링',
+            id: prodId,
+            name: prod?.name ?? '알 수 없는 상품',
           };
-        }
-        const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
-        return {
-          id: prodId,
-          name: prod?.name ?? '알 수 없는 상품',
-        };
-      })
-    );
+        })
+      );
+    }
 
     //  items 배열 재구성 (id, name, price, quantity)
     const items = await Promise.all(
@@ -1491,7 +1501,11 @@ export async function handleSubmitStringingApplication(req: Request) {
       requirements,
       orderId, // 문자열 | undefined (단독 신청 허용)
       packageOptOut,
+      lines,
     } = await req.json();
+
+    // 라인 사용 여부
+    const usingLines = Array.isArray(lines) && lines.length > 0;
 
     // === 1) 필수값 검증 ===
     if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0) {
@@ -1554,15 +1568,52 @@ export async function handleSubmitStringingApplication(req: Request) {
     }
 
     // === 4) 스트링 아이템 구성 ===
-    const stringItems = await Promise.all(
-      stringTypes.map(async (prodId: string) => {
-        if (prodId === 'custom') {
-          return { id: 'custom', name: customStringName?.trim() || '커스텀 스트링' };
-        }
-        const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
-        return { id: prodId, name: prod?.name ?? '알 수 없는 상품' };
-      })
-    );
+    // - 기본값: 지금까지처럼 stringTypes 기반
+    // - 개선: lines가 넘어오면 그 정보를 우선 사용
+    let displayStringItems: { id: string; name: string }[] = [];
+
+    if (usingLines) {
+      // 프론트에서 lines를 보냈다면, 그걸 표시용으로 사용
+      displayStringItems = (lines as any[]).map((line) => ({
+        id: line.stringProductId ?? 'custom',
+        name: line.stringName?.trim() || (line.stringProductId === 'custom' ? '커스텀 스트링' : '선택한 스트링'),
+      }));
+    } else {
+      // 과거 방식: stringTypes 배열을 기반으로 상품명을 조회
+      displayStringItems = await Promise.all(
+        (stringTypes || []).map(async (prodId: string) => {
+          if (prodId === 'custom') {
+            return {
+              id: 'custom',
+              name: customStringName?.trim() || '커스텀 스트링',
+            };
+          }
+          const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
+
+          return {
+            id: prodId,
+            name: prod?.name ?? '알 수 없는 상품',
+          };
+        })
+      );
+    }
+
+    // === 4-1) DB 저장용 StringItem 배열 정규화 ===
+    const normalizedStringItems =
+      usingLines && Array.isArray(lines) && lines.length > 0
+        ? // 새 구조: ApplicationLine 기반
+          (lines as any[]).map((line) => ({
+            productId: line.stringProductId ?? 'custom',
+            name: line.stringName?.trim() || (line.stringProductId === 'custom' ? '커스텀 스트링' : '선택한 스트링'),
+            quantity: 1,
+            mountingFee: typeof line.mountingFee === 'number' ? line.mountingFee : undefined,
+          }))
+        : // 과거 구조: stringTypes 기반 (mountingFee는 전체 합만 쓰고, per-item은 미사용)
+          displayStringItems.map((item) => ({
+            productId: item.id,
+            name: item.name,
+            quantity: 1,
+          }));
 
     // === 5) collectionMethod 정규화 & 일관 저장 ===
     const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
@@ -1570,7 +1621,7 @@ export async function handleSubmitStringingApplication(req: Request) {
     const stringDetails: any = {
       racketType,
       stringTypes,
-      stringItems,
+      stringItems: displayStringItems,
       ...(stringTypes.includes('custom') && customStringName ? { customStringName: customStringName.trim() } : {}),
       preferredDate: cm === 'visit' ? preferredDate : null,
       preferredTime: cm === 'visit' ? preferredTime : null,
@@ -1592,7 +1643,16 @@ export async function handleSubmitStringingApplication(req: Request) {
     }
 
     // === 6) 금액 계산 / 패키지 처리 ===
-    const totalBefore = await calcStringingTotal(db, stringTypes);
+    // lines 가 있으면 각 라인의 mountingFee 합계를 사용하고
+    // 없으면 기존처럼 stringTypes 기반 금액 계산을 사용
+    let totalBefore: number;
+
+    if (usingLines && Array.isArray(lines) && lines.length > 0) {
+      totalBefore = (lines as any[]).reduce((sum, line) => sum + (typeof line.mountingFee === 'number' ? line.mountingFee : 0), 0);
+    } else {
+      totalBefore = await calcStringingTotal(db, stringTypes);
+    }
+
     let totalPrice = totalBefore;
     const serviceFeeBefore = totalBefore;
 
@@ -1629,7 +1689,7 @@ export async function handleSubmitStringingApplication(req: Request) {
 
     // === 7) 문서 저장: draft가 있거나 bodyAppId가 있으면 업데이트(승격), 아니면 신규 삽입 ===
     const baseDoc = {
-      _id: applicationId, // 최종 _id 고정
+      _id: applicationId,
       orderId: orderObjectId,
       name,
       phone,
@@ -1637,14 +1697,17 @@ export async function handleSubmitStringingApplication(req: Request) {
       contactEmail,
       contactPhone,
       shippingInfo,
-      collectionMethod: cm, // 최상위 필드도 표준화 값으로 저장
+      collectionMethod: cm,
       stringDetails,
+
+      stringItems: normalizedStringItems,
       totalPrice,
       serviceFeeBefore,
+
       packageApplied,
       packagePassId,
       packageRedeemedAt,
-      status: '검토 중', // draft → 제출 상태로 승격
+      status: '검토 중',
       submittedAt: new Date(),
       userId,
       guestName: userId ? null : name,
