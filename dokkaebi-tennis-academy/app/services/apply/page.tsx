@@ -533,9 +533,19 @@ export default function StringServiceApplyPage() {
       return '선택한 스트링';
     };
 
-    // stringTypes에 담긴 각 상품 ID마다 라인 하나씩 생성
     return stringIds.map((prodId, index) => {
       const stringName = getStringName(prodId);
+
+      // 라인별 장착비:
+      // - 주문 기반이면 해당 주문 항목의 mountingFee
+      // - 그 외에는 baseFee 공통 적용
+      let lineFee = baseFee;
+      if (isOrderMode && order) {
+        const found = order.items.find((it) => it.id === prodId);
+        if (typeof found?.mountingFee === 'number') {
+          lineFee = found.mountingFee;
+        }
+      }
 
       const line: ApplicationLine = {
         // 간단한 프론트용 임시 ID (리스트 key 용)
@@ -548,35 +558,37 @@ export default function StringServiceApplyPage() {
         tensionCross: '',
         // 라켓별 요청사항: 현재는 전체 requirements를 그대로 사용
         note: formData.requirements,
-        // 한 라켓당 장착비 (여러 개 선택 시, 장착비 * 라인 수)
-        mountingFee: baseFee,
+        // 한 라켓당 장착비
+        mountingFee: lineFee,
       };
 
       return line;
     });
   }, [formData.lines, formData.stringTypes, formData.customStringType, formData.racketType, formData.requirements, priceView.base, order, orderId]);
 
+  // 이번 신청서에서 라켓/스트링 라인 개수
+  const lineCount = linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
+
+  // 요약 카드용 교체비/합계 (주문 기반/단독 신청 모두 커버)
+  // - 주문(orderId 기반)인 경우: 선택된 스트링들의 총 장착비(price 상태)를 그대로 사용
+  // - 그 외(단독 신청/PDP 진입): 1자루 기준 금액(base)에 라인 수를 곱해 합계를 구함
+  const summaryBase = orderId && order ? price : priceView.base * (lineCount || 0);
+  const summaryTotal = priceView.usingPackage ? 0 : summaryBase + priceView.pickupFee;
+
   // 통화 포메터
   const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
-  // 체크박스 변화 콜백
+  // 라켓/스트링 선택 체크박스 변화 콜백
   const handleStringTypesChange = (ids: string[]) => {
-    // PDP에서 넘어온 경우: 이미 상품에서 선택한 스트링으로 고정이므로, 변경 허용하지 않음
+    // PDP에서 넘어온 경우: 상품 상세에서 이미 스트링을 확정하고 넘어온 상황이므로
+    // 여기서는 추가 변경을 허용하지 않는다.
     if (fromPDP) return;
 
-    // 주문(orderId) 기반 진입인 경우: 항상 "하나만" 선택되도록 강제
-    if (orderId) {
-      // 마지막으로 클릭한 항목만 남기고 나머지는 제거
-      const last = ids[ids.length - 1];
-      setFormData((prev) => ({
-        ...prev,
-        stringTypes: last ? [last] : [],
-      }));
-      return;
-    }
-
-    // 3) 그 외(직접 /services/apply 진입 등): 기존처럼 여러 개 선택 허용
-    setFormData((prev) => ({ ...prev, stringTypes: ids }));
+    // 그 외(주문 기반 진입 + 단독 진입 등)는 모두 다중 선택 허용
+    setFormData((prev) => ({
+      ...prev,
+      stringTypes: ids,
+    }));
   };
 
   const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
@@ -1174,7 +1186,8 @@ export default function StringServiceApplyPage() {
                 {/* 주문 기반 진입 시 안내 문구 */}
                 {orderId && (
                   <p className="mb-2 text-xs text-muted-foreground">
-                    이번 신청서는 <span className="font-semibold">라켓 1자루 기준</span>으로 처리됩니다. 구매하신 스트링 중 <span className="font-semibold">한 가지만</span> 선택해 주세요. (여러 라켓이라면 신청서를 여러 번 작성해 주세요)
+                    이번 신청서는 <span className="font-semibold">여러 자루 라켓</span>을 한 번에 접수할 수 있습니다. 장착을 원하는 스트링 상품만 체크해 주세요. 선택한 개수만큼 라켓 장착이 진행되며, 장착비는{' '}
+                    <span className="font-semibold">1자루 기준 금액 × 선택한 스트링 개수</span>로 계산됩니다.
                   </p>
                 )}
 
@@ -1199,18 +1212,32 @@ export default function StringServiceApplyPage() {
                         </div>
                       ) : (
                         <>
-                          {/* 공통: 이번 신청의 교체비 요약 */}
                           <p className="font-medium text-blue-700 dark:text-blue-200">
-                            총 장착 금액:
-                            {/* 
-              - 주문(orderId) 기반이면 price (주문 항목 mountingFee 합계)
-              - 그 외(PDP/단독 진입 등)에는 priceView.base (pdpMountingFee 또는 기본값)
-            */}
-                            {(order ? price : priceView.base).toLocaleString('ko-KR')}원
+                            총 장착 금액:{' '}
+                            {
+                              order && lineCount > 0
+                                ? price.toLocaleString('ko-KR') // 주문 기반: 선택한 주문 항목 mountingFee 합계
+                                : (priceView.base * Math.max(lineCount, 1)).toLocaleString('ko-KR') // 그 외: 1자루 기준 금액 × 라인 수
+                            }
+                            원
                           </p>
 
                           {/* 주문 기반 진입 + 스트링 선택 완료 시 상세 안내 */}
-                          {orderId && selectedOrderItem && (
+                          {orderId && order && lineCount > 1 && (
+                            <div className="mt-2 space-y-1 text-xs text-blue-700/90 dark:text-blue-100/90">
+                              <p>
+                                선택한 스트링 상품 수: <span className="font-semibold">{lineCount}개</span>
+                              </p>
+                              <p>
+                                이번 신청으로 추가 납부할 교체비 합계: <span className="font-semibold text-foreground">{price.toLocaleString('ko-KR')}원</span>
+                              </p>
+                              <p className="text-[11px] text-muted-foreground">
+                                스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
+                              </p>
+                            </div>
+                          )}
+
+                          {orderId && selectedOrderItem && lineCount === 1 && (
                             <div className="mt-2 space-y-1 text-xs text-blue-700/90 dark:text-blue-100/90">
                               <p>
                                 선택한 스트링 상품 가격(이미 결제): <span className="font-semibold text-foreground">{selectedOrderItem.price.toLocaleString('ko-KR')}원</span>
@@ -1532,9 +1559,9 @@ export default function StringServiceApplyPage() {
                         collectionMethod={formData.collectionMethod as any}
                         stringTypes={formData.stringTypes}
                         usingPackage={priceView.usingPackage}
-                        base={priceView.base}
+                        base={summaryBase}
                         pickupFee={priceView.pickupFee}
-                        total={priceView.total}
+                        total={summaryTotal}
                       />
                     </div>
 
@@ -1616,9 +1643,9 @@ export default function StringServiceApplyPage() {
                   collectionMethod={formData.collectionMethod as any}
                   stringTypes={formData.stringTypes}
                   usingPackage={priceView.usingPackage}
-                  base={priceView.base}
+                  base={summaryBase}
                   pickupFee={priceView.pickupFee}
-                  total={priceView.total}
+                  total={summaryTotal}
                 />
               </div>
             </div>
