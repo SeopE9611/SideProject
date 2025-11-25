@@ -648,14 +648,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           장바구니에 담기
                         </Button>
                       )}
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                        이 버튼은 현재 상품 1자루 기준으로 교체 서비스를 신청할 때 사용합니다. 여러 자루 라켓 또는 여러 개의 스트링을 한 번에 교체하시려면, 장바구니에서 묶음 주문 후 주문 상세 페이지에서 교체 서비스를 신청해 주세요.
-                      </p>
-                      <Button variant="outline" disabled={busy} onClick={goToStringingService} className={`w-full ${isWishlisted ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400' : ''}`}>
-                        <Calendar className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
-                        교체 서비스 신청하기
-                      </Button>
-
+                      <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                          이 버튼은 현재 상품 1자루 기준으로 교체 서비스를 신청할 때 사용합니다... 여러 개의 스트링을 한 번에 교체하시려면, 장바구니에서 묶음 주문 후 주문 상세 페이지에서 교체 서비스를 신청해 주세요.
+                        </p>
+                        <Button variant="outline" disabled={busy} onClick={goToStringingService} className={`w-full ...`}>
+                          <Calendar className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                          교체 서비스 신청하기
+                        </Button>
+                      </div>
                       <Button variant="outline" disabled={busy} onClick={handleWishlist} className={`w-full ${isWishlisted ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400' : ''}`}>
                         <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                         위시리스트
@@ -1235,7 +1236,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           <img src={rp.images?.[0] || '/placeholder.svg'} alt={rp.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                         </div>
                         <CardContent className="p-4">
-                          <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{rp.brand}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{BRAND_MAP[rp.brand] ?? rp.brand}</div>
                           <div className="font-medium line-clamp-2 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{rp.name}</div>
                           <div className="font-bold text-blue-600 dark:text-blue-400">{Number(rp.price).toLocaleString()}원</div>
                         </CardContent>
