@@ -1531,7 +1531,7 @@ export async function handleSubmitStringingApplication(req: Request) {
     const usingLines = Array.isArray(lines) && lines.length > 0;
 
     // === 1) 필수값 검증 ===
-    if (!name || !phone || !racketType || !Array.isArray(stringTypes) || stringTypes.length === 0) {
+    if (!name || !phone || !Array.isArray(stringTypes) || stringTypes.length === 0) {
       return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
     }
 
