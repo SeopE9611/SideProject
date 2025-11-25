@@ -171,9 +171,8 @@ export default function OrderDetailClient({ orderId }: Props) {
   if (!orderDetail) {
     return <OrderDetailSkeleton />;
   }
-  // 이 주문에서 '장착 서비스 대상 스트링' 개수
-  // mountingFee가 설정된 상품을 기준으로 계산한다.
-  const stringServiceItemCount = (orderDetail.items ?? []).filter((item) => item.mountingFee != null && item.mountingFee > 0).length;
+  // quantity 기반으로 총 '장착 서비스 대상 스트링 수량' 계산
+  const stringServiceItemCount = (orderDetail.items ?? []).filter((item) => item.mountingFee != null && item.mountingFee > 0).reduce((sum, item) => sum + (item.quantity ?? 1), 0);
 
   // 취소 요청 상태/라벨 계산
   const cancelLabel = getCancelRequestLabel(orderDetail);
@@ -299,8 +298,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     {/* 스트링을 여러 개 산 주문에만 추가 안내 출력 */}
                     {stringServiceItemCount > 1 && (
                       <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
-                        이번 주문에서 스트링을 여러 개 구매하신 경우,
-                        <span className="font-semibold"> 라켓 1자루당 신청서를 한 번씩</span> 작성해 주세요. 신청서 안에서 사용할 스트링을 선택할 수 있습니다.
+                        이 주문에는 교체 서비스 대상 스트링이 <span className="font-semibold">{stringServiceItemCount}개</span> 포함되어 있습니다. 이번 신청에서 장착하실 라켓 개수를 선택해 주세요.
                       </p>
                     )}
                   </div>
@@ -318,8 +316,11 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <CheckCircle className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-green-900 dark:text-green-100">이 주문은 스트링 장착 서비스가 신청 완료되었습니다.</p>
-                    <p className="text-sm text-green-700 dark:text-green-300">신청 상세 정보를 확인하실 수 있습니다.</p>
+                    <p className="font-semibold text-green-900 dark:text-green-100">이 주문으로 교체 서비스 신청이 완료되었습니다.</p>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      이 주문에는 교체 서비스 대상 스트링이 <span className="font-semibold">{stringServiceItemCount}개</span> 포함되어 있습니다.
+                    </p>
+                    <p className="text-sm text-green-700 dark:text-green-300">실제 신청에 포함된 개수와 라켓 정보는 신청 상세 화면에서 확인하실 수 있습니다.</p>
                   </div>
                 </div>
                 {orderDetail.stringingApplicationId && (

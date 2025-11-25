@@ -73,6 +73,14 @@ interface ApplicationDetail {
     racketType: string;
     requirements?: string;
   };
+  lines?: Array<{
+    id?: string;
+    racketType?: string;
+    stringName?: string;
+    tensionMain?: string;
+    tensionCross?: string;
+    note?: string;
+  }>;
   shippingInfo?: {
     name: string;
     phone: string;
@@ -406,6 +414,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const isEditableAllowed = isAdmin || userEditableStatuses.includes(data.status);
 
   if (error) return <div className="text-red-500 p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
+
+  // 요약 표시용 파생 값
+  const stringTypeCount = data.stringDetails?.stringTypes?.length ?? 0;
+
+  // 라켓 자루 수 추정: 현재 racketType 에 '라켓1, 라켓2' 형태라면 split 로 계산
+  const racketCount = Array.isArray(data.lines) && data.lines.length > 0 ? data.lines.length : data.stringDetails?.racketType ? data.stringDetails.racketType.split(',').filter((s) => s.trim().length > 0).length : 1;
+
+  // 총 장착비 (백엔드 totalPrice 신뢰)
+  const totalPrice = data.totalPrice ?? 0;
 
   const isCancelled = data.status === '취소';
   const isPaid = ['접수완료', '작업 중', '교체완료'].includes(data.status);
@@ -807,7 +824,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               <ShoppingCart className="w-6 h-6 text-green-600" />
               <CardTitle className="mt-2 text-lg font-semibold">신청 스트링 정보</CardTitle>
             </CardHeader>
-
+            <div className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-3 text-sm">
+              <span className="font-semibold text-slate-900 dark:text-slate-50">스트링 {stringTypeCount}종</span>
+              <span className="text-slate-400">/</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-50">라켓 {racketCount}자루</span>
+              <span className="text-slate-400">/</span>
+              <span className="font-semibold text-purple-700 dark:text-purple-300">총 장착비 {totalPrice.toLocaleString()}원</span>
+            </div>
             <CardContent className="px-6 pb-6">
               {/* 섹션을 하나로 묶고 divide-y로 구분해 가독성/일관성 향상 */}
               <div className="divide-y divide-gray-200 dark:divide-slate-700">
@@ -826,7 +849,46 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <ShoppingCart className="w-5 h-5" />
                     <span className="font-medium">스트링 정보</span>
                   </div>
+                  {/* 라켓별 세부 장착 정보 */}
+                  {Array.isArray(data.lines) && data.lines.length > 0 && (
+                    <div className="py-4">
+                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-3">
+                        <Target className="w-5 h-5" />
+                        <span className="font-medium">라켓별 장착 정보</span>
+                      </div>
 
+                      <div className="space-y-3">
+                        {data.lines.map((line, index) => (
+                          <div
+                            key={line.id ?? index}
+                            className="rounded-xl px-4 py-3 ring-1 ring-slate-200/70 bg-white/70
+                           dark:ring-slate-700 dark:bg-slate-900/40"
+                          >
+                            {/* 라켓 이름 + 순번 */}
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="font-medium text-gray-900 dark:text-gray-100">
+                                라켓 {index + 1}
+                                {line.racketType ? ` · ${line.racketType}` : ''}
+                              </p>
+                            </div>
+
+                            {/* 스트링 / 텐션 */}
+                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                              {line.stringName && <span className="inline-flex items-center rounded-full px-2 py-1 bg-slate-100 dark:bg-slate-800">스트링: {line.stringName}</span>}
+                              {(line.tensionMain || line.tensionCross) && (
+                                <span className="inline-flex items-center rounded-full px-2 py-1 bg-slate-100 dark:bg-slate-800">
+                                  텐션: {line.tensionMain ?? '-'} / {line.tensionCross ?? '-'}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* 라켓별 메모 */}
+                            {line.note && <p className="mt-2 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">메모: {line.note}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <ul className="space-y-3 md:space-y-4">
                     {data.items.map((item) => (
                       <li

@@ -648,7 +648,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           장바구니에 담기
                         </Button>
                       )}
-
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                        이 버튼은 현재 상품 1자루 기준으로 교체 서비스를 신청할 때 사용합니다. 여러 자루 라켓 또는 여러 개의 스트링을 한 번에 교체하시려면, 장바구니에서 묶음 주문 후 주문 상세 페이지에서 교체 서비스를 신청해 주세요.
+                      </p>
                       <Button variant="outline" disabled={busy} onClick={goToStringingService} className={`w-full ${isWishlisted ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400' : ''}`}>
                         <Calendar className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                         교체 서비스 신청하기

@@ -116,6 +116,27 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     // 체크박스 옵션으로 그대로 사용
     const purchasedStrings = orderStrings;
     const sd = app.stringDetails || {};
+
+    // 라켓별 세부 장착 정보(racketLines) 정리
+    const racketLines = Array.isArray((sd as any).racketLines)
+      ? (sd as any).racketLines.map((line: any, index: number) => ({
+          // key 용 ID – 기존 DB에 id가 있으면 그대로 쓰고, 없으면 index 기반으로 생성
+          id: String(line.id ?? `${index}`),
+          // 라켓 이름(라켓1, 라켓2 같은 라벨) – 없으면 null
+          racketLabel: line.racketLabel ?? null,
+          // 어떤 스트링 상품을 장착하는지
+          stringProductId: line.stringProductId ?? '',
+          stringName: line.stringName ?? '',
+          // 메인/크로스 텐션
+          tensionMain: line.tensionMain ?? '',
+          tensionCross: line.tensionCross ?? '',
+          // 라켓별 메모
+          note: line.note ?? '',
+          // 한 자루당 장착비 – 숫자가 아니면 0으로 방어
+          mountingFee: typeof line.mountingFee === 'number' ? line.mountingFee : 0,
+        }))
+      : [];
+
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
@@ -142,8 +163,10 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         requirements: sd.requirements ?? '',
         stringTypes: Array.isArray(sd.stringTypes) ? sd.stringTypes : [],
         stringItems,
+        racketLines,
         ...(sd.customStringName ? { customStringName: sd.customStringName } : {}),
       },
+      lines: racketLines,
       items,
       total,
       totalPrice: app.totalPrice ?? 0,
@@ -1627,6 +1650,29 @@ export async function handleSubmitStringingApplication(req: Request) {
       preferredTime: cm === 'visit' ? preferredTime : null,
       requirements,
     };
+
+    // 라켓별 세부 장착 정보 저장
+    if (usingLines && Array.isArray(lines)) {
+      stringDetails.racketLines = (lines as any[]).map((line, index) => ({
+        // 라인 식별용 id – 없으면 index로 대체
+        id: line.id ?? `line_${index + 1}`,
+
+        // 라켓 이름 / 구분 (라켓1, 라켓2 …)
+        racketLabel: line.racketLabel ?? null,
+
+        // 연결된 스트링 정보
+        stringProductId: line.stringProductId ?? null,
+        stringName: line.stringName ?? null,
+
+        // 텐션/메모 (없으면 빈 문자열로 통일)
+        tensionMain: line.tensionMain ?? '',
+        tensionCross: line.tensionCross ?? '',
+        note: line.note ?? '',
+
+        // 장착비 (있으면 number, 없으면 undefined)
+        mountingFee: typeof line.mountingFee === 'number' ? line.mountingFee : undefined,
+      }));
+    }
 
     // 방문만 예약 필수, 그 외는 예약 불필요 → 서버에서 정리
     if (cm === 'visit') {

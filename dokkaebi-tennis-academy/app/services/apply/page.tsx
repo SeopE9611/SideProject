@@ -4,7 +4,7 @@ import type React from 'react';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +43,7 @@ interface FormData {
   racketType: string;
   stringTypes: string[];
   customStringType: string;
+  stringUseCounts: Record<string, number>;
   preferredDate: string;
   preferredTime: string;
   requirements: string;
@@ -203,7 +204,7 @@ export default function StringServiceApplyPage() {
     }
 
     if (step === 2) {
-      if (!formData.racketType.trim()) return toast('라켓 종류를 입력해주세요.'), false;
+      // if (!formData.racketType.trim()) return toast('라켓 종류를 입력해주세요.'), false;
       if (formData.stringTypes.length === 0) return toast('스트링 종류를 한 개 이상 선택해주세요.'), false;
       if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) return toast('직접 입력한 스트링명을 적어주세요.'), false;
 
@@ -242,6 +243,7 @@ export default function StringServiceApplyPage() {
     racketType: '',
     stringTypes: [] as string[],
     customStringType: '',
+    stringUseCounts: {},
     preferredDate: '',
     preferredTime: '',
     requirements: '',
@@ -499,72 +501,94 @@ export default function StringServiceApplyPage() {
   // - 1순위: formData.lines가 채워져 있으면 그대로 사용
   // - 2순위: stringTypes 배열에 있는 스트링 개수만큼 라인 자동 생성
   const linesForSubmit: ApplicationLine[] = useMemo(() => {
-    // 1) 이미 라인 배열이 세팅된 경우 (향후 UI에서 직접 편집하는 경우)
+    // 1) 이미 라인이 세팅되어 있으면 그대로 사용
     if (Array.isArray(formData.lines) && formData.lines.length > 0) {
       return formData.lines;
     }
 
-    // 2) 아직 라인이 없다면, stringTypes 기반으로 자동 생성
+    // 2) 아직 라인이 없다면, 선택된 stringTypes 기반으로 자동 생성
     const stringIds = (formData.stringTypes || []).filter(Boolean);
     if (!stringIds.length) {
       return [];
     }
 
-    // 이 신청 전체에 적용되는 기본 장착비 (지금은 "1자루 기준" 금액)
     const baseFee = priceView.base ?? 0;
-
-    // 주문 기반 진입 여부
     const isOrderMode = !!orderId && !!order;
 
-    // 주어진 stringId에 대해 표시용 이름을 계산하는 헬퍼
     const getStringName = (prodId: string): string => {
-      // 1) 주문 기반이라면, 주문 항목 이름 우선
       if (isOrderMode && order) {
         const found = order.items.find((it) => it.id === prodId);
         if (found?.name) return found.name;
       }
-
-      // 2) 커스텀/보유 스트링
       if (prodId === 'custom') {
         return formData.customStringType || '커스텀 스트링';
       }
-
-      // 3) 그래도 없으면 기본값
       return '선택한 스트링';
     };
 
-    return stringIds.map((prodId, index) => {
+    const lines: ApplicationLine[] = [];
+
+    stringIds.forEach((prodId, index) => {
       const stringName = getStringName(prodId);
 
-      // 라인별 장착비:
-      // - 주문 기반이면 해당 주문 항목의 mountingFee
-      // - 그 외에는 baseFee 공통 적용
-      let lineFee = baseFee;
-      if (isOrderMode && order) {
-        const found = order.items.find((it) => it.id === prodId);
-        if (typeof found?.mountingFee === 'number') {
-          lineFee = found.mountingFee;
-        }
+      // 커스텀/보유 스트링: quantity 개념 없이 항상 1자루 기준
+      if (prodId === 'custom') {
+        const lineFee = baseFee || 15000;
+
+        lines.push({
+          id: `custom-${index}-0`,
+          racketType: '',
+          stringProductId: prodId,
+          stringName,
+          tensionMain: '',
+          tensionCross: '',
+          note: formData.requirements,
+          mountingFee: lineFee,
+        });
+        return;
       }
 
-      const line: ApplicationLine = {
-        // 간단한 프론트용 임시 ID (리스트 key 용)
-        id: `${Date.now()}-${index}`,
-        racketType: formData.racketType,
-        stringProductId: prodId,
-        stringName,
-        // 텐션은 현재 단일 필드 구조라, 추후 필드 분리 시 연결 예정
-        tensionMain: '',
-        tensionCross: '',
-        // 라켓별 요청사항: 현재는 전체 requirements를 그대로 사용
-        note: formData.requirements,
-        // 한 라켓당 장착비
-        mountingFee: lineFee,
-      };
+      // 주문 기반(orderId)인 경우: "이번 신청에서 사용할 개수(useQty)"만큼 라인 생성
+      if (isOrderMode && order) {
+        const found = order.items.find((it) => it.id === prodId);
+        if (!found) return;
 
-      return line;
+        const orderQty = found.quantity ?? 1;
+        const fee = typeof found.mountingFee === 'number' ? found.mountingFee : baseFee;
+
+        const useQty = formData.stringUseCounts[prodId] ?? orderQty;
+
+        for (let i = 0; i < useQty; i++) {
+          lines.push({
+            id: `${prodId}-${i}`,
+            racketType: formData.racketType,
+            stringProductId: prodId,
+            stringName,
+            tensionMain: '',
+            tensionCross: '',
+            note: formData.requirements,
+            mountingFee: fee,
+          });
+        }
+      } else {
+        // 단독/PDP 경로: prodId 당 라인 1개
+        const fee = baseFee;
+
+        lines.push({
+          id: `${prodId}-0`,
+          racketType: formData.racketType,
+          stringProductId: prodId,
+          stringName,
+          tensionMain: '',
+          tensionCross: '',
+          note: formData.requirements,
+          mountingFee: fee,
+        });
+      }
     });
-  }, [formData.lines, formData.stringTypes, formData.customStringType, formData.racketType, formData.requirements, priceView.base, order, orderId]);
+
+    return lines;
+  }, [formData.lines, formData.stringTypes, formData.customStringType, formData.racketType, formData.stringUseCounts, formData.requirements, priceView.base, order, orderId]);
 
   // 이번 신청서에서 라켓/스트링 라인 개수
   const lineCount = linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
@@ -584,28 +608,123 @@ export default function StringServiceApplyPage() {
     // 여기서는 추가 변경을 허용하지 않는다.
     if (fromPDP) return;
 
-    // 그 외(주문 기반 진입 + 단독 진입 등)는 모두 다중 선택 허용
+    setFormData((prev) => {
+      // 기존 카운트 복사
+      const nextUseCounts: Record<string, number> = { ...prev.stringUseCounts };
+
+      // 선택되지 않은 스트링은 카운트에서 제거
+      const selectedSet = new Set(ids);
+      Object.keys(nextUseCounts).forEach((key) => {
+        if (!selectedSet.has(key)) {
+          delete nextUseCounts[key];
+        }
+      });
+
+      if (orderId && order) {
+        // 주문 기반: 기본값을 "주문 수량"으로 맞추되, 이미 값이 있으면 그 안에서 유지
+        ids.forEach((id) => {
+          if (id === 'custom') {
+            if (nextUseCounts[id] == null) nextUseCounts[id] = 1;
+            return;
+          }
+
+          const item = order.items.find((it) => it.id === id);
+          const orderQty = item?.quantity ?? 1;
+
+          const current = nextUseCounts[id];
+          // 기존 값이 없거나, 주문 수량보다 크면 주문 수량으로 보정
+          if (current == null || current > orderQty) {
+            nextUseCounts[id] = orderQty;
+          }
+        });
+      } else {
+        // 주문 없는 경우(PDP/단독): 각 스트링 1개 기준
+        ids.forEach((id) => {
+          if (nextUseCounts[id] == null) {
+            nextUseCounts[id] = 1;
+          }
+        });
+      }
+
+      return {
+        ...prev,
+        stringTypes: ids,
+        stringUseCounts: nextUseCounts,
+      };
+    });
+  };
+
+  // 라켓/라인 에디터: 라켓별 텐션/메모 등 변경 핸들러
+  const handleLineFieldChange = <K extends keyof ApplicationLine>(index: number, field: K, value: ApplicationLine[K]) => {
+    setFormData((prev) => {
+      // 이미 사용자가 formData.lines 를 가지고 있으면 그걸 기준으로,
+      // 없으면 현재 계산된 linesForSubmit 를 기준으로 편집한다.
+      const baseLines = Array.isArray(prev.lines) && prev.lines.length > 0 ? prev.lines : linesForSubmit;
+
+      const nextLines = baseLines.map((line, i) => (i === index ? { ...line, [field]: value } : line));
+
+      return {
+        ...prev,
+        lines: nextLines,
+      };
+    });
+  };
+
+  // 특정 스트링(productId)에 대해 "이번 신청에서 사용할 개수"를 수정하는 헬퍼
+  const handleUseQtyChange = (id: string, value: number) => {
+    // 지금은 주문 기반(orderId + order)일 때만 쓸 예정
+    if (!orderId || !order) return;
+
+    const raw = Number.isFinite(value) ? value : 0;
+    const min = 0;
+
+    let max: number;
+    if (id === 'custom') {
+      // 직접 입력 스트링은 일단 99개까지 허용
+      max = 99;
+    } else {
+      const item = order.items.find((it) => it.id === id);
+      max = item?.quantity ?? 1;
+    }
+
+    const safe = Math.min(Math.max(raw, min), max);
+
     setFormData((prev) => ({
       ...prev,
-      stringTypes: ids,
+      stringUseCounts: {
+        ...prev.stringUseCounts,
+        [id]: safe,
+      },
     }));
   };
 
   const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
+
   useEffect(() => {
-    if (!order) return;
+    if (!orderId || !order) return;
+
     let total = 0;
+
     formData.stringTypes.forEach((id) => {
       if (id === 'custom') {
-        // custom 선택 개수만큼 기본 수수료 곱하기 (보통 1개만 사용)
-        total += 15000;
-      } else {
-        const item = order.items.find((it) => it.id === id);
-        total += item?.mountingFee ?? 0;
+        const useQty = formData.stringUseCounts['custom'] ?? 1;
+        total += 15000 * useQty;
+        return;
       }
+
+      const item = order.items.find((it) => it.id === id);
+      if (!item) return;
+
+      const orderQty = item.quantity ?? 1;
+      const fee = item.mountingFee ?? 0;
+
+      const useQty = formData.stringUseCounts[id] ?? orderQty;
+
+      total += fee * useQty;
     });
+
     setPrice(total);
-  }, [formData.stringTypes, order]);
+  }, [formData.stringTypes, formData.stringUseCounts, order, orderId]);
 
   // 주문서 없는 단독 신청일 경우만 실행
   useEffect(() => {
@@ -1142,12 +1261,12 @@ export default function StringServiceApplyPage() {
             </div>
 
             <div className="space-y-6">
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="racketType" className="text-sm font-medium">
                   라켓 종류 <span className="text-red-500">*</span>
                 </Label>
                 <Input id="racketType" name="racketType" value={formData.racketType} onChange={handleInputChange} placeholder="예: 윌슨 프로 스태프 97" className="focus:ring-2 focus:ring-green-500 transition-all duration-200" />
-              </div>
+              </div> */}
 
               <div className="space-y-4">
                 <div>
@@ -1224,10 +1343,51 @@ export default function StringServiceApplyPage() {
 
                           {/* 주문 기반 진입 + 스트링 선택 완료 시 상세 안내 */}
                           {orderId && order && lineCount > 1 && (
-                            <div className="mt-2 space-y-1 text-xs text-blue-700/90 dark:text-blue-100/90">
+                            <div className="mt-2 space-y-2 text-xs text-blue-700/90 dark:text-blue-100/90">
                               <p>
-                                선택한 스트링 상품 수: <span className="font-semibold">{lineCount}개</span>
+                                이번 신청에서 장착할 라켓 수: <span className="font-semibold">{lineCount}자루</span>
                               </p>
+
+                              {/* 선택된 각 스트링별로 "구매 수량 vs 이번 신청 수량" 노출 + 수정 */}
+                              <div className="space-y-1">
+                                {formData.stringTypes.map((id) => {
+                                  if (id === 'custom') {
+                                    const useQty = formData.stringUseCounts['custom'] ?? 1;
+                                    return (
+                                      <div key={id} className="flex items-center justify-between gap-2">
+                                        <span className="truncate">• 직접 입력 스트링</span>
+                                        <div className="flex items-center gap-1">
+                                          <Label htmlFor="useQty-custom" className="sr-only">
+                                            사용할 개수
+                                          </Label>
+                                          <Input id="useQty-custom" type="number" className="h-7 w-16 px-2 py-1 text-right text-xs" min={0} max={99} value={useQty} onChange={(e) => handleUseQtyChange('custom', Number(e.target.value) || 0)} />
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+
+                                  const item = order.items.find((it) => it.id === id);
+                                  if (!item) return null;
+
+                                  const orderQty = item.quantity ?? 1;
+                                  const useQty = formData.stringUseCounts[id] ?? orderQty;
+
+                                  return (
+                                    <div key={id} className="flex items-center justify-between gap-2">
+                                      <span className="truncate">
+                                        • {item.name} <span className="text-[11px] text-blue-800/80 dark:text-blue-100/80">(구매 {orderQty}개 중)</span>
+                                      </span>
+                                      <div className="flex items-center gap-1">
+                                        <Label htmlFor={`useQty-${id}`} className="sr-only">
+                                          사용할 개수
+                                        </Label>
+                                        <Input id={`useQty-${id}`} type="number" className="h-7 w-16 px-2 py-1 text-right text-xs" min={0} max={orderQty} value={useQty} onChange={(e) => handleUseQtyChange(id, Number(e.target.value) || 0)} />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
                               <p>
                                 이번 신청으로 추가 납부할 교체비 합계: <span className="font-semibold text-foreground">{price.toLocaleString('ko-KR')}원</span>
                               </p>
@@ -1259,6 +1419,54 @@ export default function StringServiceApplyPage() {
                   </div>
                 </div>
               </div>
+
+              {/* 라켓/라인 세부 입력 (선택 사항) */}
+              {lineCount > 0 && (
+                <Card className="border-dashed border-blue-200/80 bg-blue-50/60 dark:bg-slate-900/40">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">라켓별 세부 장착 정보</CardTitle>
+                    <CardDescription className="text-xs">
+                      위에서 선택한 <span className="font-semibold">“사용 개수”</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {linesForSubmit.map((line, index) => (
+                      <div key={line.id ?? index} className="rounded-lg border-dashed bg-background px-3 py-3 space-y-2">
+                        {/* 헤더 영역: 라켓 N, 스트링 이름 */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-semibold text-white">{index + 1}</span>
+                            <span className="text-xs text-muted-foreground">라켓 {index + 1}</span>
+                          </div>
+                          <span className="truncate text-xs text-muted-foreground">스트링: {line.stringName}</span>
+                        </div>
+
+                        {/* 라켓 이름 + 텐션 */}
+                        <div className="grid gap-2 md:grid-cols-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs">라켓 이름/별칭</Label>
+                            <Input value={line.racketType ?? ''} onChange={(e) => handleLineFieldChange(index, 'racketType', e.target.value)} placeholder="예: 라켓1" className="h-8 text-xs" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">메인 텐션(kg)</Label>
+                            <Input value={line.tensionMain ?? ''} onChange={(e) => handleLineFieldChange(index, 'tensionMain', e.target.value)} placeholder="예: 24" className="h-8 text-xs" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">크로스 텐션(kg)</Label>
+                            <Input value={line.tensionCross ?? ''} onChange={(e) => handleLineFieldChange(index, 'tensionCross', e.target.value)} placeholder="예: 23" className="h-8 text-xs" />
+                          </div>
+                        </div>
+
+                        {/* 라켓별 메모 */}
+                        <div className="space-y-1">
+                          <Label className="text-xs">라켓별 메모 (선택)</Label>
+                          <Textarea value={line.note ?? ''} onChange={(e) => handleLineFieldChange(index, 'note', e.target.value)} rows={2} className="text-xs" placeholder="예: 이 라켓은 경기용, 이 라켓은 연습용 등" />
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
 
               {normalizeCollection(formData.collectionMethod) === 'visit' && (
                 <div className="grid gap-4 md:grid-cols-2">

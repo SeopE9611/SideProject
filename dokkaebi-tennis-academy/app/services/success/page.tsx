@@ -72,6 +72,8 @@ export default async function StringServiceSuccessPage(props: Props) {
   // 최종 표시 문자열 (여러 개면 " + "로 연결)
   const stringDisplay = stringNames.join(' + ') || '-';
 
+  const racketLines = Array.isArray(application?.stringDetails?.racketLines) ? application.stringDetails.racketLines : [];
+
   if (!application) return notFound();
 
   // 로그인 여부 확인
@@ -361,7 +363,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                     <Racquet className="h-6 w-6 mr-3 text-purple-600" />
                     장착 정보
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 rounded-xl">
                       <div className="flex items-center mb-3">
                         <Racquet className="h-5 w-5 text-blue-600 mr-2" />
@@ -375,7 +377,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </div>
                       <p className="font-bold text-lg text-gray-900 dark:text-white">{stringDisplay}</p>
                     </div>
-                  </div>
+                  </div> */}
 
                   {application.stringDetails.requirements && (
                     <div className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 rounded-xl">
@@ -387,6 +389,35 @@ export default async function StringServiceSuccessPage(props: Props) {
                     </div>
                   )}
                 </div>
+                {/* 기존 장착 정보 카드 아래 쪽에 추가 */}
+                {racketLines.length > 0 && (
+                  <div className="mt-8">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">라켓별 세부 장착 정보</h4>
+
+                    <div className="space-y-3">
+                      {racketLines.map((line: any, idx: number) => (
+                        <div key={line.id ?? idx} className="p-4 rounded-lg bg-gray-50 dark:bg-slate-700 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">라켓 {line.racketLabel || `${idx + 1}번`}</p>
+                            {line.stringName && <p className="font-semibold text-gray-900 dark:text-white">스트링: {line.stringName}</p>}
+                          </div>
+
+                          <div className="text-sm text-gray-700 dark:text-gray-200 text-right">
+                            {(line.tensionMain || line.tensionCross) && (
+                              <p>
+                                텐션&nbsp;
+                                <span className="font-medium">
+                                  메인 {line.tensionMain || '-'} / 크로스 {line.tensionCross || '-'}
+                                </span>
+                              </p>
+                            )}
+                            {line.note && <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">메모: {line.note}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
 
               <CardFooter className="bg-gray-50 dark:bg-slate-700 rounded-b-lg p-8">
