@@ -31,6 +31,7 @@ export interface ServicePassConsumption {
   passId: ObjectId;
   applicationId: ObjectId;
   usedAt: Date;
+  count?: number;
   reverted?: boolean;
   createdAt: Date;
 }

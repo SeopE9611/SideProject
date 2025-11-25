@@ -1702,6 +1702,11 @@ export async function handleSubmitStringingApplication(req: Request) {
     let totalPrice = totalBefore;
     const serviceFeeBefore = totalBefore;
 
+    // 이번 신청으로 실제로 몇 회의 스트링 작업이 발생하는지 계산
+    // - 라켓별 라인 정보(lines)가 있으면 각 라인 = 1회로 간주
+    // - 없으면 과거 방식처럼 1회로 처리
+    const packageUseCount = usingLines && Array.isArray(lines) && lines.length > 0 ? (lines as any[]).length : 1;
+
     // 최종 applicationId 결정 — bodyAppId 우선, 없으면 같은 주문의 draft 재사용, 없으면 신규
     const draftDoc =
       !bodyAppId && orderObjectId
@@ -1722,7 +1727,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       const pass = await findOneActivePassForUser(db, userId);
       if (pass?._id) {
         try {
-          await consumePass(db, pass._id, applicationId);
+          await consumePass(db, pass._id, applicationId, packageUseCount); // N회 차감
           packageApplied = true;
           packagePassId = pass._id;
           packageRedeemedAt = new Date();

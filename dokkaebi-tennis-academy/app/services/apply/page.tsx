@@ -184,7 +184,6 @@ export default function StringServiceApplyPage() {
     const toast = (msg: string) => {
       if (!silent) showErrorToast(msg);
     };
-    const usingPackage = !!(packagePreview?.has && !formData.packageOptOut);
 
     if (step === 1) {
       if (!formData.name.trim()) return toast('신청인 이름을 입력해주세요.'), false;
@@ -392,9 +391,6 @@ export default function StringServiceApplyPage() {
     packageSize?: number;
   }>(null);
 
-  // 패키지 사용 여부(자동 적용 + 미옵트아웃)
-  const usingPackage = !!(packagePreview?.has && !formData.packageOptOut);
-
   // 로그인 여부와 관계 없이 시도 (401이면 무시)
   useEffect(() => {
     (async () => {
@@ -425,13 +421,61 @@ export default function StringServiceApplyPage() {
   // 가격 상태 추가 및 표시
   const [price, setPrice] = useState<number>(0);
 
-  // ===== 가격 표시 계산(표시 전용) =====
+  // 수거비 상수
   const PICKUP_FEE = 3000; // 기사 방문 수거 시 후정산 안내용
 
-  const priceView = useMemo(() => {
-    // 패키지 적용 여부(프로젝트 정책에 맞게 보던 값 유지)
-    const usingPackage = !!(packagePreview?.has && !formData.packageOptOut);
+  // === 패키지 사용에 필요한 횟수 계산 ===
+  // useMemo 대신 즉시 실행 함수(IIFE)로 계산 (훅 순서 꼬임 방지)
+  const requiredPassCount = (() => {
+    const ids = (formData.stringTypes || []).filter(Boolean);
+    if (!ids.length) return 0;
 
+    const isOrderMode = !!orderId && !!order;
+    let total = 0;
+
+    ids.forEach((id) => {
+      if (id === 'custom') {
+        // 직접 입력 스트링은 개수 설정이 없으면 1회
+        const useQty = formData.stringUseCounts['custom'] ?? 1;
+        total += useQty;
+        return;
+      }
+
+      if (isOrderMode && order) {
+        const item = order.items.find((it) => it.id === id);
+        const orderQty = item?.quantity ?? 1;
+        const useQty = formData.stringUseCounts[id] ?? orderQty;
+        total += useQty;
+      } else {
+        // 주문 없는 단독/PDP: 스트링 1개 당 1회
+        total += 1;
+      }
+    });
+
+    return total;
+  })();
+
+  // 패키지 잔여 횟수 & 적용 가능 여부
+  const packageRemaining = packagePreview?.remaining ?? 0;
+
+  // 패키지 자체는 있지만, "이번 신청에 필요한 횟수"만큼 남아 있는지 여부
+  const canApplyPackage = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining >= requiredPassCount);
+
+  // 실제로 이번 신청에서 패키지를 사용하는지 여부(옵트아웃까지 반영)
+  const usingPackage = !!(canApplyPackage && !formData.packageOptOut);
+
+  // 패키지가 있지만, 이번 신청에 필요한 횟수보다 적게 남은 경우
+  const packageInsufficient = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining < requiredPassCount);
+
+  // 이런 경우에는 강제적으로 "사용 안 함"으로 고정
+  useEffect(() => {
+    if (packageInsufficient && !formData.packageOptOut) {
+      setFormData((prev) => ({ ...prev, packageOptOut: true }));
+    }
+  }, [packageInsufficient, formData.packageOptOut]);
+
+  // ===== 가격 표시 계산(표시 전용) =====
+  const priceView = useMemo(() => {
     // 교체비(표시용)
     // - 커스텀/보유 스트링: 15,000 (스트링 미포함 작업비)
     // - 주문(orderId) 기반: 선택한 주문 항목의 mountingFee
@@ -476,11 +520,10 @@ export default function StringServiceApplyPage() {
   }, [
     formData.stringTypes,
     formData.collectionMethod,
-    formData.packageOptOut,
-    packagePreview,
     (formData as any).pdpMountingFee,
     orderId,
-    order, // 주문 기반 진입 시 mountingFee 반영을 위해 추가
+    order,
+    usingPackage, // 🔥 패키지 사용 여부 변경 시 재계산
   ]);
 
   // 선택된 스트링 상품 정보 (orderId 기반 진입용)
@@ -498,8 +541,6 @@ export default function StringServiceApplyPage() {
   }, [orderId, order, formData.stringTypes]);
 
   // 이 신청에서 실제로 전송할 "라인" 목록
-  // - 1순위: formData.lines가 채워져 있으면 그대로 사용
-  // - 2순위: stringTypes 배열에 있는 스트링 개수만큼 라인 자동 생성
   const linesForSubmit: ApplicationLine[] = useMemo(() => {
     // 1) 이미 라인이 세팅되어 있으면 그대로 사용
     if (Array.isArray(formData.lines) && formData.lines.length > 0) {
@@ -597,6 +638,7 @@ export default function StringServiceApplyPage() {
   // - 주문(orderId 기반)인 경우: 선택된 스트링들의 총 장착비(price 상태)를 그대로 사용
   // - 그 외(단독 신청/PDP 진입): 1자루 기준 금액(base)에 라인 수를 곱해 합계를 구함
   const summaryBase = orderId && order ? price : priceView.base * (lineCount || 0);
+
   const summaryTotal = priceView.usingPackage ? 0 : summaryBase + priceView.pickupFee;
 
   // 통화 포메터
@@ -1532,14 +1574,27 @@ export default function StringServiceApplyPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-emerald-900 dark:text-emerald-200">패키지 자동 적용</h3>
-                      <Badge className="bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">활성</Badge>
+                      <Badge className={packageInsufficient ? 'bg-red-600/10 text-red-700 dark:text-red-300 border border-red-300/40' : 'bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40'}>
+                        {packageInsufficient ? '적용 불가' : '활성'}
+                      </Badge>
                     </div>
 
-                    <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                      교체비는 <span className="font-semibold text-emerald-700 dark:text-emerald-300">0원</span>으로 처리됩니다.
-                    </p>
+                    {packageInsufficient ? (
+                      <p className="mt-1 text-sm text-red-700 dark:text-red-200 leading-relaxed">
+                        현재 패키지 남은 횟수(
+                        <span className="font-semibold">{packageRemaining}회</span>
+                        )가 이번 교체에 필요한 횟수(
+                        <span className="font-semibold">{requiredPassCount}회</span>
+                        )보다 적어, 이번 신청에서는 패키지가 자동으로 적용되지 않습니다.
+                        <br />이 신청은 일반 교체비 결제로 진행됩니다.
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                        교체비는 <span className="font-semibold text-emerald-700 dark:text-emerald-300">0원</span>
+                        으로 처리됩니다.
+                      </p>
+                    )}
 
-                    {/* 잔여/만료 pill */}
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-300">
                         잔여 {packagePreview.remaining}회
@@ -1548,7 +1603,6 @@ export default function StringServiceApplyPage() {
                         만료일 {packagePreview.expiresAt ? new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR') : '-'}
                       </Badge>
                     </div>
-
                     {/* 잔여 게이지 */}
                     {(() => {
                       const total = packagePreview?.packageSize ?? 0;
@@ -1579,10 +1633,14 @@ export default function StringServiceApplyPage() {
                       <Checkbox
                         id="package-optout"
                         checked={!!formData.packageOptOut}
-                        onCheckedChange={(v) => setFormData({ ...formData, packageOptOut: v === true })}
+                        disabled={packageInsufficient}
+                        onCheckedChange={(v) => {
+                          if (packageInsufficient) return; // 부족하면 변경 불가
+                          setFormData({ ...formData, packageOptOut: v === true });
+                        }}
                         className="h-4 w-4 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                       />
-                      <Label htmlFor="package-optout" className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <Label htmlFor="package-optout" className={'text-sm cursor-pointer ' + (packageInsufficient ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300')}>
                         이번 신청에는 패키지 <span className="font-medium">사용 안 함</span>
                       </Label>
                     </div>

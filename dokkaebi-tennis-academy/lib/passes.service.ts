@@ -99,7 +99,7 @@ export async function findOneActivePassForUser(db: Db, userId: ObjectId) {
 }
 
 /** 패스 차감(원자 조건 포함) + 멱등 로그(service_pass_consumptions) 기록 */
-export async function consumePass(db: Db, passId: ObjectId, applicationId: ObjectId) {
+export async function consumePass(db: Db, passId: ObjectId, applicationId: ObjectId, count: number = 1) {
   const passes = db.collection<ServicePass>('service_passes');
   const consumptions = db.collection<ServicePassConsumption>('service_pass_consumptions');
   const packageOrders = db.collection('packageOrders'); // ← 주문 컬렉션
@@ -125,6 +125,7 @@ export async function consumePass(db: Db, passId: ObjectId, applicationId: Objec
     passId,
     applicationId,
     usedAt: now,
+    count,
     createdAt: now,
   });
 
@@ -136,9 +137,15 @@ export async function consumePass(db: Db, passId: ObjectId, applicationId: Objec
 
   // 5) 원자 차감
   const raw = await passes.findOneAndUpdate(
-    { _id: passId, status: 'active', remainingCount: { $gt: 0 }, expiresAt: { $gte: now } },
     {
-      $inc: { usedCount: 1, remainingCount: -1 },
+      _id: passId,
+      status: 'active',
+      // 남은 횟수가 "이번에 차감할 횟수(count)" 이상일 때만 패스 사용 허용
+      remainingCount: { $gte: count },
+      expiresAt: { $gte: now },
+    },
+    {
+      $inc: { usedCount: count, remainingCount: -count },
       $push: { redemptions: { $each: [redemption] } },
       $set: { updatedAt: now },
     },
