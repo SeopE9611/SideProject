@@ -11,6 +11,7 @@ import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
 import { onApplicationSubmitted, onStatusUpdated, onScheduleConfirmed, onScheduleUpdated, onApplicationCanceled, onScheduleCanceled } from '@/app/features/notifications/triggers/stringing';
 import { calcStringingTotal } from '@/lib/pricing';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { ServicePassConsumption } from '@/lib/types/pass';
 
 export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
 function mapCourierLabel(raw?: string | null): string {
@@ -160,6 +161,17 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       expiresAt: null,
     };
 
+    // === service_pass_consumptions 차감 이력 조회 ===
+    const rawConsumptions = await db.collection<ServicePassConsumption>('service_pass_consumptions').find({ applicationId: app._id }).sort({ usedAt: 1 }).toArray();
+
+    const packageConsumptions = rawConsumptions.map((c) => ({
+      id: c._id.toString(),
+      passId: c.passId.toString(),
+      usedAt: c.usedAt instanceof Date ? c.usedAt.toISOString() : new Date(c.usedAt).toISOString(),
+      count: typeof c.count === 'number' ? c.count : 1,
+      reverted: !!c.reverted,
+    }));
+
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
@@ -194,6 +206,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       total,
       totalPrice: app.totalPrice ?? 0,
       packageInfo,
+      packageConsumptions,
       // 신청 취소 요청 정보
       cancelRequest: app.cancelRequest
         ? {

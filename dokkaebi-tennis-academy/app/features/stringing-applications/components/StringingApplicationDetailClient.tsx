@@ -128,6 +128,14 @@ interface ApplicationDetail {
     redeemedAt?: string | null;
     expiresAt?: string | null;
   };
+  // service_pass_consumptions 기반 패키지 차감 이력
+  packageConsumptions?: Array<{
+    id: string;
+    passId: string;
+    usedAt: string;
+    count: number;
+    reverted?: boolean;
+  }>;
 }
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -429,6 +437,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   // 요약 표시용 파생 값
   const stringTypeCount = data.stringDetails?.stringTypes?.length ?? 0;
+
+  // 패키지 차감 총 회수 (이력 카드 상단에 표시 용도)
+  const totalPackageConsumed = data.packageConsumptions?.reduce((sum, c) => sum + (c.count ?? 1), 0) ?? 0;
 
   // 라켓 자루 수 추정: 현재 racketType 에 '라켓1, 라켓2' 형태라면 split 로 계산
   const racketCount = Array.isArray(data.lines) && data.lines.length > 0 ? data.lines.length : data.stringDetails?.racketType ? data.stringDetails.racketType.split(',').filter((s) => s.trim().length > 0).length : 1;
@@ -854,6 +865,35 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                           )}
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* 패키지 사용 정보 카드 아래에 차감 이력 표시 */}
+                  {data.packageConsumptions && data.packageConsumptions.length > 0 && (
+                    <div className="mt-3 rounded-lg border border-dashed border-purple-100 bg-purple-50/60 px-3 py-2 text-xs text-gray-700 dark:border-purple-700/60 dark:bg-purple-950/30 dark:text-gray-100">
+                      <div className="mb-1 flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3.5 w-3.5 text-purple-500" />
+                          <span className="font-semibold">패키지 차감 이력</span>
+                        </div>
+                        <span className="text-[11px] text-gray-500 dark:text-gray-300">총 {totalPackageConsumed}회</span>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {data.packageConsumptions.map((c) => (
+                          <li key={c.id} className="flex items-center justify-between">
+                            <span className="text-[11px] text-gray-600 dark:text-gray-300">
+                              {new Date(c.usedAt).toLocaleString('ko-KR', {
+                                dateStyle: 'short',
+                                timeStyle: 'short',
+                              })}
+                            </span>
+                            <span className="text-[11px] font-medium text-purple-700 dark:text-purple-300">
+                              {c.count ?? 1}회 사용
+                              {c.reverted && <span className="ml-1 text-[10px] text-red-500">(복원됨)</span>}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
 
