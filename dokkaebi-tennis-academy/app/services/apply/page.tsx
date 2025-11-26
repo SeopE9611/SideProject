@@ -1461,6 +1461,68 @@ export default function StringServiceApplyPage() {
                   </div>
                 </div>
               </div>
+              {/* 패키지 요약 - 장착 정보 단계 */}
+              <div className="mt-4">
+                <div
+                  className={
+                    packagePreview?.has
+                      ? canApplyPackage
+                        ? 'rounded-xl border border-emerald-200 bg-emerald-50/80 dark:border-emerald-800/60 dark:bg-emerald-950/40 px-4 py-3'
+                        : 'rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-800/60 dark:bg-amber-950/40 px-4 py-3'
+                      : 'rounded-xl border border-slate-200 bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-950/40 px-4 py-3'
+                  }
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5">
+                      <Ticket className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                    </div>
+                    <div className="flex-1 text-[12px] leading-relaxed">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-semibold tracking-tight text-slate-800 dark:text-slate-50">패키지 사용 가능 여부</span>
+
+                        {packagePreview?.has ? (
+                          canApplyPackage ? (
+                            <Badge className="h-5 rounded-full border-emerald-300/60 bg-emerald-100 text-[11px] font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100">자동 적용 대상</Badge>
+                          ) : (
+                            <Badge className="h-5 rounded-full border-amber-300/60 bg-amber-100 text-[11px] font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-100">이번 구성에는 적용 불가</Badge>
+                          )
+                        ) : (
+                          <Badge className="h-5 rounded-full border-slate-300/60 bg-slate-100 text-[11px] font-medium text-slate-700 dark:bg-slate-900/40 dark:text-slate-100">보유 패키지 없음</Badge>
+                        )}
+                      </div>
+
+                      {packagePreview?.has ? (
+                        packageInsufficient ? (
+                          <p className="text-[11px] text-amber-800 dark:text-amber-100">
+                            현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>이고, 이번 신청에는 <span className="font-semibold">{requiredPassCount}회</span>가 필요하여 패키지가 자동 적용되지 않습니다.
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-slate-700 dark:text-slate-100">
+                            이번 신청에는 패키지로 <span className="font-semibold">{requiredPassCount}회</span>가 필요합니다. 현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>이며, 결제 단계에서 사용 여부를 선택할 수
+                            있습니다.
+                          </p>
+                        )
+                      ) : (
+                        <p className="text-[11px] text-slate-600 dark:text-slate-200">현재 보유 중인 패키지가 없어 이번 신청은 일반 교체비 기준으로 결제됩니다.</p>
+                      )}
+
+                      {packagePreview?.has && (
+                        <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-200">
+                          <span>필요 {requiredPassCount}회</span>
+                          <span className="h-3 w-px bg-slate-300/60 dark:bg-slate-700/80" />
+                          <span>잔여 {packageRemaining}회</span>
+                          {packagePreview.expiresAt && (
+                            <>
+                              <span className="h-3 w-px bg-slate-300/60 dark:bg-slate-700/80" />
+                              <span>만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* 라켓/라인 세부 입력 (선택 사항) */}
               {lineCount > 0 && (
@@ -1565,64 +1627,84 @@ export default function StringServiceApplyPage() {
 
             {/* 패키지 자동 적용 안내/옵트아웃 */}
             {packagePreview?.has ? (
-              <div className="rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-5">
+              <div
+                className={
+                  packageInsufficient
+                    ? 'mt-6 rounded-2xl border border-red-200 bg-red-50/80 dark:border-red-800/60 dark:bg-red-950/40 p-5'
+                    : 'mt-6 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 dark:border-emerald-800/60 dark:from-emerald-950/40 dark:to-teal-950/40 p-5'
+                }
+              >
                 <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 shrink-0 rounded-full bg-emerald-600 text-white grid place-content-center shadow-sm">
+                  <div className={packageInsufficient ? 'h-10 w-10 shrink-0 rounded-full bg-red-500 text-white grid place-content-center shadow-sm' : 'h-10 w-10 shrink-0 rounded-full bg-emerald-600 text-white grid place-content-center shadow-sm'}>
                     <Ticket className="h-5 w-5" />
                   </div>
 
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-emerald-900 dark:text-emerald-200">패키지 자동 적용</h3>
-                      <Badge className={packageInsufficient ? 'bg-red-600/10 text-red-700 dark:text-red-300 border border-red-300/40' : 'bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40'}>
-                        {packageInsufficient ? '적용 불가' : '활성'}
+                    {/* 헤더: 제목 + 상태 배지 */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className={packageInsufficient ? 'text-sm font-semibold text-red-800 dark:text-red-100' : 'text-sm font-semibold text-emerald-900 dark:text-emerald-100'}>패키지 자동 적용</h3>
+                      <Badge
+                        className={
+                          packageInsufficient ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-100 border border-red-200/80' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100 border border-emerald-200/80'
+                        }
+                      >
+                        {packageInsufficient ? '적용 불가' : usingPackage ? '사용 중' : '사용 가능'}
                       </Badge>
                     </div>
 
+                    {/* 본문 설명 */}
                     {packageInsufficient ? (
-                      <p className="mt-1 text-sm text-red-700 dark:text-red-200 leading-relaxed">
-                        현재 패키지 남은 횟수(
-                        <span className="font-semibold">{packageRemaining}회</span>
-                        )가 이번 교체에 필요한 횟수(
+                      <p className="mt-2 text-sm text-red-800 dark:text-red-100 leading-relaxed">
+                        현재 패키지 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
+                        로, 이번 교체에 필요한 횟수(
                         <span className="font-semibold">{requiredPassCount}회</span>
-                        )보다 적어, 이번 신청에서는 패키지가 자동으로 적용되지 않습니다.
-                        <br />이 신청은 일반 교체비 결제로 진행됩니다.
+                        )보다 적어 자동 적용되지 않습니다.
+                        <br />
+                        이번 신청은 일반 교체비 결제로 진행됩니다.
+                      </p>
+                    ) : usingPackage ? (
+                      <p className="mt-2 text-sm text-slate-800 dark:text-slate-50 leading-relaxed">
+                        이번 신청에는 패키지가 자동으로 적용됩니다. <span className="font-semibold text-emerald-700 dark:text-emerald-300">교체비는 0원</span>
+                        으로 처리되며, 패키지에서 <span className="font-semibold">{requiredPassCount}회</span>가 차감됩니다.
                       </p>
                     ) : (
-                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                        교체비는 <span className="font-semibold text-emerald-700 dark:text-emerald-300">0원</span>
-                        으로 처리됩니다.
-                      </p>
+                      <p className="mt-2 text-sm text-slate-800 dark:text-slate-50 leading-relaxed">패키지로 결제할 수 있는 상태입니다. 필요하다면 아래 옵션을 해제하여 이번 신청에도 패키지를 사용할 수 있습니다.</p>
                     )}
 
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-300">
+                    {/* 숫자 요약 뱃지들 */}
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                      <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-200">
+                        필요 {requiredPassCount}회
+                      </Badge>
+                      <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-200">
                         잔여 {packagePreview.remaining}회
                       </Badge>
-                      <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-300">
-                        만료일 {packagePreview.expiresAt ? new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR') : '-'}
-                      </Badge>
+                      {packagePreview.expiresAt && (
+                        <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-200">
+                          만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}
+                        </Badge>
+                      )}
                     </div>
+
                     {/* 잔여 게이지 */}
                     {(() => {
-                      const total = packagePreview?.packageSize ?? 0;
-                      const remaining = packagePreview?.remaining ?? 0;
+                      const total = packagePreview.packageSize ?? 0;
+                      const remaining = packagePreview.remaining ?? 0;
                       const used = total ? Math.max(0, total - remaining) : 0;
                       const remainPct = total ? Math.round((remaining / total) * 100) : 0;
 
+                      if (!total) return null;
+
                       return (
                         <div className="mt-4">
-                          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                          <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
                             <span>
                               총 {total}회 중 <span className="font-medium text-slate-700">{used}</span>회 사용
                             </span>
                             <span className="tabular-nums">{remainPct}%</span>
                           </div>
-                          <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-500" style={{ width: `${remainPct}%` }} />
-                          </div>
-                          <div className="mt-1 text-xs text-slate-500">
-                            잔여 <span className="font-medium text-emerald-700">{remaining}</span>회
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-emerald-100 dark:bg-emerald-950/40">
+                            <div className="h-full bg-emerald-500 dark:bg-emerald-400" style={{ width: `${remainPct}%` }} />
                           </div>
                         </div>
                       );
@@ -1640,7 +1722,7 @@ export default function StringServiceApplyPage() {
                         }}
                         className="h-4 w-4 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                       />
-                      <Label htmlFor="package-optout" className={'text-sm cursor-pointer ' + (packageInsufficient ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300')}>
+                      <Label htmlFor="package-optout" className={formData.packageOptOut ? 'cursor-pointer text-xs text-slate-500 dark:text-slate-400' : 'cursor-pointer text-xs text-slate-800 dark:text-slate-100'}>
                         이번 신청에는 패키지 <span className="font-medium">사용 안 함</span>
                       </Label>
                     </div>
