@@ -137,6 +137,29 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         }))
       : [];
 
+    // === 패키지 사용 정보 계산 ===
+    // - 제출 시점 로직과 동일하게, 라켓 라인 개수를 사용 회차로 간주
+    const usingLinesForPackage = Array.isArray(racketLines) && racketLines.length > 0;
+    const packageUseCount = usingLinesForPackage ? racketLines.length : 1;
+
+    // 조건 없이 항상 packageInfo 객체 생성
+    const packageInfo = {
+      // 실제 패키지 차감 여부 (true면 사용, false면 미사용)
+      applied: !!(app as any).packageApplied,
+
+      // 이번 신청이 패키지 기준으로 몇 회에 해당하는지
+      useCount: packageUseCount,
+
+      // 패스 관련 정보 (있으면 값, 없으면 null)
+      passId: (app as any).packagePassId ? String((app as any).packagePassId) : null,
+      passTitle: null,
+      packageSize: null,
+      usedCount: null,
+      remainingCount: null,
+      redeemedAt: (app as any).packageRedeemedAt ? (app as any).packageRedeemedAt.toISOString() : null,
+      expiresAt: null,
+    };
+
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
@@ -170,6 +193,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       items,
       total,
       totalPrice: app.totalPrice ?? 0,
+      packageInfo,
       // 신청 취소 요청 정보
       cancelRequest: app.cancelRequest
         ? {

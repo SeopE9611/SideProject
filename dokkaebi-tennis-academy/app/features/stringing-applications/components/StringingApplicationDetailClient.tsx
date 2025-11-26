@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, Target, Pencil, Settings, Edit3, Truck, CheckCircle2, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, Target, Pencil, Settings, Edit3, Truck, CheckCircle2, Clock, Ticket } from 'lucide-react';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -116,6 +116,18 @@ interface ApplicationDetail {
     name: string;
     mountingFee: number;
   }[];
+
+  packageInfo?: {
+    applied: boolean;
+    useCount: number;
+    passId?: string | null;
+    passTitle?: string | null;
+    packageSize?: number | null;
+    usedCount?: number | null;
+    remainingCount?: number | null;
+    redeemedAt?: string | null;
+    expiresAt?: string | null;
+  };
 }
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -798,6 +810,52 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <PaymentMethodDetail method="무통장입금" bankKey={data.shippingInfo?.bank} depositor={data.shippingInfo?.depositor} />
                   </div>
+                  {/* 패키지 사용 정보 요약 */}
+                  {data.packageInfo && (
+                    <div
+                      className={
+                        data.packageInfo.applied
+                          ? 'p-3 rounded-lg border border-emerald-200 bg-emerald-50/80 dark:border-emerald-800/60 dark:bg-emerald-950/40'
+                          : 'p-3 rounded-lg border border-slate-200 bg-slate-50/80 dark:border-slate-700/60 dark:bg-slate-900/40'
+                      }
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="mt-0.5">
+                          <Ticket className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                        </div>
+                        <div className="flex-1 text-xs leading-relaxed">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-slate-900 dark:text-slate-50">패키지 사용 정보</span>
+                            <Badge variant="outline" className={data.packageInfo.applied ? 'border-emerald-300 text-emerald-700 dark:text-emerald-200' : 'border-slate-300 text-slate-600 dark:text-slate-200'}>
+                              {data.packageInfo.applied ? '이번 신청에 패키지 적용' : '이번 신청에는 패키지 미사용'}
+                            </Badge>
+                          </div>
+
+                          {/* 본문 설명 */}
+                          {data.packageInfo.applied ? (
+                            <p className="text-slate-700 dark:text-slate-100">
+                              이번 신청에서 패키지 <span className="font-semibold">{data.packageInfo.useCount}회</span>가 차감되었습니다.
+                            </p>
+                          ) : (
+                            <p className="text-slate-600 dark:text-slate-200">
+                              이 신청은 패키지 기준으로는 <span className="font-semibold">{data.packageInfo.useCount}회</span>에 해당하지만, 실제로 패키지는 사용되지 않았습니다.
+                            </p>
+                          )}
+
+                          {/* 패스 정보가 있는 경우에만 상세 숫자 표시 */}
+                          {data.packageInfo.passId && (
+                            <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-200">
+                              {data.packageInfo.passTitle && <span className="font-medium">{data.packageInfo.passTitle}</span>}
+                              {typeof data.packageInfo.packageSize === 'number' && <span>총 {data.packageInfo.packageSize}회</span>}
+                              {typeof data.packageInfo.usedCount === 'number' && <span>사용 {data.packageInfo.usedCount}회</span>}
+                              {typeof data.packageInfo.remainingCount === 'number' && <span>잔여 {data.packageInfo.remainingCount}회</span>}
+                              {data.packageInfo.expiresAt && <span>만료일 {new Date(data.packageInfo.expiresAt).toLocaleDateString('ko-KR')}</span>}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 rounded-lg border border-purple-100 dark:border-purple-800/30">
                     <div>
