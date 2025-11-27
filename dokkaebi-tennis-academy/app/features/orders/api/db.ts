@@ -44,7 +44,21 @@ export async function fetchCombinedOrders() {
         ? { name: `${order.guestInfo.name} (비회원)`, email: order.guestInfo.email ?? '-', phone: order.guestInfo.phone ?? '-' }
         : { name: '(고객 정보 없음)', email: '-', phone: '-' };
 
-      const cancelStatus = order.cancelRequest && order.cancelRequest.status ? (order.cancelRequest.status as 'requested' | 'approved' | 'rejected') : undefined;
+      // 원본 상태 문자열 (한글/영문 섞여 있을 수 있음)
+      const rawCancelStatus = order.cancelRequest?.status as string | undefined;
+
+      // 한글/영문 모두 지원해서 공통 코드로 정규화
+      let cancelStatus: 'requested' | 'approved' | 'rejected' | undefined;
+
+      if (rawCancelStatus === 'requested' || rawCancelStatus === '요청') {
+        cancelStatus = 'requested';
+      } else if (rawCancelStatus === 'approved' || rawCancelStatus === '승인') {
+        cancelStatus = 'approved';
+      } else if (rawCancelStatus === 'rejected' || rawCancelStatus === '거절') {
+        cancelStatus = 'rejected';
+      } else {
+        cancelStatus = undefined;
+      }
 
       return {
         id: order._id.toString(),
@@ -115,7 +129,20 @@ export async function fetchCombinedOrders() {
         const totalFromDoc = typeof (app as any).totalPrice === 'number' ? (app as any).totalPrice : null;
         const totalCalculated = items.reduce((s, it) => s + (it.price || 0) * (it.quantity || 0), 0);
 
-        const cancelStatus = app.cancelRequest && app.cancelRequest.status ? (app.cancelRequest.status as 'requested' | 'approved' | 'rejected') : undefined;
+        // 신청서 쪽 원본 상태 문자열
+        const rawAppCancelStatus = (app as any).cancelRequest?.status as string | undefined;
+
+        let cancelStatus: 'requested' | 'approved' | 'rejected' | undefined;
+
+        if (rawAppCancelStatus === 'requested' || rawAppCancelStatus === '요청') {
+          cancelStatus = 'requested';
+        } else if (rawAppCancelStatus === 'approved' || rawAppCancelStatus === '승인') {
+          cancelStatus = 'approved';
+        } else if (rawAppCancelStatus === 'rejected' || rawAppCancelStatus === '거절') {
+          cancelStatus = 'rejected';
+        } else {
+          cancelStatus = undefined;
+        }
 
         return {
           id: app._id.toString(),

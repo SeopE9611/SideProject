@@ -91,6 +91,8 @@ export async function GET(req: Request) {
           selfShip: { trackingNo },
         },
         hasTracking,
+        // 이 신청이 연결된 주문 ID (없으면 null)
+        orderId: (doc as any).orderId ? String((doc as any).orderId) : null,
         // 마이페이지 목록 카드용 취소 요청 정보
         cancelStatus: rawCancelStatus, //'요청' | '승인' | '거절' | 'none'
         cancelReasonSummary, // 한 줄 요약

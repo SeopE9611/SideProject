@@ -25,17 +25,20 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
   const [otherReason, setOtherReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 교체 신청 동시 취소 확인 단계 여부 / 신청 개수
+  const [confirmWithStringing, setConfirmWithStringing] = useState(false);
+  const [linkedCount, setLinkedCount] = useState<number | null>(null);
+
   //  제출 처리 함수
   const handleSubmit = async () => {
     // 이미 제출 중이면 중복 요청 방지
     if (isSubmitting) return;
 
-    // 기본 유효성 검사 (기타 선택 시 내용 필수 등)는 기존 로직 그대로 사용
+    // 기본 유효성 검사
     if (!selectedReason) {
       showErrorToast('취소 사유를 선택해주세요.');
       return;
     }
-    // 기타 사유 선택 시, 내용이 없으면 막기
     if (selectedReason === '기타' && !otherReason.trim()) {
       showErrorToast('기타 사유를 입력해주세요.');
       return;
@@ -53,22 +56,58 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
         },
         credentials: 'include',
         body: JSON.stringify({
-          // reasonCode: 셀렉트 박스에서 선택한 라벨(예: '단순 변심')
+          // reasonCode: 셀렉트 박스 라벨(예: '단순 변심', '다른 상품으로 대체')
           reasonCode: finalReason,
-          // 기타 사유 텍스트 (기타가 아닐 땐 undefined)
+          // 기타 사유 텍스트
           reasonText: selectedReason === '기타' ? otherReason.trim() : undefined,
+          // ⚠️ 연결된 교체 서비스 신청도 함께 취소되도록 요청하는지 여부
+          withStringing: confirmWithStringing ? true : false,
         }),
       });
 
-      if (!res.ok) {
-        // 서버가 에러 메시지를 text로 내려주면 같이 보여주기
+      // 409: 비즈니스 룰 위반 (연결된 신청 존재 등)
+      if (!res.ok && res.status === 409) {
+        let payload: any = null;
+        try {
+          payload = await res.json();
+        } catch {
+          // json 파싱 실패 시에는 아래 일반 에러 처리
+        }
+
+        if (payload?.errorCode === 'STRINGING_IN_PROGRESS') {
+          // 이미 작업 중/완료라 취소 요청 자체가 불가한 경우
+          showErrorToast(payload.message || '이미 작업 중이거나 완료된 교체 서비스 신청이 있어 주문 취소 요청을 할 수 없습니다.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (payload?.errorCode === 'STRINGING_APPS_EXIST') {
+          // 취소 가능한 신청이 있어서, 한 번 더 확인해야 하는 경우
+          const count = payload.data?.count ?? null;
+          setLinkedCount(typeof count === 'number' ? count : null);
+          setConfirmWithStringing(true);
+
+          showErrorToast(payload.message || '이 주문으로 접수된 교체 서비스 신청이 있습니다. 한 번 더 확인 후 취소 요청을 진행해 주세요.');
+
+          setIsSubmitting(false);
+          return;
+        }
+
+        // 그 외 409는 일반 에러로 처리
         const message = await res.text().catch(() => '');
         throw new Error(message || '취소 요청 처리 중 오류가 발생했습니다.');
       }
 
-      // 이제는 "바로 취소"가 아니라, 취소 요청이 접수된 상태
-      showSuccessToast('취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.');
+      // 409 외 일반 에러
+      if (!res.ok) {
+        const message = await res.text().catch(() => '');
+        throw new Error(message || '취소 요청 처리 중 오류가 발생했습니다.');
+      }
 
+      // 여기까지 왔으면:
+      // - 연결된 신청이 없거나
+      // - 있더라도 사용자가 "신청도 함께 취소되도록" 동의(withStringing: true)한 상태
+      showSuccessToast(confirmWithStringing ? '주문과 연결된 교체 서비스 신청을 함께 취소 요청했습니다. 관리자 확인 후 처리됩니다.' : '취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.');
       // status 전용 버튼/Badge 갱신 (OrderStatusBadge가 /api/orders/{orderId}/status 를 SWR로 가져오는 경우)
       await mutate(`/api/orders/${orderId}/status`, undefined, { revalidate: true });
 
@@ -81,14 +120,20 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
       //  주문 전체 데이터 (/api/orders/{orderId}) 갱신 : OrderDetailClient가 이 키로 데이터를 가져오기 때문
       await mutate(`/api/orders/${orderId}`, undefined, { revalidate: true });
       // router.refresh(); //   주문 상세 UI 갱신
-    } catch (err) {
+
+      // 다이얼로그 닫기/상태 초기화는 여기서 처리할지,
+      // 상위에서 open state를 제어하는지에 따라 다름.
+      // 이 컴포넌트는 내부에서 Dialog open 상태를 들고 있지 않으므로
+      // 일단 confirmWithStringing, linkedCount 만 초기화해 둔다.
+      setConfirmWithStringing(false);
+      setLinkedCount(null);
+    } catch (err: any) {
       console.error(err);
-      showErrorToast('주문 취소 중 오류가 발생했습니다.');
+      showErrorToast(err.message || '주문 취소 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <Dialog>
       {/*  다이얼로그 트리거 버튼 */}
@@ -107,6 +152,19 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
 
         {/*  사유 선택 */}
         <div className="space-y-2 py-4">
+          {/* 연결된 교체 서비스 신청 경고 메시지 */}
+          {confirmWithStringing && (
+            <div className="mb-2 rounded-md border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              <div className="mb-1 font-semibold">교체 서비스 신청도 함께 취소됩니다.</div>
+              <p>
+                이 주문으로 접수된 교체 서비스 신청
+                {linkedCount && linkedCount > 1 ? ` ${linkedCount}건` : '이'} 있습니다.
+                <br />
+                계속 진행하면 해당 신청도 함께 취소되도록 요청됩니다. 정말 진행하시겠습니까?
+              </p>
+            </div>
+          )}
+
           <Label>취소 사유</Label>
           <Select onValueChange={setSelectedReason}>
             <SelectTrigger>

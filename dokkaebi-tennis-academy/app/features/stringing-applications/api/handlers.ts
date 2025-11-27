@@ -7,7 +7,7 @@ import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { OrderItem } from '@/lib/types/order';
 import { normalizeEmail } from '@/lib/claims';
-import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
+import { consumePass, findOneActivePassForUser, revertConsumption } from '@/lib/passes.service';
 import { onApplicationSubmitted, onStatusUpdated, onScheduleConfirmed, onScheduleUpdated, onApplicationCanceled, onScheduleCanceled } from '@/app/features/notifications/triggers/stringing';
 import { calcStringingTotal } from '@/lib/pricing';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
@@ -634,7 +634,17 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
       OTHER: '기타',
     };
 
-    const reasonLabel = reasonLabelMap[reasonCode ?? 'OTHER'] ?? '기타';
+    let reasonLabel: string;
+    if (!reasonCode) {
+      reasonLabel = '기타';
+    } else if (reasonLabelMap[reasonCode]) {
+      // 코드값으로 들어온 경우
+      reasonLabel = reasonLabelMap[reasonCode];
+    } else {
+      // 이미 한글 라벨(예: '다른 상품으로 대체', '상품 정보와 다름')로 들어온 경우
+      reasonLabel = reasonCode.trim();
+    }
+
     const extra = reasonText?.trim() ? ` (${reasonText.trim()})` : '';
 
     const historyEntry: HistoryRecord = {
@@ -670,7 +680,6 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
     // 관리자 인증
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
-    //  관리자 권한이 없는 경우 (로그인 안 했거나 role이 admin이 아닌 경우)
     if (!token) {
       return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
@@ -707,6 +716,16 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
       date: now,
       description: '관리자가 신청 취소를 승인했습니다.',
     };
+
+    // 패키지 사용분 복원 (패키지 사용 + passId가 있을 때만)
+    if (appDoc.packageApplied && appDoc.packagePassId) {
+      try {
+        await revertConsumption(db, appDoc.packagePassId as ObjectId, _id);
+      } catch (e) {
+        // 패키지 복원 실패해도 취소 자체는 진행
+        console.error('[handleStringingCancelApprove] revertConsumption error', e);
+      }
+    }
 
     // 신청 상태를 "취소"로 변경 + cancelRequest 상태 업데이트
     await col.updateOne({ _id }, {
@@ -1276,6 +1295,16 @@ export async function handleApplicationCancelApprove(req: Request, { params }: {
       $push: { history: historyEntry },
     } as any);
 
+    // ] 패키지 사용분 복원
+    if (existing.packageApplied && existing.packagePassId) {
+      try {
+        await revertConsumption(db, existing.packagePassId as ObjectId, _id);
+      } catch (err) {
+        console.error('[handleApplicationCancelApprove] revertConsumption error', err);
+        // 복원 실패해도 취소 자체는 유지
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('POST /api/applications/stringing/[id]/cancel-approve 오류:', err);
@@ -1601,31 +1630,41 @@ export async function handleSubmitStringingApplication(req: Request) {
       return NextResponse.json({ message: '선택하신 시간대는 방금 전 마감되었습니다. 다른 시간대를 선택해주세요.' }, { status: 409 });
     }
 
-    // === 3) 같은 주문의 "진행중" 문서 탐지 ===
-    // - 진행중 = 취소를 제외한 모든 상태 (draft 포함)
-    // 같은 주문의 진행중 문서 탐지(주문이 있을 때만)
-    const existingActive = orderObjectId ? await db.collection('stringing_applications').findOne({ orderId: orderObjectId, status: { $nin: ['취소'] } }, { projection: { _id: 1, status: 1, createdAt: 1 } }) : null;
+    // === 3) 같은 주문의 신청 멱등성 (옵션 C 적용 이후 설명) ===
+    // 옵션 C 정책:
+    // - 한 주문(orderId)에서 여러 개의 신청서를 허용한다.
+    // - 슬롯(remainingSlots)은 주문 단위로 관리하고,
+    //   개별 신청서는 슬롯 범위 안에서 여러 번 만들어질 수 있다.
+    // - 따라서 더 이상 "같은 주문에 진행중 신청이 있으면 409로 막는" 정책은 사용하지 않는다.
+    //
+    // 아래 기존 코드는 한 주문당 1건만 허용하던 시절의 로직이므로
+    // 동작을 비활성화하고, 필요 시 롤백 용도로만 남겨둔다.
 
-    // 멱등성 정책:
-    // - 이미 제출된 문서(= draft가 아닌 진행중: '검토 중' | '접수완료' | '작업 중')가 있으면 새 제출은 409로 차단
-    //   단, 이어쓰기 안내(applicationId/location)를 함께 내려 UX 보완
-    if (existingActive && existingActive.status !== 'draft') {
-      return NextResponse.json(
-        {
-          code: 'APPLICATION_EXISTS',
-          message: '이미 제출된 신청이 있습니다. 기존 신청서로 이동합니다.',
-          applicationId: String(existingActive._id),
-          status: existingActive.status,
-          location: `/services/applications/${String(existingActive._id)}`,
-        },
-        {
-          status: 409,
-          headers: {
-            Location: `/services/applications/${String(existingActive._id)}`,
-          },
-        }
-      );
-    }
+    // // === 3) 같은 주문의 "진행중" 문서 탐지 ===
+    // // - 진행중 = 취소를 제외한 모든 상태 (draft 포함)
+    // // 같은 주문의 진행중 문서 탐지(주문이 있을 때만)
+    // const existingActive = orderObjectId ? await db.collection('stringing_applications').findOne({ orderId: orderObjectId, status: { $nin: ['취소'] } }, { projection: { _id: 1, status: 1, createdAt: 1 } }) : null;
+
+    // // 멱등성 정책:
+    // // - 이미 제출된 문서(= draft가 아닌 진행중: '검토 중' | '접수완료' | '작업 중')가 있으면 새 제출은 409로 차단
+    // //   단, 이어쓰기 안내(applicationId/location)를 함께 내려 UX 보완
+    // if (existingActive && existingActive.status !== 'draft') {
+    //   return NextResponse.json(
+    //     {
+    //       code: 'APPLICATION_EXISTS',
+    //       message: '이미 제출된 신청이 있습니다. 기존 신청서로 이동합니다.',
+    //       applicationId: String(existingActive._id),
+    //       status: existingActive.status,
+    //       location: `/services/applications/${String(existingActive._id)}`,
+    //     },
+    //     {
+    //       status: 409,
+    //       headers: {
+    //         Location: `/services/applications/${String(existingActive._id)}`,
+    //       },
+    //     }
+    //   );
+    // }
 
     // === 4) 스트링 아이템 구성 ===
     // - 기본값: 지금까지처럼 stringTypes 기반

@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import jwt from 'jsonwebtoken';
+import { revertConsumption } from '@/lib/passes.service';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -115,6 +116,68 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       $set: updateFields,
       $push: { history: historyEntry },
     } as any);
+
+    // 연결된 스트링 교체 서비스 신청이 있는 경우 함께 취소 처리
+    try {
+      const rawAppId = (existing as any).stringingApplicationId;
+
+      // 주문 도큐먼트에 stringingApplicationId가 설정된 경우만 처리
+      if (rawAppId) {
+        const appIdStr = String(rawAppId);
+        const apps = db.collection('stringing_applications');
+
+        // _id 타입이 문자열일 수도 있고 ObjectId일 수도 있으므로 둘 다 지원
+        let appDoc: any = null;
+
+        if (ObjectId.isValid(appIdStr)) {
+          appDoc = await apps.findOne({ _id: new ObjectId(appIdStr) });
+        } else {
+          appDoc = await apps.findOne({ _id: appIdStr } as any); // 🔹 여기서 타입 경고 우회
+        }
+
+        if (appDoc) {
+          // 실제 DB에 저장된 _id 타입 그대로 사용 (문자열이든 ObjectId든)
+          const appKey = appDoc._id;
+
+          // 1) 패키지 사용분 복원 (패키지 사용 + passId가 있을 때만)
+          if (appDoc.packageApplied && appDoc.packagePassId) {
+            try {
+              await revertConsumption(db, appDoc.packagePassId, appKey);
+            } catch (e) {
+              // 회차 복원 실패해도 주문/신청 취소 자체는 유지
+              console.error('[cancel-approve] revertConsumption error (linked application)', e);
+            }
+          }
+
+          // 2) 신청 상태 + cancelRequest + history 업데이트
+          const currentCancel = appDoc.cancelRequest ?? {};
+
+          await apps.updateOne(
+            { _id: appKey } as any,
+            {
+              $set: {
+                status: '취소', // 신청 자체 상태
+                cancelRequest: {
+                  ...currentCancel,
+                  status: '승인',
+                  approvedAt: now,
+                },
+              },
+              $push: {
+                history: {
+                  status: '취소',
+                  date: now,
+                  description: '주문 취소 승인으로 인해 연결된 스트링 교체 서비스 신청도 함께 취소되었습니다.',
+                },
+              },
+            } as any
+          );
+        }
+      }
+    } catch (e) {
+      console.error('[cancel-approve] linked stringing application cancel error:', e);
+      // 여기서 throw 하지 않고, 주문 취소 응답은 그대로 성공 처리
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

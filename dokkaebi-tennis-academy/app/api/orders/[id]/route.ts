@@ -102,10 +102,44 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       }
     }
 
-    // 실제 신청서 유무 계산 (draft 제외)
-    const linkedApp = await db.collection('stringing_applications').findOne({ orderId: new ObjectId(order._id), status: { $ne: 'draft' } }, { projection: { _id: 1 } });
+    // 스트링 서비스 신청 존재 여부
+    // - draft(초안)와 취소(취소 완료)는 제외
+    const linkedApp = await db.collection('stringing_applications').findOne(
+      {
+        orderId: new ObjectId(order._id),
+        status: { $nin: ['draft', '취소'] },
+      },
+      { projection: { _id: 1 } }
+    );
+
     const isStringServiceApplied = !!linkedApp;
     const stringingApplicationId = linkedApp?._id?.toString() ?? null;
+
+    // 주문 전체에서 스트링 장착 상품이 몇 개인지 계산
+    const totalSlots = enrichedItems.filter((item) => item.mountingFee > 0).reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+
+    // 이 주문으로 생성된 모든 스트링 신청서 조회 (취소 제외)
+    const apps = await db
+      .collection('stringing_applications')
+      .find({
+        orderId: order._id,
+        status: { $ne: '취소' },
+      })
+      .toArray();
+
+    // 각 신청서에서 사용된 슬롯(= 라켓 개수) 합산
+    const usedSlots = apps.reduce((sum, app) => sum + (app.stringDetails?.racketLines?.length ?? 0), 0);
+
+    // 남은 슬롯 계산 (음수 방지)
+    const remainingSlots = Math.max(totalSlots - usedSlots, 0);
+
+    // 이 주문과 연결된 신청서 요약 정보 배열
+    const stringingApplications = apps.map((app: any) => ({
+      id: app._id?.toString(),
+      status: app.status ?? 'draft',
+      createdAt: app.createdAt ?? null,
+      racketCount: app.stringDetails?.racketLines?.length ?? 0,
+    }));
 
     return NextResponse.json({
       ...order, // 원문은 펴주되,
@@ -132,6 +166,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       // 의사표시와 '실제 신청 존재'를 분리해 내려줌(여기가 핵심)
       isStringServiceApplied,
       stringingApplicationId,
+      stringService: {
+        totalSlots,
+        usedSlots,
+        remainingSlots,
+      },
+      // 주문 1건에 연결된 모든 신청서 요약 리스트
+      stringingApplications,
     });
   } catch (error) {
     console.error(' 주문 상세 조회 실패:', error);

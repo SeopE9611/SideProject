@@ -212,6 +212,15 @@ export default function StringServiceApplyPage() {
         if (!formData.preferredDate) return toast('장착 희망일을 선택해주세요.'), false;
         if (!formData.preferredTime) return toast('희망 시간대를 선택해주세요.'), false;
       }
+
+      // 이 주문에서 허용된 남은 교체 횟수 초과 여부 검사
+      if (orderId && typeof orderRemainingSlots === 'number') {
+        // requiredPassCount = 이번 신청에서 실제로 장착하려는 라켓 수
+        if (requiredPassCount > orderRemainingSlots) {
+          return toast(`이 주문에서 남은 교체 가능 횟수는 ${orderRemainingSlots}회입니다. 장착할 라켓 수를 줄여주세요.`), false;
+        }
+      }
+
       return true;
     }
 
@@ -644,6 +653,18 @@ export default function StringServiceApplyPage() {
   // 통화 포메터
   const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
+  // 이 주문에 연결된 스트링 서비스 슬롯 정보 (있을 때만 사용)
+  const orderStringService = (order as any)?.stringService as
+    | {
+        totalSlots?: number;
+        usedSlots?: number;
+        remainingSlots?: number;
+      }
+    | undefined;
+
+  // 남은 슬롯 (주문 기준) – 숫자가 아닐 경우 undefined 처리
+  const orderRemainingSlots = typeof orderStringService?.remainingSlots === 'number' ? orderStringService.remainingSlots : undefined;
+
   // 라켓/스트링 선택 체크박스 변화 콜백
   const handleStringTypesChange = (ids: string[]) => {
     // PDP에서 넘어온 경우: 상품 상세에서 이미 스트링을 확정하고 넘어온 상황이므로
@@ -663,10 +684,18 @@ export default function StringServiceApplyPage() {
       });
 
       if (orderId && order) {
-        // 주문 기반: 기본값을 "주문 수량"으로 맞추되, 이미 값이 있으면 그 안에서 유지
+        // 이 주문에서 아직 남은 전체 교체 가능 횟수
+        let remaining: number | undefined = typeof orderRemainingSlots === 'number' ? orderRemainingSlots : undefined;
+
         ids.forEach((id) => {
+          // 직접 입력 스트링
           if (id === 'custom') {
-            if (nextUseCounts[id] == null) nextUseCounts[id] = 1;
+            if (nextUseCounts[id] == null) {
+              // 커스텀은 기본 1자루, 단 남은 슬롯이 있으면 그 안에서만 허용
+              const base = remaining != null ? Math.min(1, Math.max(remaining, 0)) : 1;
+              nextUseCounts[id] = base;
+              if (remaining != null) remaining -= base;
+            }
             return;
           }
 
@@ -674,9 +703,19 @@ export default function StringServiceApplyPage() {
           const orderQty = item?.quantity ?? 1;
 
           const current = nextUseCounts[id];
-          // 기존 값이 없거나, 주문 수량보다 크면 주문 수량으로 보정
+
+          // 기존 값이 없거나, 주문 수량보다 큰 값은 보정
           if (current == null || current > orderQty) {
-            nextUseCounts[id] = orderQty;
+            let base = orderQty;
+
+            // 남은 슬롯 정보가 있으면, 주문 수량과 남은 슬롯 중 더 작은 값으로 기본값 설정
+            if (remaining != null) {
+              const allowedForThis = Math.min(orderQty, Math.max(remaining, 0));
+              base = allowedForThis;
+              remaining -= allowedForThis;
+            }
+
+            nextUseCounts[id] = base;
           }
         });
       } else {
@@ -721,12 +760,24 @@ export default function StringServiceApplyPage() {
     const min = 0;
 
     let max: number;
+
     if (id === 'custom') {
-      // 직접 입력 스트링은 일단 99개까지 허용
+      // 커스텀은 이론상 99개까지 허용 (단, 아래에서 남은 슬롯으로 다시 한번 제한)
       max = 99;
     } else {
       const item = order.items.find((it) => it.id === id);
-      max = item?.quantity ?? 1;
+      max = item?.quantity ?? 1; // 기본 상한 = 해당 상품 주문 수량
+    }
+
+    // 남은 슬롯 정보가 있으면, "다른 스트링에서 이미 쓴 개수"를 빼고
+    //    이 스트링에 할당할 수 있는 최대치만큼으로 한 번 더 제한
+    if (typeof orderRemainingSlots === 'number') {
+      const otherTotal = Object.entries(formData.stringUseCounts)
+        .filter(([key]) => key !== id)
+        .reduce((sum, [, v]) => sum + (typeof v === 'number' ? v : 0), 0);
+
+      const remainForThis = Math.max(orderRemainingSlots - otherTotal, 0);
+      max = Math.min(max, remainForThis);
     }
 
     const safe = Math.min(Math.max(raw, min), max);
@@ -971,14 +1022,8 @@ export default function StringServiceApplyPage() {
       if (!res.ok) {
         if (res.status === 409) {
           const data = await res.json().catch(() => ({} as any));
-          if (data?.code === 'APPLICATION_EXISTS' && (data?.applicationId || data?.location)) {
-            // stringing 세그먼트 반영
-            const fallback = data?.applicationId ? `/services/applications/stringing/${data.applicationId}` : '/services/applications';
-            router.replace(data.location ?? fallback);
-            setIsSubmitting(false);
-            return;
-          }
-          // 시간대 마감 → 기존 UX 유지
+
+          // 시간대 마감
           const message = data?.message ?? '해당 시간대가 마감되었습니다.';
           showErrorToast(message);
           setFormData((prev) => ({ ...prev, preferredTime: '' })); // 선택 시간 해제

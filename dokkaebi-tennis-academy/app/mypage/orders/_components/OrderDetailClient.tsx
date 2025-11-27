@@ -73,6 +73,18 @@ interface OrderDetail {
   cancelReasonDetail?: string;
   isStringServiceApplied?: boolean;
   stringingApplicationId?: string;
+
+  stringService?: {
+    totalSlots?: number | null;
+    usedSlots?: number | null;
+    remainingSlots?: number | null;
+  } | null;
+  stringingApplications?: {
+    id: string;
+    status: string;
+    createdAt?: string | null;
+    racketCount?: number;
+  }[];
 }
 interface Props {
   orderId: string;
@@ -173,6 +185,19 @@ export default function OrderDetailClient({ orderId }: Props) {
   }
   // quantity 기반으로 총 '장착 서비스 대상 스트링 수량' 계산
   const stringServiceItemCount = (orderDetail.items ?? []).filter((item) => item.mountingFee != null && item.mountingFee > 0).reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+
+  // remainingSlots 파생값
+  const totalSlots = orderDetail.stringService?.totalSlots ?? stringServiceItemCount;
+  const usedSlots = orderDetail.stringService?.usedSlots ?? totalSlots - (orderDetail.stringService?.remainingSlots ?? 0);
+  const remainingSlots = orderDetail.stringService?.remainingSlots ?? Math.max(totalSlots - usedSlots, 0);
+
+  // 이 주문과 연결된 신청서 요약 리스트
+  const linkedStringingApps = orderDetail?.stringingApplications ?? [];
+  const hasLinkedStringingApps = linkedStringingApps.length > 0;
+
+  // 리뷰/링크에 사용할 대표 신청 ID
+  // - 우선순위: 기존 필드(stringingApplicationId) → 요약 리스트의 첫 번째 신청
+  const primaryStringingAppId = orderDetail?.stringingApplicationId ?? (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
 
   // 취소 요청 상태/라벨 계산
   const cancelLabel = getCancelRequestLabel(orderDetail);
@@ -284,7 +309,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       )}
       {orderDetail.shippingInfo?.withStringService && (
         <>
-          {!orderDetail.isStringServiceApplied ? (
+          {totalSlots > 0 && remainingSlots > 0 ? (
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border border-yellow-200 dark:border-yellow-800/30 rounded-xl p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -293,26 +318,27 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </div>
                   <div>
                     <p className="font-semibold text-yellow-900 dark:text-yellow-100">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300">아래 버튼을 클릭하여 스트링 장착 서비스를 신청해주세요.</p>
-
-                    {/* 스트링을 여러 개 산 주문에만 추가 안내 출력 */}
-                    {stringServiceItemCount > 1 && (
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                      총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체 가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
+                    </p>
+                    {stringServiceItemCount > 1 && <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">(상품 기준으로는 교체 서비스 대상 스트링이 {stringServiceItemCount}개 포함되어 있습니다.)</p>}
+                    {hasLinkedStringingApps && (
                       <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
-                        이 주문에는 교체 서비스 대상 스트링이 <span className="font-semibold">{stringServiceItemCount}개</span> 포함되어 있습니다. 이번 신청에서 장착하실 라켓 개수를 선택해 주세요.
+                        이 주문으로 이미 <span className="font-semibold">{linkedStringingApps.length}</span>건의 교체 서비스 신청을 완료했습니다.
                       </p>
                     )}
                   </div>
                 </div>
                 <Link href={`/services/apply?orderId=${orderDetail._id}`}>
-                  <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg">스트링 장착 서비스 신청하기</Button>
+                  <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg">스트링 장착 서비스 추가 신청하기</Button>
                 </Link>
               </div>
             </div>
-          ) : (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-green-200 dark:border-green-800/30 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-2">
+          ) : totalSlots > 0 ? (
+            <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800/40 rounded-xl p-6 shadow-lg mt-4">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <div className="flex items-start space-x-3">
+                  <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-2 mt-1">
                     <CheckCircle className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
@@ -321,19 +347,45 @@ export default function OrderDetailClient({ orderId }: Props) {
                       이 주문에는 교체 서비스 대상 스트링이 <span className="font-semibold">{stringServiceItemCount}개</span> 포함되어 있습니다.
                     </p>
                     <p className="text-sm text-green-700 dark:text-green-300">실제 신청에 포함된 개수와 라켓 정보는 신청 상세 화면에서 확인하실 수 있습니다.</p>
+
+                    {/* 연결된 신청 리스트 간단 요약 */}
+                    {hasLinkedStringingApps && (
+                      <div className="mt-3 space-y-1 text-xs text-green-800 dark:text-green-200">
+                        {linkedStringingApps.map((app) => (
+                          <div key={app.id} className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="px-1.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-[11px] font-medium">{app.status ?? '상태 미정'}</span>
+                              {app.createdAt && <span>{formatDate(app.createdAt)}</span>}
+                              <span>라켓 {app.racketCount ?? 0}개</span>
+                            </div>
+                            <Link href={`/mypage?tab=applications&applicationId=${app.id}`}>
+                              <Button variant="outline" className="h-7 px-2 text-xs">
+                                신청 상세
+                              </Button>
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-                {orderDetail.stringingApplicationId && (
-                  <Link href={`/mypage?tab=applications&applicationId=${orderDetail.stringingApplicationId}`}>
-                    <Button variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-950/20 bg-transparent">
-                      신청 상세 보기
-                    </Button>
-                  </Link>
-                )}
-                <ServiceReviewCTA applicationId={orderDetail.stringingApplicationId} className="ml-2" />
+
+                <div className="flex items-center gap-2">
+                  {/* [호환용] 리스트가 없고, 대표 신청 ID만 있는 경우 단일 버튼 유지 */}
+                  {!hasLinkedStringingApps && primaryStringingAppId && (
+                    <Link href={`/mypage?tab=applications&applicationId=${primaryStringingAppId}`}>
+                      <Button variant="outline" className="border-green-300 text-green-800 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-950/20 bg-transparent">
+                        신청 상세 보기
+                      </Button>
+                    </Link>
+                  )}
+
+                  {primaryStringingAppId && <ServiceReviewCTA applicationId={primaryStringingAppId} className="ml-2" />}
+                </div>
               </div>
             </div>
-          )}
+          ) : null}
+
           <div id="reviews-cta" className="mt-4">
             {allReviewed ? (
               <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 rounded-xl p-6 shadow-sm flex items-center justify-between">

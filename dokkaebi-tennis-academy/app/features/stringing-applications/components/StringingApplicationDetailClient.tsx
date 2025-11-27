@@ -622,6 +622,35 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           )}
         </div>
 
+        {/* 연결된 주문 정보 (주문에서 생성된 신청인 경우만 표시) */}
+        {data.orderId && (
+          <Card className="mb-8 border border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                연결된 주문
+                <Badge variant="outline" className="text-[11px]">
+                  주문 기반 신청
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500 dark:text-slate-400">이 신청은 아래 주문으로부터 생성된 신청입니다.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-sm">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  주문 ID 끝자리 <span className="font-mono font-semibold">{String(data.orderId).slice(-6)}</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link href={isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&orderId=${data.orderId}`}>
+                  <Button variant="outline" size="sm">
+                    주문 상세 보기
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 상태 카드 */}
         <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden mb-8">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">

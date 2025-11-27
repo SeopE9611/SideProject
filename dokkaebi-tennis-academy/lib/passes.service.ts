@@ -167,15 +167,46 @@ export async function revertConsumption(db: Db, passId: ObjectId, applicationId:
   const passes = db.collection<ServicePass>('service_passes');
   const consumptions = db.collection<ServicePassConsumption>('service_pass_consumptions');
 
-  // 소비 로그에 reverted 표시(있으면)
-  await consumptions.updateOne({ passId, applicationId }, { $set: { reverted: true } });
+  // 아직 되돌리지 않은 소비 로그 조회
+  const log = await consumptions.findOne(
+    {
+      passId,
+      applicationId,
+      // 이미 되돌린 기록은 건너뛴다
+      $or: [{ reverted: { $exists: false } }, { reverted: false }],
+    } as any,
+    { projection: { count: 1 } as any }
+  );
 
-  // 패스에서 1회 환원(해당 applicationId 기록 찾아 reverted 마킹)
+  // 소비 로그가 없으면 (이미 되돌렸거나, 애초에 패키지 미사용) → 아무 것도 하지 않음
+  if (!log) return;
+
+  // 사용된 회차 수 (기록에 없으면 안전하게 1회로 간주)
+  const count = typeof (log as any).count === 'number' ? (log as any).count : 1;
+
+  // 소비 로그에 reverted 표시
+  await consumptions.updateOne(
+    { passId, applicationId },
+    {
+      $set: {
+        reverted: true,
+      },
+    }
+  );
+
+  // 패스 문서에서 usedCount / remainingCount를 count 만큼 되돌리고,
+  //    해당 applicationId에 대한 redemptions 원소에 reverted 플래그를 남김
   await passes.updateOne(
     { _id: passId, 'redemptions.applicationId': applicationId },
     {
-      $inc: { usedCount: -1, remainingCount: 1 },
-      $set: { 'redemptions.$.reverted': true, updatedAt: new Date() },
+      $inc: {
+        usedCount: -count,
+        remainingCount: count,
+      },
+      $set: {
+        'redemptions.$.reverted': true,
+        updatedAt: new Date(),
+      },
     }
   );
 }

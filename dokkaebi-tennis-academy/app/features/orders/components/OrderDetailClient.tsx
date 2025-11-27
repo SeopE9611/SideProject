@@ -65,6 +65,21 @@ interface OrderDetail {
   history: Array<any>; // initialData용 (하지만 useSWRInfinite로 실제 이력 사용)
   cancelReason?: string;
   cancelReasonDetail?: string;
+  stringService?: {
+    hasStringService: boolean; // 이 주문에 스트링 서비스(패키지/신청 연결)가 있는지
+    totalSlots?: number | null; // 패키지 전체 횟수
+    usedSlots?: number | null; // 지금까지 사용한 횟수
+    remainingSlots?: number | null; // 남은 횟수
+    passTitle?: string | null; // (있다면) 패키지 이름
+    note?: string | null; // (선택) 설명/메모용
+  } | null;
+  // 이 주문과 연결된 모든 스트링 신청서 요약 리스트
+  stringingApplications?: {
+    id: string;
+    status: string;
+    createdAt?: string | null;
+    racketCount?: number;
+  }[];
 }
 
 // 관리자용 취소 요청 상태 정보 헬퍼
@@ -146,6 +161,11 @@ export default function OrderDetailClient({ orderId }: Props) {
   if (!orderDetail) {
     return <Loading />;
   }
+
+  // remainingSlots 값을 안전하게 읽어오는 파생값
+  const remainingSlots = orderDetail?.stringService?.remainingSlots ?? 0;
+  const totalSlots = orderDetail?.stringService?.totalSlots ?? 0;
+  const usedSlots = orderDetail?.stringService?.usedSlots ?? 0;
 
   // 취소 요청 상태 정보 계산
   const cancelInfo = getAdminCancelRequestInfo(orderDetail);
@@ -326,13 +346,61 @@ export default function OrderDetailClient({ orderId }: Props) {
                 )}
               </div>
             </CardFooter>
-            {orderDetail?.stringingApplicationId && (
+
+            {/*주문 1건에 여러 신청이 있을 수 있으므로, 요약 리스트 표시 */}
+            {orderDetail?.stringingApplications && orderDetail.stringingApplications.length > 0 && (
+              <Card className="border border-muted text-sm text-muted-foreground m-4">
+                <CardContent className="py-3">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <LinkIcon className="w-4 h-4" />
+                      <span>이 주문은 스트링 장착 서비스 신청서와 연결되어 있습니다.</span>
+                    </div>
+
+                    {totalSlots > 0 && (
+                      <div className="ml-6 text-xs text-gray-600 dark:text-gray-300">
+                        총 {totalSlots}회 중 <strong>{usedSlots}회 사용</strong>, 남은 <strong>{remainingSlots}회</strong>
+                      </div>
+                    )}
+
+                    <div className="mt-2 ml-6 flex flex-col gap-1 text-xs text-muted-foreground">
+                      {orderDetail.stringingApplications.map((app) => (
+                        <div key={app.id} className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-medium">[{app.status}]</span>
+                            {app.createdAt && <span>{formatDate(app.createdAt)}</span>}
+                            <span className="text-[11px] text-muted-foreground">라켓 {app.racketCount ?? 0}개</span>
+                          </div>
+                          <Link href={`/admin/applications/stringing/${app.id}`}>
+                            <Button variant="ghost" size="sm">
+                              보기
+                            </Button>
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/*예전 필드(stringingApplicationId)만 있는 경우 단일 버튼 유지 */}
+            {!orderDetail?.stringingApplications?.length && orderDetail?.stringingApplicationId && (
               <Card className="border border-muted text-sm text-muted-foreground m-4">
                 <CardContent className="flex justify-between items-center py-3">
-                  <div className="flex items-center gap-2">
-                    <LinkIcon className="w-4 h-4" />
-                    <span>이 주문은 스트링 장착 서비스 신청서와 연결되어 있습니다.</span>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <LinkIcon className="w-4 h-4" />
+                      <span>이 주문은 스트링 장착 서비스 신청서와 연결되어 있습니다.</span>
+                    </div>
+
+                    {totalSlots > 0 && (
+                      <div className="ml-6 text-xs text-gray-600 dark:text-gray-300">
+                        총 {totalSlots}회 중 <strong>{usedSlots}회 사용</strong>, 남은 <strong>{remainingSlots}회</strong>
+                      </div>
+                    )}
                   </div>
+
                   <Link href={`/admin/applications/stringing/${orderDetail.stringingApplicationId}`}>
                     <Button variant="ghost" size="sm">
                       신청서 보기

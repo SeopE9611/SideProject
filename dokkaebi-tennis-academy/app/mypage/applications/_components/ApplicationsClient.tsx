@@ -31,6 +31,9 @@ export interface Application {
   hasTracking: boolean;
   cancelStatus?: string; // '요청' | '승인' | '거절' | 'none'
   cancelReasonSummary?: string | null;
+
+  // 이 신청이 어떤 주문에서 생성되었는지 연결 정보
+  orderId?: string | null;
 }
 
 type AppResponse = { items: Application[]; total: number };
@@ -208,6 +211,9 @@ export default function ApplicationsClient() {
           const collectionLabel = !isStringService ? null : cm === 'self_ship' ? '수령 방법: 자가 발송(택배)' : cm === 'visit' ? '수령 방법: 매장 방문' : '수령 방법: 기타';
           // 운송장 등록 여부
           const hasTracking = app.hasTracking;
+          // 연결된 주문 ID
+          const orderId = (app as any).orderId as string | null | undefined;
+          const hasOrderLink = Boolean(orderId);
           // 종료 상태(수정 금지)
           const CLOSED = ['작업 중', '교체완료'];
           const isClosed = CLOSED.includes(String((app as any).status));
@@ -245,6 +251,22 @@ export default function ApplicationsClient() {
                         <Calendar className="h-3 w-3" />
                         {formatDateTime(app.appliedAt)}
                       </div>
+
+                      {/* 이 신청이 어떤 주문에서 생성되었는지 링크 */}
+                      {hasOrderLink && orderId && (
+                        <div className="mt-1 flex items-center gap-2">
+                          <Link href={`/mypage?tab=orders&orderId=${orderId}`}>
+                            <Badge
+                              variant="outline"
+                              className="border-slate-200 bg-slate-50/80 text-[11px] font-medium text-slate-700
+          dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            >
+                              원 주문 상세 보기
+                            </Badge>
+                          </Link>
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500">주문 ID 끝자리 {orderId.slice(-6)}</span>
+                        </div>
+                      )}
 
                       {collectionLabel && <div className="mt-1 inline-flex items-center rounded-full bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{collectionLabel}</div>}
                     </div>
