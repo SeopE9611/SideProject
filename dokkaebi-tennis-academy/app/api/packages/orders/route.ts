@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const body: any = await req.json().catch(() => ({}));
     const pkg = body?.packageInfo ?? {};
 
-    // ✅ 관리자 패키지 설정(허용 회수 / 가격 / 이름) 로드
+    // 관리자 패키지 설정(허용 회수 / 가격 / 이름) 로드
     const { allowedSessions, priceBySessions, configById } = await getPackagePricingInfo();
 
     // 클라이언트가 보낸 패키지 ID 후보

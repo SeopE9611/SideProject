@@ -57,7 +57,6 @@ export async function GET(req: Request) {
           content: 1,
           createdAt: 1,
           updatedAt: 1,
-          // 🔹 서버 표준: status 로 통일 (visible | hidden)
           status: {
             $cond: [{ $eq: ['$status', 'hidden'] }, 'hidden', 'visible'],
           },
