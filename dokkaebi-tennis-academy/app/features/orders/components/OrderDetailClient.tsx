@@ -148,6 +148,9 @@ export default function OrderDetailClient({ orderId }: Props) {
   // local 상태를 두어 "옵티미스틱 업데이트"가 가능하게 적용
   // 서버에서 받아온 orderDetail.status가 바뀌면 자동 동기화
   const [localStatus, setLocalStatus] = useState<string>(orderDetail?.status || '대기중');
+
+  const [isProcessingCancelRequest, setIsProcessingCancelRequest] = useState(false);
+
   useEffect(() => {
     if (orderDetail && orderDetail.status !== localStatus) {
       setLocalStatus(orderDetail.status);
@@ -169,6 +172,10 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   // 취소 요청 상태 정보 계산
   const cancelInfo = getAdminCancelRequestInfo(orderDetail);
+
+  // 실제 cancelRequest.status 를 보고 "요청됨" 상태인지 여부
+  const cancelStatus = (orderDetail as any).cancelRequest?.status ?? 'none';
+  const isCancelRequested = cancelStatus === 'requested';
 
   // 페이지네이션 없이 가져온 모든 이력 합치기
   const allHistory: any[] = historyPages ? historyPages.flatMap((page) => page.history) : [];
@@ -209,6 +216,82 @@ export default function OrderDetailClient({ orderId }: Props) {
       if (orderDetail.status !== '취소') {
         setLocalStatus(orderDetail.status);
       }
+    }
+  };
+
+  // 🔹 (추가) "취소 요청 승인" 버튼 클릭 시
+  const handleApproveCancelRequest = async () => {
+    if (!orderId) return;
+
+    const ok = window.confirm('이 주문의 취소 요청을 승인하시겠습니까?\n주문과 연결된 모든 교체 서비스 신청이 함께 취소됩니다.');
+    if (!ok) return;
+
+    setIsProcessingCancelRequest(true);
+    try {
+      const existingReq: any = (orderDetail as any).cancelRequest ?? {};
+
+      const res = await fetch(`/api/orders/${orderId}/cancel-approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          // 고객이 요청할 때 저장된 reasonCode / reasonText 를 그대로 넘겨줌
+          reasonCode: existingReq.reasonCode,
+          reasonText: existingReq.reasonText,
+        }),
+      });
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        throw new Error(msg || '취소 승인 실패');
+      }
+
+      // 서버에서 주문/신청/패키지 복원 처리 후 최신 상태로 갱신
+      await mutateOrder();
+      await mutateHistory();
+      setLocalStatus('취소');
+      showSuccessToast('주문 취소 요청을 승인했습니다.');
+    } catch (err: any) {
+      console.error(err);
+      showErrorToast(err?.message || '취소 승인 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsProcessingCancelRequest(false);
+    }
+  };
+
+  // 🔹 (추가) "취소 요청 거절" 버튼 클릭 시
+  const handleRejectCancelRequest = async () => {
+    if (!orderId) return;
+
+    const adminMemo = window.prompt('취소 요청 거절 사유를 입력하세요.\n(선택 입력, 비워두면 사유 없이 기록됩니다.)') ?? '';
+
+    const ok = window.confirm('이 주문의 취소 요청을 거절하시겠습니까?');
+    if (!ok) return;
+
+    setIsProcessingCancelRequest(true);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel-reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          adminMemo: adminMemo.trim() || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        throw new Error(msg || '취소 거절 실패');
+      }
+
+      await mutateOrder();
+      await mutateHistory();
+      showSuccessToast('주문 취소 요청을 거절했습니다.');
+    } catch (err: any) {
+      console.error(err);
+      showErrorToast(err?.message || '취소 거절 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsProcessingCancelRequest(false);
     }
   };
 
@@ -341,6 +424,15 @@ export default function OrderDetailClient({ orderId }: Props) {
 
                 {localStatus === '취소' ? (
                   <p className="text-sm text-muted-foreground italic mt-2">취소된 주문입니다. 상태 변경 및 취소가 불가능합니다.</p>
+                ) : isCancelRequested ? (
+                  <div className="flex gap-2 mt-2 sm:mt-0">
+                    <Button size="sm" variant="destructive" onClick={handleApproveCancelRequest} disabled={isProcessingCancelRequest}>
+                      취소 승인
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={handleRejectCancelRequest} disabled={isProcessingCancelRequest}>
+                      취소 거절
+                    </Button>
+                  </div>
                 ) : (
                   <AdminCancelOrderDialog orderId={orderId!} onCancelSuccess={handleCancelSuccess} key={'cancel-' + allHistory.length} />
                 )}

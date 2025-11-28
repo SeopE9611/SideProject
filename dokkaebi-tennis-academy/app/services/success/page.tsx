@@ -398,7 +398,8 @@ export default async function StringServiceSuccessPage(props: Props) {
                       {racketLines.map((line: any, idx: number) => (
                         <div key={line.id ?? idx} className="p-4 rounded-lg bg-gray-50 dark:bg-slate-700 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                           <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">라켓 {line.racketLabel || `${idx + 1}번`}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">라켓 {line.racketType || line.racketLabel || `${idx + 1}번`}</p>
+
                             {line.stringName && <p className="font-semibold text-gray-900 dark:text-white">스트링: {line.stringName}</p>}
                           </div>
 

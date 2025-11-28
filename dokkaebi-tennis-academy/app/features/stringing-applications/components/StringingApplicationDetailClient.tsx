@@ -36,6 +36,7 @@ interface Props {
 interface ApplicationDetail {
   id: string;
   orderId?: string;
+  orderCancelStatus?: string;
   customer: {
     name: string;
     email: string;
@@ -76,6 +77,7 @@ interface ApplicationDetail {
   lines?: Array<{
     id?: string;
     racketType?: string;
+    racketLabel?: string;
     stringName?: string;
     tensionMain?: string;
     tensionCross?: string;
@@ -458,6 +460,19 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const isCancelApproved = rawCancelStatus === '승인' || rawCancelStatus === 'approved';
   const isCancelRejected = rawCancelStatus === '거절' || rawCancelStatus === 'rejected';
 
+  // 라켓 종류 요약 문자열
+  const racketTypeSummary =
+    data.stringDetails?.racketType && data.stringDetails.racketType.trim().length > 0
+      ? data.stringDetails.racketType.trim()
+      : Array.isArray(data.lines) && data.lines.length > 0
+      ? data.lines.map((line, index) => line.racketType || line.racketLabel || `라켓 ${index + 1}`).join(', ')
+      : '입력된 라켓 정보 없음';
+
+  // 주문 취소 요청 여부
+  const hasOrderCancelRequested = data.orderCancelStatus === 'requested' || data.orderCancelStatus === '요청';
+
+  const paymentMethodLabel = data.packageInfo?.applied ? '무통장입금(패키지 사용)' : '무통장입금';
+
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
   const cancelInfo = getAdminApplicationCancelRequestInfo(data);
 
@@ -595,7 +610,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <Target className="h-4 w-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">라켓 종류</span>
               </div>
-              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{data.stringDetails.racketType}</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{racketTypeSummary}</p>
             </div>
 
             <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 backdrop-blur-sm">
@@ -703,7 +718,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 )}
 
                 {/* 관리자: 취소 요청이 들어온 경우에만 승인/거절 버튼 노출 */}
-                {isAdmin && isCancelRequested && !isCancelled && (
+                {isAdmin && isCancelRequested && !isCancelled && !hasOrderCancelRequested && (
                   <>
                     <Button size="sm" variant="destructive" onClick={handleAdminApproveCancel} disabled={isPending}>
                       <XCircle className="mr-1 h-4 w-4" />
@@ -714,6 +729,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </Button>
                   </>
                 )}
+
+                {/* 주문에 취소 요청이 걸려 있으면 신청 단독 승인/거절 막기 */}
+                {isAdmin && hasOrderCancelRequested && !isCancelled && <p className="text-xs text-red-500 mt-2">이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다. 최종 취소 승인/거절은 주문 상세 화면에서 처리해 주세요.</p>}
               </div>
             </div>
           </CardContent>
@@ -848,7 +866,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               ) : (
                 <div className="space-y-4">
                   <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <PaymentMethodDetail method="무통장입금" bankKey={data.shippingInfo?.bank} depositor={data.shippingInfo?.depositor} />
+                    <PaymentMethodDetail method={paymentMethodLabel} bankKey={data.shippingInfo?.bank} depositor={data.shippingInfo?.depositor} />
                   </div>
                   {/* 패키지 사용 정보 요약 */}
                   {data.packageInfo && (
@@ -951,104 +969,107 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               <ShoppingCart className="w-6 h-6 text-green-600" />
               <CardTitle className="mt-2 text-lg font-semibold">신청 스트링 정보</CardTitle>
             </CardHeader>
-            <div className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-3 text-sm">
-              <span className="font-semibold text-slate-900 dark:text-slate-50">스트링 {stringTypeCount}종</span>
-              <span className="text-slate-400">/</span>
-              <span className="font-semibold text-slate-900 dark:text-slate-50">라켓 {racketCount}자루</span>
-              <span className="text-slate-400">/</span>
-              <span className="font-semibold text-purple-700 dark:text-purple-300">총 장착비 {totalPrice.toLocaleString()}원</span>
+
+            <div className="mx-6 mt-4 mb-3 rounded-xl border border-slate-200/80 bg-slate-50/90 dark:border-slate-700/80 dark:bg-slate-900/70 px-4 py-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ">
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center rounded-full bg-white/90 dark:bg-slate-800 px-3 py-1 text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-50">스트링 {stringTypeCount}종</span>
+                  <span className="inline-flex items-center rounded-full bg-white/90 dark:bg-slate-800 px-3 py-1 text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-50">라켓 {racketCount}자루</span>
+                </div>
+
+                <div className="text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300">총 장착비 {totalPrice.toLocaleString()}원</div>
+              </div>
             </div>
+
             <CardContent className="px-6 pb-6">
-              {/* 섹션을 하나로 묶고 divide-y로 구분해 가독성/일관성 향상 */}
-              <div className="divide-y divide-gray-200 dark:divide-slate-700">
-                {/* 희망 일시 */}
-                <div className="flex items-center justify-between py-4">
+              <div className="space-y-6">
+                <section className="flex items-start justify-between border-b border-dashed border-slate-200 pb-4 dark:border-slate-700">
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                     <Calendar className="w-5 h-5" />
                     <span className="font-medium">희망 일시</span>
                   </div>
-                  <div className="text-gray-900 dark:text-gray-100">{isVisit && data.stringDetails.preferredDate && data.stringDetails.preferredTime ? `${data.stringDetails.preferredDate} ${data.stringDetails.preferredTime}` : '예약 불필요'}</div>
-                </div>
-
-                {/* 스트링 정보 */}
-                <div className="py-4">
-                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-3">
-                    <ShoppingCart className="w-5 h-5" />
-                    <span className="font-medium">스트링 정보</span>
+                  <div className="text-right text-gray-900 dark:text-gray-100 text-sm">
+                    {isVisit && data.stringDetails.preferredDate && data.stringDetails.preferredTime ? `${data.stringDetails.preferredDate} ${data.stringDetails.preferredTime}` : '예약 불필요'}
                   </div>
-                  {/* 라켓별 세부 장착 정보 */}
-                  {Array.isArray(data.lines) && data.lines.length > 0 && (
-                    <div className="py-4">
-                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-3">
-                        <Target className="w-5 h-5" />
-                        <span className="font-medium">라켓별 장착 정보</span>
-                      </div>
+                </section>
 
-                      <div className="space-y-3">
-                        {data.lines.map((line, index) => (
-                          <div
-                            key={line.id ?? index}
-                            className="rounded-xl px-4 py-3 ring-1 ring-slate-200/70 bg-white/70
-                           dark:ring-slate-700 dark:bg-slate-900/40"
-                          >
-                            {/* 라켓 이름 + 순번 */}
-                            <div className="flex items-center justify-between mb-1">
-                              <p className="font-medium text-gray-900 dark:text-gray-100">
-                                라켓 {index + 1}
-                                {line.racketType ? ` · ${line.racketType}` : ''}
-                              </p>
-                            </div>
-
-                            {/* 스트링 / 텐션 */}
-                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                              {line.stringName && <span className="inline-flex items-center rounded-full px-2 py-1 bg-slate-100 dark:bg-slate-800">스트링: {line.stringName}</span>}
-                              {(line.tensionMain || line.tensionCross) && (
-                                <span className="inline-flex items-center rounded-full px-2 py-1 bg-slate-100 dark:bg-slate-800">
-                                  텐션: {line.tensionMain ?? '-'} / {line.tensionCross ?? '-'}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* 라켓별 메모 */}
-                            {line.note && <p className="mt-2 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">메모: {line.note}</p>}
-                          </div>
-                        ))}
-                      </div>
+                {/* 섹션 2: 라켓별 장착 정보 */}
+                {Array.isArray(data.lines) && data.lines.length > 0 && (
+                  <section className="space-y-3">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                      <Target className="w-5 h-5" />
+                      <span className="font-medium">라켓별 장착 정보</span>
                     </div>
-                  )}
-                  <ul className="space-y-3 md:space-y-4">
-                    {data.items.map((item) => (
-                      <li
-                        key={item.id}
-                        className="flex items-center justify-between gap-4 rounded-xl px-4 py-3
-                     ring-1 ring-slate-200/70 bg-white/70
-                     dark:ring-slate-700 dark:bg-slate-900/40"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">수량: {item.quantity}개</p>
+
+                    <div className="space-y-3">
+                      {data.lines.map((line, index) => (
+                        <div key={line.id ?? index} className="rounded-xl px-4 py-3 ring-1 ring-slate-200/70 bg-white/70 dark:ring-slate-700 dark:bg-slate-900/40">
+                          {/* 라켓 이름 + 순번 */}
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
+                              라켓 {index + 1}
+                              {line.racketType ? ` · ${line.racketType}` : ''}
+                            </p>
+                            {(line.tensionMain || line.tensionCross) && (
+                              <span className="inline-flex items-center rounded-full px-2 py-1 text-xs bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                                텐션 {line.tensionMain ?? '-'} / {line.tensionCross ?? '-'}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* 스트링 이름 */}
+                          {line.stringName && (
+                            <p className="text-xs text-slate-700 dark:text-slate-200">
+                              스트링: <span className="font-medium">{line.stringName}</span>
+                            </p>
+                          )}
+
+                          {/* 라켓별 메모 */}
+                          {line.note && <p className="mt-2 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">메모: {line.note}</p>}
                         </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
 
-                        <span
-                          className="shrink-0 rounded-md px-2.5 py-1 text-sm font-semibold
-                           bg-slate-100 text-gray-900
-                           dark:bg-slate-800 dark:text-gray-100"
-                        >
-                          {item.price.toLocaleString()}원
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {/* 섹션 3: 장착 상품 정보 (스트링 상품 리스트) */}
+                {data.items && data.items.length > 0 && (
+                  <section className="space-y-2">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                      <ShoppingCart className="w-5 h-5" />
+                      <span className="font-medium">장착 상품 정보</span>
+                    </div>
 
-                {/* 라켓 종류 */}
-                <div className="flex items-center justify-between py-4">
+                    <div className="overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-white/80 dark:ring-slate-700 dark:bg-slate-900/60">
+                      {/* 헤더 행 */}
+                      <div className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-slate-800/70">
+                        <span>상품명</span>
+                        <span className="text-center">수량</span>
+                        <span className="text-right">장착비</span>
+                      </div>
+
+                      {/* 데이터 행 */}
+                      {data.items.map((item) => (
+                        <div key={item.id} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-slate-100 dark:border-slate-700/70">
+                          <div className="pr-2">
+                            <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{item.name}</p>
+                          </div>
+                          <div className="text-center text-xs text-muted-foreground">x {item.quantity}개</div>
+                          <div className="text-right font-semibold text-gray-900 dark:text-gray-100">{item.price.toLocaleString()}원</div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* 섹션 4: 라켓 종류 요약 */}
+                <section className="flex items-start justify-between border-t border-dashed border-slate-200 pt-4 dark:border-slate-700">
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                     <Target className="w-5 h-5" />
                     <span className="font-medium">라켓 종류</span>
                   </div>
-                  <div className="text-gray-900 dark:text-gray-100">{data.stringDetails.racketType}</div>
-                </div>
+                  <div className="text-right text-gray-900 dark:text-gray-100 text-sm max-w-xs">{racketTypeSummary}</div>
+                </section>
               </div>
             </CardContent>
 
@@ -1060,6 +1081,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </Button>
               </CardFooter>
             )}
+
             <Dialog open={isStringModalOpen} onOpenChange={setIsStringModalOpen}>
               <DialogTrigger asChild></DialogTrigger>
               <DialogContent className="max-w-lg">
