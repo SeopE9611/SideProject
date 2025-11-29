@@ -12,6 +12,7 @@ import { onApplicationSubmitted, onStatusUpdated, onScheduleConfirmed, onSchedul
 import { calcStringingTotal } from '@/lib/pricing';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { ServicePassConsumption } from '@/lib/types/pass';
+import { buildSlotSummaryForDate, loadStringingSettings, validateBookingWindow } from '@/app/features/stringing-applications/lib/slotEngine';
 
 export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
 function mapCourierLabel(raw?: string | null): string {
@@ -1494,132 +1495,27 @@ export async function handleGetReservedTimeSlots(req: Request) {
     const { searchParams } = new URL(req.url);
     const date = searchParams.get('date'); // YYYY-MM-DD
 
-    // 입력 검증
+    // 0) 날짜 형식 검증
     const isValidDate = (s: string | null | undefined): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
     if (!isValidDate(date)) {
       return NextResponse.json({ message: '유효하지 않은 날짜입니다.' }, { status: 400 });
     }
 
-    // ===== 설정 로드(예약 가능 기간 포함) =====
     const db = (await clientPromise).db();
 
-    type ExceptionItem = {
-      date: string;
-      closed?: boolean;
-      start?: string;
-      end?: string;
-      interval?: number;
-      capacity?: number;
-    };
-    type StringingSettings = {
-      _id: 'stringingSlots';
-      capacity?: number;
-      businessDays?: number[];
-      start?: string;
-      end?: string;
-      interval?: number;
-      holidays?: string[];
-      exceptions?: ExceptionItem[];
-      bookingWindowDays?: number;
-    };
-
-    // 한 번에 필요한 필드들을 projection으로 가져옴
-    const s = await db.collection<StringingSettings>('settings').findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1, businessDays: 1, start: 1, end: 1, interval: 1, holidays: 1, exceptions: 1, bookingWindowDays: 1 } });
-
-    // ===== 예약 가능 기간 제한(설정값 사용, 기본 30일) =====
-    const WINDOW_DAYS = Number(s?.bookingWindowDays ?? 30);
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const target = new Date(`${date}T00:00:00`);
-    const max = new Date();
-    max.setHours(0, 0, 0, 0);
-    max.setDate(max.getDate() + WINDOW_DAYS);
-
-    if (target < today || target > max) {
-      return NextResponse.json({ message: `예약 가능 기간을 벗어났습니다. (오늘부터 ${WINDOW_DAYS}일 이내만 예약 가능)` }, { status: 400 });
+    // 1) 우선 설정을 로드하고, "예약 가능 기간" 검증을 slotEngine 로직으로 수행
+    const settings = await loadStringingSettings(db);
+    const win = validateBookingWindow(settings, date);
+    if (!win.ok) {
+      return NextResponse.json({ message: win.message ?? `예약 가능 기간을 벗어났습니다. (오늘부터 ${win.windowDays}일 이내만 예약 가능)` }, { status: 400 });
     }
 
-    // 기본값
-    let capacity = Math.max(1, Math.min(10, Number(s?.capacity ?? 1)));
-    let start = typeof s?.start === 'string' ? s!.start! : '10:00';
-    let end = typeof s?.end === 'string' ? s!.end! : '19:00';
-    let interval = Number.isFinite(s?.interval) ? Number(s!.interval) : 30;
+    // 2) slotEngine에 하루 요약 계산을 위임
+    const summary = await buildSlotSummaryForDate(db, date);
 
-    const bizDays = Array.isArray(s?.businessDays) ? s!.businessDays! : [1, 2, 3, 4, 5];
-    const holidays = Array.isArray(s?.holidays) ? s!.holidays! : [];
-    const exceptions = Array.isArray(s?.exceptions) ? s!.exceptions! : [];
-
-    // 2) 예외일 우선 적용
-    const ex = exceptions.find((e) => e.date === date);
-    const jsDay = new Date(`${date}T00:00:00`).getDay();
-
-    let isOpen: boolean;
-    if (ex) {
-      if (ex.closed) {
-        // 예외일: 휴무
-        isOpen = false;
-      } else {
-        // 예외일: 영업 + 값 오버라이드
-        isOpen = true;
-        if (ex.start) start = ex.start;
-        if (ex.end) end = ex.end;
-        if (typeof ex.interval === 'number') interval = Math.max(5, Math.min(240, Math.floor(ex.interval)));
-        if (typeof ex.capacity === 'number') capacity = Math.max(1, Math.min(10, Math.floor(ex.capacity)));
-      }
-    } else {
-      // 예외가 없으면: 요일/연휴 정책으로 영업 여부 결정
-      const isHoliday = holidays.includes(date);
-      isOpen = bizDays.includes(jsDay) && !isHoliday;
-    }
-
-    // 3) 슬롯 생성
-    const toMin = (hhmm: string) => {
-      const [h, m] = hhmm.split(':').map(Number);
-      return (h || 0) * 60 + (m || 0);
-    };
-    const toHHMM = (mins: number) => {
-      const h = Math.floor(mins / 60),
-        m = mins % 60;
-      const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-      return `${pad(h)}:${pad(m)}`;
-    };
-
-    let allTimes: string[] = [];
-    if (isOpen) {
-      const startMin = toMin(start);
-      const endMin = toMin(end);
-      const step = Math.max(5, Math.min(240, Math.floor(interval)));
-      for (let t = startMin; t <= endMin; t += step) {
-        allTimes.push(toHHMM(t));
-      }
-    } else {
-      return NextResponse.json({ date, capacity, reservedTimes: [], allTimes: [], availableTimes: [], closed: true }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
-    }
-
-    // 4) 마감 시간 계산 (취소/초안 제외)
-    const EXCLUDED = ['취소', 'draft'];
-    const rows = await db
-      .collection('stringing_applications')
-      .aggregate([
-        {
-          $match: {
-            'stringDetails.preferredDate': date,
-            'stringDetails.preferredTime': { $type: 'string', $ne: '' },
-            status: { $nin: EXCLUDED },
-          },
-        },
-        { $group: { _id: '$stringDetails.preferredTime', count: { $sum: 1 } } },
-        { $match: { count: { $gte: capacity } } },
-        { $project: { _id: 0, time: '$_id' } },
-        { $sort: { time: 1 } },
-      ] as any[])
-      .toArray();
-
-    const reservedTimes = rows.map((r) => String(r.time).trim()).filter(Boolean);
-    const availableTimes = allTimes.filter((t) => !reservedTimes.includes(t));
-
-    return NextResponse.json({ date, capacity, reservedTimes, allTimes, availableTimes, closed: false }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+    // 3) 그대로 프론트로 반환
+    //    - allTimes / reservedTimes / availableTimes / capacity / date
+    return NextResponse.json(summary, { status: 200, headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('[handleGetReservedTimeSlots] error', error);
     return NextResponse.json({ message: '예약 시간 조회 중 오류가 발생했습니다.' }, { status: 500 });
@@ -1874,6 +1770,79 @@ export async function handleSubmitStringingApplication(req: Request) {
       cm === 'visit' && visitSlotCount && visitSlotCount > 0
         ? visitSlotCount * slotMinutes // 여기에서 slotMinutes 사용
         : undefined;
+
+    //  방문 예약 시 멀티 슬롯(span) 기준 수용 인원 체크 ===
+    // - UI에서 이미 막고 있지만, 동시 요청에 대비한 백엔드 안전망
+    if (cm === 'visit' && visitSlotCount && visitSlotCount > 0 && preferredDate && preferredTime) {
+      // 같은 날짜의 진행 중 신청들을 모두 조회 (취소/초안 제외)
+      const existing = await db
+        .collection('stringing_applications')
+        .find(
+          {
+            'stringDetails.preferredDate': preferredDate,
+            status: { $nin: EXCLUDED_STATUSES },
+          },
+          {
+            projection: {
+              'stringDetails.preferredTime': 1,
+              visitSlotCount: 1,
+            },
+          }
+        )
+        .toArray();
+
+      // 'HH:MM' → 분 단위 숫자로 변환 유틸
+      const toMin = (time: string | null | undefined) => {
+        if (!time || typeof time !== 'string') return null;
+        const [h, m] = time.split(':').map((v) => Number(v));
+        if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+        return h * 60 + m;
+      };
+
+      // 슬롯별 현재 점유 수를 저장하는 맵: key = 분 단위 시간, value = 점유 개수
+      const occupancy = new Map<number, number>();
+
+      // 1) 기존 신청들의 점유 슬롯들을 모두 펼쳐서 occupancy에 누적
+      for (const app of existing as any[]) {
+        const base = toMin(app?.stringDetails?.preferredTime);
+        if (base == null) continue;
+
+        const count = typeof app?.visitSlotCount === 'number' && app.visitSlotCount > 0 ? app.visitSlotCount : 1;
+
+        for (let i = 0; i < count; i++) {
+          const key = base + i * slotMinutes;
+          occupancy.set(key, (occupancy.get(key) ?? 0) + 1);
+        }
+      }
+
+      // 2) 이번 신청이 점유하려는 슬롯들도 같은 방식으로 계산
+      const newBase = toMin(preferredTime);
+      if (newBase == null) {
+        // 이 경우는 앞단 validation에서 이미 걸러지지만, 방어 코드
+        return NextResponse.json({ message: '방문 수령은 예약 일시가 필수입니다.' }, { status: 400 });
+      }
+
+      let blocked = false;
+      for (let i = 0; i < visitSlotCount; i++) {
+        const key = newBase + i * slotMinutes;
+        const current = occupancy.get(key) ?? 0;
+
+        // 어떤 슬롯이라도 capacity에 도달했으면 더 이상 수용 불가
+        if (current >= capacity) {
+          blocked = true;
+          break;
+        }
+      }
+
+      if (blocked) {
+        return NextResponse.json(
+          {
+            message: '선택하신 시간대는 방금 전 다른 예약으로 마감되었습니다. 다른 시간대를 선택해주세요.',
+          },
+          { status: 409 }
+        );
+      }
+    }
 
     // 최종 applicationId 결정 — bodyAppId 우선, 없으면 같은 주문의 draft 재사용, 없으면 신규
     const draftDoc =

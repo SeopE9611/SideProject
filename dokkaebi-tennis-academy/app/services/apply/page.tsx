@@ -15,7 +15,7 @@ import type { Order } from '@/lib/types/order';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { bankLabelMap } from '@/lib/constants';
 import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
-import { User, CreditCard, MapPin, Clock, CheckCircle, ArrowRight, Shield, Award, Zap, DollarSign, Wrench, ClipboardList, Ticket, Box, Truck, Store } from 'lucide-react';
+import { User, CreditCard, MapPin, CheckCircle, ArrowRight, Shield, Zap, DollarSign, Wrench, ClipboardList, Ticket, Box, Store } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -62,6 +62,7 @@ interface FormData {
   pickupTime: string;
   pickupNote: string;
   lines: ApplicationLine[];
+  pdpMountingFee?: number; // PDP에서 넘어온 장착비 (임시)
 }
 
 declare global {
@@ -76,7 +77,7 @@ export default function StringServiceApplyPage() {
   const orderId = searchParams.get('orderId');
   // PDP 연동용
   const pdpProductId = searchParams.get('productId');
-  const pdpMountingFee = Number(searchParams.get('mountingFee') ?? NaN);
+  const pdpMountingFee = Number(searchParams.get('mountingFee') ?? Number.NaN);
   const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(pdpProductId));
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -153,7 +154,10 @@ export default function StringServiceApplyPage() {
       // 초안 생성이 끝난 뒤 applicationId가 없다면 by-order 재조회
       if (!applicationId && orderId) {
         try {
-          const r = await fetch(`/api/applications/stringing/by-order/${orderId}`, { cache: 'no-store', credentials: 'include' });
+          const r = await fetch(`/api/applications/stringing/by-order/${orderId}`, {
+            cache: 'no-store',
+            credentials: 'include',
+          });
           if (r.ok) {
             const j = await r.json();
             if (j?.found) setApplicationId(j.applicationId);
@@ -312,7 +316,9 @@ export default function StringServiceApplyPage() {
       try {
         setSlotsError(null);
 
-        const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=1`, {
+        const cap = Math.max(requiredPassCount || 1, 1);
+
+        const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=${cap}`, {
           method: 'GET',
           signal: controller.signal,
         });
@@ -638,9 +644,9 @@ export default function StringServiceApplyPage() {
     });
 
     return lines;
-  }, [formData.lines, formData.stringTypes, formData.customStringType, formData.racketType, formData.stringUseCounts, formData.requirements, priceView.base, order, orderId]);
+  }, [formData, priceView.base, order, orderId, formData.collectionMethod]); // Added formData.collectionMethod to dependencies
 
-  // 이번 신청서에서 라켓/스트링 라인 개수
+  // 이번 신청에서 라켓/스트링 라인 개수
   const lineCount = linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
 
   // 요약 카드용 교체비/합계 (주문 기반/단독 신청 모두 커버)
@@ -652,6 +658,56 @@ export default function StringServiceApplyPage() {
 
   // 통화 포메터
   const won = (n: number) => n.toLocaleString('ko-KR') + '원';
+
+  // 'HH:MM' ↔ 분 단위 변환 헬퍼 (UI 표시용)
+  const parseTimeToMinutes = (time: string | null | undefined) => {
+    if (!time || typeof time !== 'string') return null;
+    const [h, m] = time.split(':').map((v) => Number(v));
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+    return h * 60 + m;
+  };
+
+  const formatMinutesToTime = (minutes: number) => {
+    if (!Number.isFinite(minutes)) return '';
+    // 24시간 넘어가도 안전하게 모듈로 처리
+    const total = ((minutes % (24 * 60)) + 24 * 60) % (24 * 60);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
+    return `${pad(h)}:${pad(m)}`;
+  };
+
+  // 현재 슬롯 리스트(timeSlots)에서 간격(분)을 추정
+  // - /admin 설정에서 interval 을 바꿔도 자동으로 따라가도록 UI 에서도 계산
+  const slotIntervalMinutes = useMemo(() => {
+    if (!timeSlots || timeSlots.length < 2) return null;
+    const first = parseTimeToMinutes(timeSlots[0]);
+    const second = parseTimeToMinutes(timeSlots[1]);
+    if (first == null || second == null) return null;
+    const diff = Math.abs(second - first);
+    return diff > 0 ? diff : null;
+  }, [timeSlots]);
+
+  // 이번 신청이 실제로 사용하는 슬롯 개수 (라켓 개수와 동일한 개념)
+  const visitSlotCountUi = lineCount || 0;
+
+  // 이번 방문 예상 소요 시간(분) = 슬롯 간격 × 슬롯 개수
+  const visitDurationMinutesUi = useMemo(() => {
+    if (!slotIntervalMinutes || !visitSlotCountUi) return null;
+    return slotIntervalMinutes * visitSlotCountUi;
+  }, [slotIntervalMinutes, visitSlotCountUi]);
+
+  // 선택된 시작/종료 시간 텍스트 (예: 11:30 ~ 12:30)
+  const visitTimeRange = useMemo(() => {
+    if (!formData.preferredTime || !visitDurationMinutesUi) return null;
+    const startMin = parseTimeToMinutes(formData.preferredTime);
+    if (startMin == null) return null;
+    const endMin = startMin + visitDurationMinutesUi;
+    return {
+      start: formData.preferredTime,
+      end: formatMinutesToTime(endMin),
+    };
+  }, [formData.preferredTime, visitDurationMinutesUi]);
 
   // 이 주문에 연결된 스트링 서비스 슬롯 정보 (있을 때만 사용)
   const orderStringService = (order as any)?.stringService as
@@ -942,7 +998,9 @@ export default function StringServiceApplyPage() {
   async function refetchDisabledTimesFor(date: string) {
     if (!date) return;
     try {
-      const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=1`, {
+      const cap = Math.max(requiredPassCount || 1, 1);
+
+      const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=${cap}`, {
         credentials: 'include',
       });
       if (!res.ok) return;
@@ -1224,7 +1282,8 @@ export default function StringServiceApplyPage() {
                   onValueChange={(v) =>
                     setFormData((prev) => {
                       const next = { ...prev, collectionMethod: v as CollectionMethod };
-                      if (normalizeCollection(v) !== 'visit') {
+                      // 방문 접수 시, 날짜/시간 필드는 초기화 (기존에 선택된게 있다면)
+                      if (normalizeCollection(v) === 'visit') {
                         (next as any).preferredDate = '';
                         (next as any).preferredTime = '';
                       }
@@ -1408,101 +1467,107 @@ export default function StringServiceApplyPage() {
                 </div>
 
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                  <div className="flex items-center space-x-3">
-                    <DollarSign className="h-5 w-5 text-blue-500 dark:text-blue-400 flex-shrink-0" />
-                    <div className="text-sm">
-                      {formData.stringTypes.includes('custom') ? (
-                        <div className="text-blue-700 dark:text-blue-200">
-                          <p className="font-medium">💡 가격은 접수 후 안내됩니다.</p>
-                          <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">기본 장착 금액: 15,000원</p>
-                        </div>
-                      ) : (
-                        <>
-                          <p className="font-medium text-blue-700 dark:text-blue-200">
-                            총 장착 금액:{' '}
-                            {
-                              order && lineCount > 0
-                                ? price.toLocaleString('ko-KR') // 주문 기반: 선택한 주문 항목 mountingFee 합계
-                                : (priceView.base * Math.max(lineCount, 1)).toLocaleString('ko-KR') // 그 외: 1자루 기준 금액 × 라인 수
-                            }
-                            원
-                          </p>
-
-                          {/* 주문 기반 진입 + 스트링 선택 완료 시 상세 안내 */}
-                          {orderId && order && lineCount > 1 && (
-                            <div className="mt-2 space-y-2 text-xs text-blue-700/90 dark:text-blue-100/90">
-                              <p>
-                                이번 신청에서 장착할 라켓 수: <span className="font-semibold">{lineCount}자루</span>
-                              </p>
-
-                              {/* 선택된 각 스트링별로 "구매 수량 vs 이번 신청 수량" 노출 + 수정 */}
-                              <div className="space-y-1">
-                                {formData.stringTypes.map((id) => {
-                                  if (id === 'custom') {
-                                    const useQty = formData.stringUseCounts['custom'] ?? 1;
-                                    return (
-                                      <div key={id} className="flex items-center justify-between gap-2">
-                                        <span className="truncate">• 직접 입력 스트링</span>
-                                        <div className="flex items-center gap-1">
-                                          <Label htmlFor="useQty-custom" className="sr-only">
-                                            사용할 개수
-                                          </Label>
-                                          <Input id="useQty-custom" type="number" className="h-7 w-16 px-2 py-1 text-right text-xs" min={0} max={99} value={useQty} onChange={(e) => handleUseQtyChange('custom', Number(e.target.value) || 0)} />
-                                        </div>
-                                      </div>
-                                    );
-                                  }
-
-                                  const item = order.items.find((it) => it.id === id);
-                                  if (!item) return null;
-
-                                  const orderQty = item.quantity ?? 1;
-                                  const useQty = formData.stringUseCounts[id] ?? orderQty;
-
-                                  return (
-                                    <div key={id} className="flex items-center justify-between gap-2">
-                                      <span className="truncate">
-                                        • {item.name} <span className="text-[11px] text-blue-800/80 dark:text-blue-100/80">(구매 {orderQty}개 중)</span>
-                                      </span>
-                                      <div className="flex items-center gap-1">
-                                        <Label htmlFor={`useQty-${id}`} className="sr-only">
-                                          사용할 개수
-                                        </Label>
-                                        <Input id={`useQty-${id}`} type="number" className="h-7 w-16 px-2 py-1 text-right text-xs" min={0} max={orderQty} value={useQty} onChange={(e) => handleUseQtyChange(id, Number(e.target.value) || 0)} />
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-
-                              <p>
-                                이번 신청으로 추가 납부할 교체비 합계: <span className="font-semibold text-foreground">{price.toLocaleString('ko-KR')}원</span>
-                              </p>
-                              <p className="text-[11px] text-muted-foreground">
-                                스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
-                              </p>
-                            </div>
-                          )}
-
-                          {orderId && selectedOrderItem && lineCount === 1 && (
-                            <div className="mt-2 space-y-1 text-xs text-blue-700/90 dark:text-blue-100/90">
-                              <p>
-                                선택한 스트링 상품 가격(이미 결제): <span className="font-semibold text-foreground">{selectedOrderItem.price.toLocaleString('ko-KR')}원</span>
-                              </p>
-                              <p>
-                                이번 신청으로 추가 납부할 교체비: <span className="font-semibold text-foreground">{priceView.base.toLocaleString('ko-KR')}원</span>
-                              </p>
-                              <p>
-                                예상 총 장착 비용(참고): <span className="font-semibold text-blue-600 dark:text-blue-300">{(selectedOrderItem.price + priceView.base).toLocaleString('ko-KR')}원</span>
-                              </p>
-                              <p className="text-[11px] text-muted-foreground">
-                                스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
-                              </p>
-                            </div>
-                          )}
-                        </>
-                      )}
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
+                    <DollarSign className="h-5 w-5 mr-2" />
+                    예상 장착 비용
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">기본 장착비</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {formData.stringTypes.includes('custom') ? '15,000원' : order && lineCount > 0 ? price.toLocaleString('ko-KR') + '원' : (priceView.base * Math.max(lineCount, 1)).toLocaleString('ko-KR') + '원'}
+                      </span>
                     </div>
+
+                    {/* 주문 기반 진입 + 스트링 선택 완료 시 상세 안내 */}
+                    {orderId && order && lineCount > 0 && (
+                      <div className="mt-3 space-y-2 text-xs text-blue-700/90 dark:text-blue-100/90">
+                        <p>
+                          이번 신청에서 장착할 라켓 수: <span className="font-semibold">{lineCount}자루</span>
+                        </p>
+
+                        {/* 선택된 각 스트링별로 "구매 수량 vs 이번 신청 수량" 노출 + 수정 */}
+                        <div className="space-y-1">
+                          {formData.stringTypes.map((id) => {
+                            if (id === 'custom') {
+                              const useQty = formData.stringUseCounts['custom'] ?? 1;
+                              return (
+                                <div key={id} className="flex items-center justify-between gap-2">
+                                  <span className="truncate">• 직접 입력 스트링</span>
+                                  <div className="flex items-center gap-1">
+                                    <Label htmlFor="useQty-custom" className="sr-only">
+                                      사용할 개수
+                                    </Label>
+                                    <Input
+                                      id="useQty-custom"
+                                      type="number"
+                                      className="h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500"
+                                      min={0}
+                                      max={99}
+                                      value={useQty}
+                                      onChange={(e) => handleUseQtyChange('custom', Number(e.target.value) || 0)}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            const item = order.items.find((it) => it.id === id);
+                            if (!item) return null;
+
+                            const orderQty = item.quantity ?? 1;
+                            const useQty = formData.stringUseCounts[id] ?? orderQty;
+
+                            return (
+                              <div key={id} className="flex items-center justify-between gap-2">
+                                <span className="truncate">
+                                  • {item.name} <span className="text-[11px] text-blue-800/80 dark:text-blue-100/80">(구매 {orderQty}개 중)</span>
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <Label htmlFor={`useQty-${id}`} className="sr-only">
+                                    사용할 개수
+                                  </Label>
+                                  <Input
+                                    id={`useQty-${id}`}
+                                    type="number"
+                                    className="h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500"
+                                    min={0}
+                                    max={orderQty}
+                                    value={useQty}
+                                    onChange={(e) => handleUseQtyChange(id, Number(e.target.value) || 0)}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <p>
+                          이번 신청으로 추가 납부할 교체비 합계: <span className="font-semibold text-foreground">{price.toLocaleString('ko-KR')}원</span>
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* 주문 기반 진입 + 스트링 1개만 선택 시 상세 안내 */}
+                    {orderId && selectedOrderItem && lineCount === 1 && (
+                      <div className="mt-3 space-y-1 text-xs text-blue-700/90 dark:text-blue-100/90">
+                        <p>
+                          선택한 스트링 상품 가격(이미 결제): <span className="font-semibold text-foreground">{selectedOrderItem.price.toLocaleString('ko-KR')}원</span>
+                        </p>
+                        <p>
+                          이번 신청으로 추가 납부할 교체비: <span className="font-semibold text-foreground">{priceView.base.toLocaleString('ko-KR')}원</span>
+                        </p>
+                        <p>
+                          예상 총 장착 비용(참고): <span className="font-semibold text-blue-600 dark:text-blue-300">{(selectedOrderItem.price + priceView.base).toLocaleString('ko-KR')}원</span>
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1543,8 +1608,8 @@ export default function StringServiceApplyPage() {
                           </p>
                         ) : (
                           <p className="text-[11px] text-slate-700 dark:text-slate-100">
-                            이번 신청에는 패키지로 <span className="font-semibold">{requiredPassCount}회</span>가 필요합니다. 현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>이며, 결제 단계에서 사용 여부를 선택할 수
-                            있습니다.
+                            이번 신청에는 패키지로 <span className="font-semibold">{requiredPassCount}회</span>가 필요합니다. 현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
+                            이며, 결제 단계에서 사용 여부를 선택할 수 있습니다.
                           </p>
                         )
                       ) : (
@@ -1568,48 +1633,75 @@ export default function StringServiceApplyPage() {
                   </div>
                 </div>
               </div>
-
               {/* 라켓/라인 세부 입력 (선택 사항) */}
               {lineCount > 0 && (
-                <Card className="border-dashed border-blue-200/80 bg-blue-50/60 dark:bg-slate-900/40">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold">라켓별 세부 장착 정보</CardTitle>
-                    <CardDescription className="text-xs">
-                      위에서 선택한 <span className="font-semibold">“사용 개수”</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
+                <Card className="border-none bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-slate-800/30 dark:to-slate-900/40 shadow-sm">
+                  <CardHeader className="pb-4 space-y-1">
+                    <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">라켓별 세부 장착 정보</CardTitle>
+                    <CardDescription className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                      위에서 선택한 <span className="font-semibold text-blue-600 dark:text-blue-400">"사용 개수"</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-4">
                     {linesForSubmit.map((line, index) => (
-                      <div key={line.id ?? index} className="rounded-lg border-dashed bg-background px-3 py-3 space-y-2">
+                      <div key={line.id ?? index} className="group relative rounded-xl bg-white dark:bg-slate-800/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
                         {/* 헤더 영역: 라켓 N, 스트링 이름 */}
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-semibold text-white">{index + 1}</span>
-                            <span className="text-xs text-muted-foreground">라켓 {index + 1}</span>
+                        <div className="flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-slate-50 to-slate-100/50 dark:from-slate-700/30 dark:to-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50">
+                          <div className="flex items-center gap-2.5">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
+                              <span className="text-sm font-bold text-white">{index + 1}</span>
+                            </div>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">라켓 {index + 1}</span>
                           </div>
-                          <span className="truncate text-xs text-muted-foreground">스트링: {line.stringName}</span>
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20">
+                            <div className="h-1.5 w-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
+                            <span className="text-xs font-medium text-blue-700 dark:text-blue-300 truncate max-w-[200px]">{line.stringName}</span>
+                          </div>
                         </div>
 
                         {/* 라켓 이름 + 텐션 */}
-                        <div className="grid gap-2 md:grid-cols-3">
-                          <div className="space-y-1">
-                            <Label className="text-xs">라켓 이름/별칭</Label>
-                            <Input value={line.racketType ?? ''} onChange={(e) => handleLineFieldChange(index, 'racketType', e.target.value)} placeholder="예: 라켓1" className="h-8 text-xs" />
+                        <div className="p-4 space-y-4">
+                          <div className="grid gap-3 md:grid-cols-3">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">라켓 이름/별칭</Label>
+                              <Input
+                                value={line.racketType ?? ''}
+                                onChange={(e) => handleLineFieldChange(index, 'racketType', e.target.value)}
+                                placeholder="예: 라켓1"
+                                className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">메인 텐션(kg)</Label>
+                              <Input
+                                value={line.tensionMain ?? ''}
+                                onChange={(e) => handleLineFieldChange(index, 'tensionMain', e.target.value)}
+                                placeholder="예: 24"
+                                className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">크로스 텐션(kg)</Label>
+                              <Input
+                                value={line.tensionCross ?? ''}
+                                onChange={(e) => handleLineFieldChange(index, 'tensionCross', e.target.value)}
+                                placeholder="예: 23"
+                                className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                              />
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">메인 텐션(kg)</Label>
-                            <Input value={line.tensionMain ?? ''} onChange={(e) => handleLineFieldChange(index, 'tensionMain', e.target.value)} placeholder="예: 24" className="h-8 text-xs" />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">크로스 텐션(kg)</Label>
-                            <Input value={line.tensionCross ?? ''} onChange={(e) => handleLineFieldChange(index, 'tensionCross', e.target.value)} placeholder="예: 23" className="h-8 text-xs" />
-                          </div>
-                        </div>
 
-                        {/* 라켓별 메모 */}
-                        <div className="space-y-1">
-                          <Label className="text-xs">라켓별 메모 (선택)</Label>
-                          <Textarea value={line.note ?? ''} onChange={(e) => handleLineFieldChange(index, 'note', e.target.value)} rows={2} className="text-xs" placeholder="예: 이 라켓은 경기용, 이 라켓은 연습용 등" />
+                          {/* 라켓별 메모 */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">라켓별 메모 (선택)</Label>
+                            <Textarea
+                              value={line.note ?? ''}
+                              onChange={(e) => handleLineFieldChange(index, 'note', e.target.value)}
+                              rows={2}
+                              className="text-sm resize-none border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                              placeholder="요청사항을 적어 두셔도 좋습니다."
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1632,6 +1724,14 @@ export default function StringServiceApplyPage() {
                       min={new Date().toISOString().split('T')[0]}
                       className="focus:ring-2 focus:ring-green-500 transition-all duration-200"
                     />
+                    {formData.preferredDate && formData.preferredTime && visitSlotCountUi > 0 && visitDurationMinutesUi && (
+                      <div className="mt-3 text-xs md:text-[13px] text-slate-700 dark:text-slate-100 bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2">
+                        <p className="font-medium">
+                          이번 방문 예상 소요 시간: {visitTimeRange ? `${visitTimeRange.start} ~ ${visitTimeRange.end}` : `약 ${visitDurationMinutesUi}분`} ({visitSlotCountUi}슬롯)
+                        </p>
+                        <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-300 leading-relaxed">선택하신 시간부터 연속으로 작업이 진행되며,&nbsp; 해당 시간대에는 다른 예약이 불가능합니다.</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
