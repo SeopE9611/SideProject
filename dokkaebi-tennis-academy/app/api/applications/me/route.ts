@@ -80,7 +80,31 @@ export async function GET(req: Request) {
         phone: doc.phone ?? null,
         appliedAt: appliedAtISO,
         status: doc.status ?? '접수',
-        racketType: details.racketType ?? '-',
+        // 라켓 종류 요약 문자열
+        // 1) stringDetails.racketType 문자열이 있으면 그 값을 우선 사용
+        // 2) 없으면 stringDetails.racketLines 배열을 기준으로 라켓 이름들을 합쳐서 보여줌
+        racketType: (() => {
+          // 1단계: 단일 필드(racketType)에 값이 있으면 그걸 그대로 사용
+          if (details.racketType && typeof details.racketType === 'string' && details.racketType.trim().length > 0) {
+            return details.racketType.trim();
+          }
+
+          // 2단계: racketLines 배열을 기준으로 요약 생성
+          const rawLines = Array.isArray((details as any).racketLines) ? (details as any).racketLines : [];
+          if (rawLines.length === 0) {
+            return '-';
+          }
+
+          const names = rawLines.map((line: any, index: number) => {
+            const rawName = (line.racketType && String(line.racketType).trim()) || (line.racketLabel && String(line.racketLabel).trim()) || '';
+
+            // 이름이 하나도 없으면 "라켓1", "라켓2" 형태로 대체
+            return rawName || `라켓 ${index + 1}`;
+          });
+
+          return names.join(', ');
+        })(),
+
         stringType: names.join(', ') || '-',
         // 방문만 예약 표시, 그 외는 null로 정리
         preferredDate: cm === 'visit' ? details.preferredDate ?? null : null,

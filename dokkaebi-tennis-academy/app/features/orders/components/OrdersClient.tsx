@@ -377,18 +377,18 @@ export default function OrdersClient() {
 
                     return group.map((order) => (
                       <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
-                        {/* 왼쪽 경계 때문에 셀 좌측 여백만 살짝 확보 */}
                         <TableCell className={cn(tdClasses, 'pl-6 border-l-4', isGrouped ? borderColor : 'border-transparent')}>
                           <TooltipProvider delayDuration={10}>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="inline-flex items-center gap-1 max-w-[140px] truncate cursor-pointer">
+                                <div className="flex items-center gap-1 max-w-[140px] truncate cursor-pointer w-full h-full justify-start">
                                   {/* 취소요청 상태일 때만 아이콘 노출 */}
                                   {order.cancelStatus === 'requested' && <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" aria-hidden="true" />}
                                   {/* 실제 표시되는 주문 ID (짧게) */}
                                   <span className="truncate">{shortenId(order.id)}</span>
-                                </span>
+                                </div>
                               </TooltipTrigger>
+
                               <TooltipContent
                                 side="top"
                                 align="center"
@@ -417,11 +417,13 @@ export default function OrdersClient() {
                                   </div>
 
                                   {order.cancelStatus === 'requested' && <p className="mt-2 text-sm text-amber-500">취소 요청이 접수된 주문입니다.</p>}
+                                  {order.__type === 'stringing_application' && order.stringSummary && <p className="mt-1 text-[11px] text-muted-foreground">장착 상품: {order.stringSummary}</p>}
                                 </div>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         </TableCell>
+
                         {/* 고객 정보 셀 */}
                         <TableCell className={tdClasses}>
                           <div className="flex flex-col items-center">

@@ -1436,11 +1436,43 @@ export async function handleGetApplicationList() {
     const userId = new ObjectId(payload.sub);
 
     // 'stringing_applications' 컬렉션에서 신청서 목록 전체 조회
-    const applications = await db
+    const rawList = await db
       .collection('stringing_applications') // 정확한 컬렉션명 주의
       .find({ userId })
       .sort({ createdAt: -1 }) // 최신순 정렬
       .toArray();
+
+    // 각 신청서에 장착 상품 요약(stringSummary) 필드 추가
+    const applications = await Promise.all(
+      rawList.map(async (doc) => {
+        const details: any = (doc as any).stringDetails ?? {};
+        const typeIds: string[] = Array.isArray(details.stringTypes) ? details.stringTypes : [];
+
+        // 스트링 이름 목록 생성 (커스텀/상품명 혼합)
+        const names = await Promise.all(
+          typeIds.map(async (prodId: string) => {
+            if (prodId === 'custom') {
+              return (details.customStringName ?? '커스텀 스트링') as string;
+            }
+            const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
+            return (prod?.name as string) ?? '알 수 없는 스트링';
+          })
+        );
+
+        const primaryName = names[0];
+        const kinds = names.length;
+
+        let stringSummary: string | undefined;
+        if (primaryName) {
+          stringSummary = kinds <= 1 ? primaryName : `${primaryName} 외 ${kinds - 1}종`;
+        }
+
+        return {
+          ...(doc as any),
+          stringSummary,
+        };
+      })
+    );
 
     // 신청서 목록을 JSON 응답으로 반환
     return NextResponse.json(applications);

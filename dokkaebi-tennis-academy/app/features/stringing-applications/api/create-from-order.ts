@@ -58,10 +58,14 @@ export async function createStringingApplicationFromOrder(order: DBOrderLite) {
   const client = await clientPromise;
   const db = client.db();
 
-  // 1) 방어로직: 이미 동일 orderId로 생성된 신청서가 있으면 중복 생성 방지
-  const exists = await db.collection('stringing_applications').findOne({ orderId: order._id });
-  if (exists) return exists; // 멱등성(idempotency) 보장
+  // 1) 방어로직: 이 주문에 'draft' 상태 신청서가 이미 있으면 그걸 재사용
+  //    (제출이 완료된 신청서는 추가 신청을 막지 않음)
+  const existingDraft = await db.collection('stringing_applications').findOne({
+    orderId: order._id,
+    status: 'draft',
+  });
 
+  if (existingDraft) return existingDraft;
   // 픽업 방식 정규화(기본 SELF_SEND)
   const pickup = order.servicePickupMethod === 'SHOP_VISIT' ? 'SHOP_VISIT' : order.servicePickupMethod === 'COURIER_VISIT' ? 'COURIER_VISIT' : 'SELF_SEND';
 

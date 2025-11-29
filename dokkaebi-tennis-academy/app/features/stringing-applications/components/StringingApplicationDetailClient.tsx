@@ -1049,8 +1049,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       </div>
 
                       {/* 데이터 행 */}
-                      {data.items.map((item) => (
-                        <div key={item.id} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-slate-100 dark:border-slate-700/70">
+                      {data.items.map((item, index) => (
+                        <div key={`${item.id}-${index}`} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-slate-100 dark:border-slate-700/70">
                           <div className="pr-2">
                             <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{item.name}</p>
                           </div>

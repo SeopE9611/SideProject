@@ -129,6 +129,21 @@ export async function fetchCombinedOrders() {
         const totalFromDoc = typeof (app as any).totalPrice === 'number' ? (app as any).totalPrice : null;
         const totalCalculated = items.reduce((s, it) => s + (it.price || 0) * (it.quantity || 0), 0);
 
+        // 장착 상품 요약 문자열 (첫 상품 + 종수/총수량)
+        let stringSummary: string | undefined;
+        if (items.length > 0) {
+          const [first, ...rest] = items;
+          const totalQty = items.reduce((sum, it) => sum + (it.quantity ?? 1), 0);
+
+          if (rest.length === 0) {
+            // 상품 1종만 있을 때: "이름 N개"
+            stringSummary = `${first.name} ${first.quantity ?? 1}개`;
+          } else {
+            // 여러 종일 때: "이름 외 N종 · 총 M개"
+            stringSummary = `${first.name} 외 ${rest.length}종 · 총 ${totalQty}개`;
+          }
+        }
+
         // 신청서 쪽 원본 상태 문자열
         const rawAppCancelStatus = (app as any).cancelRequest?.status as string | undefined;
 
@@ -156,6 +171,7 @@ export async function fetchCombinedOrders() {
           type: '서비스',
           total: totalFromDoc ?? totalCalculated,
           items,
+          stringSummary,
           shippingInfo: {
             name: customer.name,
             phone: customer.phone,

@@ -46,6 +46,9 @@ export type Order = {
 
   items: OrderItem[];
 
+  // 장착 서비스 신청용 요약 문자열 (예: '듀로플렉스 125 외 1종')
+  stringSummary?: string;
+
   cancelStatus?: 'requested' | 'approved' | 'rejected';
 };
 
