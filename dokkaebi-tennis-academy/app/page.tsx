@@ -1,21 +1,7 @@
 'use client';
-
-/**
- * 홈 메인 페이지
- * - HeroSlider(상단 배너)
- * - HorizontalProducts(가로 캐러셀) 2개: 프리미엄 스트링 / 중고 라켓
- *
- * 설계 포인트
- * 1) 데이터 준비(필터링/매핑)는 page.tsx에서 담당
- * 2) 캐러셀/가운데 정렬/스냅/페이지 스크롤/‘더보기’ 배치는 HorizontalProducts에 위임
- * 3) 섹션을 늘릴 때는 HorizontalProducts를 한 줄 더 호출하면 끝
- */
-
-import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import HeroSlider from '@/components/HeroSlider';
 import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from '@/lib/constants';
 
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
@@ -213,7 +199,7 @@ export default function Home() {
   }, [rackByBrand, activeBrand]);
 
   // 섹션 렌더 — moreHref를 /rackets로
-  <HorizontalProducts title="중고 라켓" subtitle="최근 등록 순으로 미리보기" items={usedRacketsItems} moreHref="/rackets" firstPageSlots={4} moveMoreToSecondWhen5Plus={true} loading={loading} />;
+  // <HorizontalProducts title="중고 라켓" subtitle="최근 등록 순으로 미리보기" items={usedRacketsItems} moreHref="/rackets" firstPageSlots={4} moveMoreToSecondWhen5Plus={true} loading={loading} />;
 
   return (
     <div>
@@ -221,90 +207,117 @@ export default function Home() {
       <HeroSlider slides={SLIDES} />
 
       {/* 프리미엄 스트링 섹션 */}
-      <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl m-4">
-        <section className="py-20 bg-slate-50 dark:bg-slate-900 relative">
-          {/* 장식 배경(기존 유지) */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(59,130,246,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]" />
-          </div>
+      <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm">
+        <section className="py-12 md:py-16 lg:py-20 relative overflow-hidden">
+          {/* 배경 그라데이션 */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 opacity-60" />
 
-          <div className="relative z-10">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6">
             {/* 타이틀 */}
-            <div className="text-center">
-              <div className="inline-flex items-center gap-4 mb-6">
-                <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400" />
-                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">스트링</h2>
-                <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400" />
-              </div>
-              {/* <p className="text-xl text-slate-600 dark:text-slate-300">프로가 선택하는 테니스 스트링</p> */}
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-2">스트링</h2>
+              <p className="text-sm md:text-base text-slate-600 dark:text-slate-400">프로가 선택하는 테니스 스트링</p>
             </div>
 
-            {/* 스트링(브랜드 탭) */}
-            <Tabs value={activeStringBrand} onValueChange={(v) => setActiveStringBrand(v as StringBrandKey)}>
-              <TabsList className="mb-4 flex gap-2 overflow-x-auto">
-                <TabsTrigger value="all">전체</TabsTrigger>
-                {STRING_BRANDS.map((b) => (
-                  <TabsTrigger key={b.value} value={b.value}>
-                    {b.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+            <div className="mb-8 md:mb-10">
+              <div className="flex justify-center">
+                <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide px-4 max-w-full">
+                  <button
+                    onClick={() => setActiveStringBrand('all')}
+                    className={`
+                      shrink-0 px-5 md:px-7 py-2.5 md:py-3 rounded-full text-sm md:text-base font-semibold 
+                      transition-all duration-300 whitespace-nowrap
+                      ${
+                        activeStringBrand === 'all'
+                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-105'
+                          : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:scale-105 hover:shadow-sm'
+                      }
+                    `}
+                  >
+                    전체
+                  </button>
+                  {STRING_BRANDS.map((b) => (
+                    <button
+                      key={b.value}
+                      onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
+                      className={`
+                        shrink-0 px-5 md:px-7 py-2.5 md:py-3 rounded-full text-sm md:text-base font-semibold 
+                        transition-all duration-300 whitespace-nowrap
+                        ${
+                          activeStringBrand === b.value
+                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-105'
+                            : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:scale-105 hover:shadow-sm'
+                        }
+                      `}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-              <HorizontalProducts
-                title="스트링"
-                subtitle={activeStringBrand === 'all' ? '브랜드로 골라보기' : `${stringBrandLabel(activeStringBrand)} 추천`}
-                items={premiumItems}
-                moreHref={activeStringBrand === 'all' ? '/products' : `/products?brand=${activeStringBrand}`}
-                firstPageSlots={4}
-                moveMoreToSecondWhen5Plus={true}
-                loading={loading}
-                showHeader={false}
-              />
-            </Tabs>
+            <HorizontalProducts
+              title="스트링"
+              subtitle={activeStringBrand === 'all' ? '브랜드로 골라보기' : `${stringBrandLabel(activeStringBrand)} 추천`}
+              items={premiumItems}
+              moreHref={activeStringBrand === 'all' ? '/products' : `/products?brand=${activeStringBrand}`}
+              firstPageSlots={4}
+              moveMoreToSecondWhen5Plus={true}
+              loading={loading}
+              showHeader={false}
+            />
           </div>
         </section>
       </div>
 
       {/* 중고 라켓 섹션 */}
-      <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl m-4">
-        <section className="py-20 bg-slate-50 dark:bg-slate-900 relative">
-          {/* 장식 배경(기존 유지) */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]" />
-          </div>
+      <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm">
+        <section className="py-12 md:py-16 lg:py-20 relative overflow-hidden">
+          {/* 배경 그라데이션 */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 opacity-60" />
 
-          <div className="relative z-10">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6">
             {/* 타이틀 */}
-            <div className="text-center">
-              <div className="inline-flex items-center gap-4 mb-6">
-                <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400" />
-                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">중고 라켓</h2>
-                <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400" />
-              </div>
-              {/* <p className="text-xl text-slate-600 dark:text-slate-300">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p> */}
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-2">중고 라켓</h2>
+              <p className="text-sm md:text-base text-slate-600 dark:text-slate-400">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p>
             </div>
 
-            {/* 가로 캐러셀: 재사용 (items만 교체) */}
-            <Tabs value={activeBrand} onValueChange={(v) => setActiveBrand(v as BrandKey)}>
-              <TabsList className="mb-4 flex gap-2 overflow-x-auto">
-                {BRAND_KEYS.map((b) => (
-                  <TabsTrigger key={b} value={b}>
-                    {b === 'all' ? '전체' : racketBrandLabel(b)}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+            <div className="mb-8 md:mb-10">
+              <div className="flex justify-center">
+                <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide px-4 max-w-full">
+                  {BRAND_KEYS.map((b) => (
+                    <button
+                      key={b}
+                      onClick={() => setActiveBrand(b as BrandKey)}
+                      className={`
+                        shrink-0 px-5 md:px-7 py-2.5 md:py-3 rounded-full text-sm md:text-base font-semibold 
+                        transition-all duration-300 whitespace-nowrap
+                        ${
+                          activeBrand === b
+                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-105'
+                            : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:scale-105 hover:shadow-sm'
+                        }
+                      `}
+                    >
+                      {b === 'all' ? '전체' : racketBrandLabel(b)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-              <HorizontalProducts
-                title="중고 라켓"
-                subtitle={activeBrand === 'all' ? '최근 등록 순 미리보기' : `${racketBrandLabel(activeBrand)} 라켓`}
-                items={usedRacketsItems}
-                moreHref={activeBrand === 'all' ? '/rackets' : `/rackets?brand=${activeBrand}`}
-                firstPageSlots={4}
-                moveMoreToSecondWhen5Plus={true}
-                loading={!rackByBrand[activeBrand]} // 탭 최초 로딩 시만 true
-                showHeader={false}
-              />
-            </Tabs>
+            <HorizontalProducts
+              title="중고 라켓"
+              subtitle={activeBrand === 'all' ? '최근 등록 순 미리보기' : `${racketBrandLabel(activeBrand)} 라켓`}
+              items={usedRacketsItems}
+              moreHref={activeBrand === 'all' ? '/rackets' : `/rackets?brand=${activeBrand}`}
+              firstPageSlots={4}
+              moveMoreToSecondWhen5Plus={true}
+              loading={!rackByBrand[activeBrand]}
+              showHeader={false}
+            />
           </div>
         </section>
       </div>

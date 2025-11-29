@@ -157,67 +157,71 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
     else emblaApi.scrollNext();
   };
 
-  // 카드 공통 컴포넌트
   const ItemCard = ({ p }: { p: HItem }) => (
     <Link
       key={p._id}
       href={p.href ?? `/products/${p._id}`}
       className="group block h-full
-        bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700
-        hover:ring-1 hover:ring-blue-300/60 dark:hover:ring-blue-500/50
-        transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+        bg-white dark:bg-slate-900 rounded-xl p-4 md:p-5 lg:p-6 
+        transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
     >
-      <div className="relative mb-6 aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600">
+      <div className="relative mb-3 md:mb-4 aspect-square rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
         {p.images?.[0] ? (
-          <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+          <img src={p.images[0] || '/placeholder.svg'} alt={p.name} className="w-full h-full object-contain p-2 md:p-3" loading="lazy" />
         ) : (
-          <div className="flex items-center justify-center h-full text-4xl font-bold text-slate-400 dark:text-slate-500">{(p.brand ?? 'D').charAt(0)}</div>
+          <div className="flex items-center justify-center h-full text-3xl md:text-5xl font-bold text-slate-300 dark:text-slate-600">{(p.brand ?? 'D').charAt(0)}</div>
         )}
 
         {(typeof p.rentalEnabled === 'boolean' || p.condition) && (
-          <div className="absolute top-3 left-3 right-3 flex items-center gap-2 z-10">
+          <div className="absolute top-2 left-2 right-2 flex items-center gap-1.5 z-10">
             {typeof p.rentalEnabled === 'boolean' && !p.rentalEnabled && <StatusBadge kind="rental" state="unavailable" />}
             {p.condition && <StatusBadge kind="condition" state={p.condition} />}
           </div>
         )}
       </div>
 
-      <div className="space-y-3">
-        <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2">{p.name}</h3>
-        <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{Number(p.price).toLocaleString()}원</div>
+      <div className="space-y-1.5 md:space-y-2">
+        <div className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
+        <h3
+          className="text-sm md:text-base lg:text-lg font-semibold text-slate-900 dark:text-white 
+          line-clamp-2 min-h-[2.5rem] md:min-h-[3rem] leading-snug"
+        >
+          {p.name}
+        </h3>
+        <div className="text-base md:text-lg lg:text-xl font-bold text-slate-900 dark:text-white pt-1">{Number(p.price).toLocaleString()}원</div>
       </div>
     </Link>
   );
 
   const PlaceholderCard = () => (
     <div
-      className="h-full rounded-2xl p-6 border-2 border-dashed
-        border-slate-300/70 dark:border-slate-600/70
-        bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700"
+      className="h-full rounded-xl p-4 md:p-5 lg:p-6 
+      bg-slate-50 dark:bg-slate-800/50 
+      flex flex-col items-center justify-center"
     >
-      <div className="relative mb-6 aspect-square rounded-xl overflow-hidden bg-white/40 dark:bg-slate-700/40 flex items-center justify-center">
-        <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-600" />
+      <div
+        className="relative mb-3 md:mb-4 aspect-square w-full rounded-lg bg-slate-100 dark:bg-slate-700 
+        flex items-center justify-center"
+      >
+        <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-slate-200 dark:bg-slate-600" />
       </div>
-      <div className="text-center space-y-2">
-        <div className="text-base font-semibold text-slate-700 dark:text-slate-200">준비 중인 상품</div>
-        <div className="text-sm text-slate-500 dark:text-slate-400">곧 업데이트됩니다</div>
+      <div className="text-center space-y-1">
+        <div className="text-sm md:text-base font-semibold text-slate-400 dark:text-slate-500">준비 중</div>
+        <div className="text-xs md:text-sm text-slate-400 dark:text-slate-600">곧 업데이트</div>
       </div>
     </div>
   );
 
   const SkeletonCard = () => (
     <div
-      className="h-full rounded-2xl p-6 border border-slate-200 dark:border-slate-700
-        bg-white dark:bg-slate-800 animate-pulse"
+      className="h-full rounded-xl p-4 md:p-5 lg:p-6 
+      bg-white dark:bg-slate-900 animate-pulse"
     >
-      {/* 이미지 자리 스켈레톤 */}
-      <div className="relative mb-6 aspect-square rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700" />
-      {/* 텍스트 자리 스켈레톤 3줄 */}
-      <div className="space-y-3">
-        <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-600" />
-        <div className="h-5 w-40 rounded bg-slate-200 dark:bg-slate-600" />
-        <div className="h-6 w-24 rounded bg-slate-200 dark:bg-slate-600" />
+      <div className="relative mb-3 md:mb-4 aspect-square rounded-lg bg-slate-100 dark:bg-slate-800" />
+      <div className="space-y-2 md:space-y-3">
+        <div className="h-3 md:h-4 w-20 md:w-24 rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-4 md:h-5 w-32 md:w-40 rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-5 md:h-6 w-20 md:w-24 rounded bg-slate-100 dark:bg-slate-800" />
       </div>
     </div>
   );
@@ -225,20 +229,20 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
   const MoreCard = () => (
     <Link
       href={moreHref}
-      className="group h-full
-        bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700
-        rounded-2xl p-6 border-2 border-dashed border-blue-300 dark:border-blue-600
-        hover:border-blue-500 dark:hover:border-blue-400
-        transition-all duration-300 hover:shadow-xl hover:-translate-y-1
-        flex items-center justify-center"
+      className="group h-full bg-slate-50 dark:bg-slate-800 rounded-xl p-4 md:p-5 lg:p-6 
+        hover:bg-slate-100 dark:hover:bg-slate-700
+        transition-all duration-300 flex items-center justify-center hover:scale-[1.02] hover:shadow-lg"
     >
-      <div className="text-center space-y-4">
-        <div className="w-16 h-16 bg-blue-100 rounded-full mx-auto group-hover:scale-110 transition-transform duration-300 flex items-center justify-center">
-          <ArrowRight className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+      <div className="text-center space-y-2 md:space-y-3">
+        <div
+          className="w-14 h-14 md:w-18 md:h-18 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto 
+          flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+        >
+          <ArrowRight className="h-6 w-6 md:h-8 md:w-8 text-slate-600 dark:text-slate-400" />
         </div>
-        <div className="space-y-2">
-          <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">더 많은 상품</h3>
-          <p className="text-sm text-blue-600 dark:text-blue-300">전체 컬렉션 보기</p>
+        <div className="space-y-1">
+          <h3 className="text-sm md:text-base lg:text-lg font-bold text-slate-900 dark:text-white">더 많은 상품</h3>
+          <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">전체 보기</p>
         </div>
       </div>
     </Link>
@@ -246,26 +250,18 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
 
   // 렌더
   return (
-    <section className="py-20 bg-slate-50 dark:bg-slate-900 relative rounded-2xl">
-      <div className="absolute inset-0 opacity-5">
-        <div className="w-full h-full bg-[linear-gradient(45deg,transparent_24%,rgba(59,130,246,0.1)_25%,rgba(59,130,246,0.1)_26%,transparent_27%,transparent_74%,rgba(59,130,246,0.1)_75%,rgba(59,130,246,0.1)_76%,transparent_77%,transparent),linear-gradient(-45deg,transparent_24%,rgba(99,102,241,0.1)_25%,rgba(99,102,241,0.1)_26%,transparent_27%,transparent_74%,rgba(99,102,241,0.1)_75%,rgba(99,102,241,0.1)_76%,transparent_77%,transparent)] bg-[size:40px_40px]" />
-      </div>
-
+    <section className="relative">
       <div className="relative z-10">
         {showHeader && (
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-4 mb-6">
-              <div className="w-12 h-px bg-gradient-to-r from-transparent to-blue-400" />
-              <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white">{title}</h2>
-              <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400" />
-            </div>
-            {subtitle && <p className="text-xl text-slate-600 dark:text-slate-300">{subtitle}</p>}
+          <div className="text-center mb-8 md:mb-12 lg:mb-16">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-2">{title}</h2>
+            {subtitle && <p className="text-sm md:text-base lg:text-xl text-slate-600 dark:text-slate-400">{subtitle}</p>}
           </div>
         )}
 
         <div className="relative">
-          <div ref={viewportRef} className="overflow-hidden px-4">
-            <div className={`flex gap-6 ${shouldCenter ? 'justify-center' : ''}`}>
+          <div ref={viewportRef} className="overflow-hidden">
+            <div className={`flex gap-3 md:gap-4 lg:gap-6 ${shouldCenter ? 'justify-center' : ''}`}>
               {slides.map((s, i) => {
                 if (s.kind === 'item') {
                   return (
@@ -275,7 +271,6 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
                   );
                 }
 
-                // 로딩 중일 때 스켈레톤 카드
                 if (s.kind === 'skeleton') {
                   return (
                     <div key={`sk-${i}`} className={slideClass}>
@@ -292,7 +287,6 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
                   );
                 }
 
-                // more
                 return (
                   <div key={`more-${i}`} className={slideClass}>
                     <MoreCard />
@@ -302,21 +296,23 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
             </div>
           </div>
 
-          {/* 페이지 네비게이션:
-              한 화면에 들어가는 카드 개수보다 전체 슬라이드가 많을 때만 노출 */}
           {slides.length > itemsPerPage && (
-            <div className="mt-8 flex flex-col items-center gap-2">
-              {/* 좌우 네비게이션 버튼 */}
-              <div className="flex gap-4">
+            <div className="mt-6 md:mt-8 flex flex-col items-center gap-2">
+              <div className="flex gap-3">
                 <Button
                   variant="outline"
                   size="sm"
                   aria-label="이전 상품 보기"
                   disabled={!canPrev}
-                  className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500 disabled:opacity-50"
+                  className="rounded-full w-10 h-10 md:w-12 md:h-12 p-0 
+                    bg-white dark:bg-slate-900 
+                    border-0 shadow-md
+                    hover:shadow-xl hover:scale-105
+                    disabled:opacity-30 disabled:cursor-not-allowed
+                    transition-all duration-300"
                   onClick={() => scrollByPage('left')}
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
 
                 <Button
@@ -324,15 +320,19 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
                   size="sm"
                   aria-label="다음 상품 보기"
                   disabled={!canNext}
-                  className="rounded-full w-12 h-12 p-0 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 dark:hover:border-blue-500 disabled:opacity-50"
+                  className="rounded-full w-10 h-10 md:w-12 md:h-12 p-0 
+                    bg-white dark:bg-slate-900 
+                    border-0 shadow-md
+                    hover:shadow-xl hover:scale-105
+                    disabled:opacity-30 disabled:cursor-not-allowed
+                    transition-all duration-300"
                   onClick={() => scrollByPage('right')}
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </div>
 
-              {/* 드래그 가능 안내 문구 */}
-              <p className="text-xs text-slate-500 dark:text-slate-400">마우스 드래그(또는 터치)로도 좌우로 넘겨볼 수 있어요.</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 hidden md:block">드래그하거나 터치로 넘겨보세요</p>
             </div>
           )}
         </div>
