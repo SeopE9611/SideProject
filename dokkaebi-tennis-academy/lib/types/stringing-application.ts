@@ -63,6 +63,10 @@ export interface StringingApplication {
   preferredTime?: string; // "10:00" 등
   requirements?: string;
 
+  // 방문 예약 슬롯 정보
+  visitSlotCount?: number;
+  visitDurationMinutes?: number;
+
   shippingInfo: StringingShippingInfo;
 
   // 품목/요금(현재 프로젝트 로직에 맞춰 서버에서 계산/저장)

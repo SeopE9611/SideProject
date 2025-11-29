@@ -26,6 +26,10 @@ export interface Application {
   stringType?: string;
   preferredDate?: string;
   preferredTime?: string;
+
+  visitSlotCount?: number | null;
+  visitDurationMinutes?: number | null;
+
   course?: string;
   schedule?: string;
   hasTracking: boolean;
@@ -47,6 +51,39 @@ const formatDateTime = (iso: string) => {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
+};
+
+// --- 희망 일시 포맷터 (방문 예약 전용) ---
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+const formatVisitTimeRange = (preferredDate?: string, preferredTime?: string, durationMinutes?: number | null, slotCount?: number | null): string => {
+  if (!preferredDate || !preferredTime) {
+    return '예약 일시 미입력';
+  }
+
+  const [hh, mm] = preferredTime.split(':');
+  const h = Number(hh);
+  const m = Number(mm);
+
+  if (!Number.isFinite(h) || !Number.isFinite(m) || !durationMinutes || durationMinutes <= 0) {
+    // duration 없으면 예전처럼 시작 시각만
+    return `${preferredDate} ${preferredTime}`;
+  }
+
+  const startTotal = h * 60 + m;
+  const endTotal = startTotal + durationMinutes;
+
+  const endH = Math.floor(endTotal / 60) % 24;
+  const endM = endTotal % 60;
+  const endTimeStr = `${pad2(endH)}:${pad2(endM)}`;
+
+  const baseRange = `${preferredDate} ${preferredTime} ~ ${endTimeStr}`;
+
+  if (slotCount && slotCount > 0) {
+    return `${baseRange} (${slotCount}슬롯 / 총 ${durationMinutes}분)`;
+  }
+  return `${baseRange} (총 ${durationMinutes}분)`;
 };
 
 const fetcher = async (url: string) => {
@@ -208,6 +245,11 @@ export default function ApplicationsClient() {
           const cm = normalizeCollection((app as any).collectionMethod ?? (app as any).shippingInfo?.collectionMethod);
           const isSelfShip = isStringService && cm === 'self_ship';
           const isVisit = isStringService && cm === 'visit';
+
+          // 방문 예약 희망 일시 라벨 (목록 카드용)
+          const visitTimeLabel =
+            isStringService && isVisit && app.preferredDate && app.preferredTime ? formatVisitTimeRange(app.preferredDate, app.preferredTime, app.visitDurationMinutes ?? null, app.visitSlotCount ?? null).replace(/-/g, '.') : null;
+
           const collectionLabel = !isStringService ? null : cm === 'self_ship' ? '수령 방법: 자가 발송(택배)' : cm === 'visit' ? '수령 방법: 매장 방문' : '수령 방법: 기타';
           // 운송장 등록 여부
           const hasTracking = app.hasTracking;
@@ -302,9 +344,7 @@ export default function ApplicationsClient() {
                           <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                           <div>
                             <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">매장 방문 희망일시</div>
-                            <div className="font-medium text-slate-900 dark:text-slate-100">
-                              {app.preferredDate.replace(/-/g, '.')} {app.preferredTime}
-                            </div>
+                            <div className="font-medium text-slate-900 dark:text-slate-100">{visitTimeLabel}</div>
                           </div>
                         </div>
                       )}

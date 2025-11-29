@@ -23,6 +23,38 @@ function isValidObjectId(id: string | undefined): boolean {
   return typeof id === 'string' && /^[a-fA-F0-9]{24}$/.test(id);
 }
 
+// 시간 2자리 포맷
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+// 방문 예약 일시를 "YYYY-MM-DD HH:mm ~ HH:mm (n슬롯 / 총 m분)" 형태로
+function formatVisitTimeRange(preferredDate?: string, preferredTime?: string, durationMinutes?: number | null, slotCount?: number | null): string {
+  if (!preferredDate || !preferredTime) {
+    return '예약 일시 미입력';
+  }
+
+  const [hh, mm] = preferredTime.split(':');
+  const h = Number(hh);
+  const m = Number(mm);
+
+  if (!Number.isFinite(h) || !Number.isFinite(m) || !durationMinutes || durationMinutes <= 0) {
+    return `${preferredDate} ${preferredTime}`;
+  }
+
+  const startTotal = h * 60 + m;
+  const endTotal = startTotal + durationMinutes;
+
+  const endH = Math.floor(endTotal / 60) % 24;
+  const endM = endTotal % 60;
+  const endTimeStr = `${pad2(endH)}:${pad2(endM)}`;
+
+  const baseRange = `${preferredDate} ${preferredTime} ~ ${endTimeStr}`;
+
+  if (slotCount && slotCount > 0) {
+    return `${baseRange} (${slotCount}슬롯 / 총 ${durationMinutes}분)`;
+  }
+  return `${baseRange} (총 ${durationMinutes}분)`;
+}
+
 export default async function StringServiceSuccessPage(props: Props) {
   const searchParams = await props.searchParams;
   const applicationId = searchParams.applicationId;
@@ -39,7 +71,14 @@ export default async function StringServiceSuccessPage(props: Props) {
   const cm = normalizeCollection(typeof rawMethod === 'string' ? rawMethod : 'self_ship'); // 'visit' | 'self_ship' | 'courier_pickup'
   const isVisit = cm === 'visit';
   const isSelfShip = cm === 'self_ship';
-  const isCourierPickup = cm === 'courier_pickup'; // 패키지 정보 조회
+  const isCourierPickup = cm === 'courier_pickup';
+
+  // 방문 예약 희망 일시 라벨
+  const visitTimeLabel = isVisit
+    ? formatVisitTimeRange(application?.stringDetails?.preferredDate, application?.stringDetails?.preferredTime, (application as any)?.visitDurationMinutes ?? null, (application as any)?.visitSlotCount ?? null)
+    : `예약 불필요${isSelfShip || isCourierPickup ? ' (자가발송/기사 수거)' : ''}`;
+
+  // 패키지 정보 조회
   let appliedPass: any = null;
   if (application?.packageApplied && application?.packagePassId) {
     try {
@@ -194,16 +233,9 @@ export default async function StringServiceSuccessPage(props: Props) {
                   <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
                     <div className="flex items-center mb-3">
                       <Clock className="h-6 w-6 text-purple-600 mr-3" />
-                      <h3 className="font-semibold text-gray-900 dark:text-white">희망일</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">희망 일시</h3>
                     </div>
-                    {isVisit && application.stringDetails?.preferredDate && application.stringDetails?.preferredTime ? (
-                      <>
-                        <p className="text-lg font-bold text-purple-600">{application.stringDetails.preferredDate}</p>
-                        <p className="text-sm text-purple-500 mt-1">{application.stringDetails.preferredTime}</p>
-                      </>
-                    ) : (
-                      <p className="text-lg font-bold text-purple-600">예약 불필요{isSelfShip || isCourierPickup ? ' (자가발송/기사 수거)' : ''}</p>
-                    )}{' '}
+                    <p className="text-lg font-bold text-purple-600">{visitTimeLabel}</p>
                   </div>
                 </div>
 

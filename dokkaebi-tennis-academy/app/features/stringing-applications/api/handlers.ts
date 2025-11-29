@@ -224,6 +224,10 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         racketLines,
         ...(sd.customStringName ? { customStringName: sd.customStringName } : {}),
       },
+      // 방문 예약 슬롯 정보 (없으면 null)
+      visitSlotCount: typeof (app as any).visitSlotCount === 'number' ? (app as any).visitSlotCount : null,
+      visitDurationMinutes: typeof (app as any).visitDurationMinutes === 'number' ? (app as any).visitDurationMinutes : null,
+
       lines: racketLines,
       items,
       total,
@@ -1671,10 +1675,28 @@ export async function handleSubmitStringingApplication(req: Request) {
 
     // === 2) 동일 시간대 수용 인원 체크 (draft/취소 제외) ===
     const EXCLUDED_STATUSES = ['취소', 'draft'] as const;
-    type StringingSettings = { _id: 'stringingSlots'; capacity?: number };
-    const sdoc = await db.collection<StringingSettings>('settings').findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1 } });
 
+    // 관리자 예약 설정 문서 타입
+    type StringingSettings = {
+      _id: 'stringingSlots';
+      capacity?: number;
+      interval?: number; // 간격(분) - /admin/scheduling 에서 설정하는 값
+    };
+
+    // capacity + interval 을 한 번에 읽어옴
+    const sdoc = await db.collection<StringingSettings>('settings').findOne({ _id: 'stringingSlots' }, { projection: { capacity: 1, interval: 1 } });
+
+    // 동시 수용 인원 (1~10 사이로 클램프)
     const capacity = Math.max(1, Math.min(10, Number(sdoc?.capacity ?? 1)));
+
+    // 슬롯 길이(분) - interval 설정값 사용, 없으면 기본 30분
+    //   - 최소 5분, 최대 240분으로 클램프
+    const slotMinutes = (() => {
+      const raw = typeof sdoc?.interval === 'number' ? sdoc.interval : NaN;
+      if (!Number.isFinite(raw)) return 30;
+      const clamped = Math.max(5, Math.min(240, Math.floor(raw)));
+      return clamped;
+    })();
 
     const concurrent = await db.collection('stringing_applications').countDocuments({
       'stringDetails.preferredDate': preferredDate,
@@ -1846,6 +1868,13 @@ export async function handleSubmitStringingApplication(req: Request) {
     // - 없으면 과거 방식처럼 1회로 처리
     const packageUseCount = usingLines && Array.isArray(lines) && lines.length > 0 ? (lines as any[]).length : 1;
 
+    // 방문 예약인 경우에만 슬롯/시간 계산
+    const visitSlotCount = cm === 'visit' ? packageUseCount : undefined;
+    const visitDurationMinutes =
+      cm === 'visit' && visitSlotCount && visitSlotCount > 0
+        ? visitSlotCount * slotMinutes // 여기에서 slotMinutes 사용
+        : undefined;
+
     // 최종 applicationId 결정 — bodyAppId 우선, 없으면 같은 주문의 draft 재사용, 없으면 신규
     const draftDoc =
       !bodyAppId && orderObjectId
@@ -1894,6 +1923,9 @@ export async function handleSubmitStringingApplication(req: Request) {
       totalPrice,
       serviceFeeBefore,
 
+      visitSlotCount,
+      visitDurationMinutes,
+
       packageApplied,
       packagePassId,
       packageRedeemedAt,
@@ -1923,6 +1955,8 @@ export async function handleSubmitStringingApplication(req: Request) {
             stringDetails: baseDoc.stringDetails,
             totalPrice: baseDoc.totalPrice,
             serviceFeeBefore: baseDoc.serviceFeeBefore,
+            visitSlotCount: baseDoc.visitSlotCount,
+            visitDurationMinutes: baseDoc.visitDurationMinutes,
             packageApplied: baseDoc.packageApplied,
             packagePassId: baseDoc.packagePassId,
             packageRedeemedAt: baseDoc.packageRedeemedAt,

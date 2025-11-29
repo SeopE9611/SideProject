@@ -74,6 +74,8 @@ interface ApplicationDetail {
     racketType: string;
     requirements?: string;
   };
+  visitSlotCount?: number | null;
+  visitDurationMinutes?: number | null;
   lines?: Array<{
     id?: string;
     racketType?: string;
@@ -228,6 +230,47 @@ const buildTrackingUrl = (courier?: string | null, trackingNumber?: string | nul
 const getCourierLabel = (courier?: string | null) => {
   if (!courier) return '택배사 미입력';
   return stringingCourierLabelMap[courier] ?? courier;
+};
+
+// 시간(시/분)을 2자리 문자열로 포맷
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * 방문 예약 일시를 "YYYY-MM-DD HH:mm ~ HH:mm (n슬롯 / 총 m분)" 형태로 포맷.
+ *
+ * - preferredDate / preferredTime 이 비어 있으면 간단한 문구만 반환
+ * - durationMinutes 가 없으면 "YYYY-MM-DD HH:mm"까지만,
+ * - slotCount 가 있으면 "(n슬롯 / 총 m분)" 꼬리를 붙여줌.
+ */
+const formatVisitTimeRange = (preferredDate?: string, preferredTime?: string, durationMinutes?: number | null, slotCount?: number | null): string => {
+  if (!preferredDate || !preferredTime) {
+    return '예약 일시 미입력';
+  }
+
+  // HH:mm 파싱
+  const [hh, mm] = preferredTime.split(':');
+  const h = Number(hh);
+  const m = Number(mm);
+
+  // 시간이 이상하거나 duration이 없으면 그냥 "날짜 + 시작시간"만
+  if (!Number.isFinite(h) || !Number.isFinite(m) || !durationMinutes || durationMinutes <= 0) {
+    return `${preferredDate} ${preferredTime}`;
+  }
+
+  const startTotal = h * 60 + m;
+  const endTotal = startTotal + durationMinutes;
+
+  // 단순하게 24시간 기준으로 mod 처리 (자정 넘는 극단 케이스도 안전하게 표시)
+  const endH = Math.floor(endTotal / 60) % 24;
+  const endM = endTotal % 60;
+  const endTimeStr = `${pad2(endH)}:${pad2(endM)}`;
+
+  const baseRange = `${preferredDate} ${preferredTime} ~ ${endTimeStr}`;
+
+  if (slotCount && slotCount > 0) {
+    return `${baseRange} (${slotCount}슬롯 / 총 ${durationMinutes}분)`;
+  }
+  return `${baseRange} (총 ${durationMinutes}분)`;
 };
 
 export default function StringingApplicationDetailClient({ id, baseUrl, backUrl = '/admin/orders', isAdmin = true, userEditableStatuses = ['검토 중', '접수완료'] }: Props) {
@@ -481,6 +524,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const isSelfShip = typeof collectionMethod === 'string' && ['self_ship', 'self', '자가발송'].includes(collectionMethod.toLowerCase());
   const isVisit = normalizeCollection(collectionMethod ?? 'self_ship') === 'visit';
 
+  // 방문 예약인 경우에만 의미 있는 희망 일시 라벨
+  const visitTimeLabel = isVisit ? formatVisitTimeRange(data.stringDetails.preferredDate, data.stringDetails.preferredTime, data.visitDurationMinutes ?? null, data.visitSlotCount ?? null) : '예약 불필요';
+
   const trackingNo = data?.shippingInfo?.selfShip?.trackingNo ?? data?.shippingInfo?.invoice?.trackingNumber ?? null;
   const hasTracking = Boolean(trackingNo);
   const selfShip = data.shippingInfo?.selfShip;
@@ -618,9 +664,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">희망 일시</span>
               </div>
-              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                {isVisit && data.stringDetails.preferredDate && data.stringDetails.preferredTime ? `${data.stringDetails.preferredDate} ${data.stringDetails.preferredTime}` : '예약 불필요'}
-              </p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{visitTimeLabel}</p>
             </div>
           </div>
           {/* 취소 요청 상태 안내 (관리자용) */}
@@ -988,9 +1032,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <Calendar className="w-5 h-5" />
                     <span className="font-medium">희망 일시</span>
                   </div>
-                  <div className="text-right text-gray-900 dark:text-gray-100 text-sm">
-                    {isVisit && data.stringDetails.preferredDate && data.stringDetails.preferredTime ? `${data.stringDetails.preferredDate} ${data.stringDetails.preferredTime}` : '예약 불필요'}
-                  </div>
+                  <div className="text-right text-gray-900 dark:text-gray-100 text-sm">{visitTimeLabel}</div>
                 </section>
 
                 {/* 섹션 2: 라켓별 장착 정보 */}

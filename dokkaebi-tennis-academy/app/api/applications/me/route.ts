@@ -109,6 +109,11 @@ export async function GET(req: Request) {
         // 방문만 예약 표시, 그 외는 null로 정리
         preferredDate: cm === 'visit' ? details.preferredDate ?? null : null,
         preferredTime: cm === 'visit' ? details.preferredTime ?? null : null,
+
+        // 방문 예약 슬롯 정보 (없으면 null)
+        visitSlotCount: cm === 'visit' ? (doc as any).visitSlotCount ?? null : null,
+        visitDurationMinutes: cm === 'visit' ? (doc as any).visitDurationMinutes ?? null : null,
+
         requests: details.requirements ?? null,
         shippingInfo: {
           collectionMethod,
