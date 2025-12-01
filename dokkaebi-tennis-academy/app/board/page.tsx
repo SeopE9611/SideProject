@@ -73,6 +73,12 @@ const stripHtml = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
+// 제목/텍스트를 글자 수 기준으로 잘라서 항상 … 처리
+function truncateText(text: string, max: number) {
+  if (!text) return '';
+  return text.length > max ? text.slice(0, max) + '…' : text;
+}
+
 // 리뷰 아이템에서 본문 후보 키(content/body/text/comment) 중 첫 번째 값 사용
 function reviewExcerpt(r: ReviewItem, max = 60) {
   const raw = (r.content ?? '') as string;
@@ -123,13 +129,11 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
           ) : (
             items.map((notice) => (
               <div key={notice._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    {/* 제목 줄: 왼쪽(카테고리/고정/제목) · 오른쪽(첨부) */}
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      {/* 왼쪽 */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        {/* 카테고리 먼저 */}
+                        {/* 카테고리 */}
                         {!!notice.category && (
                           <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)} shrink-0`} title={notice.category ?? undefined}>
                             {notice.category}
@@ -143,8 +147,8 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                           </Badge>
                         )}
 
-                        {/* 제목 (마지막, 잘림 처리) */}
-                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate min-w-0">
+                        {/* 제목 (1줄 말줄임) */}
+                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 min-w-0 truncate">
                           {notice.title}
                         </Link>
                       </div>
@@ -224,10 +228,10 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
           ) : (
             items.map((qna) => (
               <div key={qna._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
                     {/* 제목 줄: 왼쪽(카테고리/제목) · 오른쪽(답변상태) */}
-                    <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
                       {/* 왼쪽 */}
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
                         {/* 카테고리 먼저 */}
@@ -236,7 +240,7 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
                         </Badge>
 
                         {/* 제목 (마지막, 잘림 처리) */}
-                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors truncate min-w-0">
+                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex-1 min-w-0 truncate">
                           {qna.title}
                         </Link>
                       </div>

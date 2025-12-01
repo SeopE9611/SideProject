@@ -43,16 +43,26 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
   // 제출용 상태 (버튼/엔터로 확정된 값만 SWR에 반영)
   const [keyword, setKeyword] = useState('');
   const [field, setField] = useState<'all' | 'title' | 'content' | 'title_content'>('all');
+
+  const [page, setPage] = useState(1);
+  const limit = 20;
   // 목록 불러오기 (검색 파라미터 포함)
-  const qs = new URLSearchParams({ type: 'notice', page: '1', limit: '20' });
+  const qs = new URLSearchParams({
+    type: 'notice',
+    page: String(page),
+    limit: String(limit),
+  });
+
   if (keyword.trim()) {
     qs.set('q', keyword.trim());
     qs.set('field', field);
   }
+
   const { data, error, isLoading } = useSWR(`/api/boards?${qs.toString()}`, fetcher, { fallbackData: { items: initialItems, total: initialTotal } });
 
   const items: NoticeItem[] = data?.items ?? initialItems ?? [];
-  const total = data?.total ?? initialTotal ?? items.length;
+  const total: number = data?.total ?? initialTotal ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   const pinnedCount = items.filter((n) => n.isPinned).length;
   const totalViews = items.reduce((sum, n) => sum + (n.viewCount ?? 0), 0);
@@ -150,7 +160,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-2">
+                          <div className="flex items-center space-x-2 mb-2 min-w-0">
                             {/* 상단 고정 */}
                             {notice.isPinned && (
                               <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`}>
@@ -163,7 +173,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
                             {notice.category && <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)}`}>{notice.category}</Badge>}
 
                             {/* 제목 */}
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{notice.title}</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 min-w-0 truncate">{notice.title}</h3>
 
                             {/* 첨부(이미지/파일) */}
                             {(notice.hasImage || notice.hasFile) && (
@@ -209,22 +219,25 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
 
             <div className="mt-8 flex items-center justify-center">
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700">
+                {/* 이전 페이지 */}
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
                   <span className="sr-only">이전 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </Button>
-                <Button variant="outline" size="sm" className="h-10 w-10 bg-blue-600 text-white border-blue-600">
-                  1
-                </Button>
-                <Button variant="outline" size="sm" className="h-10 w-10 bg-white dark:bg-gray-700">
-                  2
-                </Button>
-                <Button variant="outline" size="sm" className="h-10 w-10 bg-white dark:bg-gray-700">
-                  3
-                </Button>
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700">
+                {/* 페이지 번호들: 최대 3개 정도만 노출 (디자인 유지용) */}
+                {Array.from({ length: totalPages })
+                  .map((_, i) => i + 1)
+                  .slice(0, 3)
+                  .map((pageNumber) => (
+                    <Button key={pageNumber} variant="outline" size="sm" className={pageNumber === page ? 'h-10 w-10 bg-blue-600 text-white border-blue-600' : 'h-10 w-10 bg-white dark:bg-gray-700'} onClick={() => setPage(pageNumber)}>
+                      {pageNumber}
+                    </Button>
+                  ))}
+
+                {/* 다음 페이지 */}
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
                   <span className="sr-only">다음 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="9 18 15 12 9 6" />

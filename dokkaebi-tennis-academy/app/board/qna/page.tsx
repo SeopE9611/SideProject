@@ -68,6 +68,7 @@ export default function QnaPage() {
     return arr;
   }, [serverItems, answerFilter]);
   const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
   const answeredCount = serverItems.filter((q) => !!q.answer).length;
   const waitingCount = serverItems.filter((q) => !q.answer).length;
   const totalViews = serverItems.reduce((sum, q) => sum + (q.viewCount ?? 0), 0);
@@ -274,7 +275,7 @@ export default function QnaPage() {
                                 {qna.answer ? '답변 완료' : '답변 대기'}
                               </Badge>
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors mb-3">{qna.title}</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors mb-3 flex-1 min-w-0 truncate">{qna.title}</h3>
                             <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-500">
                               <div className="flex items-center space-x-2">
                                 <Avatar className="h-6 w-6">
@@ -303,14 +304,25 @@ export default function QnaPage() {
 
             <div className="mt-8 flex items-center justify-center">
               <div className="flex items-center space-x-2">
-                <span className="sr-only">이전 페이지</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-                <span className="px-3 text-sm text-gray-600 dark:text-gray-400">
-                  {page} / {Math.max(1, Math.ceil((data?.total ?? 0) / limit))}
-                </span>
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => p + 1)} disabled={page >= Math.max(1, Math.ceil((data?.total ?? 0) / limit))}>
+                {/* 이전 페이지 */}
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+                  <span className="sr-only">이전 페이지</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </Button>
+                {/* 페이지 번호 버튼: 공지와 맞춰 최대 3개 정도 */}
+                {Array.from({ length: totalPages })
+                  .map((_, i) => i + 1)
+                  .slice(0, 3)
+                  .map((pageNumber) => (
+                    <Button key={pageNumber} variant="outline" size="sm" className={pageNumber === page ? 'h-10 w-10 bg-teal-600 text-white border-teal-600' : 'h-10 w-10 bg-white dark:bg-gray-700'} onClick={() => setPage(pageNumber)}>
+                      {pageNumber}
+                    </Button>
+                  ))}
+
+                {/* 다음 페이지 */}
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
                   <span className="sr-only">다음 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="9 18 15 12 9 6" />
