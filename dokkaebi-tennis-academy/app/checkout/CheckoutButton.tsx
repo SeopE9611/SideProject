@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useCartStore } from '@/app/store/cartStore';
+import { CartItem, useCartStore } from '@/app/store/cartStore';
 import { useState, useEffect, useRef } from 'react';
 import type { User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
@@ -26,6 +26,7 @@ export default function CheckoutButton({
   deliveryMethod,
   withStringService,
   servicePickupMethod,
+  items,
 }: {
   disabled: boolean;
   name: string;
@@ -43,9 +44,9 @@ export default function CheckoutButton({
   deliveryMethod: '택배수령' | '방문수령';
   withStringService: boolean;
   servicePickupMethod: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
+  items: CartItem[];
 }) {
   const router = useRouter();
-  const { items, clearCart } = useCartStore();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);

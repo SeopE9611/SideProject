@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useCartStore } from '@/app/store/cartStore';
+import { CartItem, useCartStore } from '@/app/store/cartStore';
 import { useEffect, useState } from 'react';
 import CheckoutButton from '@/app/checkout/CheckoutButton';
 import { useAuthStore, type User } from '@/app/store/authStore';
@@ -18,6 +18,7 @@ import { getMyInfo } from '@/lib/auth.client';
 import { CreditCard, MapPin, Truck, Shield, CheckCircle, UserIcon, Mail, Phone, Home, MessageSquare, Building2, Package, Star } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { bankLabelMap } from '@/lib/constants';
+import { useBuyNowStore } from '@/app/store/buyNowStore';
 
 declare global {
   interface Window {
@@ -41,7 +42,17 @@ export default function CheckoutPage() {
     }
   }, [withServiceParam]);
 
-  const { items: orderItems } = useCartStore();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get('mode'); // 'buynow' | null
+
+  const { items: cartItems } = useCartStore();
+  const { item: buyNowItem } = useBuyNowStore();
+
+  // 장바구니 결제 vs 즉시 구매 모드 분기
+  const orderItems: CartItem[] =
+    mode === 'buynow' && buyNowItem
+      ? [buyNowItem] // 즉시 구매: 단일 상품만
+      : cartItems; // 기본: 장바구니 전체
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingFee = subtotal >= 30000 ? 0 : 3000;
@@ -582,6 +593,7 @@ export default function CheckoutPage() {
                     deliveryMethod={deliveryMethod}
                     withStringService={withStringService}
                     servicePickupMethod={servicePickupMethod}
+                    items={orderItems}
                   />
                   <Button variant="outline" className="w-full border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
                     <Link href="/cart">장바구니로 돌아가기</Link>

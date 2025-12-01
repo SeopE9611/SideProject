@@ -1,12 +1,38 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Activity, FileText, Settings, Pencil, MessageSquare, Lock, Calendar } from 'lucide-react';
+import {
+  Star,
+  ShoppingCart,
+  Heart,
+  ArrowLeft,
+  Truck,
+  Shield,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Zap,
+  RotateCcw,
+  Plus,
+  Minus,
+  Check,
+  X,
+  Loader2,
+  Target,
+  Activity,
+  FileText,
+  Settings,
+  Pencil,
+  MessageSquare,
+  Lock,
+  Calendar,
+  CreditCard,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useCartStore } from '@/app/store/cartStore';
+import { CartItem, useCartStore } from '@/app/store/cartStore';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -23,6 +49,7 @@ import { Textarea } from '@/components/ui/textarea';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor } from '@/lib/badge-style';
+import { useBuyNowStore } from '@/app/store/buyNowStore';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   // ====== 사양/브랜드/색상/게이지 매핑 ======
@@ -145,6 +172,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   // const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
+  const { setItem: setBuyNowItem } = useBuyNowStore();
   const stock = product.inventory?.stock ?? 0;
 
   const router = useRouter();
@@ -405,7 +433,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
       price: product.price,
       quantity,
       image: product.images?.[0] || '/placeholder.svg',
-      // stock: product.inventory?.stock,
       stock,
     });
 
@@ -430,6 +457,31 @@ export default function ProductDetailClient({ product }: { product: any }) {
     } else {
       showSuccessToast('장바구니에 담았습니다.');
     }
+  };
+  // 즉시 구매용 핸들러 (장바구니와 완전히 분리)
+  const handleBuyNow = () => {
+    if (loading) return;
+
+    // 재고 검증 (지금 선택 수량이 stock 초과인지)
+    if (quantity > stock) {
+      showErrorToast(`재고가 부족합니다. 현재 재고: ${stock}개`);
+      return;
+    }
+
+    // Buy-Now 전용 상태에 현재 상품 1건만 저장
+    const buyNowItem: CartItem = {
+      id: product._id.toString(),
+      name: product.name,
+      price: product.price,
+      quantity,
+      image: product.images?.[0] || '/placeholder.svg',
+      stock,
+    };
+
+    setBuyNowItem(buyNowItem);
+
+    // 장바구니는 건드리지 않고, buy-now 모드로 체크아웃 진입
+    router.push('/checkout?mode=buynow');
   };
 
   const goToStringingService = () => {
@@ -638,15 +690,24 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                     <div className="flex flex-col gap-3">
                       {product.inventory?.manageStock && product.inventory.stock <= 0 ? (
-                        <Button disabled className="w-full bg-red-100 text-red-600 border border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-600 cursor-not-allowed hover:bg-red-100 dark:hover:bg-red-900">
+                        <Button disabled className="w-full bg-red-100 text-red-600 border border-red-300 dark:bg-red-900/40 dark:text-red-200">
                           <X className="mr-2 h-4 w-4" />
                           재고가 소진되었습니다
                         </Button>
                       ) : (
-                        <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg" onClick={handleAddToCart} disabled={loading || quantity > stock}>
-                          <ShoppingCart className="mr-2 h-4 w-4" />
-                          장바구니에 담기
-                        </Button>
+                        <>
+                          {/* 즉시 구매하기 버튼 (체크아웃 바로 이동) */}
+                          <Button className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600" onClick={handleBuyNow} disabled={loading || stock <= 0 || quantity > stock}>
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            즉시 구매하기
+                          </Button>
+
+                          {/* 기존 장바구니 담기 버튼 */}
+                          <Button variant="outline" className="w-full" onClick={handleAddToCart} disabled={loading || quantity > stock}>
+                            <ShoppingCart className="mr-2 h-4 w-4" />
+                            장바구니에 담기
+                          </Button>
+                        </>
                       )}
                       <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300">
                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
