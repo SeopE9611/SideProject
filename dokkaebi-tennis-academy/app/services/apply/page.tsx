@@ -65,6 +65,11 @@ interface FormData {
   pdpMountingFee?: number; // PDP에서 넘어온 장착비 (임시)
 }
 
+interface PdpMiniProduct {
+  name: string;
+  image: string | null;
+}
+
 declare global {
   interface Window {
     daum: any;
@@ -79,6 +84,10 @@ export default function StringServiceApplyPage() {
   const pdpProductId = searchParams.get('productId');
   const pdpMountingFee = Number(searchParams.get('mountingFee') ?? Number.NaN);
   const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(pdpProductId));
+
+  // PDP에서 넘어온 상품의 미니 정보(이름, 이미지)
+  const [pdpProduct, setPdpProduct] = useState<PdpMiniProduct | null>(null);
+  const [isLoadingPdpProduct, setIsLoadingPdpProduct] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
@@ -127,6 +136,60 @@ export default function StringServiceApplyPage() {
     })();
   }, [orderId]);
 
+  // PDP 상품 미니 정보 로딩 (이미지/이름)
+  useEffect(() => {
+    if (!pdpProductId) {
+      // PDP에서 안 넘어온 경우 초기화
+      setPdpProduct(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingPdpProduct(true);
+
+    fetch(`/api/products/${pdpProductId}/mini`)
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data?.ok) return;
+
+        if (!cancelled) {
+          setPdpProduct({
+            name: data.name,
+            image: data.image ?? null,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          // 에러가 나더라도 화면은 그냥 “텍스트 안내”만 나오도록 null 처리
+          setPdpProduct(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingPdpProduct(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pdpProductId]);
+
+  // PDP에서 넘어오면 STEP2 자동 선택 + 장착비 기억 + 플래그 on
+  useEffect(() => {
+    if (!pdpProductId) return;
+    setFormData((prev) => {
+      if (Array.isArray(prev.stringTypes) && prev.stringTypes.length > 0) return prev;
+      return {
+        ...prev,
+        stringTypes: [pdpProductId], // 자동 선택
+        pdpMountingFee: Number.isFinite(pdpMountingFee) ? pdpMountingFee : undefined,
+      };
+    });
+    setFromPDP(true); // “상품에서 이어짐” 플래그
+  }, [pdpProductId, pdpMountingFee]);
   // 초안 보장: 주문 기반 진입 시, 진행 중 신청서(draft/received)를 "항상" 1개로 맞춘다.
   // - 이미 있으면 재사용(reused=true), 없으면 자동 생성
   // - UI에는 영향 없음(프리필/흐름 그대로), 서버/DB 일관성만 강화
@@ -1448,20 +1511,29 @@ export default function StringServiceApplyPage() {
                     </div>
                   </div>
                 </div>
-                {/* PDP에서 이어졌을 때 노출되는 안내 */}
+                {/* PDP에서 이어졌을 때 노출되는 스트링 정보 카드 */}
                 {fromPDP && Array.isArray(formData.stringTypes) && formData.stringTypes[0] === pdpProductId && (
-                  <div className="mb-3 flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
-                    <span>상품 상세에서 선택한 스트링으로 이어졌습니다.</span>
-                    <button
-                      type="button"
-                      className="underline underline-offset-2"
-                      onClick={() => {
-                        setFromPDP(false); // 잠금 해제
-                        setFormData((prev) => ({ ...prev, stringTypes: [] })); // 초기화
-                      }}
-                    >
-                      변경하기
-                    </button>
+                  <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/70 p-3">
+                    {isLoadingPdpProduct ? (
+                      // 로딩 중에는 간단한 안내 문구만 표시
+                      <div className="text-xs text-blue-700">선택한 스트링 정보를 불러오는 중입니다...</div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        {/* 상품 이미지 */}
+                        {pdpProduct?.image && (
+                          <div className="relative h-16 w-16 overflow-hidden rounded-md bg-white shadow-sm">
+                            <img src={pdpProduct.image} alt={pdpProduct.name} className="h-full w-full object-cover" />
+                          </div>
+                        )}
+
+                        {/* 상품 텍스트 정보 */}
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold text-blue-700">상품 상세에서 선택한 스트링</span>
+                          <span className="text-sm font-medium text-gray-900">{pdpProduct?.name ?? '선택한 스트링으로 신청 중입니다.'}</span>
+                          <span className="mt-1 text-xs text-gray-600">이 신청서는 위 스트링을 기준으로 장착 서비스가 진행됩니다.</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* 주문 기반 진입 시 안내 문구 */}
