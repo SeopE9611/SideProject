@@ -1,0 +1,253 @@
+'use client';
+
+import useSWR from 'swr';
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { MessageSquare, Bell, LifeBuoy, ArrowRight, Plus, Eye, HelpCircle, MessagesSquare } from 'lucide-react';
+import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor, getNoticeCategoryColor, noticePinColor } from '@/lib/badge-style';
+
+// ---------------------- 공통 유틸 ----------------------
+
+type NoticeItem = {
+  _id: string;
+  title: string;
+  createdAt: string | Date;
+  viewCount?: number;
+  isPinned?: boolean;
+  category?: string | null;
+};
+
+type QnaItem = {
+  _id: string;
+  title: string;
+  createdAt: string | Date;
+  category?: string | null;
+  authorName?: string | null;
+  answer?: any;
+  viewCount?: number;
+};
+
+const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
+
+function FiveLineSkeleton() {
+  return (
+    <div className="space-y-4">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-3/4" />
+            <div className="flex items-center space-x-4">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-3 w-12" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ErrorBox({ message = '데이터를 불러오는 중 오류가 발생했습니다.' }) {
+  return <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{message}</div>;
+}
+
+// ---------------------- 공지 카드 ----------------------
+
+function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any }) {
+  return (
+    <Card className="border-0 bg-white/90 dark:bg-gray-900/80 shadow-xl backdrop-blur-sm h-full">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/40 border-b">
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Bell className="h-5 w-5 text-blue-600" />
+            <span className="font-semibold">공지사항</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button asChild size="sm" variant="ghost" className="h-8 px-3 border-blue-200 dark:border-blue-700">
+                <Link href="/board/notice/write">
+                  <Plus className="h-4 w-4 mr-1" />
+                  공지 쓰기
+                </Link>
+              </Button>
+            )}
+            <Button asChild size="sm" variant="ghost" className="h-8 px-3">
+              <Link href="/board/notice">
+                전체보기
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          {error ? (
+            <ErrorBox message="공지 불러오기에 실패했습니다." />
+          ) : isLoading ? (
+            <FiveLineSkeleton />
+          ) : items.length === 0 ? (
+            <div className="py-8 text-center text-sm text-gray-500">등록된 공지가 없습니다.</div>
+          ) : (
+            items.map((notice) => (
+              <div key={notice._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    {/* 제목 줄 */}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        {!!notice.category && (
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)} shrink-0`} title={notice.category ?? undefined}>
+                            {notice.category}
+                          </Badge>
+                        )}
+
+                        {notice.isPinned && (
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor} shrink-0`}>
+                            고정
+                          </Badge>
+                        )}
+
+                        {/* 말줄임 제목 (부모 flex-1 + min-w-0 중요) */}
+                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 min-w-0 truncate">
+                          {notice.title}
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* 메타 정보 */}
+                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                      <span>{fmt(notice.createdAt)}</span>
+                      <span className="flex items-center">
+                        <Eye className="h-3 w-3 mr-1" />
+                        {notice.viewCount ?? 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------- Q&A 카드 ----------------------
+
+function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: boolean; error?: any }) {
+  return (
+    <Card className="border-0 bg-white/90 dark:bg-gray-900/80 shadow-xl backdrop-blur-sm h-full">
+      <CardHeader className="bg-gradient-to-r from-teal-50 to-teal-100 dark:from-teal-950/40 dark:to-teal-900/40 border-b">
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-teal-600" />
+            <span className="font-semibold">Q&amp;A</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="ghost" className="h-8 px-3">
+              <Link href="/board/qna/write">
+                <Plus className="h-4 w-4 mr-1" />
+                질문하기
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="ghost" className="h-8 px-3">
+              <Link href="/board/qna">
+                전체보기
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          {error ? (
+            <ErrorBox message="Q&A 불러오기에 실패했습니다." />
+          ) : isLoading ? (
+            <FiveLineSkeleton />
+          ) : items.length === 0 ? (
+            <div className="py-8 text-center text-sm text-gray-500">등록된 문의가 없습니다.</div>
+          ) : (
+            items.map((qna) => (
+              <div key={qna._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    {/* 제목 줄 */}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(qna.category ?? undefined)} shrink-0`} title={qna.category ?? undefined}>
+                          {qna.category ?? '일반문의'}
+                        </Badge>
+
+                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex-1 min-w-0 truncate">
+                          {qna.title}
+                        </Link>
+                      </div>
+
+                      <div className="shrink-0">
+                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!qna.answer)}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
+                          {qna.answer ? '답변 완료' : '답변 대기'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                      <span>{qna.authorName ?? '익명'}</span>
+                      <span>{fmt(qna.createdAt)}</span>
+                      <span className="flex items-center">
+                        <MessageSquare className="h-3 w-3 mr-1" />
+                        답변 {qna.answer ? 1 : 0}개
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------- 페이지 컴포넌트 ----------------------
+
+export default function SupportPage() {
+  // 공지/Q&A 묶어서 가져오는 기존 API 재사용
+  const { data, error, isLoading } = useSWR('/api/boards/main', fetcher);
+  const notices = (data?.notices ?? []) as NoticeItem[];
+  const qnas = (data?.qna ?? []) as QnaItem[];
+
+  // 관리자 여부 확인 (공지 쓰기 버튼 제어)
+  const { data: me } = useSWR('/api/users/me', fetcher);
+  const isAdmin = me?.role === 'admin' || me?.isAdmin === true || (Array.isArray(me?.roles) && me.roles.includes('admin'));
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* 헤더 */}
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
+              <MessagesSquare className="h-6 w-6 text-white" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">고객센터</h1>
+          </div>
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 max-w-xl mx-auto">공지사항과 문의 내역을 한 곳에서 확인하고, 궁금한 점을 남겨주세요.</p>
+        </div>
+
+        {/* 카드 2열 레이아웃 */}
+        <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-start">
+          <NoticeCard items={notices} isAdmin={isAdmin} isLoading={isLoading} error={error} />
+          <QnaCard items={qnas} isLoading={isLoading} error={error} />
+        </div>
+      </div>
+    </div>
+  );
+}
