@@ -54,11 +54,20 @@ export default function ImageUploader({ value, onChange, max = 10, variant = 're
           const key = `${targetFolder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
           const { error } = await supabase.storage.from(BUCKET).upload(key, f);
+
           if (error) {
+            // 디버깅용: 배포 환경에서 실제 에러 메시지 확인
+            console.error('[ImageUploader] Supabase upload error', {
+              message: error.message,
+              name: error.name,
+              status: (error as any)?.status,
+              bucket: BUCKET,
+              key,
+            });
+
             showErrorToast('이미지 업로드 중 오류가 발생했습니다.');
             continue;
           }
-
           const { data } = supabase.storage.from(BUCKET).getPublicUrl(key);
           const url = data?.publicUrl;
           if (url) next.push(url);
