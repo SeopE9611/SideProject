@@ -1556,6 +1556,22 @@ export async function handleSubmitStringingApplication(req: Request) {
       return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
     }
 
+    // 🔴 추가: 라켓별 세부 장착 정보 필수값 검증 (lines 를 사용하는 경우에만)
+    if (usingLines) {
+      const invalidIndex = (lines as any[]).findIndex((line) => {
+        const racketType = typeof (line as any).racketType === 'string' ? (line as any).racketType.trim() : '';
+        const tensionMain = typeof (line as any).tensionMain === 'string' ? (line as any).tensionMain.trim() : '';
+        const tensionCross = typeof (line as any).tensionCross === 'string' ? (line as any).tensionCross.trim() : '';
+
+        // 라켓 이름/별칭 + 메인/크로스 텐션은 필수
+        return !racketType || !tensionMain || !tensionCross;
+      });
+
+      if (invalidIndex !== -1) {
+        return NextResponse.json({ message: `라켓 ${invalidIndex + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.` }, { status: 400 });
+      }
+    }
+
     const contactEmail = normalizeEmail(email);
     const contactPhone = (phone ?? '').replace(/\D/g, '') || null;
 

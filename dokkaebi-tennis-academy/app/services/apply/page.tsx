@@ -225,6 +225,22 @@ export default function StringServiceApplyPage() {
         }
       }
 
+      // 🔴 추가: 라켓별 세부 장착 정보 필수 검증
+      // linesForSubmit 는 위에서 useMemo 로 계산된 최종 라인 배열
+      if (linesForSubmit.length > 0) {
+        for (let i = 0; i < linesForSubmit.length; i++) {
+          const line = linesForSubmit[i];
+          const racketName = (line.racketType ?? '').trim();
+          const tensionMain = (line.tensionMain ?? '').trim();
+          const tensionCross = (line.tensionCross ?? '').trim();
+
+          // 라켓 이름, 메인/크로스 텐션 모두 필수
+          if (!racketName || !tensionMain || !tensionCross) {
+            return toast(`라켓 ${i + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.`), false;
+          }
+        }
+      }
+
       return true;
     }
 
