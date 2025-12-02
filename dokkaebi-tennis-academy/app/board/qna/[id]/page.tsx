@@ -63,14 +63,28 @@ export default function QnaDetailPage() {
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="mb-6">
-            <Link
-              href="/board/qna"
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary bg-white/80 hover:bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-800/80 dark:hover:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Q&A 목록으로 돌아가기
-            </Link>
+          <div className="mb-6 flex items-center justify-between gap-3">
+            <div>
+              <div className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                <span className="font-medium text-teal-600 dark:text-teal-400">고객센터</span>
+                <span className="mx-1">›</span>
+                <span>Q&amp;A</span>
+              </div>
+
+              {/* Q&A 목록으로 돌아가기 */}
+              <Link
+                href="/board/qna"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white/80 border border-gray-200 rounded-full shadow-sm hover:bg-gray-50 hover:text-gray-900 transition-colors dark:bg-gray-800/80 dark:text-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Q&amp;A 목록으로 돌아가기
+              </Link>
+            </div>
+
+            {/* 고객센터 홈으로 이동 버튼 */}
+            <Button asChild variant="outline" size="sm" className="shrink-0">
+              <Link href="/support">고객센터 홈으로</Link>
+            </Button>
           </div>
 
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-800/80">

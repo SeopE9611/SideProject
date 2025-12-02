@@ -78,21 +78,25 @@ export default function QnaPage() {
       <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-col space-y-6">
           <div className="flex items-center space-x-4">
+            {/* 고객센터 홈으로 돌아가는 Back 버튼 */}
             <Button variant="ghost" asChild className="p-2">
-              <Link href="/board">
+              <Link href="/support">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
+
             <div className="flex items-center space-x-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 shadow-lg">
                 <MessageSquare className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">Q&A</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-300">궁금한 점을 문의하고 답변을 받아보세요</p>
+                {/* 메인 타이틀: 고객센터 · Q&A */}
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">고객센터 · Q&amp;A</h1>
+                <p className="text-lg text-gray-600 dark:text-gray-300">도깨비 테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
               </div>
             </div>
           </div>
+
           {/* KPI 미사용 주석처리 (삭제는 일단 대기)
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">

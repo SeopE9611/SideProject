@@ -350,13 +350,46 @@ function CommunityIntroCard() {
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6 space-y-3 text-sm text-gray-600 dark:text-gray-300">
+      <CardContent className="p-6 space-y-4 text-sm text-gray-600 dark:text-gray-300">
+        {/* 커뮤니티 기능 소개 */}
         <p>앞으로 이곳에서 자유 게시판, 브랜드별 게시판, 인기글 모아보기 등 다양한 커뮤니티 기능을 제공할 예정입니다.</p>
         <ul className="list-disc pl-4 space-y-1 text-xs sm:text-sm">
           <li>자유 게시판 – 질문, 정보 공유, 일상 이야기</li>
           <li>브랜드별 게시판 – 라켓/스트링 브랜드별 사용 후기</li>
           <li>인기글 모아보기 – 조회수/댓글 기준 하이라이트</li>
         </ul>
+
+        {/* 준비중 커뮤니티 게시판 바로가기 버튼들 */}
+        <div className="pt-1 space-y-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400">아래 게시판들은 현재 준비 중인 커뮤니티 공간으로, 미리 URL 구조를 확인하실 수 있습니다.</p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {/* 자유 게시판 */}
+            <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
+              <Link href="/board/free">
+                <span>자유 게시판</span>
+                <ArrowRight className="h-3 w-3 ml-1" />
+              </Link>
+            </Button>
+
+            {/* 브랜드별 게시판 */}
+            <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
+              <Link href="/board/brands">
+                <span>브랜드별 게시판</span>
+                <ArrowRight className="h-3 w-3 ml-1" />
+              </Link>
+            </Button>
+
+            {/* 인기글 모아보기 */}
+            <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
+              <Link href="/board/hot">
+                <span>인기글 모아보기</span>
+                <ArrowRight className="h-3 w-3 ml-1" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* 현재는 리뷰 게시판으로 유도 */}
         <div className="pt-2">
           <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
             <Link href="/reviews">지금은 리뷰 게시판 둘러보기</Link>

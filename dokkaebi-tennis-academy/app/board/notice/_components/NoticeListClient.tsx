@@ -77,18 +77,21 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
       <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-col space-y-6">
           <div className="flex items-center space-x-4">
+            {/* 고객센터 홈으로 돌아가는 Back 버튼 */}
             <Button variant="ghost" asChild className="p-2">
-              <Link href="/board">
+              <Link href="/support">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
+
             <div className="flex items-center space-x-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
                 <Bell className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">공지사항</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-300">도깨비 테니스 아카데미의 최신 소식을 확인하세요</p>
+                {/* 메인 타이틀: 고객센터 흐름에 맞게 정리 */}
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">고객센터 · 공지사항</h1>
+                <p className="text-lg text-gray-600 dark:text-gray-300">도깨비 테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
               </div>
             </div>
           </div>
