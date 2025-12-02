@@ -336,19 +336,42 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
   );
 }
 
+function CommunityIntroCard() {
+  return (
+    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm h-full">
+      <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-100 dark:from-indigo-950/50 dark:to-purple-900/50 border-b">
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <MessageSquare className="h-5 w-5 text-purple-600" />
+            <span>커뮤니티 게시판</span>
+          </div>
+          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
+            준비중
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-6 space-y-3 text-sm text-gray-600 dark:text-gray-300">
+        <p>앞으로 이곳에서 자유 게시판, 브랜드별 게시판, 인기글 모아보기 등 다양한 커뮤니티 기능을 제공할 예정입니다.</p>
+        <ul className="list-disc pl-4 space-y-1 text-xs sm:text-sm">
+          <li>자유 게시판 – 질문, 정보 공유, 일상 이야기</li>
+          <li>브랜드별 게시판 – 라켓/스트링 브랜드별 사용 후기</li>
+          <li>인기글 모아보기 – 조회수/댓글 기준 하이라이트</li>
+        </ul>
+        <div className="pt-2">
+          <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Link href="/reviews">지금은 리뷰 게시판 둘러보기</Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function BoardPage() {
-  // 데이터 로드
-  const { data, error, isLoading } = useSWR('/api/boards/main', fetcher);
-  const notices = data?.notices ?? [];
-  const qnas = data?.qna ?? [];
-
-  //  리뷰는 별도 API에서 최신 5개만 가져오기 (예전 ReviewCard 내부 호출을 부모로 옮김)
+  // 리뷰 게시판 허브용 – 최신 리뷰 5개만 가져오기
   const { data: rData, error: rError, isLoading: rLoading } = useSWR('/api/reviews?type=all&withHidden=mask&sort=latest&limit=5', fetcher);
-  const reviews = Array.isArray(rData?.items) ? (rData.items as ReviewItem[]) : [];
 
-  // 현재 사용자(관리자 여부) 확인
-  const { data: me } = useSWR('/api/users/me', fetcher);
-  const isAdmin = me?.role === 'admin' || me?.isAdmin === true || (Array.isArray(me?.roles) && me.roles.includes('admin'));
+  const reviews = Array.isArray(rData?.items) ? (rData.items as ReviewItem[]) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -361,26 +384,25 @@ export default function BoardPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">게시판</h1>
           </div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">도깨비 테니스 아카데미의 최신 소식과 정보를 확인하고, 궁금한 점을 문의하세요</p>
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">회원들의 생생한 후기와 앞으로 추가될 커뮤니티 게시판을 한 곳에서 만나보세요.</p>
         </div>
 
         {/* 메인 게시판 카드들 */}
-        <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-          <NoticeCard items={notices} isAdmin={isAdmin} isLoading={isLoading} error={error} />
-          <QnaCard items={qnas} isLoading={isLoading} error={error} />
+        <div className="grid md:grid-cols-2 gap-6 md:gap-8">
           <ReviewCard items={reviews} isLoading={rLoading} error={rError} />
+          <CommunityIntroCard />
         </div>
 
         {/* 추가 링크 섹션 */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-8">
           <div className="text-center space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">더 많은 정보가 필요하신가요?</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">더 많은 후기와 이야기를 보고 싶으신가요?</h2>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white shadow-lg">
-                <Link href="/board/faq">자주 묻는 질문 보기</Link>
+              <Button asChild size="lg" className="bg-gradient-to-r from-purple-600 to-teal-600 hover:from-purple-700 hover:to-teal-700 text-white shadow-lg">
+                <Link href="/reviews">리뷰 게시판 전체 보기</Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="bg-white/80 dark:bg-gray-700/80 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                <Link href="/contact">직접 문의하기</Link>
+                <Link href="/support">고객센터로 이동</Link>
               </Button>
             </div>
           </div>
