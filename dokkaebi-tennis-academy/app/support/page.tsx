@@ -229,7 +229,7 @@ export default function SupportPage() {
   const isAdmin = me?.role === 'admin' || me?.isAdmin === true || (Array.isArray(me?.roles) && me.roles.includes('admin'));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen ">
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* 헤더 */}
         <div className="text-center space-y-4">

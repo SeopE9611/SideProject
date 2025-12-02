@@ -131,13 +131,7 @@ const Header = () => {
       { name: '장착 비용 안내', href: '/services/pricing' },
       { name: '매장/예약 안내', href: '/services/locations' },
     ],
-    packages: [
-      { name: '패키지 안내', href: '/services/packages' },
-      { name: '10회 패키지', href: '/services/packages?package=10-sessions&target=packages' },
-      { name: '30회 패키지', href: '/services/packages?package=30-sessions&target=packages' },
-      { name: '50회 패키지', href: '/services/packages?package=50-sessions&target=packages' },
-      { name: '100회 패키지', href: '/services/packages?package=100-sessions&target=packages' },
-    ],
+    packages: [{ name: '패키지 안내', href: '/services/packages' }],
     boards: [
       { name: '공지사항', href: '/board/notice' },
       { name: 'QnA', href: '/board/qna' },
@@ -196,79 +190,12 @@ const Header = () => {
     { name: '라켓', href: '/rackets', hasMegaMenu: true, isRacketMenu: true },
     { name: '장착 서비스', href: '/services', hasMegaMenu: true, isServiceMenu: true },
     { name: '패키지', href: '/services/packages', hasMegaMenu: true, isPackageMenu: true },
+
+    { name: '고객센터', href: '/support' },
+
+    // 앞으로 커뮤니티(리뷰, 자유게시판 등) 허브가 될 /board
     { name: '게시판', href: '/board', hasMegaMenu: true, isBoardMenu: true },
   ];
-
-  /** 링크 데이터 */
-  const brandLinks = [
-    { name: '윌슨', href: '/products?brand=wilson' },
-    { name: '바볼랏', href: '/products?brand=babolat' },
-    { name: '럭실론', href: '/products?brand=luxilon' },
-    { name: '요넥스', href: '/products?brand=yonex' },
-    { name: '헤드', href: '/products?brand=head' },
-    { name: '테크니화이버', href: '/products?brand=tecnifibre' },
-    { name: '솔린코', href: '/products?brand=solinco' },
-    { name: '프린스', href: '/products?brand=prince' },
-  ];
-
-  const stringTypes = [
-    { name: '폴리에스터', href: '/products?material=polyester' },
-    { name: '하이브리드', href: '/products?material=hybrid' },
-    { name: '멀티필라멘트', href: '/products?material=multifilament' },
-    { name: '천연 거트', href: '/products?material=natural_gut' },
-    { name: '합성 거트', href: '/products?material=synthetic_gut' },
-  ];
-
-  const recommendedLinks = [
-    { name: '초보자 추천', href: '/products/strings/beginner' },
-    { name: '베스트셀러', href: '/products/strings/bestseller' },
-    { name: '세일 상품', href: '/products/strings/sale' },
-  ];
-
-  const serviceLinks = [
-    { name: '장착 서비스 예약', href: '/services', isHighlight: true },
-    { name: '텐션 가이드', href: '/services/tension-guide' },
-    { name: '장착 비용 안내', href: '/services/pricing' },
-    { name: '매장/예약 안내', href: '/services/locations' },
-  ];
-
-  const boardLinks = [
-    { name: '공지사항', href: '/board/notice' },
-    { name: 'QnA', href: '/board/qna' },
-    { name: '리뷰 게시판', href: '/reviews' },
-  ];
-
-  const packageLinks = [
-    {
-      name: '스타터 패키지 (10회)',
-      href: '/services/packages?package=10-sessions&target=packages',
-      description: '테니스 입문자를 위한 기본 패키지',
-    },
-    {
-      name: '레귤러 패키지 (30회)',
-      href: '/services/packages?package=30-sessions&target=packages',
-      description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지',
-      isPopular: true,
-    },
-    {
-      name: '프로 패키지 (50회)',
-      href: '/services/packages?package=50-sessions&target=packages',
-      description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
-    },
-    {
-      name: '챔피언 패키지 (100회)',
-      href: '/services/packages?package=100-sessions&target=packages',
-      description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
-    },
-  ];
-
-  const packageBenefits = [
-    { name: '최대 17% 할인', href: '/services/packages#benefits' },
-    { name: '우선 예약 혜택', href: '/services/packages#benefits' },
-    { name: '전문가 상담', href: '/services/packages#benefits' },
-    { name: '품질 보장', href: '/services/packages#benefits' },
-  ];
-
   /** 스트링 메뉴 핸들러 */
   const openStringWithDelay = () => {
     if (stringCloseTimer) {

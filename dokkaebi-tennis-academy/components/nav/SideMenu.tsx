@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Grid2X2, Wrench, Gift, MessageSquareText, ChevronRight } from 'lucide-react';
+import { Grid2X2, Wrench, Gift, MessageSquareText, ChevronRight, MessageSquare } from 'lucide-react';
 import { NAV_FLAGS, NAV_LINKS } from './nav.config';
 import { MdSportsTennis } from 'react-icons/md';
 import { cn } from '@/lib/utils';
@@ -66,7 +66,7 @@ export default function SideMenu() {
       aria-label="사이드 내비게이션"
     >
       <div className="h-full overflow-y-auto scrollbar-hide p-4 space-y-1">
-        <Accordion type="multiple" defaultValue={['strings', 'rackets', 'service', 'packages', 'boards']}>
+        <Accordion type="multiple" defaultValue={['strings', 'rackets', 'service', 'packages', 'support', 'boards']}>
           {/* 스트링 */}
           <AccordionItem value="strings" className="border-none">
             <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100/50 dark:hover:from-blue-950/30 dark:hover:to-blue-900/20 hover:no-underline transition-all group">
@@ -171,6 +171,28 @@ export default function SideMenu() {
             </AccordionTrigger>
             <AccordionContent value="packages" className="pb-2 pt-1 space-y-0.5">
               {NAV_LINKS.packages.map((it) => (
+                <Link key={it.name} href={it.href} className={linkClass(it.href)}>
+                  <span className="flex items-center justify-between">
+                    {it.name}
+                    <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </span>
+                </Link>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* 고객센터 */}
+          <AccordionItem value="support" className="border-none">
+            <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-50/60 hover:to-teal-50/60 dark:hover:from-blue-950/40 dark:hover:to-teal-950/40 hover:no-underline transition-all group">
+              <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-teal-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+                <span className="bg-gradient-to-r from-blue-700 via-teal-600 to-teal-500 dark:from-blue-300 dark:via-teal-300 dark:to-teal-200 bg-clip-text text-transparent">고객센터</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent value="support" className="pb-2 pt-1 space-y-0.5">
+              {NAV_LINKS.support?.map((it) => (
                 <Link key={it.name} href={it.href} className={linkClass(it.href)}>
                   <span className="flex items-center justify-between">
                     {it.name}

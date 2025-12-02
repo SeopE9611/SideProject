@@ -34,22 +34,32 @@ export const menuSections: MenuSection[] = [
     id: 'packages',
     title: '패키지',
     icon: 'gift',
-    links: [
-      { name: '패키지 안내', href: '/services/packages' },
-      { name: '10회 패키지', href: '/services/packages?package=10-sessions&target=packages' },
-      { name: '30회 패키지', href: '/services/packages?package=30-sessions&target=packages' },
-      { name: '50회 패키지', href: '/services/packages?package=50-sessions&target=packages' },
-      { name: '100회 패키지', href: '/services/packages?package=100-sessions&target=packages' },
-    ],
+    links: [{ name: '패키지 안내', href: '/services/packages' }],
   },
   {
     id: 'boards',
-    title: '게시판',
+    title: '고객센터 · 게시판',
     icon: 'board',
     links: [
-      { name: '공지사항', href: '/board/notice' },
-      { name: 'QnA', href: '/board/qna' },
-      { name: '리뷰 게시판', href: '/reviews' },
+      // 고객센터 영역
+      {
+        name: '고객센터 홈',
+        href: '/support',
+      },
+      {
+        name: '공지사항',
+        href: '/board/notice',
+      },
+      {
+        name: 'Q&A',
+        href: '/board/qna',
+      },
+
+      // 커뮤니티 게시판 영역
+      {
+        name: '리뷰 게시판',
+        href: '/reviews',
+      },
     ],
   },
-];
+] as const;

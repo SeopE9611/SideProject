@@ -36,16 +36,13 @@ export const NAV_LINKS = {
     { name: '장착 비용 안내', href: '/services/pricing' },
     { name: '매장/예약 안내', href: '/services/locations' },
   ],
-  packages: [
-    { name: '패키지 안내', href: '/services/packages' },
-    { name: '10회 패키지', href: '/services/packages?package=10-sessions&target=packages' },
-    { name: '30회 패키지', href: '/services/packages?package=30-sessions&target=packages' },
-    { name: '50회 패키지', href: '/services/packages?package=50-sessions&target=packages' },
-    { name: '100회 패키지', href: '/services/packages?package=100-sessions&target=packages' },
-  ],
-  boards: [
+  packages: [{ name: '패키지 안내', href: '/services/packages' }],
+  support: [
+    { name: '고객센터 홈', href: '/support' },
     { name: '공지사항', href: '/board/notice' },
-    { name: 'QnA', href: '/board/qna' },
-    { name: '리뷰 게시판', href: '/reviews' },
+    { name: 'Q&A', href: '/board/qna' },
   ],
+
+  /** 커뮤니티형 게시판(지금은 리뷰만, 앞으로 자유게시판/브랜드 게시판 등 확장 예정) */
+  boards: [{ name: '리뷰 게시판', href: '/reviews' }],
 } as const;
