@@ -189,13 +189,13 @@ export async function GET(req: NextRequest) {
     updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : d.updatedAt ? String(d.updatedAt) : undefined,
   }));
 
-  logInfo({
-    msg: 'community:list',
-    status: 200,
-    durationMs: stop(),
-    extra: { total, page, limit, sort, type: typeParam, brand },
-    ...meta,
-  });
+  // logInfo({
+  //   msg: 'community:list',
+  //   status: 200,
+  //   durationMs: stop(),
+  //   extra: { total, page, limit, sort, type: typeParam, brand },
+  //   ...meta,
+  // });
 
   return NextResponse.json(
     { ok: true, items, total, page, limit },
@@ -223,25 +223,25 @@ export async function POST(req: NextRequest) {
 
   const payload = await getAuthPayload();
   if (!payload) {
-    logInfo({
-      msg: 'community:create:unauthorized',
-      status: 401,
-      durationMs: stop(),
-      ...meta,
-    });
+    // logInfo({
+    //   msg: 'community:create:unauthorized',
+    //   status: 401,
+    //   durationMs: stop(),
+    //   ...meta,
+    // });
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
   const bodyRaw = await req.json();
   const parsed = createSchema.safeParse(bodyRaw);
   if (!parsed.success) {
-    logInfo({
-      msg: 'community:create:validation_failed',
-      status: 400,
-      durationMs: stop(),
-      extra: { issues: parsed.error.issues },
-      ...meta,
-    });
+    // logInfo({
+    //   msg: 'community:create:validation_failed',
+    //   status: 400,
+    //   durationMs: stop(),
+    //   extra: { issues: parsed.error.issues },
+    //   ...meta,
+    // });
     return NextResponse.json({ ok: false, error: 'validation_error', details: parsed.error.issues }, { status: 400 });
   }
 
@@ -308,13 +308,13 @@ export async function POST(req: NextRequest) {
 
   const r = await col.insertOne(doc as any);
 
-  logInfo({
-    msg: 'community:create:success',
-    status: 201,
-    durationMs: stop(),
-    extra: { id: r.insertedId.toString(), type: body.type },
-    ...meta,
-  });
+  // logInfo({
+  //   msg: 'community:create:success',
+  //   status: 201,
+  //   durationMs: stop(),
+  //   extra: { id: r.insertedId.toString(), type: body.type },
+  //   ...meta,
+  // });
 
   return NextResponse.json({ ok: true, id: r.insertedId.toString() }, { status: 201 });
 }

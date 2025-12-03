@@ -9,6 +9,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CommunityPost } from '@/lib/types/community';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
+import { useState } from 'react';
 
 type Props = {
   id: string;
@@ -106,12 +108,50 @@ function ErrorBox({ message }: { message: string }) {
 
 export default function FreeBoardDetailClient({ id }: Props) {
   const router = useRouter();
+  const { user } = useCurrentUser(); // 현재 로그인 사용자
+  const [isDeleting, setIsDeleting] = useState(false); // 삭제 중 플래그
 
   const { data, error, isLoading } = useSWR<DetailResponse>(`/api/community/posts/${id}`, fetcher);
 
   const item = data?.item;
-
   const isNotFound = (error as any)?.error === 'not_found';
+
+  const isAuthor = !!user && !!item?.userId && user.id === item.userId;
+
+  // 삭제 핸들러
+  const handleDelete = async () => {
+    if (!item) return;
+    if (isDeleting) return;
+
+    const confirmed = window.confirm('정말로 이 게시글을 삭제하시겠습니까? 되돌릴 수 없습니다.');
+    if (!confirmed) return;
+
+    try {
+      setIsDeleting(true);
+
+      const res = await fetch(`/api/community/posts/${item.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const msg = data?.error === 'forbidden' ? '본인이 작성한 글만 삭제할 수 있습니다.' : data?.error === 'unauthorized' ? '로그인이 필요합니다.' : '글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+
+        alert(msg);
+        return;
+      }
+
+      // 삭제 성공 - 목록으로 이동
+      router.push('/board/free');
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -224,7 +264,20 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
               <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-xs text-gray-500 dark:text-gray-400">
                 <span>게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
-                <div className="flex gap-2">
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {isAuthor && (
+                    <>
+                      <Button type="button" variant="outline" size="sm" onClick={() => router.push(`/board/free/${item.id}/edit`)}>
+                        수정
+                      </Button>
+
+                      <Button type="button" variant="destructive" size="sm" onClick={handleDelete} disabled={isDeleting}>
+                        {isDeleting ? '삭제 중...' : '삭제'}
+                      </Button>
+                    </>
+                  )}
+
                   <Button asChild variant="outline" size="sm">
                     <Link href="/board/free">목록으로</Link>
                   </Button>
