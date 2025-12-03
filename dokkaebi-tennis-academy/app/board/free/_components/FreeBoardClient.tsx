@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { MessageSquare, Plus, Eye } from 'lucide-react';
+import { MessageSquare, Plus, Eye, ThumbsUp } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,12 +22,49 @@ type ListResponse = {
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
-const fmtDate = (v: string | Date) =>
-  new Date(v).toLocaleDateString('ko-KR', {
+const fmtDateTime = (v: string | Date) =>
+  new Date(v).toLocaleString('ko-KR', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   });
+
+function getCategoryLabel(category?: string | null) {
+  switch (category) {
+    case 'general':
+      return '자유';
+    case 'info':
+      return '정보';
+    case 'question':
+      return '질문';
+    case 'tip':
+      return '노하우';
+    case 'etc':
+      return '기타';
+    default:
+      return '분류 없음';
+  }
+}
+
+function getCategoryBadgeClasses(category?: string | null) {
+  // 카테고리별 배경/글자색 분리
+  switch (category) {
+    case 'general': // 자유
+      return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+    case 'info': // 정보
+      return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
+    case 'question': // 질문
+      return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+    case 'tip': // 노하우
+      return 'bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
+    case 'etc': // 기타
+      return 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
+    default: // 분류 없음
+      return 'bg-gray-100 text-gray-500 dark:bg-gray-800/60 dark:text-gray-300';
+  }
+}
 
 // 목록 스켈레톤 UI
 function ListSkeleton() {
@@ -131,29 +168,101 @@ export default function FreeBoardClient() {
             )}
 
             {!isLoading && !error && items.length > 0 && (
-              <div className="divide-y divide-gray-100 text-sm dark:divide-gray-800">
-                {items.map((post) => (
-                  <div key={post.id} className="flex items-start justify-between gap-3 py-4">
-                    {/* 제목/작성자/날짜 */}
-                    <div className="min-w-0 flex-1">
-                      <Link href={`/board/free/${post.id}`} className="line-clamp-1 text-sm font-medium text-gray-900 hover:text-blue-600 dark:text-gray-50 dark:hover:text-blue-400">
-                        {post.title}
-                      </Link>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                        <span className="font-medium">{post.nickname || '회원'}</span>
-                        <span>·</span>
-                        <span>{fmtDate(post.createdAt)}</span>
-                      </div>
-                    </div>
-
-                    {/* 조회수 */}
-                    <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-                      <Eye className="h-3 w-3" />
-                      <span>{post.views ?? 0}</span>
-                    </div>
+              <>
+                {/* 데스크탑: 테이블형 리스트 */}
+                <div className="hidden text-sm md:block">
+                  {/* 헤더 행 */}
+                  <div className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center border-b border-gray-200 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-400">
+                    <div className="text-center">번호</div>
+                    <div className="text-center">분류</div>
+                    <div>제목</div>
+                    <div className="text-center">글쓴이</div>
+                    <div className="text-center">작성일</div>
+                    <div className="text-center">댓글</div>
+                    <div className="text-center">조회</div>
+                    <div className="text-center">추천</div>
                   </div>
-                ))}
-              </div>
+
+                  {/* 데이터 행들 */}
+                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {items.map((post) => (
+                      <Link key={post.id} href={`/board/free/${post.id}`} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm hover:bg-blue-50/40 dark:hover:bg-gray-800/60">
+                        {/* 번호 */}
+                        <div className="text-center text-xs tabular-nums text-gray-400 dark:text-gray-500">{typeof post.postNo === 'number' ? post.postNo : '-'}</div>
+
+                        {/* 분류 뱃지 */}
+                        <div className="flex justify-center">
+                          <span className={getCategoryBadgeClasses(post.category)}>{getCategoryLabel(post.category)}</span>
+                        </div>
+
+                        {/* 제목 (+ 댓글 수 배치) */}
+                        <div className="flex items-center gap-1">
+                          <span className="line-clamp-1 text-gray-900 dark:text-gray-50">{post.title}</span>
+                          {post.commentsCount ? <span className="text-xs text-blue-500">[{post.commentsCount}]</span> : null}
+                        </div>
+
+                        {/* 글쓴이 */}
+                        <div className="truncate text-center text-xs text-gray-600 dark:text-gray-300">{post.nickname || '회원'}</div>
+
+                        {/* 작성일 */}
+                        <div className="text-center text-xs text-gray-500 dark:text-gray-400">{fmtDateTime(post.createdAt)}</div>
+
+                        {/* 댓글 수 */}
+                        <div className="text-center text-xs text-gray-500 dark:text-gray-400">{post.commentsCount ?? 0}</div>
+
+                        {/* 조회 수 */}
+                        <div className="text-center text-xs text-gray-500 dark:text-gray-400">{post.views ?? 0}</div>
+
+                        {/* 추천 수 */}
+                        <div className="text-center text-xs text-gray-500 dark:text-gray-400">{post.likes ?? 0}</div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 모바일: 카드형 리스트 */}
+                <div className="space-y-3 md:hidden">
+                  {items.map((post) => (
+                    <Link
+                      key={post.id}
+                      href={`/board/free/${post.id}`}
+                      className="block rounded-lg border border-gray-100 bg-white/90 px-3 py-2 shadow-sm hover:border-blue-200 hover:bg-blue-50/60 dark:border-gray-700 dark:bg-gray-900/80 dark:hover:border-blue-500/60"
+                    >
+                      {/* 1줄: 번호 + 분류 뱃지 */}
+                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                        <span className="text-[11px] tabular-nums text-gray-400 dark:text-gray-500">{typeof post.postNo === 'number' ? post.postNo : '-'}</span>
+                        <span className={getCategoryBadgeClasses(post.category)}>{getCategoryLabel(post.category)}</span>
+                      </div>
+
+                      {/* 2줄: 제목 */}
+                      <div className="mt-1 line-clamp-2 text-sm font-medium text-gray-900 dark:text-gray-50">{post.title}</div>
+
+                      {/* 3줄: 작성자/날짜 + 카운트들(댓글/조회/추천) */}
+                      <div className="mt-1 flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <span>{post.nickname || '회원'}</span>
+                          <span>·</span>
+                          <span>{fmtDateTime(post.createdAt)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="flex items-center gap-1">
+                            <MessageSquare className="h-3 w-3" />
+                            {post.commentsCount ?? 0}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            {post.views ?? 0}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <ThumbsUp className="h-3 w-3" />
+                            {post.likes ?? 0}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

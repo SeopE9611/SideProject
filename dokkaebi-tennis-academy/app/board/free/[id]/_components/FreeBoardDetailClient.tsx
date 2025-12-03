@@ -3,7 +3,7 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Eye, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Eye, MessageSquare, ThumbsUp } from 'lucide-react';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,39 @@ const fmtDateTime = (v: string | Date) =>
     hour: '2-digit',
     minute: '2-digit',
   });
+
+function getCategoryLabel(category?: string | null) {
+  switch (category) {
+    case 'general':
+      return '자유';
+    case 'info':
+      return '정보';
+    case 'question':
+      return '질문';
+    case 'tip':
+      return '노하우';
+    case 'etc':
+      return '기타';
+    default:
+      return '분류 없음';
+  }
+}
+function getCategoryBadgeClasses(category?: string | null) {
+  switch (category) {
+    case 'general':
+      return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+    case 'info':
+      return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
+    case 'question':
+      return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+    case 'tip':
+      return 'bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
+    case 'etc':
+      return 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
+    default:
+      return 'bg-gray-100 text-gray-500 dark:bg-gray-800/60 dark:text-gray-300';
+  }
+}
 
 function DetailSkeleton() {
   return (
@@ -136,20 +169,51 @@ export default function FreeBoardDetailClient({ id }: Props) {
           <Card className="border-0 bg-white/90 shadow-xl backdrop-blur-sm dark:bg-gray-900/80">
             <CardHeader className="space-y-3 border-b bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/40">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg">
-                  <MessageSquare className="h-5 w-5 text-white" />
-                </div>
                 <div className="flex-1 space-y-2">
-                  <CardTitle className="text-base md:text-lg">{item.title}</CardTitle>
+                  <CardTitle className="text-base md:text-lg">
+                    {typeof item.postNo === 'number' && <span className="mr-2 text-sm font-semibold tabular-nums text-gray-400 dark:text-gray-500">{item.postNo}</span>}
+
+                    {/* 카테고리 뱃지 */}
+                    <span
+                      className={`
+      mr-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5
+      text-[11px] font-semibold
+      ${getCategoryBadgeClasses(item.category)}
+    `}
+                    >
+                      {getCategoryLabel(item.category)}
+                    </span>
+
+                    {item.title}
+                  </CardTitle>
+
                   <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400 md:text-sm">
+                    {/* 작성자 */}
                     <span className="font-medium">{item.nickname || '회원'}</span>
                     <span>·</span>
-                    <span>{fmtDateTime(item.createdAt)}</span>
-                    <span>·</span>
+
+                    {/* 조회수 */}
                     <span className="inline-flex items-center gap-1">
                       <Eye className="h-3 w-3" />
                       조회 {item.views ?? 0}
                     </span>
+                    <span>·</span>
+
+                    {/* 댓글 수 */}
+                    <span className="inline-flex items-center gap-1">
+                      <MessageSquare className="h-3 w-3" />
+                      댓글 {item.commentsCount ?? 0}
+                    </span>
+                    <span>·</span>
+
+                    {/* 추천 수 */}
+                    <span className="inline-flex items-center gap-1">
+                      <ThumbsUp className="h-3 w-3" />
+                      추천 {item.likes ?? 0}
+                    </span>
+                    <span>·</span>
+                    {/* 작성일시 */}
+                    <span>{fmtDateTime(item.createdAt)}</span>
                   </div>
                 </div>
               </div>

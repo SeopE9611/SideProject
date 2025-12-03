@@ -54,6 +54,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     content: doc.content,
     brand: doc.brand ?? null,
     userId: doc.userId ? String(doc.userId) : null,
+    category: doc.category ?? null,
+    images: Array.isArray(doc.images) ? doc.images : [],
+    postNo: typeof doc.postNo === 'number' ? doc.postNo : null,
     nickname: doc.nickname ?? '회원',
     status: doc.status ?? 'public',
     // updateOne이 비동기라 응답엔 +1 된 값으로 보내기

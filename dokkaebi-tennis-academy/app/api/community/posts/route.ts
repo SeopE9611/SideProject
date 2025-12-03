@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-import { COMMUNITY_BOARD_TYPES, CommunityBoardType, CommunityPost } from '@/lib/types/community';
+import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES, CommunityBoardType, CommunityPost } from '@/lib/types/community';
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
@@ -51,9 +51,20 @@ async function resolveDisplayName(payload: any | null): Promise<string> {
 // 커뮤니티 글 생성 요청 바디 검증 스키마
 const createSchema = z.object({
   type: z.enum(COMMUNITY_BOARD_TYPES),
+
   title: z.string().min(1, '제목을 입력해 주세요.').max(200, '제목은 200자 이내로 입력해 주세요.'),
+
   content: z.string().min(1, '내용을 입력해 주세요.'),
+
+  // 브랜드 게시판일 때만 의미 있음 (자유 게시판은 null/undefined)
   brand: z.string().max(100, '브랜드명은 100자 이내로 입력해 주세요.').optional().nullable(),
+
+  // 자유 게시판 카테고리 (제목 머릿말 용)
+  // - 폼에서 아직 값을 안 보내도 기본값 'general' 로 처리
+  category: z.enum(COMMUNITY_CATEGORIES).optional().default('general'),
+
+  // 첨부 이미지 URL 리스트 (Supabase 업로더와 호환)
+  images: z.array(z.string()).max(10).optional(),
 });
 
 /**
@@ -161,6 +172,13 @@ export async function GET(req: NextRequest) {
     title: d.title,
     content: d.content,
     brand: d.brand ?? null,
+
+    category: d.category ?? 'general',
+    images: Array.isArray(d.images) ? d.images : [],
+    postNo: typeof d.postNo === 'number' ? d.postNo : undefined,
+    authorName: d.authorName,
+    authorEmail: d.authorEmail,
+
     userId: d.userId ? String(d.userId) : null,
     nickname: d.nickname ?? '회원',
     status: d.status ?? 'public',
@@ -232,6 +250,30 @@ export async function POST(req: NextRequest) {
   const db = await getDb();
   const col = db.collection('community_posts');
 
+  type CounterDoc = { _id: string; seq: number };
+
+  const countersCol = db.collection<CounterDoc>('counters');
+
+  // 게시판 내 노출용 번호 (자유 게시판에만 사용)
+  let postNo: number | undefined = undefined;
+
+  if (body.type === 'free') {
+    const counterId = 'community_free';
+
+    const counterResult = await countersCol.findOneAndUpdate(
+      { _id: counterId },
+      { $inc: { seq: 1 } },
+      {
+        upsert: true,
+        returnDocument: 'after',
+      }
+    );
+
+    // findOneAndUpdate 결과가 "문서 또는 null"이므로 그대로 seq만 안전하게 읽어온다
+    const seq = counterResult?.seq;
+    postNo = typeof seq === 'number' ? seq : 1;
+  }
+
   const displayName = await resolveDisplayName(payload);
   const now = new Date();
 
@@ -239,7 +281,18 @@ export async function POST(req: NextRequest) {
     type: body.type,
     title: body.title,
     content: body.content,
+
+    // 브랜드 게시판이 아닐 때는 항상 null
     brand: body.type === 'brand' ? body.brand ?? null : null,
+
+    // 자유 게시판 카테고리 (제목 머릿말)
+    category: body.category ?? 'general',
+
+    // 첨부 이미지 URL 배열 (없으면 빈 배열)
+    images: body.images && body.images.length > 0 ? body.images : [],
+
+    // 게시판 내 노출용 번호 (자유 게시판만 사용)
+    postNo,
 
     userId: new ObjectId(String(payload.sub)),
     nickname: displayName,
