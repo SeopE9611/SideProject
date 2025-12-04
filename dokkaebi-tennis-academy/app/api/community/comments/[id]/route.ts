@@ -1,0 +1,130 @@
+// app/api/community/comments/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { ObjectId } from 'mongodb';
+import { z } from 'zod';
+
+import { getDb } from '@/lib/mongodb';
+import { verifyAccessToken } from '@/lib/auth.utils';
+
+// 공통: 인증 페이로드
+async function getAuthPayload() {
+  const jar = await cookies();
+  const token = jar.get('accessToken')?.value;
+  if (!token) return null;
+  const payload = verifyAccessToken(token);
+  return payload ?? null;
+}
+
+// PATCH 바디 스키마
+const updateCommentSchema = z.object({
+  content: z.string().min(1, '댓글 내용을 입력해 주세요.').max(1000, '댓글은 1000자 이내로 입력해 주세요.'),
+});
+
+// --------------------------- PATCH: 댓글 수정 ---------------------------
+
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+
+  if (!ObjectId.isValid(id)) {
+    return NextResponse.json({ ok: false, error: 'invalid_id' }, { status: 400 });
+  }
+
+  const payload = await getAuthPayload();
+  if (!payload) {
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+
+  const db = await getDb();
+  const commentsCol = db.collection('community_comments');
+
+  const commentObjectId = new ObjectId(id);
+
+  // 기존 댓글 조회
+  const existing = await commentsCol.findOne({ _id: commentObjectId });
+
+  if (!existing || existing.status === 'deleted') {
+    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
+
+  // 작성자 본인인지 확인
+  if (!existing.userId || String(existing.userId) !== String(payload.sub)) {
+    return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
+  }
+
+  const raw = await req.json();
+  const parsed = updateCommentSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    return NextResponse.json({ ok: false, error: 'validation_error', details: parsed.error.issues }, { status: 400 });
+  }
+
+  const { content } = parsed.data;
+
+  await commentsCol.updateOne(
+    { _id: commentObjectId },
+    {
+      $set: {
+        content,
+        updatedAt: new Date(),
+      },
+    }
+  );
+
+  return NextResponse.json({ ok: true }, { status: 200 });
+}
+
+// --------------------------- DELETE: 댓글 삭제 ---------------------------
+
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+
+  if (!ObjectId.isValid(id)) {
+    return NextResponse.json({ ok: false, error: 'invalid_id' }, { status: 400 });
+  }
+
+  const payload = await getAuthPayload();
+  if (!payload) {
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+
+  const db = await getDb();
+  const commentsCol = db.collection('community_comments');
+  const postsCol = db.collection('community_posts');
+
+  const commentObjectId = new ObjectId(id);
+
+  const existing = await commentsCol.findOne({ _id: commentObjectId });
+
+  if (!existing || existing.status === 'deleted') {
+    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
+
+  // 작성자 본인인지 확인
+  if (!existing.userId || String(existing.userId) !== String(payload.sub)) {
+    return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
+  }
+
+  // 소프트 삭제 + 댓글 수 감소
+  await commentsCol.updateOne(
+    { _id: commentObjectId },
+    {
+      $set: {
+        status: 'deleted' as const,
+        updatedAt: new Date(),
+      },
+    }
+  );
+
+  if (existing.postId) {
+    await postsCol.updateOne(
+      { _id: existing.postId },
+      {
+        $inc: { commentsCount: -1 },
+        $set: { updatedAt: new Date() },
+      }
+    );
+  }
+
+  return NextResponse.json({ ok: true }, { status: 200 });
+}

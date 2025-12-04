@@ -88,3 +88,35 @@ export interface CommunityPost {
   createdAt: string; // ISO 문자열
   updatedAt?: string; // ISO 문자열(수정 시)
 }
+
+export interface CommunityComment {
+  /** 댓글 고유 ID (ObjectId 문자열) */
+  id: string;
+
+  /** 어느 글에 달린 댓글인지 (CommunityPost.id) */
+  postId: string;
+
+  /** 작성자 유저 ID (로그인 기반, 비회원 허용 시 null 가능) */
+  userId: string | null;
+
+  /** 표시용 닉네임 (users.name / nickname / 이메일 앞부분 중 하나) */
+  nickname: string;
+
+  /** (선택) 실제 이름 스냅샷 - 추후 운영/관리용으로 확장 가능 */
+  authorName?: string;
+
+  /** (선택) 이메일 스냅샷 - 동명이인 구분용 */
+  authorEmail?: string;
+
+  /** 댓글 본문 */
+  content: string;
+
+  /** 노출 상태 - 기본은 'public' */
+  status: CommunityStatus;
+
+  /** 생성 시각 (ISO 문자열) */
+  createdAt: string;
+
+  /** 수정 시각 (ISO 문자열) */
+  updatedAt?: string;
+}
