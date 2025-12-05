@@ -121,69 +121,102 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
   const item = data && data.ok ? data.item : null;
 
-  // 조회수 중복 방지: localStorage 기반으로 /view API 한 번만 호출
+  // 조회수 처리: 비로그인 = localStorage TTL, 로그인 = 서버(userId 기준)에서 중복 방지
   useEffect(() => {
-    // 게시글 데이터가 아직 없으면 아무 것도 하지 않음
     if (!item) return;
+    if (typeof window === 'undefined') return;
 
-    const key = `viewed_post_${item.id}`;
+    const isLoggedIn = !!user; // useCurrentUser()에서 가져온 user
 
-    try {
-      const now = Date.now();
+    const now = Date.now();
 
-      // localStorage에서 기록 읽기
-      const raw = window.localStorage.getItem(key);
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw) as { ts: number };
-          if (parsed && typeof parsed.ts === 'number') {
-            // TTL 이내면 조회수 증가 요청 생략
-            if (now - parsed.ts < VIEW_TTL_MS) {
-              return;
+    // 1) 비로그인 사용자: 브라우저(localStorage) 기준 24시간 1회
+    if (!isLoggedIn) {
+      const key = `viewed_post_${item.id}`;
+
+      try {
+        const raw = window.localStorage.getItem(key);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw) as { ts: number };
+            if (parsed && typeof parsed.ts === 'number') {
+              if (now - parsed.ts < VIEW_TTL_MS) {
+                // TTL 이내면 /view 호출 없이 종료
+                return;
+              }
             }
+          } catch {
+            // JSON 파싱 실패 시에는 아래에서 새로 기록
           }
-        } catch {
-          // JSON 파싱 실패 시에는 새로 기록해버리면 됨
         }
+
+        // TTL이 지났거나 기록이 없으면 /view 호출
+        (async () => {
+          try {
+            const res = await fetch(`/api/community/posts/${item.id}/view`, {
+              method: 'POST',
+              credentials: 'include',
+            });
+
+            const json = await res.json().catch(() => null);
+
+            if (res.ok && json && typeof json.views === 'number') {
+              // 조회수 증가 성공 시, localStorage에 시간 기록
+              window.localStorage.setItem(key, JSON.stringify({ ts: now }));
+
+              // SWR 캐시도 같이 업데이트해서 화면에 즉시 반영
+              mutate((prev) => {
+                if (!prev || !prev.ok || !prev.item) return prev;
+
+                return {
+                  ...prev,
+                  item: {
+                    ...prev.item,
+                    views: json.views,
+                  },
+                };
+              }, false);
+            }
+          } catch (err) {
+            console.error('failed to increase view (guest)', err);
+          }
+        })();
+      } catch (err) {
+        console.error('localStorage error', err);
       }
 
-      // TTL이 지났거나 기록이 없으면 /view 호출
-      (async () => {
-        try {
-          const res = await fetch(`/api/community/posts/${item.id}/view`, {
-            method: 'POST',
-            credentials: 'include',
-          });
-
-          const json = await res.json().catch(() => null);
-
-          if (res.ok && json && typeof json.views === 'number') {
-            // 조회수 증가 성공 시, localStorage에 시간 기록
-            window.localStorage.setItem(key, JSON.stringify({ ts: now }));
-
-            // SWR 캐시도 같이 업데이트해서 화면에 즉시 반영
-            mutate((prev) => {
-              if (!prev || !prev.ok || !prev.item) return prev;
-
-              return {
-                ...prev,
-                item: {
-                  ...prev.item,
-                  views: json.views,
-                },
-              };
-            }, false);
-          }
-        } catch (err) {
-          console.error('failed to increase view', err);
-          // 조회수 실패는 치명적인 건 아니라서 UI 에러는 띄우지 않음
-        }
-      })();
-    } catch (err) {
-      console.error('localStorage error', err);
-      // localStorage 접근이 실패하더라도 페이지 자체는 계속 렌더링
+      return;
     }
-  }, [item?.id, mutate, VIEW_TTL_MS, item]);
+
+    // 2) 로그인 사용자: localStorage는 쓰지 않고,
+    //    항상 /view 호출 → 서버에서 userId 기준으로 중복 방지
+    (async () => {
+      try {
+        const res = await fetch(`/api/community/posts/${item.id}/view`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        const json = await res.json().catch(() => null);
+
+        // 서버가 views 를 돌려주면, 화면에도 즉시 반영
+        if (res.ok && json && typeof json.views === 'number') {
+          mutate((prev) => {
+            if (!prev || !prev.ok || !prev.item) return prev;
+            return {
+              ...prev,
+              item: {
+                ...prev.item,
+                views: json.views,
+              },
+            };
+          }, false);
+        }
+      } catch (err) {
+        console.error('failed to increase view (member)', err);
+      }
+    })();
+  }, [item?.id, user, mutate, VIEW_TTL_MS]);
 
   const isNotFound = (error as any)?.error === 'not_found';
 
