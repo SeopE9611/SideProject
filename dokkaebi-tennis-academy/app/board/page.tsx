@@ -345,7 +345,7 @@ function CommunityIntroCard() {
             <MessageSquare className="h-5 w-5 text-purple-600" />
             <span>커뮤니티 게시판</span>
           </div>
-          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
+          <Badge variant="secondary" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
             준비중
           </Badge>
         </CardTitle>
@@ -392,7 +392,7 @@ function CommunityIntroCard() {
         {/* 현재는 리뷰 게시판으로 유도 */}
         <div className="pt-2">
           <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
-            <Link href="/reviews">지금은 리뷰 게시판 둘러보기</Link>
+            <Link href="/reviews">리뷰 게시판 둘러보기</Link>
           </Button>
         </div>
       </CardContent>

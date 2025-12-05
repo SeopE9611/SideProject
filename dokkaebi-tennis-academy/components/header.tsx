@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Menu, ChevronRight, Wrench, Gift, MessageSquareText, Grid2X2, Package } from 'lucide-react';
+import { ShoppingCart, Menu, ChevronRight, Wrench, Gift, MessageSquareText, Grid2X2, Package, MessageSquare } from 'lucide-react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetOverlay, SheetTrigger } from '@/components/ui/sheet';
@@ -64,38 +64,6 @@ const Header = () => {
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  const itemIcon = (item: any) => {
-    if (item.isServiceMenu) return <Wrench className="h-4 w-4" />;
-    if (item.isPackageMenu) return <Gift className="h-4 w-4" />;
-    if (item.isBoardMenu) return <MessageSquareText className="h-4 w-4" />;
-    if (item.isRacketMenu) return <Package className="h-4 w-4" />;
-    return <Grid2X2 className="h-4 w-4" />; // 스트링 기본
-  };
-
-  const itemColor = (item: any) => {
-    if (item.isServiceMenu) return 'from-amber-500 to-amber-600';
-    if (item.isPackageMenu) return 'from-purple-500 to-purple-600';
-    if (item.isBoardMenu) return 'from-rose-500 to-rose-600';
-    if (item.isRacketMenu) return 'from-emerald-500 to-emerald-600';
-    return 'from-blue-500 to-blue-600'; // 스트링
-  };
-
-  /** 메가메뉴 표시 상태 */
-  const [showStringMenu, setShowStringMenu] = useState(false);
-  const [showBoardMenu, setShowBoardMenu] = useState(false);
-  const [showPackageMenu, setShowPackageMenu] = useState(false);
-  const [showServiceMenu, setShowServiceMenu] = useState(false);
-
-  /** 오픈/클로즈 지연 타이머 */
-  const [stringOpenTimer, setStringOpenTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [stringCloseTimer, setStringCloseTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [boardOpenTimer, setBoardOpenTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [boardCloseTimer, setBoardCloseTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [packageOpenTimer, setPackageOpenTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [packageCloseTimer, setPackageCloseTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [serviceOpenTimer, setServiceOpenTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [serviceCloseTimer, setServiceCloseTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-
   const { items } = useCartStore();
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
@@ -132,11 +100,13 @@ const Header = () => {
       { name: '매장/예약 안내', href: '/services/locations' },
     ],
     packages: [{ name: '패키지 안내', href: '/services/packages' }],
-    boards: [
+    support: [
+      { name: '고객센터 홈', href: '/support/notice' },
       { name: '공지사항', href: '/board/notice' },
       { name: 'QnA', href: '/board/qna' },
-      { name: '리뷰 게시판', href: '/reviews' },
     ],
+
+    boards: [{ name: '리뷰 게시판', href: '/reviews' }],
   };
 
   // 헤더 실제 높이를 CSS 변수로 노출 → 좌측 사이드 top 자동 반영
@@ -196,157 +166,6 @@ const Header = () => {
     // 앞으로 커뮤니티(리뷰, 자유게시판 등) 허브가 될 /board
     { name: '게시판', href: '/board', hasMegaMenu: true, isBoardMenu: true },
   ];
-  /** 스트링 메뉴 핸들러 */
-  const openStringWithDelay = () => {
-    if (stringCloseTimer) {
-      clearTimeout(stringCloseTimer);
-      setStringCloseTimer(null);
-    }
-    if (!stringOpenTimer) {
-      const timer = setTimeout(() => {
-        setShowStringMenu(true);
-        setStringOpenTimer(null);
-      }, 150);
-      setStringOpenTimer(timer);
-    }
-  };
-  const closeStringWithDelay = () => {
-    if (stringOpenTimer) {
-      clearTimeout(stringOpenTimer);
-      setStringOpenTimer(null);
-    }
-    if (!stringCloseTimer) {
-      const timer = setTimeout(() => {
-        setShowStringMenu(false);
-        setStringCloseTimer(null);
-      }, 220);
-      setStringCloseTimer(timer);
-    }
-  };
-  const keepStringOpen = () => {
-    if (stringOpenTimer) {
-      clearTimeout(stringOpenTimer);
-      setStringOpenTimer(null);
-    }
-    if (stringCloseTimer) {
-      clearTimeout(stringCloseTimer);
-      setStringCloseTimer(null);
-    }
-  };
-
-  /** 게시판 메뉴 */
-  const openBoardWithDelay = () => {
-    if (boardCloseTimer) {
-      clearTimeout(boardCloseTimer);
-      setBoardCloseTimer(null);
-    }
-    if (!boardOpenTimer) {
-      const timer = setTimeout(() => {
-        setShowBoardMenu(true);
-        setBoardOpenTimer(null);
-      }, 150);
-      setBoardOpenTimer(timer);
-    }
-  };
-  const closeBoardWithDelay = () => {
-    if (boardOpenTimer) {
-      clearTimeout(boardOpenTimer);
-      setBoardOpenTimer(null);
-    }
-    if (!boardCloseTimer) {
-      const timer = setTimeout(() => {
-        setShowBoardMenu(false);
-        setBoardCloseTimer(null);
-      }, 220);
-      setBoardCloseTimer(timer);
-    }
-  };
-  const keepBoardOpen = () => {
-    if (boardOpenTimer) {
-      clearTimeout(boardOpenTimer);
-      setBoardOpenTimer(null);
-    }
-    if (boardCloseTimer) {
-      clearTimeout(boardCloseTimer);
-      setBoardCloseTimer(null);
-    }
-  };
-
-  /** 패키지 메뉴 */
-  const openPackageWithDelay = () => {
-    if (packageCloseTimer) {
-      clearTimeout(packageCloseTimer);
-      setPackageCloseTimer(null);
-    }
-    if (!packageOpenTimer) {
-      const timer = setTimeout(() => {
-        setShowPackageMenu(true);
-        setPackageOpenTimer(null);
-      }, 150);
-      setPackageOpenTimer(timer);
-    }
-  };
-  const closePackageWithDelay = () => {
-    if (packageOpenTimer) {
-      clearTimeout(packageOpenTimer);
-      setPackageOpenTimer(null);
-    }
-    if (!packageCloseTimer) {
-      const timer = setTimeout(() => {
-        setShowPackageMenu(false);
-        setPackageCloseTimer(null);
-      }, 220);
-      setPackageCloseTimer(timer);
-    }
-  };
-  const keepPackageOpen = () => {
-    if (packageOpenTimer) {
-      clearTimeout(packageOpenTimer);
-      setPackageOpenTimer(null);
-    }
-    if (packageCloseTimer) {
-      clearTimeout(packageCloseTimer);
-      setPackageCloseTimer(null);
-    }
-  };
-
-  /** 장착 서비스 메뉴 */
-  const openServiceWithDelay = () => {
-    if (serviceCloseTimer) {
-      clearTimeout(serviceCloseTimer);
-      setServiceCloseTimer(null);
-    }
-    if (!serviceOpenTimer) {
-      const timer = setTimeout(() => {
-        setShowServiceMenu(true);
-        setServiceOpenTimer(null);
-      }, 150);
-      setServiceOpenTimer(timer);
-    }
-  };
-  const closeServiceWithDelay = () => {
-    if (serviceOpenTimer) {
-      clearTimeout(serviceOpenTimer);
-      setServiceOpenTimer(null);
-    }
-    if (!serviceCloseTimer) {
-      const timer = setTimeout(() => {
-        setShowServiceMenu(false);
-        setServiceCloseTimer(null);
-      }, 220);
-      setServiceCloseTimer(timer);
-    }
-  };
-  const keepServiceOpen = () => {
-    if (serviceOpenTimer) {
-      clearTimeout(serviceOpenTimer);
-      setServiceOpenTimer(null);
-    }
-    if (serviceCloseTimer) {
-      clearTimeout(serviceCloseTimer);
-      setServiceCloseTimer(null);
-    }
-  };
 
   return (
     <>
@@ -373,7 +192,6 @@ const Header = () => {
         >
           {/* 하나의 수평 그리드로: 로고(좌) / 검색(가운데) / 아이콘(우) */}
           <div className="flex items-center justify-between w-full gap-3 lg:gap-6">
-            {/* 1) 로고 (좌) */}
             <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈">
               <div className="font-black text-lg lg:text-xl tracking-[-0.01em] whitespace-nowrap text-slate-900 dark:text-white">도깨비 테니스</div>
               <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
@@ -398,9 +216,9 @@ const Header = () => {
               })}
             </nav>
 
-            <div className="max-w-md w-full">
+            {/* <div className="max-w-md w-full">
               <WeatherBadge />
-            </div>
+            </div> */}
 
             {/* 검색 (PC 전용) */}
             <div className="hidden lg:flex flex-1 justify-end">
@@ -418,7 +236,7 @@ const Header = () => {
               </div>
             </div>
 
-            {/* 3) 아이콘/유저 (우) */}
+            {/* 아이콘/유저 */}
             <div className="hidden lg:flex items-center gap-3 xl:gap-4 pl-2 shrink-0">
               <Link href="/cart">
                 <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 transition-all duration-300 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
@@ -481,7 +299,7 @@ const Header = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto scrollbar-hide p-4 bg-white dark:bg-slate-900">
-                  <Accordion type="multiple" defaultValue={['strings', 'rackets', 'service', 'packages', 'boards']}>
+                  <Accordion type="multiple" defaultValue={['strings', 'rackets', 'service', 'packages', 'support', 'boards']}>
                     {/* 스트링 */}
                     <AccordionItem value="strings" className="border-none">
                       <AccordionTrigger
@@ -675,6 +493,48 @@ const Header = () => {
                             className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
                               text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
                               hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+                            onClick={() => {
+                              setOpen(false);
+                              router.push(it.href);
+                            }}
+                          >
+                            {it.name}
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </Button>
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* 고객센터 */}
+                    <AccordionItem value="support" className="border-none">
+                      <AccordionTrigger
+                        value="support"
+                        className="py-3 px-3 rounded-lg hover:bg-slate-100 
+        dark:hover:bg-slate-800 hover:no-underline transition-all group"
+                      >
+                        <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                          <div
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
+          from-sky-500 to-sky-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </div>
+                          <span
+                            className="bg-gradient-to-r from-sky-700 to-sky-600 dark:from-sky-400 
+          dark:to-sky-300 bg-clip-text text-transparent"
+                          >
+                            고객센터
+                          </span>
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent value="support" className="pb-2 pt-1 space-y-0.5">
+                        {NAV_LINKS.support.map((it) => (
+                          <Button
+                            key={it.name}
+                            variant="ghost"
+                            className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+            text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+            hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
                             onClick={() => {
                               setOpen(false);
                               router.push(it.href);
