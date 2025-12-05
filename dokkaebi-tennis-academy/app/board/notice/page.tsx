@@ -1,18 +1,26 @@
-import { getBaseUrl } from '@/lib/getBaseUrl';
 import NoticeListClient from './_components/NoticeListClient';
 
 // ISR(30s): 페이지 단위 캐시
 export const revalidate = 30;
 
+// 1) 공지 목록 조회: 내부 API는 상대 경로 사용
 async function fetchNotices() {
   const qs = new URLSearchParams({ type: 'notice', page: '1', limit: '20' });
-  // 서버에서 /api 호출 시 상대 경로는 안 됨 -> 절대 URL 필요할 때는 NEXT_PUBLIC_SITE_URL 등을 쓰고,
-  // 여기서는 RSC라서 직접 DB를 물어보지 않는 이상 아래처럼 내부 fetch 허용.
-  const res = await fetch(`${getBaseUrl()}/api/boards?${qs.toString()}`, {
-    // 목록은 ISR이므로 기본 force-cache, next.revalidate를 함께 명시해도 OK
+
+  //  상대 경로로 호출하면 Next가 내부 라우팅을 사용하므로
+  //    빌드 시점에도 localhost:3000으로 네트워크 요청을 안 보냄
+  const res = await fetch(`/api/boards?${qs.toString()}`, {
     next: { revalidate: 30 },
-    headers: { cookie: '' }, // 공개 목록이므로 쿠키 필요 없음
+    // 빌드/ISR 단계에선 원래 쿠키가 없으니 굳이 비우는 헤더 지정도 불필요
+    // headers: { cookie: '' },
   });
+
+  if (!res.ok) {
+    // 빌드시 에러 터지면 빈 목록으로라도 방어 (선택)
+    console.error('Failed to fetch notices', res.status, res.statusText);
+    return { items: [], total: 0 };
+  }
+
   const json = await res.json();
   return {
     items: json?.items ?? [],
@@ -20,12 +28,16 @@ async function fetchNotices() {
   };
 }
 
+// 2) 관리자 여부 조회: cache: 'no-store' 동적 페이지로 처리됨
 async function fetchIsAdmin() {
-  // 관리자 여부는 SSR에서 쿠키 포함해도 되지만,
-  // 공지 목록 공개 페이지라 쿠키 없이 false 기본값 권장
-  // (상단 "작성하기" 버튼 노출 제어용)
   try {
-    const res = await fetch(`${getBaseUrl()}/api/users/me`, { cache: 'no-store' });
+    const res = await fetch('/api/users/me', {
+      cache: 'no-store',
+      // 여기서는 쿠키를 자동으로 Next가 전달해줌 (요청 컨텍스트 기반)
+    });
+
+    if (!res.ok) return false;
+
     const me = await res.json();
     return me?.role === 'admin' || me?.isAdmin === true || (Array.isArray(me?.roles) && me.roles.includes('admin'));
   } catch {
