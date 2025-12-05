@@ -51,8 +51,19 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
-  // 조회수 +1 (상세 조회는 이미 성공했으니 실패해도 치명적이지 않음)
-  await col.updateOne({ _id }, { $inc: { views: 1 } });
+  // 로그인 사용자가 이미 좋아요를 눌렀는지 여부 계산
+  let likedByMe = false;
+  const userId = await getAuthUserId();
+
+  if (userId) {
+    const likesCol = db.collection('community_likes');
+    const likeDoc = await likesCol.findOne({
+      postId: _id,
+      userId: new ObjectId(userId),
+    });
+
+    likedByMe = !!likeDoc;
+  }
 
   const item: CommunityPost = {
     id: String(doc._id),
@@ -71,9 +82,10 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     nickname: doc.nickname ?? '회원',
     status: doc.status ?? 'public',
 
-    // updateOne이 비동기라 응답엔 +1 된 값으로 보내기
-    views: (doc.views ?? 0) + 1,
+    // GET에서는 조회수 증가를 하지 않으므로, 저장된 값 그대로 반환
+    views: doc.views ?? 0,
     likes: doc.likes ?? 0,
+    likedByMe,
     commentsCount: doc.commentsCount ?? 0,
 
     createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : String(doc.createdAt),

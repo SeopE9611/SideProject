@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CommunityComment, CommunityPost } from '@/lib/types/community';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -112,10 +112,79 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const router = useRouter();
   const { user } = useCurrentUser(); // 현재 로그인 사용자
   const [isDeleting, setIsDeleting] = useState(false); // 삭제 중 플래그
+  const [isLiking, setIsLiking] = useState(false); // 추천(좋아요) 처리 중 플래그
+
+  // 조회수 중복 방지 TTL (24시간)
+  const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
 
   const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}`, fetcher);
 
   const item = data && data.ok ? data.item : null;
+
+  // 조회수 중복 방지: localStorage 기반으로 /view API 한 번만 호출
+  useEffect(() => {
+    // 게시글 데이터가 아직 없으면 아무 것도 하지 않음
+    if (!item) return;
+
+    const key = `viewed_post_${item.id}`;
+
+    try {
+      const now = Date.now();
+
+      // localStorage에서 기록 읽기
+      const raw = window.localStorage.getItem(key);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as { ts: number };
+          if (parsed && typeof parsed.ts === 'number') {
+            // TTL 이내면 조회수 증가 요청 생략
+            if (now - parsed.ts < VIEW_TTL_MS) {
+              return;
+            }
+          }
+        } catch {
+          // JSON 파싱 실패 시에는 새로 기록해버리면 됨
+        }
+      }
+
+      // TTL이 지났거나 기록이 없으면 /view 호출
+      (async () => {
+        try {
+          const res = await fetch(`/api/community/posts/${item.id}/view`, {
+            method: 'POST',
+            credentials: 'include',
+          });
+
+          const json = await res.json().catch(() => null);
+
+          if (res.ok && json && typeof json.views === 'number') {
+            // 조회수 증가 성공 시, localStorage에 시간 기록
+            window.localStorage.setItem(key, JSON.stringify({ ts: now }));
+
+            // SWR 캐시도 같이 업데이트해서 화면에 즉시 반영
+            mutate((prev) => {
+              if (!prev || !prev.ok || !prev.item) return prev;
+
+              return {
+                ...prev,
+                item: {
+                  ...prev.item,
+                  views: json.views,
+                },
+              };
+            }, false);
+          }
+        } catch (err) {
+          console.error('failed to increase view', err);
+          // 조회수 실패는 치명적인 건 아니라서 UI 에러는 띄우지 않음
+        }
+      })();
+    } catch (err) {
+      console.error('localStorage error', err);
+      // localStorage 접근이 실패하더라도 페이지 자체는 계속 렌더링
+    }
+  }, [item?.id, mutate, VIEW_TTL_MS, item]);
+
   const isNotFound = (error as any)?.error === 'not_found';
 
   const isAuthor = !!user && !!item?.userId && user.id === item.userId;
@@ -302,6 +371,58 @@ export default function FreeBoardDetailClient({ id }: Props) {
     }
   };
 
+  // 추천(좋아요) 토글 핸들러
+  const handleToggleLike = async () => {
+    if (!item) return;
+
+    // 비회원이면 알림 후 종료
+    if (!user) {
+      alert('로그인 후에 추천할 수 있습니다.');
+      return;
+    }
+
+    // 중복 클릭 방지
+    if (isLiking) return;
+
+    try {
+      setIsLiking(true);
+
+      const res = await fetch(`/api/community/posts/${item.id}/like`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      const json = (await res.json().catch(() => null)) as { ok: true; liked: boolean; likes: number } | { ok: false; error?: string } | null;
+
+      if (!res.ok || !json || !('ok' in json) || !json.ok) {
+        const msg = (json as any)?.error ?? '추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+        alert(msg);
+        return;
+      }
+
+      // SWR 캐시 갱신 (likes, likedByMe만 업데이트)
+      await mutate(
+        (prev) => {
+          if (!prev || !prev.ok) return prev;
+          return {
+            ...prev,
+            item: {
+              ...prev.item,
+              likes: json.likes,
+              likedByMe: json.liked,
+            },
+          };
+        },
+        false // 재요청 없이 로컬 캐시만 갱신
+      );
+    } catch (err) {
+      console.error(err);
+      alert('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
@@ -415,6 +536,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
                 <span>게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
 
                 <div className="flex flex-wrap items-center gap-2">
+                  {item && (
+                    <Button type="button" variant={item.likedByMe ? 'default' : 'outline'} size="sm" onClick={handleToggleLike} disabled={isLiking} className="flex items-center gap-1">
+                      <ThumbsUp className="h-3 w-3" />
+                      {isLiking ? '처리 중...' : item.likedByMe ? `추천 취소 (${item.likes ?? 0})` : `추천 (${item.likes ?? 0})`}
+                    </Button>
+                  )}
                   {isAuthor && (
                     <>
                       <Button type="button" variant="outline" size="sm" onClick={() => router.push(`/board/free/${item.id}/edit`)}>
