@@ -13,6 +13,8 @@ import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 type Props = {
   id: string;
@@ -113,6 +115,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const { user } = useCurrentUser(); // 현재 로그인 사용자
   const [isDeleting, setIsDeleting] = useState(false); // 삭제 중 플래그
   const [isLiking, setIsLiking] = useState(false); // 추천(좋아요) 처리 중 플래그
+
+  // 리폿
+  const [openReport, setOpenReport] = useState(false);
+  const [reason, setReason] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
 
   // 조회수 중복 방지 TTL (24시간)
   const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
@@ -456,6 +463,46 @@ export default function FreeBoardDetailClient({ id }: Props) {
     }
   };
 
+  // 리폿 핸들러
+  async function handleSubmitReport() {
+    // 게시글이 아직 로드 안 된 경우 방어
+    if (!item) return;
+
+    if (reason.trim().length < 10) {
+      showErrorToast('신고 사유는 최소 10자 이상 입력해야 합니다.');
+      return;
+    }
+
+    try {
+      setIsReporting(true);
+
+      const res = await fetch(`/api/community/posts/${item.id}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason }),
+      });
+
+      if (!res.ok) {
+        if (res.status === 429) {
+          showErrorToast('이미 최근에 신고한 게시글입니다.');
+        } else {
+          showErrorToast('신고 처리 중 오류가 발생했습니다.');
+        }
+        return;
+      }
+
+      showSuccessToast('신고가 접수되었습니다.');
+      setReason('');
+      setOpenReport(false);
+    } catch (error) {
+      console.error(error);
+      showErrorToast('신고 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsReporting(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
@@ -575,6 +622,31 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       {isLiking ? '처리 중...' : item.likedByMe ? `추천 취소 (${item.likes ?? 0})` : `추천 (${item.likes ?? 0})`}
                     </Button>
                   )}
+                  <Dialog open={openReport} onOpenChange={setOpenReport}>
+                    <DialogTrigger asChild>
+                      <Button type="button" variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                        신고하기
+                      </Button>
+                    </DialogTrigger>
+
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>이 게시글을 신고하시겠습니까?</DialogTitle>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수 있습니다.</p>
+                      </DialogHeader>
+
+                      <Textarea placeholder="신고 사유를 구체적으로 작성해주세요. (최소 10자)" value={reason} onChange={(e) => setReason(e.target.value)} className="h-32" disabled={isReporting} />
+
+                      <DialogFooter className="gap-2 sm:justify-end">
+                        <Button type="button" variant="outline" onClick={() => setOpenReport(false)} disabled={isReporting}>
+                          취소
+                        </Button>
+                        <Button type="button" variant="destructive" onClick={handleSubmitReport} disabled={isReporting}>
+                          {isReporting ? '신고 중...' : '신고하기'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                   {isAuthor && (
                     <>
                       <Button type="button" variant="outline" size="sm" onClick={() => router.push(`/board/free/${item.id}/edit`)}>

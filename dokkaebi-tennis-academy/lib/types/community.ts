@@ -123,3 +123,36 @@ export interface CommunityComment {
   /** 수정 시각 (ISO 문자열) */
   updatedAt?: string;
 }
+
+/** 신고 처리 상태 */
+export type CommunityReportStatus = 'pending' | 'reviewed' | 'ignored';
+
+/** 커뮤니티 게시글 신고 데이터 타입 (API 응답용) */
+export interface CommunityReport {
+  /** MongoDB _id 문자열 */
+  id: string;
+
+  /** 신고 대상 게시글 _id */
+  postId: string;
+
+  /** 게시판 종류 (free | brand 등) */
+  boardType: CommunityBoardType;
+
+  /** 신고 사유 */
+  reason: string;
+
+  /** 신고 처리 상태 */
+  status: CommunityReportStatus;
+
+  /** 신고자(회원) ID - 비회원이면 undefined */
+  reporterUserId?: string;
+
+  /** 신고자 이메일 스냅샷 (선택) */
+  reporterEmail?: string;
+
+  /** 생성 시각 (ISO 문자열) */
+  createdAt: string;
+
+  /** 처리 완료 시각 (ISO 문자열, 선택) */
+  resolvedAt?: string;
+}
