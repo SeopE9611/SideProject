@@ -1,30 +1,34 @@
 // 상단 import 추가
 import { getBaseUrl } from '@/lib/getBaseUrl';
 import NoticeListClient from './_components/NoticeListClient';
+import { getBoardList } from '@/lib/boards.queries';
 
 // ISR(30s): 페이지 단위 캐시
 export const revalidate = 30;
 
-// 1) 공지 목록 조회
+// 1) 공지 목록 조회: HTTP가 아니라 DB를 직접 조회
 async function fetchNotices() {
-  const qs = new URLSearchParams({ type: 'notice', page: '1', limit: '20' });
+  const page = 1;
+  const limit = 20;
 
-  // 절대 URL 생성
-  const baseUrl = getBaseUrl();
+  try {
+    const { items, total } = await getBoardList({
+      type: 'notice',
+      page,
+      limit,
+      // 초기 진입은 검색/카테고리/상품 필터 없음
+      // q: '',
+      // field: 'all',
+      // category: null,
+      // productId: null,
+    });
 
-  const res = await fetch(`${baseUrl}/api/boards?${qs.toString()}`, {
-    next: { revalidate: 30 },
-  });
-
-  if (!res.ok) {
-    throw new Error('공지 목록을 불러오지 못했습니다.');
+    return { items, total };
+  } catch (error) {
+    // 서버 렌더링 시 쿼리 실패해도 전체 페이지가 터지지 않도록 방어
+    console.error('Failed to load notices from DB', error);
+    return { items: [], total: 0 };
   }
-
-  const data = await res.json();
-  return {
-    items: data.items ?? [],
-    total: data.total ?? 0,
-  };
 }
 
 // 2) 관리자 여부 조회: cache: 'no-store' 동적 페이지로 처리됨

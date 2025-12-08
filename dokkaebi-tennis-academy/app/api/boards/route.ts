@@ -7,6 +7,7 @@ import type { BoardPost, BoardType, QnaCategory } from '@/lib/types/board';
 import { ObjectId } from 'mongodb';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { getBoardList } from '@/lib/boards.queries';
 
 // 관리자 확인 헬퍼
 async function mustAdmin() {
@@ -158,7 +159,6 @@ const isAllowedHttpUrl = (v: unknown): v is string => {
 export async function GET(req: NextRequest) {
   const stop = startTimer();
   const meta = reqMeta(req);
-  const db = await getDb();
   const url = new URL(req.url);
 
   const typeParam = url.searchParams.get('type');
@@ -170,124 +170,24 @@ export async function GET(req: NextRequest) {
   // 키워드 검색 파라미터
   const q = url.searchParams.get('q') || url.searchParams.get('keyword') || url.searchParams.get('query') || '';
 
-  // type 유효성 가드
-  const type: BoardType | null = typeParam === 'notice' || typeParam === 'qna' ? (typeParam as BoardType) : null;
+  const fieldRaw = url.searchParams.get('field') || 'all';
 
-  const filter: any = { status: 'published' };
-  if (type) filter.type = type;
+  // 허용된 field 값만 사용, 그 외는 all 처리
+  const allowedFields = new Set(['all', 'title', 'content', 'title_content']);
+  const field = (allowedFields.has(fieldRaw) ? fieldRaw : 'all') as 'all' | 'title' | 'content' | 'title_content';
+
+  // type 유효성 가드: 기본은 notice, 'qna'면 qna로
+  const type: BoardType = typeParam === 'qna' ? 'qna' : 'notice';
 
   // 타입별 카테고리 정규화
+  let category: string | null = null;
   if (type === 'notice') {
     const n = normalizeNoticeCategory(rawCategory);
-    if (n) filter.category = n; // 공지는 '일반','이벤트' 등 라벨로 저장됨
+    if (n) category = n; // 공지는 라벨('일반','이벤트' 등)로 저장됨
   } else if (type === 'qna') {
     const n = normalizeCategory(rawCategory); // 코드/라벨 → QnA 라벨로
-    if (n) filter.category = n as QnaCategory;
+    if (n) category = n as QnaCategory;
   }
-
-  if (productId) filter['productRef.productId'] = productId;
-
-  // 검색 필드: all | title | content | title_content (한글 라벨도 허용)
-  const fieldRaw = (url.searchParams.get('field') || 'all').toLowerCase();
-  const field = ['title', '제목'].includes(fieldRaw) ? 'title' : ['content', '내용'].includes(fieldRaw) ? 'content' : ['title_content', '제목+내용', '제목내용', '제목내용전체'].includes(fieldRaw) ? 'title_content' : 'all';
-
-  // 정규식 이스케이프
-  const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-  // 검색 적용 (부분일치: 공지 → 공지1/공지2 전부 매칭)
-  if (q.trim()) {
-    const re = new RegExp(esc(q.trim()), 'i');
-
-    if (field === 'title') {
-      filter.title = { $regex: re };
-    } else if (field === 'content') {
-      filter.content = { $regex: re };
-    } else {
-      // all 또는 title_content: 제목+내용 OR
-      filter.$or = [{ title: { $regex: re } }, { content: { $regex: re } }];
-    }
-  }
-  // 목록에서는 비밀글이라도 제목/메타는 노출(본문/첨부는 상세에서 제한)
-  const col = db.collection('board_posts');
-
-  const total = await col.countDocuments(filter);
-
-  // 정렬: 공지는 핀 우선 + 최신, 나머지는 최신
-  const sort = type === 'notice' ? { isPinned: -1, createdAt: -1 } : { createdAt: -1 };
-
-  // 집계 파이프라인로 목록 + 계산필드(attachmentsCount/hasAttachments) 생성
-  const pipeline = [
-    { $match: filter },
-    { $sort: sort },
-    { $skip: (page - 1) * limit },
-    { $limit: limit },
-
-    // attachments 배열 보정
-    { $addFields: { attachmentsArr: { $ifNull: ['$attachments', []] } } },
-
-    // 이미지 개수 계산
-    {
-      $addFields: {
-        attachmentsCount: { $size: '$attachmentsArr' },
-        imagesCount: {
-          $size: {
-            $filter: {
-              input: '$attachmentsArr',
-              as: 'a',
-              cond: {
-                $or: [{ $regexMatch: { input: { $ifNull: ['$$a.mime', ''] }, regex: /^image\// } }, { $regexMatch: { input: { $ifNull: ['$$a.url', ''] }, regex: /\.(png|jpe?g|gif|webp|bmp|svg)$/i } }],
-              },
-            },
-          },
-        },
-      },
-    },
-
-    // 파일(비이미지) 개수/플래그 — 이미지 조건의 NOT으로 직접 계산
-    {
-      $addFields: {
-        filesCount: {
-          $size: {
-            $filter: {
-              input: '$attachmentsArr',
-              as: 'a',
-              cond: {
-                $and: [{ $not: [{ $regexMatch: { input: { $ifNull: ['$$a.mime', ''] }, regex: /^image\// } }] }, { $not: [{ $regexMatch: { input: { $ifNull: ['$$a.url', ''] }, regex: /\.(png|jpe?g|gif|webp|bmp|svg)$/i } }] }],
-              },
-            },
-          },
-        },
-        hasImage: { $gt: ['$imagesCount', 0] },
-        hasFile: {
-          $gt: [
-            {
-              $size: {
-                $filter: {
-                  input: '$attachmentsArr',
-                  as: 'a',
-                  cond: {
-                    $and: [{ $not: [{ $regexMatch: { input: { $ifNull: ['$$a.mime', ''] }, regex: /^image\// } }] }, { $not: [{ $regexMatch: { input: { $ifNull: ['$$a.url', ''] }, regex: /\.(png|jpe?g|gif|webp|bmp|svg)$/i } }] }],
-                  },
-                },
-              },
-            },
-            0,
-          ],
-        },
-      },
-    },
-
-    // 목록에서는 본문/첨부 내용은 제외(= 순수 exclusion 프로젝션)
-    {
-      $project: {
-        content: 0,
-        attachments: 0,
-        attachmentsArr: 0,
-      },
-    },
-  ];
-
-  const items = await col.aggregate(pipeline).toArray();
 
   logInfo({
     msg: 'boards:list:query',
@@ -297,7 +197,25 @@ export async function GET(req: NextRequest) {
     ...meta,
   });
 
-  logInfo({ msg: 'boards:list:ok', status: 200, durationMs: stop(), extra: { count: items.length, total }, ...meta });
+  // 공용 MongoDB 쿼리 함수 사용
+  const { items, total } = await getBoardList({
+    type,
+    page,
+    limit,
+    q,
+    field,
+    category,
+    productId: productId || null,
+  });
+
+  logInfo({
+    msg: 'boards:list:ok',
+    status: 200,
+    durationMs: stop(),
+    extra: { count: items.length, total },
+    ...meta,
+  });
+
   return NextResponse.json(
     { ok: true, items, total, page, limit },
     {
