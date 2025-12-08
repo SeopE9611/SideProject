@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import Image from 'next/image';
 
 type Props = {
   id: string;
@@ -610,8 +611,32 @@ export default function FreeBoardDetailClient({ id }: Props) {
             </CardHeader>
 
             <CardContent className="p-6">
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800 dark:text-gray-100">{item.content}</div>
-
+              {/* 이미지 영역 - 인라인 표시 + 클릭 시 새창에서 원본 보기 */}
+              {item.images && item.images.length > 0 && (
+                <div className="mb-6 space-y-4">
+                  {item.images.map((url, idx) => (
+                    <div key={url + idx} className="flex justify-center">
+                      <button
+                        type="button"
+                        onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                        // bg-neutral-50 → bg-white / 다크모드에서는 어두운색
+                        className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-white dark:bg-neutral-900 hover:bg-white transition"
+                      >
+                        <Image
+                          src={url}
+                          alt={`첨부 이미지 ${idx + 1}`}
+                          width={1200}
+                          height={800}
+                          // 여백에도 동일하게 흰색이 보이도록 bg-white 추가
+                          className="w-full h-auto max-h-[560px] object-contain bg-white dark:bg-neutral-900"
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* 본문 */}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800 dark:text-gray-100">{item.content}</div>{' '}
               <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-xs text-gray-500 dark:text-gray-400">
                 <span>게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
 

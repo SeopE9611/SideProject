@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { CommunityPost } from '@/lib/types/community';
+import ImageUploader from '@/components/admin/ImageUploader';
 
 type Props = {
   id: string;
@@ -33,6 +34,10 @@ export default function FreeBoardEditClient({ id }: Props) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
+  // 이미지 상태
+  const [images, setImages] = useState<string[]>([]);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+
   // 상태 플래그
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -45,6 +50,7 @@ export default function FreeBoardEditClient({ id }: Props) {
     if (data && data.ok) {
       setTitle(data.item.title ?? '');
       setContent(data.item.content ?? '');
+      setImages(Array.isArray(data.item.images) ? data.item.images : []);
     }
   }, [data]);
 
@@ -73,10 +79,9 @@ export default function FreeBoardEditClient({ id }: Props) {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          // PATCH에서는 바뀐 필드만 보내도 되지만,
-          // 지금은 단순하게 제목/내용 둘 다 항상 보냄
           title: title.trim(),
           content: content.trim(),
+          images,
         }),
       });
 
@@ -85,6 +90,11 @@ export default function FreeBoardEditClient({ id }: Props) {
       if (!res.ok || !data?.ok) {
         const detail = data?.details?.[0]?.message ?? data?.error ?? '글 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.';
         setErrorMsg(detail);
+        return;
+      }
+
+      if (isUploadingImages) {
+        setErrorMsg('이미지 업로드가 완료될 때까지 잠시만 기다려 주세요.');
         return;
       }
 
@@ -208,6 +218,12 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <Label htmlFor="content">내용</Label>
                 <Textarea id="content" className="min-h-[200px]" value={content} onChange={(e) => setContent(e.target.value)} disabled={isSubmitting} />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
+              </div>
+              {/* 이미지 업로드 */}
+              <div className="space-y-2">
+                <Label>이미지 첨부 (선택)</Label>
+                <p className="text-xs text-gray-500 dark:text-gray-400">기존에 등록된 이미지를 삭제하거나 새로 추가할 수 있습니다.</p>
+                <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
               </div>
 
               {/* 에러 메시지 */}

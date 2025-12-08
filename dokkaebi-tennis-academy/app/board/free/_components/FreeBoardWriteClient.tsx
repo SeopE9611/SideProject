@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import ImageUploader from '@/components/admin/ImageUploader';
 
 export default function FreeBoardWriteClient() {
   const router = useRouter();
@@ -18,6 +19,10 @@ export default function FreeBoardWriteClient() {
   // 폼 상태
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+
+  // 이미지 상태
+  const [images, setImages] = useState<string[]>([]);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   // 제출 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,6 +49,11 @@ export default function FreeBoardWriteClient() {
       return;
     }
 
+    if (isUploadingImages) {
+      setErrorMsg('이미지 업로드가 완료될 때까지 잠시만 기다려 주세요.');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -55,6 +65,7 @@ export default function FreeBoardWriteClient() {
           type: 'free',
           title: title.trim(),
           content: content.trim(),
+          images: images,
         }),
       });
 
@@ -137,6 +148,13 @@ export default function FreeBoardWriteClient() {
                 <Label htmlFor="content">내용</Label>
                 <Textarea id="content" className="min-h-[200px] resize-y" value={content} onChange={(e) => setContent(e.target.value)} disabled={isSubmitting} />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
+              </div>
+
+              {/* 이미지 업로드 */}
+              <div className="space-y-2">
+                <Label>이미지 첨부 (선택)</Label>
+                <p className="text-xs text-gray-500 dark:text-gray-400">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
+                <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
               </div>
 
               {/* 에러 메시지 */}
