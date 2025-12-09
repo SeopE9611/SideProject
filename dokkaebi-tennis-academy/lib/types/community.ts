@@ -13,6 +13,12 @@ export const COMMUNITY_CATEGORIES = ['general', 'info', 'qna', 'etc'] as const;
 /** 자유 게시판 카테고리 타입 */
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
 
+// 파일 메타 타입
+export type CommunityAttachment = {
+  name: string; // 원본 파일명
+  url: string; // Supabase에 업로드된 파일 URL
+  size?: number; // 파일 크기
+};
 /**
  * API 응답/프론트에서 사용하는 커뮤니티 게시글 타입
  * - DB에서는 community_posts 컬렉션에 저장
@@ -55,6 +61,9 @@ export interface CommunityPost {
    * - 이후 업로드 기능 붙일 때 사용
    */
   images?: string[];
+
+  // 첨부 파일
+  attachments?: CommunityAttachment[];
 
   // ---------------------------------------------------------------------------
   // 작성자 정보

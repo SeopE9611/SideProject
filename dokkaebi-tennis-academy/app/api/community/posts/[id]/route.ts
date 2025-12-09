@@ -77,6 +77,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     // 자유 게시판 카테고리/이미지/번호
     category: doc.category ?? null,
     images: Array.isArray(doc.images) ? doc.images : [],
+    attachments: Array.isArray(doc.attachments) ? doc.attachments : [],
     postNo: typeof doc.postNo === 'number' ? doc.postNo : null,
 
     nickname: doc.nickname ?? '회원',
@@ -129,8 +130,18 @@ const patchBodySchema = z
     content: z.string().min(1).max(5000).optional(),
     category: z.enum(COMMUNITY_CATEGORIES).optional(),
     images: z.array(z.string()).max(20).optional(), // supabase URL 문자열 배열
+
+    attachments: z
+      .array(
+        z.object({
+          name: z.string(),
+          url: z.string().url(),
+          size: z.number().optional(),
+        })
+      )
+      .optional(),
   })
-  .refine((val) => val.title !== undefined || val.content !== undefined || val.category !== undefined || val.images !== undefined, {
+  .refine((val) => val.title !== undefined || val.content !== undefined || val.category !== undefined || val.images !== undefined || val.attachments !== undefined, {
     message: '수정할 필드가 없습니다.',
   });
 
@@ -217,6 +228,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   if (body.content !== undefined) update.content = body.content.trim();
   if (body.category !== undefined) update.category = body.category;
   if (body.images !== undefined) update.images = body.images;
+  if (body.attachments !== undefined) update.attachments = body.attachments;
 
   update.updatedAt = new Date();
 

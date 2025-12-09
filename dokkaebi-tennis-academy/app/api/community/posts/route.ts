@@ -65,6 +65,17 @@ const createSchema = z.object({
 
   // 첨부 이미지 URL 리스트 (Supabase 업로더와 호환)
   images: z.array(z.string()).max(10).optional(),
+
+  // 첨부 파일 호환
+  attachments: z
+    .array(
+      z.object({
+        name: z.string(),
+        url: z.string().url(),
+        size: z.number().optional(),
+      })
+    )
+    .optional(),
 });
 
 /**
@@ -175,6 +186,7 @@ export async function GET(req: NextRequest) {
 
     category: d.category ?? 'general',
     images: Array.isArray(d.images) ? d.images : [],
+    attachments: d.attachments ?? [],
     postNo: typeof d.postNo === 'number' ? d.postNo : undefined,
     authorName: d.authorName,
     authorEmail: d.authorEmail,
@@ -290,6 +302,9 @@ export async function POST(req: NextRequest) {
 
     // 첨부 이미지 URL 배열 (없으면 빈 배열)
     images: body.images && body.images.length > 0 ? body.images : [],
+
+    // 첨부 파일
+    attachments: body.attachments ?? [],
 
     // 게시판 내 노출용 번호 (자유 게시판만 사용)
     postNo,

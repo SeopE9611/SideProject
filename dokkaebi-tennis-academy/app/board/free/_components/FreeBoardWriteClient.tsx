@@ -1,9 +1,9 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState, ChangeEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, ArrowLeft, Loader2 } from 'lucide-react';
+import { MessageSquare, ArrowLeft, Loader2, Upload, X } from 'lucide-react';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import ImageUploader from '@/components/admin/ImageUploader';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { supabase } from '@/lib/supabase';
 
 export default function FreeBoardWriteClient() {
   const router = useRouter();
@@ -23,6 +25,11 @@ export default function FreeBoardWriteClient() {
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
+
+  // 파일 업로드 상태
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
 
   // 제출 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,51 +46,136 @@ export default function FreeBoardWriteClient() {
     return null;
   };
 
+  const MAX_FILES = 5;
+  const MAX_SIZE_MB = 10;
+
+  // 파일 추가 (드롭/선택 공통)
+  const addFiles = (files: File[]) => {
+    if (!files.length) return;
+
+    // 개수 제한
+    if (selectedFiles.length + files.length > MAX_FILES) {
+      alert(`파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`);
+      return;
+    }
+
+    // 용량 제한
+    const tooLarge = files.find((f) => f.size > MAX_SIZE_MB * 1024 * 1024);
+    if (tooLarge) {
+      alert(`파일당 ${MAX_SIZE_MB}MB를 초과할 수 없어요.`);
+      return;
+    }
+
+    // 이미지 파일 방지 (이미지는 이미지 탭에서만)
+    const hasImage = files.some((f) => f.type?.startsWith('image/'));
+    if (hasImage) {
+      alert('이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.');
+      return;
+    }
+
+    setSelectedFiles((prev) => [...prev, ...files]);
+  };
+
+  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    addFiles(files);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Supabase에 한 개 파일 업로드
+  const uploadOneFile = async (file: File) => {
+    const BUCKET = 'tennis-images';
+    const FOLDER = 'community/attachments';
+
+    const ext = file.name.split('.').pop() || 'bin';
+    const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+      upsert: false,
+      contentType: file.type || undefined,
+    });
+
+    if (error) {
+      console.error(error);
+      throw error;
+    }
+
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    const url = data?.publicUrl;
+    if (!url) throw new Error('파일 URL 생성에 실패했습니다.');
+
+    return {
+      name: file.name,
+      url,
+      size: file.size,
+    };
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
-    const msg = validate();
-    if (msg) {
-      setErrorMsg(msg);
+    if (!title.trim() || !content.trim()) {
+      setErrorMsg('제목과 내용을 입력해 주세요.');
       return;
     }
 
-    if (isUploadingImages) {
-      setErrorMsg('이미지 업로드가 완료될 때까지 잠시만 기다려 주세요.');
+    if (isUploadingImages || isUploadingFiles) {
+      setErrorMsg('첨부 업로드가 끝날 때까지 잠시만 기다려 주세요.');
       return;
     }
 
     try {
       setIsSubmitting(true);
 
+      let attachments: { name: string; url: string; size?: number }[] | undefined;
+
+      if (selectedFiles.length > 0) {
+        setIsUploadingFiles(true);
+        try {
+          const uploaded = await Promise.all(selectedFiles.map(uploadOneFile));
+          attachments = uploaded;
+        } finally {
+          setIsUploadingFiles(false);
+        }
+      }
+
+      const payload: any = {
+        type: 'free',
+        title: title.trim(),
+        content: content.trim(),
+        images,
+      };
+      if (attachments && attachments.length > 0) {
+        payload.attachments = attachments;
+      }
+
       const res = await fetch('/api/community/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          type: 'free',
-          title: title.trim(),
-          content: content.trim(),
-          images: images,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
 
       if (!res.ok || !data?.ok) {
-        // 백엔드에서 validation_error / unauthorized 등 내려줄 수 있음
-        const detail = data?.details?.[0]?.message ?? data?.error ?? '글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-        setErrorMsg(detail);
+        setErrorMsg(data?.error ?? '글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
         return;
       }
 
-      // TODO: 나중에 상세 페이지 구현되면 `/board/free/${data.id}` 로 이동해도 됨
-      router.push('/board/free');
+      const goId = data.id ?? data.item?._id ?? data.item?.id;
+      router.push(goId ? `/board/free/${goId}` : '/board/free');
       router.refresh();
     } catch (err) {
       console.error(err);
-      setErrorMsg('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      setErrorMsg('글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -150,11 +242,98 @@ export default function FreeBoardWriteClient() {
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
               </div>
 
-              {/* 이미지 업로드 */}
-              <div className="space-y-2">
-                <Label>이미지 첨부 (선택)</Label>
-                <p className="text-xs text-gray-500 dark:text-gray-400">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
-                <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
+              {/* 첨부 영역: 이미지 / 파일 탭 */}
+              <div className="space-y-3">
+                <Label>첨부 (선택)</Label>
+
+                <Tabs defaultValue="image" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="image">이미지 업로드</TabsTrigger>
+                    <TabsTrigger value="file">파일 업로드</TabsTrigger>
+                  </TabsList>
+
+                  {/* 이미지 업로드 탭 */}
+                  <TabsContent value="image" className="pt-4 space-y-2">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
+                    <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
+                  </TabsContent>
+
+                  {/* 파일 업로드 탭 */}
+                  <TabsContent value="file" className="pt-4 space-y-4">
+                    {/* 드롭존 */}
+                    <div
+                      className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer bg-white/60 dark:bg-gray-900/40"
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        if (e.target !== e.currentTarget) return;
+                        fileInputRef.current?.click();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          fileInputRef.current?.click();
+                        }
+                      }}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        addFiles(Array.from(e.dataTransfer.files || []));
+                      }}
+                    >
+                      <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600 dark:text-gray-300">클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.</p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-3"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fileInputRef.current?.click();
+                        }}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        파일 선택
+                      </Button>
+                      <input ref={fileInputRef} type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt" className="sr-only" onChange={handleFileInputChange} />
+                    </div>
+
+                    {/* 선택된 파일 카드 목록 */}
+                    {selectedFiles.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          첨부된 파일 ({selectedFiles.length}/{MAX_FILES})
+                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                          {selectedFiles.map((file, index) => (
+                            <div
+                              key={`${file.name}-${index}`}
+                              className="group relative flex flex-col justify-between rounded-lg bg-white dark:bg-gray-900/80 px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition"
+                            >
+                              <div className="flex-1 flex flex-col gap-1 text-xs">
+                                <span className="font-medium truncate" title={file.name}>
+                                  {file.name}
+                                </span>
+                                <span className="text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveFile(index)}
+                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-red-500"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
 
               {/* 에러 메시지 */}
@@ -162,12 +341,18 @@ export default function FreeBoardWriteClient() {
 
               {/* 버튼 영역 */}
               <div className="flex items-center justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" size="sm" disabled={isSubmitting} onClick={() => router.back()}>
+                <Button type="button" variant="outline" size="sm" disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={() => router.back()}>
                   취소
                 </Button>
-                <Button type="submit" size="sm" className={cn('gap-2')} disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  <span>작성하기</span>
+                <Button type="submit" size="sm" className={cn('gap-2')} disabled={isSubmitting || isUploadingImages || isUploadingFiles}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      등록 중…
+                    </>
+                  ) : (
+                    '작성하기'
+                  )}
                 </Button>
               </div>
             </form>

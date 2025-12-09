@@ -3,7 +3,7 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Eye, MessageSquare, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, Eye, MessageSquare, ThumbsUp, FileText } from 'lucide-react';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -128,6 +128,9 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}`, fetcher);
 
   const item = data && data.ok ? data.item : null;
+
+  // 첨부파일 (자유게시판은 현재 파일만 저장되지만, 타입이 배열인지 한 번 더 안전하게 체크)
+  const attachments = Array.isArray(item?.attachments) ? item!.attachments : [];
 
   // 조회수 처리: 비로그인 = localStorage TTL, 로그인 = 서버(userId 기준)에서 중복 방지
   useEffect(() => {
@@ -503,6 +506,30 @@ export default function FreeBoardDetailClient({ id }: Props) {
       setIsReporting(false);
     }
   }
+  // 첨부파일 강제 다운로드 핸들러
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error('다운로드 요청이 실패했습니다.');
+      }
+
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || 'attachment';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error(err);
+      alert('파일 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -616,27 +643,58 @@ export default function FreeBoardDetailClient({ id }: Props) {
                 <div className="mb-6 space-y-4">
                   {item.images.map((url, idx) => (
                     <div key={url + idx} className="flex justify-center">
-                      <button
-                        type="button"
-                        onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
-                        // bg-neutral-50 → bg-white / 다크모드에서는 어두운색
-                        className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-white dark:bg-neutral-900 hover:bg-white transition"
-                      >
-                        <Image
-                          src={url}
-                          alt={`첨부 이미지 ${idx + 1}`}
-                          width={1200}
-                          height={800}
-                          // 여백에도 동일하게 흰색이 보이도록 bg-white 추가
-                          className="w-full h-auto max-h-[560px] object-contain bg-white dark:bg-neutral-900"
-                        />
+                      <button type="button" onClick={() => window.open(url, '_blank', 'noopener,noreferrer')} className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-white dark:bg-neutral-900 hover:bg-white transition">
+                        <Image src={url} alt={`첨부 이미지 ${idx + 1}`} width={1200} height={800} className="w-full h-auto max-h-[560px] object-contain bg-white dark:bg-neutral-900" />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
+
               {/* 본문 */}
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800 dark:text-gray-100">{item.content}</div>{' '}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800 dark:text-gray-100">{item.content}</div>
+
+              {/* 첨부파일 */}
+              {attachments.length > 0 && (
+                <div className="mt-8 space-y-3 border-t border-gray-100 pt-4 dark:border-gray-800">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-50">첨부파일</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{attachments.length}개</span>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {attachments.map((att, index) => {
+                      const url = typeof att === 'string' ? att : att.url;
+                      const name = typeof att === 'string' ? `attachment-${index + 1}` : att.name || `attachment-${index + 1}`;
+                      const size = typeof att === 'object' && att.size ? `${(att.size / 1024 / 1024).toFixed(2)} MB` : '';
+
+                      if (!url) return null;
+
+                      return (
+                        <div key={`${url}-${index}`} className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs shadow-sm dark:border-gray-700 dark:bg-gray-900/60">
+                          <div className="flex min-w-0 flex-1 items-center gap-3">
+                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-blue-50 dark:bg-blue-900/30">
+                              <FileText className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate font-medium text-gray-900 dark:text-gray-50" title={name}>
+                                {name}
+                              </div>
+                              {size && <div className="text-[11px] text-gray-500 dark:text-gray-400">{size}</div>}
+                            </div>
+                          </div>
+
+                          <Button type="button" variant="outline" size="sm" className="ml-3 flex-shrink-0" onClick={() => handleDownload(url, name)}>
+                            다운로드
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-xs text-gray-500 dark:text-gray-400">
                 <span>게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
 
@@ -647,6 +705,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       {isLiking ? '처리 중...' : item.likedByMe ? `추천 취소 (${item.likes ?? 0})` : `추천 (${item.likes ?? 0})`}
                     </Button>
                   )}
+
                   <Dialog open={openReport} onOpenChange={setOpenReport}>
                     <DialogTrigger asChild>
                       <Button type="button" variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
