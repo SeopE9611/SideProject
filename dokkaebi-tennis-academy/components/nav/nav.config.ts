@@ -44,5 +44,9 @@ export const NAV_LINKS = {
   ],
 
   /** 커뮤니티형 게시판(지금은 리뷰만, 앞으로 자유게시판/브랜드 게시판 등 확장 예정) */
-  boards: [{ name: '리뷰 게시판', href: '/reviews' }],
+  boards: [
+    { name: '게시판 홈', href: '/board' },
+    { name: '자유 게시판', href: '/board/free' },
+    { name: '리뷰 게시판', href: '/reviews' },
+  ],
 } as const;

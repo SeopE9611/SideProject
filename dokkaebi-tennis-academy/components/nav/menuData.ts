@@ -57,6 +57,14 @@ export const menuSections: MenuSection[] = [
 
       // 커뮤니티 게시판 영역
       {
+        name: '게시판 홈',
+        href: '/board',
+      },
+      {
+        name: '자유 게시판',
+        href: '/board/free',
+      },
+      {
         name: '리뷰 게시판',
         href: '/reviews',
       },

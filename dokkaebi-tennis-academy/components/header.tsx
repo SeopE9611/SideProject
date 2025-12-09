@@ -106,7 +106,11 @@ const Header = () => {
       { name: 'QnA', href: '/board/qna' },
     ],
 
-    boards: [{ name: '리뷰 게시판', href: '/reviews' }],
+    boards: [
+      { name: '게시판 홈', href: '/board' },
+      { name: '자유 게시판', href: '/board/free' },
+      { name: '리뷰 게시판', href: '/reviews' },
+    ],
   };
 
   // 헤더 실제 높이를 CSS 변수로 노출 → 좌측 사이드 top 자동 반영
