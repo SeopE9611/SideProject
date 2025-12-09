@@ -204,13 +204,15 @@ const Header = () => {
             {/* 데스크탑 메뉴 (임시용) */}
             <nav className="hidden lg:flex items-center gap-2 xl:gap-3 ml-2">
               {menuItems.map((item) => {
-                const active = pathname?.startsWith(item.href);
+                // 서비스(부모) 항목은 자식 경로와 매칭시키지 않고 정확히 비교하여
+                // '/services/packages'에서 '/services'가 활성화되는 문제를 방지 (기억해놓자.)
+                const active = item.isServiceMenu ? pathname === item.href : pathname?.startsWith(item.href);
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={`px-3 py-2 rounded-lg text-sm transition
-                     ${active ? 'text-blue-600 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/30 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50'}`}
+                      ${active ? 'text-blue-600 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/30 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50'}`}
                     aria-current={active ? 'page' : undefined}
                     aria-label={`${item.name} 페이지로 이동`}
                   >
