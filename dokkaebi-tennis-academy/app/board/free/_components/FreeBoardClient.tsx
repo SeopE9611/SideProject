@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { MessageSquare, Plus, Eye, ThumbsUp, ImageIcon } from 'lucide-react';
+import { MessageSquare, Plus, Eye, ThumbsUp, ImageIcon, Paperclip } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -196,11 +196,18 @@ export default function FreeBoardClient() {
                           <span className={getCategoryBadgeClasses(post.category)}>{getCategoryLabel(post.category)}</span>
                         </div>
 
-                        {/* 제목 (+ 댓글 수 배치) */}
+                        {/* 제목  */}
                         <div className="flex items-center gap-1">
                           <span className="line-clamp-1 text-gray-900 dark:text-gray-50">{post.title}</span>
+
+                          {/* 댓글 수 뱃지 */}
                           {post.commentsCount ? <span className="text-xs text-blue-500">[{post.commentsCount}]</span> : null}
+
+                          {/* 이미지 첨부 아이콘 */}
                           {post.images && post.images.length > 0 && <ImageIcon className="h-4 w-4 shrink-0 ml-1 text-emerald-500" aria-label="이미지 첨부 있음" />}
+
+                          {/* 파일 첨부 아이콘 */}
+                          {post.attachments && post.attachments.length > 0 && <Paperclip className="h-4 w-4 shrink-0 ml-0.5 text-sky-500" aria-label="파일 첨부 있음" />}
                         </div>
 
                         {/* 글쓴이 */}
@@ -239,9 +246,18 @@ export default function FreeBoardClient() {
                       {/* 2줄: 제목 */}
                       <div className="mt-1 flex line-clamp-2 text-sm font-medium text-gray-900 dark:text-gray-50">
                         {post.title}
+
+                        {/* 이미지 첨부 아이콘 */}
                         {post.images && post.images.length > 0 && (
                           <span className="flex items-center justify-center rounded-full">
                             <ImageIcon className="h-4 w-4 shrink-0 ml-1 text-emerald-500" aria-label="이미지 첨부 있음" />
+                          </span>
+                        )}
+
+                        {/* 파일 첨부 아이콘 */}
+                        {post.attachments && post.attachments.length > 0 && (
+                          <span className="flex items-center justify-center rounded-full">
+                            <Paperclip className="h-4 w-4 shrink-0 ml-0.5 text-sky-500" aria-label="파일 첨부 있음" />
                           </span>
                         )}
                       </div>
