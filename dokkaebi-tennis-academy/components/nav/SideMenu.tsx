@@ -85,6 +85,13 @@ export default function SideMenu() {
                 </span>
               </Link>
 
+              <Link href="/services/apply" className={linkClass('/services/apply')}>
+                <span className="flex items-center justify-between font-semibold text-amber-700 dark:text-amber-400">
+                  장착 서비스 즉시 예약
+                  <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </span>
+              </Link>
+
               {/* 브랜드 서브메뉴 */}
               {NAV_FLAGS.SHOW_BRAND_MENU && NAV_LINKS.strings.brands?.length ? (
                 <div className="mt-2 pl-2 space-y-0.5">

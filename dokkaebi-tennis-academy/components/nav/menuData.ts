@@ -24,7 +24,7 @@ export const menuSections: MenuSection[] = [
     title: '장착 서비스',
     icon: 'wrench',
     links: [
-      { name: '장착 서비스 예약', href: '/services' },
+      { name: '장착 서비스 홈', href: '/services' },
       { name: '텐션 가이드', href: '/services/tension-guide' },
       { name: '장착 비용 안내', href: '/services/pricing' },
       { name: '매장/예약 안내', href: '/services/locations' },

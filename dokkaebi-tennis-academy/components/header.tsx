@@ -94,7 +94,7 @@ const Header = () => {
       ],
     },
     services: [
-      { name: '장착 서비스 예약', href: '/services' },
+      { name: '장착 서비스 홈', href: '/services' },
       { name: '텐션 가이드', href: '/services/tension-guide' },
       { name: '장착 비용 안내', href: '/services/pricing' },
       { name: '매장/예약 안내', href: '/services/locations' },
@@ -338,6 +338,20 @@ const Header = () => {
                           }}
                         >
                           전체 보기
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                           text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                           hover:from-amber-50/50 hover:to-orange-50/50 transition-all"
+                          onClick={() => {
+                            setOpen(false);
+                            router.push('/services/apply');
+                          }}
+                        >
+                          장착 서비스 즉시 예약
                           <ChevronRight className="h-3.5 w-3.5" />
                         </Button>
 
