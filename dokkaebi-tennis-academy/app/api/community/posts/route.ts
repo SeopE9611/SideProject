@@ -29,18 +29,24 @@ async function resolveDisplayName(payload: any | null): Promise<string> {
 
   try {
     if (payload?.sub) {
-      const u = await db.collection('users').findOne({ _id: new ObjectId(String(payload.sub)) });
-      // 런타임에서만 쓰이므로 any 허용
+      const u = await db.collection('users').findOne({
+        _id: new ObjectId(String(payload.sub)),
+      });
+
+      // 현재 users 스키마 기준:
+      // 1) (나중에 nickname 필드가 생기면) u.nickname
+      // 2) u.name
+      // 3) 그 외는 fallback
       // @ts-ignore
-      displayName = u?.name ?? u?.nickname ?? undefined;
+      displayName = u?.nickname ?? u?.name ?? null;
     }
   } catch {
-    // 이름 조회 실패해도 치명적이진 않으니 무시
+    // 조회 실패해도 치명적이진 않으니 무시
   }
 
-  // @ts-ignore
+  // 아직도 못 정했으면 payload 기반 fallback
   if (!displayName) {
-    displayName = payload?.name ?? payload?.nickname ?? payload?.email?.split('@')?.[0] ?? '회원';
+    displayName = payload?.nickname ?? payload?.name ?? payload?.email?.split('@')?.[0] ?? '회원';
   }
 
   return displayName ?? '회원';
