@@ -24,7 +24,17 @@ type Props = {
 type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: string };
 
 // 댓글 목록 응답 타입
-type CommentsResponse = { ok: true; items: CommunityComment[]; total: number; page: number; limit: number } | { ok: false; error: string };
+type CommentsResponse =
+  | {
+      ok: true;
+      items: CommunityComment[];
+      total: number;
+      page: number;
+      limit: number;
+    }
+  | { ok: false; error: string };
+
+const COMMENT_LIMIT = 10; // 댓글 1페이지당 10개
 
 // 제네릭 없이 공용으로 쓰는 fetcher
 const fetcher = async (url: string) => {
@@ -241,12 +251,18 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
 
-  // 댓글 목록 SWR (게시글이 로드된 후에만 요청)
-  const { data: commentsData, isLoading: isCommentsLoading, mutate: mutateComments } = useSWR<CommentsResponse>(item ? `/api/community/posts/${id}/comments` : null, fetcher);
+  // 댓글 페이지 상태
+  const [commentPage, setCommentPage] = useState(1);
 
+  // 댓글 목록 SWR (게시글이 로드된 후에만 요청)
+  const commentsKey = item ? `/api/community/posts/${id}/comments?page=${commentPage}&limit=${COMMENT_LIMIT}` : null;
+  const { data: commentsData, isLoading: isCommentsLoading, mutate: mutateComments } = useSWR<CommentsResponse>(commentsKey, fetcher);
   const comments = commentsData && commentsData.ok ? commentsData.items : [];
 
   const totalComments = commentsData && commentsData.ok ? commentsData.total : item?.commentsCount ?? 0;
+
+  // 댓글 전체 페이지 수
+  const totalCommentPages = Math.max(1, Math.ceil(totalComments / COMMENT_LIMIT));
 
   // 댓글 작성 핸들러
   const handleSubmitComment = async () => {
@@ -871,6 +887,22 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       );
                     })}
                   </ul>
+                )}
+                {/* 댓글 페이지네이션 */}
+                {!isCommentsLoading && totalCommentPages > 1 && (
+                  <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-300">
+                    <span>
+                      페이지 <span className="font-semibold">{commentPage}</span> / {totalCommentPages}
+                    </span>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" size="sm" disabled={commentPage <= 1} onClick={() => setCommentPage((p) => Math.max(1, p - 1))}>
+                        이전
+                      </Button>
+                      <Button type="button" variant="outline" size="sm" disabled={commentPage >= totalCommentPages} onClick={() => setCommentPage((p) => Math.min(totalCommentPages, p + 1))}>
+                        다음
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </div>
             </CardContent>
