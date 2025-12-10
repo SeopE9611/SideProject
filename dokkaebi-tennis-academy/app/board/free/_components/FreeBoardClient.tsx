@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CommunityPost } from '@/lib/types/community';
 import { attachImageColor, badgeBaseOutlined, badgeSizeSm } from '@/lib/badge-style';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
+import { useRouter } from 'next/navigation';
 
 // API 응답 타입
 type ListResponse = {
@@ -96,6 +98,9 @@ function ErrorBox({ message = '자유 게시판을 불러오는 중 오류가 �
 
 export default function FreeBoardClient() {
   const [page] = useState(1); // 추후 페이지네이션 추가 여지
+  // 로그인 상태 확인
+  const { user, loading } = useCurrentUser();
+  const router = useRouter();
   const { data, error, isLoading } = useSWR<ListResponse>(`/api/community/posts?type=free&page=${page}&limit=20`, fetcher);
 
   const items = data?.items ?? [];
@@ -117,16 +122,28 @@ export default function FreeBoardClient() {
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">테니스 관련 질문, 정보 공유, 일상 이야기를 자유롭게 나눌 수 있는 공간입니다.</p>
           </div>
 
-          {/* 우측: 글쓰기 / 게시판 홈 */}
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm">
               <Link href="/board">게시판 홈으로</Link>
             </Button>
-            <Button asChild size="sm" className="gap-1">
-              <Link href="/board/free/write">
-                <Plus className="h-4 w-4" />
-                <span>글쓰기</span>
-              </Link>
+
+            <Button
+              type="button"
+              size="sm"
+              className="gap-1"
+              disabled={loading}
+              onClick={() => {
+                if (!user) {
+                  // 비회원: 로그인 페이지로 이동
+                  router.push('/login');
+                  return;
+                }
+
+                router.push('/board/free/write');
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              <span>글쓰기</span>
             </Button>
           </div>
         </div>

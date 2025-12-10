@@ -81,15 +81,21 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
-  // 4) 신고자 정보 (회원/비회원 모두 허용)
+  // 4) 신고자 정보 (회원만 허용)
   const payload = await getAuthPayload();
 
-  const reporterUserId = payload?.sub ? String(payload.sub) : undefined;
-  const reporterEmail = payload?.email ? String(payload.email) : undefined;
+  if (!payload) {
+    // 비회원은 신고 불가
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+
+  // 여기까지 왔으면 인증된 사용자
+  const reporterUserId = String(payload.sub);
+  const reporterEmail = payload.email ? String(payload.email) : undefined;
 
   const reportsCol = db.collection('community_reports');
 
-  // 5) (선택) 간단한 중복 신고 방지 로직
+  // 5)  중복 신고 방지 로직
   //   - 같은 회원이 같은 글을 5분 내에 여러 번 신고하는 것 차단
   if (reporterUserId) {
     const now = new Date();

@@ -421,7 +421,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
     // 비회원이면 알림 후 종료
     if (!user) {
-      alert('로그인 후에 추천할 수 있습니다.');
+      alert('로그인이 필요합니다.');
       return;
     }
 
@@ -706,9 +706,18 @@ export default function FreeBoardDetailClient({ id }: Props) {
                     </Button>
                   )}
 
-                  <Dialog open={openReport} onOpenChange={setOpenReport}>
+                  <Dialog
+                    open={openReport}
+                    onOpenChange={(next) => {
+                      if (next && !user) {
+                        showErrorToast('로그인이 필요 합니다.');
+                        return;
+                      }
+                      setOpenReport(next);
+                    }}
+                  >
                     <DialogTrigger asChild>
-                      <Button type="button" variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                      <Button type="button" variant="ghost" size="sm" className="gap-1 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                         신고하기
                       </Button>
                     </DialogTrigger>
