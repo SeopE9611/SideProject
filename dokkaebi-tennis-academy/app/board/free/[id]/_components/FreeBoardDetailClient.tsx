@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CommunityComment, CommunityPost } from '@/lib/types/community';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -251,6 +251,14 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
 
+  // 대댓글 입력 상태
+  // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
+  // - replyDrafts: 각 댓글별로 입력 중인 답글 내용을 보관 (IME 안정성을 위해 commentId별로 분리)
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [isReplySubmitting, setIsReplySubmitting] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
+
   // 댓글 페이지 상태
   const [commentPage, setCommentPage] = useState(1);
 
@@ -263,6 +271,17 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
   // 댓글 전체 페이지 수
   const totalCommentPages = Math.max(1, Math.ceil(totalComments / COMMENT_LIMIT));
+
+  // 루트 댓글과 대댓글 분리
+  const rootComments = comments.filter((c) => !c.parentId);
+
+  const repliesByParentId = comments.reduce<Record<string, CommunityComment[]>>((acc, c) => {
+    if (c.parentId) {
+      if (!acc[c.parentId]) acc[c.parentId] = [];
+      acc[c.parentId].push(c);
+    }
+    return acc;
+  }, {});
 
   // 댓글 작성 핸들러
   const handleSubmitComment = async () => {
@@ -308,6 +327,73 @@ export default function FreeBoardDetailClient({ id }: Props) {
     } finally {
       setIsCommentSubmitting(false);
     }
+  };
+
+  // 대댓글 작성 핸들러
+  const handleSubmitReply = async (parentId: string) => {
+    if (!item) return;
+
+    if (!user) {
+      alert('로그인 후 답글을 작성할 수 있습니다.');
+      return;
+    }
+
+    const raw = replyDrafts[parentId] ?? '';
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      setReplyError('답글 내용을 입력해 주세요.');
+      return;
+    }
+
+    try {
+      setIsReplySubmitting(true);
+      setReplyError(null);
+
+      const res = await fetch(`/api/community/posts/${item.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ content: trimmed, parentId }),
+      });
+
+      const json = await res.json().catch(() => null);
+
+      if (!res.ok || !json?.ok) {
+        const msg = json?.details?.[0]?.message ?? json?.error ?? '답글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+        setReplyError(msg);
+        return;
+      }
+
+      // 입력값/상태 초기화 (해당 parentId만 제거)
+      setReplyDrafts((prev) => {
+        const next = { ...prev };
+        delete next[parentId];
+        return next;
+      });
+      setReplyingToId(null);
+
+      // 댓글 목록 재요청
+      await mutateComments();
+    } catch (err) {
+      console.error(err);
+      setReplyError('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setIsReplySubmitting(false);
+    }
+  };
+
+  // 어떤 댓글에 답글을 달지 시작할 때 호출
+  const handleStartReply = (commentId: string, nickname: string) => {
+    // 하나의 댓글에만 폼이 열리도록 replyingToId만 교체
+    setReplyingToId(commentId);
+
+    // 이미 입력 중이던 값이 있다면 유지, 없으면 빈 문자열로 초기화
+    setReplyDrafts((prev) => ({
+      ...prev,
+      [commentId]: prev[commentId] ?? '',
+    }));
+
+    setReplyError(null);
   };
 
   // 댓글 수정 모드 진입
@@ -545,6 +631,159 @@ export default function FreeBoardDetailClient({ id }: Props) {
       console.error(err);
       alert('파일 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
     }
+  };
+
+  // 댓글 아이템 컴포넌트
+  const CommentItem = ({ comment, isReply = false }: { comment: CommunityComment; isReply?: boolean }) => {
+    const isCommentAuthor = !!user && !!comment.userId && user.id === comment.userId;
+    const isEditing = editingCommentId === comment.id;
+    const isDeleted = comment.status === 'deleted';
+
+    // 대댓글 입력을 위한 로컬 ref (controlled가 아닌 uncontrolled로)
+    const replyInputRef = useRef<HTMLTextAreaElement>(null);
+
+    return (
+      <div className={`space-y-1 rounded-md border px-3 py-2 text-sm ${isReply ? 'ml-6 border-gray-100 bg-white dark:border-gray-800 dark:bg-gray-900/40' : 'border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/60'}`}>
+        {/* 상단: 작성자/시간/액션 */}
+        <div className="flex items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <span className="font-medium text-gray-700 dark:text-gray-200">
+            {comment.nickname ?? '회원'}
+            {isDeleted && ' (삭제된 댓글)'}
+          </span>
+          <div className="flex items-center gap-2">
+            <span>
+              {new Date(comment.createdAt).toLocaleString('ko-KR', {
+                year: '2-digit',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
+            {isCommentAuthor && !isDeleted && (
+              <div className="flex items-center gap-1">
+                {!isEditing && (
+                  <>
+                    <button type="button" className="text-[11px] text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100" onClick={() => startEditComment(comment.id, comment.content)}>
+                      수정
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button type="button" className="text-[11px] text-red-500 hover:text-red-600" onClick={() => handleDeleteComment(comment.id)}>
+                      삭제
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 본문 / 수정 모드 */}
+        {isDeleted ? (
+          <p className="whitespace-pre-wrap text-sm text-gray-400 dark:text-gray-500 italic">삭제된 댓글입니다.</p>
+        ) : isEditing ? (
+          <div className="space-y-2">
+            <Textarea className="min-h-[60px]" value={editingContent} onChange={(e) => setEditingContent(e.target.value)} disabled={isCommentSubmitting} />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={cancelEditComment} disabled={isCommentSubmitting}>
+                취소
+              </Button>
+              <Button type="button" size="sm" onClick={() => handleUpdateComment(comment.id)} disabled={isCommentSubmitting}>
+                저장
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-100">{comment.content}</p>
+        )}
+
+        {/* 답글 달기 버튼 */}
+        {!isEditing && !isReply && !isDeleted && (
+          <div className="mt-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <button type="button" className="text-[11px] text-blue-600 hover:text-blue-700 hover:underline" onClick={() => handleStartReply(comment.id, comment.nickname ?? '회원')}>
+              답글 달기
+            </button>
+          </div>
+        )}
+
+        {/* 이 댓글에 대한 대댓글 입력 폼 */}
+        {replyingToId === comment.id && (
+          <form
+            className="mt-2 space-y-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const content = replyInputRef.current?.value || '';
+              if (!content.trim()) {
+                setReplyError('답글 내용을 입력해 주세요.');
+                return;
+              }
+
+              (async () => {
+                if (!item || !user) return;
+
+                try {
+                  setIsReplySubmitting(true);
+                  setReplyError(null);
+
+                  const res = await fetch(`/api/community/posts/${item.id}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ content: content.trim(), parentId: comment.id }),
+                  });
+
+                  const json = await res.json().catch(() => null);
+
+                  if (!res.ok || !json?.ok) {
+                    const msg = json?.details?.[0]?.message ?? json?.error ?? '답글 작성에 실패했습니다.';
+                    setReplyError(msg);
+                    return;
+                  }
+
+                  // 입력값 초기화
+                  if (replyInputRef.current) {
+                    replyInputRef.current.value = '';
+                  }
+                  setReplyingToId(null);
+                  setReplyError(null);
+
+                  // 댓글 목록 재요청
+                  await mutateComments();
+                } catch (err) {
+                  console.error(err);
+                  setReplyError('알 수 없는 오류가 발생했습니다.');
+                } finally {
+                  setIsReplySubmitting(false);
+                }
+              })();
+            }}
+          >
+            <Textarea ref={replyInputRef} className="min-h-[60px]" defaultValue="" disabled={isReplySubmitting} placeholder={`@${comment.nickname ?? '회원'} 님께 답글을 남겨 보세요.`} autoFocus />
+            {replyError && <p className="text-xs text-red-600 dark:text-red-300">{replyError}</p>}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (replyInputRef.current) {
+                    replyInputRef.current.value = '';
+                  }
+                  setReplyingToId(null);
+                  setReplyError(null);
+                }}
+                disabled={isReplySubmitting}
+              >
+                취소
+              </Button>
+              <Button type="submit" size="sm" disabled={isReplySubmitting}>
+                {isReplySubmitting ? '작성 중...' : '답글 등록'}
+              </Button>
+            </div>
+          </form>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -830,64 +1069,26 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                 {!isCommentsLoading && comments.length > 0 && (
                   <ul className="space-y-4">
-                    {comments.map((c) => {
-                      const isCommentAuthor = !!user && !!c.userId && user.id === c.userId;
+                    {rootComments.map((c) => (
+                      <li key={c.id} className="space-y-2">
+                        {/* 루트 댓글 */}
+                        <CommentItem comment={c} />
 
-                      const isEditing = editingCommentId === c.id;
-
-                      return (
-                        <li key={c.id} className="space-y-1 rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm dark:border-gray-800 dark:bg-gray-900/60">
-                          <div className="flex items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
-                            <span className="font-medium text-gray-700 dark:text-gray-200">{c.nickname ?? '회원'}</span>
-                            <div className="flex items-center gap-2">
-                              <span>
-                                {new Date(c.createdAt).toLocaleString('ko-KR', {
-                                  year: '2-digit',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                              {isCommentAuthor && (
-                                <div className="flex items-center gap-1">
-                                  {!isEditing && (
-                                    <>
-                                      <button type="button" className="text-[11px] text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100" onClick={() => startEditComment(c.id, c.content)}>
-                                        수정
-                                      </button>
-                                      <span className="text-gray-300">|</span>
-                                      <button type="button" className="text-[11px] text-red-500 hover:text-red-600" onClick={() => handleDeleteComment(c.id)}>
-                                        삭제
-                                      </button>
-                                    </>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* 내용 영역: 편집 중이면 Textarea, 아니면 그냥 텍스트 */}
-                          {isEditing ? (
-                            <div className="space-y-2">
-                              <Textarea className="min-h-[60px]" value={editingContent} onChange={(e) => setEditingContent(e.target.value)} disabled={isCommentSubmitting} />
-                              <div className="flex justify-end gap-2">
-                                <Button type="button" variant="outline" size="sm" onClick={cancelEditComment} disabled={isCommentSubmitting}>
-                                  취소
-                                </Button>
-                                <Button type="button" size="sm" onClick={() => handleUpdateComment(c.id)} disabled={isCommentSubmitting}>
-                                  저장
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-100">{c.content}</p>
-                          )}
-                        </li>
-                      );
-                    })}
+                        {/* 이 루트 댓글에 달린 대댓글들 */}
+                        {repliesByParentId[c.id] && repliesByParentId[c.id].length > 0 && (
+                          <ul className="mt-2 space-y-2 border-l border-gray-100 pl-3 dark:border-gray-800">
+                            {repliesByParentId[c.id].map((reply) => (
+                              <li key={reply.id}>
+                                <CommentItem comment={reply} isReply />
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
                   </ul>
                 )}
+
                 {/* 댓글 페이지네이션 */}
                 {!isCommentsLoading && totalCommentPages > 1 && (
                   <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-300">

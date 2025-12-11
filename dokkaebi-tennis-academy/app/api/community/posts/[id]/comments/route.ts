@@ -57,6 +57,8 @@ async function resolveDisplayName(payload: any | null): Promise<string> {
 // 댓글 작성 요청 바디 스키마
 const createCommentSchema = z.object({
   content: z.string().min(1, '댓글 내용을 입력해 주세요.').max(1000, '댓글은 1000자 이내로 입력해 주세요.'),
+  // 대댓글용 부모 댓글 ID (루트 댓글이면 생략/undefined)
+  parentId: z.string().optional(),
 });
 
 // GET 쿼리: page, limit (기본값 1페이지 20개)
@@ -87,26 +89,56 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
   const db = await getDb();
   const commentsCol = db.collection('community_comments');
 
-  const filter = {
-    postId: new ObjectId(id),
+  const postObjectId = new ObjectId(id);
+
+  // 기본 필터: 이 글의 'public' 댓글 전체
+  const baseFilter = {
+    postId: postObjectId,
     status: 'public' as const,
   };
 
-  const skip = (page - 1) * limit;
+  // 전체 댓글 수(루트 + 대댓글)를 total로 내려줌
+  const total = await commentsCol.countDocuments(baseFilter);
 
-  const [total, docs] = await Promise.all([
-    commentsCol.countDocuments(filter),
-    commentsCol
-      .find(filter)
-      .sort({ createdAt: 1 }) // 오래된 댓글부터
-      .skip(skip)
-      .limit(limit)
-      .toArray(),
-  ]);
+  // 1) 페이지네이션 기준은 "루트 댓글(parentId: null)"만 사용
+  //    → 화면에는 public + deleted 모두 보여주고,
+  //      deleted는 프론트에서 "삭제된 댓글입니다" 로만 표시
+  const rootFilter = {
+    postId: postObjectId,
+    parentId: null,
+    status: { $in: ['public', 'deleted'] as const },
+  };
+
+  const skip = (page - 1) * limit;
+  // 이번 페이지에 들어갈 루트 댓글들
+  const rootDocs = await commentsCol
+    .find(rootFilter)
+    .sort({ createdAt: 1 }) // 오래된 댓글부터
+    .skip(skip)
+    .limit(limit)
+    .toArray();
+
+  const rootIds = rootDocs.map((d: any) => d._id);
+
+  // 2) 위 루트 댓글들에 달린 대댓글 전부 조회 (public + deleted)
+  const replyDocs =
+    rootIds.length > 0
+      ? await commentsCol
+          .find({
+            postId: postObjectId,
+            parentId: { $in: rootIds },
+            status: { $in: ['public', 'deleted'] as const },
+          })
+          .sort({ createdAt: 1 })
+          .toArray()
+      : [];
+  // 3) 루트 + 대댓글 합쳐서 프론트로 전달
+  const docs = [...rootDocs, ...replyDocs];
 
   const items: CommunityComment[] = docs.map((d: any) => ({
     id: String(d._id),
     postId: d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
+    parentId: d.parentId instanceof ObjectId ? d.parentId.toString() : d.parentId ? String(d.parentId) : null,
     userId: d.userId ? String(d.userId) : null,
     nickname: d.nickname ?? '회원',
     authorName: d.authorName,
@@ -117,14 +149,6 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : d.updatedAt ? String(d.updatedAt) : undefined,
   }));
 
-  // logInfo({
-  //   msg: 'community:comments:list',
-  //   status: 200,
-  //   durationMs: stop(),
-  //   extra: { postId: id, total, page, limit },
-  //   ...meta,
-  // });
-
   return NextResponse.json(
     {
       ok: true,
@@ -134,7 +158,6 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       limit,
     },
     {
-      // 캐시 방지 (댓글은 실시간성이 중요하므로)
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',
       },
@@ -184,10 +207,30 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   const postObjectId = new ObjectId(id);
 
-  // 실제로 해당 게시글이 존재하는지 한 번 체크 (선택이지만 안전)
+  // 실제로 해당 게시글이 존재하는지 체크
   const post = await postsCol.findOne({ _id: postObjectId, status: { $ne: 'deleted' } });
   if (!post) {
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
+
+  // parentId가 넘어온 경우: 같은 글에 속한 유효한 댓글인지 검증
+  let parentObjectId: ObjectId | null = null;
+  if (body.parentId) {
+    if (!ObjectId.isValid(body.parentId)) {
+      return NextResponse.json({ ok: false, error: 'invalid_parent_id' }, { status: 400 });
+    }
+
+    parentObjectId = new ObjectId(body.parentId);
+
+    const parentComment = await commentsCol.findOne({
+      _id: parentObjectId,
+      postId: postObjectId,
+      status: { $ne: 'deleted' },
+    });
+
+    if (!parentComment) {
+      return NextResponse.json({ ok: false, error: 'parent_not_found' }, { status: 400 });
+    }
   }
 
   const displayName = await resolveDisplayName(payload);
@@ -195,6 +238,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   const doc = {
     postId: postObjectId,
+    parentId: parentObjectId, // 루트 댓글이면 null, 대댓글이면 부모 댓글 ObjectId
     userId: new ObjectId(String(payload.sub)),
     nickname: displayName,
     content: body.content,
