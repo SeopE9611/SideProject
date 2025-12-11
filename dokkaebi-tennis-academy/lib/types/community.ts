@@ -8,7 +8,7 @@ export const COMMUNITY_BOARD_TYPES = ['free', 'brand'] as const;
 export type CommunityBoardType = (typeof COMMUNITY_BOARD_TYPES)[number];
 
 /** 자유 게시판 카테고리 목록 (제목 머릿말 용) */
-export const COMMUNITY_CATEGORIES = ['general', 'info', 'qna', 'etc'] as const;
+export const COMMUNITY_CATEGORIES = ['general', 'info', 'qna', 'tip', 'etc'] as const;
 
 /** 자유 게시판 카테고리 타입 */
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];

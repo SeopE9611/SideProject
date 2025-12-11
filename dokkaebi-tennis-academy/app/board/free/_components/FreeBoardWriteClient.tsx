@@ -15,12 +15,25 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 
+export const CATEGORY_OPTIONS = [
+  { value: 'general', label: '자유' },
+  { value: 'info', label: '정보' },
+  { value: 'qna', label: '질문' },
+  { value: 'tip', label: '노하우' },
+  { value: 'etc', label: '기타' },
+] as const;
+
+type CategoryValue = (typeof CATEGORY_OPTIONS)[number]['value'];
+
 export default function FreeBoardWriteClient() {
   const router = useRouter();
 
   // 폼 상태
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+
+  // 카테고리 상태 (기본 'general')
+  const [category, setCategory] = useState<CategoryValue>('general');
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -151,6 +164,7 @@ export default function FreeBoardWriteClient() {
         title: title.trim(),
         content: content.trim(),
         images,
+        category,
       };
       if (attachments && attachments.length > 0) {
         payload.attachments = attachments;
@@ -229,6 +243,25 @@ export default function FreeBoardWriteClient() {
 
           <CardContent className="p-6">
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* 분류 선택 */}
+              <div className="space-y-2">
+                <Label>분류</Label>
+                <div className="flex flex-wrap gap-2 text-sm">
+                  {CATEGORY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setCategory(opt.value as CategoryValue)}
+                      className={cn(
+                        'rounded-full border px-3 py-1',
+                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300'
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {/* 제목 입력 */}
               <div className="space-y-2">
                 <Label htmlFor="title">제목</Label>

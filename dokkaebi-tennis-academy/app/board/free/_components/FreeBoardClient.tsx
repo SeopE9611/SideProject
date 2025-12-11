@@ -40,7 +40,7 @@ function getCategoryLabel(category?: string | null) {
       return '자유';
     case 'info':
       return '정보';
-    case 'question':
+    case 'qna':
       return '질문';
     case 'tip':
       return '노하우';
@@ -55,20 +55,19 @@ function getCategoryBadgeClasses(category?: string | null) {
   // 카테고리별 배경/글자색 분리
   switch (category) {
     case 'general': // 자유
-      return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
     case 'info': // 정보
-      return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
-    case 'question': // 질문
-      return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
+    case 'qna': // 질문
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
     case 'tip': // 노하우
-      return 'bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
     case 'etc': // 기타
-      return 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
-    default: // 분류 없음
-      return 'bg-gray-100 text-gray-500 dark:bg-gray-800/60 dark:text-gray-300';
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
+    default: // 분류없음
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-gray-100 text-gray-500 dark:bg-gray-800/60 dark:text-gray-300';
   }
 }
-
 // 목록 스켈레톤 UI
 function ListSkeleton() {
   return (

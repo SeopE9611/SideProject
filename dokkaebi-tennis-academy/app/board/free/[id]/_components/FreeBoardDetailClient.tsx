@@ -8,7 +8,7 @@ import { ArrowLeft, Eye, MessageSquare, ThumbsUp, FileText } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { CommunityComment, CommunityPost } from '@/lib/types/community';
+import type { CommunityCategory, CommunityComment, CommunityPost } from '@/lib/types/community';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useEffect, useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
@@ -56,13 +56,13 @@ const fmtDateTime = (v: string | Date) =>
     minute: '2-digit',
   });
 
-function getCategoryLabel(category?: string | null) {
+export function getCategoryLabel(category?: CommunityCategory | null): string {
   switch (category) {
     case 'general':
       return '자유';
     case 'info':
       return '정보';
-    case 'question':
+    case 'qna':
       return '질문';
     case 'tip':
       return '노하우';
@@ -78,7 +78,7 @@ function getCategoryBadgeClasses(category?: string | null) {
       return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
     case 'info':
       return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
-    case 'question':
+    case 'qna':
       return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
     case 'tip':
       return 'bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
@@ -135,7 +135,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
   // 조회수 중복 방지 TTL (24시간)
   const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
 
-  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}`, fetcher);
+  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}`, fetcher, {
+    revalidateOnMount: true,
+    revalidateIfStale: true,
+    dedupingInterval: 0,
+  });
 
   const item = data && data.ok ? data.item : null;
 
@@ -806,7 +810,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
           </div>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => router.back()}>
+            <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => router.push('/board/free')}>
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>

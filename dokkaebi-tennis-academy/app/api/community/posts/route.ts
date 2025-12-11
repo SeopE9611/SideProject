@@ -253,13 +253,13 @@ export async function POST(req: NextRequest) {
   const bodyRaw = await req.json();
   const parsed = createSchema.safeParse(bodyRaw);
   if (!parsed.success) {
-    // logInfo({
-    //   msg: 'community:create:validation_failed',
-    //   status: 400,
-    //   durationMs: stop(),
-    //   extra: { issues: parsed.error.issues },
-    //   ...meta,
-    // });
+    logInfo({
+      msg: 'community:create:validation_failed',
+      status: 400,
+      durationMs: stop(),
+      extra: { issues: parsed.error.issues },
+      ...meta,
+    });
     return NextResponse.json({ ok: false, error: 'validation_error', details: parsed.error.issues }, { status: 400 });
   }
 
