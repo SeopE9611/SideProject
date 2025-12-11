@@ -251,7 +251,7 @@ export default function FreeBoardClient() {
                   {/* 데이터 행들 */}
                   <div className="divide-y divide-gray-100 dark:divide-gray-800">
                     {items.map((post) => (
-                      <Link key={post.id} href={`/board/free/${post.id}`} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm hover:bg-blue-50/40 dark:hover:bg-gray-800/60">
+                      <Link key={post.id} href={`/board/free/${post.postNo ?? post.id}`} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm hover:bg-blue-50/40 dark:hover:bg-gray-800/60">
                         {/* 번호 */}
                         <div className="text-center text-xs tabular-nums text-gray-400 dark:text-gray-500">{typeof post.postNo === 'number' ? post.postNo : '-'}</div>
 
@@ -298,7 +298,7 @@ export default function FreeBoardClient() {
                   {items.map((post) => (
                     <Link
                       key={post.id}
-                      href={`/board/free/${post.id}`}
+                      href={`/board/free/${post.postNo ?? post.id}`}
                       className="block rounded-lg border border-gray-100 bg-white/90 px-3 py-2 shadow-sm hover:border-blue-200 hover:bg-blue-50/60 dark:border-gray-700 dark:bg-gray-900/80 dark:hover:border-blue-500/60"
                     >
                       {/* 1줄: 번호 + 분류 뱃지 */}

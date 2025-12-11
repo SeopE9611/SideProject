@@ -263,7 +263,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [commentPage, setCommentPage] = useState(1);
 
   // 댓글 목록 SWR (게시글이 로드된 후에만 요청)
-  const commentsKey = item ? `/api/community/posts/${id}/comments?page=${commentPage}&limit=${COMMENT_LIMIT}` : null;
+  const commentsKey = item ? `/api/community/posts/${item.id}/comments?page=${commentPage}&limit=${COMMENT_LIMIT}` : null;
   const { data: commentsData, isLoading: isCommentsLoading, mutate: mutateComments } = useSWR<CommentsResponse>(commentsKey, fetcher);
   const comments = commentsData && commentsData.ok ? commentsData.items : [];
 

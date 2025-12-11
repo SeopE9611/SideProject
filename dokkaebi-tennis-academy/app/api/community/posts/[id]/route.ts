@@ -10,7 +10,7 @@ import { COMMUNITY_CATEGORIES } from '@/lib/types/community';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
 // ---------------------------------------------------------------------------
-// GET: 게시글 상세 + 조회수 +1
+// GET: 게시글 상세
 // ---------------------------------------------------------------------------
 export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
@@ -21,33 +21,42 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
   const db = await getDb();
   const col = db.collection('community_posts');
 
-  // id가 ObjectId 형식이 아니면 바로 404
-  if (!ObjectId.isValid(id)) {
-    logInfo({
-      msg: 'community:detail:invalid_id',
-      status: 404,
-      durationMs: stop(),
-      extra: { id },
-      ...meta,
-    });
+  // id 해석: ObjectId 우선, 아니면 숫자(postNo) 시도
+  let doc: any | null = null;
+  let postObjectId: ObjectId | null = null;
 
-    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  if (ObjectId.isValid(id)) {
+    // URL 파라미터가 ObjectId 형식이면 기존 방식 유지
+    postObjectId = new ObjectId(id);
+    doc = (await col.findOne({ _id: postObjectId })) as any | null;
+  } else {
+    // ObjectId가 아니면 "숫자 문자열"인지 확인 → 자유게시판 postNo로 조회
+    const postNo = Number(id);
+
+    if (!Number.isInteger(postNo)) {
+      // 숫자로도 해석이 안 되면 아예 잘못된 URL → 404
+      logInfo({
+        msg: 'community:detail:invalid_id',
+        status: 404,
+        durationMs: stop(),
+        extra: { id },
+        ...meta,
+      });
+
+      return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    }
+
+    // 자유게시판(type: 'free')에서 postNo로 조회
+    doc = (await col.findOne({ type: 'free', postNo })) as any | null;
+
+    // 조회에 성공하면 doc._id를 이후 공통 처리에서 사용
+    if (doc && doc._id instanceof ObjectId) {
+      postObjectId = doc._id;
+    }
   }
 
-  const _id = new ObjectId(id);
-
-  // 문서 존재 여부 확인
-  const doc = (await col.findOne({ _id })) as any | null;
-
-  if (!doc) {
-    // logInfo({
-    //   msg: 'community:detail:not_found',
-    //   status: 404,
-    //   durationMs: stop(),
-    //   extra: { id },
-    //   ...meta,
-    // });
-
+  // 문서가 없거나 _id를 얻지 못한 경우
+  if (!doc || !postObjectId) {
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
@@ -58,7 +67,8 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
   if (userId) {
     const likesCol = db.collection('community_likes');
     const likeDoc = await likesCol.findOne({
-      postId: _id,
+      // 항상 실제 문서의 _id를 postId로 사용
+      postId: postObjectId,
       userId: new ObjectId(userId),
     });
 
@@ -152,25 +162,11 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
-    // logInfo({
-    //   msg: 'community:update:invalid_id',
-    //   status: 404,
-    //   durationMs: stop(),
-    //   extra: { id },
-    //   ...meta,
-    // });
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
   const userId = await getAuthUserId();
   if (!userId) {
-    // logInfo({
-    //   msg: 'community:update:unauthorized',
-    //   status: 401,
-    //   durationMs: stop(),
-    //   extra: { id },
-    //   ...meta,
-    // });
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
@@ -180,25 +176,11 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   const doc = (await col.findOne({ _id })) as any | null;
   if (!doc) {
-    // logInfo({
-    //   msg: 'community:update:not_found',
-    //   status: 404,
-    //   durationMs: stop(),
-    //   extra: { id },
-    //   ...meta,
-    // });
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
   // 작성자 본인인지 확인
   if (!doc.userId || String(doc.userId) !== userId) {
-    // logInfo({
-    //   msg: 'community:update:forbidden',
-    //   status: 403,
-    //   durationMs: stop(),
-    //   extra: { id, userId },
-    //   ...meta,
-    // });
     return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
   }
 
@@ -234,14 +216,6 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   await col.updateOne({ _id }, { $set: update });
 
-  // logInfo({
-  //   msg: 'community:update:success',
-  //   status: 200,
-  //   durationMs: stop(),
-  //   extra: { id, userId },
-  //   ...meta,
-  // });
-
   return NextResponse.json({ ok: true });
 }
 
@@ -256,25 +230,11 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
-    // logInfo({
-    //   msg: 'community:delete:invalid_id',
-    //   status: 404,
-    //   durationMs: stop(),
-    //   extra: { id },
-    //   ...meta,
-    // });
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
   const userId = await getAuthUserId();
   if (!userId) {
-    // logInfo({
-    //   msg: 'community:delete:unauthorized',
-    //   status: 401,
-    //   durationMs: stop(),
-    //   extra: { id },
-    //   ...meta,
-    // });
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
@@ -284,37 +244,15 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
 
   const doc = (await col.findOne({ _id })) as any | null;
   if (!doc) {
-    // logInfo({
-    //   msg: 'community:delete:not_found',
-    //   status: 404,
-    //   durationMs: stop(),
-    //   extra: { id },
-    //   ...meta,
-    // });
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
   // 작성자 본인인지 확인
   if (!doc.userId || String(doc.userId) !== userId) {
-    // logInfo({
-    //   msg: 'community:delete:forbidden',
-    //   status: 403,
-    //   durationMs: stop(),
-    //   extra: { id, userId },
-    //   ...meta,
-    // });
     return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
   }
 
   await col.deleteOne({ _id });
-
-  // logInfo({
-  //   msg: 'community:delete:success',
-  //   status: 200,
-  //   durationMs: stop(),
-  //   extra: { id, userId },
-  //   ...meta,
-  // });
 
   return NextResponse.json({ ok: true });
 }
