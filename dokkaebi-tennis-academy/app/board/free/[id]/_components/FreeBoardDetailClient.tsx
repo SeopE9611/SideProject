@@ -344,7 +344,6 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [commentError, setCommentError] = useState<string | null>(null);
 
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editingContent, setEditingContent] = useState('');
 
   // 대댓글 입력 상태
   // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
@@ -504,21 +503,19 @@ export default function FreeBoardDetailClient({ id }: Props) {
   };
 
   // 댓글 수정 모드 진입
-  const startEditComment = (commentId: string, currentContent: string) => {
+  const startEditComment = (commentId: string) => {
     setEditingCommentId(commentId);
-    setEditingContent(currentContent);
     setCommentError(null);
   };
 
   // 댓글 수정 모드 취소
   const cancelEditComment = () => {
     setEditingCommentId(null);
-    setEditingContent('');
   };
-
   // 댓글 수정 저장
-  const handleUpdateComment = async (commentId: string) => {
-    if (!editingContent.trim()) {
+  const handleUpdateComment = async (commentId: string, newContent: string) => {
+    const trimmed = newContent.trim();
+    if (!trimmed) {
       setCommentError('댓글 내용을 입력해 주세요.');
       return;
     }
@@ -531,7 +528,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ content: editingContent.trim() }),
+        body: JSON.stringify({ content: trimmed }),
       });
 
       const json = await res.json().catch(() => null);
@@ -544,9 +541,8 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
       // 수정 모드 종료
       setEditingCommentId(null);
-      setEditingContent('');
 
-      // 댓글 목록만 재검증 (게시글 메타는 그대로)
+      // 댓글 목록만 재검증
       await mutateComments();
     } catch (err) {
       console.error(err);
@@ -829,6 +825,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
     // 대댓글 입력을 위한 로컬 ref (controlled가 아닌 uncontrolled로)
     const replyInputRef = useRef<HTMLTextAreaElement>(null);
+    const editInputRef = useRef<HTMLTextAreaElement>(null);
 
     return (
       <div
@@ -861,7 +858,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   <button
                     type="button"
                     className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                    onClick={() => startEditComment(comment.id, comment.content)}
+                    onClick={() => startEditComment(comment.id)}
                   >
                     수정
                   </button>
@@ -894,16 +891,31 @@ export default function FreeBoardDetailClient({ id }: Props) {
         ) : isEditing ? (
           <div className="space-y-2.5">
             <Textarea
+              ref={editInputRef}
               className="min-h-[80px] resize-none border-gray-200 text-sm focus-visible:ring-1 focus-visible:ring-gray-900 dark:border-gray-700 dark:focus-visible:ring-gray-400"
-              value={editingContent}
-              onChange={(e) => setEditingContent(e.target.value)}
+              defaultValue={comment.content} // 초기값만 세팅, 이후는 브라우저가 관리
               disabled={isCommentSubmitting}
+              autoFocus
             />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" size="sm" onClick={cancelEditComment} disabled={isCommentSubmitting} className="h-8 px-4 text-xs bg-transparent">
                 취소
               </Button>
-              <Button type="button" size="sm" onClick={() => handleUpdateComment(comment.id)} disabled={isCommentSubmitting} className="h-8 bg-gray-900 px-4 text-xs hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200">
+              <Button
+                type="button"
+                size="sm"
+                disabled={isCommentSubmitting}
+                className="h-8 bg-gray-900 px-4 text-xs hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                onClick={() => {
+                  const content = editInputRef.current?.value ?? '';
+                  // 빈 내용 방어
+                  if (!content.trim()) {
+                    setCommentError('댓글 내용을 입력해 주세요.');
+                    return;
+                  }
+                  void handleUpdateComment(comment.id, content);
+                }}
+              >
                 저장
               </Button>
             </div>
