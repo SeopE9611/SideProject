@@ -7,7 +7,7 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 
-// 로그인된 사용자 정보 가져오기 (없으면 null)
+// 1) 인증 페이로드 유틸
 async function getAuthPayload() {
   const jar = await cookies();
   const token = jar.get('accessToken')?.value;
@@ -17,8 +17,7 @@ async function getAuthPayload() {
   return payload ?? null;
 }
 
-// -------------------------- 신고 요청 스키마 -----------------------------
-
+// 2) 신고 사유 스키마
 const reportSchema = z.object({
   reason: z.string().trim().min(10, '신고 사유는 최소 10자 이상이어야 합니다.').max(500, '신고 사유는 500자 이하로 입력해주세요.'),
 });
@@ -26,12 +25,12 @@ const reportSchema = z.object({
 type ReportInput = z.infer<typeof reportSchema>;
 
 // -----------------------------------------------------------------------
-// POST: 게시글 신고 생성
+// POST: 댓글/대댓글 신고 생성
+// POST /api/community/comments/[id]/report
 // -----------------------------------------------------------------------
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
-
   const { id } = await ctx.params;
 
   // 1) ID 유효성 검사
@@ -39,7 +38,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ ok: false, error: 'invalid_id' }, { status: 400 });
   }
 
-  // 2) 요청 본문 파싱 + Zod 검증
+  // 2) body 파싱 + Zod 검증
   let json: unknown;
   try {
     json = await req.json();
@@ -49,81 +48,65 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   const parsed = reportSchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: 'validation_failed',
-        details: parsed.error.flatten(),
-      },
-      { status: 400 }
-    );
+    return NextResponse.json({ ok: false, error: 'validation_failed', details: parsed.error.flatten() }, { status: 400 });
   }
 
   const { reason } = parsed.data as ReportInput;
 
+  // 3) 댓글 존재 여부 확인 + 게시글 정보 가져오기
   const db = await getDb();
+  const commentsCol = db.collection('community_comments');
   const postsCol = db.collection('community_posts');
+  const reportsCol = db.collection('community_reports');
 
-  const _id = new ObjectId(id);
+  const commentObjectId = new ObjectId(id);
 
-  // 3) 대상 게시글 존재 여부 확인 (삭제된 글은 신고 불가)
-  const post = await postsCol.findOne({ _id, status: { $ne: 'deleted' } });
+  const comment = await commentsCol.findOne({ _id: commentObjectId });
 
-  if (!post) {
-    // logInfo({
-    //   msg: 'community:report:not_found',
-    //   status: 404,
-    //   durationMs: stop(),
-    //   extra: { id },
-    //   ...meta,
-    // });
-
+  if (!comment || comment.status === 'deleted') {
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
+
+  // 이 댓글이 속한 게시글 정보 (게시판 타입 등)
+  const post = await postsCol.findOne({ _id: comment.postId });
+  if (!post) {
+    return NextResponse.json({ ok: false, error: 'post_not_found' }, { status: 404 });
   }
 
   // 4) 신고자 정보 (회원만 허용)
   const payload = await getAuthPayload();
-
   if (!payload) {
-    // 비회원은 신고 불가
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
-  // 여기까지 왔으면 인증된 사용자
   const reporterUserId = String(payload.sub);
   const reporterEmail = payload.email ? String(payload.email) : undefined;
 
-  const reportsCol = db.collection('community_reports');
-
-  // 자기글은 신고불가
-  if (post.userId && String(post.userId) === reporterUserId) {
-    return NextResponse.json({ ok: false, error: 'cannot_report_own_post' }, { status: 400 });
+  // 자기 댓글은 신고 불가
+  if (comment.userId && String(comment.userId) === reporterUserId) {
+    return NextResponse.json({ ok: false, error: 'cannot_report_own_comment' }, { status: 400 });
   }
 
-  // 5)  중복 신고 방지 로직
-  //   - 같은 회원이 같은 글을 5분 내에 여러 번 신고하는 것 차단
-  if (reporterUserId) {
-    const now = new Date();
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+  // 5) 중복 신고(5분 이내) 방지
+  const now = new Date();
+  const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
 
-    const recent = await reportsCol.findOne({
-      postId: _id,
-      reporterUserId,
-      createdAt: { $gte: fiveMinutesAgo },
-    });
+  const recent = await reportsCol.findOne({
+    commentId: commentObjectId,
+    reporterUserId,
+    createdAt: { $gte: fiveMinutesAgo },
+  });
 
-    if (recent) {
-      return NextResponse.json({ ok: false, error: 'too_many_requests' }, { status: 429 });
-    }
+  if (recent) {
+    return NextResponse.json({ ok: false, error: 'too_many_requests' }, { status: 429 });
   }
 
   // 6) 신고 문서 생성
-  const now = new Date();
-
   const doc = {
-    postId: _id,
-    // 게시판 종류: DB에서는 type 필드 사용 중 (free / brand)
+    postId: comment.postId,
+    commentId: commentObjectId,
     boardType: post.type ?? 'free',
+    targetType: 'comment' as const,
     reason,
     reporterUserId: reporterUserId ?? null,
     reporterEmail: reporterEmail ?? null,
@@ -135,12 +118,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const result = await reportsCol.insertOne(doc as any);
 
   logInfo({
-    msg: 'community:report:create',
+    msg: 'community:comment_report:create',
     status: 201,
     durationMs: stop(),
     extra: {
       reportId: result.insertedId.toString(),
-      postId: id,
+      commentId: id,
       reporterUserId: reporterUserId ?? null,
     },
     ...meta,

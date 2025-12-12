@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import Image from 'next/image';
 
 type Props = {
@@ -131,6 +131,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [openReport, setOpenReport] = useState(false);
   const [reason, setReason] = useState('');
   const [isReporting, setIsReporting] = useState(false);
+
+  // 댓글 리폿
+  const [openCommentReport, setOpenCommentReport] = useState(false); // 모달 오픈 여부
+  const [commentReportReason, setCommentReportReason] = useState(''); // 신고 사유
+  const [isCommentReporting, setIsCommentReporting] = useState(false); // 처리 중 플래그
+  const [targetComment, setTargetComment] = useState<CommunityComment | null>(null); // 신고 대상 댓글
 
   // 조회수 중복 방지 TTL (24시간)
   const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
@@ -585,9 +591,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
     }
   };
 
-  // 리폿 핸들러
   async function handleSubmitReport() {
-    // 게시글이 아직 로드 안 된 경우 방어
     if (!item) return;
 
     if (reason.trim().length < 10) {
@@ -606,11 +610,28 @@ export default function FreeBoardDetailClient({ id }: Props) {
       });
 
       if (!res.ok) {
-        if (res.status === 429) {
-          showErrorToast('이미 최근에 신고한 게시글입니다.');
-        } else {
-          showErrorToast('신고 처리 중 오류가 발생했습니다.');
+        const data = await res.json().catch(() => null);
+
+        // 비로그인
+        if (res.status === 401 || data?.error === 'unauthorized') {
+          showErrorToast('로그인이 필요 합니다.');
+          return;
         }
+
+        // 자기 글 신고
+        if (res.status === 400 && data?.error === 'cannot_report_own_post') {
+          showErrorToast('본인이 작성한 글은 신고할 수 없습니다.');
+          return;
+        }
+
+        // 5분 이내 중복 신고
+        if (res.status === 429 || data?.error === 'too_many_requests') {
+          showErrorToast('이미 최근에 신고한 게시글입니다.');
+          return;
+        }
+
+        // 그 외
+        showErrorToast('신고 처리 중 오류가 발생했습니다.');
         return;
       }
 
@@ -624,6 +645,72 @@ export default function FreeBoardDetailClient({ id }: Props) {
       setIsReporting(false);
     }
   }
+
+  // 댓글 리폿 핸들러
+  const openCommentReportDialog = (comment: CommunityComment) => {
+    if (!user) {
+      showErrorToast('로그인이 필요 합니다.');
+      return;
+    }
+    if (comment.status === 'deleted') {
+      showErrorToast('삭제된 댓글은 신고할 수 없습니다.');
+      return;
+    }
+
+    setTargetComment(comment);
+    setCommentReportReason('');
+    setOpenCommentReport(true);
+  };
+
+  async function handleSubmitCommentReport() {
+    if (!targetComment) return;
+
+    if (commentReportReason.trim().length < 10) {
+      showErrorToast('신고 사유는 최소 10자 이상 입력해야 합니다.');
+      return;
+    }
+
+    try {
+      setIsCommentReporting(true);
+
+      const res = await fetch(`/api/community/comments/${targetComment.id}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason: commentReportReason }),
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          showErrorToast('로그인이 필요 합니다.');
+          return;
+        }
+        if (res.status === 429) {
+          showErrorToast('이미 최근에 신고한 댓글입니다. 잠시 후 다시 시도해 주세요.');
+          return;
+        }
+
+        if (res.status === 404) {
+          showErrorToast('댓글을 찾을 수 없습니다.');
+          return;
+        }
+
+        showErrorToast('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        return;
+      }
+
+      showSuccessToast('댓글 신고가 접수되었습니다.');
+      setOpenCommentReport(false);
+      setCommentReportReason('');
+      setTargetComment(null);
+    } catch (error) {
+      console.error(error);
+      showErrorToast('신고 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsCommentReporting(false);
+    }
+  }
+
   // 첨부파일 강제 다운로드 핸들러
   const handleDownload = async (url: string, filename: string) => {
     try {
@@ -676,21 +763,31 @@ export default function FreeBoardDetailClient({ id }: Props) {
                 minute: '2-digit',
               })}
             </span>
-            {isCommentAuthor && !isDeleted && (
-              <div className="flex items-center gap-1">
-                {!isEditing && (
-                  <>
-                    <button type="button" className="text-[11px] text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100" onClick={() => startEditComment(comment.id, comment.content)}>
-                      수정
-                    </button>
-                    <span className="text-gray-300">|</span>
-                    <button type="button" className="text-[11px] text-red-500 hover:text-red-600" onClick={() => handleDeleteComment(comment.id)}>
-                      삭제
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
+            {/* 오른쪽 액션 영역 */}
+            <div className="flex items-center gap-1">
+              {/* 작성자용: 수정/삭제 */}
+              {isCommentAuthor && !isDeleted && !isEditing && (
+                <>
+                  <button type="button" className="text-[11px] text-blue-600 hover:underline" onClick={() => startEditComment(comment.id, comment.content)}>
+                    수정
+                  </button>
+                  <span className="text-gray-300">|</span>
+                  <button type="button" className="text-[11px] text-red-500 hover:underline" onClick={() => handleDeleteComment(comment.id)}>
+                    삭제
+                  </button>
+                </>
+              )}
+
+              {/* 비작성자용: 신고 버튼 */}
+              {!isCommentAuthor && !isDeleted && (
+                <>
+                  {isCommentAuthor && <span className="text-gray-300">|</span>}
+                  <button type="button" className="text-[11px] text-red-500 hover:underline" onClick={() => openCommentReportDialog(comment)}>
+                    신고
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1011,6 +1108,55 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
+                  <Dialog
+                    open={openCommentReport}
+                    onOpenChange={(next) => {
+                      if (!next) {
+                        setOpenCommentReport(false);
+                        setTargetComment(null);
+                        setCommentReportReason('');
+                        return;
+                      }
+
+                      // 열 때는 버튼에서만 열리므로 여기서 user 체크는 생략 가능
+                    }}
+                  >
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>댓글 신고하기</DialogTitle>
+                        <DialogDescription>신고 사유를 자세히 작성해 주세요. 운영자가 검토 후 필요한 조치를 진행합니다.</DialogDescription>
+                      </DialogHeader>
+
+                      <div className="space-y-2">
+                        {targetComment && (
+                          <div className="rounded-md border bg-muted px-3 py-2 text-xs text-muted-foreground">
+                            <div className="font-medium mb-1">신고 대상: {targetComment.nickname ?? '회원'}</div>
+                            <div className="line-clamp-2 whitespace-pre-wrap">{targetComment.content}</div>
+                          </div>
+                        )}
+
+                        <Label htmlFor="comment-report-reason">신고 사유</Label>
+                        <Textarea
+                          id="comment-report-reason"
+                          className="min-h-[100px]"
+                          value={commentReportReason}
+                          onChange={(e) => setCommentReportReason(e.target.value)}
+                          disabled={isCommentReporting}
+                          placeholder="신고 사유를 10자 이상 입력해 주세요."
+                        />
+                      </div>
+
+                      <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setOpenCommentReport(false)}>
+                          취소
+                        </Button>
+                        <Button type="button" onClick={handleSubmitCommentReport} disabled={isCommentReporting}>
+                          {isCommentReporting ? '신고 중...' : '신고하기'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
                   {isAuthor && (
                     <>
                       <Button type="button" variant="outline" size="sm" onClick={() => router.push(`/board/free/${item.id}/edit`)}>
