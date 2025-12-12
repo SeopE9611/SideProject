@@ -234,8 +234,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
     if (openProfile === '1') {
       handleOpenAuthorProfile();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item?.id, searchParams]); // searchParams도 의존성으로 추가
+  }, [item?.id]);
 
   // 첨부파일 (자유게시판은 현재 파일만 저장되지만, 타입이 배열인지 한 번 더 안전하게 체크)
   const attachments = Array.isArray(item?.attachments) ? item!.attachments : [];
@@ -333,8 +332,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
         console.error('failed to increase view (member)', err);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item?.id, user, mutate]); // item?.id 와 user를 의존성으로 추가
+  }, [item?.id, user, mutate, VIEW_TTL_MS]);
 
   const isNotFound = (error as any)?.error === 'not_found';
 
@@ -842,9 +840,6 @@ export default function FreeBoardDetailClient({ id }: Props) {
       >
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-700 to-gray-900 text-sm font-medium text-white dark:from-gray-600 dark:to-gray-800">
-              {(comment.nickname ?? '회원').charAt(0).toUpperCase()}
-            </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{comment.nickname ?? '회원'}</span>
               <span className="text-xs text-gray-500 dark:text-gray-500">
@@ -860,7 +855,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
           </div>
 
           {!isDeleted && (
-            <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="flex items-center gap-1 opacity-100">
               {isCommentAuthor && !isEditing && (
                 <>
                   <button
