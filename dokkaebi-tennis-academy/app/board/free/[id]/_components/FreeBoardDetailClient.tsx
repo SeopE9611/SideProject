@@ -263,6 +263,18 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [isReplySubmitting, setIsReplySubmitting] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
 
+  // 루트 댓글별 전체 답글 펼침 상태
+  const [expandedRootIds, setExpandedRootIds] = useState<Set<string>>(new Set());
+  // 특정 루트 댓글의 답글 접기/펼치기 토글
+  const toggleRootReplies = (commentId: string) => {
+    setExpandedRootIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(commentId)) next.delete(commentId);
+      else next.add(commentId);
+      return next;
+    });
+  };
+
   // 댓글 페이지 상태
   const [commentPage, setCommentPage] = useState(1);
 
@@ -1073,23 +1085,44 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                 {!isCommentsLoading && comments.length > 0 && (
                   <ul className="space-y-4">
-                    {rootComments.map((c) => (
-                      <li key={c.id} className="space-y-2">
-                        {/* 루트 댓글 */}
-                        <CommentItem comment={c} />
+                    {rootComments.map((c) => {
+                      const replies = repliesByParentId[c.id] || [];
+                      const isExpanded = expandedRootIds.has(c.id);
 
-                        {/* 이 루트 댓글에 달린 대댓글들 */}
-                        {repliesByParentId[c.id] && repliesByParentId[c.id].length > 0 && (
-                          <ul className="mt-2 space-y-2 border-l border-gray-100 pl-3 dark:border-gray-800">
-                            {repliesByParentId[c.id].map((reply) => (
-                              <li key={reply.id}>
-                                <CommentItem comment={reply} isReply />
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    ))}
+                      const MAX_COLLAPSED_REPLIES = 3;
+                      const totalReplies = replies.length;
+
+                      // 펼쳐진 상태면 전체 보이고, 아니면 최대 3개까지만 보이기
+                      const visibleReplies = isExpanded ? replies : replies.slice(0, MAX_COLLAPSED_REPLIES);
+
+                      // 접힌 상태일 때 "더보기" 버튼에 표시할 숨겨진 개수
+                      const hiddenCount = isExpanded ? 0 : Math.max(0, totalReplies - MAX_COLLAPSED_REPLIES);
+
+                      return (
+                        <li key={c.id} className="space-y-2">
+                          {/* 루트 댓글 */}
+                          <CommentItem comment={c} />
+
+                          {/* 이 루트 댓글에 달린 대댓글들 (보이는 부분만) */}
+                          {visibleReplies.length > 0 && (
+                            <ul className="mt-2 space-y-2 border-l border-gray-100 pl-3 dark:border-gray-800">
+                              {visibleReplies.map((reply) => (
+                                <li key={reply.id}>
+                                  <CommentItem comment={reply} isReply />
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+
+                          {/* 답글 더보기 / 접기 버튼 */}
+                          {totalReplies > MAX_COLLAPSED_REPLIES && (
+                            <button type="button" onClick={() => toggleRootReplies(c.id)} className="ml-3 mt-1 text-xs text-muted-foreground hover:underline">
+                              {isExpanded ? '답글 접기' : `답글 ${hiddenCount}개 더보기`}
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
 
