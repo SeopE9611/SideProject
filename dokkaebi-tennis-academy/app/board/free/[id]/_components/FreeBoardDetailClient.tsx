@@ -234,7 +234,8 @@ export default function FreeBoardDetailClient({ id }: Props) {
     if (openProfile === '1') {
       handleOpenAuthorProfile();
     }
-  }, [item?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item?.id, searchParams]); // searchParams도 의존성으로 추가
 
   // 첨부파일 (자유게시판은 현재 파일만 저장되지만, 타입이 배열인지 한 번 더 안전하게 체크)
   const attachments = Array.isArray(item?.attachments) ? item!.attachments : [];
@@ -267,7 +268,6 @@ export default function FreeBoardDetailClient({ id }: Props) {
             // JSON 파싱 실패 시에는 아래에서 새로 기록
           }
         }
-
         // TTL이 지났거나 기록이 없으면 /view 호출
         (async () => {
           try {
@@ -305,7 +305,6 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
       return;
     }
-
     // 2) 로그인 사용자: localStorage는 쓰지 않고,
     //    항상 /view 호출 → 서버에서 userId 기준으로 중복 방지
     (async () => {
@@ -334,7 +333,8 @@ export default function FreeBoardDetailClient({ id }: Props) {
         console.error('failed to increase view (member)', err);
       }
     })();
-  }, [item?.id, user, mutate, VIEW_TTL_MS]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item?.id, user, mutate]); // item?.id 와 user를 의존성으로 추가
 
   const isNotFound = (error as any)?.error === 'not_found';
 
@@ -833,83 +833,106 @@ export default function FreeBoardDetailClient({ id }: Props) {
     const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
     return (
-      <div className={`space-y-1 rounded-md border px-3 py-2 text-sm ${isReply ? 'ml-6 border-gray-100 bg-white dark:border-gray-800 dark:bg-gray-900/40' : 'border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/60'}`}>
-        {/* 상단: 작성자/시간/액션 */}
-        <div className="flex items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
-          <span className="font-medium text-gray-700 dark:text-gray-200">
-            {comment.nickname ?? '회원'}
-            {isDeleted && ' (삭제된 댓글)'}
-          </span>
-          <div className="flex items-center gap-2">
-            <span>
-              {new Date(comment.createdAt).toLocaleString('ko-KR', {
-                year: '2-digit',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </span>
-            {/* 오른쪽 액션 영역 */}
-            <div className="flex items-center gap-1">
-              {/* 작성자용: 수정/삭제 */}
-              {isCommentAuthor && !isDeleted && !isEditing && (
+      <div
+        className={`group relative rounded-xl transition-all ${
+          isReply
+            ? 'ml-10 border-l-2 border-gray-200 bg-gray-50 pl-4 py-3 dark:border-gray-700 dark:bg-gray-800/50'
+            : 'border border-gray-100 bg-white p-5 hover:border-gray-200 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900/50 dark:hover:border-gray-700'
+        }`}
+      >
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-700 to-gray-900 text-sm font-medium text-white dark:from-gray-600 dark:to-gray-800">
+              {(comment.nickname ?? '회원').charAt(0).toUpperCase()}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{comment.nickname ?? '회원'}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-500">
+                {new Date(comment.createdAt).toLocaleString('ko-KR', {
+                  year: '2-digit',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            </div>
+          </div>
+
+          {!isDeleted && (
+            <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+              {isCommentAuthor && !isEditing && (
                 <>
-                  <button type="button" className="text-[11px] text-blue-600 hover:underline" onClick={() => startEditComment(comment.id, comment.content)}>
+                  <button
+                    type="button"
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                    onClick={() => startEditComment(comment.id, comment.content)}
+                  >
                     수정
                   </button>
-                  <span className="text-gray-300">|</span>
-                  <button type="button" className="text-[11px] text-red-500 hover:underline" onClick={() => handleDeleteComment(comment.id)}>
+                  <button
+                    type="button"
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-950/50 dark:hover:text-red-400"
+                    onClick={() => handleDeleteComment(comment.id)}
+                  >
                     삭제
                   </button>
                 </>
               )}
 
-              {/* 비작성자용: 신고 버튼 */}
-              {!isCommentAuthor && !isDeleted && (
-                <>
-                  {isCommentAuthor && <span className="text-gray-300">|</span>}
-                  <button type="button" className="text-[11px] text-red-500 hover:underline" onClick={() => openCommentReportDialog(comment)}>
-                    신고
-                  </button>
-                </>
+              {!isCommentAuthor && (
+                <button
+                  type="button"
+                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                  onClick={() => openCommentReportDialog(comment)}
+                >
+                  신고
+                </button>
               )}
             </div>
-          </div>
+          )}
         </div>
 
         {/* 본문 / 수정 모드 */}
         {isDeleted ? (
-          <p className="whitespace-pre-wrap text-sm text-gray-400 dark:text-gray-500 italic">삭제된 댓글입니다.</p>
+          <p className="text-sm italic text-gray-400 dark:text-gray-600">삭제된 댓글입니다.</p>
         ) : isEditing ? (
-          <div className="space-y-2">
-            <Textarea className="min-h-[60px]" value={editingContent} onChange={(e) => setEditingContent(e.target.value)} disabled={isCommentSubmitting} />
+          <div className="space-y-2.5">
+            <Textarea
+              className="min-h-[80px] resize-none border-gray-200 text-sm focus-visible:ring-1 focus-visible:ring-gray-900 dark:border-gray-700 dark:focus-visible:ring-gray-400"
+              value={editingContent}
+              onChange={(e) => setEditingContent(e.target.value)}
+              disabled={isCommentSubmitting}
+            />
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={cancelEditComment} disabled={isCommentSubmitting}>
+              <Button type="button" variant="outline" size="sm" onClick={cancelEditComment} disabled={isCommentSubmitting} className="h-8 px-4 text-xs bg-transparent">
                 취소
               </Button>
-              <Button type="button" size="sm" onClick={() => handleUpdateComment(comment.id)} disabled={isCommentSubmitting}>
+              <Button type="button" size="sm" onClick={() => handleUpdateComment(comment.id)} disabled={isCommentSubmitting} className="h-8 bg-gray-900 px-4 text-xs hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200">
                 저장
               </Button>
             </div>
           </div>
         ) : (
-          <p className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-100">{comment.content}</p>
+          <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{comment.content}</p>
         )}
 
-        {/* 답글 달기 버튼 */}
         {!isEditing && !isReply && !isDeleted && (
-          <div className="mt-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-            <button type="button" className="text-[11px] text-blue-600 hover:text-blue-700 hover:underline" onClick={() => handleStartReply(comment.id, comment.nickname ?? '회원')}>
-              답글 달기
+          <div className="mt-3">
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+              onClick={() => handleStartReply(comment.id, comment.nickname ?? '회원')}
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              답글
             </button>
           </div>
         )}
 
-        {/* 이 댓글에 대한 대댓글 입력 폼 */}
         {replyingToId === comment.id && (
           <form
-            className="mt-2 space-y-2"
+            className="mt-3 space-y-2.5 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50"
             onSubmit={(e) => {
               e.preventDefault();
               const content = replyInputRef.current?.value || '';
@@ -917,7 +940,6 @@ export default function FreeBoardDetailClient({ id }: Props) {
                 setReplyError('답글 내용을 입력해 주세요.');
                 return;
               }
-
               (async () => {
                 if (!item || !user) return;
 
@@ -940,14 +962,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
                     return;
                   }
 
-                  // 입력값 초기화
                   if (replyInputRef.current) {
                     replyInputRef.current.value = '';
                   }
                   setReplyingToId(null);
                   setReplyError(null);
 
-                  // 댓글 목록 재요청
                   await mutateComments();
                 } catch (err) {
                   console.error(err);
@@ -958,8 +978,15 @@ export default function FreeBoardDetailClient({ id }: Props) {
               })();
             }}
           >
-            <Textarea ref={replyInputRef} className="min-h-[60px]" defaultValue="" disabled={isReplySubmitting} placeholder={`@${comment.nickname ?? '회원'} 님께 답글을 남겨 보세요.`} autoFocus />
-            {replyError && <p className="text-xs text-red-600 dark:text-red-300">{replyError}</p>}
+            <Textarea
+              ref={replyInputRef}
+              className="min-h-[70px] resize-none border-gray-200 bg-white text-sm focus-visible:ring-1 focus-visible:ring-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:focus-visible:ring-gray-400"
+              defaultValue=""
+              disabled={isReplySubmitting}
+              placeholder={`@${comment.nickname ?? '회원'} 님께 답글을 남겨 보세요.`}
+              autoFocus
+            />
+            {replyError && <p className="text-xs text-red-600 dark:text-red-400">{replyError}</p>}
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
@@ -973,11 +1000,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   setReplyError(null);
                 }}
                 disabled={isReplySubmitting}
+                className="h-8 px-4 text-xs"
               >
                 취소
               </Button>
-              <Button type="submit" size="sm" disabled={isReplySubmitting}>
-                {isReplySubmitting ? '작성 중...' : '답글 등록'}
+              <Button type="submit" size="sm" disabled={isReplySubmitting} className="h-8 bg-gray-900 px-4 text-xs hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200">
+                {isReplySubmitting ? '작성 중...' : '등록'}
               </Button>
             </div>
           </form>
@@ -1296,55 +1324,73 @@ export default function FreeBoardDetailClient({ id }: Props) {
         )}
         {/* ================== 댓글 카드 시작 ================== */}
         {!isLoading && !error && item && (
-          <Card className="border-0 bg-white/90 shadow-xl backdrop-blur-sm dark:bg-gray-900/80">
-            <CardHeader className="space-y-1 border-b border-gray-100 pb-4 dark:border-gray-800">
-              <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-50">
-                <MessageSquare className="h-4 w-4 text-teal-500" />
+          <Card className="overflow-hidden border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <CardHeader className="border-b border-gray-100 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-900/50">
+              <CardTitle className="flex items-center gap-3 text-base font-semibold text-gray-900 dark:text-gray-50">
+                <MessageSquare className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                 <span>댓글</span>
-                <span className="text-sm font-normal text-gray-500 dark:text-gray-400">{totalComments}개</span>
+                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-gray-900 px-2.5 text-sm font-medium text-white dark:bg-gray-100 dark:text-gray-900">{totalComments}</span>
               </CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-6 p-6">
-              {/* 댓글 입력 영역 */}
-              <div className="space-y-2">
-                <Label htmlFor="comment">댓글 쓰기</Label>
+              <div className="space-y-3">
                 {user ? (
                   <>
-                    <Textarea id="comment" className="min-h-[80px]" placeholder="예의 있는 댓글 문화를 지켜주세요." value={commentContent} onChange={(e) => setCommentContent(e.target.value)} disabled={isCommentSubmitting} />
-                    {commentError && <p className="mt-1 text-xs text-red-600 dark:text-red-300">{commentError}</p>}
-                    <div className="mt-2 flex justify-end">
-                      <Button type="button" size="sm" className="gap-2" disabled={isCommentSubmitting} onClick={handleSubmitComment}>
-                        {isCommentSubmitting && <span className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />}
+                    <Textarea
+                      id="comment"
+                      className="min-h-[100px] resize-none border-gray-200 text-sm focus-visible:ring-1 focus-visible:ring-gray-900 dark:border-gray-700 dark:focus-visible:ring-gray-400"
+                      placeholder="댓글을 입력하세요."
+                      value={commentContent}
+                      onChange={(e) => setCommentContent(e.target.value)}
+                      disabled={isCommentSubmitting}
+                    />
+                    {commentError && <p className="text-xs text-red-600 dark:text-red-400">{commentError}</p>}
+                    <div className="flex justify-end">
+                      <Button type="button" size="sm" className="h-9 bg-gray-900 px-5 text-sm hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200" disabled={isCommentSubmitting} onClick={handleSubmitComment}>
+                        {isCommentSubmitting && <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent dark:border-gray-900 dark:border-t-transparent" />}
                         <span>등록</span>
                       </Button>
                     </div>
                   </>
                 ) : (
-                  <div className="rounded-md border border-dashed border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-400">로그인 후 댓글을 작성할 수 있습니다.</div>
+                  <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3.5 dark:border-gray-700 dark:bg-gray-800/50">
+                    <MessageSquare className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400">로그인 후 댓글을 작성할 수 있습니다.</p>
+                  </div>
                 )}
               </div>
 
-              {/* 구분선 */}
-              <div className="h-px bg-gray-100 dark:bg-gray-800" />
+              <div className="h-px bg-gray-200 dark:bg-gray-800" />
 
               {/* 댓글 리스트 영역 */}
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {isCommentsLoading && (
                   <div className="space-y-3">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="space-y-2">
-                        <Skeleton className="h-4 w-24" />
+                      <div key={i} className="space-y-3 rounded-xl border border-gray-100 bg-white p-5 dark:border-gray-800 dark:bg-gray-900/50">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-9 w-9 rounded-full" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-3 w-20" />
+                            <Skeleton className="h-2.5 w-24" />
+                          </div>
+                        </div>
                         <Skeleton className="h-4 w-full" />
                       </div>
                     ))}
                   </div>
                 )}
 
-                {!isCommentsLoading && comments.length === 0 && <p className="text-sm text-gray-500 dark:text-gray-400">아직 등록된 댓글이 없습니다. 첫 댓글을 남겨보세요.</p>}
+                {!isCommentsLoading && comments.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <MessageSquare className="mb-3 h-12 w-12 text-gray-300 dark:text-gray-700" />
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">첫 댓글을 남겨보세요</p>
+                  </div>
+                )}
 
                 {!isCommentsLoading && comments.length > 0 && (
-                  <ul className="space-y-4">
+                  <ul className="space-y-3">
                     {rootComments.map((c) => {
                       const replies = repliesByParentId[c.id] || [];
                       const isExpanded = expandedRootIds.has(c.id);
@@ -1352,20 +1398,16 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       const MAX_COLLAPSED_REPLIES = 3;
                       const totalReplies = replies.length;
 
-                      // 펼쳐진 상태면 전체 보이고, 아니면 최대 3개까지만 보이기
                       const visibleReplies = isExpanded ? replies : replies.slice(0, MAX_COLLAPSED_REPLIES);
 
-                      // 접힌 상태일 때 "더보기" 버튼에 표시할 숨겨진 개수
                       const hiddenCount = isExpanded ? 0 : Math.max(0, totalReplies - MAX_COLLAPSED_REPLIES);
 
                       return (
-                        <li key={c.id} className="space-y-2">
-                          {/* 루트 댓글 */}
+                        <li key={c.id} className="space-y-2.5">
                           <CommentItem comment={c} />
 
-                          {/* 이 루트 댓글에 달린 대댓글들 (보이는 부분만) */}
                           {visibleReplies.length > 0 && (
-                            <ul className="mt-2 space-y-2 border-l border-gray-100 pl-3 dark:border-gray-800">
+                            <ul className="space-y-2.5">
                               {visibleReplies.map((reply) => (
                                 <li key={reply.id}>
                                   <CommentItem comment={reply} isReply />
@@ -1374,10 +1416,20 @@ export default function FreeBoardDetailClient({ id }: Props) {
                             </ul>
                           )}
 
-                          {/* 답글 더보기 / 접기 버튼 */}
                           {totalReplies > MAX_COLLAPSED_REPLIES && (
-                            <button type="button" onClick={() => toggleRootReplies(c.id)} className="ml-3 mt-1 text-xs text-muted-foreground hover:underline">
-                              {isExpanded ? '답글 접기' : `답글 ${hiddenCount}개 더보기`}
+                            <button
+                              type="button"
+                              onClick={() => toggleRootReplies(c.id)}
+                              className="ml-10 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                            >
+                              {isExpanded ? (
+                                <span>답글 접기</span>
+                              ) : (
+                                <>
+                                  <MessageSquare className="h-3.5 w-3.5" />
+                                  <span>답글 {hiddenCount}개 더보기</span>
+                                </>
+                              )}
                             </button>
                           )}
                         </li>
@@ -1386,17 +1438,16 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   </ul>
                 )}
 
-                {/* 댓글 페이지네이션 */}
                 {!isCommentsLoading && totalCommentPages > 1 && (
-                  <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-300">
-                    <span>
-                      페이지 <span className="font-semibold">{commentPage}</span> / {totalCommentPages}
+                  <div className="flex items-center justify-between rounded-lg border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50">
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                      {commentPage} / {totalCommentPages}
                     </span>
                     <div className="flex gap-2">
-                      <Button type="button" variant="outline" size="sm" disabled={commentPage <= 1} onClick={() => setCommentPage((p) => Math.max(1, p - 1))}>
+                      <Button type="button" variant="outline" size="sm" disabled={commentPage <= 1} onClick={() => setCommentPage((p) => Math.max(1, p - 1))} className="h-8 px-4 text-xs">
                         이전
                       </Button>
-                      <Button type="button" variant="outline" size="sm" disabled={commentPage >= totalCommentPages} onClick={() => setCommentPage((p) => Math.min(totalCommentPages, p + 1))}>
+                      <Button type="button" variant="outline" size="sm" disabled={commentPage >= totalCommentPages} onClick={() => setCommentPage((p) => Math.min(totalCommentPages, p + 1))} className="h-8 px-4 text-xs">
                         다음
                       </Button>
                     </div>
