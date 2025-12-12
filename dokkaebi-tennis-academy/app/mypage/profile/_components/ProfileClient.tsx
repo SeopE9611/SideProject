@@ -14,6 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import WithdrawalReasonSelect from '@/app/mypage/profile/_components/WithdrawalReasonSelect';
 import { useRouter } from 'next/navigation';
+import { MdSportsTennis } from 'react-icons/md';
+import TennisProfileForm from '@/app/mypage/profile/_components/TennisProfileForm';
 
 type Props = {
   user: {
@@ -221,7 +223,7 @@ export default function ProfileClient({ user }: Props) {
           <Tabs defaultValue="profile" className="space-y-8">
             <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
               <CardContent className="p-6">
-                <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-slate-100 dark:bg-slate-700">
+                <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-slate-100 dark:bg-slate-700">
                   <TabsTrigger value="profile" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                     <User className="h-5 w-5" />
                     <span className="text-xs font-medium">기본정보</span>
@@ -233,6 +235,13 @@ export default function ProfileClient({ user }: Props) {
                   <TabsTrigger value="address" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                     <MapPin className="h-5 w-5" />
                     <span className="text-xs font-medium">배송지</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="tennis-profile"
+                    className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-md"
+                  >
+                    <MdSportsTennis className="h-5 w-5" />
+                    <span className="text-xs font-medium">테니스 프로필</span>
                   </TabsTrigger>
                   <TabsTrigger value="preferences" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                     <Bell className="h-5 w-5" />
@@ -442,6 +451,10 @@ export default function ProfileClient({ user }: Props) {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="tennis-profile">
+              <TennisProfileForm />
             </TabsContent>
 
             <TabsContent value="preferences">

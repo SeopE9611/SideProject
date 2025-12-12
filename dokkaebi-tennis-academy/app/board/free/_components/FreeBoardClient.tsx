@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { MessageSquare, Plus, Eye, ThumbsUp, ImageIcon, Paperclip } from 'lucide-react';
@@ -12,7 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { CommunityPost } from '@/lib/types/community';
 import { attachImageColor, badgeBaseOutlined, badgeSizeSm } from '@/lib/badge-style';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 // API 응답 타입
 type ListResponse = {
@@ -103,12 +104,28 @@ export default function FreeBoardClient() {
 
   const { user, loading } = useCurrentUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // 사용자의 게시물 검색
+  const authorId = searchParams.get('authorId');
+  const authorName = searchParams.get('authorName');
+  // authorId 바뀌면 페이지는 1로
+  useEffect(() => {
+    setPage(1);
+  }, [authorId]);
 
   // 한 페이지당 개수
   const PAGE_LIMIT = 10;
 
-  // API 호출: PAGE_LIMIT 사용
-  const { data, error, isLoading } = useSWR<ListResponse>(`/api/community/posts?type=free&page=${page}&limit=${PAGE_LIMIT}&sort=${sort}`, fetcher);
+  const qs = new URLSearchParams({
+    type: 'free',
+    page: String(page),
+    limit: String(PAGE_LIMIT),
+    sort,
+  });
+  if (authorId) qs.set('authorId', authorId);
+
+  const { data, error, isLoading } = useSWR<ListResponse>(`/api/community/posts?${qs.toString()}`, fetcher);
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -215,6 +232,19 @@ export default function FreeBoardClient() {
               </div>
             )}
 
+            {authorId && (
+              <div className="flex items-center gap-2 text-sm">
+                <span>현재: {authorName ? `${authorName}님의 글` : '특정 작성자 글'} 보는 중</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push('/board/free')} // 쿼리 제거(해제)
+                >
+                  해제
+                </Button>
+              </div>
+            )}
+
             {/* 로딩/에러/빈 상태 처리 */}
             {isLoading && <ListSkeleton />}
             {error && !isLoading && <ErrorBox />}
@@ -274,7 +304,47 @@ export default function FreeBoardClient() {
                         </div>
 
                         {/* 글쓴이 */}
-                        <div className="truncate text-center text-xs text-gray-600 dark:text-gray-300">{post.nickname || '회원'}</div>
+                        <div className="truncate text-center text-xs">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                type="button"
+                                className="truncate text-gray-600 underline-offset-4 hover:underline dark:text-gray-300"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                              >
+                                {post.nickname || '회원'}
+                              </button>
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent align="start" className="w-44">
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  if (!post.userId) return;
+                                  const authorName = post.nickname ?? '';
+                                  router.push(`/board/free?authorId=${post.userId}&authorName=${encodeURIComponent(authorName)}`);
+                                }}
+                              >
+                                이 작성자의 글 보기
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  if (!post.userId) return;
+                                  router.push(`/board/free/${post.postNo ?? post.id}?openProfile=1`);
+                                }}
+                              >
+                                작성자 테니스 프로필
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
 
                         {/* 작성일 */}
                         <div className="text-center text-xs text-gray-500 dark:text-gray-400">{fmtDateTime(post.createdAt)}</div>

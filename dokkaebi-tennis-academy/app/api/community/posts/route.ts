@@ -98,6 +98,7 @@ function parseListQuery(req: NextRequest): {
   page: number;
   limit: number;
   q: string;
+  authorId: string | null;
 } {
   const url = new URL(req.url);
 
@@ -112,7 +113,7 @@ function parseListQuery(req: NextRequest): {
   const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
 
   const q = url.searchParams.get('q') || '';
-
+  const authorId = url.searchParams.get('authorId');
   return {
     typeParam,
     brand, // 명시적으로 string | null
@@ -120,6 +121,7 @@ function parseListQuery(req: NextRequest): {
     page,
     limit,
     q,
+    authorId,
   };
 }
 
@@ -137,7 +139,7 @@ export async function GET(req: NextRequest) {
   const db = await getDb();
   const col = db.collection('community_posts');
 
-  const { typeParam, brand, sort, page, limit, q } = parseListQuery(req);
+  const { typeParam, brand, sort, page, limit, q, authorId } = parseListQuery(req);
 
   const filter: any = { status: 'public' as const };
 
@@ -176,6 +178,10 @@ export async function GET(req: NextRequest) {
     default:
       sortOption = { createdAt: -1 };
       break;
+  }
+
+  if (authorId && ObjectId.isValid(authorId)) {
+    filter.userId = new ObjectId(authorId); // “이 작성자의 글” 필터
   }
 
   const skip = (page - 1) * limit;

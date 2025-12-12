@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Eye, MessageSquare, ThumbsUp, FileText } from 'lucide-react';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -16,6 +16,27 @@ import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import Image from 'next/image';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
+// 한글 매핑 작업
+const LEVEL_LABEL: Record<string, string> = {
+  beginner: '초보자',
+  intermediate: '중급자',
+  advanced: '상급자',
+  pro: '준프로 / 프로',
+};
+const HAND_LABEL: Record<string, string> = { right: '오른손', left: '왼손', both: '양손' };
+const STYLE_LABEL: Record<string, string> = {
+  baseline: '베이스라이너',
+  all_court: '올코트',
+  serve_and_volley: '서브&발리',
+  counter_puncher: '카운터 펀처',
+  other: '기타',
+};
+// 작성하지 않은 프로필 정보 - 처리
+const v = (x: any) => (x === null || x === undefined || String(x).trim() === '' ? '-' : String(x));
+const label = (map: Record<string, string>, v?: string) => (v ? map[v] ?? v : '-');
 
 type Props = {
   id: string;
@@ -26,18 +47,17 @@ type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: st
 // 작성자 프로필 모달 상태
 type AuthorOverview = {
   firstActivityAt: string | null;
-  stats: {
-    posts: number;
-    comments: number;
+  stats: { posts: number; comments: number };
+  recentPosts: { id: string; title: string; createdAt: string; views: number; likes: number; commentsCount: number }[];
+  tennisProfile: null | {
+    level: string;
+    hand: string;
+    playStyle: string;
+    mainRacket: Record<string, any>;
+    mainString: Record<string, any>;
+    note: string;
+    updatedAt: string | null;
   };
-  recentPosts: {
-    id: string;
-    title: string;
-    createdAt: string;
-    views: number;
-    likes: number;
-    commentsCount: number;
-  }[];
 };
 
 // 댓글 목록 응답 타입
@@ -140,6 +160,8 @@ function ErrorBox({ message }: { message: string }) {
 
 export default function FreeBoardDetailClient({ id }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const { user } = useCurrentUser(); // 현재 로그인 사용자
   const [isDeleting, setIsDeleting] = useState(false); // 삭제 중 플래그
   const [isLiking, setIsLiking] = useState(false); // 추천(좋아요) 처리 중 플래그
@@ -204,6 +226,15 @@ export default function FreeBoardDetailClient({ id }: Props) {
   });
 
   const item = data && data.ok ? data.item : null;
+
+  // 목록에서 프로필 오픈하면 상세에서 쿼리 감지하여 모달 자동 오픈
+  useEffect(() => {
+    if (!item) return;
+    const openProfile = searchParams.get('openProfile');
+    if (openProfile === '1') {
+      handleOpenAuthorProfile();
+    }
+  }, [item?.id]);
 
   // 첨부파일 (자유게시판은 현재 파일만 저장되지만, 타입이 배열인지 한 번 더 안전하게 체크)
   const attachments = Array.isArray(item?.attachments) ? item!.attachments : [];
@@ -1031,10 +1062,35 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                   <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400 md:text-sm">
                     {/* 작성자 */}
-                    <button type="button" onClick={handleOpenAuthorProfile} className="font-medium underline-offset-4 hover:underline">
-                      {item.nickname || '회원'}
-                    </button>
-                    <span>·</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button type="button" className="font-medium underline-offset-4 hover:underline">
+                          {item.nickname || '회원'}
+                        </button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="start" className="w-44">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            // 비회원/익명 글은 userId가 없을 수 있음
+                            if (!item.userId) return;
+                            const authorName = item.nickname ?? '';
+                            router.push(`/board/free?authorId=${item.userId}&authorName=${encodeURIComponent(authorName)}`);
+                          }}
+                        >
+                          이 작성자의 글 보기
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => {
+                            // 기존 로직 재사용: 여기서 모달 오픈 + overview fetch
+                            handleOpenAuthorProfile();
+                          }}
+                        >
+                          작성자 테니스 프로필
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
 
                     {/* 조회수 */}
                     <span className="inline-flex items-center gap-1">
@@ -1362,65 +1418,131 @@ export default function FreeBoardDetailClient({ id }: Props) {
             {isAuthorLoading && <div className="py-6 text-sm text-gray-500">작성자 정보를 불러오는 중입니다...</div>}
 
             {!isAuthorLoading && (
-              <div className="space-y-4">
-                {/* 기본 정보 */}
-                <div>
-                  <h3 className="mb-2 text-sm font-semibold text-gray-700">기본 정보</h3>
-                  <div className="space-y-1 text-sm text-gray-600">
+              <Tabs defaultValue="community" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="community">작성자 프로필</TabsTrigger>
+                  <TabsTrigger value="tennis">테니스 프로필</TabsTrigger>
+                </TabsList>
+
+                {/* 작성자(커뮤니티) 탭 */}
+                <TabsContent value="community" className="mt-4">
+                  <div className="space-y-4">
+                    {/* 기본 정보 */}
                     <div>
-                      닉네임: <span className="font-medium">{item?.nickname ?? '회원'}</span>
-                    </div>
-                    {authorOverview?.firstActivityAt && <div>첫 활동일: {new Date(authorOverview.firstActivityAt).toLocaleDateString('ko-KR')}</div>}
-                  </div>
-                </div>
-
-                {/* 활동량 */}
-                {authorOverview && (
-                  <div>
-                    <h3 className="mb-2 text-sm font-semibold text-gray-700">커뮤니티 활동</h3>
-                    <div className="flex gap-4 text-sm">
-                      <div>
-                        <div className="text-xs text-gray-500">작성 글</div>
-                        <div className="text-lg font-semibold">{authorOverview.stats.posts}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500">작성 댓글</div>
-                        <div className="text-lg font-semibold">{authorOverview.stats.comments}</div>
+                      <h3 className="mb-2 text-sm font-semibold text-gray-700">기본 정보</h3>
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <div>
+                          이름: <span className="font-medium">{item?.nickname ?? '회원'}</span>
+                        </div>
+                        {authorOverview?.firstActivityAt && <div>첫 활동일: {new Date(authorOverview.firstActivityAt).toLocaleDateString('ko-KR')}</div>}
                       </div>
                     </div>
-                  </div>
-                )}
 
-                {/* 최근 작성 글 */}
-                {authorOverview?.recentPosts?.length ? (
-                  <div>
-                    <h3 className="mb-2 text-sm font-semibold text-gray-700">최근 작성 글</h3>
-                    <ul className="space-y-1 text-sm">
-                      {authorOverview.recentPosts.map((p) => (
-                        <li key={p.id} className="flex justify-between gap-2">
-                          <Link href={`/board/free/${p.id}`} className="truncate text-blue-600 hover:underline">
-                            {p.title || '(제목 없음)'}
-                          </Link>
-                          <span className="shrink-0 text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  !isAuthorLoading && <p className="text-xs text-gray-500">아직 활동 기록이 없거나, 공개 게시글이 없습니다.</p>
-                )}
+                    {/* 활동량 */}
+                    {authorOverview && (
+                      <div>
+                        <h3 className="mb-2 text-sm font-semibold text-gray-700">커뮤니티 활동</h3>
+                        <div className="flex gap-4 text-sm">
+                          <div>
+                            <div className="text-xs text-gray-500">작성 글</div>
+                            <div className="text-lg font-semibold">{authorOverview.stats.posts}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500">작성 댓글</div>
+                            <div className="text-lg font-semibold">{authorOverview.stats.comments}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                {/* 액션 버튼 */}
-                <div className="flex justify-between pt-2">
+                    {/* 최근 작성 글 */}
+                    {authorOverview?.recentPosts?.length ? (
+                      <div>
+                        <h3 className="mb-2 text-sm font-semibold text-gray-700">최근 작성 글</h3>
+                        <ul className="space-y-1 text-sm">
+                          {authorOverview.recentPosts.map((p) => (
+                            <li key={p.id} className="flex justify-between gap-2">
+                              <Link href={`/board/free/${p.id}`} className="truncate text-blue-600 hover:underline">
+                                {p.title || '(제목 없음)'}
+                              </Link>
+                              <span className="shrink-0 text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500">아직 활동 기록이 없거나, 공개 게시글이 없습니다.</p>
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* 테니스 탭 */}
+                <TabsContent value="tennis" className="mt-4">
+                  <div className="space-y-4">
+                    {!authorOverview?.tennisProfile ? (
+                      <div className="text-sm text-muted-foreground">작성자가 테니스 프로필을 공개하지 않았습니다.</div>
+                    ) : (
+                      <div className="space-y-3 text-sm">
+                        {/* 기본 */}
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <div className="text-xs text-muted-foreground">실력</div>
+                            <div>{label(LEVEL_LABEL, authorOverview.tennisProfile.level)}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">사용 손</div>
+                            <div>{label(HAND_LABEL, authorOverview.tennisProfile.hand)}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">스타일</div>
+                            <div>{label(STYLE_LABEL, authorOverview.tennisProfile.playStyle)}</div>
+                          </div>
+                        </div>
+
+                        {/* 라켓 */}
+                        <div className="rounded-md border p-3">
+                          <div className="mb-2 text-xs font-medium text-muted-foreground">메인 라켓</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>브랜드: {v(authorOverview.tennisProfile.mainRacket?.brand)}</div>
+                            <div>모델: {v(authorOverview.tennisProfile.mainRacket?.model)}</div>
+                            <div>무게: {v(authorOverview.tennisProfile.mainRacket?.weight)}</div>
+                            <div>밸런스: {v(authorOverview.tennisProfile.mainRacket?.balance)}</div>
+                          </div>
+                        </div>
+
+                        {/* 스트링 */}
+                        <div className="rounded-md border p-3">
+                          <div className="mb-2 text-xs font-medium text-muted-foreground">메인 스트링</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>브랜드: {v(authorOverview.tennisProfile.mainString?.brand)}</div>
+                            <div>모델: {v(authorOverview.tennisProfile.mainString?.model)}</div>
+                            <div>게이지: {v(authorOverview.tennisProfile.mainString?.gauge)}</div>
+                            <div>재질: {v(authorOverview.tennisProfile.mainString?.material)}</div>
+                            <div>메인 텐션: {v(authorOverview.tennisProfile.mainString?.tensionMain)}</div>
+                            <div>크로스 텐션: {v(authorOverview.tennisProfile.mainString?.tensionCross)}</div>
+                          </div>
+                        </div>
+
+                        {/* 소개 */}
+                        <div className="rounded-md border p-3">
+                          <div className="mb-2 text-xs font-medium text-muted-foreground">소개</div>
+                          <div className="whitespace-pre-wrap">{authorOverview.tennisProfile.note?.trim() ? authorOverview.tennisProfile.note : '입력하지 않았습니다.'}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <div className="flex justify-between pt-4">
                   <Button variant="outline" size="sm" asChild disabled={!item}>
-                    <Link href={item ? `/board/free?author=${encodeURIComponent(item.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
+                    <Link href={item ? `/board/free?authorId=${item.userId}&authorName=${encodeURIComponent(item.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
                   </Button>
 
                   <Button variant="ghost" size="sm" onClick={() => setIsAuthorProfileOpen(false)}>
                     닫기
                   </Button>
                 </div>
-              </div>
+              </Tabs>
             )}
           </DialogContent>
         </Dialog>

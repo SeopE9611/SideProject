@@ -14,6 +14,7 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   const db = await getDb();
   const postsCol = db.collection('community_posts');
   const commentsCol = db.collection('community_comments');
+  const profilesCol = db.collection('player_profiles');
 
   // 1) 글/댓글 개수
   const [postsCount, commentsCount] = await Promise.all([postsCol.countDocuments({ userId: authorObjectId, status: 'public' }), commentsCol.countDocuments({ userId: authorObjectId, status: 'public' })]);
@@ -63,6 +64,35 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
 
   const firstActivityAt = firstDates.length > 0 ? new Date(Math.min(...firstDates.map((d) => d.getTime()))).toISOString() : null;
 
+  // 테니스 프로필 조회
+  const profileDoc = await profilesCol.findOne(
+    { userId: authorObjectId },
+    {
+      projection: {
+        level: 1,
+        hand: 1,
+        playStyle: 1,
+        mainRacket: 1,
+        mainString: 1,
+        note: 1,
+        isPublic: 1,
+        updatedAt: 1,
+      },
+    }
+  );
+
+  const tennisProfile =
+    profileDoc && profileDoc.isPublic === true
+      ? {
+          level: profileDoc.level ?? '',
+          hand: profileDoc.hand ?? '',
+          playStyle: profileDoc.playStyle ?? '',
+          mainRacket: profileDoc.mainRacket ?? {},
+          mainString: profileDoc.mainString ?? {},
+          note: profileDoc.note ?? '',
+          updatedAt: profileDoc.updatedAt instanceof Date ? profileDoc.updatedAt.toISOString() : null,
+        }
+      : null;
   return NextResponse.json({
     ok: true,
     authorId: id,
@@ -72,5 +102,6 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
       comments: commentsCount,
     },
     recentPosts,
+    tennisProfile,
   });
 }
