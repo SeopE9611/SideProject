@@ -1006,7 +1006,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
           </div>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => router.push('/board/free')}>
+            <Button type="button" variant="outline" size="sm" className="gap-1 bg-transparent" onClick={() => router.push('/board/free')}>
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
@@ -1126,7 +1126,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   {item.images.map((url, idx) => (
                     <div key={url + idx} className="flex justify-center">
                       <button type="button" onClick={() => window.open(url, '_blank', 'noopener,noreferrer')} className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-white dark:bg-neutral-900 hover:bg-white transition">
-                        <Image src={url} alt={`첨부 이미지 ${idx + 1}`} width={1200} height={800} className="w-full h-auto max-h-[560px] object-contain bg-white dark:bg-neutral-900" />
+                        <Image src={url || '/placeholder.svg'} alt={`첨부 이미지 ${idx + 1}`} width={1200} height={800} className="w-full h-auto max-h-[560px] object-contain bg-white dark:bg-neutral-900" />
                       </button>
                     </div>
                   ))}
@@ -1167,7 +1167,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                             </div>
                           </div>
 
-                          <Button type="button" variant="outline" size="sm" className="ml-3 flex-shrink-0" onClick={() => handleDownload(url, name)}>
+                          <Button type="button" variant="outline" size="sm" className="ml-3 flex-shrink-0 bg-transparent" onClick={() => handleDownload(url, name)}>
                             다운로드
                           </Button>
                         </div>
@@ -1408,48 +1408,58 @@ export default function FreeBoardDetailClient({ id }: Props) {
         )}
 
         {/* 작성자 프로필 모달 */}
-        <Dialog open={isAuthorProfileOpen} onOpenChange={setIsAuthorProfileOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>작성자 프로필</DialogTitle>
-              <DialogDescription>{item?.nickname ? `${item.nickname}님의 커뮤니티 활동 정보입니다.` : '작성자 정보'}</DialogDescription>
-            </DialogHeader>
+        {item && (
+          <Dialog open={isAuthorProfileOpen} onOpenChange={setIsAuthorProfileOpen}>
+            <DialogContent className="max-w-5xl max-h-screen overflow-y-auto">
+              <DialogHeader className="pb-4 border-b border-slate-200 dark:border-slate-800">
+                <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-slate-50">작성자 프로필</DialogTitle>
+                <DialogDescription className="text-sm text-slate-600 dark:text-slate-400">{item?.nickname ? `${item.nickname}님의 커뮤니티 활동 정보입니다.` : '작성자 정보'}</DialogDescription>
+              </DialogHeader>
 
-            {isAuthorLoading && <div className="py-6 text-sm text-gray-500">작성자 정보를 불러오는 중입니다...</div>}
+              {isAuthorLoading && <div className="py-8 text-sm text-slate-500 text-center">작성자 정보를 불러오는 중입니다...</div>}
 
-            {!isAuthorLoading && (
-              <Tabs defaultValue="community" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="community">작성자 프로필</TabsTrigger>
-                  <TabsTrigger value="tennis">테니스 프로필</TabsTrigger>
-                </TabsList>
+              {!isAuthorLoading && (
+                <Tabs defaultValue="community" className="w-full mt-2">
+                  <TabsList className="grid w-full grid-cols-2 h-10">
+                    <TabsTrigger value="community" className="text-sm">
+                      작성자 프로필
+                    </TabsTrigger>
+                    <TabsTrigger value="tennis" className="text-sm">
+                      테니스 프로필
+                    </TabsTrigger>
+                  </TabsList>
 
-                {/* 작성자(커뮤니티) 탭 */}
-                <TabsContent value="community" className="mt-4">
-                  <div className="space-y-4">
+                  {/* 작성자(커뮤니티) 탭 */}
+                  <TabsContent value="community" className="mt-6 space-y-6">
                     {/* 기본 정보 */}
-                    <div>
-                      <h3 className="mb-2 text-sm font-semibold text-gray-700">기본 정보</h3>
-                      <div className="space-y-1 text-sm text-gray-600">
-                        <div>
-                          이름: <span className="font-medium">{item?.nickname ?? '회원'}</span>
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 pb-2 border-b border-slate-200 dark:border-slate-800">기본 정보</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-600 dark:text-slate-400 w-20">이름</span>
+                          <span className="font-medium text-slate-900 dark:text-slate-50">{item?.nickname ?? '회원'}</span>
                         </div>
-                        {authorOverview?.firstActivityAt && <div>첫 활동일: {new Date(authorOverview.firstActivityAt).toLocaleDateString('ko-KR')}</div>}
+                        {authorOverview?.firstActivityAt && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-600 dark:text-slate-400 w-20">첫 활동일</span>
+                            <span className="text-slate-900 dark:text-slate-50">{new Date(authorOverview.firstActivityAt).toLocaleDateString('ko-KR')}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     {/* 활동량 */}
                     {authorOverview && (
-                      <div>
-                        <h3 className="mb-2 text-sm font-semibold text-gray-700">커뮤니티 활동</h3>
-                        <div className="flex gap-4 text-sm">
-                          <div>
-                            <div className="text-xs text-gray-500">작성 글</div>
-                            <div className="text-lg font-semibold">{authorOverview.stats.posts}</div>
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 pb-2 border-b border-slate-200 dark:border-slate-800">커뮤니티 활동</h3>
+                        <div className="flex gap-6">
+                          <div className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+                            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">작성 글</div>
+                            <div className="text-2xl font-semibold text-slate-900 dark:text-slate-50">{authorOverview.stats.posts}</div>
                           </div>
-                          <div>
-                            <div className="text-xs text-gray-500">작성 댓글</div>
-                            <div className="text-lg font-semibold">{authorOverview.stats.comments}</div>
+                          <div className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+                            <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">작성댓글</div>
+                            <div className="text-2xl font-semibold text-slate-900 dark:text-slate-50">{authorOverview.stats.comments}</div>
                           </div>
                         </div>
                       </div>
@@ -1457,95 +1467,132 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                     {/* 최근 작성 글 */}
                     {authorOverview?.recentPosts?.length ? (
-                      <div>
-                        <h3 className="mb-2 text-sm font-semibold text-gray-700">최근 작성 글</h3>
-                        <ul className="space-y-1 text-sm">
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 pb-2 border-b border-slate-200 dark:border-slate-800">최근 작성 글</h3>
+                        <ul className="space-y-2">
                           {authorOverview.recentPosts.map((p) => (
-                            <li key={p.id} className="flex justify-between gap-2">
-                              <Link href={`/board/free/${p.id}`} className="truncate text-blue-600 hover:underline">
+                            <li key={p.id} className="flex items-center justify-between gap-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-900/40 rounded-md p-2 -mx-2 transition-colors">
+                              <Link href={`/board/free/${p.id}`} className="truncate text-slate-900 dark:text-slate-50 hover:text-slate-700 dark:hover:text-slate-300 flex-1">
                                 {p.title || '(제목 없음)'}
                               </Link>
-                              <span className="shrink-0 text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
+                              <span className="shrink-0 text-xs text-slate-500 dark:text-slate-500">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
                             </li>
                           ))}
                         </ul>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500">아직 활동 기록이 없거나, 공개 게시글이 없습니다.</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-500 text-center py-4">아직 활동 기록이 없거나, 공개 게시글이 없습니다.</p>
                     )}
-                  </div>
-                </TabsContent>
+                  </TabsContent>
 
-                {/* 테니스 탭 */}
-                <TabsContent value="tennis" className="mt-4">
-                  <div className="space-y-4">
+                  {/* 테니스 탭 */}
+                  <TabsContent value="tennis" className="mt-6">
                     {!authorOverview?.tennisProfile ? (
-                      <div className="text-sm text-muted-foreground">작성자가 테니스 프로필을 공개하지 않았습니다.</div>
+                      <div className="text-sm text-slate-500 dark:text-slate-500 text-center py-8">작성자가 테니스 프로필을 공개하지 않았습니다.</div>
                     ) : (
-                      <div className="space-y-3 text-sm">
-                        {/* 기본 */}
-                        <div className="grid grid-cols-3 gap-2">
-                          <div>
-                            <div className="text-xs text-muted-foreground">실력</div>
-                            <div>{label(LEVEL_LABEL, authorOverview.tennisProfile.level)}</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground">사용 손</div>
-                            <div>{label(HAND_LABEL, authorOverview.tennisProfile.hand)}</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground">스타일</div>
-                            <div>{label(STYLE_LABEL, authorOverview.tennisProfile.playStyle)}</div>
+                      <div className="space-y-6">
+                        {/* 기본 정보 */}
+                        <div className="space-y-3">
+                          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 pb-2 border-b border-slate-200 dark:border-slate-800">플레이어 정보</h3>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-3">
+                              <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">실력</div>
+                              <div className="text-sm font-medium text-slate-900 dark:text-slate-50">{label(LEVEL_LABEL, authorOverview.tennisProfile.level)}</div>
+                            </div>
+                            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-3">
+                              <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">사용 손</div>
+                              <div className="text-sm font-medium text-slate-900 dark:text-slate-50">{label(HAND_LABEL, authorOverview.tennisProfile.hand)}</div>
+                            </div>
+                            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-3">
+                              <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">스타일</div>
+                              <div className="text-sm font-medium text-slate-900 dark:text-slate-50">{label(STYLE_LABEL, authorOverview.tennisProfile.playStyle)}</div>
+                            </div>
                           </div>
                         </div>
 
                         {/* 라켓 */}
-                        <div className="rounded-md border p-3">
-                          <div className="mb-2 text-xs font-medium text-muted-foreground">메인 라켓</div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>브랜드: {v(authorOverview.tennisProfile.mainRacket?.brand)}</div>
-                            <div>모델: {v(authorOverview.tennisProfile.mainRacket?.model)}</div>
-                            <div>무게: {v(authorOverview.tennisProfile.mainRacket?.weight)}</div>
-                            <div>밸런스: {v(authorOverview.tennisProfile.mainRacket?.balance)}</div>
+                        <div className="space-y-3">
+                          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 pb-2 border-b border-slate-200 dark:border-slate-800">메인 라켓</h3>
+                          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-16">브랜드</span>
+                                <span className="text-slate-900 dark:text-slate-50 font-medium">{v(authorOverview.tennisProfile.mainRacket?.brand)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-16">모델</span>
+                                <span className="text-slate-900 dark:text-slate-50 font-medium">{v(authorOverview.tennisProfile.mainRacket?.model)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-16">무게</span>
+                                <span className="text-slate-900 dark:text-slate-50">{v(authorOverview.tennisProfile.mainRacket?.weight)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-16">밸런스</span>
+                                <span className="text-slate-900 dark:text-slate-50">{v(authorOverview.tennisProfile.mainRacket?.balance)}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
                         {/* 스트링 */}
-                        <div className="rounded-md border p-3">
-                          <div className="mb-2 text-xs font-medium text-muted-foreground">메인 스트링</div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>브랜드: {v(authorOverview.tennisProfile.mainString?.brand)}</div>
-                            <div>모델: {v(authorOverview.tennisProfile.mainString?.model)}</div>
-                            <div>게이지: {v(authorOverview.tennisProfile.mainString?.gauge)}</div>
-                            <div>재질: {v(authorOverview.tennisProfile.mainString?.material)}</div>
-                            <div>메인 텐션: {v(authorOverview.tennisProfile.mainString?.tensionMain)}</div>
-                            <div>크로스 텐션: {v(authorOverview.tennisProfile.mainString?.tensionCross)}</div>
+                        <div className="space-y-3">
+                          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 pb-2 border-b border-slate-200 dark:border-slate-800">메인 스트링</h3>
+                          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-20">브랜드</span>
+                                <span className="text-slate-900 dark:text-slate-50 font-medium">{v(authorOverview.tennisProfile.mainString?.brand)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-20">모델</span>
+                                <span className="text-slate-900 dark:text-slate-50 font-medium">{v(authorOverview.tennisProfile.mainString?.model)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-20">게이지</span>
+                                <span className="text-slate-900 dark:text-slate-50">{v(authorOverview.tennisProfile.mainString?.gauge)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-20">재질</span>
+                                <span className="text-slate-900 dark:text-slate-50">{v(authorOverview.tennisProfile.mainString?.material)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-20">메인 텐션</span>
+                                <span className="text-slate-900 dark:text-slate-50">{v(authorOverview.tennisProfile.mainString?.tensionMain)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-400 w-20">크로스 텐션</span>
+                                <span className="text-slate-900 dark:text-slate-50">{v(authorOverview.tennisProfile.mainString?.tensionCross)}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
                         {/* 소개 */}
-                        <div className="rounded-md border p-3">
-                          <div className="mb-2 text-xs font-medium text-muted-foreground">소개</div>
-                          <div className="whitespace-pre-wrap">{authorOverview.tennisProfile.note?.trim() ? authorOverview.tennisProfile.note : '입력하지 않았습니다.'}</div>
+                        <div className="space-y-3">
+                          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50 pb-2 border-b border-slate-200 dark:border-slate-800">소개</h3>
+                          <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+                            <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{authorOverview.tennisProfile.note?.trim() ? authorOverview.tennisProfile.note : '소개를 입력하지 않았습니다.'}</p>
+                          </div>
                         </div>
                       </div>
                     )}
+                  </TabsContent>
+
+                  <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-200 dark:border-slate-800">
+                    <Button variant="outline" size="sm" asChild disabled={!item} className="h-9 bg-transparent">
+                      <Link href={item ? `/board/free?authorId=${item.userId}&authorName=${encodeURIComponent(item.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
+                    </Button>
+
+                    <Button variant="ghost" size="sm" onClick={() => setIsAuthorProfileOpen(false)} className="h-9">
+                      닫기
+                    </Button>
                   </div>
-                </TabsContent>
-
-                <div className="flex justify-between pt-4">
-                  <Button variant="outline" size="sm" asChild disabled={!item}>
-                    <Link href={item ? `/board/free?authorId=${item.userId}&authorName=${encodeURIComponent(item.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
-                  </Button>
-
-                  <Button variant="ghost" size="sm" onClick={() => setIsAuthorProfileOpen(false)}>
-                    닫기
-                  </Button>
-                </div>
-              </Tabs>
-            )}
-          </DialogContent>
-        </Dialog>
+                </Tabs>
+              )}
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );
