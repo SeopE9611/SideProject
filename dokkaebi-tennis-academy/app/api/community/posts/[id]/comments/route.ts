@@ -97,30 +97,32 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     status: 'public' as const,
   };
 
-  // 전체 댓글 수(루트 + 대댓글)를 total로 내려줌
-  const total = await commentsCol.countDocuments(baseFilter);
-
-  // 1) 페이지네이션 기준은 "루트 댓글(parentId: null)"만 사용
-  //    → 화면에는 public + deleted 모두 보여주고,
-  //      deleted는 프론트에서 "삭제된 댓글입니다" 로만 표시
-  const rootFilter = {
+  // 0) 화면에 실제로 보여줄 댓글 전체(루트 + 대댓글, public + deleted)
+  const visibleFilter = {
     postId: postObjectId,
-    parentId: null,
     status: { $in: ['public', 'deleted'] as const },
   };
 
+  // 전체 댓글 수(루트 + 대댓글)를 total로 내려줌 → 상단 "댓글 N" 표시용
+  const total = await commentsCol.countDocuments(visibleFilter);
+
+  // 1) 페이지네이션 기준은 "루트 댓글(parentId: null)"만 사용
+  //    → deleted도 보여주므로 상태는 동일하게 맞춰줌
+  const rootFilter = {
+    ...visibleFilter,
+    parentId: null,
+  };
+
+  // 루트 댓글 수: 실제 페이지 수 계산용
+  const rootTotal = await commentsCol.countDocuments(rootFilter);
+
   const skip = (page - 1) * limit;
-  // 이번 페이지에 들어갈 루트 댓글들
-  const rootDocs = await commentsCol
-    .find(rootFilter)
-    .sort({ createdAt: 1 }) // 오래된 댓글부터
-    .skip(skip)
-    .limit(limit)
-    .toArray();
+
+  const rootDocs = await commentsCol.find(rootFilter).sort({ createdAt: 1 }).skip(skip).limit(limit).toArray();
 
   const rootIds = rootDocs.map((d: any) => d._id);
 
-  // 2) 위 루트 댓글들에 달린 대댓글 전부 조회 (public + deleted)
+  // 2) 해당 루트 댓글들의 대댓글 로딩 (public + deleted)
   const replyDocs =
     rootIds.length > 0
       ? await commentsCol
@@ -132,9 +134,8 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
           .sort({ createdAt: 1 })
           .toArray()
       : [];
-  // 3) 루트 + 대댓글 합쳐서 프론트로 전달
-  const docs = [...rootDocs, ...replyDocs];
 
+  const docs = [...rootDocs, ...replyDocs];
   const items: CommunityComment[] = docs.map((d: any) => ({
     id: String(d._id),
     postId: d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
@@ -154,6 +155,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       ok: true,
       items,
       total,
+      rootTotal,
       page,
       limit,
     },

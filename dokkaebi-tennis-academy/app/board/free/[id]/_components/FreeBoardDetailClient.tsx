@@ -65,7 +65,8 @@ type CommentsResponse =
   | {
       ok: true;
       items: CommunityComment[];
-      total: number;
+      total: number; // 전체 댓글 수(루트 + 대댓글)
+      rootTotal?: number; // 루트 댓글 수(서버에서 내려줌, 없으면 total로 fallback)
       page: number;
       limit: number;
     }
@@ -373,10 +374,16 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const { data: commentsData, isLoading: isCommentsLoading, mutate: mutateComments } = useSWR<CommentsResponse>(commentsKey, fetcher);
   const comments = commentsData && commentsData.ok ? commentsData.items : [];
 
+  // 전체 댓글 수(루트 + 대댓글) → 상단 뱃지 표시용
   const totalComments = commentsData && commentsData.ok ? commentsData.total : item?.commentsCount ?? 0;
 
-  // 댓글 전체 페이지 수
-  const totalCommentPages = Math.max(1, Math.ceil(totalComments / COMMENT_LIMIT));
+  // 루트 댓글 수 → 실제 페이지 수 계산용
+  const totalRootComments =
+    commentsData && commentsData.ok
+      ? commentsData.rootTotal ?? totalComments // rootTotal 없으면 total로 fallback
+      : totalComments;
+
+  const totalCommentPages = Math.max(1, Math.ceil(totalRootComments / COMMENT_LIMIT));
 
   // 루트 댓글과 대댓글 분리
   const rootComments = comments.filter((c) => !c.parentId);
@@ -388,6 +395,13 @@ export default function FreeBoardDetailClient({ id }: Props) {
     }
     return acc;
   }, {});
+
+  useEffect(() => {
+    // 로딩 끝, 2페이지 이상인데, 컨텐츠는 없고, 루트 댓글 수는 0이 아님 → 한 페이지 뒤로 밀기
+    if (!isCommentsLoading && commentPage > 1 && comments.length === 0 && totalRootComments > 0) {
+      setCommentPage((prev) => Math.max(1, prev - 1));
+    }
+  }, [isCommentsLoading, commentPage, comments.length, totalRootComments]);
 
   // 댓글 작성 핸들러
   const handleSubmitComment = async () => {
