@@ -109,10 +109,58 @@ export default function FreeBoardClient() {
   // 사용자의 게시물 검색
   const authorId = searchParams.get('authorId');
   const authorName = searchParams.get('authorName');
+
+  // 검색어 & 검색 타입 (URL 기준)
+  const qParam = searchParams.get('q') ?? '';
+  const rawSearchType = searchParams.get('searchType');
+  const searchTypeParam: 'title' | 'author' | 'title_content' = rawSearchType === 'title' || rawSearchType === 'author' || rawSearchType === 'title_content' ? rawSearchType : 'title_content'; // 기본값: 제목+내용
+
+  // 검색 입력 상태 (폼에서 사용하는 값)
+  const [searchText, setSearchText] = useState(qParam);
+  const [searchType, setSearchType] = useState<'title' | 'author' | 'title_content'>(searchTypeParam);
+
+  // 카테고리 (URL 기준)
+  const rawCategoryParam = searchParams.get('category');
+  const categoryParam: 'general' | 'info' | 'qna' | 'tip' | 'etc' | null =
+    rawCategoryParam === 'general' || rawCategoryParam === 'info' || rawCategoryParam === 'qna' || rawCategoryParam === 'tip' || rawCategoryParam === 'etc' ? rawCategoryParam : null;
+
+  // UI에서 사용할 카테고리 상태 (전체 포함)
+  const [category, setCategory] = useState<'all' | 'general' | 'info' | 'qna' | 'tip' | 'etc'>(categoryParam ?? 'all');
+
   // authorId 바뀌면 페이지는 1로
   useEffect(() => {
     setPage(1);
   }, [authorId]);
+
+  // URL의 category가 바뀌면 상태도 동기화
+  useEffect(() => {
+    if (categoryParam) {
+      setCategory(categoryParam);
+    } else {
+      setCategory('all');
+    }
+    setPage(1);
+  }, [categoryParam]);
+
+  // URL 쿼리가 바뀌면 검색 입력값도 동기화
+  useEffect(() => {
+    setSearchText(qParam);
+    setSearchType(searchTypeParam);
+  }, [qParam, searchTypeParam]);
+
+  // 카테고리 선택 시 URL 바꾸는 핸들러
+  const handleCategoryChange = (next: 'all' | 'general' | 'info' | 'qna' | 'tip' | 'etc') => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (next === 'all') {
+      params.delete('category'); // 전체면 쿼리 제거
+    } else {
+      params.set('category', next);
+    }
+
+    router.push(`/board/free?${params.toString()}`);
+    setPage(1);
+  };
 
   // 한 페이지당 개수
   const PAGE_LIMIT = 10;
@@ -123,7 +171,50 @@ export default function FreeBoardClient() {
     limit: String(PAGE_LIMIT),
     sort,
   });
-  if (authorId) qs.set('authorId', authorId);
+
+  if (authorId) {
+    qs.set('authorId', authorId);
+  }
+
+  // 카테고리 필터
+  if (categoryParam) {
+    qs.set('category', categoryParam);
+  }
+
+  // 검색 쿼리 반영
+  if (qParam) {
+    qs.set('q', qParam);
+    qs.set('searchType', searchTypeParam);
+  }
+  const handleSearchSubmit = (e: any) => {
+    e.preventDefault();
+
+    // 현재 URL 쿼리 기준으로 새 파라미터 구성
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (searchText.trim()) {
+      params.set('q', searchText.trim());
+      params.set('searchType', searchType);
+    } else {
+      // 빈 검색어면 검색 관련 파라미터 제거
+      params.delete('q');
+      params.delete('searchType');
+    }
+
+    router.push(`/board/free?${params.toString()}`);
+    setPage(1); // 검색하면 1페이지부터 다시
+  };
+
+  const handleSearchReset = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('q');
+    params.delete('searchType');
+
+    router.push(`/board/free?${params.toString()}`);
+    setSearchText('');
+    setSearchType('title_content');
+    setPage(1);
+  };
 
   const { data, error, isLoading } = useSWR<ListResponse>(`/api/community/posts?${qs.toString()}`, fetcher);
 
@@ -196,42 +287,74 @@ export default function FreeBoardClient() {
           </CardHeader>
 
           <CardContent className="p-6 space-y-4">
-            {/* 상단: 총 글 수 + 정렬 옵션 */}
+            {/* 상단: 총 글 수 + 정렬 옵션 + 카테고리 필터 */}
             {!error && (
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  총 <span className="font-semibold">{total.toLocaleString()}</span>개의 글이 있습니다.
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    총 <span className="font-semibold">{total.toLocaleString()}</span>개의 글이 있습니다.
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="hidden text-gray-500 dark:text-gray-400 sm:inline">정렬:</span>
+                    <div className="inline-flex overflow-hidden rounded-md border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+                      {[
+                        { value: 'latest', label: '최신순' },
+                        { value: 'views', label: '조회순' },
+                        { value: 'likes', label: '추천순' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            setSort(opt.value as 'latest' | 'views' | 'likes');
+                            setPage(1);
+                          }}
+                          className={[
+                            'px-3 py-1.5 text-xs sm:text-[13px]',
+                            'transition-colors',
+                            'border-r border-gray-200 last:border-r-0 dark:border-gray-700',
+                            sort === opt.value ? 'bg-blue-500 text-white dark:bg-blue-500' : 'bg-transparent text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800',
+                          ].join(' ')}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="hidden text-gray-500 dark:text-gray-400 sm:inline">정렬:</span>
-                  <div className="inline-flex overflow-hidden rounded-md border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-                    {[
-                      { value: 'latest', label: '최신순' },
-                      { value: 'views', label: '조회순' },
-                      { value: 'likes', label: '추천순' },
-                    ].map((opt) => (
+
+                {/* 카테고리 필터 */}
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-gray-500 dark:text-gray-400">분류:</span>
+                  {[
+                    { value: 'all', label: '전체' },
+                    { value: 'general', label: '자유' },
+                    { value: 'info', label: '정보' },
+                    { value: 'qna', label: '질문' },
+                    { value: 'tip', label: '노하우' },
+                    { value: 'etc', label: '기타' },
+                  ].map((cat) => {
+                    const active = category === cat.value;
+                    return (
                       <button
-                        key={opt.value}
+                        key={cat.value}
                         type="button"
-                        onClick={() => {
-                          setSort(opt.value as 'latest' | 'views' | 'likes');
-                          setPage(1);
-                        }}
+                        onClick={() => handleCategoryChange(cat.value as any)}
                         className={[
-                          'px-3 py-1.5 text-xs sm:text-[13px]',
+                          'rounded-full border px-3 py-1',
                           'transition-colors',
-                          'border-r border-gray-200 last:border-r-0 dark:border-gray-700',
-                          sort === opt.value ? 'bg-blue-500 text-white dark:bg-blue-500' : 'bg-transparent text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800',
+                          active
+                            ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-950/40 dark:text-blue-200'
+                            : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800',
                         ].join(' ')}
                       >
-                        {opt.label}
+                        {cat.label}
                       </button>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
-
             {authorId && (
               <div className="flex items-center gap-2 text-sm">
                 <span>현재: {authorName ? `${authorName}님의 글` : '특정 작성자 글'} 보는 중</span>
@@ -420,42 +543,81 @@ export default function FreeBoardClient() {
                     </Link>
                   ))}
                 </div>
-                {/* 페이지네이션: 공지 목록과 동일 스타일 */}
-                {!isLoading && !error && total > 0 && (
-                  <div className="mt-8 flex items-center justify-center">
-                    <div className="flex items-center space-x-2">
-                      {/* 이전 페이지 */}
-                      <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} type="button">
-                        <span className="sr-only">이전 페이지</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                          <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                      </Button>
+                {/* 하단: 검색 + 페이지네이션 */}
+                {total > 0 && (
+                  <div className="mt-8 space-y-4">
+                    {/* 검색 폼: 제목 / 제목+내용 / 글쓴이 */}
+                    <form onSubmit={handleSearchSubmit} className="flex flex-col gap-2 rounded-md bg-gray-50 px-3 py-3 text-xs text-gray-700 dark:bg-gray-900/60 dark:text-gray-200 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="font-medium">검색</div>
+                      <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+                        {/* 검색 타입 선택 */}
+                        <select
+                          value={searchType}
+                          onChange={(e) => setSearchType(e.target.value as 'title' | 'author' | 'title_content')}
+                          className="h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-xs dark:border-gray-700 dark:bg-gray-900 sm:w-32"
+                        >
+                          <option value="title_content">제목+내용</option>
+                          <option value="title">제목</option>
+                          <option value="author">글쓴이</option>
+                        </select>
 
-                      {/* 페이지 번호들: 최대 3개 정도만 노출 */}
-                      {Array.from({ length: totalPages })
-                        .map((_, i) => i + 1)
-                        .slice(0, 3)
-                        .map((pageNumber) => (
-                          <Button
-                            key={pageNumber}
-                            variant="outline"
-                            size="sm"
-                            className={pageNumber === page ? 'h-10 w-10 bg-blue-600 text-white border-blue-600' : 'h-10 w-10 bg-white dark:bg-gray-700'}
-                            onClick={() => setPage(pageNumber)}
-                            type="button"
-                          >
-                            {pageNumber}
+                        {/* 검색어 입력 */}
+                        <input
+                          value={searchText}
+                          onChange={(e) => setSearchText(e.target.value)}
+                          className="h-9 w-full rounded-md border border-gray-300 bg-white px-2 text-xs dark:border-gray-700 dark:bg-gray-900"
+                          placeholder="검색어를 입력하세요"
+                        />
+
+                        {/* 버튼들 */}
+                        <div className="flex shrink-0 items-center gap-2">
+                          <Button type="submit" size="sm" className="px-3">
+                            검색
                           </Button>
-                        ))}
+                          {qParam && (
+                            <Button type="button" variant="outline" size="sm" className="px-3" onClick={handleSearchReset}>
+                              초기화
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </form>
 
-                      {/* 다음 페이지 */}
-                      <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} type="button">
-                        <span className="sr-only">다음 페이지</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                      </Button>
+                    <div className="flex items-center justify-center">
+                      <div className="flex items-center space-x-2">
+                        {/* 이전 페이지 */}
+                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} type="button">
+                          <span className="sr-only">이전 페이지</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                            <polyline points="15 18 9 12 15 6" />
+                          </svg>
+                        </Button>
+
+                        {/* 페이지 번호들: 최대 3개 정도만 노출 */}
+                        {Array.from({ length: totalPages })
+                          .map((_, i) => i + 1)
+                          .slice(0, 3)
+                          .map((pageNumber) => (
+                            <Button
+                              key={pageNumber}
+                              variant="outline"
+                              size="sm"
+                              className={pageNumber === page ? 'h-10 w-10 bg-blue-600 text-white border-blue-600' : 'h-10 w-10 bg-white dark:bg-gray-700'}
+                              onClick={() => setPage(pageNumber)}
+                              type="button"
+                            >
+                              {pageNumber}
+                            </Button>
+                          ))}
+
+                        {/* 다음 페이지 */}
+                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} type="button">
+                          <span className="sr-only">다음 페이지</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}

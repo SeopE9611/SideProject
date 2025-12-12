@@ -84,13 +84,6 @@ const createSchema = z.object({
     .optional(),
 });
 
-/**
- * 리스트 조회 쿼리 파라미터:
- * - type: free | brand (선택)
- * - brand: 브랜드명 (선택, type=brand 일 때 주로 사용)
- * - sort: latest | views | likes | hot
- * - page, limit: 페이징
- */
 function parseListQuery(req: NextRequest): {
   typeParam: CommunityBoardType | null;
   brand: string | null;
@@ -99,47 +92,60 @@ function parseListQuery(req: NextRequest): {
   limit: number;
   q: string;
   authorId: string | null;
+  searchType: 'title' | 'author' | 'title_content';
+  category: (typeof COMMUNITY_CATEGORIES)[number] | null;
 } {
   const url = new URL(req.url);
 
+  // 자게 / 브랜드 게시판 타입
   const rawType = url.searchParams.get('type');
-  const typeParam = (rawType as CommunityBoardType | null) ?? null;
+  const typeParam = rawType === 'brand' || rawType === 'free' ? (rawType as CommunityBoardType | null) : null;
 
+  // 태그(브랜드) 필터
   const brand = url.searchParams.get('brand'); // string | null
 
-  const sortParam = (url.searchParams.get('sort') || 'latest') as 'latest' | 'views' | 'likes' | 'hot';
+  // 정렬: 최신 / 조회수 / 추천순 / hot
+  const sortParam = (url.searchParams.get('sort') as 'latest' | 'views' | 'likes' | 'hot') ?? 'latest';
 
+  // 페이지 / 페이지당 개수
   const page = Math.max(1, Number(url.searchParams.get('page') || 1));
   const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
 
-  const q = url.searchParams.get('q') || '';
+  // 검색어 (기존 q 그대로 사용)
+  const q = (url.searchParams.get('q') || '').toString().trim();
+
+  // 특정 유저 글만 보기 (작성자 ID 필터)
   const authorId = url.searchParams.get('authorId');
+
+  // 검색 타입: 제목 / 글쓴이 / 제목+내용
+  const rawSearchType = url.searchParams.get('searchType');
+  const searchType: 'title' | 'author' | 'title_content' = rawSearchType === 'title' || rawSearchType === 'author' || rawSearchType === 'title_content' ? rawSearchType : 'title_content'; // 기본값: 제목+내용
+
+  // 카테고리 필터 (자유/정보/질문/노하우/기타)
+  const rawCategory = url.searchParams.get('category');
+  const category = rawCategory && (COMMUNITY_CATEGORIES as readonly string[]).includes(rawCategory) ? (rawCategory as (typeof COMMUNITY_CATEGORIES)[number]) : null;
+
   return {
     typeParam,
-    brand, // 명시적으로 string | null
+    brand,
     sort: sortParam,
     page,
     limit,
     q,
     authorId,
+    searchType,
+    category,
   };
 }
 
-// ------------------------------- GET ---------------------------------------
-
-/**
- * 커뮤니티 게시글 리스트 조회
- * - /api/community/posts?type=free
- * - /api/community/posts?type=brand&brand=wilson
- * - /api/community/posts?sort=hot&limit=20
- */
+// 커뮤니티 게시글 리스트 조회
 export async function GET(req: NextRequest) {
   const stop = startTimer();
   const meta = reqMeta(req);
   const db = await getDb();
   const col = db.collection('community_posts');
 
-  const { typeParam, brand, sort, page, limit, q, authorId } = parseListQuery(req);
+  const { typeParam, brand, sort, page, limit, q, authorId, searchType, category } = parseListQuery(req);
 
   const filter: any = { status: 'public' as const };
 
@@ -151,11 +157,25 @@ export async function GET(req: NextRequest) {
     filter.brand = brand;
   }
 
-  // 간단한 제목/본문 검색
-  if (q) {
-    filter.$or = [{ title: { $regex: q, $options: 'i' } }, { content: { $regex: q, $options: 'i' } }];
+  if (category) {
+    filter.category = category;
   }
 
+  // 검색어 필터 (searchType 에 따라 분기)
+  if (q) {
+    const regex = { $regex: q, $options: 'i' as const };
+
+    if (searchType === 'title') {
+      // 제목만 검색
+      filter.title = regex;
+    } else if (searchType === 'author') {
+      // 글쓴이(닉네임) 검색
+      filter.nickname = regex;
+    } else {
+      // 기본: 제목 + 내용 검색
+      filter.$or = [{ title: regex }, { content: regex }];
+    }
+  }
   // 정렬 기준
   let sortOption: any;
   switch (sort) {
