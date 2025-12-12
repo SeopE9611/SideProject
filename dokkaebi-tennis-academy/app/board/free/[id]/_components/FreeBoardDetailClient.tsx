@@ -23,6 +23,23 @@ type Props = {
 
 type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: string };
 
+// 작성자 프로필 모달 상태
+type AuthorOverview = {
+  firstActivityAt: string | null;
+  stats: {
+    posts: number;
+    comments: number;
+  };
+  recentPosts: {
+    id: string;
+    title: string;
+    createdAt: string;
+    views: number;
+    likes: number;
+    commentsCount: number;
+  }[];
+};
+
 // 댓글 목록 응답 타입
 type CommentsResponse =
   | {
@@ -126,6 +143,45 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const { user } = useCurrentUser(); // 현재 로그인 사용자
   const [isDeleting, setIsDeleting] = useState(false); // 삭제 중 플래그
   const [isLiking, setIsLiking] = useState(false); // 추천(좋아요) 처리 중 플래그
+
+  // 작성자 프로필
+  const [isAuthorProfileOpen, setIsAuthorProfileOpen] = useState(false);
+  const [authorOverview, setAuthorOverview] = useState<AuthorOverview | null>(null);
+  const [isAuthorLoading, setIsAuthorLoading] = useState(false);
+
+  async function handleOpenAuthorProfile() {
+    // 게시글 데이터가 없으면 방어
+    if (!item) return;
+
+    // 비회원/익명 글인 경우: 활동량 집계할 userId가 없음
+    if (!item.userId) {
+      setAuthorOverview(null);
+      setIsAuthorProfileOpen(true);
+      return;
+    }
+
+    setIsAuthorProfileOpen(true);
+    setIsAuthorLoading(true);
+
+    try {
+      const res = await fetch(`/api/community/authors/${item.userId}/overview`, {
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        showErrorToast('작성자 정보를 불러오지 못했습니다.');
+        return;
+      }
+
+      const data = await res.json();
+      setAuthorOverview(data);
+    } catch (err) {
+      console.error(err);
+      showErrorToast('작성자 정보를 불러오지 못했습니다.');
+    } finally {
+      setIsAuthorLoading(false);
+    }
+  }
 
   // 리폿
   const [openReport, setOpenReport] = useState(false);
@@ -975,7 +1031,9 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                   <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400 md:text-sm">
                     {/* 작성자 */}
-                    <span className="font-medium">{item.nickname || '회원'}</span>
+                    <button type="button" onClick={handleOpenAuthorProfile} className="font-medium underline-offset-4 hover:underline">
+                      {item.nickname || '회원'}
+                    </button>
                     <span>·</span>
 
                     {/* 조회수 */}
@@ -1292,6 +1350,80 @@ export default function FreeBoardDetailClient({ id }: Props) {
             </CardContent>
           </Card>
         )}
+
+        {/* 작성자 프로필 모달 */}
+        <Dialog open={isAuthorProfileOpen} onOpenChange={setIsAuthorProfileOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>작성자 프로필</DialogTitle>
+              <DialogDescription>{item?.nickname ? `${item.nickname}님의 커뮤니티 활동 정보입니다.` : '작성자 정보'}</DialogDescription>
+            </DialogHeader>
+
+            {isAuthorLoading && <div className="py-6 text-sm text-gray-500">작성자 정보를 불러오는 중입니다...</div>}
+
+            {!isAuthorLoading && (
+              <div className="space-y-4">
+                {/* 기본 정보 */}
+                <div>
+                  <h3 className="mb-2 text-sm font-semibold text-gray-700">기본 정보</h3>
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <div>
+                      닉네임: <span className="font-medium">{item?.nickname ?? '회원'}</span>
+                    </div>
+                    {authorOverview?.firstActivityAt && <div>첫 활동일: {new Date(authorOverview.firstActivityAt).toLocaleDateString('ko-KR')}</div>}
+                  </div>
+                </div>
+
+                {/* 활동량 */}
+                {authorOverview && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-gray-700">커뮤니티 활동</h3>
+                    <div className="flex gap-4 text-sm">
+                      <div>
+                        <div className="text-xs text-gray-500">작성 글</div>
+                        <div className="text-lg font-semibold">{authorOverview.stats.posts}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">작성 댓글</div>
+                        <div className="text-lg font-semibold">{authorOverview.stats.comments}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 최근 작성 글 */}
+                {authorOverview?.recentPosts?.length ? (
+                  <div>
+                    <h3 className="mb-2 text-sm font-semibold text-gray-700">최근 작성 글</h3>
+                    <ul className="space-y-1 text-sm">
+                      {authorOverview.recentPosts.map((p) => (
+                        <li key={p.id} className="flex justify-between gap-2">
+                          <Link href={`/board/free/${p.id}`} className="truncate text-blue-600 hover:underline">
+                            {p.title || '(제목 없음)'}
+                          </Link>
+                          <span className="shrink-0 text-xs text-gray-500">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  !isAuthorLoading && <p className="text-xs text-gray-500">아직 활동 기록이 없거나, 공개 게시글이 없습니다.</p>
+                )}
+
+                {/* 액션 버튼 */}
+                <div className="flex justify-between pt-2">
+                  <Button variant="outline" size="sm" asChild disabled={!item}>
+                    <Link href={item ? `/board/free?author=${encodeURIComponent(item.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
+                  </Button>
+
+                  <Button variant="ghost" size="sm" onClick={() => setIsAuthorProfileOpen(false)}>
+                    닫기
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
