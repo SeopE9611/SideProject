@@ -26,6 +26,7 @@ export interface OrderItemSnapshot {
   price: number;
   imageUrl: string | null;
   quantity: number;
+  kind?: 'product' | 'racket';
 }
 
 export type DBOrder = {

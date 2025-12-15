@@ -33,32 +33,58 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return new NextResponse('권한이 없습니다.', { status: 403 });
     }
     const enrichedItems = await Promise.all(
-      (order.items as { productId: any; quantity: number }[]).map(async (item) => {
-        // ObjectId 로 변환
-        const prodId = item.productId instanceof ObjectId ? item.productId : new ObjectId(item.productId);
+      (order.items as { productId: any; quantity: number; kind?: 'product' | 'racket' }[]).map(async (item) => {
+        const id = item.productId instanceof ObjectId ? item.productId : new ObjectId(item.productId);
+        const kind = item.kind ?? 'product';
 
-        // 상품 조회
-        const prod = await db.collection('products').findOne({ _id: prodId });
+        // product
+        if (kind === 'product') {
+          const prod = await db.collection('products').findOne({ _id: id });
 
-        // prod 가 없으면 폴백
-        if (!prod) {
-          console.warn(`Product not found:`, prodId);
+          if (!prod) {
+            console.warn(`Product not found:`, id);
+            return {
+              id: id.toString(),
+              name: '알 수 없는 상품',
+              price: 0,
+              mountingFee: 0,
+              quantity: item.quantity,
+              kind: 'product' as const,
+            };
+          }
+
           return {
-            id: prodId.toString(),
-            name: '알 수 없는 상품',
-            price: 0,
-            mountingFee: 0,
+            id: prod._id.toString(),
+            name: prod.name,
+            price: prod.price,
+            mountingFee: prod.mountingFee ?? 0,
             quantity: item.quantity,
+            kind: 'product' as const,
           };
         }
 
-        // 정상 데이터
+        // racket
+        const racket = await db.collection('used_rackets').findOne({ _id: id });
+
+        if (!racket) {
+          console.warn(`Racket not found:`, id);
+          return {
+            id: id.toString(),
+            name: '알 수 없는 라켓',
+            price: 0,
+            mountingFee: 0, // 라켓 자체는 장착비 없음
+            quantity: item.quantity,
+            kind: 'racket' as const,
+          };
+        }
+
         return {
-          id: prod._id.toString(),
-          name: prod.name,
-          price: prod.price,
-          mountingFee: prod.mountingFee ?? 0,
+          id: id.toString(),
+          name: `${racket.brand} ${racket.model}`.trim(),
+          price: racket.price ?? 0,
+          mountingFee: 0,
           quantity: item.quantity,
+          kind: 'racket' as const,
         };
       })
     );

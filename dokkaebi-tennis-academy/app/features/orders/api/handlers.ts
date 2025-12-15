@@ -22,6 +22,11 @@ export async function createOrder(req: Request): Promise<Response> {
 
     // 요청 바디 파싱
     const body = await req.json();
+    type RawOrderItem = {
+      productId: string;
+      quantity: number;
+      kind?: 'product' | 'racket';
+    };
     const { items: rawItems, shippingInfo, totalPrice, shippingFee, guestInfo } = body;
 
     //  DB 커넥션 가져오기
@@ -40,62 +45,110 @@ export async function createOrder(req: Request): Promise<Response> {
       }
     }
 
-    for (const item of rawItems) {
-      // 재고 검증/차감을 위해 rawItems 순회
-      // console.log(' 주문 상품 ID:', item.productId);
-      const productId = new ObjectId(item.productId); // 상품의 MongoDB ObjectId 생성
-      const quantity = item.quantity; // 사용자가 구매한 수량
+    for (const item of rawItems as RawOrderItem[]) {
+      const kind = item.kind ?? 'product';
+      const quantity = item.quantity;
 
-      //  해당 상품이 실제 존재하는지 조회
-      const product = await db.collection('products').findOne({ _id: productId });
-      if (!product) {
-        //  존재하지 않으면 404 에러 응답
-        // console.error(' 상품을 찾을 수 없음:', productId);
-        return NextResponse.json({ error: '상품을 찾을 수 없습니다.' }, { status: 404 });
-      }
-      // console.log('재고 차감 대상 상품:', {
-      //   productId,
-      //   quantity,
-      //   currentStock: product.stock,
-      // });
       if (quantity <= 0) {
         return NextResponse.json({ error: '수량이 잘못되었습니다.' }, { status: 400 });
       }
-      // 재고가 부족한 경우 처리 차단
-      if (product.inventory.stock < quantity) {
-        return NextResponse.json(
+
+      // 일반 상품 재고 차감
+      if (kind === 'product') {
+        const productId = new ObjectId(item.productId);
+
+        const product = await db.collection('products').findOne({ _id: productId });
+        if (!product) {
+          return NextResponse.json({ error: '상품을 찾을 수 없습니다.' }, { status: 404 });
+        }
+
+        if (product.inventory.stock < quantity) {
+          return NextResponse.json(
+            {
+              error: 'INSUFFICIENT_STOCK',
+              productName: product.name,
+              currentStock: product.inventory.stock,
+            },
+            { status: 400 }
+          );
+        }
+
+        await db.collection('products').updateOne(
+          { _id: productId },
           {
-            error: 'INSUFFICIENT_STOCK',
-            productName: product.name,
-            currentStock: product.inventory.stock,
-          },
-          { status: 400 }
+            $inc: {
+              'inventory.stock': -quantity,
+              sold: quantity,
+            },
+          }
         );
+
+        continue;
       }
 
-      //  상품 재고 차감
-      await db.collection('products').updateOne(
-        { _id: productId }, // 어떤 상품인지 지정
-        {
-          $inc: {
-            'inventory.stock': -quantity, // stock 필드를 음수로 감소시킴
-            sold: quantity, // 누적 판매 수량 증가
-          },
+      // 중고 라켓 판매 처리 (used_rackets)
+      if (kind === 'racket') {
+        const racketId = new ObjectId(item.productId);
+
+        // used_rackets 스키마: status/price/images/brand/model
+        const racket = await db.collection('used_rackets').findOne({ _id: racketId });
+        if (!racket) {
+          return NextResponse.json({ error: '라켓을 찾을 수 없습니다.' }, { status: 404 });
         }
-      );
+
+        // 판매 가능 상태만 허용
+        if (racket.status !== 'available') {
+          return NextResponse.json({ error: '판매 가능한 라켓이 아닙니다.' }, { status: 400 });
+        }
+
+        // 중고 라켓은 보통 1점 상품이므로 quantity는 1만 허용(안전)
+        if (quantity !== 1) {
+          return NextResponse.json({ error: '라켓은 1개만 구매할 수 있습니다.' }, { status: 400 });
+        }
+
+        // 판매 완료 처리: status를 sold로 변경
+        await db.collection('used_rackets').updateOne({ _id: racketId }, { $set: { status: 'sold', updatedAt: new Date().toISOString() } });
+
+        continue;
+      }
+
+      return NextResponse.json({ error: 'INVALID_ITEM_KIND' }, { status: 400 });
     }
 
-    //  주문 스냅샷 생성: name, price, imageUrl 포함
+    //  주문 스냅샷
     const itemsWithSnapshot = await Promise.all(
-      rawItems.map(async (it: { productId: string; quantity: number }) => {
-        const oid = new ObjectId(it.productId);
-        const prod = await db.collection('products').findOne({ _id: oid });
+      (rawItems as RawOrderItem[]).map(async (it) => {
+        const kind = it.kind ?? 'product';
+        const quantity = it.quantity;
+
+        // product 스냅샷
+        if (kind === 'product') {
+          const oid = new ObjectId(it.productId);
+          const prod = await db.collection('products').findOne({ _id: oid });
+
+          return {
+            productId: oid,
+            name: prod?.name ?? '알 수 없는 상품',
+            price: prod?.price ?? 0,
+            imageUrl: (prod as any)?.imageUrl ?? null,
+            quantity,
+            kind: 'product' as const,
+          };
+        }
+
+        // racket 스냅샷
+        const rid = new ObjectId(it.productId);
+        const racket = await db.collection('used_rackets').findOne({ _id: rid });
+
+        const racketName = racket ? `${racket.brand} ${racket.model}`.trim() : '알 수 없는 라켓';
+
         return {
-          productId: oid,
-          name: prod?.name ?? '알 수 없는 상품',
-          price: prod?.price ?? 0,
-          imageUrl: prod?.imageUrl ?? null,
-          quantity: it.quantity,
+          productId: rid,
+          name: racketName,
+          price: racket?.price ?? 0,
+          imageUrl: racket?.images?.[0] ?? null,
+          quantity,
+          kind: 'racket' as const,
         };
       })
     );
