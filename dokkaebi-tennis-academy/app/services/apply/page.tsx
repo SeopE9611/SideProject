@@ -82,7 +82,10 @@ export default function StringServiceApplyPage() {
   const orderId = searchParams.get('orderId');
   // PDP 연동용
   const pdpProductId = searchParams.get('productId');
-  const pdpMountingFee = Number(searchParams.get('mountingFee') ?? Number.NaN);
+  // null 또는 빈문자열("")이면 NaN 처리, 그 외에는 Number 변환
+  const mountingFeeParam = searchParams.get('mountingFee');
+  const pdpMountingFee = mountingFeeParam === null || mountingFeeParam.trim() === '' ? Number.NaN : Number(mountingFeeParam);
+
   const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(pdpProductId));
 
   // PDP에서 넘어온 상품의 미니 정보(이름, 이미지)
@@ -201,12 +204,16 @@ export default function StringServiceApplyPage() {
     draftBootRef.current = true;
     (async () => {
       try {
-        await fetch('/api/applications/stringing/drafts', {
+        const draftUrl = orderId && orderId.trim() ? `/api/applications/stringing/drafts?orderId=${encodeURIComponent(orderId)}` : `/api/applications/stringing/drafts`;
+
+        const resp = await fetch(draftUrl, {
           method: 'POST',
-          credentials: 'include',
+          credentials: 'include', // ← 쿠키 기반 인증 필수
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId }),
+          body: JSON.stringify({ orderId: orderId || undefined }), // 서버 멱등성 유지
+          cache: 'no-store',
         });
+        console.debug('[draft bootstrap] POST', draftUrl, 'status=', resp.status);
         // 응답 데이터(applicationId, reused 등)는 현재 화면 흐름에 직접 필요 없으므로
         // 별도 상태 저장 없이 "초안 존재"만 보장. (멱등: 여러 번 호출돼도 중복 생성 없음)
       } catch (err) {
@@ -229,22 +236,6 @@ export default function StringServiceApplyPage() {
       }
     })();
   }, [orderId]);
-
-  // PDP에서 넘어오면 STEP2 자동 선택 + 장착비 기억 + 플래그 on
-  useEffect(() => {
-    if (!pdpProductId) return;
-    setFormData((prev) => {
-      if (Array.isArray(prev.stringTypes) && prev.stringTypes.length > 0) return prev;
-      return {
-        ...prev,
-        stringTypes: [pdpProductId], // 자동 선택
-        pdpMountingFee: Number.isFinite(pdpMountingFee) // 요약 패널에서 사용
-          ? pdpMountingFee
-          : undefined,
-      };
-    });
-    setFromPDP(true); // “상품에서 이어짐” 배지용
-  }, [pdpProductId, pdpMountingFee]);
 
   // 스텝별 검증 (silent=true면 토스트 없이 true/false만 반환)
   const validateStep = (step: number, silent = false): boolean => {
@@ -288,7 +279,7 @@ export default function StringServiceApplyPage() {
         }
       }
 
-      // 🔴 추가: 라켓별 세부 장착 정보 필수 검증
+      // 라켓별 세부 장착 정보 필수 검증
       // linesForSubmit 는 위에서 useMemo 로 계산된 최종 라인 배열
       if (linesForSubmit.length > 0) {
         for (let i = 0; i < linesForSubmit.length; i++) {
@@ -400,6 +391,7 @@ export default function StringServiceApplyPage() {
         const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=${cap}`, {
           method: 'GET',
           signal: controller.signal,
+          credentials: 'include',
         });
 
         if (!res.ok) {
@@ -550,7 +542,7 @@ export default function StringServiceApplyPage() {
   })();
 
   // 패키지 잔여 횟수 & 적용 가능 여부
-  const packageRemaining = packagePreview?.remaining ?? 0;
+  const packageRemaining = Math.max(0, packagePreview?.remaining ?? 0);
 
   // 패키지 자체는 있지만, "이번 신청에 필요한 횟수"만큼 남아 있는지 여부
   const canApplyPackage = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining >= requiredPassCount);
@@ -723,17 +715,42 @@ export default function StringServiceApplyPage() {
     });
 
     return lines;
-  }, [formData, priceView.base, order, orderId, formData.collectionMethod]); // Added formData.collectionMethod to dependencies
+  }, [formData, priceView.base, order, orderId]);
 
   // 이번 신청에서 라켓/스트링 라인 개수
   const lineCount = linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
 
+  // 라켓 금액: orderId 기반 주문에서 가져오기
+  const racketPrice = useMemo(() => {
+    if (!orderId || !order) return 0;
+
+    // totalPrice 우선 사용
+    const total = (order as any)?.totalPrice;
+    if (typeof total === 'number' && Number.isFinite(total)) return total;
+
+    // 없으면 items[] 중 라켓/중고라켓 합산
+    const items = (order as any)?.items;
+    if (Array.isArray(items)) {
+      return items
+        .filter((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket')
+        .reduce((sum: number, it: any) => {
+          const unit = Number(it?.price ?? 0);
+          const qty = Number(it?.quantity ?? 1);
+          return sum + unit * qty;
+        }, 0);
+    }
+    return 0;
+  }, [orderId, order]);
+
   // 요약 카드용 교체비/합계 (주문 기반/단독 신청 모두 커버)
   // - 주문(orderId 기반)인 경우: 선택된 스트링들의 총 장착비(price 상태)를 그대로 사용
   // - 그 외(단독 신청/PDP 진입): 1자루 기준 금액(base)에 라인 수를 곱해 합계를 구함
+  // 교체비(서비스비) 부분
   const summaryBase = orderId && order ? price : priceView.base * (lineCount || 0);
 
-  const summaryTotal = priceView.usingPackage ? 0 : summaryBase + priceView.pickupFee;
+  // 최종 합계: 라켓 금액 + (패키지면 교체비 0, 아니면 교체비) + 수거비
+  const serviceCost = priceView.usingPackage ? 0 : summaryBase;
+  const summaryTotal = racketPrice + serviceCost + priceView.pickupFee;
 
   // 통화 포메터
   const won = (n: number) => n.toLocaleString('ko-KR') + '원';
@@ -873,16 +890,10 @@ export default function StringServiceApplyPage() {
   // 라켓/라인 에디터: 라켓별 텐션/메모 등 변경 핸들러
   const handleLineFieldChange = <K extends keyof ApplicationLine>(index: number, field: K, value: ApplicationLine[K]) => {
     setFormData((prev) => {
-      // 이미 사용자가 formData.lines 를 가지고 있으면 그걸 기준으로,
-      // 없으면 현재 계산된 linesForSubmit 를 기준으로 편집한다.
-      const baseLines = Array.isArray(prev.lines) && prev.lines.length > 0 ? prev.lines : linesForSubmit;
-
+      // 최신 계산 결과(linesForSubmit)를 우선 사용, 사용자가 직접 만든 prev.lines가 있으면 그걸 우선
+      const baseLines = Array.isArray(prev.lines) && prev.lines.length > 0 ? prev.lines : linesForSubmit ?? [];
       const nextLines = baseLines.map((line, i) => (i === index ? { ...line, [field]: value } : line));
-
-      return {
-        ...prev,
-        lines: nextLines,
-      };
+      return { ...prev, lines: nextLines };
     });
   };
 
@@ -1063,6 +1074,10 @@ export default function StringServiceApplyPage() {
   };
 
   const handleOpenPostcode = () => {
+    if (!window?.daum?.Postcode) {
+      showErrorToast('주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
     new window.daum.Postcode({
       oncomplete: (data: any) => {
         setFormData((prev) => ({
@@ -1073,7 +1088,6 @@ export default function StringServiceApplyPage() {
       },
     }).open();
   };
-
   async function refetchDisabledTimesFor(date: string) {
     if (!date) return;
     try {
@@ -1092,7 +1106,12 @@ export default function StringServiceApplyPage() {
       // 조용히 실패 무시
     }
   }
-
+  const steps = [
+    { id: 1, title: '신청자 정보', icon: User, description: '기본 정보를 입력해주세요' },
+    { id: 2, title: '장착 정보', icon: ClipboardList, description: '라켓과 스트링 정보를 선택해주세요' },
+    { id: 3, title: '결제 정보', icon: CreditCard, description: '결제 방법을 선택해주세요' },
+    { id: 4, title: '추가 요청', icon: CheckCircle, description: '추가 요청사항을 입력해주세요' },
+  ];
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1188,16 +1207,10 @@ export default function StringServiceApplyPage() {
     setCurrentStep((s) => Math.min(4, s + 1));
   };
 
-  const steps = [
-    { id: 1, title: '신청자 정보', icon: User, description: '기본 정보를 입력해주세요' },
-    { id: 2, title: '장착 정보', icon: ClipboardList, description: '라켓과 스트링 정보를 선택해주세요' },
-    { id: 3, title: '결제 정보', icon: CreditCard, description: '결제 방법을 선택해주세요' },
-    { id: 4, title: '추가 요청', icon: CheckCircle, description: '추가 요청사항을 입력해주세요' },
-  ];
-
   // 방문 수령 여부(한글/영문 데이터 모두 허용)
-  const isVisitDelivery = (order?.shippingInfo as any)?.deliveryMethod === '방문수령' || order?.shippingInfo?.shippingMethod === 'visit';
-  const lockVisit = !!isVisitDelivery; // 방문이면 매장만 선택 가능
+  const isVisitDelivery = (order?.shippingInfo as any)?.deliveryMethod === '방문수령' || order?.shippingInfo?.shippingMethod === 'visit'; // 방문이면 매장만 선택 가능
+  // 주문 기반 진입 시(= orderId 존재)에는 수거 방식 전체 잠금
+  const lockCollection = Boolean(orderId);
 
   const getCurrentStepContent = () => {
     switch (currentStep) {
@@ -1360,6 +1373,8 @@ export default function StringServiceApplyPage() {
                   value={formData.collectionMethod}
                   onValueChange={(v) =>
                     setFormData((prev) => {
+                      // 주문 연동 모드에서는 수거 방식 변경 자체를 막는다.
+                      if (lockCollection) return prev;
                       const next = { ...prev, collectionMethod: v as CollectionMethod };
                       // 방문 접수 시, 날짜/시간 필드는 초기화 (기존에 선택된게 있다면)
                       if (normalizeCollection(v) === 'visit') {
@@ -1373,7 +1388,7 @@ export default function StringServiceApplyPage() {
                 >
                   {/* 자가 발송 */}
                   <div>
-                    <RadioGroupItem id="cm-self" value="self_ship" disabled={lockVisit} className="peer sr-only" />
+                    <RadioGroupItem id="cm-self" value="self_ship" disabled={lockCollection || isVisitDelivery} className="peer sr-only" />
                     <Label
                       htmlFor="cm-self"
                       className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
@@ -1405,7 +1420,7 @@ export default function StringServiceApplyPage() {
 
                   {/* 매장 방문 접수 */}
                   <div>
-                    <RadioGroupItem id="cm-visit" value="visit" disabled={false} className="peer sr-only" />
+                    <RadioGroupItem id="cm-visit" value="visit" disabled={lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */} className="peer sr-only" />
                     <Label
                       htmlFor="cm-visit"
                       className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
@@ -1419,6 +1434,7 @@ export default function StringServiceApplyPage() {
                     </Label>
                   </div>
                 </RadioGroup>
+                {lockCollection && <p className="mt-2 text-xs text-slate-500">라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.</p>}
 
                 {/* 기사 방문 수거 선택 시 추가 입력 */}
                 {normalizeCollection(formData.collectionMethod) === 'courier_pickup' && (
@@ -2001,7 +2017,7 @@ export default function StringServiceApplyPage() {
                   </select>
                 </div>
 
-                {formData.shippingBank && (
+                {formData.shippingBank && bankLabelMap[formData.shippingBank] ? (
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
                     <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
                       <CreditCard className="h-5 w-5 mr-2" />
@@ -2022,7 +2038,7 @@ export default function StringServiceApplyPage() {
                       </div>
                     </div>
                   </div>
-                )}
+                ) : null}
 
                 <div className="space-y-2">
                   <Label htmlFor="shippingDepositor" className="text-sm font-medium">
@@ -2129,6 +2145,17 @@ export default function StringServiceApplyPage() {
             <div className="mx-auto w-full md:w-[800px]">
               <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl">
                 <CardContent className="p-8">
+                  {/* 라켓 주문 프리필 배지 */}
+                  {orderId && (
+                    <div className="mb-6">
+                      <div className="inline-flex items-center gap-2 rounded-md border bg-white px-3 py-1.5 text-xs text-slate-700">
+                        <span className="font-medium text-slate-900">프리필</span>
+                        <span className="text-slate-500">라켓 주문</span>
+                        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px]">{orderId}</code>
+                        <span className="text-slate-500">기준으로 고객·배송·접수 방식이 자동 채워졌습니다.</span>
+                      </div>
+                    </div>
+                  )}
                   <form onSubmit={handleSubmit}>
                     {getCurrentStepContent()}
 
@@ -2227,6 +2254,7 @@ export default function StringServiceApplyPage() {
                   base={summaryBase}
                   pickupFee={priceView.pickupFee}
                   total={summaryTotal}
+                  racketPrice={racketPrice}
                 />
               </div>
             </div>

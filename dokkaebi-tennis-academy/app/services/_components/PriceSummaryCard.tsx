@@ -14,11 +14,12 @@ interface PriceSummaryProps {
   base: number;
   pickupFee: number;
   total: number;
+  racketPrice?: number;
 }
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
-export default function PriceSummaryCard({ preferredDate, preferredTime, collectionMethod = 'self_ship', stringTypes, usingPackage, base, pickupFee, total }: PriceSummaryProps) {
+export default function PriceSummaryCard({ preferredDate, preferredTime, collectionMethod, stringTypes, usingPackage, base, pickupFee, total, racketPrice = 0 }: PriceSummaryProps) {
   const isCustom = stringTypes.includes('custom');
 
   const MethodIcon = collectionMethod === 'courier_pickup' ? Truck : collectionMethod === 'visit' ? Store : Box;
@@ -73,7 +74,16 @@ export default function PriceSummaryCard({ preferredDate, preferredTime, collect
                 <p className="text-xs text-muted-foreground">{isCustom ? '보유/커스텀 스트링: 장착비만' : '스트링 상품 선택: 스트링 포함'}</p>
               </div>
             </div>
+
             <p className="text-sm">{won(base)}</p>
+          </div>
+          {/* 라켓 금액 */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2">
+              <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+              <p className="text-sm font-medium">라켓 금액</p>
+            </div>
+            <p className="text-sm">{won(racketPrice)}</p>
           </div>
 
           <div className="flex items-start justify-between">

@@ -1552,11 +1552,12 @@ export async function handleSubmitStringingApplication(req: Request) {
     const usingLines = Array.isArray(lines) && lines.length > 0;
 
     // === 1) 필수값 검증 ===
+
     if (!name || !phone || !Array.isArray(stringTypes) || stringTypes.length === 0) {
       return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
     }
 
-    // 🔴 추가: 라켓별 세부 장착 정보 필수값 검증 (lines 를 사용하는 경우에만)
+    // 라켓별 세부 장착 정보 필수값 검증 (lines 를 사용하는 경우에만)
     if (usingLines) {
       const invalidIndex = (lines as any[]).findIndex((line) => {
         const racketType = typeof (line as any).racketType === 'string' ? (line as any).racketType.trim() : '';
@@ -1705,6 +1706,58 @@ export async function handleSubmitStringingApplication(req: Request) {
 
     // === 5) collectionMethod 정규화 & 일관 저장 ===
     const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
+
+    // 주문 <-> 신청 수거방식 일치 검증 (db, orderObjectId, cm 준비된 이후에만 가능)
+    if (orderObjectId) {
+      // 주문에서 접수 방식 관련 최소 필드만 조회
+      const order = await db.collection('orders').findOne(
+        { _id: orderObjectId },
+        {
+          projection: {
+            servicePickupMethod: 1, // 예: 'SHOP_VISIT' 등
+            collectionMethod: 1, // 과거/신규 스키마 호환
+            'shippingInfo.shippingMethod': 1, // 예: 'visit' | 'courier'
+            'shippingInfo.deliveryMethod': 1, // 예: '방문수령'
+            status: 1,
+          },
+        }
+      );
+
+      if (!order) {
+        return NextResponse.json({ message: '유효하지 않은 orderId' }, { status: 400 });
+      }
+
+      // 주문 문서에서 기대 접수방식 도출
+      // 1순위: order.collectionMethod (있으면 그대로)
+      // 2순위: servicePickupMethod 또는 shippingInfo.* 기반으로 추론
+      let expected = 'self_ship' as 'self_ship' | 'visit' | 'courier_pickup';
+
+      if ((order as any)?.collectionMethod) {
+        expected = normalizeCollection((order as any).collectionMethod);
+      } else if ((order as any)?.servicePickupMethod === 'SHOP_VISIT' || (order as any)?.shippingInfo?.shippingMethod === 'visit' || (order as any)?.shippingInfo?.deliveryMethod === '방문수령') {
+        expected = 'visit';
+      } else {
+        expected = 'self_ship';
+      }
+
+      // 최종 비교: 주문에서 기대되는 방식(expected) vs 이번 신청서(cm)
+      if (expected !== cm) {
+        return NextResponse.json(
+          {
+            message: '접수 방식은 라켓 구매 단계에서 선택한 값과 일치해야 합니다.',
+            expected,
+            actual: cm,
+          },
+          { status: 422 }
+        );
+      }
+
+      // 취소/환불된 주문에 연결 방지
+      const forbidden = ['canceled', 'refunded'];
+      if (forbidden.includes(String((order as any).status ?? ''))) {
+        return NextResponse.json({ message: '취소/환불된 주문에는 신청서를 연결할 수 없습니다.' }, { status: 409 });
+      }
+    }
 
     const stringDetails: any = {
       racketType,
@@ -1997,7 +2050,31 @@ export async function handleSubmitStringingApplication(req: Request) {
 // ================= DRAFT(초안) 생성/재사용 =================
 // 목적: /services/apply?orderId=... 진입 시, 해당 주문에 진행 중 신청서가 "항상 1개" 존재하도록 보장
 // 불변식: 같은 orderId에 status ∈ INPROGRESS_STATUSES 문서는 동시에 1개만
+async function safeJson<T = any>(req: Request): Promise<T | null> {
+  try {
+    // 본문이 비어 있거나 이미 소비된 경우 에러가 나므로 안전하게 감쌉니다.
+    return (await req.json()) as T;
+  } catch {
+    return null;
+  }
+}
 export async function handleCreateOrGetDraftApplication(req: Request) {
+  // 쿼리스트링에서도 orderId를 받는 fallback
+  const url = new URL(req.url);
+  const qsOrderId = url.searchParams.get('orderId');
+
+  // 본문 JSON은 안전하게 파싱
+  const body = await safeJson<{ orderId?: string }>(req);
+  const orderId = body?.orderId ?? qsOrderId ?? '';
+
+  // 디버깅: 요청 URL과 파싱된 값 로깅
+  console.debug('[stringing drafts] req.url=', String(req.url));
+  console.debug('[stringing drafts] qsOrderId=', String(qsOrderId), 'bodyOrderId=', body?.orderId, 'orderId=', orderId);
+
+  if (!orderId || !ObjectId.isValid(orderId)) {
+    console.warn('[stringing drafts] invalid orderId:', orderId);
+    return NextResponse.json({ ok: false, error: 'Invalid or missing orderId' }, { status: 400 });
+  }
   try {
     const db = await getDb();
     const jar = await cookies();
@@ -2014,7 +2091,6 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     if (!orderId || !ObjectId.isValid(orderId)) {
       return new Response(JSON.stringify({ message: '유효하지 않은 orderId' }), { status: 400 });
     }
-
     // 3) 주문 조회 (이후 권한 판단에서 'order'를 사용하므로 반드시 먼저 조회)
     const ordersCol = db.collection('orders');
     const order = await ordersCol.findOne({ _id: new ObjectId(orderId) });

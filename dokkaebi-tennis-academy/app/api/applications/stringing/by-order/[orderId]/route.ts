@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 
-export async function GET(_: Request, context: { params: { orderId: string } }) {
+export async function GET(_req: Request, context: { params: Promise<{ orderId: string }> }) {
   try {
     const db = (await clientPromise).db();
-    const { orderId } = context.params;
+    const { orderId } = await context.params;
 
     // orderId를 ObjectId와 string 둘 다로 매칭 (DB에 혼재 가능성 대응)
     let oid: ObjectId | null = null;

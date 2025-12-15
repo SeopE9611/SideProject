@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import HeroSlider from '@/components/HeroSlider';
 import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from '@/lib/constants';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
 type ApiProduct = {
@@ -54,7 +56,7 @@ const SLIDES = [
 export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>('all');
   const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>('all');
-
+  const router = useRouter();
   // 마운트 후 URL에서 초깃값 한 번만 읽기
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -205,6 +207,12 @@ export default function Home() {
     <div>
       {/* 상단 배너 */}
       <HeroSlider slides={SLIDES} />
+
+      <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm text-[30px]">
+        <Button className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600 text-[30px]" onClick={() => router.push(`/rackets`)}>
+          (테스트중입니다.) 라켓 구매 + 스트링 + 교체서비스 동시작업하기
+        </Button>
+      </div>
 
       {/* 프리미엄 스트링 섹션 */}
       <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm">
