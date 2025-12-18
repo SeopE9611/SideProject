@@ -3,10 +3,12 @@
 import { useEffect, useRef } from 'react';
 import { useCartStore } from '@/app/store/cartStore';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
+import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
 
 export default function ClearCartOnMount() {
   const clearCart = useCartStore((s) => s.clearCart);
   const clearBuyNow = useBuyNowStore((s) => s.clear);
+  const clearPdpBundle = usePdpBundleStore((s) => s.clear);
 
   // 성공 페이지 진입 시 카드 비우기
 
@@ -18,7 +20,8 @@ export default function ClearCartOnMount() {
     ran.current = true;
     clearCart(); // 기존 장바구니 비우기
     clearBuyNow(); //  buy-now 임시 상태도 함께 비우기
-  }, [clearCart, clearBuyNow]);
+    clearPdpBundle();
+  }, [clearCart, clearBuyNow, clearPdpBundle]);
 
   return null;
 }

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { issuePassesForPaidOrder } from '@/lib/passes.service';
 import jwt from 'jsonwebtoken';
 
@@ -29,7 +29,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const isOwner = payload?.sub === order.userId?.toString();
     const isAdmin = payload?.role === 'admin';
     // console.log('raw cookie header:', _req.headers.get('cookie'));
-    if (!isOwner && !isAdmin) {
+    const oax = cookieStore.get('orderAccessToken')?.value ?? null;
+    const guestClaims = oax ? verifyOrderAccessToken(oax) : null;
+    const isGuestOrder = !order.userId || (order as any).guest === true;
+    const guestOwnsOrder = !!(isGuestOrder && guestClaims && guestClaims.orderId === String(order._id));
+
+    if (!isOwner && !isAdmin && !guestOwnsOrder) {
       return new NextResponse('권한이 없습니다.', { status: 403 });
     }
     const enrichedItems = await Promise.all(

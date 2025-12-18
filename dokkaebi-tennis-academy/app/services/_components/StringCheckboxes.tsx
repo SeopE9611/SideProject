@@ -9,13 +9,15 @@ interface Props {
   onChange: (value: string[]) => void; // 배열로 넘겨줌
   onCustomInputChange: (value: string) => void;
   disabled?: boolean;
+  hideCustom?: boolean; // 주문 기반 등에서 "직접 입력" 숨김
 }
 
-export default function StringCheckboxes({ items, stringTypes, customInput, onChange, onCustomInputChange, disabled = false }: Props) {
+export default function StringCheckboxes({ items, stringTypes, customInput, onChange, onCustomInputChange, disabled = false, hideCustom = false }: Props) {
   const toggle = (id: string) => {
     if (disabled) return;
     // custom 체크박스를 토글할 때는 오직 ['custom'] 만 남기고 모두 해제
     if (id === 'custom') {
+      if (hideCustom) return;
       const next = stringTypes.includes('custom') ? [] : ['custom'];
       onChange(next);
       return;
@@ -57,14 +59,16 @@ export default function StringCheckboxes({ items, stringTypes, customInput, onCh
       })}
 
       {/* 직접 입력 항목 */}
-      <label className={cn('flex flex-col gap-2 border rounded-lg px-4 py-2 cursor-pointer transition-all', stringTypes.includes('custom') ? 'border-primary bg-primary/10' : 'border-muted')}>
-        <div className="flex items-center gap-2">
-          <input type="checkbox" checked={stringTypes.includes('custom')} onChange={() => toggle('custom')} />
-          <span className="font-medium">직접 입력하기</span>
-        </div>
-        {/* 직접 입력 필드 */}
-        {stringTypes.includes('custom') && <Input placeholder="직접 입력한 스트링 이름" value={customInput} onChange={(e) => onCustomInputChange(e.target.value)} />}
-      </label>
+      {!hideCustom && (
+        <label className={cn('flex flex-col gap-2 border rounded-lg px-4 py-2 cursor-pointer transition-all', stringTypes.includes('custom') ? 'border-primary bg-primary/10' : 'border-muted')}>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" checked={stringTypes.includes('custom')} onChange={() => toggle('custom')} />
+            <span className="font-medium">직접 입력하기</span>
+          </div>
+          {/* 직접 입력 필드 */}
+          {stringTypes.includes('custom') && <Input placeholder="직접 입력한 스트링 이름" value={customInput} onChange={(e) => onCustomInputChange(e.target.value)} />}
+        </label>
+      )}
     </div>
   );
 }

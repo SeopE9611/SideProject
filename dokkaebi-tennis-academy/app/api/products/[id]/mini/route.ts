@@ -11,8 +11,19 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
   const db = await getDb();
 
-  // ✅ mountingFee 포함해서 가져오기
-  const prod = await db.collection('products').findOne({ _id: new ObjectId(id) }, { projection: { name: 1, title: 1, thumbnail: 1, images: 1, mountingFee: 1 } });
+  const prod = await db.collection('products').findOne(
+    { _id: new ObjectId(id) },
+    {
+      projection: {
+        name: 1,
+        title: 1,
+        thumbnail: 1,
+        images: 1,
+        mountingFee: 1,
+        price: 1,
+      },
+    }
+  );
 
   if (!prod) return NextResponse.json({ ok: false, error: 'notFound' }, { status: 404 });
 
@@ -21,9 +32,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       ok: true,
       name: prod.name ?? prod.title ?? '상품',
       image: prod.thumbnail || (Array.isArray(prod.images) && prod.images[0]) || null,
-
-      // ✅ 없으면 0으로 정규화해서 프론트에서 안전하게 사용
       mountingFee: typeof (prod as any).mountingFee === 'number' ? (prod as any).mountingFee : 0,
+      price: typeof (prod as any).price === 'number' ? (prod as any).price : 0,
     },
     { headers: { 'Cache-Control': 'no-store' } }
   );

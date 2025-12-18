@@ -27,7 +27,7 @@ export async function createOrder(req: Request): Promise<Response> {
       quantity: number;
       kind?: 'product' | 'racket';
     };
-    const { items: rawItems, shippingInfo, totalPrice, shippingFee, guestInfo } = body;
+    const { items: rawItems, shippingInfo, totalPrice, shippingFee, guestInfo, serviceFee } = body;
 
     //  DB 커넥션 가져오기
     const client = await clientPromise;
@@ -87,28 +87,45 @@ export async function createOrder(req: Request): Promise<Response> {
       }
 
       // 중고 라켓 판매 처리 (used_rackets)
+      // - quantity <= 1 : "단품" → status(available) 기반으로 판매 가능 판단 + sold 처리
+      // - quantity > 1  : "재고형" → quantity 기반으로 재고 차감(원자적) + 남은 수량에 따라 status 자동 정합화
       if (kind === 'racket') {
         const racketId = new ObjectId(item.productId);
+        const rackCol = db.collection('used_rackets');
 
-        // used_rackets 스키마: status/price/images/brand/model
-        const racket = await db.collection('used_rackets').findOne({ _id: racketId });
+        const racket = await rackCol.findOne({ _id: racketId }, { projection: { status: 1, quantity: 1 } });
         if (!racket) {
-          return NextResponse.json({ error: '라켓을 찾을 수 없습니다.' }, { status: 404 });
-        }
-
-        // 판매 가능 상태만 허용
-        if (racket.status !== 'available') {
           return NextResponse.json({ error: '판매 가능한 라켓이 아닙니다.' }, { status: 400 });
         }
 
-        // 중고 라켓은 보통 1점 상품이므로 quantity는 1만 허용(안전)
+        const stockQty = Number(racket.quantity ?? 1);
+
+        // (A) 단품(1점) 라켓: 기존 로직 유지 (status=available 이어야 판매 가능)
+        if (!Number.isFinite(stockQty) || stockQty <= 1) {
+          if (racket.status !== 'available') {
+            return NextResponse.json({ error: '판매 가능한 라켓이 아닙니다.' }, { status: 400 });
+          }
+          if (quantity !== 1) {
+            return NextResponse.json({ error: '라켓은 1개만 구매할 수 있습니다.' }, { status: 400 });
+          }
+          await rackCol.updateOne({ _id: racketId, status: 'available' }, { $set: { status: 'sold', updatedAt: new Date().toISOString() } });
+          continue;
+        }
+
+        // (B) 재고형(다수 수량) 라켓: quantity 기반으로 차감 (status는 남은 수량에 맞춰 자동 정합화)
         if (quantity !== 1) {
           return NextResponse.json({ error: '라켓은 1개만 구매할 수 있습니다.' }, { status: 400 });
         }
 
-        // 판매 완료 처리: status를 sold로 변경
-        await db.collection('used_rackets').updateOne({ _id: racketId }, { $set: { status: 'sold', updatedAt: new Date().toISOString() } });
-
+        const nowIso = new Date().toISOString();
+        const updated = await rackCol.findOneAndUpdate(
+          { _id: racketId, quantity: { $gte: 1 }, status: { $nin: ['inactive', '비노출'] } },
+          [{ $set: { quantity: { $subtract: ['$quantity', 1] }, updatedAt: nowIso } }, { $set: { status: { $cond: [{ $lte: ['$quantity', 0] }, 'sold', 'available'] } } }] as any,
+          { returnDocument: 'after' }
+        );
+        if (!updated?.value) {
+          return NextResponse.json({ error: '재고가 부족합니다.' }, { status: 400 });
+        }
         continue;
       }
 
@@ -174,8 +191,8 @@ export async function createOrder(req: Request): Promise<Response> {
       paymentInfo,
       createdAt: new Date(),
       status: '대기중',
-      // isStringServiceApplied: !!body.isStringServiceApplied, // 프론트 신호 보존
       idemKey,
+      serviceFee: typeof serviceFee === 'number' ? serviceFee : 0,
     };
     (order as any).servicePickupMethod = body.servicePickupMethod;
 
@@ -196,17 +213,17 @@ export async function createOrder(req: Request): Promise<Response> {
     //   const client = await clientPromise;
     //   const db = client.db();
 
-    //   // 방금 저장한 order 문서 재조회(신뢰할 id로)
-    //   const saved = await db.collection('orders').findOne({ _id: result.insertedId });
+    if (shippingInfo?.withStringService === true) {
+      //  주문 → 스트링 교체 신청서 자동 생성(멱등)
+      // - 결제는 Checkout에서 1회(orders.totalPrice)로 종료
+      // - 신청서(stringing_applications)는 작업/예약/배송 정보 문서로만 관리 (결제 없음)
+      // - withStringService=true 인 주문만 대상
+      const saved = await db.collection('orders').findOne({ _id: result.insertedId });
 
-    //   if (saved) {
-    //     // 주문 → 신청서 변환 유틸 호출(멱등)
-    //     await createStringingApplicationFromOrder(saved as any);
-    //   }
-    // }
-    // === 자동 생성은 하지 않음.===
-    // 체크박스는 shippingInfo.withStringService 로만 보존하고,
-    // 실제 신청은 마이페이지/주문 상세/주문 목록 CTA를 통해 사용자가 진행.
+      if (saved) {
+        await createStringingApplicationFromOrder(saved as any);
+      }
+    }
 
     // 성공 응답 반환
     return NextResponse.json({ success: true, orderId: result.insertedId.toString() }, { status: 201 });

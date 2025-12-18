@@ -19,6 +19,7 @@ import { CreditCard, MapPin, Truck, Shield, CheckCircle, UserIcon, Mail, Phone, 
 import { useSearchParams } from 'next/navigation';
 import { bankLabelMap } from '@/lib/constants';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
+import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
 
 declare global {
   interface Window {
@@ -32,6 +33,10 @@ export default function CheckoutPage() {
   // 1) URL 파라미터로 최초 진입 제어
   const withServiceParam = sp.get('withService'); // '1' | '0' | null
 
+  //  PDP에서 넘어온 장착비(1자루 기준 공임)
+  const mountingFeeParam = sp.get('mountingFee');
+  const pdpMountingFee = mountingFeeParam && mountingFeeParam.trim() !== '' ? Number(mountingFeeParam) : NaN;
+
   // 2) 기존 상태
   const [withStringService, setWithStringService] = useState(false);
 
@@ -41,22 +46,35 @@ export default function CheckoutPage() {
       setWithStringService(true);
     }
   }, [withServiceParam]);
-
-  const searchParams = useSearchParams();
-  const mode = searchParams.get('mode'); // 'buynow' | null
+  const mode = sp.get('mode'); // 'buynow' | null
 
   const { items: cartItems } = useCartStore();
   const { item: buyNowItem } = useBuyNowStore();
+  const { items: pdpBundleItems } = usePdpBundleStore();
 
   // 장바구니 결제 vs 즉시 구매 모드 분기
-  const orderItems: CartItem[] =
-    mode === 'buynow' && buyNowItem
-      ? [buyNowItem] // 즉시 구매: 단일 상품만
-      : cartItems; // 기본: 장바구니 전체
+  const orderItems: CartItem[] = mode === 'buynow' ? (pdpBundleItems.length > 0 ? pdpBundleItems : buyNowItem ? [buyNowItem] : []) : cartItems;
 
+  // 상품 금액 합계
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  // 배송비
   const shippingFee = subtotal >= 30000 ? 0 : 3000;
-  const total = subtotal + shippingFee;
+
+  // 교체 서비스 공임(serviceFee) 계산
+  let serviceFee = 0;
+
+  // - 교체 서비스 플래그가 켜져 있고
+  // - buy-now 모드이며
+  // - PDP에서 공임이 숫자로 넘어온 경우에만 사용
+  if (withStringService && mode === 'buynow' && Number.isFinite(pdpMountingFee)) {
+    const racketQty = orderItems.find((it) => it.kind === 'racket')?.quantity;
+    const qty = typeof racketQty === 'number' ? racketQty : orderItems[0]?.quantity ?? 1;
+    serviceFee = pdpMountingFee * qty;
+  }
+
+  // 최종 결제 금액 = 상품 + 배송 + 서비스
+  const total = subtotal + shippingFee + serviceFee;
 
   const [selectedBank, setSelectedBank] = useState('shinhan');
 
@@ -543,8 +561,17 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-600 dark:text-slate-400">배송비</span>
-                      <span className={`font-semibold ${shippingFee === 0 ? 'text-green-600' : 'text-slate-800 dark:text-slate-200'}`}>{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}</span>
+                      <span className={`font-semibold ${shippingFee > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-emerald-500'}`}>{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}</span>
                     </div>
+
+                    {/* 교체 서비스비 (있는 경우에만 표시) */}
+                    {serviceFee > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-600 dark:text-slate-400">교체 서비스비</span>
+                        <span className="font-semibold text-lg">{serviceFee.toLocaleString()}원</span>
+                      </div>
+                    )}
+
                     <Separator />
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>총 결제 금액</span>
@@ -594,6 +621,7 @@ export default function CheckoutPage() {
                     withStringService={withStringService}
                     servicePickupMethod={servicePickupMethod}
                     items={orderItems}
+                    serviceFee={serviceFee}
                   />
                   <Button variant="outline" className="w-full border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
                     <Link href="/cart">장바구니로 돌아가기</Link>

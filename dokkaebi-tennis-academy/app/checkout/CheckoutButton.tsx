@@ -27,6 +27,7 @@ export default function CheckoutButton({
   withStringService,
   servicePickupMethod,
   items,
+  serviceFee = 0,
 }: {
   disabled: boolean;
   name: string;
@@ -45,6 +46,7 @@ export default function CheckoutButton({
   withStringService: boolean;
   servicePickupMethod: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
   items: CartItem[];
+  serviceFee?: number;
 }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -84,14 +86,16 @@ export default function CheckoutButton({
         items: items.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
+          kind: item.kind ?? 'product',
         })),
         shippingInfo,
         paymentInfo: {
           method: '무통장입금',
           bank: selectedBank,
         },
-        totalPrice,
+        totalPrice, // 이미 상품 + 배송비 + 서비스비가 포함된 값
         shippingFee,
+        serviceFee,
         guestInfo: !user ? { name, phone, email } : undefined,
         isStringServiceApplied: withStringService,
         servicePickupMethod,
@@ -125,7 +129,8 @@ export default function CheckoutButton({
       const data = await res.json();
 
       if (data?.orderId) {
-        router.push(`/checkout/success?orderId=${data.orderId}`);
+        const qs = withStringService ? `orderId=${data.orderId}&autoApply=1` : `orderId=${data.orderId}`;
+        router.push(`/checkout/success?${qs}`);
         router.refresh();
         return;
       }

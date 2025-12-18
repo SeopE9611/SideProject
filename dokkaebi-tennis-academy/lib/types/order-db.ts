@@ -56,4 +56,5 @@ export type DBOrder = {
   };
   isStringServiceApplied?: boolean;
   idemKey?: string | null;
+   serviceFee?: number;
 };

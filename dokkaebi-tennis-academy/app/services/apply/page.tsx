@@ -63,11 +63,14 @@ interface FormData {
   pickupNote: string;
   lines: ApplicationLine[];
   pdpMountingFee?: number; // PDP에서 넘어온 장착비 (임시)
+  defaultMainTension?: string;
+  defaultCrossTension?: string;
 }
 
 interface PdpMiniProduct {
   name: string;
   image: string | null;
+  price?: number; // 스트링 상품 금액
 }
 
 declare global {
@@ -80,13 +83,15 @@ export default function StringServiceApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
-  // PDP 연동용
-  const pdpProductId = searchParams.get('productId');
+  const isOrderBased = Boolean(orderId && orderId.trim());
+
+  // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
+  const pdpProductId = isOrderBased ? null : searchParams.get('productId');
   // null 또는 빈문자열("")이면 NaN 처리, 그 외에는 Number 변환
-  const mountingFeeParam = searchParams.get('mountingFee');
+  const mountingFeeParam = isOrderBased ? null : searchParams.get('mountingFee');
   const pdpMountingFee = mountingFeeParam === null || mountingFeeParam.trim() === '' ? Number.NaN : Number(mountingFeeParam);
 
-  const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(pdpProductId));
+  const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(!isOrderBased && pdpProductId));
 
   // PDP에서 넘어온 상품의 미니 정보(이름, 이미지)
   const [pdpProduct, setPdpProduct] = useState<PdpMiniProduct | null>(null);
@@ -139,10 +144,9 @@ export default function StringServiceApplyPage() {
     })();
   }, [orderId]);
 
-  // PDP 상품 미니 정보 로딩 (이미지/이름)
+  // PDP 상품 미니 정보 로딩 (이미지/이름/장착비)
   useEffect(() => {
     if (!pdpProductId) {
-      // PDP에서 안 넘어온 경우 초기화
       setPdpProduct(null);
       return;
     }
@@ -160,12 +164,20 @@ export default function StringServiceApplyPage() {
           setPdpProduct({
             name: data.name,
             image: data.image ?? null,
+            price: typeof data.price === 'number' ? data.price : undefined,
           });
+
+          // 🔥 mountingFee를 formData에 저장
+          if (typeof data.mountingFee === 'number') {
+            setFormData((prev) => ({
+              ...prev,
+              pdpMountingFee: data.mountingFee,
+            }));
+          }
         }
       })
       .catch(() => {
         if (!cancelled) {
-          // 에러가 나더라도 화면은 그냥 “텍스트 안내”만 나오도록 null 처리
           setPdpProduct(null);
         }
       })
@@ -183,16 +195,22 @@ export default function StringServiceApplyPage() {
   // PDP에서 넘어오면 STEP2 자동 선택 + 장착비 기억 + 플래그 on
   useEffect(() => {
     if (!pdpProductId) return;
+
+    // 주문 데이터 로딩 완료를 기다림
+    if (orderId && !order) return;
+
     setFormData((prev) => {
-      if (Array.isArray(prev.stringTypes) && prev.stringTypes.length > 0) return prev;
+      // 이미 같은 상품이 선택되어 있으면 스킵
+      if (prev.stringTypes.includes(pdpProductId)) return prev;
+
       return {
         ...prev,
-        stringTypes: [pdpProductId], // 자동 선택
+        stringTypes: [pdpProductId], // 무조건 선택
         pdpMountingFee: Number.isFinite(pdpMountingFee) ? pdpMountingFee : undefined,
       };
     });
-    setFromPDP(true); // “상품에서 이어짐” 플래그
-  }, [pdpProductId, pdpMountingFee]);
+    setFromPDP(true);
+  }, [pdpProductId, pdpMountingFee, orderId, order]); // order 의존성 추가
   // 초안 보장: 주문 기반 진입 시, 진행 중 신청서(draft/received)를 "항상" 1개로 맞춘다.
   // - 이미 있으면 재사용(reused=true), 없으면 자동 생성
   // - UI에는 영향 없음(프리필/흐름 그대로), 서버/DB 일관성만 강화
@@ -262,16 +280,24 @@ export default function StringServiceApplyPage() {
 
     if (step === 2) {
       // if (!formData.racketType.trim()) return toast('라켓 종류를 입력해주세요.'), false;
-      if (formData.stringTypes.length === 0) return toast('스트링 종류를 한 개 이상 선택해주세요.'), false;
-      if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) return toast('직접 입력한 스트링명을 적어주세요.'), false;
+      if (formData.stringTypes.length === 0) {
+        return toast('스트링 종류를 한 개 이상 선택해주세요.'), false;
+      }
+      if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) {
+        return toast('직접 입력한 스트링명을 적어주세요.'), false;
+      }
 
       const isVisit = normalizeCollection(formData.collectionMethod) === 'visit';
       if (isVisit) {
-        if (!formData.preferredDate) return toast('장착 희망일을 선택해주세요.'), false;
-        if (!formData.preferredTime) return toast('희망 시간대를 선택해주세요.'), false;
+        if (!formData.preferredDate) {
+          return toast('장착 희망일을 선택해주세요.'), false;
+        }
+        if (!formData.preferredTime) {
+          return toast('희망 시간대를 선택해주세요.'), false;
+        }
       }
 
-      // 이 주문에서 허용된 남은 교체 횟수 초과 여부 검사
+      // 주문 기반(orderId) 진입이면, 이 주문에서 허용된 남은 교체 횟수(remainingSlots)를 초과 신청할 수 없음
       if (orderId && typeof orderRemainingSlots === 'number') {
         // requiredPassCount = 이번 신청에서 실제로 장착하려는 라켓 수
         if (requiredPassCount > orderRemainingSlots) {
@@ -280,7 +306,6 @@ export default function StringServiceApplyPage() {
       }
 
       // 라켓별 세부 장착 정보 필수 검증
-      // linesForSubmit 는 위에서 useMemo 로 계산된 최종 라인 배열
       if (linesForSubmit.length > 0) {
         for (let i = 0; i < linesForSubmit.length; i++) {
           const line = linesForSubmit[i];
@@ -288,7 +313,6 @@ export default function StringServiceApplyPage() {
           const tensionMain = (line.tensionMain ?? '').trim();
           const tensionCross = (line.tensionCross ?? '').trim();
 
-          // 라켓 이름, 메인/크로스 텐션 모두 필수
           if (!racketName || !tensionMain || !tensionCross) {
             return toast(`라켓 ${i + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.`), false;
           }
@@ -589,7 +613,6 @@ export default function StringServiceApplyPage() {
       if (!base && Number.isFinite((formData as any).pdpMountingFee)) {
         base = Number((formData as any).pdpMountingFee);
       }
-
       // 2-3) 그 외(완전 단독 신청 등): 기존 35,000 fallback 유지
       if (!base) {
         base = 35000;
@@ -633,7 +656,6 @@ export default function StringServiceApplyPage() {
       return formData.lines;
     }
 
-    // 2) 아직 라인이 없다면, 선택된 stringTypes 기반으로 자동 생성
     const stringIds = (formData.stringTypes || []).filter(Boolean);
     if (!stringIds.length) {
       return [];
@@ -647,21 +669,45 @@ export default function StringServiceApplyPage() {
         const found = order.items.find((it) => it.id === prodId);
         if (found?.name) return found.name;
       }
+      if (prodId === pdpProductId && pdpProduct?.name) {
+        return pdpProduct.name; // PDP 상품 이름 사용
+      }
       if (prodId === 'custom') {
         return formData.customStringType || '커스텀 스트링';
       }
       return '선택한 스트링';
     };
 
+    // 장착비 가져오는 헬퍼 함수 추가
+    const getMountingFee = (prodId: string): number => {
+      if (prodId === 'custom') {
+        return 15000;
+      }
+
+      // 주문 아이템에서 찾기
+      if (isOrderMode && order) {
+        const found = order.items.find((it) => it.id === prodId);
+        if (found?.mountingFee != null) {
+          return found.mountingFee;
+        }
+      }
+
+      // PDP에서 넘어온 경우
+      if (prodId === pdpProductId && Number.isFinite(pdpMountingFee)) {
+        return pdpMountingFee;
+      }
+
+      // 기본값
+      return baseFee || 35000;
+    };
+
     const lines: ApplicationLine[] = [];
 
     stringIds.forEach((prodId, index) => {
       const stringName = getStringName(prodId);
+      const lineFee = getMountingFee(prodId);
 
-      // 커스텀/보유 스트링: quantity 개념 없이 항상 1자루 기준
       if (prodId === 'custom') {
-        const lineFee = baseFee || 15000;
-
         lines.push({
           id: `custom-${index}-0`,
           racketType: '',
@@ -675,32 +721,46 @@ export default function StringServiceApplyPage() {
         return;
       }
 
-      // 주문 기반(orderId)인 경우: "이번 신청에서 사용할 개수(useQty)"만큼 라인 생성
+      // 주문 기반인 경우
       if (isOrderMode && order) {
         const found = order.items.find((it) => it.id === prodId);
-        if (!found) return;
-
-        const orderQty = found.quantity ?? 1;
-        const fee = typeof found.mountingFee === 'number' ? found.mountingFee : baseFee;
-
+        const orderQty = found?.quantity ?? 1;
         const useQty = formData.stringUseCounts[prodId] ?? orderQty;
 
-        for (let i = 0; i < useQty; i++) {
-          lines.push({
-            id: `${prodId}-${i}`,
-            racketType: formData.racketType,
-            stringProductId: prodId,
-            stringName,
-            tensionMain: '',
-            tensionCross: '',
-            note: formData.requirements,
-            mountingFee: fee,
-          });
+        // 주문 기반인 경우
+        if (isOrderMode && order) {
+          const found = order.items.find((it) => it.id === prodId);
+          const orderQty = found?.quantity ?? 1;
+          const useQty = formData.stringUseCounts[prodId] ?? orderQty;
+
+          // ✅ 주문 안에서 라켓/중고라켓 하나만 있다면 그 이름을 기본값으로 사용
+          let racketNameFromOrder: string | undefined;
+          const items = (order as any)?.items;
+          if (Array.isArray(items)) {
+            const racketItems = items.filter((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
+            if (racketItems.length === 1) {
+              const r = racketItems[0] as any;
+              racketNameFromOrder = (r.name ?? r.productName ?? '').trim() || undefined;
+            }
+          }
+
+          for (let i = 0; i < useQty; i++) {
+            const alias = (formData.racketType || '').trim() || racketNameFromOrder || `라켓 ${lines.length + 1}`;
+
+            lines.push({
+              id: `${prodId}-${i}`,
+              racketType: alias,
+              stringProductId: prodId,
+              stringName,
+              tensionMain: '',
+              tensionCross: '',
+              note: formData.requirements,
+              mountingFee: lineFee,
+            });
+          }
         }
       } else {
-        // 단독/PDP 경로: prodId 당 라인 1개
-        const fee = baseFee;
-
+        // 단독/PDP 경로
         lines.push({
           id: `${prodId}-0`,
           racketType: formData.racketType,
@@ -709,13 +769,27 @@ export default function StringServiceApplyPage() {
           tensionMain: '',
           tensionCross: '',
           note: formData.requirements,
-          mountingFee: fee,
+          mountingFee: lineFee,
         });
       }
     });
 
     return lines;
-  }, [formData, priceView.base, order, orderId]);
+  }, [formData.lines, formData.stringTypes, formData.stringUseCounts, formData.racketType, formData.requirements, priceView.base, order, orderId, pdpProductId, pdpProduct, pdpMountingFee]);
+
+  // 4. 디버깅을 위한 콘솔 로그 추가
+  useEffect(() => {
+    console.log('🔍 Debug Info:', {
+      pdpProductId,
+      pdpMountingFee,
+      orderId,
+      hasOrder: !!order,
+      orderItems: order?.items?.map((i) => ({ id: i.id, name: i.name, mountingFee: i.mountingFee })),
+      stringTypes: formData.stringTypes,
+      linesCount: linesForSubmit.length,
+      fromPDP,
+    });
+  }, [pdpProductId, pdpMountingFee, orderId, order, formData.stringTypes, linesForSubmit, fromPDP]);
 
   // 이번 신청에서 라켓/스트링 라인 개수
   const lineCount = linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
@@ -723,10 +797,6 @@ export default function StringServiceApplyPage() {
   // 라켓 금액: orderId 기반 주문에서 가져오기
   const racketPrice = useMemo(() => {
     if (!orderId || !order) return 0;
-
-    // totalPrice 우선 사용
-    const total = (order as any)?.totalPrice;
-    if (typeof total === 'number' && Number.isFinite(total)) return total;
 
     // 없으면 items[] 중 라켓/중고라켓 합산
     const items = (order as any)?.items;
@@ -742,17 +812,40 @@ export default function StringServiceApplyPage() {
     return 0;
   }, [orderId, order]);
 
-  // 요약 카드용 교체비/합계 (주문 기반/단독 신청 모두 커버)
-  // - 주문(orderId 기반)인 경우: 선택된 스트링들의 총 장착비(price 상태)를 그대로 사용
-  // - 그 외(단독 신청/PDP 진입): 1자루 기준 금액(base)에 라인 수를 곱해 합계를 구함
+  // 이미 결제된 주문 금액(정보용) - 라켓 PDP에서 넘어온 주문 기준
+  const paidTotal = useMemo(() => {
+    if (!orderId || !order) return undefined;
+
+    const raw = (order as any)?.totalPrice;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n <= 0) return undefined;
+
+    return n;
+  }, [orderId, order]);
+
+  // PDP 통합 모드인지 여부: orderId가 있고, PDP에서 넘어온 경우
+  const isCombinedPdpMode = Boolean(orderId && fromPDP);
+
+  /** PDP에서 넘어온 스트링 상품 금액 (없으면 0원) */
+  const pdpStringPrice = isCombinedPdpMode && pdpProduct && typeof pdpProduct.price === 'number' ? pdpProduct.price : 0;
+
   // 교체비(서비스비) 부분
-  const summaryBase = orderId && order ? price : priceView.base * (lineCount || 0);
+  const summaryBase = price; // linesForSubmit 기반 교체비 총합
 
-  // 최종 합계: 라켓 금액 + (패키지면 교체비 0, 아니면 교체비) + 수거비
+  // 패키지면 0, 아니면 교체비 그대로
   const serviceCost = priceView.usingPackage ? 0 : summaryBase;
-  const summaryTotal = racketPrice + serviceCost + priceView.pickupFee;
 
-  // 통화 포메터
+  // 👉 최종 합계
+  // - PDP 통합 모드: 라켓 금액 + 스트링 금액 + 서비스비
+  // - 그 외: 서비스비만
+  const baseTotal = serviceCost;
+  const checkoutTotal = isCombinedPdpMode ? (racketPrice || 0) + pdpStringPrice + baseTotal : baseTotal;
+
+  // 👉 합계 라벨
+  const totalLabel = isCombinedPdpMode ? '이번 신청 예상 결제 금액' : '이번 교체 서비스 예상 비용';
+
+  const summaryTotal = serviceCost;
+
   const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
   // 'HH:MM' ↔ 분 단위 변환 헬퍼 (UI 표시용)
@@ -816,12 +909,13 @@ export default function StringServiceApplyPage() {
 
   // 남은 슬롯 (주문 기준) – 숫자가 아닐 경우 undefined 처리
   const orderRemainingSlots = typeof orderStringService?.remainingSlots === 'number' ? orderStringService.remainingSlots : undefined;
+  const isOrderSlotBlocked = !!(orderId && typeof orderRemainingSlots === 'number' && orderRemainingSlots <= 0);
 
   // 라켓/스트링 선택 체크박스 변화 콜백
   const handleStringTypesChange = (ids: string[]) => {
-    // PDP에서 넘어온 경우: 상품 상세에서 이미 스트링을 확정하고 넘어온 상황이므로
-    // 여기서는 추가 변경을 허용하지 않는다.
-    if (fromPDP) return;
+    // PDP에서 넘어온 경우: 상품 상세에서 이미 스트링을 확정하고 넘어온 상황이므로 잠금
+    // 단, 주문 기반(orderId) 진입이면 주문 품목에서 고르는 UX가 필요하므로 잠금 해제
+    if (fromPDP && !orderId) return;
 
     setFormData((prev) => {
       // 기존 카운트 복사
@@ -890,10 +984,19 @@ export default function StringServiceApplyPage() {
   // 라켓/라인 에디터: 라켓별 텐션/메모 등 변경 핸들러
   const handleLineFieldChange = <K extends keyof ApplicationLine>(index: number, field: K, value: ApplicationLine[K]) => {
     setFormData((prev) => {
-      // 최신 계산 결과(linesForSubmit)를 우선 사용, 사용자가 직접 만든 prev.lines가 있으면 그걸 우선
       const baseLines = Array.isArray(prev.lines) && prev.lines.length > 0 ? prev.lines : linesForSubmit ?? [];
+
       const nextLines = baseLines.map((line, i) => (i === index ? { ...line, [field]: value } : line));
-      return { ...prev, lines: nextLines };
+
+      // 첫 번째 라인의 텐션을 "기본값"으로 들고 가고 싶을 때 (선택)
+      let next: FormData = { ...prev, lines: nextLines };
+      if (index === 0 && field === 'tensionMain') {
+        next.defaultMainTension = String(value ?? '');
+      }
+      if (index === 0 && field === 'tensionCross') {
+        next.defaultCrossTension = String(value ?? '');
+      }
+      return next;
     });
   };
 
@@ -940,30 +1043,22 @@ export default function StringServiceApplyPage() {
   const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
 
   useEffect(() => {
-    if (!orderId || !order) return;
+    // linesForSubmit를 기준으로 교체비 총합을 다시 계산한다.
+    // - 주문 기반(orderId) + 다자루일 때: 각 라켓 라인에 mountingFee가 세팅되어 있음
+    // - PDP 경로: 선택된 스트링 1자루 기준 라인에 mountingFee(pdpMountingFee 등)가 세팅됨
+    // - 단독 신청: 커스텀/보유 스트링도 동일하게 1라인 1회 작업비로 표현됨
+    if (!linesForSubmit.length) {
+      setPrice(0);
+      return;
+    }
 
-    let total = 0;
-
-    formData.stringTypes.forEach((id) => {
-      if (id === 'custom') {
-        const useQty = formData.stringUseCounts['custom'] ?? 1;
-        total += 15000 * useQty;
-        return;
-      }
-
-      const item = order.items.find((it) => it.id === id);
-      if (!item) return;
-
-      const orderQty = item.quantity ?? 1;
-      const fee = item.mountingFee ?? 0;
-
-      const useQty = formData.stringUseCounts[id] ?? orderQty;
-
-      total += fee * useQty;
-    });
+    const total = linesForSubmit.reduce((sum, line) => {
+      const fee = typeof line.mountingFee === 'number' ? line.mountingFee : 0;
+      return sum + fee;
+    }, 0);
 
     setPrice(total);
-  }, [formData.stringTypes, formData.stringUseCounts, order, orderId]);
+  }, [linesForSubmit]);
 
   // 주문서 없는 단독 신청일 경우만 실행
   useEffect(() => {
@@ -1528,7 +1623,7 @@ export default function StringServiceApplyPage() {
                   </div>
                 </div>
                 {/* PDP에서 이어졌을 때 노출되는 스트링 정보 카드 */}
-                {fromPDP && Array.isArray(formData.stringTypes) && formData.stringTypes[0] === pdpProductId && (
+                {fromPDP && !orderId && Array.isArray(formData.stringTypes) && formData.stringTypes[0] === pdpProductId && (
                   <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/70 p-3">
                     {isLoadingPdpProduct ? (
                       // 로딩 중에는 간단한 안내 문구만 표시
@@ -1553,6 +1648,21 @@ export default function StringServiceApplyPage() {
                   </div>
                 )}
                 {/* 주문 기반 진입 시 안내 문구 */}
+                {orderId && typeof orderRemainingSlots === 'number' && (
+                  <div className="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-200">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="font-medium">이 주문에서 남은 교체 가능 횟수</span>
+                      <span className="font-semibold">{orderRemainingSlots}회</span>
+                      {typeof orderStringService?.totalSlots === 'number' && typeof orderStringService?.usedSlots === 'number' && (
+                        <span className="text-xs text-slate-600 dark:text-slate-400">
+                          (총 {orderStringService.totalSlots} / 사용 {orderStringService.usedSlots})
+                        </span>
+                      )}
+                    </div>
+
+                    {isOrderSlotBlocked && <p className="mt-1 text-xs text-red-600 dark:text-red-400">이 주문은 더 이상 교체 신청을 진행할 수 없습니다. 추가 스트링 구매 후 다시 시도해 주세요.</p>}
+                  </div>
+                )}
                 {orderId && (
                   <p className="mb-2 text-xs text-muted-foreground">
                     이번 신청서는 <span className="font-semibold">여러 자루 라켓</span>을 한 번에 접수할 수 있습니다. 장착을 원하는 스트링 상품만 체크해 주세요. 선택한 개수만큼 라켓 장착이 진행되며, 장착비는{' '}
@@ -1560,11 +1670,23 @@ export default function StringServiceApplyPage() {
                   </p>
                 )}
 
-                <div className={fromPDP ? 'pointer-events-none opacity-60' : ''}>
+                <div className={fromPDP && !orderId ? 'pointer-events-none opacity-60' : ''}>
                   <StringCheckboxes
-                    items={(order?.items ?? []).filter((i) => i.mountingFee !== undefined).map((i) => ({ id: i.id, name: i.name, mountingFee: i.mountingFee! }))}
+                    items={
+                      orderId && order
+                        ? (order?.items ?? [])
+                            // 모든 상품 중 mountingFee가 있는 것만 (kind 체크 제거)
+                            .filter((i: any) => typeof i.mountingFee === 'number' && i.mountingFee > 0)
+                            .map((i: any) => ({
+                              id: i.id,
+                              name: i.name,
+                              mountingFee: i.mountingFee,
+                            }))
+                        : [] // 주문이 없으면 빈 배열
+                    }
                     stringTypes={formData.stringTypes}
                     customInput={formData.customStringType}
+                    hideCustom={Boolean(orderId)}
                     onChange={handleStringTypesChange}
                     onCustomInputChange={handleCustomInputChange}
                   />
@@ -1664,8 +1786,9 @@ export default function StringServiceApplyPage() {
                         <p>
                           이번 신청으로 추가 납부할 교체비: <span className="font-semibold text-foreground">{priceView.base.toLocaleString('ko-KR')}원</span>
                         </p>
-                        <p>
-                          예상 총 장착 비용(참고): <span className="font-semibold text-blue-600 dark:text-blue-300">{(selectedOrderItem.price + priceView.base).toLocaleString('ko-KR')}원</span>
+                        <p className="text-[11px] text-muted-foreground">
+                          스트링 상품 가격(이미 결제) {won(selectedOrderItem.price)} + 교체비 {won(priceView.base)} = 총 {won(selectedOrderItem.price + priceView.base)} (참고용입니다. 이번 신청에서 실제로 입금할 금액은{' '}
+                          <span className="font-semibold">교체비만</span>입니다.)
                         </p>
                         <p className="text-[11px] text-muted-foreground">
                           스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
@@ -1755,7 +1878,7 @@ export default function StringServiceApplyPage() {
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
                               <span className="text-sm font-bold text-white">{index + 1}</span>
                             </div>
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">라켓 {index + 1}</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
                           </div>
                           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20">
                             <div className="h-1.5 w-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
@@ -2162,14 +2285,17 @@ export default function StringServiceApplyPage() {
                     {/* 모바일/태블릿: 인라인 요금 요약 (xl 미만에서만 노출) */}
                     <div className="mt-8 xl:hidden">
                       <PriceSummaryCard
-                        preferredDate={formData.preferredDate}
-                        preferredTime={formData.preferredTime}
-                        collectionMethod={formData.collectionMethod as any}
+                        preferredDate={formData.preferredDate ?? undefined}
+                        preferredTime={formData.preferredTime ?? undefined}
+                        collectionMethod={formData.collectionMethod as CollectionMethod}
                         stringTypes={formData.stringTypes}
                         usingPackage={priceView.usingPackage}
                         base={summaryBase}
                         pickupFee={priceView.pickupFee}
-                        total={summaryTotal}
+                        total={checkoutTotal}
+                        racketPrice={racketPrice}
+                        stringPrice={pdpStringPrice}
+                        totalLabel={totalLabel}
                       />
                     </div>
 
@@ -2192,7 +2318,7 @@ export default function StringServiceApplyPage() {
                       ) : (
                         <Button
                           type="button"
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || isOrderSlotBlocked}
                           onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
                           className="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white transition-all duration-200 disabled:opacity-50"
                         >
@@ -2253,8 +2379,10 @@ export default function StringServiceApplyPage() {
                   usingPackage={priceView.usingPackage}
                   base={summaryBase}
                   pickupFee={priceView.pickupFee}
-                  total={summaryTotal}
+                  total={checkoutTotal}
                   racketPrice={racketPrice}
+                  stringPrice={pdpStringPrice}
+                  totalLabel={totalLabel}
                 />
               </div>
             </div>

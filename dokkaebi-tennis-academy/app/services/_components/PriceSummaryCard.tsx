@@ -14,12 +14,14 @@ interface PriceSummaryProps {
   base: number;
   pickupFee: number;
   total: number;
-  racketPrice?: number;
+  racketPrice?: number; // 라켓 금액(정보용)
+  stringPrice?: number; // 스트링 상품 금액(정보용)
+  totalLabel?: string; // 합계 라벨 커스터마이징
 }
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
-export default function PriceSummaryCard({ preferredDate, preferredTime, collectionMethod, stringTypes, usingPackage, base, pickupFee, total, racketPrice = 0 }: PriceSummaryProps) {
+export default function PriceSummaryCard({ preferredDate, preferredTime, collectionMethod, stringTypes, usingPackage, base, pickupFee, total, racketPrice = 0, stringPrice = 0, totalLabel }: PriceSummaryProps) {
   const isCustom = stringTypes.includes('custom');
 
   const MethodIcon = collectionMethod === 'courier_pickup' ? Truck : collectionMethod === 'visit' ? Store : Box;
@@ -78,13 +80,25 @@ export default function PriceSummaryCard({ preferredDate, preferredTime, collect
             <p className="text-sm">{won(base)}</p>
           </div>
           {/* 라켓 금액 */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-              <p className="text-sm font-medium">라켓 금액</p>
+          {racketPrice > 0 && (
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                <p className="text-sm font-medium">라켓 금액</p>
+              </div>
+              <p className="text-sm">{won(racketPrice)}</p>
             </div>
-            <p className="text-sm">{won(racketPrice)}</p>
-          </div>
+          )}
+
+          {stringPrice > 0 && (
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <ReceiptText className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                <p className="text-sm font-medium">스트링 금액</p>
+              </div>
+              <p className="text-sm">{won(stringPrice)}</p>
+            </div>
+          )}
 
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
@@ -111,8 +125,8 @@ export default function PriceSummaryCard({ preferredDate, preferredTime, collect
 
           {/* 합계 강조 */}
           <div className="flex items-center justify-between">
-            <p className="text-base font-semibold">예상 결제 금액</p>
-            <p className="text-base font-bold tabular-nums rounded-lg px-2 py-1 bg-slate-100 dark:bg-slate-800 ring-1 ring-inset ring-slate-200 dark:ring-slate-700" aria-live="polite">
+            <p className="text-base font-semibold">{totalLabel ?? '예상 결제 금액'}</p>
+            <p className="text-base font-bold tabular-nums rounded-md px-2 py-1 ring-1 ring-inset ring-slate-200 dark:ring-slate-700" aria-live="polite">
               {won(total)}
             </p>
           </div>

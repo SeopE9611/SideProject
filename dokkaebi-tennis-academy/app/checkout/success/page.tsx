@@ -13,10 +13,18 @@ import { bankLabelMap } from '@/lib/constants';
 import BackButtonGuard from '@/app/checkout/success/_components/BackButtonGuard';
 import ClearCartOnMount from '@/app/checkout/success/_components/ClearCartOnMount';
 import SetGuestOrderToken from '@/app/checkout/success/_components/SetGuestOrderToken';
+import AutoRedirectToApply from '@/app/checkout/success/_components/AutoRedirectToApply';
 
-export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string }> }) {
+type PopulatedItem = {
+  name: string;
+  price: number;
+  quantity: number;
+};
+
+export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string; autoApply?: string }> }) {
   const sp = await searchParams;
   const orderId = sp.orderId;
+  const autoApply = sp.autoApply === '1';
 
   if (!orderId) return notFound();
 
@@ -26,8 +34,8 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
   if (!order) return notFound();
 
-  // pickup 별로 목적지 결정
-  let appHref = `/services/apply?orderId=${order._id.toString()}`;
+ const appParams = new URLSearchParams({ orderId: order._id.toString() });
+  let appHref = `/services/apply?${appParams.toString()}`;
 
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refreshToken')?.value;
@@ -54,16 +62,16 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
     return isNaN(numQuantity) || numQuantity === null || numQuantity === undefined ? 1 : numQuantity;
   };
 
-  const populatedItems = await Promise.all(
-    (order.items || []).map(async (it: any) => {
-      const prod = await db.collection('products').findOne({ _id: new ObjectId(it.productId) }, { projection: { name: 1, price: 1 } });
-      return {
-        name: prod?.name ?? '상품명 없음',
-        price: prod?.price ?? 0,
-        quantity: it.quantity ?? 1,
-      };
-    })
-  );
+  const populatedItems: PopulatedItem[] = (order.items || []).map((it: any) => {
+    const quantity = formatQuantity(it?.quantity);
+    const price = Number(it?.price);
+
+    return {
+      name: it?.name ?? '상품명 없음',
+      price: Number.isFinite(price) ? price : 0,
+      quantity,
+    };
+  });
 
   return (
     <>
@@ -109,10 +117,8 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     </div>
                     <h3 className="text-xl font-bold text-yellow-100">스트링 장착 서비스 포함</h3>
                   </div>
-
                   {/* 문구 분기: 방문/택배 */}
                   <p className="text-yellow-200 mb-4">{order.shippingInfo?.deliveryMethod === '방문수령' ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}</p>
-
                   <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold shadow-lg" asChild>
                     {/* 신청서로 곧바로 이동 (자동 생성 전제) */}
                     <Link href={appHref} className="flex items-center gap-2">
@@ -120,6 +126,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
+                   <AutoRedirectToApply enabled={autoApply} href={appHref} seconds={5} />
                 </div>
               </div>
             )}
@@ -193,7 +200,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     <Package className="h-5 w-5 text-purple-600" /> 주문 상품
                   </h3>
                   <div className="space-y-3">
-                    {populatedItems.map((item, index) => {
+                    {populatedItems.map((item: PopulatedItem, index: number) => {
                       const itemPrice = formatPrice(item.price);
                       const itemQuantity = formatQuantity(item.quantity);
                       const totalItemPrice = formatPrice(item.price * itemQuantity);

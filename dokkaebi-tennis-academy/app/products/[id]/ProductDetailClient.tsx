@@ -484,6 +484,42 @@ export default function ProductDetailClient({ product }: { product: any }) {
     router.push('/checkout?mode=buynow');
   };
 
+  // 즉시 구매 + 교체 서비스 포함 핸들러
+const handleBuyNowWithService = () => {
+  if (loading) return;
+
+  // 재고 검증
+  if (quantity > stock) {
+    showErrorToast(`재고가 부족합니다. 현재 재고: ${stock}개`);
+    return;
+  }
+
+  // Buy-Now 전용 상태에 현재 상품 1건만 저장
+  const buyNowItem: CartItem = {
+    id: product._id.toString(),
+    name: product.name,
+    price: product.price, // 여기서는 "자재 가격"만
+    quantity,
+    image: product.images?.[0] || '/placeholder.svg',
+    stock,
+  };
+
+  setBuyNowItem(buyNowItem);
+
+  // 장착비(서비스비) – 없으면 0
+  const mountingFee =
+    typeof product.mountingFee === 'number' ? product.mountingFee : 0;
+
+  const search = new URLSearchParams({
+    mode: 'buynow',
+    withService: '1',              // 서비스 ON
+    mountingFee: String(mountingFee), // 1자루 기준 공임
+  });
+
+  // Checkout으로 직접 진입 (장바구니는 건드리지 않음)
+  router.push(`/checkout?${search.toString()}`);
+};
+
   const goToStringingService = () => {
     if (!product?._id) return;
     const mountingFee = typeof product.mountingFee === 'number' ? product.mountingFee : 0;
@@ -701,6 +737,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <CreditCard className="mr-2 h-4 w-4" />
                             즉시 구매하기
                           </Button>
+
+                          {/* 교체 서비스까지 포함해서 한 번에 결제 */}
+<Button
+  className="w-full"
+  disabled={loading || quantity > stock}
+  onClick={handleBuyNowWithService}
+>
+  <CreditCard className="mr-2 h-4 w-4" />
+  교체 서비스 포함 즉시 결제
+</Button>
 
                           {/* 기존 장바구니 담기 버튼 */}
                           <Button variant="outline" className="w-full" onClick={handleAddToCart} disabled={loading || quantity > stock}>

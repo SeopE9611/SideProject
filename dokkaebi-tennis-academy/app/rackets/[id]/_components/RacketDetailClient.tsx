@@ -164,7 +164,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {/* CTA 영역 */}
                   <div ref={rentSectionRef} className="space-y-3 pt-4 border-t">
                     <div className="flex gap-2">
-                      <Button className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600" onClick={() => router.push(`/rackets/${racket.id}/purchase`)}>
+                      <Button className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600" onClick={() => router.push(`/rackets/${racket.id}/select-string`)}>
                         <ShoppingCart className="mr-2 h-4 w-4" />
                         구매하기
                       </Button>

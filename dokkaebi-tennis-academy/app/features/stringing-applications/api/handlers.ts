@@ -1707,6 +1707,8 @@ export async function handleSubmitStringingApplication(req: Request) {
     // === 5) collectionMethod 정규화 & 일관 저장 ===
     const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
 
+    // orderId 기반 제출일 때, (주문에 serviceFee가 포함된 경우) 제출 금액 정합성 검증에 사용
+    let expectedServiceFee: number | undefined = undefined;
     // 주문 <-> 신청 수거방식 일치 검증 (db, orderObjectId, cm 준비된 이후에만 가능)
     if (orderObjectId) {
       // 주문에서 접수 방식 관련 최소 필드만 조회
@@ -1719,6 +1721,10 @@ export async function handleSubmitStringingApplication(req: Request) {
             'shippingInfo.shippingMethod': 1, // 예: 'visit' | 'courier'
             'shippingInfo.deliveryMethod': 1, // 예: '방문수령'
             status: 1,
+            // 정합성 검증용(최소 필드)
+            items: 1,
+            serviceFee: 1,
+            totalPrice: 1,
           },
         }
       );
@@ -1756,6 +1762,117 @@ export async function handleSubmitStringingApplication(req: Request) {
       const forbidden = ['canceled', 'refunded'];
       if (forbidden.includes(String((order as any).status ?? ''))) {
         return NextResponse.json({ message: '취소/환불된 주문에는 신청서를 연결할 수 없습니다.' }, { status: 409 });
+      }
+      // ====== [정합성 강제] 주문 기반 신청서 스트링 검증 ======
+      expectedServiceFee = typeof (order as any)?.serviceFee === 'number' ? (order as any).serviceFee : undefined;
+
+      const orderItemsRaw: any[] = Array.isArray((order as any)?.items) ? ((order as any).items as any[]) : [];
+
+      // 주문 기반 신청서에서 "스트링(장착 가능)" 판단은 products.mountingFee(개당 공임) 기준으로 한다.
+      // - orders.items에는 mountingFee가 저장되지 않으므로, 반드시 products 컬렉션을 조회해 정합성을 검증한다.
+      const productOids: ObjectId[] = [];
+      for (const it of orderItemsRaw) {
+        const kind = it?.kind ?? 'product';
+        if (kind !== 'product') continue;
+
+        const pid = it?.productId;
+        if (!pid) continue;
+
+        try {
+          productOids.push(pid instanceof ObjectId ? pid : new ObjectId(String(pid)));
+        } catch {
+          // ignore invalid productId
+        }
+      }
+
+      const productDocs = productOids.length
+        ? await db
+            .collection('products')
+            .find({ _id: { $in: productOids } }, { projection: { mountingFee: 1 } })
+            .toArray()
+        : [];
+
+      const mountingFeeById = new Map<string, number>();
+      for (const p of productDocs as any[]) {
+        mountingFeeById.set(String(p._id), Number(p?.mountingFee ?? 0));
+      }
+
+      // 주문에서 구매한 "스트링(장착 가능)" 상품ID -> 구매수량 맵
+      const paidQtyById = new Map<string, number>();
+      for (const it of orderItemsRaw) {
+        const kind = it?.kind ?? 'product';
+        if (kind !== 'product') continue;
+
+        const pid = it?.productId;
+        if (!pid) continue;
+
+        const pidStr = String(pid);
+        const fee = mountingFeeById.get(pidStr) ?? 0;
+
+        // mountingFee > 0 인 상품만 "장착 가능 스트링"으로 인정
+        if (fee > 0) {
+          const qtyRaw = Number(it?.quantity ?? 1);
+          const qty = Number.isFinite(qtyRaw) && qtyRaw > 0 ? qtyRaw : 1;
+          paidQtyById.set(pidStr, qty);
+        }
+      }
+
+      // 주문 기반 신청서: 스트링 장착 상품이 하나도 없으면 신청서 연결 불가
+      if (paidQtyById.size === 0) {
+        return NextResponse.json({ message: '이 주문에는 스트링 장착 상품이 없습니다. (교체 서비스 신청 불가)' }, { status: 422 });
+      }
+
+      // 신청서에서 사용한 스트링 ID -> 사용수량(라인 수) 맵
+      const usedQtyById = new Map<string, number>();
+      for (const it of normalizedStringItems as any[]) {
+        const pid = it?.productId ?? 'custom';
+        const usedId = String(pid);
+
+        // 주문 기반 신청서에서는 custom 금지(정합성 우선)
+        if (usedId === 'custom') {
+          return NextResponse.json({ message: '주문 기반 신청서에서는 구매한 스트링으로만 신청할 수 있습니다. (custom 불가)' }, { status: 422 });
+        }
+
+        usedQtyById.set(usedId, (usedQtyById.get(usedId) ?? 0) + 1);
+      }
+
+      // 1) 주문에 없는 스트링 사용 금지 + 2) 구매 수량 초과 사용 금지
+      for (const [usedId, usedQty] of usedQtyById) {
+        const paidQty = paidQtyById.get(usedId);
+
+        if (!paidQty) {
+          return NextResponse.json({ message: '주문에서 구매한 스트링 내에서만 신청할 수 있습니다.', usedId }, { status: 422 });
+        }
+
+        if (usedQty > paidQty) {
+          return NextResponse.json({ message: '구매 수량을 초과한 스트링 사용은 불가합니다.', usedId, paidQty, usedQty }, { status: 422 });
+        }
+      }
+
+      // 3) remainingSlots(잔여 교체 가능 횟수) 검증
+      // - totalSlots = 주문에서 구매한 스트링 총 수량 합
+      // - usedSlots  = 해당 orderId로 생성된 기존 신청서들의 racketLines 합(취소/초안 제외)
+      // - requestedSlots = 이번 신청서의 racketLines 개수
+      const requestedSlots = usingLines && Array.isArray(lines) ? lines.length : 0;
+
+      if (requestedSlots > 0) {
+        const totalSlots = Array.from(paidQtyById.values()).reduce((acc, v) => acc + Number(v), 0);
+
+        const usedApps = await db
+          .collection('stringing_applications')
+          .find({ orderId: orderObjectId, status: { $nin: ['취소', 'draft'] } }, { projection: { 'stringDetails.racketLines': 1 } })
+          .toArray();
+
+        const usedSlots = (usedApps as any[]).reduce((acc, doc) => {
+          const c = Array.isArray(doc?.stringDetails?.racketLines) ? doc.stringDetails.racketLines.length : 0;
+          return acc + c;
+        }, 0);
+
+        const remainingSlots = Math.max(totalSlots - usedSlots, 0);
+
+        if (requestedSlots > remainingSlots) {
+          return NextResponse.json({ message: '남은 교체 서비스 가능 횟수를 초과했습니다.', totalSlots, usedSlots, remainingSlots, requestedSlots }, { status: 422 });
+        }
       }
     }
 
@@ -1981,6 +2098,11 @@ export async function handleSubmitStringingApplication(req: Request) {
       await db.collection('stringing_applications').updateOne(
         { _id: applicationId },
         {
+          $unset: {
+            // draft 생성 시 TTL 만료를 위해 설정했던 expireAt은 제출 시 제거해야 한다.
+            // expireAt이 남아있으면, 제출된 신청서가 TTL에 의해 삭제될 수 있음
+            expireAt: '',
+          },
           $set: {
             orderId: baseDoc.orderId,
             name: baseDoc.name,
@@ -2079,30 +2201,24 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     const db = await getDb();
     const jar = await cookies();
 
-    // 1) 로그인 사용자/관리자 페이로드
+    // 로그인 사용자/관리자 페이로드
     const at = jar.get('accessToken')?.value ?? null;
     const payload = at ? verifyAccessToken(at) : null;
     const userId = payload?.sub ?? null;
     const isAdmin = payload?.role === 'admin';
 
-    // 2) 요청 바디에서 orderId 먼저 파싱 (order를 조회하려면 orderId가 필요)
-    const body = await req.json().catch(() => null);
-    const orderId = body?.orderId as string | undefined;
-    if (!orderId || !ObjectId.isValid(orderId)) {
-      return new Response(JSON.stringify({ message: '유효하지 않은 orderId' }), { status: 400 });
-    }
-    // 3) 주문 조회 (이후 권한 판단에서 'order'를 사용하므로 반드시 먼저 조회)
+    // 주문 조회 (이후 권한 판단에서 'order'를 사용하므로 반드시 먼저 조회)
     const ordersCol = db.collection('orders');
     const order = await ordersCol.findOne({ _id: new ObjectId(orderId) });
     if (!order) {
       return new Response(JSON.stringify({ message: '주문을 찾을 수 없습니다.' }), { status: 404 });
     }
 
-    // 4) 게스트용 쿠키 토큰(있을 수도/없을 수도) → order 조회 후에 일치 여부 판단
+    // 게스트용 쿠키 토큰(있을 수도/없을 수도) → order 조회 후에 일치 여부 판단
     const oax = jar.get('orderAccessToken')?.value ?? null;
     const guestClaims = oax ? verifyOrderAccessToken(oax) : null;
 
-    // 5) 권한: (주문 소유자) or (관리자) or (게스트 토큰의 orderId 일치)
+    // 권한: (주문 소유자) or (관리자) or (게스트 토큰의 orderId 일치)
     const isOwner = !!(order?.userId && String(order.userId) === String(userId));
     const guestOwnsOrder = !!(guestClaims && guestClaims.orderId === String(order._id));
 
@@ -2110,7 +2226,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       return new Response(JSON.stringify({ message: 'forbidden' }), { status: 403 });
     }
 
-    // 6) 서비스 대상 확인: withStringService / isStringServiceApplied 둘 다 허용
+    // 서비스 대상 확인: withStringService / isStringServiceApplied 둘 다 허용
     const withString = Boolean(order?.shippingInfo?.withStringService) || Boolean(order?.isStringServiceApplied);
     if (!withString) {
       return new Response(JSON.stringify({ message: '스트링 서비스 대상 주문이 아닙니다.' }), { status: 400 });
@@ -2118,7 +2234,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
 
     const appsCol = db.collection('stringing_applications');
 
-    // 7) 이미 진행중(draft/received) 있으면 재사용
+    // 이미 진행중(draft/received) 있으면 재사용
     const existing = await appsCol.findOne({
       orderId: { $in: [order._id, String(order._id)] }, // ObjectId와 string 모두 매칭
       status: { $in: INPROGRESS_STATUSES },
@@ -2137,7 +2253,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     const initialCollectionMethod: 'self_ship' | 'courier_pickup' | 'visit' =
       (order as any)?.servicePickupMethod === 'COURIER_PICKUP' ? 'courier_pickup' : (order as any)?.servicePickupMethod === 'VISIT' || (order as any)?.shippingInfo?.deliveryMethod === '방문수령' ? 'visit' : 'self_ship';
 
-    // 8) 없으면 초안 생성
+    // 없으면 초안 생성
     const now = new Date();
     const doc = {
       userId: userId ? new ObjectId(userId) : null,

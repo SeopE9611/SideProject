@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   const cond = searchParams.get('cond')?.trim(); // 'A' | 'B' | 'C'
   const minStr = searchParams.get('min');
   const maxStr = searchParams.get('max');
-  const q: any = { $or: [{ status: { $exists: false } }, { status: { $nin: ['inactive', '비노출'] } }] };
+  const q: any = { $or: [{ status: { $exists: false } }, { status: { $nin: ['inactive', '비노출', 'sold'] } }] };
 
   // 브랜드(대소문자 무시) — 예: ?brand=yonex
   if (brand) q.brand = { $regex: brand, $options: 'i' };
