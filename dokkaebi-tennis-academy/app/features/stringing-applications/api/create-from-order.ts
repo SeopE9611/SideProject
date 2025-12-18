@@ -2,7 +2,7 @@
 // - 스키마 대수술 없이 최소 필드만 복제/연결
 // - 결제는 "자재"에 한정되어 있을 수 있으므로 servicePaid=false로 시작(후속단계에서 금액 확정 로직 보강 예정)
 
-import { ObjectId } from 'mongodb';
+import { ClientSession, Db, ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 
 // 주문 DB 타입의 최소 참조용(있는 필드만 사용)
@@ -54,15 +54,17 @@ type CreateAppDoc = {
   };
 };
 
-export async function createStringingApplicationFromOrder(order: DBOrderLite) {
-  const client = await clientPromise;
-  const db = client.db();
+export async function createStringingApplicationFromOrder(order: DBOrderLite, opts?: { db?: Db; session?: ClientSession }): Promise<{ _id: ObjectId }> {
+  const db = opts?.db ?? (await clientPromise).db();
+  const session = opts?.session;
+
+  type StringingAppDoc = CreateAppDoc;
+  const col = db.collection<StringingAppDoc>('stringing_applications');
 
   // 1) 방어로직(멱등): 이 주문(orderId)에 연결된 신청서가 이미 있으면 그걸 재사용
   //    - draft/제출완료/완료 등 상태와 무관하게 '중복 생성'을 막는 게 목적
-  const existing = await db.collection('stringing_applications').findOne({ orderId: order._id });
-
-  if (existing) return existing;
+  const existing = await col.findOne({ orderId: order._id }, { session });
+  if (existing) return { _id: existing._id };
   // 픽업 방식 정규화(기본 SELF_SEND)
   const pickup = order.servicePickupMethod === 'SHOP_VISIT' ? 'SHOP_VISIT' : order.servicePickupMethod === 'COURIER_VISIT' ? 'COURIER_VISIT' : 'SELF_SEND';
 
@@ -73,8 +75,8 @@ export async function createStringingApplicationFromOrder(order: DBOrderLite) {
     createdAt: new Date(),
     status: 'draft', // 주문 직후에는 '초안' 상태로만 생성
     servicePaid: false, // 1단계: 공임은 아직 미결로 시작(후속 단계에서 확정)
-  serviceAmount: (order as any).serviceFee ?? 0,
-  paymentSource: `order:${order._id.toString()}`,
+    serviceAmount: (order as any).serviceFee ?? 0,
+    paymentSource: `order:${order._id.toString()}`,
     shippingInfo: order.shippingInfo
       ? {
           name: order.shippingInfo.name,
@@ -93,8 +95,8 @@ export async function createStringingApplicationFromOrder(order: DBOrderLite) {
   };
 
   // 3) DB 저장
-  const result = await db.collection('stringing_applications').insertOne(doc as any);
+  const result = await col.insertOne(doc as any, { session });
 
   // 4) 새 문서 반환
-  return { _id: result.insertedId, ...doc };
+  return { _id: result.insertedId };
 }
