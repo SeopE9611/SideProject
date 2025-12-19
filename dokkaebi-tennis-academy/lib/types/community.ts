@@ -2,13 +2,13 @@
 export type CommunityStatus = 'public' | 'hidden' | 'deleted';
 
 /** 커뮤니티 게시판 종류 목록 */
-export const COMMUNITY_BOARD_TYPES = ['free', 'brand'] as const;
+export const COMMUNITY_BOARD_TYPES = ['free', 'brand', 'market', 'gear'] as const;
 
 /** 커뮤니티 게시판 종류 타입 */
 export type CommunityBoardType = (typeof COMMUNITY_BOARD_TYPES)[number];
 
 /** 자유 게시판 카테고리 목록 (제목 머릿말 용) */
-export const COMMUNITY_CATEGORIES = ['general', 'info', 'qna', 'tip', 'etc'] as const;
+export const COMMUNITY_CATEGORIES = ['general', 'info', 'qna', 'tip', 'etc', 'racket', 'string', 'equipment'] as const;
 
 /** 자유 게시판 카테고리 타입 */
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
@@ -38,8 +38,9 @@ export interface CommunityPost {
   content: string;
 
   /**
-   * 브랜드 게시판에서 사용할 브랜드 코드
-   * 자유 게시판에서는 null 또는 undefined
+   * 브랜드 코드
+   * - 브랜드 게시판/중고거래 게시판에서 사용
+   * - 그 외 게시판에서는 null 또는 undefined
    */
   brand?: string | null;
 

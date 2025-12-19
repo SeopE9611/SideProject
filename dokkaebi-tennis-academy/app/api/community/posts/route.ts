@@ -62,7 +62,7 @@ const createSchema = z.object({
 
   content: z.string().min(1, '내용을 입력해 주세요.'),
 
-  // 브랜드 게시판일 때만 의미 있음 (자유 게시판은 null/undefined)
+  // 브랜드 게시판/중고거래 게시판에서만 의미 있음 (그 외 게시판은 null/undefined)
   brand: z.string().max(100, '브랜드명은 100자 이내로 입력해 주세요.').optional().nullable(),
 
   // 자유 게시판 카테고리 (제목 머릿말 용)
@@ -97,9 +97,9 @@ function parseListQuery(req: NextRequest): {
 } {
   const url = new URL(req.url);
 
-  // 자게 / 브랜드 게시판 타입
+  // 게시판 타입 필터 (자게/브랜드/중고/사용기)
   const rawType = url.searchParams.get('type');
-  const typeParam = rawType === 'brand' || rawType === 'free' ? (rawType as CommunityBoardType | null) : null;
+  const typeParam = rawType && (COMMUNITY_BOARD_TYPES as readonly string[]).includes(rawType) ? (rawType as CommunityBoardType) : null;
 
   // 태그(브랜드) 필터
   const brand = url.searchParams.get('brand'); // string | null
@@ -326,8 +326,8 @@ export async function POST(req: NextRequest) {
     title: body.title,
     content: body.content,
 
-    // 브랜드 게시판이 아닐 때는 항상 null
-    brand: body.type === 'brand' ? body.brand ?? null : null,
+    // 브랜드 게시판/중고거래 게시판이 아닐 때는 항상 null
+    brand: body.type === 'brand' || body.type === 'market' ? body.brand ?? null : null,
 
     // 자유 게시판 카테고리 (제목 머릿말)
     category: body.category ?? 'general',
