@@ -136,12 +136,13 @@ export default function CheckoutButton({
       }
 
       if (data?.error === 'INSUFFICIENT_STOCK') {
+        const isRentalReserved = data?.reason === 'RENTAL_RESERVED';
         showErrorToast(
           <div>
             <p>
               <strong>"{data.productName}"</strong> 상품의 재고가 부족합니다.
             </p>
-            <p>수량을 다시 확인해주세요.</p>
+            <p>{isRentalReserved ? '현재 대여중인 수량이 있어, 판매 가능한 재고가 없습니다.' : '수량을 다시 확인해주세요.'}</p>
             <p>현재 재고: {data.currentStock}개</p>
           </div>
         );

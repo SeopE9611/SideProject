@@ -17,13 +17,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ racketI
     status: { $in: ['paid', 'out'] },
   });
 
-  // 라켓 수량 (used_rackets 우선 → rackets 폴백)
-  const proj = { projection: { quantity: 1 } } as const;
-  const used = await db.collection('used_rackets').findOne({ _id: new ObjectId(racketId) }, proj);
-  const rack = used ?? (await db.collection('rackets').findOne({ _id: new ObjectId(racketId) }, proj));
-  const quantity = Number(rack?.quantity ?? 1);
+  // - 단품 라켓(<=1)은 status가 available일 때만 1개로 취급 (sold/inactive면 0개)
+  const projUsed = { projection: { quantity: 1, status: 1 } } as const;
+  const projRackets = { projection: { quantity: 1 } } as const;
+  const used = await db.collection('used_rackets').findOne({ _id: new ObjectId(racketId) }, projUsed);
+  const rack = used ?? (await db.collection('rackets').findOne({ _id: new ObjectId(racketId) }, projRackets));
+  const rawQty = Number(rack?.quantity ?? 1);
+  const baseQty = used ? (!Number.isFinite(rawQty) || rawQty <= 1 ? (used.status === 'available' ? 1 : 0) : rawQty) : rawQty;
 
   // 잔여
-  const available = Math.max(0, quantity - count);
-  return NextResponse.json({ ok: true, count, quantity, available });
+  const available = Math.max(0, baseQty - count);
+  return NextResponse.json({ ok: true, count, quantity: baseQty, available });
 }

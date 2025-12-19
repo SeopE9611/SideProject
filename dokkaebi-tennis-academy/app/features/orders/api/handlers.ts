@@ -101,10 +101,32 @@ export async function createOrder(req: Request): Promise<Response> {
             const racketId = new ObjectId(item.productId);
             const rackCol = db.collection('used_rackets');
 
-            const racket = await rackCol.findOne({ _id: racketId }, { projection: { status: 1, quantity: 1 }, session });
+            const racket = await rackCol.findOne({ _id: racketId }, { projection: { status: 1, quantity: 1, brand: 1, model: 1 }, session });
             if (!racket) throw new HttpError(400, { error: '판매 가능한 라켓이 아닙니다.' });
 
             const stockQty = Number(racket.quantity ?? 1);
+            const racketName = `${(racket as any).brand ?? ''} ${(racket as any).model ?? ''}`.trim() || '중고 라켓';
+
+            //  현재 "대여 점유" 수량 계산: paid/out 상태는 반납 전이므로 판매 재고를 점유
+            const activeRentalCount = await db.collection('rental_orders').countDocuments({ racketId, status: { $in: ['paid', 'out'] } }, { session });
+
+            // 단품 라켓(<=1)은 status가 available일 때만 1개로 보고, 거기서 대여 점유를 뺌
+            const baseQty = !Number.isFinite(stockQty) || stockQty <= 1 ? (racket.status === 'available' ? 1 : 0) : stockQty;
+
+            const sellableQty = baseQty - activeRentalCount;
+
+            if (sellableQty < 1) {
+              const reason = activeRentalCount > 0 ? 'RENTAL_RESERVED' : 'OUT_OF_STOCK';
+              throw new HttpError(400, {
+                error: 'INSUFFICIENT_STOCK',
+                kind: 'racket',
+                productName: racketName,
+                currentStock: sellableQty,
+                baseQty,
+                reason,
+                activeRentalCount,
+              });
+            }
 
             // (A) 단품(1점) 라켓
             if (!Number.isFinite(stockQty) || stockQty <= 1) {
@@ -112,7 +134,14 @@ export async function createOrder(req: Request): Promise<Response> {
               if (quantity !== 1) throw new HttpError(400, { error: '라켓은 1개만 구매할 수 있습니다.' });
 
               const r = await rackCol.updateOne({ _id: racketId, status: 'available' }, { $set: { status: 'sold', updatedAt: new Date().toISOString() } }, { session });
-              if (r.matchedCount === 0) throw new HttpError(400, { error: '재고가 부족합니다.' });
+              if (r.matchedCount === 0)
+                throw new HttpError(400, {
+                  error: 'INSUFFICIENT_STOCK',
+                  kind: 'racket',
+                  productName: racketName,
+                  currentStock: 0,
+                  reason: 'CONCURRENT_UPDATE',
+                });
               continue;
             }
 
@@ -121,7 +150,7 @@ export async function createOrder(req: Request): Promise<Response> {
 
             const nowIso = new Date().toISOString();
             const updated = await rackCol.findOneAndUpdate(
-              { _id: racketId, quantity: { $gte: 1 }, status: { $nin: ['inactive', '비노출'] } },
+              { _id: racketId, quantity: { $gte: activeRentalCount + 1 }, status: { $nin: ['inactive', '비노출'] } },
               [{ $set: { quantity: { $subtract: ['$quantity', 1] }, updatedAt: nowIso } }, { $set: { status: { $cond: [{ $lte: ['$quantity', 0] }, 'sold', 'available'] } } }] as any,
               { returnDocument: 'after', session } as any
             );
@@ -129,7 +158,14 @@ export async function createOrder(req: Request): Promise<Response> {
             // driver 버전에 따라 updated가 { value: doc } 이거나 doc 자체일 수 있어서 둘 다 대응
             const updatedDoc = updated && typeof updated === 'object' && 'value' in (updated as any) ? (updated as any).value : updated;
 
-            if (!updatedDoc) throw new HttpError(400, { error: '재고가 부족합니다.' });
+            if (!updatedDoc)
+              throw new HttpError(400, {
+                error: 'INSUFFICIENT_STOCK',
+                kind: 'racket',
+                productName: racketName,
+                currentStock: 0,
+                reason: 'CONCURRENT_UPDATE',
+              });
 
             continue;
           }

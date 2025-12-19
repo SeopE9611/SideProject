@@ -30,6 +30,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const [activeTab, setActiveTab] = useState<'description' | 'specifications'>('description');
 
   const soldOut = stock.available <= 0;
+
   const images = racket.images || [];
   const open = searchParams.get('open'); // 'rent' 면 자동 오픈
 
@@ -164,9 +165,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {/* CTA 영역 */}
                   <div ref={rentSectionRef} className="space-y-3 pt-4 border-t">
                     <div className="flex gap-2">
-                      <Button className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600" onClick={() => router.push(`/rackets/${racket.id}/select-string`)}>
+                      <Button
+                        className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600"
+                        onClick={() => router.push(`/rackets/${racket.id}/select-string`)}
+                        disabled={soldOut}
+                        title={soldOut ? '현재 구매 가능한 재고가 없습니다.' : undefined}
+                      >
                         <ShoppingCart className="mr-2 h-4 w-4" />
-                        구매하기
+                        {soldOut ? '품절(구매 불가)' : '구매하기'}
                       </Button>
 
                       {racket?.rental?.enabled ? (
