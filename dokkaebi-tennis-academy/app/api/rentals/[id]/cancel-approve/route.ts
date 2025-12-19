@@ -96,6 +96,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       },
     });
 
+    // (B안) 단품 라켓이면 rented -> available 복구 (멀티 수량은 rental_orders로만 점유/해제됨)
+    if (existing?.racketId) {
+      const rid = new ObjectId(String(existing.racketId));
+      const rack = await db.collection('used_rackets').findOne({ _id: rid }, { projection: { quantity: 1 } });
+      const qty = Number(rack?.quantity ?? 1);
+      if (!Number.isFinite(qty) || qty <= 1) {
+        await db.collection('used_rackets').updateOne({ _id: rid, status: 'rented' }, { $set: { status: 'available', updatedAt: new Date() } });
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('POST /api/rentals/[id]/cancel-approve 오류:', error);

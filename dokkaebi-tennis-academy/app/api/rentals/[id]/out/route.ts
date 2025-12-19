@@ -68,7 +68,12 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   });
   // 라켓은 이미 paid에서 rented로 바뀌어 있음. 혹시 싱크 깨진 경우 보정
   if (order.racketId) {
-    await db.collection('used_rackets').updateOne({ _id: new ObjectId(String(order.racketId)) }, { $set: { status: 'rented', updatedAt: new Date() } });
+    const rid = new ObjectId(String(order.racketId));
+    const rack = await db.collection('used_rackets').findOne({ _id: rid }, { projection: { quantity: 1, status: 1 } });
+    const qty = Number(rack?.quantity ?? 1);
+    if (!Number.isFinite(qty) || qty <= 1) {
+      await db.collection('used_rackets').updateOne({ _id: rid, status: { $in: ['available', 'rented'] } }, { $set: { status: 'rented', updatedAt: new Date() } });
+    }
   }
 
   return NextResponse.json({ ok: true, id });

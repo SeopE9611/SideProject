@@ -43,20 +43,24 @@ export async function POST(req: Request) {
   }
 
   // 라켓 조회(+요금 정보 포함)
-  const racket = await db.collection('used_rackets').findOne({ _id: new ObjectId(racketId) }, { projection: { brand: 1, model: 1, quantity: 1, rental: 1 } });
+  const racketObjectId = new ObjectId(racketId);
+  const racket = await db.collection('used_rackets').findOne({ _id: racketObjectId }, { projection: { brand: 1, model: 1, quantity: 1, status: 1, rental: 1 } });
   if (!racket) {
     return NextResponse.json({ message: '라켓 없음' }, { status: 404 });
   }
-
   //진행 중 대여 수량 계산: paid|out만 재고 점유
   const activeCount = await db.collection('rental_orders').countDocuments({
-    racketId: new ObjectId(racketId),
+    racketId: racketObjectId,
     status: { $in: ['paid', 'out'] },
   });
 
+  // 단품(<=1)은 status=available일 때만 1개로 취급, 아니면 0개
+  const rawQty = Number(racket.quantity ?? 1);
+  const baseQty = !Number.isFinite(rawQty) || rawQty <= 1 ? (racket.status === 'available' ? 1 : 0) : rawQty;
+  const available = baseQty - activeCount;
+
   // 잔여 수량 체크
-  const quantity = Number(racket.quantity ?? 1);
-  if (quantity - activeCount <= 0) {
+  if (available <= 0) {
     // 재고가 0이므로 생성 불가
     return NextResponse.json({ message: '대여 불가 상태(재고 없음)' }, { status: 409 });
   }

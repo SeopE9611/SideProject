@@ -203,6 +203,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="quantity">보유 수량</Label>
+                  <p className="text-xs text-muted-foreground">보유 수량은 판매로만 감소합니다. 대여 중 점유는 ‘판매가능(available)’로 계산되어 표시됩니다.</p>
                   <Input id="quantity" type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Math.max(1, Number(e.target.value || 1)) })} />
                   <p className="text-xs text-muted-foreground">최소 1개. 다수 보유 시 사용자에게 '잔여 n/총 m'로 표시됩니다.</p>
                 </div>

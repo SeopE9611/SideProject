@@ -34,12 +34,41 @@ type Props = {
 
 function RacketAvailBadge({ id }: { id: string }) {
   const { data } = useSWR<{ ok: boolean; count: number; quantity: number; available: number }>(`/api/rentals/active-count/${id}`, fetcher, { dedupingInterval: 5000 });
+  // "잔여" → "가용" (판매/대여 공통으로 지금 가능한 수량)
+  // - qty: 보유 수량
+  // - count: 대여중 수량(paid/out)
+  // - avail: 현재 가용(보유 - 대여중)
   const qty = Number(data?.quantity ?? 1);
-  // 우선순위: 서버의 available → 없을 때만 count로 보정
-  const avail = Number.isFinite(data?.available) ? Math.max(0, Number(data?.available)) : Math.max(0, qty - Number(data?.count ?? 0));
-  const soldOut = avail <= 0;
+  const count = Number(data?.count ?? 0);
+
+  const availRaw = (data as any)?.available;
+  const avail = Number.isFinite(availRaw) ? Math.max(0, Number(availRaw)) : Math.max(0, qty - count);
+
+  // 전량 대여중 vs 판매완료를 구분하기 위한 보조값
+  const rentedCount = Math.min(qty, Math.max(0, count)); // 혹시 count가 비정상적으로 커져도 UI는 클램프
+  const isSold = qty <= 0;
+  const isAllRented = !isSold && avail <= 0 && rentedCount > 0;
+
+  if (isSold) {
+    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap">판매 완료</div>;
+  }
+
+  if (isAllRented) {
+    return (
+      <div className="text-xs font-medium px-2 py-1 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300 whitespace-nowrap">
+        전량 대여중 ({rentedCount}/{qty})
+      </div>
+    );
+  }
+
   return (
-    <div className={`text-xs font-medium ${soldOut ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{qty > 1 ? (soldOut ? `대여 중 (0/${qty})` : `잔여 ${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}</div>
+    <div className="flex items-center gap-1.5">
+      <div className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 whitespace-nowrap">
+        가용 {avail}/{qty}
+      </div>
+
+      {rentedCount > 0 && <div className="text-xs font-medium px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 whitespace-nowrap">대여중 {rentedCount}</div>}
+    </div>
   );
 }
 
@@ -82,11 +111,6 @@ const RacketCard = React.memo(
                 </div>
                 <div className="text-left lg:text-right">
                   <div className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
-                  {racket.rental?.enabled && (
-                    <div className="text-sm text-muted-foreground mt-1">
-                      <RacketAvailBadge id={racket.id} />
-                    </div>
-                  )}
                 </div>
               </div>
 

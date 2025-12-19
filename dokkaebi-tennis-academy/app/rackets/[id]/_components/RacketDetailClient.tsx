@@ -31,6 +31,17 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
   const soldOut = stock.available <= 0;
 
+  // 대여중 수량(상세는 count를 굳이 안 받아도 quantity-available로 복원 가능)
+  const rentedCount = Math.max(0, stock.quantity - stock.available);
+
+  // 상태 구분
+  const isSold = stock.quantity <= 0; // 판매 완료(보유 0)
+  const isAllRented = !isSold && soldOut && rentedCount > 0; // 전량 대여중(임시 품절)
+
+  // 버튼/라벨용 문구
+  const stockLabel = isSold ? '판매 완료' : isAllRented ? `전량 대여중 (${rentedCount}/${stock.quantity})` : `가용 ${stock.available}/${stock.quantity}${rentedCount > 0 ? ` · 대여중 ${rentedCount}` : ''}`;
+  const rentalState = !racket?.rental?.enabled || isSold ? 'unavailable' : isAllRented ? 'rented' : 'available';
+
   const images = racket.images || [];
   const open = searchParams.get('open'); // 'rent' 면 자동 오픈
 
@@ -112,7 +123,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 )}
                 <div className="absolute top-4 left-4 flex gap-2">
                   <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">중고</Badge>
-                  {racket?.rental?.enabled === false ? <StatusBadge kind="rental" state="unavailable" /> : soldOut ? <StatusBadge kind="rental" state="rented" /> : <StatusBadge kind="rental" state="available" />}
+                  <StatusBadge kind="rental" state={rentalState} />
                 </div>
               </div>
             </Card>
@@ -147,9 +158,22 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       {racket?.rental?.enabled === false ? (
                         <StatusBadge kind="rental" state="unavailable" />
                       ) : (
-                        <Badge className={`${soldOut ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
-                          {stock.quantity > 1 ? (soldOut ? `대여 중 (0/${stock.quantity})` : `잔여 ${stock.available}/${stock.quantity}`) : soldOut ? '대여 중' : '대여 가능'}
-                        </Badge>
+                        <div className="flex items-center gap-2 flex-wrap" title={`보유 ${stock.quantity}개 / 대여중 ${rentedCount}개 / 가용 ${stock.available}개`}>
+                          {isSold ? (
+                            <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">판매 완료</Badge>
+                          ) : isAllRented ? (
+                            <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300">
+                              전량 대여중 ({rentedCount}/{stock.quantity})
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                              가용 {stock.available}/{stock.quantity}
+                            </Badge>
+                          )}
+
+                          {/* 보조: 대여중 수량 (가용 상태일 때만 추가로 강조) */}
+                          {rentedCount > 0 && !isSold && !isAllRented && <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">대여중 {rentedCount}</Badge>}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -169,7 +193,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600"
                         onClick={() => router.push(`/rackets/${racket.id}/select-string`)}
                         disabled={soldOut}
-                        title={soldOut ? '현재 구매 가능한 재고가 없습니다.' : undefined}
+                        title={soldOut ? (isAllRented ? '현재 전량 대여중이라 구매/대여가 불가합니다. 반납 시 다시 가능합니다.' : '판매가 종료된 상품입니다.') : undefined}
                       >
                         <ShoppingCart className="mr-2 h-4 w-4" />
                         {soldOut ? '품절(구매 불가)' : '구매하기'}
