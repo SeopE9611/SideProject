@@ -1,11 +1,11 @@
-import FreeBoardWriteClient from '@/app/board/free/_components/FreeBoardWriteClient';
+import FreeBoardWriteClient from '@/app/board/gear/_components/FreeBoardWriteClient';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: '자유 게시판 글쓰기 | 도깨비 테니스',
-  description: '자유 게시판에 테니스 관련 이야기를 작성합니다.',
-  alternates: { canonical: '/board/free/write' },
+  title: '사용기 글쓰기 | 도깨비 테니스',
+  // description: '자유 게시판에 테니스 관련 이야기를 작성합니다.',
+  alternates: { canonical: '/board/gear/write' },
 };
 // 서버 컴포넌트에서 로그인 여부를 먼저 확인
 export default async function FreeBoardWritePage() {

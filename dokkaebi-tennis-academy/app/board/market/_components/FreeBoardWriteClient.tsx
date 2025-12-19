@@ -16,11 +16,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 
 export const CATEGORY_OPTIONS = [
-  { value: 'general', label: '자유' },
-  { value: 'info', label: '정보' },
-  { value: 'qna', label: '질문' },
-  { value: 'tip', label: '노하우' },
-  { value: 'etc', label: '기타' },
+  { value: 'racket', label: '라켓' },
+  { value: 'string', label: '스트링' },
+  { value: 'equipment', label: '일반장비' },
 ] as const;
 
 type CategoryValue = (typeof CATEGORY_OPTIONS)[number]['value'];
@@ -32,8 +30,8 @@ export default function FreeBoardWriteClient() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
-  // 카테고리 상태 (기본 'general')
-  const [category, setCategory] = useState<CategoryValue>('general');
+  // 카테고리 상태 (기본 'racket')
+  const [category, setCategory] = useState<CategoryValue>('racket');
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -160,7 +158,7 @@ export default function FreeBoardWriteClient() {
       }
 
       const payload: any = {
-        type: 'free',
+        type: 'market',
         title: title.trim(),
         content: content.trim(),
         images,
@@ -185,7 +183,7 @@ export default function FreeBoardWriteClient() {
       }
 
       const goId = data.id ?? data.item?._id ?? data.item?.id;
-      router.push(goId ? `/board/free/${goId}` : '/board/free');
+      router.push(goId ? `/board/market/${goId}` : '/board/market');
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -205,7 +203,7 @@ export default function FreeBoardWriteClient() {
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
-              <Link href="/board/free" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
+              <Link href="/board/market" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
                 자유 게시판
               </Link>
               <span className="mx-1">›</span>
@@ -218,7 +216,7 @@ export default function FreeBoardWriteClient() {
           {/* 우측 버튼들: 목록으로 / 게시판 홈 */}
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm" className="gap-1">
-              <Link href="/board/free">
+              <Link href="/board/market">
                 <ArrowLeft className="h-4 w-4" />
                 <span>목록으로</span>
               </Link>

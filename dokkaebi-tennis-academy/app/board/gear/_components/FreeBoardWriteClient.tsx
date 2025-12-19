@@ -160,7 +160,7 @@ export default function FreeBoardWriteClient() {
       }
 
       const payload: any = {
-        type: 'free',
+        type: 'gear',
         title: title.trim(),
         content: content.trim(),
         images,
@@ -185,7 +185,7 @@ export default function FreeBoardWriteClient() {
       }
 
       const goId = data.id ?? data.item?._id ?? data.item?.id;
-      router.push(goId ? `/board/free/${goId}` : '/board/free');
+      router.push(goId ? `/board/gear/${goId}` : '/board/gear');
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -205,7 +205,7 @@ export default function FreeBoardWriteClient() {
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
-              <Link href="/board/free" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
+              <Link href="/board/gear" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
                 자유 게시판
               </Link>
               <span className="mx-1">›</span>
@@ -218,7 +218,7 @@ export default function FreeBoardWriteClient() {
           {/* 우측 버튼들: 목록으로 / 게시판 홈 */}
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm" className="gap-1">
-              <Link href="/board/free">
+              <Link href="/board/gear">
                 <ArrowLeft className="h-4 w-4" />
                 <span>목록으로</span>
               </Link>

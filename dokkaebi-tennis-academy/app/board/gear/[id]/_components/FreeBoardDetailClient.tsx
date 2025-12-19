@@ -624,7 +624,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
       }
 
       // 삭제 성공 - 목록으로 이동
-      router.push('/board/free');
+      router.push('/board/gear');
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -1044,7 +1044,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
-              <Link href="/board/free" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
+              <Link href="/board/gear" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
                 자유 게시판
               </Link>
               <span className="mx-1">›</span>
@@ -1055,12 +1055,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
           </div>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" className="gap-1 bg-transparent" onClick={() => router.push('/board/free')}>
+            <Button type="button" variant="outline" size="sm" className="gap-1 bg-transparent" onClick={() => router.push('/board/gear')}>
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
             <Button asChild variant="outline" size="sm">
-              <Link href="/board/free">목록으로</Link>
+              <Link href="/board/gear">목록으로</Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link href="/board">게시판 홈</Link>
@@ -1077,10 +1077,10 @@ export default function FreeBoardDetailClient({ id }: Props) {
               <ErrorBox message={isNotFound ? '해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.' : '글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'} />
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/board/free">목록으로</Link>
+                  <Link href="/board/gear">목록으로</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link href="/board/free/write">새 글 작성하기</Link>
+                  <Link href="/board/gear/write">새 글 작성하기</Link>
                 </Button>
               </div>
             </CardContent>
@@ -1124,7 +1124,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                             // 비회원/익명 글은 userId가 없을 수 있음
                             if (!item.userId) return;
                             const authorName = item.nickname ?? '';
-                            router.push(`/board/free?authorId=${item.userId}&authorName=${encodeURIComponent(authorName)}`);
+                            router.push(`/board/gear?authorId=${item.userId}&authorName=${encodeURIComponent(authorName)}`);
                           }}
                         >
                           이 작성자의 글 보기
@@ -1322,7 +1322,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                   {isAuthor && (
                     <>
-                      <Button type="button" variant="outline" size="sm" onClick={() => router.push(`/board/free/${item.id}/edit`)}>
+                      <Button type="button" variant="outline" size="sm" onClick={() => router.push(`/board/gear/${item.id}/edit`)}>
                         수정
                       </Button>
 
@@ -1333,10 +1333,10 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   )}
 
                   <Button asChild variant="outline" size="sm">
-                    <Link href="/board/free">목록으로</Link>
+                    <Link href="/board/gear">목록으로</Link>
                   </Button>
                   <Button asChild variant="outline" size="sm">
-                    <Link href="/board/free/write">새 글 작성</Link>
+                    <Link href="/board/gear/write">새 글 작성</Link>
                   </Button>
                 </div>
               </div>
@@ -1544,7 +1544,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                         <ul className="space-y-2">
                           {authorOverview.recentPosts.map((p) => (
                             <li key={p.id} className="flex items-center justify-between gap-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-900/40 rounded-md p-2 -mx-2 transition-colors">
-                              <Link href={`/board/free/${p.id}`} className="truncate text-slate-900 dark:text-slate-50 hover:text-slate-700 dark:hover:text-slate-300 flex-1">
+                              <Link href={`/board/gear/${p.id}`} className="truncate text-slate-900 dark:text-slate-50 hover:text-slate-700 dark:hover:text-slate-300 flex-1">
                                 {p.title || '(제목 없음)'}
                               </Link>
                               <span className="shrink-0 text-xs text-slate-500 dark:text-slate-500">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
@@ -1653,7 +1653,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                   <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-200 dark:border-slate-800">
                     <Button variant="outline" size="sm" asChild disabled={!item} className="h-9 bg-transparent">
-                      <Link href={item ? `/board/free?authorId=${item.userId}&authorName=${encodeURIComponent(item.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
+                      <Link href={item ? `/board/gear?authorId=${item.userId}&authorName=${encodeURIComponent(item.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
                     </Button>
 
                     <Button variant="ghost" size="sm" onClick={() => setIsAuthorProfileOpen(false)} className="h-9">

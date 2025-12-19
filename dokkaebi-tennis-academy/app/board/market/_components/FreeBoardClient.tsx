@@ -158,7 +158,7 @@ export default function FreeBoardClient() {
       params.set('category', next);
     }
 
-    router.push(`/board/free?${params.toString()}`);
+    router.push(`/board/market?${params.toString()}`);
     setPage(1);
   };
 
@@ -166,7 +166,7 @@ export default function FreeBoardClient() {
   const PAGE_LIMIT = 10;
 
   const qs = new URLSearchParams({
-    type: 'free',
+    type: 'market',
     page: String(page),
     limit: String(PAGE_LIMIT),
     sort,
@@ -201,7 +201,7 @@ export default function FreeBoardClient() {
       params.delete('searchType');
     }
 
-    router.push(`/board/free?${params.toString()}`);
+    router.push(`/board/market?${params.toString()}`);
     setPage(1); // 검색하면 1페이지부터 다시
   };
 
@@ -210,7 +210,7 @@ export default function FreeBoardClient() {
     params.delete('q');
     params.delete('searchType');
 
-    router.push(`/board/free?${params.toString()}`);
+    router.push(`/board/market?${params.toString()}`);
     setSearchText('');
     setSearchType('title_content');
     setPage(1);
@@ -257,7 +257,7 @@ export default function FreeBoardClient() {
                   return;
                 }
 
-                router.push('/board/free/write');
+                router.push('/board/market/write');
               }}
             >
               <Plus className="h-4 w-4" />
@@ -361,7 +361,7 @@ export default function FreeBoardClient() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push('/board/free')} // 쿼리 제거(해제)
+                  onClick={() => router.push('/board/market')} // 쿼리 제거(해제)
                 >
                   해제
                 </Button>
@@ -377,7 +377,7 @@ export default function FreeBoardClient() {
                 <p>아직 등록된 글이 없습니다.</p>
                 <p>자유 게시판의 첫 번째 글을 작성해 보세요.</p>
                 <Button asChild size="sm" className="mt-2">
-                  <Link href="/board/free/write">
+                  <Link href="/board/market/write">
                     <Plus className="mr-1 h-4 w-4" />첫 글 작성하기
                   </Link>
                 </Button>
@@ -403,7 +403,7 @@ export default function FreeBoardClient() {
                   {/* 데이터 행들 */}
                   <div className="divide-y divide-gray-100 dark:divide-gray-800">
                     {items.map((post) => (
-                      <Link key={post.id} href={`/board/free/${post.postNo ?? post.id}`} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm hover:bg-blue-50/40 dark:hover:bg-gray-800/60">
+                      <Link key={post.id} href={`/board/market/${post.postNo ?? post.id}`} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm hover:bg-blue-50/40 dark:hover:bg-gray-800/60">
                         {/* 번호 */}
                         <div className="text-center text-xs tabular-nums text-gray-400 dark:text-gray-500">{typeof post.postNo === 'number' ? post.postNo : '-'}</div>
 
@@ -449,7 +449,7 @@ export default function FreeBoardClient() {
                                   e.stopPropagation();
                                   if (!post.userId) return;
                                   const authorName = post.nickname ?? '';
-                                  router.push(`/board/free?authorId=${post.userId}&authorName=${encodeURIComponent(authorName)}`);
+                                  router.push(`/board/market?authorId=${post.userId}&authorName=${encodeURIComponent(authorName)}`);
                                 }}
                               >
                                 이 작성자의 글 보기
@@ -460,7 +460,7 @@ export default function FreeBoardClient() {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   if (!post.userId) return;
-                                  router.push(`/board/free/${post.postNo ?? post.id}?openProfile=1`);
+                                  router.push(`/board/market/${post.postNo ?? post.id}?openProfile=1`);
                                 }}
                               >
                                 작성자 테니스 프로필
@@ -490,7 +490,7 @@ export default function FreeBoardClient() {
                   {items.map((post) => (
                     <Link
                       key={post.id}
-                      href={`/board/free/${post.postNo ?? post.id}`}
+                      href={`/board/market/${post.postNo ?? post.id}`}
                       className="block rounded-lg border border-gray-100 bg-white/90 px-3 py-2 shadow-sm hover:border-blue-200 hover:bg-blue-50/60 dark:border-gray-700 dark:bg-gray-900/80 dark:hover:border-blue-500/60"
                     >
                       {/* 1줄: 번호 + 분류 뱃지 */}

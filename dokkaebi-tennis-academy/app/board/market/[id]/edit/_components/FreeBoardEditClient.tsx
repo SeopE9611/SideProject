@@ -17,7 +17,7 @@ import type { CommunityPost } from '@/lib/types/community';
 import ImageUploader from '@/components/admin/ImageUploader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
-import { CATEGORY_OPTIONS } from '@/app/board/free/_components/FreeBoardWriteClient';
+import { CATEGORY_OPTIONS } from '@/app/board/market/_components/FreeBoardWriteClient';
 
 type Props = {
   id: string;
@@ -40,7 +40,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   const [content, setContent] = useState('');
 
   // 카테고리 상태
-  const [category, setCategory] = useState<'general' | 'info' | 'qna' | 'tip' | 'etc'>('general');
+  const [category, setCategory] = useState<'racket' | 'string' | 'equipment'>('racket');
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -67,7 +67,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       setTitle(item.title ?? '');
       setContent(item.content ?? '');
       setImages(Array.isArray(item.images) ? item.images : []);
-      setCategory((data.item.category as any) ?? 'general');
+      setCategory((data.item.category as any) ?? 'racket');
 
       if (Array.isArray(item.attachments)) {
         setAttachments(item.attachments as AttachmentItem[]);
@@ -231,7 +231,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       }
 
       // 수정 후에는 상세 페이지로 이동
-      router.push(`/board/free/${id}`);
+      router.push(`/board/market/${id}`);
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -281,7 +281,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.</div>
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/board/free">목록으로</Link>
+                  <Link href="/board/market">목록으로</Link>
                 </Button>
               </div>
             </CardContent>
@@ -303,7 +303,7 @@ export default function FreeBoardEditClient({ id }: Props) {
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
-              <Link href="/board/free" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
+              <Link href="/board/market" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
                 자유 게시판
               </Link>
               <span className="mx-1">›</span>
@@ -320,7 +320,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               <span>이전으로</span>
             </Button>
             <Button asChild variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-              <Link href="/board/free">
+              <Link href="/board/market">
                 <MessageSquare className="h-4 w-4" />
                 <span>목록으로</span>
               </Link>
@@ -469,7 +469,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
               {/* 하단 버튼 */}
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" size="sm" className={cn('gap-2')} disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={() => router.push(`/board/free/${id}`)}>
+                <Button type="button" variant="outline" size="sm" className={cn('gap-2')} disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={() => router.push(`/board/market/${id}`)}>
                   <ArrowLeft className="h-4 w-4" />
                   <span>취소</span>
                 </Button>

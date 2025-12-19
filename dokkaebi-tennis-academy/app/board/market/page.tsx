@@ -1,9 +1,9 @@
-import FreeBoardClient from '@/app/board/free/_components/FreeBoardClient';
+import FreeBoardClient from '@/app/board/market/_components/FreeBoardClient';
 
 export const metadata = {
-  title: '자유 게시판 | 도깨비 테니스',
-  description: '테니스 관련 질문, 정보 공유, 일상 이야기를 나누는 자유 게시판입니다.',
-  alternates: { canonical: '/board/free' },
+  title: '중고 거래 게시판 | 도깨비 테니스',
+  // description: '테니스 관련 질문, 정보 공유, 일상 이야기를 나누는 자유 게시판입니다.',
+  alternates: { canonical: '/board/market' },
 };
 
 export default function FreeBoardPage() {
