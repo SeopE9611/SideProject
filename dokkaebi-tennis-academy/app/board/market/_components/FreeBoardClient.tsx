@@ -37,38 +37,30 @@ const fmtDateTime = (v: string | Date) =>
 
 function getCategoryLabel(category?: string | null) {
   switch (category) {
-    case 'general':
-      return '자유';
-    case 'info':
-      return '정보';
-    case 'qna':
-      return '질문';
-    case 'tip':
-      return '노하우';
-    case 'etc':
-      return '기타';
+    case 'racket':
+      return '라켓';
+    case 'string':
+      return '스트링';
+    case 'equipment':
+      return '일반장비';
     default:
       return '분류 없음';
   }
 }
 
 function getCategoryBadgeClasses(category?: string | null) {
-  // 카테고리별 배경/글자색 분리
   switch (category) {
-    case 'general': // 자유
+    case 'racket':
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
-    case 'info': // 정보
+    case 'string':
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
-    case 'qna': // 질문
+    case 'equipment':
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
-    case 'tip': // 노하우
-      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
-    case 'etc': // 기타
-      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
-    default: // 분류없음
+    default:
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-gray-100 text-gray-500 dark:bg-gray-800/60 dark:text-gray-300';
   }
 }
+
 // 목록 스켈레톤 UI
 function ListSkeleton() {
   return (
@@ -121,11 +113,10 @@ export default function FreeBoardClient() {
 
   // 카테고리 (URL 기준)
   const rawCategoryParam = searchParams.get('category');
-  const categoryParam: 'general' | 'info' | 'qna' | 'tip' | 'etc' | null =
-    rawCategoryParam === 'general' || rawCategoryParam === 'info' || rawCategoryParam === 'qna' || rawCategoryParam === 'tip' || rawCategoryParam === 'etc' ? rawCategoryParam : null;
+  const categoryParam: 'racket' | 'string' | 'equipment' | null = rawCategoryParam === 'racket' || rawCategoryParam === 'string' || rawCategoryParam === 'equipment' ? rawCategoryParam : null;
 
   // UI에서 사용할 카테고리 상태 (전체 포함)
-  const [category, setCategory] = useState<'all' | 'general' | 'info' | 'qna' | 'tip' | 'etc'>(categoryParam ?? 'all');
+  const [category, setCategory] = useState<'all' | 'racket' | 'string' | 'equipment'>(categoryParam ?? 'all');
 
   // authorId 바뀌면 페이지는 1로
   useEffect(() => {
@@ -149,17 +140,15 @@ export default function FreeBoardClient() {
   }, [qParam, searchTypeParam]);
 
   // 카테고리 선택 시 URL 바꾸는 핸들러
-  const handleCategoryChange = (next: 'all' | 'general' | 'info' | 'qna' | 'tip' | 'etc') => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (next === 'all') {
-      params.delete('category'); // 전체면 쿼리 제거
-    } else {
-      params.set('category', next);
-    }
-
-    router.push(`/board/market?${params.toString()}`);
+  const handleCategoryChange = (next: 'all' | 'racket' | 'string' | 'equipment') => {
     setPage(1);
+    setCategory(next);
+
+    const sp = new URLSearchParams(searchParams.toString());
+    if (next === 'all') sp.delete('category');
+    else sp.set('category', next);
+
+    router.push(`/board/market?${sp.toString()}`);
   };
 
   // 한 페이지당 개수
@@ -328,11 +317,9 @@ export default function FreeBoardClient() {
                   <span className="text-gray-500 dark:text-gray-400">분류:</span>
                   {[
                     { value: 'all', label: '전체' },
-                    { value: 'general', label: '자유' },
-                    { value: 'info', label: '정보' },
-                    { value: 'qna', label: '질문' },
-                    { value: 'tip', label: '노하우' },
-                    { value: 'etc', label: '기타' },
+                    { value: 'racket', label: '라켓' },
+                    { value: 'string', label: '스트링' },
+                    { value: 'equipment', label: '일반장비' },
                   ].map((cat) => {
                     const active = category === cat.value;
                     return (

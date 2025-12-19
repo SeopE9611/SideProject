@@ -97,20 +97,21 @@ const fmtDateTime = (v: string | Date) =>
 export function getCategoryLabel(category?: CommunityCategory | null): string {
   switch (category) {
     case 'racket':
-      return '자유';
+      return '라켓';
     case 'string':
-      return '정보';
+      return '스트링';
     case 'equipment':
-      return '질문';
+      return '일반장비';
     default:
       return '분류 없음';
   }
 }
+
 function getCategoryBadgeClasses(category?: string | null) {
   switch (category) {
     case 'racket':
       return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
-    case 'info':
+    case 'string':
       return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
     case 'equipment':
       return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
