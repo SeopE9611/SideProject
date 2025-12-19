@@ -13,7 +13,7 @@ import { bankLabelMap } from '@/lib/constants';
 import BackButtonGuard from '@/app/checkout/success/_components/BackButtonGuard';
 import ClearCartOnMount from '@/app/checkout/success/_components/ClearCartOnMount';
 import SetGuestOrderToken from '@/app/checkout/success/_components/SetGuestOrderToken';
-import AutoRedirectToApply from '@/app/checkout/success/_components/AutoRedirectToApply';
+import CheckoutApplyHandoffClient from '@/app/checkout/success/_components/CheckoutApplyHandoffClient';
 
 type PopulatedItem = {
   name: string;
@@ -34,7 +34,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
   if (!order) return notFound();
 
- const appParams = new URLSearchParams({ orderId: order._id.toString() });
+  const appParams = new URLSearchParams({ orderId: order._id.toString() });
   let appHref = `/services/apply?${appParams.toString()}`;
 
   const cookieStore = await cookies();
@@ -49,6 +49,29 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   }
 
   const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
+
+  // autoApply=1 + withStringService=true 인 경우: 성공페이지 대신 "핸드오프 화면"만 보여주기
+  const isHandoff = autoApply && order.shippingInfo?.withStringService === true;
+
+  if (isHandoff) {
+    return (
+      <>
+        <BackButtonGuard />
+        <ClearCartOnMount />
+        <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
+
+        <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+          <div className="container py-12">
+            <CheckoutApplyHandoffClient
+              href={appHref}
+              orderId={order._id.toString()}
+              seconds={8} // 5초는 짧다 했으니 8초 추천 (원하면 0~15로 조절)
+            />
+          </div>
+        </div>
+      </>
+    );
+  }
 
   // 안전한 가격 표시 함수
   const formatPrice = (price: any): string => {
@@ -126,7 +149,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
-                   <AutoRedirectToApply enabled={autoApply} href={appHref} seconds={5} />
+                  {/* <AutoRedirectToApply enabled={autoApply} href={appHref} seconds={5} /> */}
                 </div>
               </div>
             )}
