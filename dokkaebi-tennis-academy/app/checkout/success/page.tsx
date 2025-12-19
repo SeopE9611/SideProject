@@ -49,7 +49,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   }
 
   const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
-
+  const orderDetailHref = isLoggedIn ? '/mypage' : `/order-lookup/details/${order._id.toString()}`;
   // autoApply=1 + withStringService=true 인 경우: 성공페이지 대신 "핸드오프 화면"만 보여주기
   const isHandoff = autoApply && order.shippingInfo?.withStringService === true;
 
@@ -65,8 +65,16 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
             <CheckoutApplyHandoffClient
               href={appHref}
               orderId={order._id.toString()}
-              seconds={8} // 5초는 짧다 했으니 8초 추천 (원하면 0~15로 조절)
+              seconds={8} //8초
             />
+
+            <div className="mt-6 flex justify-center">
+              <Button variant="outline" asChild>
+                <Link href={orderDetailHref} target="_blank" rel="noopener noreferrer">
+                  주문 상세 보기(새 탭)
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </>
