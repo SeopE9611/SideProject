@@ -1038,13 +1038,13 @@ export default function FreeBoardDetailClient({ id }: Props) {
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/market" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
-                자유 게시판
+                중고 거래 게시판
               </Link>
               <span className="mx-1">›</span>
               <span>글 상세</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">자유 게시판 글 상세</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">자유 게시판에 작성된 글의 상세 내용을 확인할 수 있습니다.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">중고 거래 게시판 글 상세</h1>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">중고 거래 게시판에 작성된 글의 상세 내용을 확인할 수 있습니다.</p>
           </div>
 
           <div className="flex gap-2">

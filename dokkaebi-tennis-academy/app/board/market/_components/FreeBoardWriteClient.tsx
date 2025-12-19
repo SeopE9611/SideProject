@@ -199,18 +199,18 @@ export default function FreeBoardWriteClient() {
         {/* 상단 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            {/* 브레드크럼: 게시판 > 자유 게시판 > 글쓰기 */}
+            {/* 브레드크럼: 게시판 > 중고 거래 게시판 > 글쓰기 */}
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/market" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
-                자유 게시판
+                중고 거래 게시판
               </Link>
               <span className="mx-1">›</span>
               <span>글쓰기</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">자유 게시판 글쓰기</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">중고 거래 게시판 글쓰기</h1>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">회원들과 자유롭게 테니스 상품을 거래 해보세요.</p>
           </div>
 
           {/* 우측 버튼들: 목록으로 / 게시판 홈 */}
@@ -234,8 +234,10 @@ export default function FreeBoardWriteClient() {
               <MessageSquare className="h-5 w-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-base md:text-lg">자유 게시판 글 작성</CardTitle>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">다른 이용자들이 함께 볼 수 있다는 점을 고려해, 예의를 지키는 표현을 사용해 주세요.</p>
+              <CardTitle className="text-base md:text-lg">중고 거래 게시판 글 작성</CardTitle>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">
+                테니스 라켓, 스트링,장비 등 판매하고자 하는 상품을 작성해보세요.
+              </p>
             </div>
           </CardHeader>
 

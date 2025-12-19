@@ -40,7 +40,17 @@ export default function FreeBoardEditClient({ id }: Props) {
   const [content, setContent] = useState('');
 
   // 카테고리 상태
-  const [category, setCategory] = useState<'general' | 'info' | 'qna' | 'tip' | 'etc'>('general');
+  const [category, setCategory] = useState<
+    | 'racket'
+    | 'string'
+    | 'shoes'
+    | 'bag'
+    | 'apparel'
+    | 'grip'
+    | 'accessory'
+    | 'ball'
+    | 'other'
+  >('racket');
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -67,7 +77,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       setTitle(item.title ?? '');
       setContent(item.content ?? '');
       setImages(Array.isArray(item.images) ? item.images : []);
-      setCategory((data.item.category as any) ?? 'general');
+      setCategory((data.item.category as any) ?? 'racket');
 
       if (Array.isArray(item.attachments)) {
         setAttachments(item.attachments as AttachmentItem[]);
@@ -299,7 +309,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         {/* 상단 헤더 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            {/* 브레드크럼: 게시판 > 자유 게시판 > 글 수정 */}
+            {/* 브레드크럼: 게시판 > 장비 사용기 > 글 수정 */}
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
@@ -309,7 +319,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               <span className="mx-1">›</span>
               <span>글 수정</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">자유 게시판 글 수정</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">장비 사용기 글 수정</h1>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.</p>
           </div>
 

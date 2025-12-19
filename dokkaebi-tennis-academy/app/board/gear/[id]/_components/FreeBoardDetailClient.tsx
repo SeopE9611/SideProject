@@ -96,15 +96,23 @@ const fmtDateTime = (v: string | Date) =>
 
 export function getCategoryLabel(category?: CommunityCategory | null): string {
   switch (category) {
-    case 'general':
-      return '자유';
-    case 'info':
-      return '정보';
-    case 'qna':
-      return '질문';
-    case 'tip':
-      return '노하우';
-    case 'etc':
+    case 'racket':
+      return '라켓';
+    case 'string':
+      return '스트링';
+    case 'shoes':
+      return '테니스화';
+    case 'bag':
+      return '가방';
+    case 'apparel':
+      return '의류';
+    case 'grip':
+      return '그립';
+    case 'accessory':
+      return '악세서리';
+    case 'ball':
+      return '테니스볼';
+    case 'other':
       return '기타';
     default:
       return '분류 없음';
@@ -112,16 +120,24 @@ export function getCategoryLabel(category?: CommunityCategory | null): string {
 }
 function getCategoryBadgeClasses(category?: string | null) {
   switch (category) {
-    case 'general':
+    case 'racket':
       return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
-    case 'info':
+    case 'string':
       return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
-    case 'qna':
+    case 'shoes':
       return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
-    case 'tip':
+    case 'bag':
       return 'bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
-    case 'etc':
+    case 'apparel':
+      return 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300';
+    case 'grip':
+      return 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300';
+    case 'accessory':
       return 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
+    case 'ball':
+      return 'bg-lime-50 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300';
+    case 'other':
+      return 'bg-gray-100 text-gray-600 dark:bg-gray-800/60 dark:text-gray-300';
     default:
       return 'bg-gray-100 text-gray-500 dark:bg-gray-800/60 dark:text-gray-300';
   }
@@ -1045,13 +1061,13 @@ export default function FreeBoardDetailClient({ id }: Props) {
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/gear" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
-                자유 게시판
+                장비 사용기
               </Link>
               <span className="mx-1">›</span>
               <span>글 상세</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">자유 게시판 글 상세</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">자유 게시판에 작성된 글의 상세 내용을 확인할 수 있습니다.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">장비 사용기 글 상세</h1>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">장비 사용기에 작성된 글의 상세 내용을 확인할 수 있습니다.</p>
           </div>
 
           <div className="flex gap-2">

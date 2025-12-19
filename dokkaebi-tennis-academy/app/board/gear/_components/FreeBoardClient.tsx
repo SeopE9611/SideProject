@@ -37,15 +37,23 @@ const fmtDateTime = (v: string | Date) =>
 
 function getCategoryLabel(category?: string | null) {
   switch (category) {
-    case 'general':
-      return '자유';
-    case 'info':
-      return '정보';
-    case 'qna':
-      return '질문';
-    case 'tip':
-      return '노하우';
-    case 'etc':
+    case 'racket':
+      return '라켓';
+    case 'string':
+      return '스트링';
+    case 'shoes':
+      return '테니스화';
+    case 'bag':
+      return '가방';
+    case 'apparel':
+      return '의류';
+    case 'grip':
+      return '그립';
+    case 'accessory':
+      return '악세서리';
+    case 'ball':
+      return '테니스볼';
+    case 'other':
       return '기타';
     default:
       return '분류 없음';
@@ -55,17 +63,25 @@ function getCategoryLabel(category?: string | null) {
 function getCategoryBadgeClasses(category?: string | null) {
   // 카테고리별 배경/글자색 분리
   switch (category) {
-    case 'general': // 자유
+    case 'racket':
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
-    case 'info': // 정보
+    case 'string':
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
-    case 'qna': // 질문
+    case 'shoes':
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
-    case 'tip': // 노하우
+    case 'bag':
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
-    case 'etc': // 기타
+    case 'apparel':
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300';
+    case 'grip':
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300';
+    case 'accessory':
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
-    default: // 분류없음
+    case 'ball':
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-lime-50 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300';
+    case 'other':
+      return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-gray-100 text-gray-600 dark:bg-gray-800/60 dark:text-gray-300';
+    default:
       return 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-gray-100 text-gray-500 dark:bg-gray-800/60 dark:text-gray-300';
   }
 }
@@ -92,7 +108,7 @@ function ListSkeleton() {
 }
 
 // 에러 박스
-function ErrorBox({ message = '자유 게시판을 불러오는 중 오류가 발생했습니다.' }) {
+function ErrorBox({ message = '장비 사용기 게시판을 불러오는 중 오류가 발생했습니다.' }) {
   return <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/60">{message}</div>;
 }
 export default function FreeBoardClient() {
@@ -121,11 +137,21 @@ export default function FreeBoardClient() {
 
   // 카테고리 (URL 기준)
   const rawCategoryParam = searchParams.get('category');
-  const categoryParam: 'general' | 'info' | 'qna' | 'tip' | 'etc' | null =
-    rawCategoryParam === 'general' || rawCategoryParam === 'info' || rawCategoryParam === 'qna' || rawCategoryParam === 'tip' || rawCategoryParam === 'etc' ? rawCategoryParam : null;
+  const categoryParam: 'racket' | 'string' | 'shoes' | 'bag' | 'apparel' | 'grip' | 'accessory' | 'ball' | 'other' | null =
+    rawCategoryParam === 'racket' ||
+    rawCategoryParam === 'string' ||
+    rawCategoryParam === 'shoes' ||
+    rawCategoryParam === 'bag' ||
+    rawCategoryParam === 'apparel' ||
+    rawCategoryParam === 'grip' ||
+    rawCategoryParam === 'accessory' ||
+    rawCategoryParam === 'ball' ||
+    rawCategoryParam === 'other'
+      ? (rawCategoryParam as any)
+      : null;
 
   // UI에서 사용할 카테고리 상태 (전체 포함)
-  const [category, setCategory] = useState<'all' | 'general' | 'info' | 'qna' | 'tip' | 'etc'>(categoryParam ?? 'all');
+  const [category, setCategory] = useState<'all' | 'racket' | 'string' | 'shoes' | 'bag' | 'apparel' | 'grip' | 'accessory' | 'ball' | 'other'>(categoryParam ?? 'all');
 
   // authorId 바뀌면 페이지는 1로
   useEffect(() => {
@@ -149,7 +175,7 @@ export default function FreeBoardClient() {
   }, [qParam, searchTypeParam]);
 
   // 카테고리 선택 시 URL 바꾸는 핸들러
-  const handleCategoryChange = (next: 'all' | 'general' | 'info' | 'qna' | 'tip' | 'etc') => {
+  const handleCategoryChange = (next: 'all' | 'racket' | 'string' | 'shoes' | 'bag' | 'apparel' | 'grip' | 'accessory' | 'ball' | 'other') => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (next === 'all') {
@@ -230,14 +256,14 @@ export default function FreeBoardClient() {
         {/* 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            {/* 브레드크럼: 게시판 > 자유 게시판 */}
+            {/* 브레드크럼: 게시판 > 장비 사용기 */}
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
-              <span>자유 게시판</span>
+              <span>장비 사용기</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">자유 게시판</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">테니스 관련 질문, 정보 공유, 일상 이야기를 자유롭게 나눌 수 있는 공간입니다.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">장비 사용기</h1>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">테니스 장비 사용기를 작성하는 공간입니다.</p>
           </div>
 
           <div className="flex gap-2">
@@ -274,8 +300,8 @@ export default function FreeBoardClient() {
                 <MessageSquare className="h-5 w-5 text-white" />
               </div>
               <div>
-                <CardTitle className="text-base md:text-lg">자유 게시판</CardTitle>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.</p>
+                <CardTitle className="text-base md:text-lg">장비 사용기</CardTitle>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">라켓, 스트링 테니스화 등 자유롭게 사용기를 남겨 보세요.</p>
               </div>
             </div>
             {total > 0 && (
@@ -328,11 +354,15 @@ export default function FreeBoardClient() {
                   <span className="text-gray-500 dark:text-gray-400">분류:</span>
                   {[
                     { value: 'all', label: '전체' },
-                    { value: 'general', label: '자유' },
-                    { value: 'info', label: '정보' },
-                    { value: 'qna', label: '질문' },
-                    { value: 'tip', label: '노하우' },
-                    { value: 'etc', label: '기타' },
+                    { value: 'racket', label: '라켓' },
+                    { value: 'string', label: '스트링' },
+                    { value: 'shoes', label: '테니스화' },
+                    { value: 'bag', label: '가방' },
+                    { value: 'apparel', label: '의류' },
+                    { value: 'grip', label: '그립' },
+                    { value: 'accessory', label: '악세서리' },
+                    { value: 'ball', label: '테니스볼' },
+                    { value: 'other', label: '기타' },
                   ].map((cat) => {
                     const active = category === cat.value;
                     return (
@@ -375,7 +405,7 @@ export default function FreeBoardClient() {
             {!isLoading && !error && items.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-3 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                 <p>아직 등록된 글이 없습니다.</p>
-                <p>자유 게시판의 첫 번째 글을 작성해 보세요.</p>
+                <p>장비 사용기 게시판의 첫 번째 사용기를 작성해 보세요.</p>
                 <Button asChild size="sm" className="mt-2">
                   <Link href="/board/gear/write">
                     <Plus className="mr-1 h-4 w-4" />첫 글 작성하기

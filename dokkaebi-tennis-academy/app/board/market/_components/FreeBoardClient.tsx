@@ -84,7 +84,7 @@ function ListSkeleton() {
 }
 
 // 에러 박스
-function ErrorBox({ message = '자유 게시판을 불러오는 중 오류가 발생했습니다.' }) {
+function ErrorBox({ message = '중고 거래 게시판을 불러오는 중 오류가 발생했습니다.' }) {
   return <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/60">{message}</div>;
 }
 export default function FreeBoardClient() {
@@ -223,10 +223,10 @@ export default function FreeBoardClient() {
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
-              <span>자유 게시판</span>
+              <span>중고 거래 게시판</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">자유 게시판</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">테니스 관련 질문, 정보 공유, 일상 이야기를 자유롭게 나눌 수 있는 공간입니다.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">중고 거래 게시판</h1>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">테니스 라켓, 스트링,장비 등 거래하는 공간입니다.</p>
           </div>
 
           <div className="flex gap-2">
@@ -263,8 +263,8 @@ export default function FreeBoardClient() {
                 <MessageSquare className="h-5 w-5 text-white" />
               </div>
               <div>
-                <CardTitle className="text-base md:text-lg">자유 게시판</CardTitle>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.</p>
+                <CardTitle className="text-base md:text-lg">중고 거래 게시판</CardTitle>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">회원들과 자유롭게 테니스 상품을 거래 해보세요.</p>
               </div>
             </div>
             {total > 0 && (
@@ -362,7 +362,7 @@ export default function FreeBoardClient() {
             {!isLoading && !error && items.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-3 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                 <p>아직 등록된 글이 없습니다.</p>
-                <p>자유 게시판의 첫 번째 글을 작성해 보세요.</p>
+                <p>첫 번째 글을 작성해 보세요.</p>
                 <Button asChild size="sm" className="mt-2">
                   <Link href="/board/market/write">
                     <Plus className="mr-1 h-4 w-4" />첫 글 작성하기

@@ -16,11 +16,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 
 export const CATEGORY_OPTIONS = [
-  { value: 'general', label: '자유' },
-  { value: 'info', label: '정보' },
-  { value: 'qna', label: '질문' },
-  { value: 'tip', label: '노하우' },
-  { value: 'etc', label: '기타' },
+  { value: 'racket', label: '라켓' },
+  { value: 'string', label: '스트링' },
+  { value: 'shoes', label: '테니스화' },
+  { value: 'bag', label: '가방' },
+  { value: 'apparel', label: '의류' },
+  { value: 'grip', label: '그립/오버그립' },
+  { value: 'accessory', label: '악세서리' },
+  { value: 'ball', label: '테니스볼' },
+  { value: 'other', label: '기타' },
 ] as const;
 
 type CategoryValue = (typeof CATEGORY_OPTIONS)[number]['value'];
@@ -33,7 +37,7 @@ export default function FreeBoardWriteClient() {
   const [content, setContent] = useState('');
 
   // 카테고리 상태 (기본 'general')
-  const [category, setCategory] = useState<CategoryValue>('general');
+  const [category, setCategory] = useState<CategoryValue>('racket');
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -201,7 +205,7 @@ export default function FreeBoardWriteClient() {
         {/* 상단 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            {/* 브레드크럼: 게시판 > 자유 게시판 > 글쓰기 */}
+            {/* 브레드크럼: 게시판 > 장비 사용기 > 글쓰기 */}
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
@@ -211,7 +215,7 @@ export default function FreeBoardWriteClient() {
               <span className="mx-1">›</span>
               <span>글쓰기</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">자유 게시판 글쓰기</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">장비 사용기 글쓰기</h1>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.</p>
           </div>
 
@@ -236,7 +240,7 @@ export default function FreeBoardWriteClient() {
               <MessageSquare className="h-5 w-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-base md:text-lg">자유 게시판 글 작성</CardTitle>
+              <CardTitle className="text-base md:text-lg">장비 사용기 글 작성</CardTitle>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">다른 이용자들이 함께 볼 수 있다는 점을 고려해, 예의를 지키는 표현을 사용해 주세요.</p>
             </div>
           </CardHeader>
