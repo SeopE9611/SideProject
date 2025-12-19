@@ -3,10 +3,239 @@ import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Bell, Star, ArrowRight, Plus, Eye } from 'lucide-react';
+import { MessageSquare, Bell, Star, ArrowRight, Plus, Eye, ShoppingBag, Dumbbell } from 'lucide-react';
+
 import Link from 'next/link';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor, getReviewTypeColor, noticePinColor, getNoticeCategoryColor, attachImageColor, attachFileColor } from '@/lib/badge-style';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { ReactNode } from 'react';
+
+type BoardKind = 'free' | 'market' | 'gear';
+
+type CommunityListItem = {
+  id: string;
+  title: string;
+  createdAt: string | Date;
+  nickname: string;
+  category?: string | null;
+  views?: number;
+  commentsCount?: number;
+};
+
+function getBoardCategoryLabel(kind: BoardKind, category?: string | null) {
+  const c = category ?? '';
+
+  if (kind === 'free') {
+    switch (c) {
+      case 'general':
+        return '자유';
+      case 'info':
+        return '정보';
+      case 'qna':
+        return '질문';
+      case 'tip':
+        return '노하우';
+      case 'etc':
+        return '기타';
+      default:
+        return c ? c : '분류';
+    }
+  }
+
+  if (kind === 'market') {
+    switch (c) {
+      case 'racket':
+        return '라켓';
+      case 'string':
+        return '스트링';
+      case 'equipment':
+        return '일반장비';
+      default:
+        return c ? c : '분류';
+    }
+  }
+
+  switch (c) {
+    case 'racket':
+      return '라켓';
+    case 'string':
+      return '스트링';
+    case 'shoes':
+      return '테니스화';
+    case 'bag':
+      return '가방';
+    case 'apparel':
+      return '의류';
+    case 'grip':
+      return '그립';
+    case 'accessory':
+      return '악세서리';
+    case 'ball':
+      return '테니스볼';
+    case 'other':
+      return '기타';
+    default:
+      return c ? c : '분류';
+  }
+}
+
+function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
+  const c = category ?? '';
+
+  // 공통 fallback
+  const gray = 'bg-gray-100 text-gray-600 dark:bg-gray-800/60 dark:text-gray-300';
+
+  if (kind === 'free') {
+    switch (c) {
+      case 'general':
+        return 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
+      case 'info':
+        return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+      case 'qna':
+        return 'bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300';
+      case 'tip':
+        return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+      case 'etc':
+        return gray;
+      default:
+        return gray;
+    }
+  }
+
+  if (kind === 'market') {
+    switch (c) {
+      case 'racket':
+        return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+      case 'string':
+        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
+      case 'equipment':
+        return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+      default:
+        return gray;
+    }
+  }
+
+  // gear
+  switch (c) {
+    case 'racket':
+      return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+    case 'string':
+      return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
+    case 'shoes':
+      return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+    case 'bag':
+      return 'bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
+    case 'apparel':
+      return 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300';
+    case 'grip':
+      return 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300';
+    case 'accessory':
+      return 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
+    case 'ball':
+      return 'bg-lime-50 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300';
+    case 'other':
+      return gray;
+    default:
+      return gray;
+  }
+}
+
+function CommunityLatestCard({
+  kind,
+  title,
+  icon,
+  headerClassName,
+  listHref,
+  writeHref,
+  items,
+  isLoading,
+  error,
+  emptyText,
+}: {
+  kind: BoardKind;
+  title: string;
+  icon: ReactNode;
+  headerClassName: string;
+  listHref: string;
+  writeHref: string;
+  items: CommunityListItem[];
+  isLoading?: boolean;
+  error?: any;
+  emptyText: string;
+}) {
+  return (
+    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
+      <CardHeader className={`${headerClassName} border-b`}>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            {icon}
+            <span>{title}</span>
+          </div>
+          <div className="flex space-x-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link href={writeHref}>
+                <Plus className="h-4 w-4 mr-1" />
+                글쓰기
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href={listHref}>
+                전체보기 <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          {error ? (
+            <ErrorBox message={`${title} 불러오기에 실패했습니다.`} />
+          ) : isLoading ? (
+            <FiveLineSkeleton />
+          ) : items.length === 0 ? (
+            <div className="py-8 text-center text-sm text-gray-500">{emptyText}</div>
+          ) : (
+            items.map((post) => (
+              <div key={post.id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        {!!post.category && (
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getBoardCategoryBadgeColor(kind, post.category)} shrink-0`} title={post.category ?? undefined}>
+                            {getBoardCategoryLabel(kind, post.category)}
+                          </Badge>
+                        )}
+
+                        <Link href={`${listHref}/${post.id}`} className="font-semibold text-gray-900 dark:text-white hover:opacity-80 transition-colors flex-1 min-w-0 truncate">
+                          {post.title}
+                        </Link>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                      <span>{post.nickname ?? '익명'}</span>
+                      <span>{fmt(post.createdAt)}</span>
+                      <span className="flex items-center">
+                        <Eye className="h-3 w-3 mr-1" />
+                        {post.views ?? 0}
+                      </span>
+                      <span className="flex items-center">
+                        <MessageSquare className="h-3 w-3 mr-1" />
+                        {post.commentsCount ?? 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 // 공용 스켈레톤
 function FiveLineSkeleton() {
@@ -338,62 +567,70 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
 
 function CommunityIntroCard() {
   return (
-    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm h-full">
+    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
       <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-100 dark:from-indigo-950/50 dark:to-purple-900/50 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <MessageSquare className="h-5 w-5 text-purple-600" />
             <span>커뮤니티 게시판</span>
           </div>
-          <Badge variant="secondary" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
-            준비중
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
+              최신글 모아보기
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
+
       <CardContent className="p-6 space-y-4 text-sm text-gray-600 dark:text-gray-300">
-        {/* 커뮤니티 기능 소개 */}
-        <p>앞으로 이곳에서 자유 게시판, 브랜드별 게시판, 인기글 모아보기 등 다양한 커뮤니티 기능을 제공할 예정입니다.</p>
-        <ul className="list-disc pl-4 space-y-1 text-xs sm:text-sm">
-          <li>자유 게시판 – 질문, 정보 공유, 일상 이야기</li>
-          <li>브랜드별 게시판 – 라켓/스트링 브랜드별 사용 후기</li>
-          <li>인기글 모아보기 – 조회수/댓글 기준 하이라이트</li>
-        </ul>
+        <p>자유게시판, 중고거래, 장비 사용기, 리뷰까지 한 곳에서 빠르게 둘러볼 수 있어요.</p>
 
-        {/* 준비중 커뮤니티 게시판 바로가기 버튼들 */}
-        <div className="pt-1 space-y-2">
-          <p className="text-xs text-gray-500 dark:text-gray-400">아래 게시판들은 현재 준비 중인 커뮤니티 공간으로, 미리 URL 구조를 확인하실 수 있습니다.</p>
-          <div className="grid gap-2 sm:grid-cols-3">
-            {/* 자유 게시판 */}
-            <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
-              <Link href="/board/free">
-                <span>자유 게시판</span>
-                <ArrowRight className="h-3 w-3 ml-1" />
-              </Link>
-            </Button>
+        <div className="grid gap-2 sm:grid-cols-4">
+          <Button asChild variant="outline" size="sm" className="w-full justify-between">
+            <Link href="/reviews">
+              <span>리뷰</span>
+              <ArrowRight className="h-3 w-3 ml-1" />
+            </Link>
+          </Button>
 
-            {/* 브랜드별 게시판 */}
-            <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
-              <Link href="/board/brands">
-                <span>브랜드별 게시판</span>
-                <ArrowRight className="h-3 w-3 ml-1" />
-              </Link>
-            </Button>
+          <Button asChild variant="outline" size="sm" className="w-full justify-between">
+            <Link href="/board/free">
+              <span>자유</span>
+              <ArrowRight className="h-3 w-3 ml-1" />
+            </Link>
+          </Button>
 
-            {/* 인기글 모아보기 */}
+          <Button asChild variant="outline" size="sm" className="w-full justify-between">
+            <Link href="/board/market">
+              <span>중고</span>
+              <ArrowRight className="h-3 w-3 ml-1" />
+            </Link>
+          </Button>
+
+          <Button asChild variant="outline" size="sm" className="w-full justify-between">
+            <Link href="/board/gear">
+              <span>사용기</span>
+              <ArrowRight className="h-3 w-3 ml-1" />
+            </Link>
+          </Button>
+        </div>
+
+        <div className="pt-1">
+          <div className="grid gap-2 sm:grid-cols-2">
             <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
               <Link href="/board/hot">
                 <span>인기글 모아보기</span>
                 <ArrowRight className="h-3 w-3 ml-1" />
               </Link>
             </Button>
-          </div>
-        </div>
 
-        {/* 현재는 리뷰 게시판으로 유도 */}
-        <div className="pt-2">
-          <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
-            <Link href="/reviews">리뷰 게시판 둘러보기</Link>
-          </Button>
+            <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
+              <Link href="/board/brands">
+                <span>브랜드별 게시판</span>
+                <ArrowRight className="h-3 w-3 ml-1" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -405,6 +642,14 @@ export default function BoardPage() {
   const { data: rData, error: rError, isLoading: rLoading } = useSWR('/api/reviews?type=all&withHidden=mask&sort=latest&limit=5', fetcher);
 
   const reviews = Array.isArray(rData?.items) ? (rData.items as ReviewItem[]) : [];
+  // 자유/중고/사용기 최신글 5개
+  const { data: fData, error: fError, isLoading: fLoading } = useSWR('/api/community/posts?type=free&sort=latest&limit=5&page=1', fetcher);
+  const { data: mData, error: mError, isLoading: mLoading } = useSWR('/api/community/posts?type=market&sort=latest&limit=5&page=1', fetcher);
+  const { data: gData, error: gError, isLoading: gLoading } = useSWR('/api/community/posts?type=gear&sort=latest&limit=5&page=1', fetcher);
+
+  const freePosts = Array.isArray(fData?.items) ? (fData.items as CommunityListItem[]) : [];
+  const marketPosts = Array.isArray(mData?.items) ? (mData.items as CommunityListItem[]) : [];
+  const gearPosts = Array.isArray(gData?.items) ? (gData.items as CommunityListItem[]) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -417,13 +662,55 @@ export default function BoardPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">게시판</h1>
           </div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">회원들의 생생한 후기와 앞으로 추가될 커뮤니티 게시판을 한 곳에서 만나보세요.</p>
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">리뷰와 커뮤니티 게시판의 최신글을 한 곳에서 확인해 보세요.</p>
         </div>
 
         {/* 메인 게시판 카드들 */}
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+        {/* 커뮤니티 허브 카드 (맨 위) */}
+        <CommunityIntroCard />
+
+        {/* 최신글 섹션 4개: 리뷰 → 자게 → 중고 → 사용기 */}
+        <div className="space-y-6">
           <ReviewCard items={reviews} isLoading={rLoading} error={rError} />
-          <CommunityIntroCard />
+
+          <CommunityLatestCard
+            kind="free"
+            title="자유게시판"
+            icon={<MessageSquare className="h-5 w-5 text-indigo-600" />}
+            headerClassName="bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/50"
+            listHref="/board/free"
+            writeHref="/board/free/write"
+            items={freePosts}
+            isLoading={fLoading}
+            error={fError}
+            emptyText="등록된 자유게시판 글이 없습니다."
+          />
+
+          <CommunityLatestCard
+            kind="market"
+            title="중고거래"
+            icon={<ShoppingBag className="h-5 w-5 text-emerald-600" />}
+            headerClassName="bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-950/50 dark:to-emerald-900/50"
+            listHref="/board/market"
+            writeHref="/board/market/write"
+            items={marketPosts}
+            isLoading={mLoading}
+            error={mError}
+            emptyText="등록된 중고거래 글이 없습니다."
+          />
+
+          <CommunityLatestCard
+            kind="gear"
+            title="장비 사용기"
+            icon={<Dumbbell className="h-5 w-5 text-amber-600" />}
+            headerClassName="bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/50"
+            listHref="/board/gear"
+            writeHref="/board/gear/write"
+            items={gearPosts}
+            isLoading={gLoading}
+            error={gError}
+            emptyText="등록된 장비 사용기 글이 없습니다."
+          />
         </div>
 
         {/* 추가 링크 섹션 */}
