@@ -83,15 +83,6 @@ export default function StringServiceApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
-  const isOrderBased = Boolean(orderId && orderId.trim());
-
-  // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
-  const pdpProductId = isOrderBased ? null : searchParams.get('productId');
-  // null 또는 빈문자열("")이면 NaN 처리, 그 외에는 Number 변환
-  const mountingFeeParam = isOrderBased ? null : searchParams.get('mountingFee');
-  const pdpMountingFee = mountingFeeParam === null || mountingFeeParam.trim() === '' ? Number.NaN : Number(mountingFeeParam);
-
-  const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(!isOrderBased && pdpProductId));
 
   // PDP에서 넘어온 상품의 미니 정보(이름, 이미지)
   const [pdpProduct, setPdpProduct] = useState<PdpMiniProduct | null>(null);
@@ -102,6 +93,16 @@ export default function StringServiceApplyPage() {
   const [isMember, setIsMember] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isUserLoading, setIsUserLoading] = useState(false);
+
+  const isOrderBased = Boolean(orderId && order);
+
+  // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
+  const pdpProductId = isOrderBased ? null : searchParams.get('productId');
+  // null 또는 빈문자열("")이면 NaN 처리, 그 외에는 Number 변환
+  const mountingFeeParam = isOrderBased ? null : searchParams.get('mountingFee');
+  const pdpMountingFee = mountingFeeParam === null || mountingFeeParam.trim() === '' ? Number.NaN : Number(mountingFeeParam);
+
+  const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(!isOrderBased && pdpProductId));
 
   // ===== 유틸 =====
   const normalizePhone = (s: string) => (s || '').replace(/[^0-9]/g, '');
@@ -733,7 +734,7 @@ export default function StringServiceApplyPage() {
           const orderQty = found?.quantity ?? 1;
           const useQty = formData.stringUseCounts[prodId] ?? orderQty;
 
-          // ✅ 주문 안에서 라켓/중고라켓 하나만 있다면 그 이름을 기본값으로 사용
+          // 주문 안에서 라켓/중고라켓 하나만 있다면 그 이름을 기본값으로 사용
           let racketNameFromOrder: string | undefined;
           const items = (order as any)?.items;
           if (Array.isArray(items)) {
@@ -812,6 +813,22 @@ export default function StringServiceApplyPage() {
     return 0;
   }, [orderId, order]);
 
+  // 주문 내 스트링 금액: items 중 mountingFee > 0 인 품목 합산(= StringCheckboxes 기준과 동일)
+  const orderStringPrice = useMemo(() => {
+    if (!orderId || !order) return 0;
+
+    const items = (order as any)?.items;
+    if (!Array.isArray(items)) return 0;
+
+    return items
+      .filter((it: any) => typeof it?.mountingFee === 'number' && it.mountingFee > 0)
+      .reduce((sum: number, it: any) => {
+        const unit = Number(it?.price ?? 0);
+        const qty = Number(it?.quantity ?? 1);
+        return sum + unit * qty;
+      }, 0);
+  }, [orderId, order]);
+
   // 이미 결제된 주문 금액(정보용) - 라켓 PDP에서 넘어온 주문 기준
   const paidTotal = useMemo(() => {
     if (!orderId || !order) return undefined;
@@ -826,23 +843,27 @@ export default function StringServiceApplyPage() {
   // PDP 통합 모드인지 여부: orderId가 있고, PDP에서 넘어온 경우
   const isCombinedPdpMode = Boolean(orderId && fromPDP);
 
+  // racketPrice: 주문 기반일 때만 의미가 있으니 그대로 사용(이미 0/양수로 잘 계산됨)
+  const summaryRacketPrice = isOrderBased ? racketPrice : 0;
+
+  // 라벨도 케이스별로
+  const totalLabel = isOrderBased ? '이번 주문 총 결제 금액' : fromPDP ? '이번 신청 예상 결제 금액' : '이번 교체 서비스 예상 비용';
+
   /** PDP에서 넘어온 스트링 상품 금액 (없으면 0원) */
   const pdpStringPrice = isCombinedPdpMode && pdpProduct && typeof pdpProduct.price === 'number' ? pdpProduct.price : 0;
-
+  // stringPrice: 주문 기반이면 주문에서, 아니면 PDP에서(기존 유지)
+  const summaryStringPrice = isOrderBased ? orderStringPrice : pdpStringPrice;
   // 교체비(서비스비) 부분
   const summaryBase = price; // linesForSubmit 기반 교체비 총합
 
   // 패키지면 0, 아니면 교체비 그대로
   const serviceCost = priceView.usingPackage ? 0 : summaryBase;
 
-  // 👉 최종 합계
-  // - PDP 통합 모드: 라켓 금액 + 스트링 금액 + 서비스비
-  // - 그 외: 서비스비만
+  // 기존 그대로: 패키지면 교체비 0
   const baseTotal = serviceCost;
-  const checkoutTotal = isCombinedPdpMode ? (racketPrice || 0) + pdpStringPrice + baseTotal : baseTotal;
 
-  // 👉 합계 라벨
-  const totalLabel = isCombinedPdpMode ? '이번 신청 예상 결제 금액' : '이번 교체 서비스 예상 비용';
+  // 합계: 주문 기반(or PDP 기반)일 때만 라켓/스트링을 합산
+  const checkoutTotal = isOrderBased || fromPDP ? baseTotal + summaryRacketPrice + summaryStringPrice : baseTotal;
 
   const summaryTotal = serviceCost;
 
@@ -1779,20 +1800,35 @@ export default function StringServiceApplyPage() {
 
                     {/* 주문 기반 진입 + 스트링 1개만 선택 시 상세 안내 */}
                     {orderId && selectedOrderItem && lineCount === 1 && (
-                      <div className="mt-3 space-y-1 text-xs text-blue-700/90 dark:text-blue-100/90">
-                        <p>
-                          선택한 스트링 상품 가격(이미 결제): <span className="font-semibold text-foreground">{selectedOrderItem.price.toLocaleString('ko-KR')}원</span>
-                        </p>
-                        <p>
-                          이번 신청으로 추가 납부할 교체비: <span className="font-semibold text-foreground">{priceView.base.toLocaleString('ko-KR')}원</span>
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          스트링 상품 가격(이미 결제) {won(selectedOrderItem.price)} + 교체비 {won(priceView.base)} = 총 {won(selectedOrderItem.price + priceView.base)} (참고용입니다. 이번 신청에서 실제로 입금할 금액은{' '}
-                          <span className="font-semibold">교체비만</span>입니다.)
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
-                        </p>
+                      <div className="mt-1 text-[11px] text-muted-foreground space-y-1">
+                        {(() => {
+                          // 스트링 금액: PDP 통합모드면 pdpStringPrice 우선, 아니면 주문 item 가격 사용
+                          const stringPrice = isCombinedPdpMode ? (Number.isFinite(pdpStringPrice) && pdpStringPrice > 0 ? pdpStringPrice : Number(selectedOrderItem.price ?? 0)) : Number(selectedOrderItem.price ?? 0);
+
+                          // 합계: 통합모드면 라켓 포함
+                          const total = (isCombinedPdpMode ? Number(racketPrice ?? 0) : 0) + stringPrice + Number(priceView.base ?? 0);
+
+                          return isCombinedPdpMode ? (
+                            <>
+                              <p>
+                                라켓 {won(Number(racketPrice ?? 0))} + 스트링 {won(stringPrice)} + 교체비 {won(Number(priceView.base ?? 0))} = 총 {won(total)} <span className="text-muted-foreground">(주문 기준 총액)</span>
+                              </p>
+                              <p>
+                                결제 성공 페이지를 건너뛴 경우, <span className="font-semibold">위 합계가 이번 주문의 총 입금 금액</span>입니다.
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p>
+                                스트링 상품 가격(이미 결제) {won(Number(selectedOrderItem.price ?? 0))} + 교체비 {won(Number(priceView.base ?? 0))} = 총 {won(Number(selectedOrderItem.price ?? 0) + Number(priceView.base ?? 0))}{' '}
+                                <span className="text-muted-foreground">(참고용)</span>
+                              </p>
+                              <p>
+                                스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
+                              </p>
+                            </>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
@@ -2294,7 +2330,7 @@ export default function StringServiceApplyPage() {
                         pickupFee={priceView.pickupFee}
                         total={checkoutTotal}
                         racketPrice={racketPrice}
-                        stringPrice={pdpStringPrice}
+                        stringPrice={summaryStringPrice}
                         totalLabel={totalLabel}
                       />
                     </div>
@@ -2339,24 +2375,6 @@ export default function StringServiceApplyPage() {
                   </form>
                 </CardContent>
               </Card>
-
-              {/* <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/20">
-                  <Shield className="h-8 w-8 text-blue-500 mx-auto mb-3" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">정품 보장</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">100% 정품 스트링만 사용합니다</p>
-                </div>
-                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/20">
-                  <Clock className="h-8 w-8 text-green-500 mx-auto mb-3" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">당일 완료</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">빠르고 정확한 장착 서비스</p>
-                </div>
-                <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl border border-white/20 dark:border-slate-700/20">
-                  <Award className="h-8 w-8 text-purple-500 mx-auto mb-3" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">전문가 상담</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">전문가가 직접</p>
-                </div>
-              </div> */}
             </div>
 
             <div
@@ -2381,7 +2399,7 @@ export default function StringServiceApplyPage() {
                   pickupFee={priceView.pickupFee}
                   total={checkoutTotal}
                   racketPrice={racketPrice}
-                  stringPrice={pdpStringPrice}
+                  stringPrice={summaryStringPrice}
                   totalLabel={totalLabel}
                 />
               </div>

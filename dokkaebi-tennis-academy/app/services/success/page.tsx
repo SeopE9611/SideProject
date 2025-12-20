@@ -115,6 +115,22 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   if (!application) return notFound();
 
+  // (통합결제) 주문 금액(라켓+스트링)까지 함께 보여주기 위한 주문 조회
+  const orderObjectId = application.orderId && ObjectId.isValid(String(application.orderId)) ? new ObjectId(String(application.orderId)) : null;
+
+  const order = orderObjectId ? await db.collection('orders').findOne({ _id: orderObjectId }) : null;
+
+  // 합계 계산 유틸
+  const sumBy = (items: any[], pred: (it: any) => boolean) => (items ?? []).filter(pred).reduce((acc, it) => acc + Number(it.price ?? 0) * Number(it.quantity ?? 1), 0);
+
+  const racketSubtotal = order?.items ? sumBy(order.items, (it) => ['racket', 'used_racket'].includes(it.kind)) : 0;
+  const stringSubtotal = order?.items ? sumBy(order.items, (it) => !['racket', 'used_racket'].includes(it.kind)) : 0;
+
+  // 교체비(신청서 기준) — 패키지면 0
+  const serviceSubtotal = application.packageApplied ? 0 : Number(application.totalPrice ?? 0);
+
+  const combinedTotal = order ? racketSubtotal + stringSubtotal + serviceSubtotal : serviceSubtotal;
+
   // 로그인 여부 확인
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refreshToken')?.value;
@@ -225,9 +241,20 @@ export default async function StringServiceSuccessPage(props: Props) {
                   <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
                     <div className="flex items-center mb-3">
                       <CreditCard className="h-6 w-6 text-indigo-600 mr-3" />
-                      <h3 className="font-semibold text-gray-900 dark:text-white">장착 금액</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">결제 요약</h3>
                     </div>
-                    <p className="text-2xl font-bold text-indigo-600">{application.totalPrice.toLocaleString()}원</p>
+
+                    <p className="text-2xl font-bold text-indigo-600">{Number(order ? combinedTotal : serviceSubtotal).toLocaleString()}원</p>
+
+                    {/* order가 있으면 상세 breakdown 유지 */}
+                    {order ? (
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        라켓 {racketSubtotal.toLocaleString()}원 + 스트링 {stringSubtotal.toLocaleString()}원 + 교체비 {serviceSubtotal.toLocaleString()}원
+                      </p>
+                    ) : (
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">교체 서비스 비용 기준</p>
+                    )}
+                    {application.packageApplied && <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-300">패키지 적용으로 입금 불필요</p>}
                   </div>
 
                   <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
@@ -260,7 +287,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                           </div>
 
                           <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                            장착 금액은 <span className="font-semibold text-emerald-700 dark:text-emerald-300">0원</span> 으로 처리 됩니다.
+                            교체비는 <span className="font-semibold text-emerald-700 dark:text-emerald-300">0원</span> 으로 처리 됩니다.
                           </p>
 
                           {/* 잔여/만료 pill */}
@@ -308,10 +335,11 @@ export default async function StringServiceSuccessPage(props: Props) {
                     <div className="mb-8">
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
                         <CreditCard className="h-6 w-6 mr-3 text-blue-600" />
-                        입금 계좌 정보
+                        입금 정보
                       </h3>
+
                       <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-blue-200 dark:border-slate-500">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">은행</p>
                             <p className="font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.label}</p>
@@ -323,6 +351,10 @@ export default async function StringServiceSuccessPage(props: Props) {
                           <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">예금주</p>
                             <p className="font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.holder}</p>
+                          </div>
+                          <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">입금 금액</p>
+                            <p className="font-bold text-lg text-green-600">{Number(order ? combinedTotal : serviceSubtotal).toLocaleString()}원</p>
                           </div>
                         </div>
                         <div className="mt-4 p-4 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-lg border border-orange-200 dark:border-orange-700">
