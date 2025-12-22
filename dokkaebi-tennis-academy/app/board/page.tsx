@@ -712,21 +712,6 @@ export default function BoardPage() {
             emptyText="등록된 장비 사용기 글이 없습니다."
           />
         </div>
-
-        {/* 추가 링크 섹션 */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-8">
-          <div className="text-center space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">더 많은 후기와 이야기를 보고 싶으신가요?</h2>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild size="lg" className="bg-gradient-to-r from-purple-600 to-teal-600 hover:from-purple-700 hover:to-teal-700 text-white shadow-lg">
-                <Link href="/reviews">리뷰 게시판 전체 보기</Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="bg-white/80 dark:bg-gray-700/80 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                <Link href="/support">고객센터로 이동</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

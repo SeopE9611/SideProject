@@ -1,10 +1,14 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
+
 import HeroSlider from '@/components/HeroSlider';
 import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from '@/lib/constants';
-import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { Package, BadgeCheck, Wrench, BookOpen, Tags, MessageSquareText } from 'lucide-react';
+import Link from 'next/link';
+import HomeMarketPreview from '@/components/HomeMarketPreview';
+import HomeNoticePreview from '@/components/HomeNoticePreview';
 
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
 type ApiProduct = {
@@ -200,135 +204,248 @@ export default function Home() {
     }));
   }, [rackByBrand, activeBrand]);
 
-  // 섹션 렌더 — moreHref를 /rackets로
-  // <HorizontalProducts title="중고 라켓" subtitle="최근 등록 순으로 미리보기" items={usedRacketsItems} moreHref="/rackets" firstPageSlots={4} moveMoreToSecondWhen5Plus={true} loading={loading} />;
+  const [notices, setNotices] = useState<Array<{ id: string; title: string; createdAt: string }>>([]);
+  const [hotPosts, setHotPosts] = useState<Array<{ id: string; title: string; type: string; likesCount?: number }>>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/boards?type=notice&limit=3', { credentials: 'include' });
+        const json = await res.json();
+        if (json.ok && Array.isArray(json.items)) {
+          setNotices(json.items.slice(0, 3));
+        }
+      } catch {
+        setNotices([]);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/community/posts?sort=popular&limit=4', { credentials: 'include' });
+        const json = await res.json();
+        if (json.ok && Array.isArray(json.items)) {
+          setHotPosts(json.items.slice(0, 4));
+        }
+      } catch {
+        setHotPosts([]);
+      }
+    })();
+  }, []);
 
   return (
     <div>
       {/* 상단 배너 */}
       <HeroSlider slides={SLIDES} />
 
-      {/* <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm text-[30px]">
-        <Button className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600 text-[30px]" onClick={() => router.push(`/rackets`)}>
-          (테스트중입니다.) 라켓 구매 + 스트링 + 교체서비스 동시작업하기
-        </Button>
-      </div> */}
+      {/* 빠른 메뉴 */}
+      <section className="mx-auto w-full max-w-7xl px-4 py-12">
+        <div className="mb-8 text-center">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">빠른 메뉴</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">원하는 서비스를 바로 이용하세요</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Link href="/services/apply" className="group flex flex-col items-center gap-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 p-6 transition-all hover:scale-105 hover:shadow-lg dark:from-slate-900 dark:to-slate-800">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-900 dark:text-blue-300 dark:group-hover:bg-blue-600">
+              <Wrench className="h-6 w-6" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold text-slate-900 dark:text-white">교체 서비스 신청</h3>
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">라켓/스트링 선택 후 한 번에</p>
+            </div>
+          </Link>
+
+          <Link href="/services/tension-guide" className="group flex flex-col items-center gap-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 p-6 transition-all hover:scale-105 hover:shadow-lg dark:from-slate-900 dark:to-slate-800">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white dark:bg-emerald-900 dark:text-emerald-300 dark:group-hover:bg-emerald-600">
+              <BookOpen className="h-6 w-6" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold text-slate-900 dark:text-white">장착/텐션 가이드</h3>
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">초보도 쉽게 고르기</p>
+            </div>
+          </Link>
+
+          <Link href="/board/market" className="group flex flex-col items-center gap-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 p-6 transition-all hover:scale-105 hover:shadow-lg dark:from-slate-900 dark:to-slate-800">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white dark:bg-amber-900 dark:text-amber-300 dark:group-hover:bg-amber-600">
+              <Tags className="h-6 w-6" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold text-slate-900 dark:text-white">중고 거래</h3>
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">라켓/스트링/장비 거래</p>
+            </div>
+          </Link>
+
+          <Link href="/board" className="group flex flex-col items-center gap-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 p-6 transition-all hover:scale-105 hover:shadow-lg dark:from-slate-900 dark:to-slate-800">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-100 text-violet-600 transition-colors group-hover:bg-violet-600 group-hover:text-white dark:bg-violet-900 dark:text-violet-300 dark:group-hover:bg-violet-600">
+              <MessageSquareText className="h-6 w-6" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold text-slate-900 dark:text-white">커뮤니티</h3>
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">리뷰·자유·사용기</p>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-8">
+        <div className="grid gap-8 lg:grid-cols-2">
+          <HomeNoticePreview />
+          <HomeMarketPreview />
+        </div>
+      </section>
+
+      {/* 서비스 플로우 */}
+      <section className="mx-auto w-full max-w-7xl px-4 py-12">
+        <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 p-8 dark:from-slate-900 dark:to-slate-800">
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">스트링 교체 프로세스</h2>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">처음 방문해도 쉽게 이해할 수 있어요</p>
+          </div>
+          <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <div className="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 1</div>
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white">신청서 작성</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">라켓/스트링/옵션 선택</p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300">
+                <Package className="h-6 w-6" />
+              </div>
+              <div className="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 2</div>
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white">방문·택배</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">방문 예약 또는 택배 발송</p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300">
+                <Wrench className="h-6 w-6" />
+              </div>
+              <div className="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 3</div>
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white">작업 진행</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">장착/텐션 세팅 후 검수</p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-violet-100 text-violet-600 dark:bg-violet-900 dark:text-violet-300">
+                <BadgeCheck className="h-6 w-6" />
+              </div>
+              <div className="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 4</div>
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white">수령</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">방문 수령 또는 배송</p>
+            </div>
+          </div>
+          <div className="text-center">
+            <Link href="/services/apply" className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+              <Wrench className="h-4 w-4" />
+              지금 신청하기
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* 프리미엄 스트링 섹션 */}
-      <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm">
-        <section className="py-12 md:py-16 lg:py-20 relative overflow-hidden">
-          {/* 배경 그라데이션 */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 opacity-60" />
+      <section className="mx-auto w-full max-w-7xl px-4 py-16">
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">스트링</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">프로가 선택하는 테니스 스트링</p>
+        </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6">
-            {/* 타이틀 */}
-            <div className="text-center mb-8 md:mb-12">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-2">스트링</h2>
-              <p className="text-sm md:text-base text-slate-600 dark:text-slate-400">프로가 선택하는 테니스 스트링</p>
+        <div className="mb-8">
+          <div className="flex justify-center">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <button
+                onClick={() => setActiveStringBrand('all')}
+                className={`
+                  shrink-0 px-6 py-2.5 rounded-full text-sm font-semibold 
+                  transition-all duration-300 whitespace-nowrap
+                  ${activeStringBrand === 'all' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
+                `}
+              >
+                전체
+              </button>
+              {STRING_BRANDS.map((b) => (
+                <button
+                  key={b.value}
+                  onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
+                  className={`
+                    shrink-0 px-6 py-2.5 rounded-full text-sm font-semibold 
+                    transition-all duration-300 whitespace-nowrap
+                    ${activeStringBrand === b.value ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
+                  `}
+                >
+                  {b.label}
+                </button>
+              ))}
             </div>
-
-            <div className="mb-8 md:mb-10">
-              <div className="flex justify-center">
-                <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide px-4 max-w-full">
-                  <button
-                    onClick={() => setActiveStringBrand('all')}
-                    className={`
-                      shrink-0 px-5 md:px-7 py-2.5 md:py-3 rounded-full text-sm md:text-base font-semibold 
-                      transition-all duration-300 whitespace-nowrap
-                      ${
-                        activeStringBrand === 'all'
-                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-105'
-                          : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:scale-105 hover:shadow-sm'
-                      }
-                    `}
-                  >
-                    전체
-                  </button>
-                  {STRING_BRANDS.map((b) => (
-                    <button
-                      key={b.value}
-                      onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
-                      className={`
-                        shrink-0 px-5 md:px-7 py-2.5 md:py-3 rounded-full text-sm md:text-base font-semibold 
-                        transition-all duration-300 whitespace-nowrap
-                        ${
-                          activeStringBrand === b.value
-                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-105'
-                            : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:scale-105 hover:shadow-sm'
-                        }
-                      `}
-                    >
-                      {b.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <HorizontalProducts
-              title="스트링"
-              subtitle={activeStringBrand === 'all' ? '브랜드로 골라보기' : `${stringBrandLabel(activeStringBrand)} 추천`}
-              items={premiumItems}
-              moreHref={activeStringBrand === 'all' ? '/products' : `/products?brand=${activeStringBrand}`}
-              firstPageSlots={4}
-              moveMoreToSecondWhen5Plus={true}
-              loading={loading}
-              showHeader={false}
-            />
           </div>
-        </section>
-      </div>
+        </div>
+
+        <HorizontalProducts
+          title="스트링"
+          subtitle={activeStringBrand === 'all' ? '브랜드로 골라보기' : `${stringBrandLabel(activeStringBrand)} 추천`}
+          items={premiumItems}
+          moreHref={activeStringBrand === 'all' ? '/products' : `/products?brand=${activeStringBrand}`}
+          firstPageSlots={4}
+          moveMoreToSecondWhen5Plus={true}
+          loading={loading}
+          showHeader={false}
+        />
+      </section>
 
       {/* 중고 라켓 섹션 */}
-      <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm">
-        <section className="py-12 md:py-16 lg:py-20 relative overflow-hidden">
-          {/* 배경 그라데이션 */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 opacity-60" />
+      <section className="mx-auto w-full max-w-7xl px-4 py-16">
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">중고 라켓</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p>
+        </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6">
-            {/* 타이틀 */}
-            <div className="text-center mb-8 md:mb-12">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-2">중고 라켓</h2>
-              <p className="text-sm md:text-base text-slate-600 dark:text-slate-400">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p>
+        <div className="mb-8">
+          <div className="flex justify-center">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <button
+                onClick={() => setActiveBrand('all')}
+                className={`
+                  shrink-0 px-6 py-2.5 rounded-full text-sm font-semibold 
+                  transition-all duration-300 whitespace-nowrap
+                  ${activeBrand === 'all' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
+                `}
+              >
+                전체
+              </button>
+              {RACKET_BRANDS.map((b) => (
+                <button
+                  key={b.value}
+                  onClick={() => setActiveBrand(b.value as BrandKey)}
+                  className={`
+                    shrink-0 px-6 py-2.5 rounded-full text-sm font-semibold 
+                    transition-all duration-300 whitespace-nowrap
+                    ${activeBrand === b.value ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
+                  `}
+                >
+                  {b.label}
+                </button>
+              ))}
             </div>
-
-            <div className="mb-8 md:mb-10">
-              <div className="flex justify-center">
-                <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide px-4 max-w-full">
-                  {BRAND_KEYS.map((b) => (
-                    <button
-                      key={b}
-                      onClick={() => setActiveBrand(b as BrandKey)}
-                      className={`
-                        shrink-0 px-5 md:px-7 py-2.5 md:py-3 rounded-full text-sm md:text-base font-semibold 
-                        transition-all duration-300 whitespace-nowrap
-                        ${
-                          activeBrand === b
-                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-105'
-                            : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:scale-105 hover:shadow-sm'
-                        }
-                      `}
-                    >
-                      {b === 'all' ? '전체' : racketBrandLabel(b)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <HorizontalProducts
-              title="중고 라켓"
-              subtitle={activeBrand === 'all' ? '최근 등록 순 미리보기' : `${racketBrandLabel(activeBrand)} 라켓`}
-              items={usedRacketsItems}
-              moreHref={activeBrand === 'all' ? '/rackets' : `/rackets?brand=${activeBrand}`}
-              firstPageSlots={4}
-              moveMoreToSecondWhen5Plus={true}
-              loading={!rackByBrand[activeBrand]}
-              showHeader={false}
-            />
           </div>
-        </section>
-      </div>
+        </div>
+
+        <HorizontalProducts
+          title="중고 라켓"
+          subtitle={activeBrand === 'all' ? '도깨비 테니스 중고' : `${racketBrandLabel(activeBrand)} 중고`}
+          items={usedRacketsItems}
+          moreHref={activeBrand === 'all' ? '/rackets' : `/rackets?brand=${activeBrand}`}
+          firstPageSlots={4}
+          moveMoreToSecondWhen5Plus={true}
+          loading={false}
+          showHeader={false}
+        />
+      </section>
     </div>
   );
 }
