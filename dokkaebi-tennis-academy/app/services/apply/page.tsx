@@ -934,10 +934,6 @@ export default function StringServiceApplyPage() {
 
   // 라켓/스트링 선택 체크박스 변화 콜백
   const handleStringTypesChange = (ids: string[]) => {
-    // PDP에서 넘어온 경우: 상품 상세에서 이미 스트링을 확정하고 넘어온 상황이므로 잠금
-    // 단, 주문 기반(orderId) 진입이면 주문 품목에서 고르는 UX가 필요하므로 잠금 해제
-    if (fromPDP && !orderId) return;
-
     setFormData((prev) => {
       // 기존 카운트 복사
       const nextUseCounts: Record<string, number> = { ...prev.stringUseCounts };
@@ -1691,7 +1687,7 @@ export default function StringServiceApplyPage() {
                   </p>
                 )}
 
-                <div className={fromPDP && !orderId ? 'pointer-events-none opacity-60' : ''}>
+                <div className={''}>
                   <StringCheckboxes
                     items={
                       orderId && order
@@ -2325,6 +2321,7 @@ export default function StringServiceApplyPage() {
                         preferredTime={formData.preferredTime ?? undefined}
                         collectionMethod={formData.collectionMethod as CollectionMethod}
                         stringTypes={formData.stringTypes}
+                        stringIncluded={isOrderBased}
                         usingPackage={priceView.usingPackage}
                         base={summaryBase}
                         pickupFee={priceView.pickupFee}
@@ -2394,6 +2391,7 @@ export default function StringServiceApplyPage() {
                   preferredTime={formData.preferredTime}
                   collectionMethod={formData.collectionMethod as any}
                   stringTypes={formData.stringTypes}
+                  stringIncluded={isOrderBased}
                   usingPackage={priceView.usingPackage}
                   base={summaryBase}
                   pickupFee={priceView.pickupFee}

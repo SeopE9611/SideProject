@@ -1,33 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  Star,
-  ShoppingCart,
-  Heart,
-  ArrowLeft,
-  Truck,
-  Shield,
-  Clock,
-  ChevronLeft,
-  ChevronRight,
-  Zap,
-  RotateCcw,
-  Plus,
-  Minus,
-  Check,
-  X,
-  Loader2,
-  Target,
-  Activity,
-  FileText,
-  Settings,
-  Pencil,
-  MessageSquare,
-  Lock,
-  Calendar,
-  CreditCard,
-} from 'lucide-react';
+import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Activity, FileText, Settings, Pencil, MessageSquare, Lock, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -485,51 +459,38 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   // 즉시 구매 + 교체 서비스 포함 핸들러
-const handleBuyNowWithService = () => {
-  if (loading) return;
+  const handleBuyNowWithService = () => {
+    if (loading) return;
 
-  // 재고 검증
-  if (quantity > stock) {
-    showErrorToast(`재고가 부족합니다. 현재 재고: ${stock}개`);
-    return;
-  }
+    // 재고 검증
+    if (quantity > stock) {
+      showErrorToast(`재고가 부족합니다. 현재 재고: ${stock}개`);
+      return;
+    }
 
-  // Buy-Now 전용 상태에 현재 상품 1건만 저장
-  const buyNowItem: CartItem = {
-    id: product._id.toString(),
-    name: product.name,
-    price: product.price, // 여기서는 "자재 가격"만
-    quantity,
-    image: product.images?.[0] || '/placeholder.svg',
-    stock,
-  };
+    // Buy-Now 전용 상태에 현재 상품 1건만 저장
+    const buyNowItem: CartItem = {
+      id: product._id.toString(),
+      name: product.name,
+      price: product.price, // 여기서는 "자재 가격"만
+      quantity,
+      image: product.images?.[0] || '/placeholder.svg',
+      stock,
+    };
 
-  setBuyNowItem(buyNowItem);
+    setBuyNowItem(buyNowItem);
 
-  // 장착비(서비스비) – 없으면 0
-  const mountingFee =
-    typeof product.mountingFee === 'number' ? product.mountingFee : 0;
-
-  const search = new URLSearchParams({
-    mode: 'buynow',
-    withService: '1',              // 서비스 ON
-    mountingFee: String(mountingFee), // 1자루 기준 공임
-  });
-
-  // Checkout으로 직접 진입 (장바구니는 건드리지 않음)
-  router.push(`/checkout?${search.toString()}`);
-};
-
-  const goToStringingService = () => {
-    if (!product?._id) return;
+    // 장착비(서비스비) – 없으면 0
     const mountingFee = typeof product.mountingFee === 'number' ? product.mountingFee : 0;
 
-    const params = new URLSearchParams({
-      productId: String(product._id),
-      mountingFee: String(mountingFee),
+    const search = new URLSearchParams({
+      mode: 'buynow',
+      withService: '1', // 서비스 ON
+      mountingFee: String(mountingFee), // 1자루 기준 공임
     });
 
-    router.push(`/services/apply?${params.toString()}`);
+    // Checkout으로 직접 진입 (장바구니는 건드리지 않음)
+    router.push(`/checkout?${search.toString()}`);
   };
 
   const handleWishlist = async () => {
@@ -739,14 +700,10 @@ const handleBuyNowWithService = () => {
                           </Button>
 
                           {/* 교체 서비스까지 포함해서 한 번에 결제 */}
-<Button
-  className="w-full"
-  disabled={loading || quantity > stock}
-  onClick={handleBuyNowWithService}
->
-  <CreditCard className="mr-2 h-4 w-4" />
-  교체 서비스 포함 즉시 결제
-</Button>
+                          <Button className="w-full" disabled={loading || quantity > stock} onClick={handleBuyNowWithService}>
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            교체 서비스 포함 즉시 결제
+                          </Button>
 
                           {/* 기존 장바구니 담기 버튼 */}
                           <Button variant="outline" className="w-full" onClick={handleAddToCart} disabled={loading || quantity > stock}>
@@ -755,15 +712,6 @@ const handleBuyNowWithService = () => {
                           </Button>
                         </>
                       )}
-                      <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300">
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                          이 버튼은 현재 상품 1자루 기준으로 교체 서비스를 신청할 때 사용합니다... 여러 개의 스트링을 한 번에 교체하시려면, 장바구니에서 묶음 주문 후 주문 상세 페이지에서 교체 서비스를 신청해 주세요.
-                        </p>
-                        <Button variant="outline" disabled={busy} onClick={goToStringingService} className={`w-full ...`}>
-                          <Calendar className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
-                          교체 서비스 신청하기
-                        </Button>
-                      </div>
                       <Button variant="outline" disabled={busy} onClick={handleWishlist} className={`w-full ${isWishlisted ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400' : ''}`}>
                         <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                         위시리스트
@@ -1512,11 +1460,11 @@ const handleBuyNowWithService = () => {
               </button>
               <button
                 type="button"
-                onClick={goToStringingService}
+                onClick={handleBuyNowWithService}
                 className="flex-1 h-12 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 text-slate-900 dark:text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2"
               >
-                <Calendar className="h-4 w-4" />
-                교체 서비스
+                <CreditCard className="h-4 w-4" />
+                교체 포함 결제
               </button>
             </div>
           </div>

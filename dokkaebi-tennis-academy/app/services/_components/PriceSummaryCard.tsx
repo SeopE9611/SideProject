@@ -10,6 +10,7 @@ interface PriceSummaryProps {
   preferredTime?: string;
   collectionMethod?: CollectionMethod;
   stringTypes: string[];
+  stringIncluded?: boolean; // 스트링 금액이 결제에 포함되는지(주문 기반/핸드오프 등)
   usingPackage: boolean;
   base: number;
   pickupFee: number;
@@ -21,7 +22,7 @@ interface PriceSummaryProps {
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
-export default function PriceSummaryCard({ preferredDate, preferredTime, collectionMethod, stringTypes, usingPackage, base, pickupFee, total, racketPrice = 0, stringPrice = 0, totalLabel }: PriceSummaryProps) {
+export default function PriceSummaryCard({ preferredDate, preferredTime, collectionMethod, stringTypes, stringIncluded = false, usingPackage, base, pickupFee, total, racketPrice = 0, stringPrice = 0, totalLabel }: PriceSummaryProps) {
   const isCustom = stringTypes.includes('custom');
 
   const MethodIcon = collectionMethod === 'courier_pickup' ? Truck : collectionMethod === 'visit' ? Store : Box;
@@ -73,7 +74,7 @@ export default function PriceSummaryCard({ preferredDate, preferredTime, collect
               <BadgeDollarSign className="h-4 w-4 text-slate-500 dark:text-slate-400" />
               <div className="space-y-0.5">
                 <p className="text-sm font-medium">교체비</p>
-                <p className="text-xs text-muted-foreground">{isCustom ? '보유/커스텀 스트링: 장착비만' : '스트링 상품 선택: 스트링 포함'}</p>
+                <p className="text-xs text-muted-foreground">{isCustom ? '보유/커스텀 스트링: 장착비만' : stringIncluded ? '스트링 상품 선택: 스트링 포함' : '스트링 상품 선택: 별도 구매 필요'}</p>
               </div>
             </div>
 
