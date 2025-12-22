@@ -10,6 +10,8 @@ import { Star, Eye, Heart, ShoppingCart } from 'lucide-react';
 import { useWishlist } from '@/app/features/wishlist/useWishlist';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useRouter } from 'next/navigation';
+import { useBuyNowStore } from '@/app/store/buyNowStore';
+import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
 
 // 제품 타입 (필요시 공통으로 뺄 수도 있음)
 export type Product = {
@@ -37,12 +39,42 @@ type Props = {
   brandLabel: string;
 };
 
-//  React.memo로 감싸서 props가 실제로 바뀌었을 때만 재렌더링 되도록 최적화
 const ProductCard = React.memo(
   function ProductCard({ product, viewMode, brandLabel }: Props) {
     const router = useRouter();
     const { has, toggle } = useWishlist();
     const inWish = has(product._id);
+
+    const setBuyNowItem = useBuyNowStore((s) => s.setItem); // buyNowStore에 맞는 setter 사용
+    const clearPdpBundle = usePdpBundleStore((s) => s.clear);
+
+    const handleStringSingleBuy = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // (중요) 이전 PDP 번들 흔적이 있으면 Checkout이 번들을 우선 사용함 → 단품 구매는 clear가 안전
+      clearPdpBundle();
+
+      const image = product.images?.[0] ?? '';
+
+      setBuyNowItem({
+        id: String(product._id),
+        name: product.name,
+        price: Number(product.price ?? 0),
+        quantity: 1,
+        image,
+        kind: 'product',
+      });
+
+      router.push('/checkout?mode=buynow');
+    };
+
+    const handleStringServiceApply = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      router.push(`/services/apply?productId=${encodeURIComponent(String(product._id))}`);
+    };
 
     if (viewMode === 'list') {
       return (
@@ -107,6 +139,13 @@ const ProductCard = React.memo(
                 </Link>
 
                 <div className="flex gap-2">
+                  <Button type="button" size="sm" variant="outline" onClick={handleStringSingleBuy} className="whitespace-nowrap">
+                    단품 구매
+                  </Button>
+
+                  <Button type="button" size="sm" variant="outline" onClick={handleStringServiceApply} className="whitespace-nowrap">
+                    작업 의뢰
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -131,9 +170,9 @@ const ProductCard = React.memo(
                   >
                     <Heart className={`w-4 h-4 ${inWish ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
-                  <Button variant="outline" size="icon" className="hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:border-blue-500 bg-transparent">
+                  {/* <Button variant="outline" size="icon" className="hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-900/20 dark:hover:border-blue-500 bg-transparent">
                     <ShoppingCart className="w-4 h-4" />
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
             </div>
@@ -167,7 +206,7 @@ const ProductCard = React.memo(
                   }}
                 >
                   <Eye className="w-4 h-4 mr-1" />
-                  보기
+                  상세보기
                 </Button>
 
                 <Button
@@ -224,15 +263,18 @@ const ProductCard = React.memo(
                 <div className="text-muted-foreground">성능 정보 없음</div>
               )}
             </div>
-          </CardContent>
-
-          <CardFooter className="p-4 md:p-5 pt-0 flex justify-between items-center">
-            <div>
+            <div className="flex justify-end">
               <div className="font-bold text-lg text-blue-600 dark:text-blue-400">{product.price.toLocaleString()}원</div>
             </div>
-            <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 shadow-lg">
-              <ShoppingCart className="w-4 h-4 mr-1" />
-              담기
+          </CardContent>
+
+          <CardFooter className="p-4 md:p-5 pt-0 flex gap-2">
+            <Button type="button" variant="outline" className="flex-1 rounded-xl" onClick={handleStringSingleBuy}>
+              스트링 단품 구매
+            </Button>
+
+            <Button type="button" variant="outline" className="flex-1 rounded-xl" onClick={handleStringServiceApply}>
+              스트링 작업의뢰
             </Button>
           </CardFooter>
         </Card>
