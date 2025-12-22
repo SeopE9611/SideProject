@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useRef, useState, ChangeEvent } from 'react';
+import { FormEvent, useRef, useState, ChangeEvent, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, ArrowLeft, Loader2, Upload, X } from 'lucide-react';
@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import ImageUploader from '@/components/admin/ImageUploader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
+import { getMarketBrandOptions, isMarketBrandCategory, isValidMarketBrandForCategory } from '@/app/board/market/_components/market.constants';
 
 export const CATEGORY_OPTIONS = [
   { value: 'racket', label: '라켓' },
@@ -25,6 +26,7 @@ type CategoryValue = (typeof CATEGORY_OPTIONS)[number]['value'];
 
 export default function FreeBoardWriteClient() {
   const router = useRouter();
+  const [brand, setBrand] = useState<string>('');
 
   // 폼 상태
   const [title, setTitle] = useState('');
@@ -46,14 +48,25 @@ export default function FreeBoardWriteClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // 카테고리 변경 시 브랜드 자동 초기화
+  useEffect(() => {
+    if (!isMarketBrandCategory(category)) {
+      if (brand) setBrand('');
+      return;
+    }
+    if (brand && !isValidMarketBrandForCategory(category, brand)) setBrand('');
+  }, [category, brand]);
+
   // 간단한 프론트 유효성 검증
   const validate = () => {
+    if (isMarketBrandCategory(category) && !brand) return '브랜드를 선택해 주세요.';
     if (!title.trim()) {
       return '제목을 입력해 주세요.';
     }
     if (!content.trim()) {
       return '내용을 입력해 주세요.';
     }
+
     return null;
   };
 
@@ -132,8 +145,9 @@ export default function FreeBoardWriteClient() {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!title.trim() || !content.trim()) {
-      setErrorMsg('제목과 내용을 입력해 주세요.');
+    const msg = validate();
+    if (msg) {
+      setErrorMsg(msg);
       return;
     }
 
@@ -163,6 +177,7 @@ export default function FreeBoardWriteClient() {
         content: content.trim(),
         images,
         category,
+        brand: isMarketBrandCategory(category) ? brand : null,
       };
       if (attachments && attachments.length > 0) {
         payload.attachments = attachments;
@@ -178,7 +193,7 @@ export default function FreeBoardWriteClient() {
       const data = await res.json();
 
       if (!res.ok || !data?.ok) {
-        setErrorMsg(data?.error ?? '글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        setErrorMsg(data?.details?.[0]?.message ?? data?.error ?? '글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
         return;
       }
 
@@ -235,9 +250,7 @@ export default function FreeBoardWriteClient() {
             </div>
             <div>
               <CardTitle className="text-base md:text-lg">중고 거래 게시판 글 작성</CardTitle>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">
-                테니스 라켓, 스트링,장비 등 판매하고자 하는 상품을 작성해보세요.
-              </p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">테니스 라켓, 스트링,장비 등 판매하고자 하는 상품을 작성해보세요.</p>
             </div>
           </CardHeader>
 
@@ -262,6 +275,21 @@ export default function FreeBoardWriteClient() {
                   ))}
                 </div>
               </div>
+              {isMarketBrandCategory(category) && (
+                <div className="space-y-2">
+                  <Label>브랜드</Label>
+                  <select value={brand} onChange={(e) => setBrand(e.target.value)} disabled={isSubmitting} className="h-10 w-full rounded-md border bg-white px-3 text-sm shadow-sm">
+                    <option value="">브랜드를 선택해 주세요</option>
+                    {getMarketBrandOptions(category).map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500">라켓/스트링 글은 브랜드 선택이 필수입니다.</p>
+                </div>
+              )}
+
               {/* 제목 입력 */}
               <div className="space-y-2">
                 <Label htmlFor="title">제목</Label>

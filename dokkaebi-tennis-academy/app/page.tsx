@@ -208,11 +208,11 @@ export default function Home() {
       {/* 상단 배너 */}
       <HeroSlider slides={SLIDES} />
 
-      <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm text-[30px]">
+      {/* <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm text-[30px]">
         <Button className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600 text-[30px]" onClick={() => router.push(`/rackets`)}>
           (테스트중입니다.) 라켓 구매 + 스트링 + 교체서비스 동시작업하기
         </Button>
-      </div>
+      </div> */}
 
       {/* 프리미엄 스트링 섹션 */}
       <div className="bg-white dark:bg-slate-950 rounded-2xl m-4 shadow-sm">

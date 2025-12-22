@@ -141,6 +141,9 @@ const patchBodySchema = z
     category: z.enum(COMMUNITY_CATEGORIES).optional(),
     images: z.array(z.string()).max(20).optional(), // supabase URL 문자열 배열
 
+    // 브랜드 게시판/중고거래 게시판
+    brand: z.string().max(100).optional().nullable(),
+
     attachments: z
       .array(
         z.object({
@@ -205,10 +208,47 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   const body = parsed.data;
 
+  // market 게시판: 라켓/스트링은 brand 필수, 일반장비는 brand 제거(null)
+  if (doc.type === 'market') {
+    const nextCategory = body.category !== undefined ? (body.category as any) : doc.category ?? null;
+    const nextBrand = body.brand !== undefined ? body.brand : doc.brand ?? null;
+
+    const needBrand = nextCategory === 'racket' || nextCategory === 'string';
+    const b = typeof nextBrand === 'string' ? nextBrand.trim() : '';
+
+    if (needBrand && !b) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'validation_error',
+          details: [{ path: ['brand'], message: '라켓/스트링 글은 브랜드를 필수로 선택해 주세요.' }],
+        },
+        { status: 400 }
+      );
+    }
+  }
+
   const update: any = {};
   if (body.title !== undefined) update.title = body.title.trim();
   if (body.content !== undefined) update.content = body.content.trim();
   if (body.category !== undefined) update.category = body.category;
+
+  // brand 업데이트(중고거래 게시판만)
+  if (doc.type === 'market') {
+    const nextCategory = body.category !== undefined ? (body.category as any) : doc.category ?? null;
+    const nextBrand = body.brand !== undefined ? body.brand : doc.brand ?? null;
+
+    const needBrand = nextCategory === 'racket' || nextCategory === 'string';
+
+    if (!needBrand) {
+      // 일반장비면 brand는 항상 null로 정리
+      update.brand = null;
+    } else {
+      // racket/string이면 brand 유지(또는 갱신)
+      update.brand = typeof nextBrand === 'string' ? nextBrand.trim() : null;
+    }
+  }
+  
   if (body.images !== undefined) update.images = body.images;
   if (body.attachments !== undefined) update.attachments = body.attachments;
 

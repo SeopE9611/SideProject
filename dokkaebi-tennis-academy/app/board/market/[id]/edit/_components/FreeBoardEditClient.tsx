@@ -18,6 +18,7 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_OPTIONS } from '@/app/board/market/_components/FreeBoardWriteClient';
+import { getMarketBrandOptions, isMarketBrandCategory, isValidMarketBrandForCategory } from '@/app/board/market/_components/market.constants';
 
 type Props = {
   id: string;
@@ -41,6 +42,8 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   // 카테고리 상태
   const [category, setCategory] = useState<'racket' | 'string' | 'equipment'>('racket');
+
+  const [brand, setBrand] = useState<string>('');
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -68,6 +71,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       setContent(item.content ?? '');
       setImages(Array.isArray(item.images) ? item.images : []);
       setCategory((data.item.category as any) ?? 'racket');
+      setBrand(typeof item.brand === 'string' ? item.brand : '');
 
       if (Array.isArray(item.attachments)) {
         setAttachments(item.attachments as AttachmentItem[]);
@@ -77,8 +81,20 @@ export default function FreeBoardEditClient({ id }: Props) {
     }
   }, [data]);
 
+  // category 변경 시 brand 정리
+  useEffect(() => {
+    if (!isMarketBrandCategory(category)) {
+      if (brand) setBrand('');
+      return;
+    }
+    // racket/string인데 현재 brand가 옵션에 없으면 비움
+    if (brand && !isValidMarketBrandForCategory(category, brand)) setBrand('');
+  }, [category, brand]);
+
   // 간단한 프론트 유효성 검증
   const validate = () => {
+    if (isMarketBrandCategory(category) && !brand) return '브랜드를 선택해 주세요.';
+
     if (!title.trim()) return '제목을 입력해 주세요.';
     if (!content.trim()) return '내용을 입력해 주세요.';
     return null;
@@ -201,6 +217,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         content: content.trim(),
         images,
         category,
+        brand: isMarketBrandCategory(category) ? brand : null,
       };
 
       // 새 파일을 업로드한 경우에만 attachments를 보냄
@@ -358,6 +375,20 @@ export default function FreeBoardEditClient({ id }: Props) {
                   ))}
                 </div>
               </div>
+              {isMarketBrandCategory(category) && (
+                <div className="space-y-2">
+                  <Label>브랜드</Label>
+                  <select value={brand} onChange={(e) => setBrand(e.target.value)} disabled={isSubmitting} className="h-10 w-full rounded-md border bg-white px-3 text-sm shadow-sm">
+                    <option value="">브랜드를 선택해 주세요</option>
+                    {getMarketBrandOptions(category).map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500">라켓/스트링 글은 브랜드 선택이 필수입니다.</p>
+                </div>
+              )}
 
               {/* 제목 */}
               <div className="space-y-2">

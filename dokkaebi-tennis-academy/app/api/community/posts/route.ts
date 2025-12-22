@@ -318,6 +318,32 @@ export async function POST(req: NextRequest) {
     postNo = typeof seq === 'number' ? seq : 1;
   }
 
+  // market 게시판: 라켓/스트링은 brand 필수, 일반장비는 brand 제거(null)
+  if (body.type === 'market') {
+    const cat = body.category ?? null;
+    const b = typeof body.brand === 'string' ? body.brand.trim() : '';
+
+    const needBrand = cat === 'racket' || cat === 'string';
+
+    if (needBrand && !b) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'validation_error',
+          details: [{ path: ['brand'], message: '라켓/스트링 글은 브랜드를 필수로 선택해 주세요.' }],
+        },
+        { status: 400 }
+      );
+    }
+
+    // 일반장비면 저장 brand는 null로 정리
+    if (!needBrand) {
+      body.brand = null;
+    } else {
+      body.brand = b;
+    }
+  }
+
   const displayName = await resolveDisplayName(payload);
   const now = new Date();
 

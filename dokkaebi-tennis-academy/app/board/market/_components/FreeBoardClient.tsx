@@ -14,6 +14,7 @@ import { attachImageColor, badgeBaseOutlined, badgeSizeSm } from '@/lib/badge-st
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MARKET_BRANDS_BY_CATEGORY } from '@/app/board/market/_components/market.constants';
 
 // API 응답 타입
 type ListResponse = {
@@ -98,6 +99,16 @@ export default function FreeBoardClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const rawBrandParam = searchParams.get('brand');
+  const brandParam = typeof rawBrandParam === 'string' ? rawBrandParam : null;
+
+  const [brand, setBrand] = useState<string>(brandParam ?? '');
+
+  useEffect(() => {
+    setBrand(brandParam ?? '');
+    setPage(1);
+  }, [brandParam]);
+
   // 사용자의 게시물 검색
   const authorId = searchParams.get('authorId');
   const authorName = searchParams.get('authorName');
@@ -148,6 +159,22 @@ export default function FreeBoardClient() {
     if (next === 'all') sp.delete('category');
     else sp.set('category', next);
 
+    // 라켓/스트링이 아니면 brand 제거
+    if (next !== 'racket' && next !== 'string') sp.delete('brand');
+
+    router.push(`/board/market?${sp.toString()}`);
+  };
+
+  // 브랜드 변경 핸들러
+  const handleBrandChange = (nextBrand: string) => {
+    setPage(1);
+    setBrand(nextBrand);
+
+    const sp = new URLSearchParams(searchParams.toString());
+
+    if (!nextBrand) sp.delete('brand');
+    else sp.set('brand', nextBrand);
+
     router.push(`/board/market?${sp.toString()}`);
   };
 
@@ -160,6 +187,10 @@ export default function FreeBoardClient() {
     limit: String(PAGE_LIMIT),
     sort,
   });
+
+  if (brandParam && (categoryParam === 'racket' || categoryParam === 'string')) {
+    qs.set('brand', brandParam);
+  }
 
   if (authorId) {
     qs.set('authorId', authorId);
@@ -340,6 +371,18 @@ export default function FreeBoardClient() {
                     );
                   })}
                 </div>
+                {(category === 'racket' || category === 'string') && (
+                  <div className="mt-3">
+                    <select value={brand} onChange={(e) => handleBrandChange(e.target.value)} className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900">
+                      <option value="">브랜드 전체</option>
+                      {(category === 'racket' ? MARKET_BRANDS_BY_CATEGORY.racket : MARKET_BRANDS_BY_CATEGORY.string).map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             )}
             {authorId && (
