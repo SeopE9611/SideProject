@@ -22,6 +22,7 @@ export type Product = {
   images?: string[];
   features?: Record<string, number>;
   isNew?: boolean;
+  mountingFee?: number; // 교체(장착) 공임(1자루 기준)
 };
 
 // 한글 라벨 매핑
@@ -73,7 +74,36 @@ const ProductCard = React.memo(
       e.preventDefault();
       e.stopPropagation();
 
-      router.push(`/services/apply?productId=${encodeURIComponent(String(product._id))}`);
+      // (중요) 이전 PDP 번들 흔적이 있으면 Checkout이 번들을 우선 사용함 → 작업의뢰도 clear가 안전
+      clearPdpBundle();
+
+      const image = product.images?.[0] ?? '';
+
+      // Buy-Now 전용 상태에 현재 상품 1건만 저장
+      setBuyNowItem({
+        id: String(product._id),
+        name: product.name,
+        price: Number(product.price ?? 0),
+        quantity: 1,
+        image,
+        kind: 'product',
+      });
+
+      // 상품별 교체(장착) 공임 — 없으면 흐름이 깨지므로 방어
+      const mountingFee = typeof (product as any).mountingFee === 'number' ? Number((product as any).mountingFee) : Number.NaN;
+
+      if (!Number.isFinite(mountingFee)) {
+        showErrorToast('교체 서비스 비용(mountingFee) 정보를 불러오지 못했습니다. 관리자 상품 등록 값을 확인해 주세요.');
+        return;
+      }
+
+      const search = new URLSearchParams({
+        mode: 'buynow',
+        withService: '1',
+        mountingFee: String(mountingFee),
+      });
+
+      router.push(`/checkout?${search.toString()}`);
     };
 
     if (viewMode === 'list') {

@@ -98,6 +98,20 @@ export default function StringServiceApplyPage() {
 
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
   const pdpProductId = isOrderBased ? null : searchParams.get('productId');
+
+  /**
+   * 옵션 A: 교체 서비스 신청은 "주문(orderId)" 기반으로만 진행합니다.
+   * - /services/apply?productId=... 직접 진입은 막고, 상품 상세로 되돌립니다.
+   * - (이유) 스트링 금액/요금요약/성공페이지 정합성을 주문 데이터로 보장하기 위함
+   */
+  useEffect(() => {
+    if (isOrderBased) return;
+    if (!pdpProductId) return;
+
+    showErrorToast('교체 서비스 신청은 결제(주문) 이후 진행됩니다. 상품 페이지로 이동합니다.');
+    router.replace(`/products/${encodeURIComponent(String(pdpProductId))}`);
+  }, [isOrderBased, pdpProductId, router]);
+
   // null 또는 빈문자열("")이면 NaN 처리, 그 외에는 Number 변환
   const mountingFeeParam = isOrderBased ? null : searchParams.get('mountingFee');
   const pdpMountingFee = mountingFeeParam === null || mountingFeeParam.trim() === '' ? Number.NaN : Number(mountingFeeParam);
@@ -934,6 +948,10 @@ export default function StringServiceApplyPage() {
 
   // 라켓/스트링 선택 체크박스 변화 콜백
   const handleStringTypesChange = (ids: string[]) => {
+    // PDP에서 넘어온 경우: 상품 상세에서 이미 스트링을 확정하고 넘어온 상황이므로 잠금
+    // 단, 주문 기반(orderId) 진입이면 주문 품목에서 고르는 UX가 필요하므로 잠금 해제
+    if (fromPDP && !orderId) return;
+
     setFormData((prev) => {
       // 기존 카운트 복사
       const nextUseCounts: Record<string, number> = { ...prev.stringUseCounts };
@@ -1687,7 +1705,7 @@ export default function StringServiceApplyPage() {
                   </p>
                 )}
 
-                <div className={''}>
+                <div className={fromPDP && !orderId ? 'pointer-events-none opacity-60' : ''}>
                   <StringCheckboxes
                     items={
                       orderId && order
@@ -2305,7 +2323,7 @@ export default function StringServiceApplyPage() {
                     <div className="mb-6">
                       <div className="inline-flex items-center gap-2 rounded-md border bg-white px-3 py-1.5 text-xs text-slate-700">
                         <span className="font-medium text-slate-900">프리필</span>
-                        <span className="text-slate-500">라켓 주문</span>
+                        <span className="text-slate-500">주문</span>
                         <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px]">{orderId}</code>
                         <span className="text-slate-500">기준으로 고객·배송·접수 방식이 자동 채워졌습니다.</span>
                       </div>
@@ -2321,7 +2339,6 @@ export default function StringServiceApplyPage() {
                         preferredTime={formData.preferredTime ?? undefined}
                         collectionMethod={formData.collectionMethod as CollectionMethod}
                         stringTypes={formData.stringTypes}
-                        stringIncluded={isOrderBased}
                         usingPackage={priceView.usingPackage}
                         base={summaryBase}
                         pickupFee={priceView.pickupFee}
@@ -2391,7 +2408,6 @@ export default function StringServiceApplyPage() {
                   preferredTime={formData.preferredTime}
                   collectionMethod={formData.collectionMethod as any}
                   stringTypes={formData.stringTypes}
-                  stringIncluded={isOrderBased}
                   usingPackage={priceView.usingPackage}
                   base={summaryBase}
                   pickupFee={priceView.pickupFee}

@@ -249,7 +249,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                     {/* order가 있으면 상세 breakdown 유지 */}
                     {order ? (
                       <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                        라켓 {racketSubtotal.toLocaleString()}원 + 스트링 {stringSubtotal.toLocaleString()}원 + 교체비 {serviceSubtotal.toLocaleString()}원
+                        {[racketSubtotal > 0 ? `라켓 ${racketSubtotal.toLocaleString()}원` : null, stringSubtotal > 0 ? `스트링 ${stringSubtotal.toLocaleString()}원` : null, `교체비 ${serviceSubtotal.toLocaleString()}원`].filter(Boolean).join(' + ')}
                       </p>
                     ) : (
                       <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">교체 서비스 비용 기준</p>
