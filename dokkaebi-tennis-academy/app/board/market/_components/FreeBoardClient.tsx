@@ -14,7 +14,7 @@ import { attachImageColor, badgeBaseOutlined, badgeSizeSm } from '@/lib/badge-st
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MARKET_BRANDS_BY_CATEGORY } from '@/app/board/market/_components/market.constants';
+import { MARKET_BRANDS_BY_CATEGORY, getMarketBrandLabel, isMarketBrandCategory } from '@/app/board/market/_components/market.constants';
 
 // API 응답 타입
 type ListResponse = {
@@ -438,8 +438,10 @@ export default function FreeBoardClient() {
                         <div className="text-center text-xs tabular-nums text-gray-400 dark:text-gray-500">{typeof post.postNo === 'number' ? post.postNo : '-'}</div>
 
                         {/* 분류 뱃지 */}
-                        <div className="flex justify-center">
+                        <div className="flex flex-col items-center justify-center gap-1">
                           <span className={getCategoryBadgeClasses(post.category)}>{getCategoryLabel(post.category)}</span>
+
+                          {isMarketBrandCategory(post.category) && post.brand ? <span className="text-[11px] text-gray-500 dark:text-gray-400">{getMarketBrandLabel(post.brand)}</span> : null}
                         </div>
 
                         {/* 제목  */}

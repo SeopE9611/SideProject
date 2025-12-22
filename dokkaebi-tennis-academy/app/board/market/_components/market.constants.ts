@@ -41,7 +41,7 @@ export function isValidMarketBrandForCategory(category: MarketCategory, brand: s
   return opts.includes(brand as any);
 }
 
-export function isMarketBrandCategory(category: string): category is 'racket' | 'string' {
+export function isMarketBrandCategory(category: string | null | undefined): category is 'racket' | 'string' {
   return category === 'racket' || category === 'string';
 }
 

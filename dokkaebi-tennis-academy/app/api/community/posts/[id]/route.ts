@@ -154,9 +154,7 @@ const patchBodySchema = z
       )
       .optional(),
   })
-  .refine((val) => val.title !== undefined || val.content !== undefined || val.category !== undefined || val.images !== undefined || val.attachments !== undefined, {
-    message: '수정할 필드가 없습니다.',
-  });
+  .refine((val) => val.title !== undefined || val.content !== undefined || val.category !== undefined || val.images !== undefined || val.attachments !== undefined || val.brand !== undefined, { message: '수정할 필드가 없습니다.' });
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
@@ -248,7 +246,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       update.brand = typeof nextBrand === 'string' ? nextBrand.trim() : null;
     }
   }
-  
+
   if (body.images !== undefined) update.images = body.images;
   if (body.attachments !== undefined) update.attachments = body.attachments;
 

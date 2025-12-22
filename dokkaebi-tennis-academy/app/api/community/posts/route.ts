@@ -298,26 +298,31 @@ export async function POST(req: NextRequest) {
 
   const countersCol = db.collection<CounterDoc>('counters');
 
-  // 게시판 내 노출용 번호 (자유 게시판에만 사용)
+  // 게시판 내 노출용 번호(postNo): 게시판별 연번
+  // - free  : community_free
+  // - market: community_market
+  // - gear  : community_gear
   let postNo: number | undefined = undefined;
 
-  if (body.type === 'free') {
-    const counterId = 'community_free';
+  const counterId =
+    body.type === 'free'
+      ? 'community_free'
+      : body.type === 'market'
+        ? 'community_market'
+        : body.type === 'gear'
+          ? 'community_gear'
+          : null;
 
-    const counterResult = await countersCol.findOneAndUpdate(
+  if (counterId) {
+    const counterDoc = await countersCol.findOneAndUpdate(
       { _id: counterId },
       { $inc: { seq: 1 } },
-      {
-        upsert: true,
-        returnDocument: 'after',
-      }
+      { upsert: true, returnDocument: 'after' }
     );
 
-    // findOneAndUpdate 결과가 "문서 또는 null"이므로 그대로 seq만 안전하게 읽어온다
-    const seq = counterResult?.seq;
+    const seq = counterDoc?.seq;
     postNo = typeof seq === 'number' ? seq : 1;
   }
-
   // market 게시판: 라켓/스트링은 brand 필수, 일반장비는 brand 제거(null)
   if (body.type === 'market') {
     const cat = body.category ?? null;

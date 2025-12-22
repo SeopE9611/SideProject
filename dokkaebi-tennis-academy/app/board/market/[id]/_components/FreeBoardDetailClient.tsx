@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import Image from 'next/image';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { getMarketBrandLabel, isMarketBrandCategory } from '@/app/board/market/_components/market.constants';
 
 // 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
@@ -1089,15 +1090,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
                     {typeof item.postNo === 'number' && <span className="mr-2 text-sm font-semibold tabular-nums text-gray-400 dark:text-gray-500">{item.postNo}</span>}
 
                     {/* 카테고리 뱃지 */}
-                    <span
-                      className={`
-      mr-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5
-      text-[11px] font-semibold
-      ${getCategoryBadgeClasses(item.category)}
-    `}
-                    >
-                      {getCategoryLabel(item.category)}
-                    </span>
+                    <span className="mr-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-200">{getCategoryLabel(item.category)}</span>
+
+                    {isMarketBrandCategory(item.category) && item.brand ? (
+                      <span className="mr-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200">{getMarketBrandLabel(item.brand)}</span>
+                    ) : null}
 
                     {item.title}
                   </CardTitle>
