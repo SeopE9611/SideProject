@@ -250,6 +250,10 @@ export async function createOrder(req: Request): Promise<Response> {
 
         const computedTotalPrice = computedSubtotal + computedServiceFee + computedShippingFee;
 
+        // 결제 은행(Checkout에서 paymentInfo.bank로 내려옴)
+        const bankRaw = body?.paymentInfo?.bank;
+        const bank = typeof bankRaw === 'string' && bankRaw.trim() !== '' ? bankRaw.trim() : undefined;
+
         // 주문 문서 생성(저장 값은 서버 계산값만)
         const order: any = {
           items: itemsWithSnapshot,
@@ -260,7 +264,7 @@ export async function createOrder(req: Request): Promise<Response> {
           shippingFee: computedShippingFee,
           serviceFee: computedServiceFee,
 
-          status: 'pending',
+          status: '대기중',
           createdAt: new Date(),
           updatedAt: new Date(),
 
@@ -270,11 +274,11 @@ export async function createOrder(req: Request): Promise<Response> {
             total: computedTotalPrice,
             shippingFee: computedShippingFee,
             serviceFee: computedServiceFee,
-            bank: shippingInfo?.bank ?? undefined,
+            bank,
             createdAt: new Date(),
           },
 
-          history: [{ status: 'pending', message: '주문 생성', createdAt: new Date() }],
+          history: [{ status: '대기중', message: '주문 생성', createdAt: new Date() }],
         };
 
         // 옵션 값들
@@ -292,7 +296,7 @@ export async function createOrder(req: Request): Promise<Response> {
         const inserted = await ordersCol.insertOne(order, { session });
         createdOrderId = inserted.insertedId as ObjectId;
 
-        // 주문 기반 신청서 자동 생성(옵션) 
+        // 주문 기반 신청서 자동 생성(옵션)
         if (shippingInfo?.withStringService === true) {
           const app = await createStringingApplicationFromOrder(
             {
