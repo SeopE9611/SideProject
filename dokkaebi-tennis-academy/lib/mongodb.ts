@@ -3,15 +3,15 @@ import { ensureReviewIndexes } from '@/lib/reviews.maintenance';
 import { ensurePassIndexes } from '@/lib/passes.indexes';
 import { ensureBoardIndexes } from '@/lib/boards.indexes';
 import { ensureRentalIndexes } from '@/lib/rentals.indexes';
+import { ensureMessageIndexes } from '@/lib/messages.indexes';
 
 const uri = process.env.MONGODB_URI;
-if (!uri) throw new Error('⛔ MONGODB_URI 환경변수가 설정되지 않았습니다.');
+if (!uri) throw new Error('MONGODB_URI 환경변수가 설정되지 않았습니다.');
 
 const dbName = process.env.MONGODB_DB || 'tennis_academy';
 
 // ---- 전역 캐시(개발 핫리로드 & 서버리스 콜드스타트 대비) ----
 declare global {
-  // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined;
   // 리뷰 인덱스 보장 1회 실행 상태
   var _reviewsIndexesReady: Promise<void> | null | undefined;
@@ -27,6 +27,9 @@ declare global {
 
   // rentals 컬렉션 인덱스 보장 상태
   var _rentalsIndexesReady: Promise<void> | null | undefined;
+
+  // 메시지 컬렉션 인덱스 보장 상태
+  var _messagesIndexesReady: Promise<void> | null | undefined;
 }
 
 let client: MongoClient;
@@ -81,6 +84,15 @@ export async function getDb() {
     });
   }
   await global._rentalsIndexesReady;
+
+  // messages 인덱스 보장(1회)
+  if (!global._messagesIndexesReady) {
+    global._messagesIndexesReady = ensureMessageIndexes(db).catch((e) => {
+      console.error('[messages] ensureMessageIndexes failed', e);
+      global._messagesIndexesReady = null;
+    });
+  }
+  await global._messagesIndexesReady;
 
   // users.email unique 인덱스 보장
   if (!global._usersIndexesReady) {

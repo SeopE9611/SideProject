@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useAuthStore } from '@/app/store/authStore';
+import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
 
 interface UserNavMobileProps {
   setOpen: (open: boolean) => void;
@@ -13,6 +14,7 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
   const router = useRouter();
   const { user, loading, refresh } = useCurrentUser();
   const { logout } = useAuthStore();
+  const { count: unreadCount } = useUnreadMessageCount(!loading && !!user);
 
   if (loading) return null;
 
@@ -54,7 +56,7 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
           router.push('/messages');
         }}
       >
-        쪽지함
+        쪽지함{unreadCount > 0 && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-1.5 py-[2px]">{unreadCount > 99 ? '99+' : unreadCount}</span>}
       </Button>
       <Button
         variant="outline"

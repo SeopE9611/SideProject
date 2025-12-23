@@ -9,11 +9,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { mutate } from 'swr';
 import { useAuthStore } from '@/app/store/authStore';
+import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
 
 export function UserNav() {
   const router = useRouter();
   const { user, loading, refresh } = useCurrentUser();
   const { logout } = useAuthStore();
+  const { count: unreadCount } = useUnreadMessageCount(!loading && !!user);
 
   if (loading) {
     return (
@@ -81,7 +83,7 @@ export function UserNav() {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/messages')}>
           <Mail className="mr-2 h-4 w-4" />
-          쪽지함
+          쪽지함 {unreadCount > 0 && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-1.5 py-[2px]">{unreadCount > 99 ? '99+' : unreadCount}</span>}
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem onClick={() => router.push('/admin/dashboard')}>
