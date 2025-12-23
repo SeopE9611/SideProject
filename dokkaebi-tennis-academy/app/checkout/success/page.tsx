@@ -237,7 +237,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       const totalItemPrice = formatPrice(item.price * itemQuantity);
 
                       return (
-                        <div key={index} className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 rounded-lg border">
+                        <div key={index} className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 rounded-lg">
                           <div className="flex-1">
                             <p className="font-semibold">{item.name}</p>
                             <p className="text-sm text-slate-600">수량: {itemQuantity}개</p>

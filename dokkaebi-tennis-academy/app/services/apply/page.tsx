@@ -2318,17 +2318,23 @@ export default function StringServiceApplyPage() {
             <div className="mx-auto w-full md:w-[800px]">
               <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl">
                 <CardContent className="p-8">
-                  {/* 라켓 주문 프리필 배지 */}
-                  {orderId && (
-                    <div className="mb-6">
-                      <div className="inline-flex items-center gap-2 rounded-md border bg-white px-3 py-1.5 text-xs text-slate-700">
-                        <span className="font-medium text-slate-900">프리필</span>
-                        <span className="text-slate-500">주문</span>
-                        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px]">{orderId}</code>
-                        <span className="text-slate-500">기준으로 고객·배송·접수 방식이 자동 채워졌습니다.</span>
-                      </div>
-                    </div>
-                  )}
+           {/* 라켓 주문 프리필 배지 */}
+{orderId && (
+  <div className="mb-6">
+    <div className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-800 px-4 py-2 shadow-sm">
+      <div className="flex items-center gap-1.5">
+        <div className="h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse" />
+        <span className="font-semibold text-blue-900 dark:text-blue-100">프리필</span>
+      </div>
+      <span className="h-4 w-px bg-blue-200 dark:bg-blue-700" />
+      <span className="text-sm text-slate-600 dark:text-slate-300">주문</span>
+      <code className="rounded bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-mono text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900">
+        {orderId}
+      </code>
+      <span className="text-sm text-slate-600 dark:text-slate-300">기준으로 자동 채워짐</span>
+    </div>
+  </div>
+)}
                   <form onSubmit={handleSubmit}>
                     {getCurrentStepContent()}
 
