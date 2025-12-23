@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, LayoutDashboard, Settings, UserIcon } from 'lucide-react';
+import { LogOut, LayoutDashboard, Settings, UserIcon, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
@@ -78,6 +78,10 @@ export function UserNav() {
         <DropdownMenuItem onClick={() => router.push('/mypage')}>
           <Settings className="mr-2 h-4 w-4" />
           마이페이지
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/messages')}>
+          <Mail className="mr-2 h-4 w-4" />
+          쪽지함
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem onClick={() => router.push('/admin/dashboard')}>

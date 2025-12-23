@@ -49,6 +49,16 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
       <Button
         variant="outline"
         className="w-full justify-center"
+        onClick={() => {
+          setOpen(false);
+          router.push('/messages');
+        }}
+      >
+        쪽지함
+      </Button>
+      <Button
+        variant="outline"
+        className="w-full justify-center"
         onClick={async () => {
           setOpen(false);
           logout();
