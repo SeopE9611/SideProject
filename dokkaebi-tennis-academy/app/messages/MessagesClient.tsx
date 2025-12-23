@@ -1,7 +1,14 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMemo, useState } from 'react';
+import { mutate as globalMutate } from 'swr';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { useMessageList } from '@/lib/hooks/useMessageList';
+import { useMessageDetail } from '@/lib/hooks/useMessageDetail';
 
 type SafeUser = {
   id: string;
@@ -10,32 +17,188 @@ type SafeUser = {
   role: 'user' | 'admin' | string;
 };
 
+const LIMIT = 20;
+
+function formatKST(iso: string) {
+  try {
+    return new Date(iso).toLocaleString('ko-KR');
+  } catch {
+    return iso;
+  }
+}
+
 export default function MessagesClient({ user }: { user: SafeUser }) {
+  const [tab, setTab] = useState<'inbox' | 'sent' | 'admin'>('inbox');
+  const [page, setPage] = useState(1);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const { items, total, isLoading, mutate, key } = useMessageList(tab, page, LIMIT, true);
+  const { item: detail, isLoading: detailLoading } = useMessageDetail(selectedId, true);
+
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / LIMIT)), [total]);
+
+  // 상세를 열면 GET /api/messages/[id]에서 readAt이 세팅될 수 있으므로
+  // - 현재 탭 목록 갱신
+  // - 상단 unread-count도 갱신
+  async function afterOpenDetail() {
+    if (key) await mutate(); // 현재 목록 리프레시
+    await globalMutate('/api/messages/unread-count'); // 상단 N 뱃지 갱신
+  }
+
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-6">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">쪽지함</CardTitle>
+
+          {user.role === 'admin' && (
+            <Button variant="outline" disabled title="다음 단계에서 전체발송 UI를 붙입니다.">
+              전체 공지 보내기(준비중)
+            </Button>
+          )}
         </CardHeader>
 
         <CardContent>
-          <Tabs defaultValue="inbox" className="w-full">
+          <Tabs
+            value={tab}
+            onValueChange={(v) => {
+              const next = v as typeof tab;
+              setTab(next);
+              setPage(1);
+              setSelectedId(null);
+            }}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="inbox">받은쪽지</TabsTrigger>
               <TabsTrigger value="sent">보낸쪽지</TabsTrigger>
               <TabsTrigger value="admin">관리자쪽지</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="inbox" className="mt-4">
-              <div className="text-sm text-muted-foreground">받은쪽지함(준비중). 목록/상세/읽음 처리를 연결합니다.</div>
-            </TabsContent>
+            <TabsContent value={tab} className="mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                {/* 왼쪽: 목록 */}
+                <div className="md:col-span-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm text-muted-foreground">
+                      총 {total}개 · {page}/{totalPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page <= 1}
+                        onClick={() => {
+                          setPage((p) => Math.max(1, p - 1));
+                          setSelectedId(null);
+                        }}
+                      >
+                        이전
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page >= totalPages}
+                        onClick={() => {
+                          setPage((p) => Math.min(totalPages, p + 1));
+                          setSelectedId(null);
+                        }}
+                      >
+                        다음
+                      </Button>
+                    </div>
+                  </div>
 
-            <TabsContent value="sent" className="mt-4">
-              <div className="text-sm text-muted-foreground">보낸쪽지함(준비중). 목록/상세/삭제(소프트 삭제)를 연결합니다.</div>
-            </TabsContent>
+                  <div className="space-y-2">
+                    {isLoading && (
+                      <>
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                      </>
+                    )}
 
-            <TabsContent value="admin" className="mt-4">
-              <div className="text-sm text-muted-foreground">관리자쪽지함(준비중). {user.role === 'admin' ? '관리자 전체발송 UI도 이 탭에 붙일 수 있어요.' : '관리자 발송 공지 쪽지만 이 탭에 노출됩니다.'}</div>
+                    {!isLoading && items.length === 0 && <div className="text-sm text-muted-foreground py-6 text-center border rounded-md">아직 쪽지가 없습니다.</div>}
+
+                    {!isLoading &&
+                      items.map((m) => {
+                        const active = selectedId === m.id;
+                        const counterpart = tab === 'sent' ? m.toName : m.fromName;
+
+                        return (
+                          <button
+                            key={m.id}
+                            className={cn('w-full text-left border rounded-md p-3 hover:bg-accent/40 transition', active && 'border-primary bg-accent/40')}
+                            onClick={async () => {
+                              setSelectedId(m.id);
+                              // 상세 열기 직후(읽음 처리 가능) 후처리
+                              // detail fetch는 SWR이 자동으로 돌지만, unread-count 갱신은 우리가 해줌
+                              setTimeout(afterOpenDetail, 250);
+                            }}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0">
+                                <div className={cn('text-sm truncate', !m.isRead && tab !== 'sent' && 'font-semibold')}>{m.title || '(제목 없음)'}</div>
+                                <div className="text-xs text-muted-foreground truncate">
+                                  {counterpart} · {formatKST(m.createdAt)}
+                                </div>
+                              </div>
+
+                              {/* 미열람 표시(받은/관리자 탭에서만 의미 있음) */}
+                              {tab !== 'sent' && !m.isRead && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-2 py-[2px]">N</span>}
+                            </div>
+
+                            <div className="mt-2 text-xs text-muted-foreground line-clamp-2">{m.snippet}</div>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+
+                {/* 오른쪽: 상세 */}
+                <div className="md:col-span-7">
+                  <div className="border rounded-md p-4 min-h-[240px]">
+                    {!selectedId && <div className="text-sm text-muted-foreground text-center py-10">왼쪽에서 쪽지를 선택하면 상세 내용을 볼 수 있습니다.</div>}
+
+                    {selectedId && detailLoading && (
+                      <div className="space-y-3">
+                        <Skeleton className="h-6 w-2/3" />
+                        <Skeleton className="h-4 w-1/3" />
+                        <Skeleton className="h-24 w-full" />
+                      </div>
+                    )}
+
+                    {selectedId && !detailLoading && !detail && <div className="text-sm text-muted-foreground text-center py-10">쪽지를 불러오지 못했습니다.</div>}
+
+                    {detail && (
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-base font-semibold break-words">{detail.title || '(제목 없음)'}</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {tab === 'sent' ? `받는 사람: ${detail.toName}` : `보낸 사람: ${detail.fromName}`}
+                              {' · '}
+                              {formatKST(detail.createdAt)}
+                              {tab !== 'sent' && (
+                                <>
+                                  {' · '}
+                                  {detail.readAt ? '읽음' : '미열람'}
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          <Button variant="outline" size="sm" disabled title="다음 단계에서 답장/삭제를 붙입니다.">
+                            답장(준비중)
+                          </Button>
+                        </div>
+
+                        <div className="whitespace-pre-wrap text-sm leading-6">{detail.body}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
