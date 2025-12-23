@@ -1,4 +1,4 @@
-import MessagesClient from '@/app/message/MessagesClient';
+import MessagesClient from '@/app/messages/MessagesClient';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { redirect } from 'next/navigation';
 
