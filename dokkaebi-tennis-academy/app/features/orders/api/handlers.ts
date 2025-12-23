@@ -11,6 +11,7 @@ export async function createOrder(req: Request): Promise<Response> {
   try {
     const idemKeyRaw = req.headers.get('Idempotency-Key');
     const idemKey = idemKeyRaw && idemKeyRaw.trim() ? idemKeyRaw : undefined;
+
     class HttpError extends Error {
       status: number;
       body: any;
@@ -21,11 +22,9 @@ export async function createOrder(req: Request): Promise<Response> {
       }
     }
 
-    // 클라이언트 쿠키에서 accessToken 가져오기
+    // 쿠키에서 accessToken → userId 추출
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
-
-    // 토큰이 있으면 검증 → payload에서 사용자 ID 추출
     const payload = token ? verifyAccessToken(token) : null;
     const userId = payload?.sub ?? null;
 
@@ -36,23 +35,41 @@ export async function createOrder(req: Request): Promise<Response> {
       quantity: number;
       kind?: 'product' | 'racket';
     };
-    const { items: rawItems, shippingInfo, totalPrice, shippingFee, guestInfo, serviceFee } = body;
 
-    //  DB 커넥션 가져오기
+    // 클라 금액은 절대 신뢰하지 않음(참고 로그용만)
+    const { items: rawItems, shippingInfo, guestInfo } = body;
+    const clientTotalPrice = body?.totalPrice;
+    const clientShippingFee = body?.shippingFee;
+    const clientServiceFee = body?.serviceFee;
+
+    // 최소 방어
+    if (!Array.isArray(rawItems) || rawItems.length === 0) {
+      return NextResponse.json({ error: '주문 상품이 비어있습니다.' }, { status: 400 });
+    }
+    if (!shippingInfo) {
+      return NextResponse.json({ error: '배송 정보가 누락되었습니다.' }, { status: 400 });
+    }
+    if (!userId && !guestInfo) {
+      return NextResponse.json({ error: '게스트 주문 정보 누락' }, { status: 400 });
+    }
+
+    // DB
     const client = await clientPromise;
     const db = client.db();
+
     type OrderDoc = Omit<DBOrder, '_id'> & {
-      idemKey?: string; // (DBOrder에 없거나 타입이 이상하면 여기서 정의
+      idemKey?: string;
       isStringServiceApplied?: boolean;
       stringingApplicationId?: string;
       servicePickupMethod?: any;
     };
+
     const ordersCol = db.collection<OrderDoc>('orders');
 
-    // 유니크 인덱스(1회성, 여러 번 호출해도 안전)
+    // idemKey 유니크 인덱스(여러 번 호출해도 안전)
     await ordersCol.createIndex({ idemKey: 1 }, { unique: true, sparse: true });
 
-    // 동일 키로 이미 생성된 주문이면 바로 반환
+    // idemKey로 이미 생성된 주문이면 반환
     if (idemKey) {
       const dup = await ordersCol.findOne({ idemKey });
       if (dup) {
@@ -60,24 +77,20 @@ export async function createOrder(req: Request): Promise<Response> {
       }
     }
 
-    // 비회원이면서 guestInfo가 없으면 잘못된 요청
-    if (!userId && !guestInfo) {
-      return NextResponse.json({ error: '게스트 주문 정보 누락' }, { status: 400 });
-    }
-
-    // 트랜잭션: 재고 차감 + 주문 생성 + (옵션) 신청서 생성까지 한 번에 커밋/롤백
+    // 트랜잭션: 재고 차감 + 주문 생성 + (옵션) 신청서 생성
     const session = client.startSession();
     let createdOrderId: ObjectId | null = null;
-    let createdAppId: ObjectId | null = null;
 
     try {
       await session.withTransaction(async () => {
-        // 1) 재고 차감 (세션 포함)
+        // 1) 재고 차감(세션 포함)
         for (const item of rawItems as RawOrderItem[]) {
           const kind = item.kind ?? 'product';
-          const quantity = item.quantity;
+          const quantity = Number(item.quantity ?? 0);
 
-          if (quantity <= 0) throw new HttpError(400, { error: '수량이 잘못되었습니다.' });
+          if (!Number.isFinite(quantity) || quantity <= 0) {
+            throw new HttpError(400, { error: '수량이 잘못되었습니다.' });
+          }
 
           if (kind === 'product') {
             const productId = new ObjectId(item.productId);
@@ -107,10 +120,9 @@ export async function createOrder(req: Request): Promise<Response> {
             const stockQty = Number(racket.quantity ?? 1);
             const racketName = `${(racket as any).brand ?? ''} ${(racket as any).model ?? ''}`.trim() || '중고 라켓';
 
-            //  현재 "대여 점유" 수량 계산: paid/out 상태는 반납 전이므로 판매 재고를 점유
+            // 대여 점유 수량
             const activeRentalCount = await db.collection('rental_orders').countDocuments({ racketId, status: { $in: ['paid', 'out'] } }, { session });
 
-            // 단품 라켓(<=1)은 status가 available일 때만 1개로 보고, 거기서 대여 점유를 뺌
             const baseQty = !Number.isFinite(stockQty) || stockQty <= 1 ? (racket.status === 'available' ? 1 : 0) : stockQty;
 
             const sellableQty = baseQty - activeRentalCount;
@@ -128,13 +140,14 @@ export async function createOrder(req: Request): Promise<Response> {
               });
             }
 
-            // (A) 단품(1점) 라켓
+            // (A) 단품(1점)
             if (!Number.isFinite(stockQty) || stockQty <= 1) {
               if (racket.status !== 'available') throw new HttpError(400, { error: '판매 가능한 라켓이 아닙니다.' });
               if (quantity !== 1) throw new HttpError(400, { error: '라켓은 1개만 구매할 수 있습니다.' });
 
               const r = await rackCol.updateOne({ _id: racketId, status: 'available' }, { $set: { status: 'sold', updatedAt: new Date().toISOString() } }, { session });
-              if (r.matchedCount === 0)
+
+              if (r.matchedCount === 0) {
                 throw new HttpError(400, {
                   error: 'INSUFFICIENT_STOCK',
                   kind: 'racket',
@@ -142,10 +155,11 @@ export async function createOrder(req: Request): Promise<Response> {
                   currentStock: 0,
                   reason: 'CONCURRENT_UPDATE',
                 });
+              }
               continue;
             }
 
-            // (B) 재고형(다수 수량) 라켓
+            // (B) 재고형(다수 수량)
             if (quantity !== 1) throw new HttpError(400, { error: '라켓은 1개만 구매할 수 있습니다.' });
 
             const nowIso = new Date().toISOString();
@@ -155,10 +169,9 @@ export async function createOrder(req: Request): Promise<Response> {
               { returnDocument: 'after', session } as any
             );
 
-            // driver 버전에 따라 updated가 { value: doc } 이거나 doc 자체일 수 있어서 둘 다 대응
             const updatedDoc = updated && typeof updated === 'object' && 'value' in (updated as any) ? (updated as any).value : updated;
 
-            if (!updatedDoc)
+            if (!updatedDoc) {
               throw new HttpError(400, {
                 error: 'INSUFFICIENT_STOCK',
                 kind: 'racket',
@@ -166,6 +179,7 @@ export async function createOrder(req: Request): Promise<Response> {
                 currentStock: 0,
                 reason: 'CONCURRENT_UPDATE',
               });
+            }
 
             continue;
           }
@@ -173,20 +187,27 @@ export async function createOrder(req: Request): Promise<Response> {
           throw new HttpError(400, { error: 'INVALID_ITEM_KIND' });
         }
 
-        // 2) 스냅샷 구성(세션 포함)
+        // 스냅샷 구성(세션 포함)
         const itemsWithSnapshot = await Promise.all(
           (rawItems as RawOrderItem[]).map(async (it) => {
             const kind = it.kind ?? 'product';
-            const quantity = it.quantity;
+            const quantity = Number(it.quantity ?? 0);
 
             if (kind === 'product') {
               const oid = new ObjectId(it.productId);
               const prod = await db.collection('products').findOne({ _id: oid }, { session });
+
               return {
                 productId: oid,
                 name: prod?.name ?? '알 수 없는 상품',
-                price: prod?.price ?? 0,
-                imageUrl: (prod as any)?.imageUrl ?? null,
+                brand: prod?.brand,
+                category: prod?.category,
+                price: Number(prod?.price ?? 0),
+
+                // 서비스비 근거 데이터(DB 기준)
+                mountingFee: Number.isFinite(Number((prod as any)?.mountingFee)) ? Number((prod as any).mountingFee) : 0,
+
+                imageUrl: prod?.images?.[0],
                 quantity,
                 kind: 'product' as const,
               };
@@ -195,143 +216,114 @@ export async function createOrder(req: Request): Promise<Response> {
             const rid = new ObjectId(it.productId);
             const racket = await db.collection('used_rackets').findOne({ _id: rid }, { session });
             const racketName = racket ? `${racket.brand} ${racket.model}`.trim() : '알 수 없는 라켓';
+
             return {
               productId: rid,
               name: racketName,
-              price: racket?.price ?? 0,
-              imageUrl: racket?.images?.[0] ?? null,
+              price: Number(racket?.price ?? 0),
+              imageUrl: (racket as any)?.images?.[0] ?? null,
               quantity,
               kind: 'racket' as const,
             };
           })
         );
 
-        const paymentInfo = { method: '무통장입금', bank: body.paymentInfo?.bank || 'shinhan' };
+        // 서버에서 금액 재계산(조작 무력화)
+        const computedSubtotal = itemsWithSnapshot.reduce((sum, it) => {
+          return sum + (Number(it.price) || 0) * (Number(it.quantity) || 0);
+        }, 0);
 
-        const order: DBOrder = {
+        const computedServiceFee = shippingInfo?.withStringService
+          ? itemsWithSnapshot.reduce((sum, it) => {
+              if (it.kind !== 'product') return sum;
+              const mf = Number((it as any).mountingFee || 0);
+              if (!Number.isFinite(mf) || mf <= 0) return sum;
+              return sum + mf * (Number(it.quantity) || 0);
+            }, 0)
+          : 0;
+
+        const computedShippingFee = (() => {
+          if (computedSubtotal === 0) return 0;
+          if (shippingInfo?.deliveryMethod === '방문수령') return 0;
+          return computedSubtotal >= 30000 ? 0 : 3000;
+        })();
+
+        const computedTotalPrice = computedSubtotal + computedServiceFee + computedShippingFee;
+
+        // 주문 문서 생성(저장 값은 서버 계산값만)
+        const order: any = {
           items: itemsWithSnapshot,
           shippingInfo,
-          totalPrice,
-          shippingFee,
-          guestInfo: guestInfo || null,
-          paymentInfo,
-          createdAt: new Date(),
-          status: '대기중',
-          serviceFee: typeof serviceFee === 'number' ? serviceFee : 0,
-        };
-        (order as any).servicePickupMethod = body.servicePickupMethod;
-        if (idemKey) (order as any).idemKey = idemKey; // idemKey 없으면 필드 자체를 안 넣음(sparse unique 안전)
+          guestInfo: userId ? null : guestInfo || null,
 
+          totalPrice: computedTotalPrice,
+          shippingFee: computedShippingFee,
+          serviceFee: computedServiceFee,
+
+          status: 'pending',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+
+          paymentInfo: {
+            method: '무통장 입금',
+            status: 'pending',
+            total: computedTotalPrice,
+            shippingFee: computedShippingFee,
+            serviceFee: computedServiceFee,
+            bank: shippingInfo?.bank ?? undefined,
+            createdAt: new Date(),
+          },
+
+          history: [{ status: 'pending', message: '주문 생성', createdAt: new Date() }],
+        };
+
+        // 옵션 값들
+        order.servicePickupMethod = body.servicePickupMethod;
+        if (idemKey) order.idemKey = idemKey;
+
+        // 회원이면 snapshot 추가
         if (userId) {
           order.userId = new ObjectId(userId);
           const snapshot = await findUserSnapshot(userId);
           if (snapshot) order.userSnapshot = snapshot;
         }
 
-        // 3) 주문 insert (세션 포함)
-        const inserted = await ordersCol.insertOne(order as any, { session });
+        // insert
+        const inserted = await ordersCol.insertOne(order, { session });
         createdOrderId = inserted.insertedId as ObjectId;
 
-        // 4) 주문 기반 신청서 자동 생성(옵션) — 같은 세션으로 묶음
+        // 주문 기반 신청서 자동 생성(옵션) 
         if (shippingInfo?.withStringService === true) {
           const app = await createStringingApplicationFromOrder(
             {
               _id: createdOrderId,
-              userId: (order as any).userId,
-              shippingInfo: order.shippingInfo as any,
+              userId: order.userId,
+              shippingInfo: order.shippingInfo,
               createdAt: order.createdAt,
-              servicePickupMethod: (order as any).servicePickupMethod,
+              servicePickupMethod: order.servicePickupMethod,
             } as any,
             { db, session }
           );
 
-          createdAppId = app?._id ?? null;
+          const createdAppId = app?._id ?? null;
 
           if (createdAppId) {
             await ordersCol.updateOne({ _id: createdOrderId }, { $set: { isStringServiceApplied: true, stringingApplicationId: String(createdAppId) } }, { session });
           }
         }
+
+        // 조작 탐지 로그
+        // console.log('[createOrder] client fees', { clientTotalPrice, clientShippingFee, clientServiceFee });
+        // console.log('[createOrder] computed fees', { computedSubtotal, computedShippingFee, computedServiceFee, computedTotalPrice });
       });
     } finally {
       await session.endSession();
     }
 
-    //  주문 스냅샷
-    const itemsWithSnapshot = await Promise.all(
-      (rawItems as RawOrderItem[]).map(async (it) => {
-        const kind = it.kind ?? 'product';
-        const quantity = it.quantity;
-
-        // product 스냅샷
-        if (kind === 'product') {
-          const oid = new ObjectId(it.productId);
-          const prod = await db.collection('products').findOne({ _id: oid });
-
-          return {
-            productId: oid,
-            name: prod?.name ?? '알 수 없는 상품',
-            price: prod?.price ?? 0,
-            imageUrl: (prod as any)?.imageUrl ?? null,
-            quantity,
-            kind: 'product' as const,
-          };
-        }
-
-        // racket 스냅샷
-        const rid = new ObjectId(it.productId);
-        const racket = await db.collection('used_rackets').findOne({ _id: rid });
-
-        const racketName = racket ? `${racket.brand} ${racket.model}`.trim() : '알 수 없는 라켓';
-
-        return {
-          productId: rid,
-          name: racketName,
-          price: racket?.price ?? 0,
-          imageUrl: racket?.images?.[0] ?? null,
-          quantity,
-          kind: 'racket' as const,
-        };
-      })
-    );
-
-    // 결제 정보 구성 (무통장 입금 + 선택된 은행)
-    const paymentInfo = {
-      method: '무통장입금',
-      bank: body.paymentInfo?.bank || 'shinhan',
-    };
-
-    // 비회원이면서 guestInfo가 없으면 잘못된 요청
-    if (!userId && !guestInfo) {
-      return NextResponse.json({ error: '게스트 주문 정보 누락' }, { status: 400 });
-    }
-
-    // 주문 객체 생성
-    const order: DBOrder = {
-      items: itemsWithSnapshot,
-      shippingInfo,
-      totalPrice,
-      shippingFee,
-      guestInfo: guestInfo || null,
-      paymentInfo,
-      createdAt: new Date(),
-      status: '대기중',
-      idemKey,
-      serviceFee: typeof serviceFee === 'number' ? serviceFee : 0,
-    };
-    (order as any).servicePickupMethod = body.servicePickupMethod;
-
-    // 회원일 경우 userId, userSnapshot 추가
-    if (userId) {
-      order.userId = new ObjectId(userId);
-      const snapshot = await findUserSnapshot(userId);
-      if (snapshot) {
-        order.userSnapshot = snapshot;
-      }
-    }
-
     if (!createdOrderId) {
       return NextResponse.json({ success: false, error: '주문 생성 실패(트랜잭션 결과 누락)' }, { status: 500 });
     }
+
     return NextResponse.json({ success: true, orderId: String(createdOrderId) }, { status: 201 });
   } catch (error) {
     if (error && typeof error === 'object' && (error as any).status && (error as any).body) {

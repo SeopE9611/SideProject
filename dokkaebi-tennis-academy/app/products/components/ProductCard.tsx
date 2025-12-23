@@ -89,18 +89,9 @@ const ProductCard = React.memo(
         kind: 'product',
       });
 
-      // 상품별 교체(장착) 공임 — 없으면 흐름이 깨지므로 방어
-      const mountingFee = typeof (product as any).mountingFee === 'number' ? Number((product as any).mountingFee) : Number.NaN;
-
-      if (!Number.isFinite(mountingFee)) {
-        showErrorToast('교체 서비스 비용(mountingFee) 정보를 불러오지 못했습니다. 관리자 상품 등록 값을 확인해 주세요.');
-        return;
-      }
-
       const search = new URLSearchParams({
         mode: 'buynow',
         withService: '1',
-        mountingFee: String(mountingFee),
       });
 
       router.push(`/checkout?${search.toString()}`);

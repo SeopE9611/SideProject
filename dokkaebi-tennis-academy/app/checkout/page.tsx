@@ -34,17 +34,18 @@ export default function CheckoutPage() {
   const withServiceParam = sp.get('withService'); // '1' | '0' | null
 
   //  PDP에서 넘어온 장착비(1자루 기준 공임)
-  const mountingFeeParam = sp.get('mountingFee');
-  const pdpMountingFee = mountingFeeParam && mountingFeeParam.trim() !== '' ? Number(mountingFeeParam) : NaN;
+  // const mountingFeeParam = sp.get('mountingFee');
+  // const pdpMountingFee = mountingFeeParam && mountingFeeParam.trim() !== '' ? Number(mountingFeeParam) : NaN;
+
+  // 상품ID 목록을 기준으로 mountingFee를 mini API로 가져오는 상태
+  const [mountingFeeByProductId, setMountingFeeByProductId] = useState<Record<string, number>>({});
 
   // 2) 기존 상태
   const [withStringService, setWithStringService] = useState(false);
 
   // 3) 최초 마운트 시 URL 파라미터가 1이면 기본 ON
   useEffect(() => {
-    if (withServiceParam === '1') {
-      setWithStringService(true);
-    }
+    setWithStringService(withServiceParam === '1');
   }, [withServiceParam]);
   const mode = sp.get('mode'); // 'buynow' | null
 
@@ -54,6 +55,49 @@ export default function CheckoutPage() {
 
   // 장바구니 결제 vs 즉시 구매 모드 분기
   const orderItems: CartItem[] = mode === 'buynow' ? (pdpBundleItems.length > 0 ? pdpBundleItems : buyNowItem ? [buyNowItem] : []) : cartItems;
+  const orderItemsKey = orderItems.map((it) => `${it.kind}:${it.id}:${it.quantity}`).join('|');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMountingFees() {
+      // 서비스 OFF면 굳이 mini API 호출하지 않음
+      if (!withStringService) {
+        setMountingFeeByProductId({});
+        return;
+      }
+
+      // mountingFee 로딩 대상 + serviceFee 계산을 “같은 기준”으로
+      const productIds = Array.from(new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id))));
+
+      if (productIds.length === 0) {
+        setMountingFeeByProductId({});
+        return;
+      }
+
+      const entries = await Promise.all(
+        productIds.map(async (id) => {
+          try {
+            const res = await fetch(`/api/products/${id}/mini`);
+            const json = await res.json();
+            const raw = json?.ok ? Number(json.mountingFee ?? 0) : 0;
+            const mf = Number.isFinite(raw) && raw > 0 ? raw : 0;
+            return [id, mf] as const;
+          } catch {
+            return [id, 0] as const;
+          }
+        })
+      );
+
+      if (cancelled) return;
+      setMountingFeeByProductId(Object.fromEntries(entries));
+    }
+
+    loadMountingFees();
+    return () => {
+      cancelled = true;
+    };
+  }, [orderItemsKey, withStringService]);
 
   // 상품 금액 합계
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -62,16 +106,33 @@ export default function CheckoutPage() {
   const shippingFee = subtotal >= 30000 ? 0 : 3000;
 
   // 교체 서비스 공임(serviceFee) 계산
-  let serviceFee = 0;
+  // let serviceFee = 0;
 
   // - 교체 서비스 플래그가 켜져 있고
   // - buy-now 모드이며
   // - PDP에서 공임이 숫자로 넘어온 경우에만 사용
-  if (withStringService && mode === 'buynow' && Number.isFinite(pdpMountingFee)) {
-    const racketQty = orderItems.find((it) => it.kind === 'racket')?.quantity;
-    const qty = typeof racketQty === 'number' ? racketQty : orderItems[0]?.quantity ?? 1;
-    serviceFee = pdpMountingFee * qty;
-  }
+  // if (withStringService && mode === 'buynow' && Number.isFinite(pdpMountingFee)) {
+  //   const racketQty = orderItems.find((it) => it.kind === 'racket')?.quantity;
+  //   const qty = typeof racketQty === 'number' ? racketQty : orderItems[0]?.quantity ?? 1;
+  //   serviceFee = pdpMountingFee * qty;
+  // }
+
+  //  장착비(공임)를 붙일 아이템 kind 정의
+  // - products 컬렉션에서 mountingFee를 조회하므로, 여기 포함된 kind는 "products 기반"이어야 함
+  const SERVICE_FEE_KINDS = new Set(['product', 'string']);
+
+  // kind가 없으면 일단 'product'로 간주 (기존 데이터 호환용)
+  const isServiceFeeTarget = (it: CartItem) => SERVICE_FEE_KINDS.has((it.kind ?? 'product') as any);
+
+  // serviceFee 계산을 “URL”이 아니라 “mountingFeeByProductId” 기반으로
+  const serviceFee = withStringService
+    ? orderItems.reduce((sum, it) => {
+        if (!isServiceFeeTarget(it)) return sum;
+
+        const mf = mountingFeeByProductId[String(it.id)] ?? 0;
+        return sum + mf * it.quantity;
+      }, 0)
+    : 0;
 
   // 최종 결제 금액 = 상품 + 배송 + 서비스
   const total = subtotal + shippingFee + serviceFee;

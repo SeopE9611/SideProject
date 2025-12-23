@@ -20,21 +20,19 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
   useEffect(() => {
     if (items.length > 0) clear();
-  }, []);
+  }, [items.length, clear]);
 
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({ limit: 6 });
 
   const handleSelectString = (p: any) => {
     const stringImage = p?.images?.[0] ?? p?.imageUrl;
-    const mountingFeeRaw = p?.mountingFee;
-    const mountingFee = Number.isFinite(Number(mountingFeeRaw)) ? Number(mountingFeeRaw) : 0;
 
     setItems([
       { id: racket.id, name: racket.name, price: racket.price, quantity: 1, image: racket.image, kind: 'racket' },
       { id: String(p._id), name: p.name, price: p.price, quantity: 1, image: stringImage, kind: 'product' },
     ]);
 
-    router.push(`/checkout?mode=buynow&withService=1&mountingFee=${encodeURIComponent(String(mountingFee))}`);
+    router.push(`/checkout?mode=buynow&withService=1`);
   };
 
   if (isLoadingInitial) return <div className="container py-10">로딩 중...</div>;
