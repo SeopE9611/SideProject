@@ -28,7 +28,7 @@ function formatKST(iso: string) {
 }
 
 export default function MessagesClient({ user }: { user: SafeUser }) {
-  const [tab, setTab] = useState<'inbox' | 'sent' | 'admin'>('inbox');
+  const [tab, setTab] = useState<'inbox' | 'send' | 'admin'>('inbox');
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -71,7 +71,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
           >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="inbox">받은쪽지</TabsTrigger>
-              <TabsTrigger value="sent">보낸쪽지</TabsTrigger>
+              <TabsTrigger value="send">보낸쪽지</TabsTrigger>
               <TabsTrigger value="admin">관리자쪽지</TabsTrigger>
             </TabsList>
 
@@ -123,7 +123,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     {!isLoading &&
                       items.map((m) => {
                         const active = selectedId === m.id;
-                        const counterpart = tab === 'sent' ? m.toName : m.fromName;
+                        const counterpart = tab === 'send' ? m.toName : m.fromName;
 
                         return (
                           <button
@@ -138,14 +138,14 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                           >
                             <div className="flex items-center justify-between gap-2">
                               <div className="min-w-0">
-                                <div className={cn('text-sm truncate', !m.isRead && tab !== 'sent' && 'font-semibold')}>{m.title || '(제목 없음)'}</div>
+                                <div className={cn('text-sm truncate', !m.isRead && tab !== 'send' && 'font-semibold')}>{m.title || '(제목 없음)'}</div>
                                 <div className="text-xs text-muted-foreground truncate">
                                   {counterpart} · {formatKST(m.createdAt)}
                                 </div>
                               </div>
 
                               {/* 미열람 표시(받은/관리자 탭에서만 의미 있음) */}
-                              {tab !== 'sent' && !m.isRead && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-2 py-[2px]">N</span>}
+                              {tab !== 'send' && !m.isRead && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-2 py-[2px]">N</span>}
                             </div>
 
                             <div className="mt-2 text-xs text-muted-foreground line-clamp-2">{m.snippet}</div>
@@ -176,10 +176,10 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                           <div className="min-w-0">
                             <div className="text-base font-semibold break-words">{detail.title || '(제목 없음)'}</div>
                             <div className="text-xs text-muted-foreground mt-1">
-                              {tab === 'sent' ? `받는 사람: ${detail.toName}` : `보낸 사람: ${detail.fromName}`}
+                              {tab === 'send' ? `받는 사람: ${detail.toName}` : `보낸 사람: ${detail.fromName}`}
                               {' · '}
                               {formatKST(detail.createdAt)}
-                              {tab !== 'sent' && (
+                              {tab !== 'send' && (
                                 <>
                                   {' · '}
                                   {detail.readAt ? '읽음' : '미열람'}
