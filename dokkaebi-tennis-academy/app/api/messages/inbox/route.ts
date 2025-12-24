@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
   const filter = {
     toUserId: new ObjectId(me.id),
     toDeletedAt: null,
+    // '관리자쪽지' 탭과 중복 표시를 막기 위해, 일반 받은쪽지함에서는 관리자 쪽지를 제외
+    isAdmin: { $ne: true },
     ...notExpiredClause(now),
   };
 

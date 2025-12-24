@@ -7,8 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { showErrorToast } from '@/lib/toast';
 import { useMessageList } from '@/lib/hooks/useMessageList';
 import { useMessageDetail } from '@/lib/hooks/useMessageDetail';
+import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
+import AdminBroadcastDialog from '@/app/messages/_components/AdminBroadcastDialog';
 
 type SafeUser = {
   id: string;
@@ -27,10 +30,33 @@ function formatKST(iso: string) {
   }
 }
 
+function buildReplyTitle(title: string) {
+  const t = (title ?? '').trim();
+  if (!t) return 'RE:';
+  if (t.toLowerCase().startsWith('re:')) return t;
+  return `RE: ${t}`;
+}
+
+function buildQuotedBody(opts: { createdAt: string; fromName: string; toName: string; body: string }) {
+  const { createdAt, fromName, toName, body } = opts;
+
+  return ['', '', '---', `[원문] ${formatKST(createdAt)} · ${fromName} → ${toName}`, body ?? ''].join('\n');
+}
+
 export default function MessagesClient({ user }: { user: SafeUser }) {
   const [tab, setTab] = useState<'inbox' | 'send' | 'admin'>('inbox');
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // 답장 모달
+  const [replyOpen, setReplyOpen] = useState(false);
+  const [replyToUserId, setReplyToUserId] = useState<string>('');
+  const [replyToName, setReplyToName] = useState<string>('');
+  const [replyDefaultTitle, setReplyDefaultTitle] = useState<string>('');
+  const [replyDefaultBody, setReplyDefaultBody] = useState<string>('');
+
+  // 관리자 전체발송 모달
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
 
   const { items, total, isLoading, mutate, key } = useMessageList(tab, page, LIMIT, true);
   const { item: detail, isLoading: detailLoading } = useMessageDetail(selectedId, true);
@@ -45,6 +71,29 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
     await globalMutate('/api/messages/unread-count'); // 상단 N 뱃지 갱신
   }
 
+  function openReply() {
+    if (!detail) return;
+
+    const toUserId = tab === 'send' ? detail.toUserId : detail.fromUserId;
+    const toName = tab === 'send' ? detail.toName : detail.fromName;
+
+    if (!toUserId) return showErrorToast('답장할 수 없는 쪽지입니다.');
+
+    setReplyToUserId(String(toUserId));
+    setReplyToName(String(toName ?? '회원'));
+    setReplyDefaultTitle(buildReplyTitle(detail.title));
+    setReplyDefaultBody(
+      buildQuotedBody({
+        createdAt: detail.createdAt,
+        fromName: detail.fromName,
+        toName: detail.toName,
+        body: detail.body,
+      })
+    );
+
+    setReplyOpen(true);
+  }
+
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-6">
       <Card>
@@ -52,8 +101,8 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
           <CardTitle className="text-lg">쪽지함</CardTitle>
 
           {user.role === 'admin' && (
-            <Button variant="outline" disabled title="다음 단계에서 전체발송 UI를 붙입니다.">
-              전체 공지 보내기(준비중)
+            <Button variant="outline" onClick={() => setBroadcastOpen(true)}>
+              전체 공지 보내기
             </Button>
           )}
         </CardHeader>
@@ -188,9 +237,10 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                             </div>
                           </div>
 
-                          <Button variant="outline" size="sm" disabled title="다음 단계에서 답장/삭제를 붙입니다.">
-                            답장(준비중)
-                          </Button>
+                          {/* 다시 보내기 버튼을 만들지 전달버튼을 만들지 고민 */}
+                          {/* <Button variant="outline" size="sm" onClick={openReply}>
+                            답장
+                          </Button> */}
                         </div>
 
                         <div className="whitespace-pre-wrap text-sm leading-6">{detail.body}</div>
@@ -203,6 +253,23 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* 답장 모달 */}
+      <MessageComposeDialog
+        open={replyOpen}
+        onOpenChange={setReplyOpen}
+        toUserId={replyToUserId}
+        toName={replyToName}
+        defaultTitle={replyDefaultTitle}
+        defaultBody={replyDefaultBody}
+        onSent={async () => {
+          // 답장 전송 후 - 보낸쪽지함 갱신(현재 탭과 무관하게 최신 반영)
+          await globalMutate((k) => typeof k === 'string' && k.startsWith('/api/messages/send'));
+        }}
+      />
+
+      {/* 관리자 전체발송 모달 */}
+      {user.role === 'admin' && <AdminBroadcastDialog open={broadcastOpen} onOpenChange={setBroadcastOpen} />}
     </div>
   );
 }
