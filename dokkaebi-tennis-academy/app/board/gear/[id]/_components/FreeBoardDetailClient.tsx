@@ -188,42 +188,43 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [isAuthorProfileOpen, setIsAuthorProfileOpen] = useState(false);
   const [authorOverview, setAuthorOverview] = useState<AuthorOverview | null>(null);
   const [isAuthorLoading, setIsAuthorLoading] = useState(false);
+  const [profileTarget, setProfileTarget] = useState<{ userId: string | null; nickname: string } | null>(null);
 
   // 모달 핸들러
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeTo, setComposeTo] = useState<{ id: string; name: string } | null>(null);
 
-  const openCompose = (toUserId: string, toName?: string | null) => {
+  const openCompose = (toUserId: string | null | undefined, toName?: string | null) => {
     if (!user) {
       showErrorToast('로그인 후 이용할 수 있습니다.');
       router.push('/login');
       return;
     }
 
-    const safeName = (toName ?? '').trim() || '회원';
+    if (!toUserId) {
+      showErrorToast('쪽지를 보낼 수 없는 사용자입니다.');
+      return;
+    }
 
+    const safeName = (toName ?? '').trim() || '회원';
     setComposeTo({ id: toUserId, name: safeName });
     setComposeOpen(true);
   };
 
-  async function handleOpenAuthorProfile() {
-    // 게시글 데이터가 없으면 방어
-    if (!item) return;
+  async function openAuthorProfile(userId: string | null | undefined, nickname?: string | null) {
+    const safeName = (nickname ?? '').trim() || '회원';
 
-    // 비회원/익명 글인 경우: 활동량 집계할 userId가 없음
-    if (!item.userId) {
-      setAuthorOverview(null);
-      setIsAuthorProfileOpen(true);
-      return;
-    }
-
+    // 대상 세팅 + 모달 오픈
+    setProfileTarget({ userId: userId ?? null, nickname: safeName });
+    setAuthorOverview(null);
     setIsAuthorProfileOpen(true);
-    setIsAuthorLoading(true);
 
+    // 비회원/익명(=userId 없음)이면 여기서 끝 (조회 API 호출 불가)
+    if (!userId) return;
+
+    setIsAuthorLoading(true);
     try {
-      const res = await fetch(`/api/community/authors/${item.userId}/overview`, {
-        credentials: 'include',
-      });
+      const res = await fetch(`/api/community/authors/${userId}/overview`, { credentials: 'include' });
 
       if (!res.ok) {
         showErrorToast('작성자 정보를 불러오지 못했습니다.');
@@ -267,9 +268,9 @@ export default function FreeBoardDetailClient({ id }: Props) {
     if (!item) return;
     const openProfile = searchParams.get('openProfile');
     if (openProfile === '1') {
-      handleOpenAuthorProfile();
+      void openAuthorProfile(item.userId, item.nickname);
     }
-  }, [item?.id]);
+  }, [item?.id, searchParams]);
 
   // 첨부파일 (자유게시판은 현재 파일만 저장되지만, 타입이 배열인지 한 번 더 안전하게 체크)
   const attachments = Array.isArray(item?.attachments) ? item!.attachments : [];
@@ -886,7 +887,50 @@ export default function FreeBoardDetailClient({ id }: Props) {
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{comment.nickname ?? '회원'}</span>
+              {comment.status === 'deleted' ? (
+                <span className="text-sm font-semibold text-gray-400 dark:text-gray-600">{comment.nickname ?? '회원'}</span>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button type="button" className="text-sm font-semibold text-gray-900 underline-offset-4 hover:underline dark:text-gray-100">
+                      {comment.nickname ?? '회원'}
+                    </button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="start" className="w-44">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (!comment.userId) return;
+                        const authorName = comment.nickname ?? '';
+                        router.push(`/board/gear?authorId=${comment.userId}&authorName=${encodeURIComponent(authorName)}`);
+                      }}
+                    >
+                      이 작성자의 글 보기
+                    </DropdownMenuItem>
+
+                    {comment.userId && comment.userId !== user?.id && (
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openCompose(comment.userId, comment.nickname);
+                        }}
+                      >
+                        쪽지 보내기
+                      </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuItem
+                      onClick={() => {
+                        openAuthorProfile(comment.userId, comment.nickname);
+                      }}
+                    >
+                      작성자 테니스 프로필
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
               <span className="text-xs text-gray-500 dark:text-gray-500">
                 {new Date(comment.createdAt).toLocaleString('ko-KR', {
                   year: '2-digit',
@@ -1196,8 +1240,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                         <DropdownMenuItem
                           onClick={() => {
-                            // 기존 로직 재사용: 여기서 모달 오픈 + overview fetch
-                            handleOpenAuthorProfile();
+                            openAuthorProfile(item.userId, item.nickname);
                           }}
                         >
                           작성자 테니스 프로필
@@ -1549,7 +1592,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
             <DialogContent className="max-w-5xl max-h-screen overflow-y-auto">
               <DialogHeader className="pb-4 border-b border-slate-200 dark:border-slate-800">
                 <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-slate-50">작성자 프로필</DialogTitle>
-                <DialogDescription className="text-sm text-slate-600 dark:text-slate-400">{item?.nickname ? `${item.nickname}님의 커뮤니티 활동 정보입니다.` : '작성자 정보'}</DialogDescription>
+                <DialogDescription className="text-sm text-slate-600 dark:text-slate-400">{profileTarget?.nickname ? `${profileTarget.nickname}님의 커뮤니티 활동 정보입니다.` : '작성자 정보'}</DialogDescription>
               </DialogHeader>
 
               {isAuthorLoading && <div className="py-8 text-sm text-slate-500 text-center">작성자 정보를 불러오는 중입니다...</div>}
@@ -1573,7 +1616,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
                           <span className="text-slate-600 dark:text-slate-400 w-20">이름</span>
-                          <span className="font-medium text-slate-900 dark:text-slate-50">{item?.nickname ?? '회원'}</span>
+                          <span className="font-medium text-slate-900 dark:text-slate-50">{profileTarget?.nickname ?? '회원'}</span>
                         </div>
                         {authorOverview?.firstActivityAt && (
                           <div className="flex items-center gap-2">
@@ -1716,8 +1759,8 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   </TabsContent>
 
                   <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-200 dark:border-slate-800">
-                    <Button variant="outline" size="sm" asChild disabled={!item} className="h-9 bg-transparent">
-                      <Link href={item ? `/board/gear?authorId=${item.userId}&authorName=${encodeURIComponent(item.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
+                    <Button variant="outline" size="sm" asChild disabled={!profileTarget?.userId} className="h-9 bg-transparent">
+                      <Link href={profileTarget?.userId ? `/board/gear?authorId=${profileTarget.userId}&authorName=${encodeURIComponent(profileTarget.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
                     </Button>
 
                     <Button variant="ghost" size="sm" onClick={() => setIsAuthorProfileOpen(false)} className="h-9">
