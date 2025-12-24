@@ -93,7 +93,7 @@ export default function StringServiceApplyPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isUserLoading, setIsUserLoading] = useState(false);
 
-  const isOrderBased = Boolean(orderId && order);
+  const isOrderBased = Boolean(orderId);
 
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
   const pdpProductId = isOrderBased ? null : searchParams.get('productId');
@@ -384,14 +384,6 @@ export default function StringServiceApplyPage() {
     lines: [],
   });
 
-  // 날짜 바꾸면 시간 자동 초기화
-  useEffect(() => {
-    if (!formData.preferredDate) return;
-    // 날짜 변경 시 선택된 시간 초기화
-    setFormData((prev) => (prev.preferredTime ? { ...prev, preferredTime: '' } : prev));
-    // 캐시에 같은 날짜가 있어도 초기화는 고정 동작
-  }, [formData.preferredDate]);
-
   // 패키지 미리보기 상태 + 패스조회
   const [packagePreview, setPackagePreview] = useState<null | {
     has: boolean;
@@ -472,13 +464,6 @@ export default function StringServiceApplyPage() {
     requiredPassCount,
     setFormData,
   });
-
-  // 사용자가 이미 비활성화된 시간을 선택해 둔 경우 자동 해제
-  useEffect(() => {
-    if (formData.preferredTime && disabledTimes.includes(formData.preferredTime)) {
-      setFormData((prev) => ({ ...prev, preferredTime: '' }));
-    }
-  }, [disabledTimes]);
 
   // 패키지 잔여 횟수 & 적용 가능 여부
   const packageRemaining = Math.max(0, packagePreview?.remaining ?? 0);
@@ -618,6 +603,19 @@ export default function StringServiceApplyPage() {
 
     const lines: ApplicationLine[] = [];
 
+    // 주문 안에서 라켓/중고라켓 하나만 있다면 그 이름을 기본값으로 사용 (라인별 기본 라켓명 프리필용)
+    let racketNameFromOrder: string | undefined;
+    if (isOrderMode && order) {
+      const items = (order as any)?.items;
+      if (Array.isArray(items)) {
+        const racketItems = items.filter((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
+        if (racketItems.length === 1) {
+          const r = racketItems[0] as any;
+          racketNameFromOrder = (r.name ?? r.productName ?? '').trim() || undefined;
+        }
+      }
+    }
+
     stringIds.forEach((prodId, index) => {
       const stringName = getStringName(prodId);
       const lineFee = getMountingFee(prodId);
@@ -636,59 +634,41 @@ export default function StringServiceApplyPage() {
         return;
       }
 
-      // 주문 기반인 경우
+      // 주문 기반(orderId)인 경우: 주문 수량(or 사용자가 조절한 수량)만큼 라인을 만든다.
       if (isOrderMode && order) {
         const found = order.items.find((it) => it.id === prodId);
         const orderQty = found?.quantity ?? 1;
         const useQty = formData.stringUseCounts[prodId] ?? orderQty;
 
-        // 주문 기반인 경우
-        if (isOrderMode && order) {
-          const found = order.items.find((it) => it.id === prodId);
-          const orderQty = found?.quantity ?? 1;
-          const useQty = formData.stringUseCounts[prodId] ?? orderQty;
+        for (let i = 0; i < useQty; i++) {
+          const alias = (formData.racketType || '').trim() || racketNameFromOrder || `라켓 ${lines.length + 1}`;
 
-          // 주문 안에서 라켓/중고라켓 하나만 있다면 그 이름을 기본값으로 사용
-          let racketNameFromOrder: string | undefined;
-          const items = (order as any)?.items;
-          if (Array.isArray(items)) {
-            const racketItems = items.filter((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
-            if (racketItems.length === 1) {
-              const r = racketItems[0] as any;
-              racketNameFromOrder = (r.name ?? r.productName ?? '').trim() || undefined;
-            }
-          }
-
-          for (let i = 0; i < useQty; i++) {
-            const alias = (formData.racketType || '').trim() || racketNameFromOrder || `라켓 ${lines.length + 1}`;
-
-            lines.push({
-              id: `${prodId}-${i}`,
-              racketType: alias,
-              stringProductId: prodId,
-              stringName,
-              tensionMain: '',
-              tensionCross: '',
-              note: formData.requirements,
-              mountingFee: lineFee,
-            });
-          }
+          lines.push({
+            id: `${prodId}-${i}`,
+            racketType: alias,
+            stringProductId: prodId,
+            stringName,
+            tensionMain: '',
+            tensionCross: '',
+            note: formData.requirements,
+            mountingFee: lineFee,
+          });
         }
-      } else {
-        // 단독/PDP 경로
-        lines.push({
-          id: `${prodId}-0`,
-          racketType: formData.racketType,
-          stringProductId: prodId,
-          stringName,
-          tensionMain: '',
-          tensionCross: '',
-          note: formData.requirements,
-          mountingFee: lineFee,
-        });
+        return;
       }
-    });
 
+      // 단독/PDP 경로: 선택한 스트링 1개 기준 1라인만 만든다.
+      lines.push({
+        id: `${prodId}-0`,
+        racketType: formData.racketType,
+        stringProductId: prodId,
+        stringName,
+        tensionMain: '',
+        tensionCross: '',
+        note: formData.requirements,
+        mountingFee: lineFee,
+      });
+    });
     return lines;
   }, [formData.lines, formData.stringTypes, formData.stringUseCounts, formData.racketType, formData.requirements, priceView.base, order, orderId, pdpProductId, pdpProduct, pdpMountingFee]);
 

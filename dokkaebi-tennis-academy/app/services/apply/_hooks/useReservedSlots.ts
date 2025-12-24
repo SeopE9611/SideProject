@@ -33,8 +33,11 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: { pr
       return;
     }
 
+    const cap = Math.max(requiredPassCount || 1, 1);
+    const cacheKey = `${date}__cap=${cap}`;
+
     // 캐시 확인: 있으면 즉시 사용(플리커 방지)
-    const cached = slotsCache.current.get(date);
+    const cached = slotsCache.current.get(cacheKey);
     const cacheHit = Array.isArray(cached);
     setHasCacheForDate(!!cacheHit);
     if (cacheHit) {
@@ -54,8 +57,6 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: { pr
     (async () => {
       try {
         setSlotsError(null);
-
-        const cap = Math.max(requiredPassCount || 1, 1);
 
         const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=${cap}`, {
           method: 'GET',
@@ -120,9 +121,9 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: { pr
       if (loadingTimer) clearTimeout(loadingTimer);
       controller.abort();
     };
-    // NOTE: 기존 코드와 동일하게 preferredDate만 의존합니다. (동작 변경 방지)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preferredDate]);
+    // NOTE: 날짜(preferredDate) 또는 필요한 연속 슬롯 수(cap=requiredPassCount)가 바뀌면 재계산해야 합니다.
+    // (cap이 바뀌는데 재요청이 안 되면, UI에서 선택 가능한 시간과 서버 검증이 어긋날 수 있습니다.)
+  }, [preferredDate, requiredPassCount]);
 
   // 사용자가 이미 비활성화된 시간을 선택해 둔 경우 자동 해제
   useEffect(() => {
@@ -144,12 +145,13 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: { pr
     if (!date) return;
     try {
       const cap = Math.max(requiredPassCount || 1, 1);
+      const cacheKey = `${date}__cap=${cap}`;
 
       const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=${cap}`, { credentials: 'include' });
       if (!res.ok) return;
       const data = await res.json();
       const times: string[] = Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
-      slotsCache.current.set(date, times);
+      slotsCache.current.set(cacheKey, times);
       setDisabledTimes(times);
     } catch {
       // 조용히 실패 무시
