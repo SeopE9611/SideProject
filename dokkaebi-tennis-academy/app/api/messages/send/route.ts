@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     const fromOid = new ObjectId(me.id);
     const [communityPostCount, qnaPostCount, communityCommentCount] = await Promise.all([
       db.collection('community_posts').countDocuments({ userId: fromOid, status: 'public' }),
-      db.collection('board_posts').countDocuments({ userId: fromOid, type: 'qna', status: 'published' }),
+      db.collection('board_posts').countDocuments({ authorId: me.id, type: 'qna', status: 'published' }),
       db.collection('community_comments').countDocuments({ userId: fromOid, status: 'public' }),
     ]);
 

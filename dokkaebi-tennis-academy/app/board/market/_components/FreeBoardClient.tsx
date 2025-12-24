@@ -15,6 +15,8 @@ import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MARKET_BRANDS_BY_CATEGORY, getMarketBrandLabel, isMarketBrandCategory } from '@/app/board/market/_components/market.constants';
+import { showErrorToast } from '@/lib/toast';
+import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 
 // API 응답 타입
 type ListResponse = {
@@ -98,6 +100,23 @@ export default function FreeBoardClient() {
   const { user, loading } = useCurrentUser();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // 모달 핸들러
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeTo, setComposeTo] = useState<{ id: string; name: string } | null>(null);
+
+  const openCompose = (toUserId: string, toName?: string | null) => {
+    if (!user) {
+      showErrorToast('로그인 후 이용할 수 있습니다.');
+      router.push('/login');
+      return;
+    }
+
+    const safeName = (toName ?? '').trim() || '회원';
+
+    setComposeTo({ id: toUserId, name: safeName });
+    setComposeOpen(true);
+  };
 
   const rawBrandParam = searchParams.get('brand');
   const brandParam = typeof rawBrandParam === 'string' ? rawBrandParam : null;
@@ -246,6 +265,15 @@ export default function FreeBoardClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <MessageComposeDialog
+        open={composeOpen}
+        onOpenChange={(v) => {
+          setComposeOpen(v);
+          if (!v) setComposeTo(null);
+        }}
+        toUserId={composeTo?.id ?? ''}
+        toName={composeTo?.name}
+      />
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -486,6 +514,28 @@ export default function FreeBoardClient() {
                               >
                                 이 작성자의 글 보기
                               </DropdownMenuItem>
+
+                              {/* 쪽지 보내기: 본인 제외 + 로그인 필요 */}
+                              {post.userId && post.userId !== user?.id && (
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    if (!user) {
+                                      router.push('/login');
+                                      return;
+                                    }
+
+                                    const toUserId = post.userId;
+                                    if (!toUserId) return;
+
+                                    openCompose(toUserId, post.nickname);
+                                  }}
+                                >
+                                  쪽지 보내기
+                                </DropdownMenuItem>
+                              )}
 
                               <DropdownMenuItem
                                 onClick={(e) => {

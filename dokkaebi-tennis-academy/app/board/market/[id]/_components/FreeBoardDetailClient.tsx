@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { getMarketBrandLabel, isMarketBrandCategory } from '@/app/board/market/_components/market.constants';
+import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 
 // 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
@@ -165,6 +166,23 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [isAuthorProfileOpen, setIsAuthorProfileOpen] = useState(false);
   const [authorOverview, setAuthorOverview] = useState<AuthorOverview | null>(null);
   const [isAuthorLoading, setIsAuthorLoading] = useState(false);
+
+  // 모달 핸들러
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeTo, setComposeTo] = useState<{ id: string; name: string } | null>(null);
+
+  const openCompose = (toUserId: string, toName?: string | null) => {
+    if (!user) {
+      showErrorToast('로그인 후 이용할 수 있습니다.');
+      router.push('/login');
+      return;
+    }
+
+    const safeName = (toName ?? '').trim() || '회원';
+
+    setComposeTo({ id: toUserId, name: safeName });
+    setComposeOpen(true);
+  };
 
   async function handleOpenAuthorProfile() {
     // 게시글 데이터가 없으면 방어
@@ -843,6 +861,15 @@ export default function FreeBoardDetailClient({ id }: Props) {
             : 'border border-gray-100 bg-white p-5 hover:border-gray-200 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900/50 dark:hover:border-gray-700'
         }`}
       >
+        <MessageComposeDialog
+          open={composeOpen}
+          onOpenChange={(v) => {
+            setComposeOpen(v);
+            if (!v) setComposeTo(null);
+          }}
+          toUserId={composeTo?.id ?? ''}
+          toName={composeTo?.name}
+        />
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex flex-col gap-0.5">
@@ -1119,6 +1146,27 @@ export default function FreeBoardDetailClient({ id }: Props) {
                         >
                           이 작성자의 글 보기
                         </DropdownMenuItem>
+
+                        {item.userId && item.userId !== user?.id && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+
+                              if (!user) {
+                                router.push('/login');
+                                return;
+                              }
+
+                              const toUserId = item.userId;
+                              if (!toUserId) return;
+
+                              openCompose(toUserId, item.nickname);
+                            }}
+                          >
+                            쪽지 보내기
+                          </DropdownMenuItem>
+                        )}
 
                         <DropdownMenuItem
                           onClick={() => {
