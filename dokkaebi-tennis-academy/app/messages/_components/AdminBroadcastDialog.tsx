@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Bell, Calendar } from 'lucide-react';
 
 type Props = {
   open: boolean;
@@ -56,7 +56,7 @@ export default function AdminBroadcastDialog({ open, onOpenChange, defaultExpire
         body: JSON.stringify({
           title: t,
           body: b,
-          expireDays: expireDaysNum, // 0이면 만료 없음
+          expireDays: expireDaysNum,
         }),
       });
 
@@ -67,7 +67,11 @@ export default function AdminBroadcastDialog({ open, onOpenChange, defaultExpire
       }
 
       showSuccessToast(`전체 공지를 전송했습니다. (총 ${data.sent ?? 0}명)`);
-      onSent?.({ broadcastId: String(data.broadcastId ?? ''), sent: Number(data.sent ?? 0), expiresAt: (data.expiresAt as string | undefined) ?? null });
+      onSent?.({
+        broadcastId: String(data.broadcastId ?? ''),
+        sent: Number(data.sent ?? 0),
+        expiresAt: (data.expiresAt as string | undefined) ?? null,
+      });
       onOpenChange(false);
     } catch {
       showErrorToast('네트워크 오류로 전송에 실패했습니다.');
@@ -78,47 +82,59 @@ export default function AdminBroadcastDialog({ open, onOpenChange, defaultExpire
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px]">
-        <DialogHeader>
-          <DialogTitle>전체 공지 보내기</DialogTitle>
-          <DialogDescription className="text-xs">관리자 권한으로 전체 사용자에게 안내 쪽지를 발송합니다.</DialogDescription>
+      <DialogContent className="sm:max-w-[640px]">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Bell className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg">전체 공지 보내기</DialogTitle>
+              <DialogDescription className="text-sm mt-1">관리자 권한으로 전체 사용자에게 안내 쪽지를 발송합니다.</DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="grid gap-3">
-          <div className="grid gap-2">
-            <div className="text-sm font-medium">제목</div>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예) 서비스 점검 안내" />
+        <div className="grid gap-5 py-4">
+          <div className="grid gap-2.5">
+            <label htmlFor="broadcast-title" className="text-sm font-semibold text-foreground">
+              제목
+            </label>
+            <Input id="broadcast-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예) 서비스 점검 안내" className="h-10" />
           </div>
 
-          <div className="grid gap-2">
-            <div className="text-sm font-medium">내용</div>
-            <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="공지 내용을 입력하세요" rows={10} />
+          <div className="grid gap-2.5">
+            <label htmlFor="broadcast-body" className="text-sm font-semibold text-foreground">
+              내용
+            </label>
+            <Textarea id="broadcast-body" value={body} onChange={(e) => setBody(e.target.value)} placeholder="공지 내용을 입력하세요" rows={12} className="resize-none" />
           </div>
 
-          <div className="grid gap-2">
-            <div className="text-sm font-medium">자동 삭제(일)</div>
-            <Input
-              inputMode="numeric"
-              value={expireDays}
-              onChange={(e) => setExpireDays(e.target.value)}
-              placeholder="예) 30 (0이면 만료 없음)"
-            />
-            <div className="text-xs text-muted-foreground">0이면 만료가 없고, 숫자를 입력하면 해당 일수 이후 자동 삭제(TTL)됩니다.</div>
+          <div className="grid gap-2.5">
+            <label htmlFor="expire-days" className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              자동 삭제 (일)
+            </label>
+            <Input id="expire-days" inputMode="numeric" value={expireDays} onChange={(e) => setExpireDays(e.target.value)} placeholder="예) 30 (0이면 만료 없음)" className="h-10" />
+            <p className="text-xs text-muted-foreground leading-relaxed">0이면 만료가 없고, 숫자를 입력하면 해당 일수 이후 자동 삭제(TTL)됩니다.</p>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending}>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending} className="min-w-[80px]">
             취소
           </Button>
-          <Button onClick={handleSend} disabled={isSending}>
+          <Button onClick={handleSend} disabled={isSending} className="min-w-[100px] gap-2">
             {isSending ? (
-              <span className="inline-flex items-center gap-2">
+              <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 전송 중
-              </span>
+              </>
             ) : (
-              '전송'
+              <>
+                <Bell className="h-4 w-4" />
+                전송
+              </>
             )}
           </Button>
         </DialogFooter>

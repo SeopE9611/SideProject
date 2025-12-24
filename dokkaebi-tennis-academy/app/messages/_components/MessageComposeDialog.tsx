@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Send, User } from 'lucide-react';
 
 type Props = {
   open: boolean;
@@ -25,15 +25,7 @@ type Props = {
   onSent?: (insertedId: string) => void;
 };
 
-export default function MessageComposeDialog({
-  open,
-  onOpenChange,
-  toUserId,
-  toName,
-  defaultTitle,
-  defaultBody,
-  onSent,
-}: Props) {
+export default function MessageComposeDialog({ open, onOpenChange, toUserId, toName, defaultTitle, defaultBody, onSent }: Props) {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -88,36 +80,55 @@ export default function MessageComposeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle>쪽지 보내기</DialogTitle>
-          <DialogDescription className="text-xs">받는 사람: {receiverLabel}</DialogDescription>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Send className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg">쪽지 보내기</DialogTitle>
+              <DialogDescription className="flex items-center gap-1.5 text-sm mt-1">
+                <User className="h-3.5 w-3.5" />
+                <span>
+                  받는 사람: <span className="font-medium text-foreground">{receiverLabel}</span>
+                </span>
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="grid gap-3">
-          <div className="grid gap-2">
-            <div className="text-sm font-medium">제목</div>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" />
+        <div className="grid gap-5 py-4">
+          <div className="grid gap-2.5">
+            <label htmlFor="message-title" className="text-sm font-semibold text-foreground">
+              제목
+            </label>
+            <Input id="message-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목을 입력하세요" className="h-10" />
           </div>
 
-          <div className="grid gap-2">
-            <div className="text-sm font-medium">내용</div>
-            <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="내용을 입력하세요" rows={8} />
+          <div className="grid gap-2.5">
+            <label htmlFor="message-body" className="text-sm font-semibold text-foreground">
+              내용
+            </label>
+            <Textarea id="message-body" value={body} onChange={(e) => setBody(e.target.value)} placeholder="내용을 입력하세요" rows={10} className="resize-none" />
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending}>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending} className="min-w-[80px]">
             취소
           </Button>
-          <Button onClick={handleSend} disabled={isSending}>
+          <Button onClick={handleSend} disabled={isSending} className="min-w-[100px] gap-2">
             {isSending ? (
-              <span className="inline-flex items-center gap-2">
+              <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 전송 중
-              </span>
+              </>
             ) : (
-              '보내기'
+              <>
+                <Send className="h-4 w-4" />
+                보내기
+              </>
             )}
           </Button>
         </DialogFooter>

@@ -13,6 +13,7 @@ import { useMessageDetail } from '@/lib/hooks/useMessageDetail';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 import AdminBroadcastDialog from '@/app/messages/_components/AdminBroadcastDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Mail, MailOpen, Send, User, Clock, ChevronLeft, ChevronRight, Reply, Trash2, Bell } from 'lucide-react';
 
 type SafeUser = {
   id: string;
@@ -49,17 +50,14 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // 답장 모달
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyToUserId, setReplyToUserId] = useState<string>('');
   const [replyToName, setReplyToName] = useState<string>('');
   const [replyDefaultTitle, setReplyDefaultTitle] = useState<string>('');
   const [replyDefaultBody, setReplyDefaultBody] = useState<string>('');
 
-  // 관리자 전체발송 모달
   const [broadcastOpen, setBroadcastOpen] = useState(false);
 
-  // 삭제 확인 다이얼로그
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -68,12 +66,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / LIMIT)), [total]);
 
-  // 상세를 열면 GET /api/messages/[id]에서 readAt이 세팅될 수 있으므로
-  // - 현재 탭 목록 갱신
-  // - 상단 unread-count도 갱신
   async function afterOpenDetail() {
-    if (key) await mutate(); // 현재 목록 리프레시
-    await globalMutate('/api/messages/unread-count'); // 상단 N 뱃지 갱신
+    if (key) await mutate();
+    await globalMutate('/api/messages/unread-count');
   }
 
   async function deleteSelectedMessage() {
@@ -93,13 +88,8 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
       setDeleteOpen(false);
       setSelectedId(null);
 
-      // 1) 현재 탭 목록 갱신
       if (key) await mutate();
-
-      // 2) 상단 N 뱃지 갱신 (미열람 삭제 시 감소)
       await globalMutate('/api/messages/unread-count');
-
-      // 3) 보낸쪽지함은 별도 캐시 키라 stale 방지 차원에서 같이 갱신
       await globalMutate((k) => typeof k === 'string' && k.startsWith('/api/messages/send'));
     } catch (e: any) {
       showErrorToast(e?.message || '삭제에 실패했습니다.');
@@ -132,19 +122,30 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">쪽지함</CardTitle>
+    <div className="mx-auto w-full max-w-7xl px-4 py-8">
+      <Card className="shadow-lg border-border/40">
+        <CardHeader className="border-b border-border/40 bg-muted/30">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Mail className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-xl font-semibold">쪽지함</CardTitle>
+                <p className="text-sm text-muted-foreground mt-0.5">메시지를 확인하고 관리하세요</p>
+              </div>
+            </div>
 
-          {user.role === 'admin' && (
-            <Button variant="outline" onClick={() => setBroadcastOpen(true)}>
-              전체 공지 보내기
-            </Button>
-          )}
+            {user.role === 'admin' && (
+              <Button variant="default" onClick={() => setBroadcastOpen(true)} className="gap-2">
+                <Bell className="h-4 w-4" />
+                전체 공지 보내기
+              </Button>
+            )}
+          </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="p-6">
           <Tabs
             value={tab}
             onValueChange={(v) => {
@@ -155,139 +156,202 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             }}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="inbox">받은쪽지</TabsTrigger>
-              <TabsTrigger value="send">보낸쪽지</TabsTrigger>
-              <TabsTrigger value="admin">관리자쪽지</TabsTrigger>
+            <TabsList className="grid w-full max-w-md grid-cols-3 mb-6 bg-muted/50">
+              <TabsTrigger value="inbox" className="gap-2">
+                <Mail className="h-4 w-4" />
+                <span className="hidden sm:inline">받은쪽지</span>
+                <span className="sm:hidden">받은</span>
+              </TabsTrigger>
+              <TabsTrigger value="send" className="gap-2">
+                <Send className="h-4 w-4" />
+                <span className="hidden sm:inline">보낸쪽지</span>
+                <span className="sm:hidden">보낸</span>
+              </TabsTrigger>
+              <TabsTrigger value="admin" className="gap-2">
+                <Bell className="h-4 w-4" />
+                <span className="hidden sm:inline">관리자</span>
+                <span className="sm:hidden">관리</span>
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value={tab} className="mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                {/* 왼쪽: 목록 */}
-                <div className="md:col-span-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm text-muted-foreground">
-                      총 {total}개 · {page}/{totalPages}
+            <TabsContent value={tab} className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-5">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
+                    <div className="text-sm font-medium text-muted-foreground">
+                      총 <span className="text-foreground font-semibold">{total}</span>개
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page <= 1}
-                        onClick={() => {
-                          setPage((p) => Math.max(1, p - 1));
-                          setSelectedId(null);
-                        }}
-                      >
-                        이전
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page >= totalPages}
-                        onClick={() => {
-                          setPage((p) => Math.min(totalPages, p + 1));
-                          setSelectedId(null);
-                        }}
-                      >
-                        다음
-                      </Button>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
+                        {page} / {totalPages}
+                      </span>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={page <= 1}
+                          onClick={() => {
+                            setPage((p) => Math.max(1, p - 1));
+                            setSelectedId(null);
+                          }}
+                          className="h-8 w-8 p-0"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={page >= totalPages}
+                          onClick={() => {
+                            setPage((p) => Math.min(totalPages, p + 1));
+                            setSelectedId(null);
+                          }}
+                          className="h-8 w-8 p-0"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     {isLoading && (
                       <>
-                        <Skeleton className="h-16 w-full" />
-                        <Skeleton className="h-16 w-full" />
-                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-24 w-full rounded-lg" />
+                        <Skeleton className="h-24 w-full rounded-lg" />
+                        <Skeleton className="h-24 w-full rounded-lg" />
                       </>
                     )}
 
-                    {!isLoading && items.length === 0 && <div className="text-sm text-muted-foreground py-6 text-center border rounded-md">아직 쪽지가 없습니다.</div>}
+                    {!isLoading && items.length === 0 && (
+                      <div className="flex flex-col items-center justify-center py-12 text-center border border-border/30 rounded-lg bg-muted/20">
+                        <Mail className="h-12 w-12 text-muted-foreground/40 mb-3" />
+                        <p className="text-sm text-muted-foreground">아직 쪽지가 없습니다.</p>
+                      </div>
+                    )}
 
                     {!isLoading &&
                       items.map((m) => {
                         const active = selectedId === m.id;
                         const counterpart = tab === 'send' ? m.toName : m.fromName;
+                        const isUnread = tab !== 'send' && !m.isRead;
 
                         return (
                           <button
                             key={m.id}
-                            className={cn('w-full text-left border rounded-md p-3 hover:bg-accent/40 transition', active && 'border-primary bg-accent/40')}
+                            className={cn('w-full text-left border border-border/30 rounded-lg p-4 transition-all hover:shadow-md hover:border-primary/30', active && 'border-primary/40 bg-primary/5 shadow-md', !active && 'hover:bg-accent/30')}
                             onClick={async () => {
                               setSelectedId(m.id);
-                              // 상세 열기 직후(읽음 처리 가능) 후처리
-                              // detail fetch는 SWR이 자동으로 돌지만, unread-count 갱신은 우리가 해줌
                               setTimeout(afterOpenDetail, 250);
                             }}
                           >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="min-w-0">
-                                <div className={cn('text-sm truncate', !m.isRead && tab !== 'send' && 'font-semibold')}>{m.title || '(제목 없음)'}</div>
-                                <div className="text-xs text-muted-foreground truncate">
-                                  {counterpart} · {formatKST(m.createdAt)}
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div className="flex items-start gap-3 min-w-0 flex-1">
+                                <div className={cn('mt-0.5 shrink-0', isUnread && 'text-primary', !isUnread && 'text-muted-foreground')}>{isUnread ? <Mail className="h-5 w-5" /> : <MailOpen className="h-5 w-5" />}</div>
+
+                                <div className="min-w-0 flex-1">
+                                  <div className={cn('text-sm truncate leading-tight', isUnread ? 'font-semibold text-foreground' : 'font-medium text-foreground/90')}>{m.title || '(제목 없음)'}</div>
+
+                                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-1">
+                                      <User className="h-3 w-3" />
+                                      <span className="truncate max-w-[100px]">{counterpart}</span>
+                                    </div>
+                                    <span>·</span>
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      <span className="whitespace-nowrap">{formatKST(m.createdAt)}</span>
+                                    </div>
+                                  </div>
+
+                                  <p className="mt-2 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{m.snippet}</p>
                                 </div>
                               </div>
 
-                              {/* 미열람 표시(받은/관리자 탭에서만 의미 있음) */}
-                              {tab !== 'send' && !m.isRead && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-2 py-[2px]">N</span>}
+                              {isUnread && <span className="shrink-0 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold leading-none px-2 py-1">NEW</span>}
                             </div>
-
-                            <div className="mt-2 text-xs text-muted-foreground line-clamp-2">{m.snippet}</div>
                           </button>
                         );
                       })}
                   </div>
                 </div>
 
-                {/* 오른쪽: 상세 */}
-                <div className="md:col-span-7">
-                  <div className="border rounded-md p-4 min-h-[240px]">
-                    {!selectedId && <div className="text-sm text-muted-foreground text-center py-10">왼쪽에서 쪽지를 선택하면 상세 내용을 볼 수 있습니다.</div>}
-
-                    {selectedId && detailLoading && (
-                      <div className="space-y-3">
-                        <Skeleton className="h-6 w-2/3" />
-                        <Skeleton className="h-4 w-1/3" />
-                        <Skeleton className="h-24 w-full" />
+                <div className="lg:col-span-7">
+                  <div className="border border-border/30 rounded-lg min-h-[400px] bg-card">
+                    {!selectedId && (
+                      <div className="flex flex-col items-center justify-center h-[400px] text-center p-8">
+                        <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                          <Mail className="h-8 w-8 text-muted-foreground/40" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          왼쪽에서 쪽지를 선택하면
+                          <br />
+                          상세 내용을 볼 수 있습니다.
+                        </p>
                       </div>
                     )}
 
-                    {selectedId && !detailLoading && !detail && <div className="text-sm text-muted-foreground text-center py-10">쪽지를 불러오지 못했습니다.</div>}
+                    {selectedId && detailLoading && (
+                      <div className="p-6 space-y-4">
+                        <Skeleton className="h-7 w-2/3" />
+                        <Skeleton className="h-4 w-1/2" />
+                        <div className="pt-4 border-t">
+                          <Skeleton className="h-32 w-full" />
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedId && !detailLoading && !detail && (
+                      <div className="flex items-center justify-center h-[400px] text-center p-8">
+                        <p className="text-sm text-muted-foreground">쪽지를 불러오지 못했습니다.</p>
+                      </div>
+                    )}
 
                     {detail && (
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="text-base font-semibold break-words">{detail.title || '(제목 없음)'}</div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {tab === 'send' ? `받는 사람: ${detail.toName}` : `보낸 사람: ${detail.fromName}`}
-                              {' · '}
-                              {formatKST(detail.createdAt)}
-                              {tab !== 'send' && (
-                                <>
-                                  {' · '}
-                                  {detail.readAt ? '읽음' : '미열람'}
-                                </>
-                              )}
+                      <div className="p-6">
+                        <div className="pb-4 border-b border-border/40">
+                          <h2 className="text-xl font-semibold text-foreground leading-tight mb-3">{detail.title || '(제목 없음)'}</h2>
+
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                <span>{tab === 'send' ? `받는 사람: ${detail.toName}` : `보낸 사람: ${detail.fromName}`}</span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                <span>{formatKST(detail.createdAt)}</span>
+                                {tab !== 'send' && (
+                                  <>
+                                    <span>·</span>
+                                    <span className={cn(detail.readAt ? 'text-muted-foreground' : 'text-primary font-medium')}>{detail.readAt ? '읽음' : '미열람'}</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                          </div>
 
-                          <div className="flex items-center gap-2">
-                            {tab !== 'send' && (
-                              <Button variant="outline" size="sm" onClick={openReply}>
-                                답장
+                            <div className="flex items-center gap-2">
+                              {tab !== 'send' && (
+                                <Button variant="outline" size="sm" onClick={openReply} className="gap-2 bg-transparent">
+                                  <Reply className="h-4 w-4" />
+                                  답장
+                                </Button>
+                              )}
+
+                              <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)} className="gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50">
+                                <Trash2 className="h-4 w-4" />
+                                삭제
                               </Button>
-                            )}
-
-                            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)}>
-                              삭제
-                            </Button>
+                            </div>
                           </div>
                         </div>
 
-                        <div className="whitespace-pre-wrap text-sm leading-6">{detail.body}</div>
+                        <div className="pt-6">
+                          <div className="prose prose-sm max-w-none">
+                            <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{detail.body}</div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -298,7 +362,6 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
         </CardContent>
       </Card>
 
-      {/* 답장 모달 */}
       <MessageComposeDialog
         open={replyOpen}
         onOpenChange={setReplyOpen}
@@ -307,14 +370,12 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
         defaultTitle={replyDefaultTitle}
         defaultBody={replyDefaultBody}
         onSent={async () => {
-          // 답장 전송 후 - 보낸쪽지함 갱신(현재 탭과 무관하게 최신 반영)
           await globalMutate((k) => typeof k === 'string' && k.startsWith('/api/messages/send'));
         }}
       />
 
-      {/* 관리자 전체발송 모달 */}
       {user.role === 'admin' && <AdminBroadcastDialog open={broadcastOpen} onOpenChange={setBroadcastOpen} />}
-      {/* 삭제 확인 모달 */}
+
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -330,8 +391,6 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
-                // Radix Action은 기본적으로 close를 트리거하므로,
-                // 비동기 삭제 완료 후 닫히도록 여기서 prevent
                 e.preventDefault();
                 void deleteSelectedMessage();
               }}
