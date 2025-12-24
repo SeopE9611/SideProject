@@ -883,15 +883,6 @@ export default function FreeBoardDetailClient({ id }: Props) {
             : 'border border-gray-100 bg-white p-5 hover:border-gray-200 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900/50 dark:hover:border-gray-700'
         }`}
       >
-        <MessageComposeDialog
-          open={composeOpen}
-          onOpenChange={(v) => {
-            setComposeOpen(v);
-            if (!v) setComposeTo(null);
-          }}
-          toUserId={composeTo?.id ?? ''}
-          toName={composeTo?.name}
-        />
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex flex-col gap-0.5">
@@ -1080,6 +1071,15 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <MessageComposeDialog
+        open={composeOpen}
+        onOpenChange={(v) => {
+          setComposeOpen(v);
+          if (!v) setComposeTo(null);
+        }}
+        toUserId={composeTo?.id ?? ''}
+        toName={composeTo?.name}
+      />
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* 상단 헤더 (브레드크럼 + 버튼) */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
