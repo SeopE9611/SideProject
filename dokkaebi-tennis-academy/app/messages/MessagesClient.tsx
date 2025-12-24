@@ -7,11 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { showErrorToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useMessageList } from '@/lib/hooks/useMessageList';
 import { useMessageDetail } from '@/lib/hooks/useMessageDetail';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 import AdminBroadcastDialog from '@/app/messages/_components/AdminBroadcastDialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 type SafeUser = {
   id: string;
@@ -58,6 +59,10 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   // 관리자 전체발송 모달
   const [broadcastOpen, setBroadcastOpen] = useState(false);
 
+  // 삭제 확인 다이얼로그
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { items, total, isLoading, mutate, key } = useMessageList(tab, page, LIMIT, true);
   const { item: detail, isLoading: detailLoading } = useMessageDetail(selectedId, true);
 
@@ -69,6 +74,38 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   async function afterOpenDetail() {
     if (key) await mutate(); // 현재 목록 리프레시
     await globalMutate('/api/messages/unread-count'); // 상단 N 뱃지 갱신
+  }
+
+  async function deleteSelectedMessage() {
+    if (!detail) return;
+
+    try {
+      setIsDeleting(true);
+
+      const res = await fetch(`/api/messages/${detail.id}`, { method: 'DELETE' });
+      const data = (await res.json().catch(() => null)) as any;
+
+      if (!res.ok || !data?.ok) {
+        throw new Error(typeof data?.error === 'string' ? data.error : '삭제에 실패했습니다.');
+      }
+
+      showSuccessToast('쪽지를 삭제했습니다.');
+      setDeleteOpen(false);
+      setSelectedId(null);
+
+      // 1) 현재 탭 목록 갱신
+      if (key) await mutate();
+
+      // 2) 상단 N 뱃지 갱신 (미열람 삭제 시 감소)
+      await globalMutate('/api/messages/unread-count');
+
+      // 3) 보낸쪽지함은 별도 캐시 키라 stale 방지 차원에서 같이 갱신
+      await globalMutate((k) => typeof k === 'string' && k.startsWith('/api/messages/send'));
+    } catch (e: any) {
+      showErrorToast(e?.message || '삭제에 실패했습니다.');
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   function openReply() {
@@ -237,10 +274,17 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                             </div>
                           </div>
 
-                          {/* 다시 보내기 버튼을 만들지 전달버튼을 만들지 고민 */}
-                          {/* <Button variant="outline" size="sm" onClick={openReply}>
-                            답장
-                          </Button> */}
+                          <div className="flex items-center gap-2">
+                            {tab !== 'send' && (
+                              <Button variant="outline" size="sm" onClick={openReply}>
+                                답장
+                              </Button>
+                            )}
+
+                            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)}>
+                              삭제
+                            </Button>
+                          </div>
                         </div>
 
                         <div className="whitespace-pre-wrap text-sm leading-6">{detail.body}</div>
@@ -270,6 +314,34 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
       {/* 관리자 전체발송 모달 */}
       {user.role === 'admin' && <AdminBroadcastDialog open={broadcastOpen} onOpenChange={setBroadcastOpen} />}
+      {/* 삭제 확인 모달 */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>쪽지를 삭제할까요?</AlertDialogTitle>
+            <AlertDialogDescription>
+              삭제한 쪽지는 현재 탭(받은/보낸/관리자)에서 보이지 않게 됩니다.
+              <br />
+              상대방 쪽지함에는 영향을 주지 않습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                // Radix Action은 기본적으로 close를 트리거하므로,
+                // 비동기 삭제 완료 후 닫히도록 여기서 prevent
+                e.preventDefault();
+                void deleteSelectedMessage();
+              }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? '삭제 중…' : '삭제'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

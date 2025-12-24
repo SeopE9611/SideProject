@@ -56,3 +56,60 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 
   return NextResponse.json({ ok: true, item: mapMessageDetail(doc) }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
 }
+
+/**
+ * 소프트 삭제
+ * - 받은쪽지/관리자쪽지: toDeletedAt 세팅
+ * - 보낸쪽지: fromDeletedAt 세팅
+ * 실제 DB에서 문서를 제거하지 않고, "내 박스"에서만 숨김 처리.
+ */
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const me = await getCurrentUser();
+  if (!me) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await ctx.params;
+  if (!ObjectId.isValid(id)) {
+    return NextResponse.json({ ok: false, error: 'invalid_id' }, { status: 400 });
+  }
+
+  const db = await getDb();
+  const col = db.collection('messages');
+  const now = new Date();
+  const oid = new ObjectId(id);
+
+  const doc = await col.findOne({
+    _id: oid,
+    ...notExpiredClause(now),
+  });
+
+  if (!doc) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+
+  const meId = String(me.id);
+  const toId = doc.toUserId ? String(doc.toUserId) : null;
+  const fromId = doc.fromUserId ? String(doc.fromUserId) : null;
+
+  const isToMe = toId === meId;
+  const isFromMe = fromId === meId;
+
+  // 당사자가 아니면 삭제 불가
+  if (!isToMe && !isFromMe) {
+    return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
+  }
+
+  // 이미 삭제된 경우에도 ok로 처리(멱등성)
+  if (isToMe && doc.toDeletedAt) {
+    return NextResponse.json({ ok: true, deleted: true, box: 'inbox' });
+  }
+  if (isFromMe && doc.fromDeletedAt) {
+    return NextResponse.json({ ok: true, deleted: true, box: 'send' });
+  }
+
+  if (isToMe) {
+    await col.updateOne({ _id: oid, toDeletedAt: null }, { $set: { toDeletedAt: new Date() } });
+    return NextResponse.json({ ok: true, deleted: true, box: 'inbox' });
+  }
+
+  // (isFromMe)
+  await col.updateOne({ _id: oid, fromDeletedAt: null }, { $set: { fromDeletedAt: new Date() } });
+  return NextResponse.json({ ok: true, deleted: true, box: 'send' });
+}
