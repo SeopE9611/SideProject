@@ -278,7 +278,7 @@ export async function createOrder(req: Request): Promise<Response> {
             createdAt: new Date(),
           },
 
-          history: [{ status: '대기중', message: '주문 생성', createdAt: new Date() }],
+          history: [{ status: '대기중', date: new Date(), description: '주문 생성' }],
         };
 
         // 옵션 값들

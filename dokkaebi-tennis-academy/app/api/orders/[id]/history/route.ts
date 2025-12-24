@@ -42,11 +42,35 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
     return new NextResponse('권한이 없습니다.', { status: 403 });
   }
 
-  // 히스토리 배열 안전하게 추출 & 타입 단언
-  const historyArray = (fullOrder?.history ?? []) as HistoryEvent[];
+  // 히스토리 배열 원본(레거시 포함) 추출
+  const rawHistory = (fullOrder?.history ?? []) as any[];
 
-  // 날짜 기준 내림차순 정렬
-  const sorted = historyArray.sort((a: HistoryEvent, b: HistoryEvent) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  /**
+   * 레거시 호환 정규화
+   * - 신규: { status, date, description }
+   * - 레거시: { status, createdAt, message }
+   * => API 응답은 항상 { status, date(ISO string), description }로 통일
+   */
+  const normalized: HistoryEvent[] = rawHistory.map((h) => {
+    const status = typeof h?.status === 'string' && h.status.trim() ? h.status : '기록';
+
+    // description: 신규(description) 우선, 없으면 레거시(message) fallback
+    const description = typeof h?.description === 'string' ? h.description : typeof h?.message === 'string' ? h.message : '-';
+
+    // date: 신규(date) 우선, 없으면 레거시(createdAt) fallback
+    const rawDate = h?.date ?? h?.createdAt ?? null;
+
+    // Date 파싱 (문자열/Date 모두 처리)
+    const d = rawDate instanceof Date ? rawDate : typeof rawDate === 'string' || typeof rawDate === 'number' ? new Date(rawDate) : null;
+
+    // Invalid Date 방지: 파싱 실패 시 epoch로 강제
+    const iso = d && !Number.isNaN(d.getTime()) ? d.toISOString() : new Date(0).toISOString();
+
+    return { status, date: iso, description };
+  });
+
+  // 날짜 기준 내림차순 정렬 (안전)
+  const sorted = normalized.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   // 페이징 처리
   const paginated = sorted.slice(skip, skip + limit);

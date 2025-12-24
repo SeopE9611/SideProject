@@ -118,9 +118,27 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   const pageData = pages?.[page - 1] ?? { history: [], total: 0 };
 
   // 내림차순 정렬 (최신 먼저)
-  const pageItems = [...pageData.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const toTime = (raw: string) => {
+    const t = new Date(raw).getTime();
+    return Number.isNaN(t) ? 0 : t; // Invalid Date면 0으로 밀어버림
+  };
+
+  const pageItems = [...pageData.history].sort((a, b) => toTime(b.date) - toTime(a.date));
 
   const totalPages = Math.max(1, Math.ceil(pageData.total / LIMIT));
+
+  // 날짜 안전 포멧 함수
+  const formatHistoryDate = (raw: string) => {
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return '날짜 없음';
+    return new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  };
 
   return (
     <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-slate-900/60">
@@ -155,15 +173,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
                 <div className="flex-1">
                   <div className="flex justify-between">
                     <span className="font-semibold">{item.status}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {new Intl.DateTimeFormat('ko-KR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      }).format(new Date(item.date))}
-                    </span>
+                    <span className="text-sm text-muted-foreground">{formatHistoryDate(item.date)}</span>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
                 </div>
