@@ -621,16 +621,23 @@ export default function StringServiceApplyPage() {
       const lineFee = getMountingFee(prodId);
 
       if (prodId === 'custom') {
-        lines.push({
-          id: `custom-${index}-0`,
-          racketType: '',
-          stringProductId: prodId,
-          stringName,
-          tensionMain: '',
-          tensionCross: '',
-          note: formData.requirements,
-          mountingFee: lineFee,
-        });
+        // 커스텀 stringUseCounts['custom']만큼 라인을 만들어 requiredPassCount/예약 슬롯(cap)/패키지 검증과 일치
+        const useQtyRaw = formData.stringUseCounts['custom'];
+        const useQty = typeof useQtyRaw === 'number' ? useQtyRaw : 1;
+
+        for (let i = 0; i < Math.max(useQty, 0); i++) {
+          lines.push({
+            id: `custom-${index}-${i}`,
+            racketType: '',
+            stringProductId: prodId,
+            stringName,
+            tensionMain: '',
+            tensionCross: '',
+            note: formData.requirements,
+            mountingFee: lineFee,
+          });
+        }
+
         return;
       }
 
@@ -879,6 +886,12 @@ export default function StringServiceApplyPage() {
             nextUseCounts[id] = base;
           }
         });
+
+        // 선택된 항목은 최소 1개 이상 사용하도록 보정 (0개는 검증/라인 생성 불일치의 원인이 됨)
+        ids.forEach((id) => {
+          const v = nextUseCounts[id];
+          if (typeof v !== 'number' || v <= 0) nextUseCounts[id] = 1;
+        });
       } else {
         // 주문 없는 경우(PDP/단독): 각 스트링 1개 기준
         ids.forEach((id) => {
@@ -946,13 +959,27 @@ export default function StringServiceApplyPage() {
 
     const safe = Math.min(Math.max(raw, min), max);
 
-    setFormData((prev) => ({
-      ...prev,
-      stringUseCounts: {
-        ...prev.stringUseCounts,
-        [id]: safe,
-      },
-    }));
+    setFormData((prev) => {
+      // "선택된 상태에서 0개"는 requiredPassCount/라인 생성/검증 로직과 불일치가 생기기 쉬움
+      //    → 0개 이하로 내려가면 해당 스트링은 "선택 해제"로 처리한다.
+      if (safe <= 0) {
+        const nextTypes = prev.stringTypes.filter((t) => t !== id);
+        const { [id]: _removed, ...restCounts } = prev.stringUseCounts;
+        return {
+          ...prev,
+          stringTypes: nextTypes,
+          stringUseCounts: restCounts,
+        };
+      }
+
+      return {
+        ...prev,
+        stringUseCounts: {
+          ...prev.stringUseCounts,
+          [id]: safe,
+        },
+      };
+    });
   };
 
   const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
