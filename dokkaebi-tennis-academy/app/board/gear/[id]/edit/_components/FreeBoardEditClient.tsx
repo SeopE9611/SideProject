@@ -40,17 +40,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   const [content, setContent] = useState('');
 
   // 카테고리 상태
-  const [category, setCategory] = useState<
-    | 'racket'
-    | 'string'
-    | 'shoes'
-    | 'bag'
-    | 'apparel'
-    | 'grip'
-    | 'accessory'
-    | 'ball'
-    | 'other'
-  >('racket');
+  const [category, setCategory] = useState<'racket' | 'string' | 'shoes' | 'bag' | 'apparel' | 'grip' | 'accessory' | 'ball' | 'other'>('racket');
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -68,7 +58,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // 기존 글 불러오기
-  const { data, error, isLoading } = useSWR<DetailResponse>(`/api/community/posts/${id}`, fetcher);
+  const { data, error, isLoading } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=gear`, fetcher);
 
   // 최초 로드 시 기존 제목/내용/이미지/첨부 세팅
   useEffect(() => {
@@ -219,7 +209,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         payload.attachments = nextAttachments;
       }
 
-      const res = await fetch(`/api/community/posts/${id}`, {
+      const res = await fetch(`/api/community/posts/${id}?type=gear`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -235,7 +225,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       }
 
       try {
-        await globalMutate(`/api/community/posts/${id}`);
+        await globalMutate(`/api/community/posts/${id}?type=gear`);
       } catch (e) {
         console.error('refresh 실패', e);
       }

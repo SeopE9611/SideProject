@@ -255,7 +255,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
   // 조회수 중복 방지 TTL (24시간)
   const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
 
-  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}`, fetcher, {
+  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=gear`, fetcher, {
     revalidateOnMount: true,
     revalidateIfStale: true,
     dedupingInterval: 0,

@@ -5,8 +5,8 @@ import { z } from 'zod';
 
 import { getDb } from '@/lib/mongodb';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-import type { CommunityPost } from '@/lib/types/community';
-import { COMMUNITY_CATEGORIES } from '@/lib/types/community';
+import type { CommunityBoardType, CommunityPost } from '@/lib/types/community';
+import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from '@/lib/types/community';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
 // ---------------------------------------------------------------------------
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     postObjectId = new ObjectId(id);
     doc = (await col.findOne({ _id: postObjectId })) as any | null;
   } else {
-    // ObjectId가 아니면 "숫자 문자열"인지 확인 → 자유게시판 postNo로 조회
+    // ObjectId가 아니면 "숫자 문자열(postNo)"인지 확인 → (type + postNo)로 조회
     const postNo = Number(id);
 
     if (!Number.isInteger(postNo)) {
@@ -46,8 +46,18 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
     }
 
-    // 자유게시판(type: 'free')에서 postNo로 조회
-    doc = (await col.findOne({ type: 'free', postNo })) as any | null;
+    // 어떤 게시판의 postNo인지 결정
+    // - /board/free: 기존처럼 type 쿼리를 보내지 않아도 되도록 기본값은 free 유지
+    // - /board/market, /board/gear: 프론트에서 ?type=market|gear 를 붙여서 조회
+    const url = new URL(req.url);
+    const rawType = url.searchParams.get('type');
+
+    const typeParam = rawType && (COMMUNITY_BOARD_TYPES as readonly string[]).includes(rawType) ? (rawType as CommunityBoardType) : null;
+
+    const resolvedType: CommunityBoardType = typeParam ?? 'free';
+
+    // 게시판(type) + 글번호(postNo)로 조회
+    doc = (await col.findOne({ type: resolvedType, postNo })) as any | null;
 
     // 조회에 성공하면 doc._id를 이후 공통 처리에서 사용
     if (doc && doc._id instanceof ObjectId) {

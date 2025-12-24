@@ -61,7 +61,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // 기존 글 불러오기
-  const { data, error, isLoading } = useSWR<DetailResponse>(`/api/community/posts/${id}`, fetcher);
+  const { data, error, isLoading } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=market`, fetcher);
 
   // 최초 로드 시 기존 제목/내용/이미지/첨부 세팅
   useEffect(() => {
@@ -226,7 +226,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         payload.attachments = nextAttachments;
       }
 
-      const res = await fetch(`/api/community/posts/${id}`, {
+      const res = await fetch(`/api/community/posts/${id}?type=market`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -242,7 +242,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       }
 
       try {
-        await globalMutate(`/api/community/posts/${id}`);
+        await globalMutate(`/api/community/posts/${id}?type=market`);
       } catch (e) {
         console.error('refresh 실패', e);
       }
