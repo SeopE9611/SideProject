@@ -1,40 +1,41 @@
-"use client"
+'use client';
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts"
-import { usePdpBundleStore } from "@/app/store/pdpBundleStore"
-import { CheckCircle2, ShoppingCart } from "lucide-react"
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
+import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
+import { CheckCircle2, ShoppingCart } from 'lucide-react';
 
 type RacketMini = {
-  id: string
-  name: string
-  price: number
-  image?: string
-  status?: string
-}
+  id: string;
+  name: string;
+  price: number;
+  image?: string;
+  status?: string;
+};
 
 export default function RacketSelectStringClient({ racket }: { racket: RacketMini }) {
-  const router = useRouter()
-  const { items, setItems, clear } = usePdpBundleStore()
+  const router = useRouter();
+  const setItems = usePdpBundleStore((s) => s.setItems);
+  const clear = usePdpBundleStore((s) => s.clear);
 
   useEffect(() => {
-    if (items.length > 0) clear()
-  }, [items.length, clear])
+    clear();
+  }, [clear]);
 
-  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({ limit: 6 })
+  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({ limit: 6 });
 
   const handleSelectString = (p: any) => {
-    const stringImage = p?.images?.[0] ?? p?.imageUrl
+    const stringImage = p?.images?.[0] ?? p?.imageUrl;
 
     setItems([
-      { id: racket.id, name: racket.name, price: racket.price, quantity: 1, image: racket.image, kind: "racket" },
-      { id: String(p._id), name: p.name, price: p.price, quantity: 1, image: stringImage, kind: "product" },
-    ])
+      { id: racket.id, name: racket.name, price: racket.price, quantity: 1, image: racket.image, kind: 'racket' },
+      { id: String(p._id), name: p.name, price: p.price, quantity: 1, image: stringImage, kind: 'product' },
+    ]);
 
-    router.push(`/checkout?mode=buynow&withService=1`)
-  }
+    router.push(`/checkout?mode=buynow&withService=1`);
+  };
 
   if (isLoadingInitial) {
     return (
@@ -46,7 +47,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -54,9 +55,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       <div className="container py-12 space-y-10">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900">스트링 선택</h1>
-          <p className="text-base text-slate-600 leading-relaxed">
-            라켓과 함께 구매하실 스트링을 선택해주세요. 선택한 스트링은 라켓과 함께 한 번에 결제됩니다.
-          </p>
+          <p className="text-base text-slate-600 leading-relaxed">라켓과 함께 구매하실 스트링을 선택해주세요. 선택한 스트링은 라켓과 함께 한 번에 결제됩니다.</p>
         </div>
 
         <div className="max-w-3xl mx-auto">
@@ -65,11 +64,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
             <div className="relative z-10 p-6 flex gap-6 items-center">
               <div className="flex-shrink-0">
                 {racket.image ? (
-                  <img
-                    src={racket.image || "/placeholder.svg"}
-                    alt={racket.name}
-                    className="w-24 h-24 object-cover rounded-xl shadow-md ring-2 ring-slate-100"
-                  />
+                  <img src={racket.image || '/placeholder.svg'} alt={racket.name} className="w-24 h-24 object-cover rounded-xl shadow-md ring-2 ring-slate-100" />
                 ) : (
                   <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-md">
                     <ShoppingCart className="w-10 h-10 text-slate-400" />
@@ -94,22 +89,15 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
           <h2 className="text-2xl font-bold text-slate-900 text-center">사용 가능한 스트링</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((p: any) => {
-              const stringImage = p?.images?.[0] ?? p?.imageUrl
+              const stringImage = p?.images?.[0] ?? p?.imageUrl;
 
               return (
-                <div
-                  key={String(p._id)}
-                  className="group relative overflow-hidden border border-slate-200 rounded-2xl bg-white hover:border-slate-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                >
+                <div key={String(p._id)} className="group relative overflow-hidden border border-slate-200 rounded-2xl bg-white hover:border-slate-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                   <div className="p-5 flex flex-col h-full">
                     {/* String Image */}
                     <div className="mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 aspect-square flex items-center justify-center">
                       {stringImage ? (
-                        <img
-                          src={stringImage || "/placeholder.svg"}
-                          alt={p.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
+                        <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                       ) : (
                         <div className="text-slate-300">
                           <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -126,43 +114,29 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
                     {/* Product Info */}
                     <div className="flex-1 space-y-2">
-                      <h3 className="font-semibold text-slate-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">
-                        {p.name}
-                      </h3>
+                      <h3 className="font-semibold text-slate-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">{p.name}</h3>
                       <p className="text-lg font-bold text-slate-900">{Number(p.price ?? 0).toLocaleString()}원</p>
                     </div>
 
                     {/* Select Button */}
-                    <Button
-                      className="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl py-5 group-hover:bg-blue-600 group-hover:shadow-lg transition-all duration-300"
-                      onClick={() => handleSelectString(p)}
-                    >
+                    <Button className="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl py-5 group-hover:bg-blue-600 group-hover:shadow-lg transition-all duration-300" onClick={() => handleSelectString(p)}>
                       <span className="flex items-center justify-center gap-2">
                         선택하기
-                        <svg
-                          className="w-4 h-4 group-hover:translate-x-1 transition-transform"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
+                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </span>
                     </Button>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </div>
 
         {hasMore && (
           <div className="flex justify-center pt-4">
-            <Button
-              onClick={loadMore}
-              disabled={isFetchingMore}
-              className="px-8 py-6 rounded-xl font-medium bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 transition-all duration-300"
-            >
+            <Button onClick={loadMore} disabled={isFetchingMore} className="px-8 py-6 rounded-xl font-medium bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 transition-all duration-300">
               {isFetchingMore ? (
                 <span className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
@@ -181,5 +155,5 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
         )}
       </div>
     </div>
-  )
+  );
 }
