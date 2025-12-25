@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
+import UserPointsDialog from '@/app/admin/users/_components/UserPointsDialog';
 
 // ---------------------- fetcher ----------------------
 const fetcher = (url: string) =>
@@ -133,6 +134,16 @@ export default function UsersClient() {
 
   // 선택된 사용자 ID 목록 상태
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+  // 포인트(적립금) 다이얼로그 상태
+  const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
+  const [pointsTarget, setPointsTarget] = useState<{ id: string; name?: string } | null>(null);
+
+  // 유저별 포인트 다이얼로그 열기
+  const openPointsDialog = (userId: string, userName?: string) => {
+    setPointsTarget({ id: userId, name: userName });
+    setPointsDialogOpen(true);
+  };
 
   // 선택된 행의 현재 상태를 계산
   const selectedRows = useMemo(() => (selectedUsers.length ? rows.filter((r) => selectedUsers.includes(r.id)) : []), [rows, selectedUsers]);
@@ -785,6 +796,14 @@ export default function UsersClient() {
                               <DropdownMenuItem asChild>
                                 <Link href={`/admin/users/${u.id}`}>상세 보기</Link>
                               </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  openPointsDialog(u.id, u.name);
+                                }}
+                              >
+                                포인트 내역/조정
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -951,6 +970,7 @@ export default function UsersClient() {
           </CardContent>
         </Card>
       </div>
+      <UserPointsDialog open={pointsDialogOpen} onOpenChange={setPointsDialogOpen} userId={pointsTarget?.id ?? null} userName={pointsTarget?.name} />
     </AuthGuard>
   );
 }

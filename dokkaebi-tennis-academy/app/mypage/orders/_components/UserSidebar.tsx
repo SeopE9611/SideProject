@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { CalendarCheck, ClipboardList, Heart, MessageCircleQuestion, Star, UserCog, ChevronRight, Ticket, MessageSquare, RectangleGoggles, Handshake, Signature, Briefcase } from 'lucide-react';
+import { CalendarCheck, ClipboardList, Heart, MessageCircleQuestion, Star, UserCog, ChevronRight, Ticket, MessageSquare, RectangleGoggles, Handshake, Signature, Briefcase, ReceiptCent } from 'lucide-react';
 
 export function UserSidebar() {
   const searchParams = useSearchParams();
@@ -60,6 +60,13 @@ export function UserSidebar() {
       icon: Ticket,
       gradient: 'from-indigo-500 to-purple-500',
       bgGradient: 'from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20',
+    },
+    {
+      label: '적립 포인트',
+      value: 'points',
+      icon: ReceiptCent,
+      gradient: 'from-amber-500 to-yellow-500',
+      bgGradient: 'from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20',
     },
     {
       label: '회원 정보 수정',

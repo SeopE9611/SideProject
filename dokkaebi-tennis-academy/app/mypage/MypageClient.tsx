@@ -26,6 +26,7 @@ import PassListSkeleton from '@/app/mypage/tabs/PassListSkeleton';
 import RentalsList from '@/app/mypage/tabs/RentalsList';
 import RentalSkeleton from '@/app/mypage/tabs/RentalSkeleton';
 import RentalsDetailClient from '@/app/mypage/rentals/_components/RentalsDetailClient';
+import MyPointsTab from '@/app/mypage/tabs/MyPointsTab';
 
 type Props = {
   user: {
@@ -172,7 +173,7 @@ export default function MypageClient({ user }: Props) {
                 {/* 탭 네비게이션 */}
                 <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm mb-8">
                   <CardContent className="p-6">
-                    <TabsList className="grid w-full grid-cols-7 h-auto p-1 bg-slate-100 dark:bg-slate-700">
+                    <TabsList className="grid w-full grid-cols-8 h-auto p-1 bg-slate-100 dark:bg-slate-700">
                       <TabsTrigger value="orders" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                         <ClipboardList className="h-5 w-5" />
                         <span className="text-xs font-medium">주문 내역</span>
@@ -201,6 +202,10 @@ export default function MypageClient({ user }: Props) {
                         <Ticket className="h-5 w-5" />
                         <span className="text-xs font-medium">패키지</span>
                       </TabsTrigger>
+                      <TabsTrigger value="points" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+                        <ReceiptCent className="h-5 w-5" />
+                        <span className="text-xs font-medium">적립 포인트</span>
+                      </TabsTrigger>
                     </TabsList>
                   </CardContent>
                 </Card>
@@ -228,7 +233,8 @@ export default function MypageClient({ user }: Props) {
                 {/* 신청 내역 탭 */}
                 <TabsContent value="applications" className="mt-0">
                   <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
-                    {/* bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-950/20 dark:via-emerald-950/20 dark:to-teal-950/20 rounded-2xl p-8 border border-green-100 dark:border-green-800/30 shadow-lg mb-8" */}
+                    {/* bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-950/20 dark:via-emerald-950/20 dark:to-teal-950/20 rounded-2xl p-8 border 
+                    -green-100 dark:border-green-800/30 shadow-lg mb-8" */}
                     <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:via-emerald-950/20 dark:to-teal-950/20 border-b">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-green-100 to-teal-100 dark:from-emerald-900 dark:to-emerald-900 rounded-2xl p-3 shadow-lg">
@@ -368,6 +374,28 @@ export default function MypageClient({ user }: Props) {
                     </CardContent>
                   </Card>
                 </TabsContent>
+
+                                 {/* 적립 포인트 탭 */}
+                 <TabsContent value="points" className="mt-0">
+                  <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                     <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-b">
+                       <div className="flex items-center gap-3">
+                         <div className="bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900 dark:to-yellow-900 rounded-2xl p-3 shadow-lg">
+                           <ReceiptCent className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                         </div>
+                         <div>
+                           <CardTitle className="text-xl">적립 포인트</CardTitle>
+                           <CardDescription>보유 포인트와 적립/사용 내역을 확인하세요.</CardDescription>
+                         </div>
+                       </div>
+                     </CardHeader>
+                     <CardContent className="p-6">
+                       <Suspense fallback={<div className="text-sm text-slate-500">불러오는 중...</div>}>
+                         <MyPointsTab />
+                       </Suspense>
+                     </CardContent>
+                   </Card>
+                 </TabsContent>
               </Tabs>
             </div>
           </div>
