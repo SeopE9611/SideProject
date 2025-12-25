@@ -63,6 +63,7 @@ export async function POST(req: Request) {
       address,
       addressDetail,
       postalCode,
+      pointsBalance: 0, // 포인트(적립금) 잔액 캐시(원장 기반으로 증감). 신규 회원은 0에서 시작.
       role: 'user',
       createdAt: new Date(),
       updatedAt: new Date(),

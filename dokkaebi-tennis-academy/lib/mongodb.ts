@@ -4,6 +4,7 @@ import { ensurePassIndexes } from '@/lib/passes.indexes';
 import { ensureBoardIndexes } from '@/lib/boards.indexes';
 import { ensureRentalIndexes } from '@/lib/rentals.indexes';
 import { ensureMessageIndexes } from '@/lib/messages.indexes';
+import { ensurePointsIndexes } from '@/lib/points.indexes';
 
 const uri = process.env.MONGODB_URI;
 if (!uri) throw new Error('MONGODB_URI 환경변수가 설정되지 않았습니다.');
@@ -30,6 +31,9 @@ declare global {
 
   // 메시지 컬렉션 인덱스 보장 상태
   var _messagesIndexesReady: Promise<void> | null | undefined;
+
+  // 포인트(적립금) 원장 컬렉션 인덱스 보장 상태
+  var _pointsIndexesReady: Promise<void> | null | undefined;
 }
 
 let client: MongoClient;
@@ -93,6 +97,15 @@ export async function getDb() {
     });
   }
   await global._messagesIndexesReady;
+
+  // points 인덱스 보장(1회)
+  if (!global._pointsIndexesReady) {
+    global._pointsIndexesReady = ensurePointsIndexes(db).catch((e) => {
+      console.error('[points] ensurePointsIndexes failed', e);
+      global._pointsIndexesReady = null;
+    });
+  }
+  await global._pointsIndexesReady;
 
   // users.email unique 인덱스 보장
   if (!global._usersIndexesReady) {

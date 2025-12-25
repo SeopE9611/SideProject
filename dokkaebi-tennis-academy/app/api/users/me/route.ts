@@ -57,6 +57,7 @@ export async function GET() {
       address: user.address ?? null,
       addressDetail: user.addressDetail ?? null,
       postalCode: user.postalCode ?? null,
+      pointsBalance: typeof (user as any).pointsBalance === 'number' ? (user as any).pointsBalance : 0, // 마이페이지(적립금 표시)에서 바로 쓰도록 포함
     });
   } catch (err: any) {
     // 토큰 오류(만료/변조)
