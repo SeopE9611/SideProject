@@ -5,6 +5,18 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { issuePassesForPaidOrder } from '@/lib/passes.service';
 import jwt from 'jsonwebtoken';
+import { deductPoints, grantPoints } from '@/lib/points.service';
+
+/**
+ * 포인트 적립 정책 (주문 결제완료 시 자동 적립)
+ * - 기본값: 결제 확정 금액(totalPrice)의 1%를 적립
+ * - 정책을 바꾸려면 이 상수/함수만 수정하면 됩니다.
+ */
+const POINTS_EARN_RATE = 0.01;
+function calcEarnPoints(totalPrice: number) {
+  if (!Number.isFinite(totalPrice) || totalPrice <= 0) return 0;
+  return Math.floor(totalPrice * POINTS_EARN_RATE);
+}
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -429,10 +441,80 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         const updatedOrder = await orders.findOne({ _id }); // 최신 문서 읽어서 전달
         if (updatedOrder) {
           await issuePassesForPaidOrder(db, updatedOrder);
+          // 주문 결제완료 시 회원 포인트 자동 적립 (비회원 주문은 userId가 없을 수 있음)
+          try {
+            const uid = (updatedOrder as any).userId;
+            const uidStr = uid ? String(uid) : '';
+            if (ObjectId.isValid(uidStr)) {
+              const total = Number((updatedOrder as any).totalPrice ?? (updatedOrder as any).paymentInfo?.amount ?? 0);
+              const earn = calcEarnPoints(total);
+              if (earn > 0) {
+                //  주문 결제완료 시 회원 포인트 자동 적립
+                const rewardRefKey = `order_reward:${String((updatedOrder as any)._id)}`;
+
+                await grantPoints(db, {
+                  userId: new ObjectId(uidStr),
+                  amount: earn,
+                  type: 'order_reward',
+                  status: 'confirmed',
+                  refKey: rewardRefKey,
+                  reason: `주문 결제완료 적립 (${(updatedOrder as any).orderId ?? ''})`.trim(),
+                  ref: { orderId: (updatedOrder as any)._id },
+                });
+              }
+            }
+          } catch (e: any) {
+            // 중복(refKey) 등은 무시: 이미 적립된 케이스로 간주
+            const msg = String(e?.message ?? '');
+            if (e?.code !== 11000 && !msg.includes('E11000')) {
+              console.error('grantPoints(order_reward) error:', e);
+            }
+          }
         }
       } catch (e) {
         console.error('issuePassesForPaidOrder error:', e);
         // 필요하면 여기서 history에 "발급 실패" 로그를 더 남길 수 있음
+      }
+    }
+
+    const becameCanceledOrRefunded = (existing.paymentStatus ?? null) === '결제완료' && ['결제취소', '환불'].includes(newPaymentStatus ?? '');
+
+    if (becameCanceledOrRefunded) {
+      try {
+        const updatedOrder = await orders.findOne({ _id });
+        if (!updatedOrder) return NextResponse.json({ ok: true });
+
+        const uid = (updatedOrder as any).userId;
+        const uidStr = uid ? String(uid) : '';
+        if (!ObjectId.isValid(uidStr)) return NextResponse.json({ ok: true });
+
+        const orderObjectId = String((updatedOrder as any)._id);
+        const rewardRefKey = `order_reward:${orderObjectId}`;
+        const revokeRefKey = `order_reward_revoke:${orderObjectId}`; // 회수 멱등키
+
+        // "얼마를 회수해야 하는지"는 가능하면 적립 트랜잭션을 찾아서 그 amount를 쓰는 게 제일 안전
+        const txCol = db.collection('points_transactions');
+        const rewardTx = await txCol.findOne({ refKey: rewardRefKey, status: 'confirmed' });
+
+        // 적립이 없으면 회수할 것도 없음
+        const amountToRevoke = Number((rewardTx as any)?.amount ?? 0);
+        if (amountToRevoke <= 0) return NextResponse.json({ ok: true });
+
+        await deductPoints(db, {
+          userId: new ObjectId(uidStr),
+          amount: amountToRevoke,
+          type: 'order_reward', // 같은 타입으로 “-amount” 기록이 남게 됨
+          status: 'confirmed',
+          refKey: revokeRefKey, // 회수 멱등
+          reason: `주문 취소/환불로 적립 포인트 회수 (${(updatedOrder as any).orderId ?? ''})`.trim(),
+          ref: { orderId: (updatedOrder as any)._id },
+        });
+      } catch (e: any) {
+        // 여기서 throw로 터뜨리면 "주문 취소/환불" 자체가 실패하는 최악의 UX가 됨 → 로그만 남기고 종료
+        console.error('revoke order_reward error:', e);
+
+        // 포인트 회수 실패를 주문 히스토리에 남기고 싶으면 history push 추가
+        // - INSUFFICIENT_POINTS(이미 사용됨) 같은 케이스는 "관리자 확인 필요"로 남겨두는 게 현실적
       }
     }
 

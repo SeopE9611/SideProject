@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { grantPoints } from '@/lib/points.service';
 
 type DbAny = any;
 
@@ -12,6 +13,9 @@ type DbAny = any;
  */
 const ALLOWED_HOSTS = new Set<string>(['cwzpxxahtayoyqqskmnt.supabase.co']);
 const ALLOWED_PATH_PREFIXES = ['/storage/v1/object/public/tennis-images/'];
+
+// MVP: 리뷰 작성 시 적립 포인트(정책은 이후 조정 가능)
+const REVIEW_REWARD_POINTS = 50;
 
 /** http/https + 화이트리스트(host, path) 체크 */
 const isAllowedHttpUrl = (v: unknown): v is string => {
@@ -200,7 +204,32 @@ export async function POST(req: Request) {
       updatedAt: now,
     };
     if (orderIdObj) doc.orderId = orderIdObj;
-    await db.collection('reviews').insertOne(doc);
+
+    const insertRes = await db.collection('reviews').insertOne(doc);
+    const reviewId = insertRes.insertedId;
+
+    // 포인트 적립 (보수적 시작)
+    // - 결제완료 주문만 적립
+    // - orderId가 없는 레거시 작성은 적립 제외(중복/어뷰징 리스크 최소화)
+    if (orderIdObj) {
+      const paidOrder = await db.collection('orders').findOne({ _id: orderIdObj, userId, paymentStatus: '결제완료' }, { projection: { _id: 1 } });
+      if (paidOrder) {
+        try {
+          await grantPoints(db, {
+            userId,
+            amount: REVIEW_REWARD_POINTS,
+            type: 'review_reward_product',
+            status: 'confirmed',
+            refKey: `review:${reviewId.toString()}`,
+            ref: { reviewId, orderId: orderIdObj },
+            reason: '상품 리뷰 작성 적립',
+          });
+        } catch (e) {
+          // 포인트 적립은 "부가 동작"이므로, 리뷰 생성 자체를 실패시키지 않음
+          console.error('[reviews] grantPoints failed (product)', e);
+        }
+      }
+    }
 
     await updateProductRatingSummary(db, productIdObj, productIdStr);
     return NextResponse.json({ ok: true }, { status: 201 });
@@ -217,7 +246,7 @@ export async function POST(req: Request) {
     const appIdObj = new ObjectId(appIdStr);
 
     // 소유권 검증
-    const app = await db.collection('stringing_applications').findOne({ _id: appIdObj }, { projection: { userId: 1 } });
+    const app = await db.collection('stringing_applications').findOne({ _id: appIdObj }, { projection: { userId: 1, orderId: 1 } });
     if (!app || String(app.userId) !== String(userId)) {
       return NextResponse.json({ message: 'forbidden' }, { status: 403 });
     }
@@ -231,7 +260,7 @@ export async function POST(req: Request) {
     if (already) return NextResponse.json({ message: 'already' }, { status: 409 });
 
     const now = new Date();
-    await db.collection('reviews').insertOne({
+    const insertRes = await db.collection('reviews').insertOne({
       userId,
       service: 'stringing',
       serviceApplicationId: appIdObj,
@@ -244,6 +273,29 @@ export async function POST(req: Request) {
       createdAt: now,
       updatedAt: now,
     });
+    const reviewId = insertRes.insertedId;
+
+    // 포인트 적립 (보수적 시작)
+    // - 결제완료 주문이 연결된 신청서만 적립
+    const appOrderId = (app as any)?.orderId;
+    if (appOrderId && ObjectId.isValid(String(appOrderId))) {
+      const paidOrder = await db.collection('orders').findOne({ _id: new ObjectId(String(appOrderId)), userId, paymentStatus: '결제완료' }, { projection: { _id: 1 } });
+      if (paidOrder) {
+        try {
+          await grantPoints(db, {
+            userId,
+            amount: REVIEW_REWARD_POINTS,
+            type: 'review_reward_service',
+            status: 'confirmed',
+            refKey: `review:${reviewId.toString()}`,
+            ref: { reviewId, orderId: new ObjectId(String(appOrderId)) },
+            reason: '서비스 리뷰 작성 적립',
+          });
+        } catch (e) {
+          console.error('[reviews] grantPoints failed (service)', e);
+        }
+      }
+    }
 
     return NextResponse.json({ ok: true }, { status: 201 });
   }

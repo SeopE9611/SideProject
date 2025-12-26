@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { deductPoints } from '@/lib/points.service';
 import { z } from 'zod';
 
 type DbAny = any;
@@ -119,6 +120,37 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   if (!isOwner && !isAdmin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
 
   await db.collection('reviews').updateOne({ _id }, { $set: { isDeleted: true, deletedAt: new Date(), status: 'hidden' } });
+
+  // 리뷰 적립 포인트 회수 (가능하면 자동 처리)
+  // - 이미 사용한 포인트 때문에 잔액이 부족할 수 있으므로 allowNegativeBalance=true로 회수 우선 반영
+  // - 포인트 원장(points_transactions)에 해당 적립이 없으면(레거시/정책상 미지급) 아무것도 하지 않음
+  try {
+    const earnRefKey = `review:${id}`;
+    const earned = await db.collection('points_transactions').findOne(
+      {
+        userId: doc.userId,
+        refKey: earnRefKey,
+        status: 'confirmed',
+        type: { $in: ['review_reward_product', 'review_reward_service'] },
+      },
+      { projection: { amount: 1, type: 1 } }
+    );
+
+    if (earned && typeof (earned as any).amount === 'number' && (earned as any).amount > 0) {
+      await deductPoints(db, {
+        userId: doc.userId,
+        amount: Number((earned as any).amount),
+        type: (earned as any).type,
+        status: 'confirmed',
+        refKey: `${earnRefKey}:revoke`,
+        ref: { reviewId: _id },
+        reason: '리뷰 삭제로 인한 적립 회수',
+        allowNegativeBalance: true,
+      });
+    }
+  } catch (e) {
+    console.error('[reviews] deductPoints failed (delete)', e);
+  }
 
   if (doc.productId) await updateProductRatingSummary(db, doc.productId);
 

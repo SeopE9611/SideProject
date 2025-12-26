@@ -1,5 +1,3 @@
-// lib/points.service.ts
-//
 // 포인트(적립금) "원장" + users.pointsBalance(캐시) 갱신 유틸
 // - 1차 단계에서는 주로 조회 API(/api/points/...)에서 사용
 // - 2차 단계(관리자 지급/차감), 3~5차(리뷰 적립/결제 적립/결제 사용)에서 재사용
@@ -7,6 +5,11 @@
 import type { Db, ObjectId } from 'mongodb';
 import { ObjectId as OID } from 'mongodb';
 import type { PointTransaction, PointTransactionStatus, PointTransactionType } from '@/lib/types/points';
+
+
+function isDuplicateKeyError(e: any) {
+  return e?.code === 11000 || /E11000 duplicate key/i.test(String(e?.message ?? ''));
+}
 
 type GrantParams = {
   userId: ObjectId;
@@ -64,7 +67,22 @@ export async function grantPoints(db: Db, params: GrantParams) {
   };
 
   // 1) 원장 기록(중복 지급은 unique index가 차단)
-  await txCol.insertOne(tx);
+  try {
+    try {
+    await txCol.insertOne(tx);
+  } catch (e: any) {
+    if (isDuplicateKeyError(e)) {
+      return { transactionId: null, amount: -amount, duplicated: true };
+    }
+    throw e;
+  }
+  } catch (e: any) {
+    // refKey(+유니크 인덱스) 기반 멱등 호출이면 '이미 반영된 것'으로 간주하고 정상 처리
+    if (isDuplicateKeyError(e)) {
+      return { transactionId: null, amount, duplicated: true };
+    }
+    throw e;
+  }
 
   // 2) 사용자 잔액 캐시 증가
   const res = await users.updateOne({ _id: params.userId as any }, { $inc: { pointsBalance: amount }, $set: { updatedAt: now } });
