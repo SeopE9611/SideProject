@@ -110,7 +110,7 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
   const shouldCenter = slides.length <= itemsPerPage;
 
   // 슬라이드 폭: 2 / 3 / 4 장이 gap까지 포함해서 딱 맞도록 calc 사용
-  const slideClass = cardWidthClass ?? 'flex-none basis-[calc((100%-16px)/2)] sm:basis-[calc((100%-24px)/2)] md:basis-[calc((100%-48px)/3)] lg:basis-[calc((100%-72px)/4)]';
+  const slideClass = cardWidthClass ?? 'flex-none basis-[calc((100%-12px)/2)] sm:basis-[calc((100%-32px)/2)] md:basis-[calc((100%-48px)/3)] lg:basis-[calc((100%-72px)/4)]';
 
   // Embla 설정
   //    - slidesToScroll 을 itemsPerPage 로 줘서
@@ -162,66 +162,66 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
       key={p._id}
       href={p.href ?? `/products/${p._id}`}
       className="group block h-full
-        bg-white dark:bg-slate-900 rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 
+        bg-white dark:bg-slate-900 rounded-xl p-4 sm:p-5 md:p-6 lg:p-7
         transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
     >
-      <div className="relative mb-2 sm:mb-3 md:mb-4 aspect-square rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <div className="relative mb-3 sm:mb-4 md:mb-5 aspect-square rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
         {p.images?.[0] ? (
-          <img src={p.images[0] || '/placeholder.svg'} alt={p.name} className="w-full h-full object-contain p-1 sm:p-2 md:p-3" loading="lazy" />
+          <img src={p.images[0] || '/placeholder.svg'} alt={p.name} className="w-full h-full object-contain p-2 sm:p-3 md:p-4" loading="lazy" />
         ) : (
-          <div className="flex items-center justify-center h-full text-2xl sm:text-3xl md:text-5xl font-bold text-slate-300 dark:text-slate-600">{(p.brand ?? 'D').charAt(0)}</div>
+          <div className="flex items-center justify-center h-full text-3xl sm:text-4xl md:text-5xl font-bold text-slate-300 dark:text-slate-600">{(p.brand ?? 'D').charAt(0)}</div>
         )}
 
         {(typeof p.rentalEnabled === 'boolean' || p.condition) && (
-          <div className="absolute top-1.5 left-1.5 right-1.5 sm:top-2 sm:left-2 sm:right-2 flex items-center gap-1 sm:gap-1.5 z-10">
+          <div className="absolute top-2 left-2 right-2 sm:top-2.5 sm:left-2.5 sm:right-2.5 flex items-center gap-1.5 sm:gap-2 z-10">
             {typeof p.rentalEnabled === 'boolean' && !p.rentalEnabled && <StatusBadge kind="rental" state="unavailable" />}
             {p.condition && <StatusBadge kind="condition" state={p.condition} />}
           </div>
         )}
       </div>
 
-      <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
-        <div className="text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
+      <div className="space-y-1.5 sm:space-y-2 md:space-y-2.5">
+        <div className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
         <h3
-          className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-slate-900 dark:text-white 
-          line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] md:min-h-[3rem] leading-snug"
+          className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-slate-900 dark:text-white 
+          line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] md:min-h-[3.5rem] leading-snug"
         >
           {p.name}
         </h3>
-        <div className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-slate-900 dark:text-white pt-0.5 sm:pt-1">{Number(p.price).toLocaleString()}원</div>
+        <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-slate-900 dark:text-white pt-1 sm:pt-1.5">{Number(p.price).toLocaleString()}원</div>
       </div>
     </Link>
   );
 
   const PlaceholderCard = () => (
     <div
-      className="h-full rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 
+      className="h-full rounded-xl p-4 sm:p-5 md:p-6 lg:p-7
       bg-slate-50 dark:bg-slate-800/50 
       flex flex-col items-center justify-center"
     >
       <div
-        className="relative mb-2 sm:mb-3 md:mb-4 aspect-square w-full rounded-lg bg-slate-100 dark:bg-slate-700 
+        className="relative mb-3 sm:mb-4 md:mb-5 aspect-square w-full rounded-lg bg-slate-100 dark:bg-slate-700 
         flex items-center justify-center"
       >
-        <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-slate-200 dark:bg-slate-600" />
+        <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-slate-200 dark:bg-slate-600" />
       </div>
-      <div className="text-center space-y-1">
-        <div className="text-xs sm:text-sm md:text-base font-semibold text-slate-400 dark:text-slate-500">준비 중</div>
-        <div className="text-[11px] sm:text-xs md:text-sm text-slate-400 dark:text-slate-600">곧 업데이트</div>
+      <div className="text-center space-y-1.5">
+        <div className="text-sm sm:text-base md:text-lg font-semibold text-slate-400 dark:text-slate-500">준비 중</div>
+        <div className="text-xs sm:text-sm md:text-base text-slate-400 dark:text-slate-600">곧 업데이트</div>
       </div>
     </div>
   );
 
   const SkeletonCard = () => (
     <div
-      className="h-full rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 
+      className="h-full rounded-xl p-4 sm:p-5 md:p-6 lg:p-7
       bg-white dark:bg-slate-900 animate-pulse"
     >
-      <div className="relative mb-2 sm:mb-3 md:mb-4 aspect-square rounded-lg bg-slate-100 dark:bg-slate-800" />
-      <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
-        <div className="h-2.5 sm:h-3 md:h-4 w-16 sm:w-20 md:w-24 rounded bg-slate-100 dark:bg-slate-800" />
-        <div className="h-3 sm:h-4 md:h-5 w-24 sm:w-32 md:w-40 rounded bg-slate-100 dark:bg-slate-800" />
-        <div className="h-4 sm:h-5 md:h-6 w-16 sm:w-20 md:w-24 rounded bg-slate-100 dark:bg-slate-800" />
+      <div className="relative mb-3 sm:mb-4 md:mb-5 aspect-square rounded-lg bg-slate-100 dark:bg-slate-800" />
+      <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
+        <div className="h-3 sm:h-4 md:h-5 w-20 sm:w-24 md:w-28 rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-4 sm:h-5 md:h-6 w-32 sm:w-40 md:w-48 rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-5 sm:h-6 md:h-7 w-20 sm:w-24 md:w-28 rounded bg-slate-100 dark:bg-slate-800" />
       </div>
     </div>
   );
@@ -229,20 +229,20 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
   const MoreCard = () => (
     <Link
       href={moreHref}
-      className="group h-full bg-slate-50 dark:bg-slate-800 rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 
+      className="group h-full bg-slate-50 dark:bg-slate-800 rounded-xl p-4 sm:p-5 md:p-6 lg:p-7
         hover:bg-slate-100 dark:hover:bg-slate-700
         transition-all duration-300 flex items-center justify-center hover:scale-[1.02] hover:shadow-lg"
     >
-      <div className="text-center space-y-1.5 sm:space-y-2 md:space-y-3">
+      <div className="text-center space-y-2 sm:space-y-3 md:space-y-4">
         <div
-          className="w-12 h-12 sm:w-14 sm:h-14 md:w-18 md:h-18 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto 
+          className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto 
           flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
         >
-          <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-slate-600 dark:text-slate-400" />
+          <ArrowRight className="h-6 w-6 sm:h-7 sm:w-7 md:h-9 md:w-9 text-slate-600 dark:text-slate-400" />
         </div>
-        <div className="space-y-0.5 sm:space-y-1">
-          <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-slate-900 dark:text-white">더 많은 상품</h3>
-          <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 dark:text-slate-400">전체 보기</p>
+        <div className="space-y-1 sm:space-y-1.5">
+          <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-slate-900 dark:text-white">더 많은 상품</h3>
+          <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-400">전체 보기</p>
         </div>
       </div>
     </Link>
@@ -261,7 +261,7 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
 
         <div className="relative">
           <div ref={viewportRef} className="overflow-hidden">
-            <div className={`flex gap-2 sm:gap-3 md:gap-4 lg:gap-6 ${shouldCenter ? 'justify-center' : ''}`}>
+            <div className={`flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 ${shouldCenter ? 'justify-center' : ''}`}>
               {slides.map((s, i) => {
                 if (s.kind === 'item') {
                   return (

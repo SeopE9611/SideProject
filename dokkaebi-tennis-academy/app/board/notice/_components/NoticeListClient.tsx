@@ -76,39 +76,39 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
+      <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12 space-y-6 sm:space-y-8">
         <div className="flex flex-col space-y-4 sm:space-y-6">
           <div className="flex items-center space-x-3 sm:space-x-4">
             {/* 고객센터 홈으로 돌아가는 Back 버튼 */}
             <Button variant="ghost" asChild className="p-2">
               <Link href="/support">
-                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </Link>
             </Button>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
-                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
+                <Bell className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">고객센터 · 공지사항</h1>
-                <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-300">도깨비 테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">고객센터 · 공지사항</h1>
+                <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300">도깨비 테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
               </div>
             </div>
           </div>
         </div>
 
         <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50 border-b p-4 sm:p-6">
-            <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-              <div className="flex items-center space-x-2">
-                <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                <span className="text-base sm:text-lg">공지사항 목록</span>
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50 border-b p-5 sm:p-6 md:p-8">
+            <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                <span className="text-lg sm:text-xl md:text-2xl">공지사항 목록</span>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
-                  <SelectTrigger className="w-full sm:w-[120px] bg-white dark:bg-gray-700 text-sm">
+                  <SelectTrigger className="w-full sm:w-[140px] bg-white dark:bg-gray-700 text-sm sm:text-base h-10 sm:h-11">
                     <SelectValue placeholder="검색 조건" />
                   </SelectTrigger>
                   <SelectContent>
@@ -119,11 +119,11 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
                   </SelectContent>
                 </Select>
                 <div className="relative flex-1 sm:flex-initial">
-                  <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
+                  <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   <Input
                     type="search"
                     placeholder="검색어를 입력하세요"
-                    className="w-full sm:w-[200px] pl-8 sm:pl-10 bg-white dark:bg-gray-700 text-sm"
+                    className="w-full sm:w-[220px] pl-10 sm:pl-12 bg-white dark:bg-gray-700 text-sm sm:text-base h-10 sm:h-11"
                     value={inputKeyword}
                     onChange={(e) => setInputKeyword(e.target.value)}
                     onKeyDown={(e) => {
@@ -141,14 +141,14 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
                     setField(inputField);
                   }}
                   size="sm"
-                  className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
+                  className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 h-10 sm:h-11 text-sm sm:text-base"
                 >
                   검색
                 </Button>
                 {isAdmin && (
-                  <Button asChild size="sm" className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
+                  <Button asChild size="sm" className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 h-10 sm:h-11 text-sm sm:text-base">
                     <Link href="/board/notice/write">
-                      <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                      <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                       작성하기
                     </Link>
                   </Button>
@@ -156,33 +156,29 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <div className="space-y-3 sm:space-y-4">
-              {!isLoading && !error && items.length === 0 && <div className="py-6 sm:py-8 text-center text-xs sm:text-sm text-gray-500">검색 결과가 없습니다.</div>}
+          <CardContent className="p-5 sm:p-6 md:p-8">
+            <div className="space-y-4 sm:space-y-5">
+              {!isLoading && !error && items.length === 0 && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-gray-500">검색 결과가 없습니다.</div>}
               {items.map((notice) => (
                 <Link key={notice._id} href={`/board/notice/${notice._id}`}>
                   <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-gray-200 dark:border-gray-700">
-                    <CardContent className="p-4 sm:p-5 md:p-6">
+                    <CardContent className="p-5 sm:p-6 md:p-7">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 min-w-0">
-                            {/* 상단 고정 */}
+                          <div className="flex items-center flex-wrap gap-2 sm:gap-2.5 mb-2 sm:mb-3 min-w-0">
                             {notice.isPinned && (
                               <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`}>
-                                <Pin className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+                                <Pin className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                                 고정
                               </Badge>
                             )}
 
-                            {/* 카테고리 */}
                             {notice.category && <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)}`}>{notice.category}</Badge>}
 
-                            {/* 제목 */}
-                            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 min-w-0 truncate">{notice.title}</h3>
+                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 min-w-0 truncate">{notice.title}</h3>
 
-                            {/* 첨부(이미지/파일) */}
                             {(notice.hasImage || notice.hasFile) && (
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1 sm:gap-1.5">
                                 {notice.hasImage && (
                                   <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachImageColor}`}>
                                     <svg viewBox="0 0 24 24" className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -203,12 +199,11 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
                             )}
                           </div>
 
-                          {/* 공지는 비밀글 개념이 없지만, API 목록 응답엔 content를 내리지 않음. excerpt가 있을 때만 표시 */}
-                          {notice.excerpt && <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 sm:mb-3 line-clamp-2">{notice.excerpt}</p>}
-                          <div className="flex items-center space-x-3 sm:space-x-4 text-xs sm:text-sm text-gray-500 dark:text-gray-500">
+                          {notice.excerpt && <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-2 sm:mb-3 line-clamp-2">{notice.excerpt}</p>}
+                          <div className="flex items-center space-x-3 sm:space-x-4 text-sm sm:text-base text-gray-500 dark:text-gray-500">
                             <span>{fmt(notice.createdAt)}</span>
                             <span className="flex items-center">
-                              <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />
+                              <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-1" />
                               {notice.viewCount ?? 0}
                             </span>
                           </div>
@@ -220,16 +215,14 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
               ))}
             </div>
 
-            <div className="mt-6 sm:mt-8 flex items-center justify-center">
-              <div className="flex items-center space-x-1.5 sm:space-x-2">
-                {/* 이전 페이지 */}
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-9 w-9 sm:h-10 sm:w-10" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+            <div className="mt-8 sm:mt-10 flex items-center justify-center">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
                   <span className="sr-only">이전 페이지</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 sm:h-4 sm:w-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </Button>
-                {/* 페이지 번호들: 최대 3개 정도만 노출 (디자인 유지용) */}
                 {Array.from({ length: totalPages })
                   .map((_, i) => i + 1)
                   .slice(0, 3)
@@ -238,17 +231,16 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
                       key={pageNumber}
                       variant="outline"
                       size="sm"
-                      className={pageNumber === page ? 'h-9 w-9 sm:h-10 sm:w-10 bg-blue-600 text-white border-blue-600 text-xs sm:text-sm' : 'h-9 w-9 sm:h-10 sm:w-10 bg-white dark:bg-gray-700 text-xs sm:text-sm'}
+                      className={pageNumber === page ? 'h-10 w-10 sm:h-12 sm:w-12 bg-blue-600 text-white border-blue-600 text-sm sm:text-base' : 'h-10 w-10 sm:h-12 sm:w-12 bg-white dark:bg-gray-700 text-sm sm:text-base'}
                       onClick={() => setPage(pageNumber)}
                     >
                       {pageNumber}
                     </Button>
                   ))}
 
-                {/* 다음 페이지 */}
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-9 w-9 sm:h-10 sm:w-10" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
                   <span className="sr-only">다음 페이지</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 sm:h-4 sm:w-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </Button>
