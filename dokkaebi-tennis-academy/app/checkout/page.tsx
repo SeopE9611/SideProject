@@ -198,6 +198,31 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 포인트(Phase 2: 결제 차감) - UI 상태
+  // - 실제 주문 반영은 CheckoutButton → /api/orders 단계에서 함께 진행(다음 파일)
+  const [pointsBalance, setPointsBalance] = useState(0);
+  const [useAllPoints, setUseAllPoints] = useState(false);
+  const [pointsToUse, setPointsToUse] = useState(0);
+
+  // 포인트 사용 정책(1차): 배송비 제외 금액까지만 사용 가능
+  // - 총액(total)에서 배송비(shippingFee)를 제외한 금액까지만 차감 허용
+  // - 로그인 유저만 사용 가능(비회원은 0으로 고정)
+  const maxPointsByPolicy = user ? Math.max(0, total - shippingFee) : 0;
+  const maxPointsToUse = Math.min(pointsBalance, maxPointsByPolicy);
+  const appliedPoints = Math.min(pointsToUse, maxPointsToUse);
+  const payableTotal = total - appliedPoints;
+
+  // 포인트 입력값 보정(유저 잔액/정책/전액사용 토글에 따라 자동 보정)
+  useEffect(() => {
+    // 비회원이면 포인트 관련 상태는 아래 useEffect에서 0으로 초기화됨
+    if (!user) return;
+
+    const desired = useAllPoints ? maxPointsToUse : pointsToUse;
+    const clamped = Math.max(0, Math.min(Math.floor(desired || 0), maxPointsToUse));
+
+    if (clamped !== pointsToUse) setPointsToUse(clamped);
+  }, [user, useAllPoints, maxPointsToUse, pointsToUse]);
+
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
@@ -238,6 +263,35 @@ export default function CheckoutPage() {
     };
 
     fetchUserInfo();
+  }, [user]);
+
+  // 로그인 유저일 때만 포인트 잔액을 조회
+  useEffect(() => {
+    if (!user) {
+      // 비회원/로그아웃 상태에서는 포인트 사용 불가
+      setPointsBalance(0);
+      setUseAllPoints(false);
+      setPointsToUse(0);
+      return;
+    }
+
+    let cancelled = false;
+    fetch('/api/points/me', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        const raw = data?.ok ? Number(data.balance ?? 0) : 0;
+        const bal = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+        setPointsBalance(bal);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPointsBalance(0);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   if (loading)
@@ -633,11 +687,63 @@ export default function CheckoutPage() {
                       </div>
                     )}
 
+                    {/* 포인트 사용(로그인 유저만) */}
+                    <div className="mt-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-4 rounded-lg border border-slate-200 dark:border-slate-600">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-600 dark:text-slate-400">보유 포인트</span>
+                        <span className="font-semibold">{user ? `${pointsBalance.toLocaleString()}P` : '로그인 필요'}</span>
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <Checkbox id="useAllPoints" checked={useAllPoints} onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))} disabled={!user || pointsBalance <= 0 || maxPointsToUse <= 0} />
+                          <Label htmlFor="useAllPoints" className="text-sm font-medium">
+                            전액 사용
+                          </Label>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min={0}
+                            max={maxPointsToUse}
+                            className="w-28 text-right"
+                            value={pointsToUse}
+                            disabled={!user || pointsBalance <= 0 || maxPointsToUse <= 0 || useAllPoints}
+                            onChange={(e) => {
+                              const n = Number(e.target.value);
+                              const v = Number.isFinite(n) ? Math.floor(n) : 0;
+                              setUseAllPoints(false);
+                              setPointsToUse(v);
+                            }}
+                          />
+                          <span className="text-sm text-slate-500">P</span>
+                        </div>
+                      </div>
+
+                      <p className="mt-2 text-xs text-slate-500">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
+                      <p className="mt-1 text-xs text-slate-500">현재 단계에서는 UI만 반영됩니다. 다음 단계에서 주문 생성(/api/orders)까지 연결되면 실제 결제에 반영됩니다.</p>
+                    </div>
+
+                    {appliedPoints > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-600 dark:text-slate-400">포인트 사용(예정)</span>
+                        <span className="font-semibold text-rose-600">-{appliedPoints.toLocaleString()}원</span>
+                      </div>
+                    )}
+
                     <Separator />
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>총 결제 금액</span>
                       <span className="text-blue-600">{total.toLocaleString()}원</span>
                     </div>
+
+                    {appliedPoints > 0 && (
+                      <div className="flex justify-between items-center text-lg font-bold">
+                        <span className="text-slate-600 dark:text-slate-400">포인트 적용 후 결제 예정 금액</span>
+                        <span className="text-blue-600">{payableTotal.toLocaleString()}원</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
@@ -683,6 +789,7 @@ export default function CheckoutPage() {
                     servicePickupMethod={servicePickupMethod}
                     items={orderItems}
                     serviceFee={serviceFee}
+                    pointsToUse={appliedPoints}
                   />
                   <Button variant="outline" className="w-full border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
                     <Link href="/cart">장바구니로 돌아가기</Link>

@@ -2,9 +2,11 @@
 // - 1차 단계에서는 주로 조회 API(/api/points/...)에서 사용
 // - 2차 단계(관리자 지급/차감), 3~5차(리뷰 적립/결제 적립/결제 사용)에서 재사용
 
-import type { Db, ObjectId } from 'mongodb';
+import type { ClientSession, Db, ObjectId } from 'mongodb';
 import { ObjectId as OID } from 'mongodb';
 import type { PointTransaction, PointTransactionStatus, PointTransactionType } from '@/lib/types/points';
+
+type MongoSessionOptions = { session?: ClientSession };
 
 function isDuplicateKeyError(e: any) {
   return e?.code === 11000 || /E11000 duplicate key/i.test(String(e?.message ?? ''));
@@ -45,7 +47,7 @@ export async function getPointsBalance(db: Db, userId: ObjectId): Promise<number
   return typeof bal === 'number' && Number.isFinite(bal) ? bal : 0;
 }
 
-export async function grantPoints(db: Db, params: GrantParams) {
+export async function grantPoints(db: Db, params: GrantParams, opts: MongoSessionOptions = {}) {
   const now = new Date();
   const amount = asSafeInt(params.amount);
   if (amount <= 0) throw Object.assign(new Error('INVALID_AMOUNT'), { code: 'INVALID_AMOUNT' });
@@ -67,7 +69,7 @@ export async function grantPoints(db: Db, params: GrantParams) {
 
   // 1) 원장 기록(중복 지급은 unique index가 차단)
   try {
-    await txCol.insertOne(tx);
+    await txCol.insertOne(tx, { session: opts.session });
   } catch (e: any) {
     // refKey(+유니크 인덱스) 기반 멱등 호출이면 '이미 반영된 것'으로 간주하고 정상 처리
     if (isDuplicateKeyError(e)) {
@@ -77,12 +79,12 @@ export async function grantPoints(db: Db, params: GrantParams) {
   }
 
   // 2) 사용자 잔액 캐시 증가
-  const res = await users.updateOne({ _id: params.userId as any }, { $inc: { pointsBalance: amount }, $set: { updatedAt: now } });
+  const res = await users.updateOne({ _id: params.userId as any }, { $inc: { pointsBalance: amount }, $set: { updatedAt: now } }, { session: opts.session });
 
   if (res.matchedCount === 0) {
     // 사용자 없으면 원장 롤백 시도
     try {
-      await txCol.deleteOne({ _id: tx._id } as any);
+      await txCol.deleteOne({ _id: tx._id } as any, { session: opts.session });
     } catch (e) {
       console.error('[points] rollback failed (user not found)', e);
     }
@@ -92,7 +94,7 @@ export async function grantPoints(db: Db, params: GrantParams) {
   return { transactionId: tx._id.toString(), amount };
 }
 
-export async function deductPoints(db: Db, params: DeductParams) {
+export async function deductPoints(db: Db, params: DeductParams, opts: MongoSessionOptions = {}) {
   const now = new Date();
   const amount = asSafeInt(params.amount);
   if (amount <= 0) throw Object.assign(new Error('INVALID_AMOUNT'), { code: 'INVALID_AMOUNT' });
@@ -113,7 +115,7 @@ export async function deductPoints(db: Db, params: DeductParams) {
     createdAt: now,
   };
 
-  await txCol.insertOne(tx);
+  await txCol.insertOne(tx, { session: opts.session });
 
   // 2) 잔액 차감 (기본은 잔액 부족 시 실패)
   const filter: any = { _id: params.userId as any };
@@ -123,12 +125,12 @@ export async function deductPoints(db: Db, params: DeductParams) {
     filter.$expr = { $gte: [{ $ifNull: ['$pointsBalance', 0] }, amount] };
   }
 
-  const res = await users.updateOne(filter, { $inc: { pointsBalance: -amount }, $set: { updatedAt: now } });
+  const res = await users.updateOne(filter, { $inc: { pointsBalance: -amount }, $set: { updatedAt: now } }, { session: opts.session });
 
   if (res.matchedCount === 0 || res.modifiedCount === 0) {
     // 잔액 부족/사용자 없음 등으로 차감 실패 → 원장 롤백
     try {
-      await txCol.deleteOne({ _id: tx._id } as any);
+      await txCol.deleteOne({ _id: tx._id } as any, { session: opts.session });
     } catch (e) {
       console.error('[points] rollback failed (deduct)', e);
     }

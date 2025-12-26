@@ -6,6 +6,7 @@ import type { DBOrder } from '@/lib/types/order-db';
 import { findUserSnapshot, fetchCombinedOrders } from './db';
 import clientPromise from '@/lib/mongodb';
 import { createStringingApplicationFromOrder } from '@/app/features/stringing-applications/api/create-from-order';
+import { deductPoints } from '@/lib/points.service';
 // 주문 생성 핸들러
 export async function createOrder(req: Request): Promise<Response> {
   try {
@@ -35,6 +36,9 @@ export async function createOrder(req: Request): Promise<Response> {
       quantity: number;
       kind?: 'product' | 'racket';
     };
+
+    // pointsToUse 읽기
+    const requestedPointsToUse = Math.max(0, Math.floor(Number(body?.pointsToUse ?? 0) || 0));
 
     // 클라 금액은 절대 신뢰하지 않음(참고 로그용만)
     const { items: rawItems, shippingInfo, guestInfo } = body;
@@ -250,6 +254,23 @@ export async function createOrder(req: Request): Promise<Response> {
 
         const computedTotalPrice = computedSubtotal + computedServiceFee + computedShippingFee;
 
+        // 포인트 사용(회원만) — 서버가 최종 확정
+        // 정책: 배송비는 포인트 적용 제외(= 상품금액 + 서비스비까지만 차감 가능)
+        const maxPointsByPolicy = Math.max(0, computedTotalPrice - computedShippingFee); // = computedSubtotal + computedServiceFee
+        let pointsToUse = 0;
+
+        if (userId && requestedPointsToUse > 0 && maxPointsByPolicy > 0) {
+          const userOid = new ObjectId(userId);
+          const u = await db.collection('users').findOne({ _id: userOid }, { projection: { pointsBalance: 1 }, session } as any);
+
+          const balanceRaw = Number((u as any)?.pointsBalance ?? 0);
+          const balance = Number.isFinite(balanceRaw) && balanceRaw > 0 ? Math.floor(balanceRaw) : 0;
+
+          const maxPointsByBalanceAndPolicy = Math.min(balance, maxPointsByPolicy);
+          pointsToUse = Math.min(requestedPointsToUse, maxPointsByBalanceAndPolicy);
+        }
+
+        const payableTotalPrice = Math.max(0, computedTotalPrice - pointsToUse);
         // 결제 은행(Checkout에서 paymentInfo.bank로 내려옴)
         const bankRaw = body?.paymentInfo?.bank;
         const bank = typeof bankRaw === 'string' && bankRaw.trim() !== '' ? bankRaw.trim() : undefined;
@@ -260,7 +281,9 @@ export async function createOrder(req: Request): Promise<Response> {
           shippingInfo,
           guestInfo: userId ? null : guestInfo || null,
 
-          totalPrice: computedTotalPrice,
+          originalTotalPrice: computedTotalPrice,
+          pointsUsed: pointsToUse,
+          totalPrice: payableTotalPrice,
           shippingFee: computedShippingFee,
           serviceFee: computedServiceFee,
 
@@ -271,7 +294,10 @@ export async function createOrder(req: Request): Promise<Response> {
           paymentInfo: {
             method: '무통장 입금',
             status: 'pending',
-            total: computedTotalPrice,
+            originalTotal: computedTotalPrice,
+            pointsUsed: pointsToUse,
+            // total: computedTotalPrice,
+            total: payableTotalPrice,
             shippingFee: computedShippingFee,
             serviceFee: computedServiceFee,
             bank,
@@ -296,6 +322,33 @@ export async function createOrder(req: Request): Promise<Response> {
         const inserted = await ordersCol.insertOne(order, { session });
         createdOrderId = inserted.insertedId as ObjectId;
 
+        // 포인트 차감(회원 + pointsToUse>0 일 때만)
+        if (userId && pointsToUse > 0) {
+          try {
+            await deductPoints(
+              db,
+              {
+                userId: new ObjectId(userId),
+                amount: pointsToUse,
+                type: 'spend_on_order',
+                status: 'confirmed',
+                refKey: `order:${String(createdOrderId)}:spend`,
+                ref: { orderId: createdOrderId },
+                reason: '주문 포인트 사용',
+              },
+              { session }
+            );
+          } catch (e: any) {
+            // (1) 중복 차감 시도(재시도/중복 호출)면 이미 반영된 것으로 보고 통과
+            if (e?.code === 11000) {
+              // noop
+            } else if (e?.code === 'INSUFFICIENT_POINTS') {
+              throw new HttpError(400, { error: 'INSUFFICIENT_POINTS', message: '포인트 잔액이 부족합니다.' });
+            } else {
+              throw e;
+            }
+          }
+        }
         // 주문 기반 신청서 자동 생성(옵션)
         if (shippingInfo?.withStringService === true) {
           const app = await createStringingApplicationFromOrder(

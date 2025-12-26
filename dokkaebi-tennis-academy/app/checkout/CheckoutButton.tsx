@@ -28,6 +28,7 @@ export default function CheckoutButton({
   servicePickupMethod,
   items,
   serviceFee = 0,
+  pointsToUse = 0,
 }: {
   disabled: boolean;
   name: string;
@@ -47,6 +48,7 @@ export default function CheckoutButton({
   servicePickupMethod: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
   items: CartItem[];
   serviceFee?: number;
+  pointsToUse?: number;
 }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -82,6 +84,9 @@ export default function CheckoutButton({
         withStringService,
       };
 
+      // 포인트 사용값(서버에서도 재검증/클램프할 예정이지만, 프론트에서도 최소한의 보정)
+      const safePointsToUse = user ? Math.max(0, Math.floor(Number(pointsToUse) || 0)) : 0;
+
       const orderData = {
         items: items.map((item) => ({
           productId: item.id,
@@ -96,6 +101,7 @@ export default function CheckoutButton({
         totalPrice, // 이미 상품 + 배송비 + 서비스비가 포함된 값
         shippingFee,
         serviceFee,
+        pointsToUse: safePointsToUse,
         guestInfo: !user ? { name, phone, email } : undefined,
         isStringServiceApplied: withStringService,
         servicePickupMethod,

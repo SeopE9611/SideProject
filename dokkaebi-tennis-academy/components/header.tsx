@@ -70,6 +70,37 @@ const Header = () => {
   const { user } = useCurrentUser();
   const isAdmin = user?.role === 'admin';
 
+  // 헤더 포인트 표시(로그인 유저만)
+  const [pointsBalance, setPointsBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setPointsBalance(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    fetch('/api/points/me', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+
+        const raw = data?.ok ? Number(data.balance ?? 0) : 0;
+        const bal = Number.isFinite(raw) && raw >= 0 ? Math.floor(raw) : 0;
+        setPointsBalance(bal);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPointsBalance(0);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // pathname을 넣어두면 페이지 이동 후에도(체크아웃 성공 이동 등) 헤더 값이 갱신됨
+  }, [user?.id, pathname]);
+
   const NAV_LINKS = {
     strings: {
       root: '/products',
@@ -253,6 +284,15 @@ const Header = () => {
                 </Button>
               </Link>
 
+              {user && (
+                <Button variant="ghost" className="h-9 px-3 rounded-full" asChild>
+                  <Link href="/mypage?tab=points" className="flex items-center gap-2">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">P</span>
+                    <span className="text-sm font-semibold tabular-nums">{pointsBalance === null ? '...' : pointsBalance.toLocaleString()}P</span>
+                  </Link>
+                </Button>
+              )}
+
               <div className="max-w-[140px] overflow-hidden">
                 <UserNav />
               </div>
@@ -268,6 +308,17 @@ const Header = () => {
                 {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">{cartBadge}</span>}
               </Button>
             </Link>
+
+            {user && (
+              <Button variant="ghost" className="h-9 px-2 rounded-full" asChild>
+                <Link href="/mypage?tab=points" aria-label="내 포인트">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold tabular-nums">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">P</span>
+                    <span className="max-w-[84px] truncate">{pointsBalance === null ? '0' : pointsBalance.toLocaleString()}P</span>
+                  </span>
+                </Link>
+              </Button>
+            )}
 
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetOverlay className="bg-black/60 backdrop-blur-0" />
