@@ -6,17 +6,7 @@ import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { issuePassesForPaidOrder } from '@/lib/passes.service';
 import jwt from 'jsonwebtoken';
 import { deductPoints, grantPoints } from '@/lib/points.service';
-
-/**
- * 포인트 적립 정책 (주문 결제완료 시 자동 적립)
- * - 기본값: 결제 확정 금액(totalPrice)의 1%를 적립
- * - 정책을 바꾸려면 이 상수/함수만 수정하면 됩니다.
- */
-const POINTS_EARN_RATE = 0.01;
-function calcEarnPoints(totalPrice: number) {
-  if (!Number.isFinite(totalPrice) || totalPrice <= 0) return 0;
-  return Math.floor(totalPrice * POINTS_EARN_RATE);
-}
+import { calcOrderEarnPoints } from '@/lib/points.policy';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -447,7 +437,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
             const uidStr = uid ? String(uid) : '';
             if (ObjectId.isValid(uidStr)) {
               const total = Number((updatedOrder as any).totalPrice ?? (updatedOrder as any).paymentInfo?.amount ?? 0);
-              const earn = calcEarnPoints(total);
+              const earn = calcOrderEarnPoints(total);
               if (earn > 0) {
                 //  주문 결제완료 시 회원 포인트 자동 적립
                 const rewardRefKey = `order_reward:${String((updatedOrder as any)._id)}`;

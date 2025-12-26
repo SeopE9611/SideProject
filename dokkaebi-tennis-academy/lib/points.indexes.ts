@@ -28,9 +28,9 @@ async function ensureIndex(db: Db, collectionName: string, keys: Keys, options: 
 
     // options 비교는 최소(주요 필드만)로 유지
     const uniqueOk = options.unique ? idx.unique === true : true;
-    const nameOk = options.name ? idx.name === options.name : true;
 
-    return samePairs && uniqueOk && nameOk;
+    // 인덱스 이름은 환경/히스토리에 따라 달라질 수 있으므로 키 패턴 + 유니크 여부가 동일하면 이미 존재한다고 판단.
+    return samePairs && uniqueOk;
   });
 
   if (!exists) {
@@ -54,14 +54,38 @@ export async function ensurePointsIndexes(db: Db) {
     }
   );
 
-  // 디버깅/운영 추적용: refKey 단독 조회
-  await ensureIndex(
-    db,
-    'points_transactions',
-    { refKey: 1 },
-    {
-      name: 'idx_points_refKey',
-      partialFilterExpression: { refKey: { $type: 'string' } },
+  // refKey 단독 멱등(가장 강한 중복 방지)
+  // - 이미 {refKey:1} 비유니크 인덱스가 존재할 수 있으므로, 발견 시 drop 후 unique로 재생성
+  // - 데이터에 중복 refKey가 있으면 unique 생성이 실패할 수 있으니, 실패하더라도 전체 부팅이 죽지 않게 처리
+  const col = db.collection('points_transactions');
+  try {
+    const idxs = await col.indexes();
+    const refKeyIdx = idxs.find((idx) => {
+      const key = idx.key as Record<string, IndexDirection>;
+      return Object.keys(key).length === 1 && key.refKey === 1;
+    });
+
+    if (refKeyIdx && refKeyIdx.name && refKeyIdx.unique !== true) {
+      // 같은 키패턴({refKey:1})의 non-unique 인덱스가 있으면, unique 인덱스를 만들 수 없어 먼저 제거
+      try {
+        await col.dropIndex(refKeyIdx.name);
+      } catch (e) {
+        console.warn('[points] dropIndex failed (refKey)', e);
+      }
     }
-  );
+
+    // unique refKey (partial)
+    await ensureIndex(
+      db,
+      'points_transactions',
+      { refKey: 1 },
+      {
+        name: 'uq_points_refKey',
+        unique: true,
+        partialFilterExpression: { refKey: { $type: 'string' } },
+      }
+    );
+  } catch (e) {
+    console.warn('[points] ensure unique refKey index skipped', e);
+  }
 }

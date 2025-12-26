@@ -6,7 +6,6 @@ import type { Db, ObjectId } from 'mongodb';
 import { ObjectId as OID } from 'mongodb';
 import type { PointTransaction, PointTransactionStatus, PointTransactionType } from '@/lib/types/points';
 
-
 function isDuplicateKeyError(e: any) {
   return e?.code === 11000 || /E11000 duplicate key/i.test(String(e?.message ?? ''));
 }
@@ -68,14 +67,7 @@ export async function grantPoints(db: Db, params: GrantParams) {
 
   // 1) 원장 기록(중복 지급은 unique index가 차단)
   try {
-    try {
     await txCol.insertOne(tx);
-  } catch (e: any) {
-    if (isDuplicateKeyError(e)) {
-      return { transactionId: null, amount: -amount, duplicated: true };
-    }
-    throw e;
-  }
   } catch (e: any) {
     // refKey(+유니크 인덱스) 기반 멱등 호출이면 '이미 반영된 것'으로 간주하고 정상 처리
     if (isDuplicateKeyError(e)) {

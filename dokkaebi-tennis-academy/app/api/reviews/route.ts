@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { grantPoints } from '@/lib/points.service';
+import { REVIEW_REWARD_POINTS } from '@/lib/points.policy';
 
 type DbAny = any;
 
@@ -13,9 +14,6 @@ type DbAny = any;
  */
 const ALLOWED_HOSTS = new Set<string>(['cwzpxxahtayoyqqskmnt.supabase.co']);
 const ALLOWED_PATH_PREFIXES = ['/storage/v1/object/public/tennis-images/'];
-
-// MVP: 리뷰 작성 시 적립 포인트(정책은 이후 조정 가능)
-const REVIEW_REWARD_POINTS = 50;
 
 /** http/https + 화이트리스트(host, path) 체크 */
 const isAllowedHttpUrl = (v: unknown): v is string => {

@@ -125,15 +125,17 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   // - 이미 사용한 포인트 때문에 잔액이 부족할 수 있으므로 allowNegativeBalance=true로 회수 우선 반영
   // - 포인트 원장(points_transactions)에 해당 적립이 없으면(레거시/정책상 미지급) 아무것도 하지 않음
   try {
+    // 리뷰 적립 트랜잭션 refKey 규칙과 반드시 일치해야 함
+    // (POST /api/reviews에서 동일한 refKey로 적립됨)
     const earnRefKey = `review:${id}`;
     const earned = await db.collection('points_transactions').findOne(
       {
         userId: doc.userId,
-        refKey: earnRefKey,
         status: 'confirmed',
         type: { $in: ['review_reward_product', 'review_reward_service'] },
+        $or: [{ refKey: earnRefKey }, { 'ref.reviewId': _id }],
       },
-      { projection: { amount: 1, type: 1 } }
+      { projection: { amount: 1, type: 1, refKey: 1 } }
     );
 
     if (earned && typeof (earned as any).amount === 'number' && (earned as any).amount > 0) {
