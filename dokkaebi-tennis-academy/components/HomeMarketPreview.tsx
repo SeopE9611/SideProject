@@ -10,34 +10,34 @@ export default function HomeMarketPreview() {
   const items = data?.ok ? data.items : [];
 
   return (
-    <section className="mt-12">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">중고 거래 최신글</h2>
-        <Link className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors" href="/board/market">
+    <section className="mt-8 sm:mt-10 md:mt-12">
+      <div className="mb-3 sm:mb-4 flex items-center justify-between">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">중고 거래 최신글</h2>
+        <Link className="text-xs sm:text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors" href="/board/market">
           더보기
         </Link>
       </div>
-      <ul className="space-y-3">
+      <ul className="space-y-2 sm:space-y-3">
         {isLoading ? (
           <>
             {Array.from({ length: 4 }).map((_, i) => (
-              <li key={`skeleton-${i}`} className="rounded-lg bg-white/60 p-3 dark:bg-black/20">
-                <div className="h-4 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                <div className="mt-2 h-3 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+              <li key={`skeleton-${i}`} className="rounded-lg bg-white/60 p-3 sm:p-4 dark:bg-black/20">
+                <div className="h-3.5 sm:h-4 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                <div className="mt-1.5 sm:mt-2 h-2.5 sm:h-3 w-20 sm:w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
               </li>
             ))}
           </>
         ) : items.length > 0 ? (
           items.map((p) => (
             <li key={p.id}>
-              <Link className="group flex items-start justify-between gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900" href={`/board/market/${p.id}`}>
-                <span className="flex-1 truncate text-sm text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white">{p.title}</span>
-                <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">{new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
+              <Link className="group flex items-start justify-between gap-2 sm:gap-3 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900" href={`/board/market/${p.id}`}>
+                <span className="flex-1 truncate text-xs sm:text-sm text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white">{p.title}</span>
+                <span className="shrink-0 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">{new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
               </Link>
             </li>
           ))
         ) : (
-          <li className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">등록된 게시글이 없습니다</li>
+          <li className="py-8 sm:py-10 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400">등록된 게시글이 없습니다</li>
         )}
       </ul>
     </section>

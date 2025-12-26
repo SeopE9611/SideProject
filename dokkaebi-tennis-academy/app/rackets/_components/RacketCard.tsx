@@ -4,9 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Eye, Heart, ShoppingCart } from 'lucide-react';
+import { Briefcase, Eye } from 'lucide-react';
 import useSWR from 'swr';
 import { racketBrandLabel } from '@/lib/constants';
 import StatusBadge from '@/components/badges/StatusBadge';
@@ -88,7 +87,7 @@ const RacketCard = React.memo(
           </div>
 
           <div className="flex flex-col md:flex-row relative z-10">
-            <div className="relative w-full md:w-48 h-48 flex-shrink-0">
+            <div className="relative w-full md:w-48 h-56 sm:h-60 md:h-48 flex-shrink-0">
               <Image src={racket.images?.[0] || '/placeholder.svg?height=200&width=200&query=tennis+racket'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" />
               <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 z-10">
                 <div className="flex items-center gap-2">
@@ -97,12 +96,12 @@ const RacketCard = React.memo(
                 </div>
               </div>
             </div>
-            <div className="flex-1 p-4 md:p-6">
-              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4 gap-4">
+            <div className="flex-1 p-5 sm:p-6">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-3 sm:mb-4 gap-3 sm:gap-4">
                 <div className="flex-1">
-                  <div className="text-sm text-muted-foreground mb-1 font-medium">{brandLabel}</div>
-                  <h3 className="text-lg md:text-xl font-bold mb-2 dark:text-white">{racket.model}</h3>
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="text-xs sm:text-sm text-muted-foreground mb-1 font-medium">{brandLabel}</div>
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 dark:text-white">{racket.model}</h3>
+                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
                     {/* 상태 등급 */}
                     <StatusBadge kind="condition" state={racket.condition} />
 
@@ -110,14 +109,14 @@ const RacketCard = React.memo(
                   </div>
                 </div>
                 <div className="text-left lg:text-right">
-                  <div className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
                 </div>
               </div>
 
               <div className="mt-2 flex justify-end gap-2">
                 <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                  <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg">
-                    <Eye className="w-4 h-4 mr-1" />
+                  <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs sm:text-sm">
+                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                     상세보기
                   </Button>
                 </Link>
@@ -126,8 +125,8 @@ const RacketCard = React.memo(
                 {racket.rental?.enabled ? (
                   <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
                 ) : (
-                  <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400" disabled aria-disabled title="대여 불가 상태입니다">
-                    <Briefcase className="w-4 h-4 mr-1" />
+                  <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-xs sm:text-sm" disabled aria-disabled title="대여 불가 상태입니다">
+                    <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                     대여 불가
                   </Button>
                 )}
@@ -149,7 +148,7 @@ const RacketCard = React.memo(
             alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
             width={300}
             height={300}
-            className="h-48 md:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="h-56 sm:h-60 md:h-64 w-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
             <div className="flex items-center gap-2">
@@ -161,19 +160,19 @@ const RacketCard = React.memo(
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
             <div className="flex gap-2">
               <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg">
-                  <Eye className="w-4 h-4 mr-1" />
+                <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs sm:text-sm">
+                  <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                   상세보기
                 </Button>
               </Link>
             </div>
           </div>
         </div>
-        <CardContent className="p-4 md:p-5">
-          <div className="text-sm text-muted-foreground mb-2 font-medium">{brandLabel}</div>
-          <CardTitle className="text-base md:text-lg mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
+        <CardContent className="p-4 sm:p-5">
+          <div className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2 font-medium">{brandLabel}</div>
+          <CardTitle className="text-sm sm:text-base md:text-lg mb-2 sm:mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
 
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-2 sm:mb-3">
             <StatusBadge kind="condition" state={racket.condition} />
             {racket.rental?.enabled ? (
               <div className="ml-1">
@@ -185,16 +184,16 @@ const RacketCard = React.memo(
           </div>
         </CardContent>
 
-        <CardFooter className="p-4 md:p-5 pt-0 flex justify-between items-center">
+        <CardFooter className="p-4 sm:p-5 pt-0 flex justify-between items-center">
           <div>
-            <div className="font-bold text-lg text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+            <div className="font-bold text-base sm:text-lg text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
           </div>
 
           {racket.rental?.enabled ? (
             <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
           ) : (
-            <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400" disabled aria-disabled>
-              <Briefcase className="w-4 h-4 mr-1" />
+            <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-xs sm:text-sm" disabled aria-disabled>
+              <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
               대여 불가
             </Button>
           )}
