@@ -47,6 +47,21 @@ export async function getPointsBalance(db: Db, userId: ObjectId): Promise<number
   return typeof bal === 'number' && Number.isFinite(bal) ? bal : 0;
 }
 
+export async function getPointsSummary(db: Db, userId: ObjectId): Promise<{ balance: number; debt: number; available: number }> {
+  const users = db.collection('users');
+  const u = await users.findOne({ _id: userId as any }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
+
+  const balanceRaw = (u as any)?.pointsBalance;
+  const debtRaw = (u as any)?.pointsDebt;
+
+  const balance = typeof balanceRaw === 'number' && Number.isFinite(balanceRaw) ? Math.trunc(balanceRaw) : 0;
+  const debt = typeof debtRaw === 'number' && Number.isFinite(debtRaw) ? Math.trunc(debtRaw) : 0;
+
+  const available = Math.max(0, balance - debt);
+
+  return { balance, debt, available };
+}
+
 export async function getPointsState(db: Db, userId: ObjectId): Promise<{ balance: number; debt: number }> {
   const users = db.collection('users');
   const u = await users.findOne({ _id: userId as any }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
@@ -117,7 +132,7 @@ export async function grantPoints(db: Db, params: GrantParams, opts: MongoSessio
     ] as any,
     { session: opts.session } as any
   );
-  
+
   if (res.matchedCount === 0) {
     // 사용자 없으면 원장 롤백 시도
     try {
@@ -195,7 +210,12 @@ export async function deductPoints(db: Db, params: DeductParams, opts: MongoSess
   } else {
     const filter: any = { _id: params.userId as any };
     // pointsBalance가 없으면 0으로 취급하여 비교
-    filter.$expr = { $gte: [{ $ifNull: ['$pointsBalance', 0] }, amount] };
+    filter.$expr = {
+      $and: [
+        { $gte: [{ $ifNull: ['$pointsBalance', 0] }, amount] },
+        { $eq: [{ $ifNull: ['$pointsDebt', 0] }, 0] }, // debt가 있으면 포인트 사용 금지
+      ],
+    };
 
     res = await users.updateOne(filter, { $inc: { pointsBalance: -amount }, $set: { updatedAt: now } }, { session: opts.session });
 
