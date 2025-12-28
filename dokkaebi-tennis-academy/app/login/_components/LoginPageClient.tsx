@@ -20,10 +20,11 @@ export default function LoginPageClient() {
   const params = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>('login');
 
-  // 소셜 회원가입(카카오) 모드 판별
-  const oauthProvider = params.get('oauth'); // 'kakao'
+  // 소셜 회원가입(카카오/네이버) 모드 판별
+  const oauthProvider = params.get('oauth'); // 'kakao' | 'naver'
   const oauthToken = params.get('token'); // pending token
-  const isKakaoOauthRegister = activeTab === 'register' && oauthProvider === 'kakao' && !!oauthToken;
+  const isSocialOauthRegister = activeTab === 'register' && (oauthProvider === 'kakao' || oauthProvider === 'naver') && !!oauthToken;
+  const socialProviderLabel = oauthProvider === 'naver' ? '네이버' : '카카오';
 
   const { setUser } = useAuthStore();
 
@@ -61,9 +62,9 @@ export default function LoginPageClient() {
     }
   }, [params]);
 
-  // 카카오 소셜 회원가입: pending 조회 → 이메일/이름 자동 입력(프리필)
+  // 소셜 회원가입: pending 조회 → 이메일/이름 자동 입력(프리필)
   useEffect(() => {
-    if (!isKakaoOauthRegister) return;
+    if (!isSocialOauthRegister) return;
     setIsEmailAvailable(null);
 
     (async () => {
@@ -98,7 +99,7 @@ export default function LoginPageClient() {
         router.push('/login?tab=login');
       }
     })();
-  }, [isKakaoOauthRegister, oauthToken, router]);
+  }, [isSocialOauthRegister, oauthToken, router]);
 
   // 이메일 저장 로직
   useEffect(() => {
@@ -193,7 +194,7 @@ export default function LoginPageClient() {
     if (submitting) return;
 
     //  카카오 OAuth 회원가입이면: password/register API가 아니라 complete로 보냄
-    if (isKakaoOauthRegister) {
+    if (isSocialOauthRegister) {
       if (!name) {
         showErrorToast('이름을 입력해주세요.');
         return;
@@ -211,6 +212,7 @@ export default function LoginPageClient() {
           credentials: 'include',
           body: JSON.stringify({
             token: oauthToken,
+            name,
             phone,
             postalCode,
             address,
@@ -302,6 +304,12 @@ export default function LoginPageClient() {
   const handleKakaoOAuth = () => {
     const from = new URLSearchParams(window.location.search).get('from');
     const url = from ? `/api/oauth/kakao?from=${encodeURIComponent(from)}` : '/api/oauth/kakao';
+    window.location.href = url;
+  };
+
+  const handleNaverOAuth = () => {
+    const from = new URLSearchParams(window.location.search).get('from');
+    const url = from ? `/api/oauth/naver?from=${encodeURIComponent(from)}` : '/api/oauth/naver';
     window.location.href = url;
   };
 
@@ -433,7 +441,7 @@ export default function LoginPageClient() {
                   </div>
                 </div>
 
-                <SocialAuthButtons onKakaoClick={handleKakaoOAuth} />
+                <SocialAuthButtons onKakaoClick={handleKakaoOAuth} onNaverClick={handleNaverOAuth} />
 
                 <div className="text-center">
                   <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-4 mb-4 border border-emerald-200/50 dark:border-emerald-800/50">
@@ -473,9 +481,9 @@ export default function LoginPageClient() {
                             <Input
                               placeholder="아이디 입력"
                               value={emailId}
-                              disabled={isKakaoOauthRegister}
+                              disabled={isSocialOauthRegister}
                               onChange={(e) => {
-                                if (isKakaoOauthRegister) return;
+                                if (isSocialOauthRegister) return;
                                 setEmailId(e.target.value);
                                 setIsEmailAvailable(null);
                               }}
@@ -490,16 +498,16 @@ export default function LoginPageClient() {
                               <Input
                                 placeholder="직접 입력"
                                 value={emailDomain}
-                                disabled={isKakaoOauthRegister}
+                                disabled={isSocialOauthRegister}
                                 onChange={(e) => {
-                                  if (isKakaoOauthRegister) return;
+                                  if (isSocialOauthRegister) return;
                                   setEmailDomain(e.target.value);
                                   setIsEmailAvailable(null);
                                 }}
                                 className="flex-1 min-w-0 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400 sm:flex-none sm:w-40"
                               />
 
-                              {!isKakaoOauthRegister && (
+                              {!isSocialOauthRegister && (
                                 <Button
                                   type="button"
                                   variant="outline"
@@ -541,20 +549,20 @@ export default function LoginPageClient() {
                           )}
                         </div>
 
-                        {!isKakaoOauthRegister && (
+                        {!isSocialOauthRegister && (
                           <Button type="button" variant="outline" className="h-12 w-full sm:w-auto sm:shrink-0" onClick={checkEmailAvailability} disabled={!emailRegex.test(`${emailId}@${emailDomain}`) || checkingEmail}>
                             {checkingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : '중복 확인'}
                           </Button>
                         )}
                       </div>
 
-                      {isKakaoOauthRegister && (
+                      {isSocialOauthRegister && (
                         <div className="mt-2 flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
                           <CheckCircle className="h-4 w-4" />
-                          카카오로 인증된 이메일입니다.
+                          {socialProviderLabel}로 인증된 이메일입니다.
                         </div>
                       )}
-                      {!isKakaoOauthRegister && isEmailAvailable !== null && (
+                      {!isSocialOauthRegister && isEmailAvailable !== null && (
                         <div className={`flex items-center gap-2 text-sm mt-2 ${isEmailAvailable ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                           {isEmailAvailable ? (
                             <>
@@ -570,7 +578,7 @@ export default function LoginPageClient() {
                         </div>
                       )}
                     </div>
-                    {!isKakaoOauthRegister && (
+                    {!isSocialOauthRegister && (
                       <>
                         {/* 비밀번호 */}
                         <div className="space-y-2">
@@ -684,8 +692,10 @@ export default function LoginPageClient() {
                   <Button
                     type="submit"
                     className={
-                      isKakaoOauthRegister
-                        ? 'w-full h-12 bg-[#FEE500] hover:bg-[#FDD835] text-[#191919] font-semibold shadow-lg'
+                      isSocialOauthRegister
+                        ? oauthProvider === 'naver'
+                          ? 'w-full h-12 bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold shadow-lg'
+                          : 'w-full h-12 bg-[#FEE500] hover:bg-[#FDD835] text-[#191919] font-semibold shadow-lg'
                         : 'w-full h-12 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold shadow-lg'
                     }
                     disabled={submitting}
@@ -695,19 +705,31 @@ export default function LoginPageClient() {
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         가입 중...
                       </>
-                    ) : isKakaoOauthRegister ? (
+                    ) : isSocialOauthRegister ? (
                       <>
-                        {/* 카카오 아이콘 */}
-                        <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 3C6.477 3 2 6.58 2 11c0 2.783 1.77 5.243 4.5 6.66L5.6 21.5c-.1.4.3.7.7.5l4.3-2.3c.45.06.91.09 1.4.09 5.523 0 10-3.58 10-8s-4.477-8-10-8z" />
-                        </svg>
-                        카카오로 회원가입 완료
+                        {oauthProvider === 'naver' ? (
+                          <>
+                            {/* 네이버 아이콘 */}
+                            <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M16.344 12.9 8.72 2H4v20h3.656V11.1L15.28 22H20V2h-3.656v10.9Z" />
+                            </svg>
+                            네이버로 회원가입 완료
+                          </>
+                        ) : (
+                          <>
+                            {/* 카카오 아이콘 */}
+                            <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 3C6.477 3 2 6.58 2 11c0 2.783 1.77 5.243 4.5 6.66L5.6 21.5c-.1.4.3.7.7.5l4.3-2.3c.45.06.91.09 1.4.09 5.523 0 10-3.58 10-8s-4.477-8-10-8z" />
+                            </svg>
+                            카카오로 회원가입 완료
+                          </>
+                        )}
                       </>
                     ) : (
                       '회원가입'
                     )}
                   </Button>
-                  {!isKakaoOauthRegister && (
+                  {!isSocialOauthRegister && (
                     <>
                       <div className="relative">
                         <div className="absolute inset-0 flex items-center">
@@ -717,8 +739,7 @@ export default function LoginPageClient() {
                           <span className="bg-white dark:bg-slate-800 px-4 text-slate-500 dark:text-slate-400 font-medium">SNS 계정으로 가입</span>
                         </div>
                       </div>
-
-                      <SocialAuthButtons onKakaoClick={handleKakaoOAuth} isRegisterMode={true} />
+                      <SocialAuthButtons onKakaoClick={handleKakaoOAuth} onNaverClick={handleNaverOAuth} isRegisterMode={true} />
                     </>
                   )}
                 </form>
