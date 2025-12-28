@@ -37,8 +37,11 @@ export async function createOrder(req: Request): Promise<Response> {
       kind?: 'product' | 'racket';
     };
 
-    // pointsToUse 읽기
+    // - 서버가 최종 규칙을 강제(클라 입력은 참고용)
+    // - 정책: 100P 단위로만 사용 가능 (UI와 동일)
+    const POINT_UNIT = 100;
     const requestedPointsToUse = Math.max(0, Math.floor(Number(body?.pointsToUse ?? 0) || 0));
+    const normalizedRequestedPointsToUse = Math.floor(requestedPointsToUse / POINT_UNIT) * POINT_UNIT;
 
     // 클라 금액은 절대 신뢰하지 않음(참고 로그용만)
     const { items: rawItems, shippingInfo, guestInfo } = body;
@@ -259,7 +262,7 @@ export async function createOrder(req: Request): Promise<Response> {
         const maxPointsByPolicy = Math.max(0, computedTotalPrice - computedShippingFee); // = computedSubtotal + computedServiceFee
         let pointsToUse = 0;
 
-        if (userId && requestedPointsToUse > 0 && maxPointsByPolicy > 0) {
+        if (userId && normalizedRequestedPointsToUse > 0 && maxPointsByPolicy > 0) {
           const userOid = new ObjectId(userId);
           const u = await db.collection('users').findOne({ _id: userOid }, { projection: { pointsBalance: 1 }, session } as any);
 
@@ -267,7 +270,7 @@ export async function createOrder(req: Request): Promise<Response> {
           const balance = Number.isFinite(balanceRaw) && balanceRaw > 0 ? Math.floor(balanceRaw) : 0;
 
           const maxPointsByBalanceAndPolicy = Math.min(balance, maxPointsByPolicy);
-          pointsToUse = Math.min(requestedPointsToUse, maxPointsByBalanceAndPolicy);
+          pointsToUse = Math.min(normalizedRequestedPointsToUse, maxPointsByBalanceAndPolicy);
         }
 
         const payableTotalPrice = Math.max(0, computedTotalPrice - pointsToUse);
