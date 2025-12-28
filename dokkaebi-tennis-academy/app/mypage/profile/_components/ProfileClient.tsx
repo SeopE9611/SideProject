@@ -16,6 +16,7 @@ import WithdrawalReasonSelect from '@/app/mypage/profile/_components/WithdrawalR
 import { useRouter } from 'next/navigation';
 import { MdSportsTennis } from 'react-icons/md';
 import TennisProfileForm from '@/app/mypage/profile/_components/TennisProfileForm';
+import { Badge } from '@/components/ui/badge';
 
 type Props = {
   user: {
@@ -47,6 +48,9 @@ export default function ProfileClient({ user }: Props) {
     },
   });
 
+  // 소셜 로그인 제공자(표시용): /api/users/me에서 내려주는 oauthProviders
+  const [socialProviders, setSocialProviders] = useState<Array<'kakao' | 'naver'>>([]);
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -69,6 +73,7 @@ export default function ProfileClient({ user }: Props) {
         if (!res.ok) throw new Error('정보를 불러올 수 없습니다');
 
         const user = await res.json();
+        setSocialProviders(Array.isArray((user as any).oauthProviders) ? (user as any).oauthProviders : []);
 
         const { address, postalCode, addressDetail, ...rest } = user;
 
@@ -291,6 +296,26 @@ export default function ProfileClient({ user }: Props) {
                         onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                         className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                       />
+                      {/* 소셜 가입/연동 제공자 표시 (표시용) */}
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <span className="font-medium">가입/연동:</span>
+                        {socialProviders.length ? (
+                          <>
+                            {socialProviders.includes('kakao') && (
+                              <Badge variant="outline" className="border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/40 dark:text-yellow-300">
+                                카카오
+                              </Badge>
+                            )}
+                            {socialProviders.includes('naver') && (
+                              <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
+                                네이버
+                              </Badge>
+                            )}
+                          </>
+                        ) : (
+                          <span>이메일</span>
+                        )}
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">

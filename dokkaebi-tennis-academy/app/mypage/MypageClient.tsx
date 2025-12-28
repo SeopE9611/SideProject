@@ -27,6 +27,7 @@ import RentalsList from '@/app/mypage/tabs/RentalsList';
 import RentalSkeleton from '@/app/mypage/tabs/RentalSkeleton';
 import RentalsDetailClient from '@/app/mypage/rentals/_components/RentalsDetailClient';
 import MyPointsTab from '@/app/mypage/tabs/MyPointsTab';
+import { Badge } from '@/components/ui/badge';
 
 type Props = {
   user: {
@@ -34,6 +35,7 @@ type Props = {
     name: string;
     email: string;
     role: string;
+    oauthProviders?: Array<'kakao' | 'naver'>;
   };
 };
 
@@ -154,9 +156,29 @@ export default function MypageClient({ user }: Props) {
                       <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-2xl p-3 shadow-lg">
                         <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                       </div>
+
                       <div>
                         <CardTitle className="text-lg">{user.name}</CardTitle>
-                        <CardDescription className="text-sm">{user.email}</CardDescription>
+                        <div className="flex items-center gap-2 flex-wrap mt-1">
+                          <span className="text-sm text-muted-foreground">{user.email}</span>
+                          {/* 소셜 로그인 제공자 표기 (표시용) */}
+                          {user.oauthProviders?.length ? (
+                            <>
+                              {user.oauthProviders.includes('kakao') && (
+                                <Badge variant="outline" className="border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/40 dark:text-yellow-300 text-xs py-0 px-2 h-5">
+                                  카카오
+                                </Badge>
+                              )}
+                              {user.oauthProviders.includes('naver') && (
+                                <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300 text-xs py-0 px-2 h-5">
+                                  네이버
+                                </Badge>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-xs text-slate-500 dark:text-slate-400">일반 계정</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CardHeader>
@@ -375,27 +397,27 @@ export default function MypageClient({ user }: Props) {
                   </Card>
                 </TabsContent>
 
-                                 {/* 적립 포인트 탭 */}
-                 <TabsContent value="points" className="mt-0">
+                {/* 적립 포인트 탭 */}
+                <TabsContent value="points" className="mt-0">
                   <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
-                     <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-b">
-                       <div className="flex items-center gap-3">
-                         <div className="bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900 dark:to-yellow-900 rounded-2xl p-3 shadow-lg">
-                           <ReceiptCent className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                         </div>
-                         <div>
-                           <CardTitle className="text-xl">적립 포인트</CardTitle>
-                           <CardDescription>보유 포인트와 적립/사용 내역을 확인하세요.</CardDescription>
-                         </div>
-                       </div>
-                     </CardHeader>
-                     <CardContent className="p-6">
-                       <Suspense fallback={<div className="text-sm text-slate-500">불러오는 중...</div>}>
-                         <MyPointsTab />
-                       </Suspense>
-                     </CardContent>
-                   </Card>
-                 </TabsContent>
+                    <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-b">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900 dark:to-yellow-900 rounded-2xl p-3 shadow-lg">
+                          <ReceiptCent className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl">적립 포인트</CardTitle>
+                          <CardDescription>보유 포인트와 적립/사용 내역을 확인하세요.</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <Suspense fallback={<div className="text-sm text-slate-500">불러오는 중...</div>}>
+                        <MyPointsTab />
+                      </Suspense>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
               </Tabs>
             </div>
           </div>

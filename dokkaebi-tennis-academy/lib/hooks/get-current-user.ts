@@ -14,6 +14,7 @@ type SafeUser = {
   name: string | null;
   email: string | null;
   role: 'user' | 'admin' | string;
+  oauthProviders?: Array<'kakao' | 'naver'>;
 };
 
 export async function getCurrentUser(): Promise<SafeUser | null> {
@@ -37,11 +38,16 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
     );
     if (!user) return null;
 
+    // 소셜 로그인 제공자(표시용): oauth id를 노출하지 않고 "연동 여부"만 내려줌
+    const oauth = (user as any)?.oauth ?? {};
+    const oauthProviders = [oauth?.kakao?.id ? 'kakao' : null, oauth?.naver?.id ? 'naver' : null].filter(Boolean) as Array<'kakao' | 'naver'>;
+
     return {
       id: user._id.toString(),
       name: user.name ?? null,
       email: user.email ?? null,
       role: (user.role as SafeUser['role']) ?? 'user',
+      oauthProviders,
     };
   } catch {
     // 만료/변조/DB 오류 등 어떤 예외든 상위에서 처리하기 쉽도록 null만 반환

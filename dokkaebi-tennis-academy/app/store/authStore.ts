@@ -6,6 +6,7 @@ export interface User {
   name: string | null;
   email: string;
   role: string;
+  socialProviders?: Array<'kakao' | 'naver'>;
   image?: string | null;
 }
 

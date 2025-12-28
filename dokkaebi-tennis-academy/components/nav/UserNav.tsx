@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, LayoutDashboard, Settings, UserIcon, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { mutate } from 'swr';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
+import { Badge } from '@/components/ui/badge';
 
 export function UserNav() {
   const router = useRouter();
@@ -36,6 +37,9 @@ export function UserNav() {
   }
 
   const isAdmin = user.role === 'admin';
+  const socialProviders = user.socialProviders ?? [];
+  const hasKakao = socialProviders.includes('kakao');
+  const hasNaver = socialProviders.includes('naver');
 
   return (
     <DropdownMenu>
@@ -47,7 +51,6 @@ export function UserNav() {
           </Avatar> */}
 
           <div className="flex items-center gap-1 min-w-0">
-            {/* 이름만 말줄임 */}
             <span
               className="
           text-sm min-w-0 grow
@@ -59,7 +62,6 @@ export function UserNav() {
               {user.name} 님
             </span>
 
-            {/* 관리자 배지: 항상 보이게 shrink-0 */}
             {isAdmin && (
               <span
                 className="
@@ -77,6 +79,20 @@ export function UserNav() {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-44">
+        {(hasKakao || hasNaver) && (
+          <>
+            <div className="px-2 py-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500 dark:text-slate-400">소셜 로그인</span>
+                <div className="flex gap-1">
+                  {hasKakao && <Badge className="pointer-events-none h-5 px-2 text-[11px] bg-[#FEE500] text-[#191919] hover:bg-[#FEE500]">카카오</Badge>}
+                  {hasNaver && <Badge className="pointer-events-none h-5 px-2 text-[11px] bg-[#03C75A] text-white hover:bg-[#03C75A]">네이버</Badge>}
+                </div>
+              </div>
+            </div>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem onClick={() => router.push('/mypage')}>
           <Settings className="mr-2 h-4 w-4" />
           마이페이지

@@ -47,17 +47,26 @@ export async function GET() {
       return NextResponse.json({ message: 'suspended' }, { status: 403 });
     }
 
-    // 4) 정상 응답(보여줘도 되는 필드만)
+    // 소셜 로그인 제공자 배지 표시용
+    const socialProviders: Array<'kakao' | 'naver'> = [];
+    const oauth = (user as any)?.oauth ?? {};
+    if (oauth?.kakao?.id) socialProviders.push('kakao');
+    if (oauth?.naver?.id) socialProviders.push('naver');
+
+    // 소셜 로그인 제공자(표시용): oauth id를 노출하지 않고 "연동 여부"만 내려줌
+    const oauthProviders = [oauth?.kakao?.id ? 'kakao' : null, oauth?.naver?.id ? 'naver' : null].filter(Boolean) as Array<'kakao' | 'naver'>;
     return NextResponse.json({
       id: user._id.toString(),
       name: user.name ?? null,
       email: user.email ?? null,
       role: user.role ?? 'user',
+      oauthProviders,
       phone: user.phone ?? null,
       address: user.address ?? null,
       addressDetail: user.addressDetail ?? null,
       postalCode: user.postalCode ?? null,
       pointsBalance: typeof (user as any).pointsBalance === 'number' ? (user as any).pointsBalance : 0, // 마이페이지(적립금 표시)에서 바로 쓰도록 포함
+      socialProviders,
     });
   } catch (err: any) {
     // 토큰 오류(만료/변조)
