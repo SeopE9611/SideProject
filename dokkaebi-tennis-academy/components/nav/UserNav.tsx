@@ -41,10 +41,10 @@ export function UserNav() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="flex items-center gap-2 cursor-pointer hover:bg-accent/50 px-2 py-1.5 rounded-md transition min-w-0">
-          <Avatar className="h-6 w-6">
+          {/* <Avatar className="h-6 w-6">
             <AvatarImage src={user.image || '/placeholder.svg'} />
             <AvatarFallback>{user.name?.charAt(0) ?? 'U'}</AvatarFallback>
-          </Avatar>
+          </Avatar> */}
 
           <div className="flex items-center gap-1 min-w-0">
             {/* 이름만 말줄임 */}
