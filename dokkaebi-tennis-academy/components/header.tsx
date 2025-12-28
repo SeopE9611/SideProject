@@ -673,7 +673,7 @@ const Header = () => {
                         from-blue-50/50 to-emerald-50/50 dark:from-blue-950/20 dark:to-emerald-950/20
                         border border-slate-200 dark:border-slate-800"
                       >
-                        <Avatar className="h-10 w-10 border-2 border-white dark:border-slate-700 shadow-sm">
+                        {/* <Avatar className="h-10 w-10 border-2 border-white dark:border-slate-700 shadow-sm">
                           <AvatarImage src={user.image || '/placeholder.svg'} />
                           <AvatarFallback
                             className="bg-gradient-to-br from-blue-500 to-emerald-500 
@@ -681,7 +681,7 @@ const Header = () => {
                           >
                             {user.name?.charAt(0) ?? 'U'}
                           </AvatarFallback>
-                        </Avatar>
+                        </Avatar> */}
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.name} 님</div>
                           {isAdmin && (
