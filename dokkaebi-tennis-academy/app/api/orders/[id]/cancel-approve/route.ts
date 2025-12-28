@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import jwt from 'jsonwebtoken';
 import { revertConsumption } from '@/lib/passes.service';
+import { deductPoints, grantPoints } from '@/lib/points.service';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -117,7 +118,69 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       $push: { history: historyEntry },
     } as any);
 
-    // 연결된 스트링 교체 서비스 신청이 있는 경우 함께 취소 처리
+    // ───────────────── 포인트 복원/회수 (주문 취소 확정 시점) ─────────────────
+    // 이 라우트(/cancel-approve)는 /api/orders/[id] PATCH를 "우회"하므로,
+    // 포인트 복원/회수 로직을 여기서도 반드시 수행해야 함.
+    // 정책:
+    // - pointsUsed(사용 포인트)는 주문 취소/환불 시 항상 복원
+    // - 결제완료로 적립된 포인트(order_reward)는 취소/환불 시 회수
+    // - refKey 유니크 인덱스로 멱등 처리(중복 실행되어도 1회만 반영)
+    try {
+      const uid = existing.userId;
+      const uidStr = uid ? String(uid) : '';
+      if (ObjectId.isValid(uidStr)) {
+        const userOid = new ObjectId(uidStr);
+
+        const orderObjectId = String(existing._id);
+        const txCol = db.collection('points_transactions');
+
+        // (1) 사용 포인트 복원
+        const spendRefKey = `order:${orderObjectId}:spend`;
+        const restoreRefKey = `order:${orderObjectId}:spend_reversal`;
+
+        const spendTx: any = await txCol.findOne({ refKey: spendRefKey, status: 'confirmed' });
+        const amountFromTx = Math.abs(Number(spendTx?.amount ?? 0));
+        const amountFromOrder = Number(existing.pointsUsed ?? existing.paymentInfo?.pointsUsed ?? 0);
+        const amountToRestore = Math.max(0, Math.trunc(amountFromTx || amountFromOrder || 0));
+
+        if (amountToRestore > 0) {
+          await grantPoints(db, {
+            userId: userOid,
+            amount: amountToRestore,
+            type: 'reversal',
+            status: 'confirmed',
+            refKey: restoreRefKey,
+            reason: `주문 취소로 사용 포인트 복원 (${existing.orderId ?? ''})`.trim(),
+            ref: { orderId: existing._id },
+          });
+        }
+
+        // (2) 결제완료로 적립된 포인트 회수
+        const rewardRefKey = `order_reward:${orderObjectId}`;
+        const revokeRefKey = `order_reward_revoke:${orderObjectId}`;
+
+        const rewardTx: any = await txCol.findOne({ refKey: rewardRefKey, status: 'confirmed' });
+        const earned = Math.max(0, Math.trunc(Number(rewardTx?.amount ?? 0)));
+
+        if (earned > 0) {
+          await deductPoints(db, {
+            userId: userOid,
+            amount: earned,
+            type: 'reversal',
+            status: 'confirmed',
+            refKey: revokeRefKey,
+            reason: `주문 취소로 적립 포인트 회수 (${existing.orderId ?? ''})`.trim(),
+            ref: { orderId: existing._id },
+            // 적립 포인트를 이미 사용한 상태에서도 취소/환불이 발생할 수 있음 → 음수 허용(정책)
+            allowNegativeBalance: true,
+          });
+        }
+      }
+    } catch (e) {
+      // 포인트 처리 실패가 "주문 취소 승인" 자체를 막으면 UX가 깨짐 → 로그만 남기고 진행
+      console.error('[cancel-approve] points restore/revoke error:', e);
+    }
+
     // 연결된 스트링 교체 서비스 신청이 있는 경우 함께 취소 처리
     try {
       const appsCol = db.collection('stringing_applications');

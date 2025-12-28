@@ -210,12 +210,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       );
     }
 
-    // 7) DB 업데이트 (주문 쪽 cancelRequest + history)
-    await orders.updateOne({ _id }, {
-      $set: { cancelRequest },
-      $push: { history: historyEntry },
-    } as any);
-
     // 7) DB 업데이트
     await orders.updateOne({ _id }, {
       $set: { cancelRequest },
