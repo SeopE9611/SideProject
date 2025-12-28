@@ -104,6 +104,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
     };
   });
 
+  // 포인트/적용 전 금액 안전 추출(필드가 없을 수도 있으니 fallback)
+  const originalTotal = order.originalTotalPrice ?? order.paymentInfo?.originalTotal ?? order.totalPrice ?? 0;
+  const pointsUsed = order.pointsUsed ?? order.paymentInfo?.pointsUsed ?? 0;
+
   return (
     <>
       <BackButtonGuard />
@@ -288,11 +292,28 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
                 {/* 결제 금액 - 안전한 데이터 처리 */}
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
-                  <div className="flex justify-between items-center text-2xl font-bold">
-                    <span className="text-slate-800 dark:text-slate-200">총 결제 금액</span>
-                    <span className="text-blue-600">{formatPrice(order.totalPrice)}원</span>
+                  <div className="space-y-2">
+                    {Number(pointsUsed) > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-700 dark:text-slate-300">포인트 적용 전 금액</span>
+                        <span className="font-semibold">{formatPrice(originalTotal)}원</span>
+                      </div>
+                    )}
+
+                    {Number(pointsUsed) > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-700 dark:text-slate-300">포인트 사용</span>
+                        <span className="font-semibold text-rose-600">-{formatPrice(pointsUsed)}원</span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center text-2xl font-bold pt-2">
+                      <span className="text-slate-800 dark:text-slate-200">총 결제 금액</span>
+                      <span className="text-blue-600">{formatPrice(order.totalPrice)}원</span>
+                    </div>
+
+                    <p className="text-sm text-slate-600 dark:text-slate-400">(배송비 {formatPrice(order.shippingFee)}원 포함)</p>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">(배송비 {formatPrice(order.shippingFee)}원 포함)</p>
                 </div>
               </CardContent>
 

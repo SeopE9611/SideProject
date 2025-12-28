@@ -198,30 +198,43 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 포인트(Phase 2: 결제 차감) - UI 상태
-  // - 실제 주문 반영은 CheckoutButton → /api/orders 단계에서 함께 진행(다음 파일)
+  // 포인트 결제 차감) - UI 상태
   const [pointsBalance, setPointsBalance] = useState(0);
   const [useAllPoints, setUseAllPoints] = useState(false);
   const [pointsToUse, setPointsToUse] = useState(0);
 
+  // 포인트 입력 UX용(0333 방지, 0 자동 제거)
+  const [pointsInput, setPointsInput] = useState('0');
+  const [isEditingPoints, setIsEditingPoints] = useState(false);
+
   // 포인트 사용 정책(1차): 배송비 제외 금액까지만 사용 가능
   // - 총액(total)에서 배송비(shippingFee)를 제외한 금액까지만 차감 허용
   // - 로그인 유저만 사용 가능(비회원은 0으로 고정)
+  const POINT_UNIT = 100; // 100원 단위
   const maxPointsByPolicy = user ? Math.max(0, total - shippingFee) : 0;
-  const maxPointsToUse = Math.min(pointsBalance, maxPointsByPolicy);
-  const appliedPoints = Math.min(pointsToUse, maxPointsToUse);
+  const maxPointsToUseRaw = Math.min(pointsBalance, maxPointsByPolicy);
+  const maxPointsToUse = Math.floor(maxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
+  const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
+  const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
   const payableTotal = total - appliedPoints;
 
   // 포인트 입력값 보정(유저 잔액/정책/전액사용 토글에 따라 자동 보정)
   useEffect(() => {
+    if (isEditingPoints) return; // 입력 중엔 강제 보정하면 타이핑이 끊김
     // 비회원이면 포인트 관련 상태는 아래 useEffect에서 0으로 초기화됨
     if (!user) return;
 
     const desired = useAllPoints ? maxPointsToUse : pointsToUse;
-    const clamped = Math.max(0, Math.min(Math.floor(desired || 0), maxPointsToUse));
-
+    const normalized = Math.floor((Number(desired) || 0) / POINT_UNIT) * POINT_UNIT;
+    const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
     if (clamped !== pointsToUse) setPointsToUse(clamped);
-  }, [user, useAllPoints, maxPointsToUse, pointsToUse]);
+  }, [user, useAllPoints, maxPointsToUse, pointsToUse, isEditingPoints]);
+
+  // 숫자 상태(pointsToUse) 변경 시 입력 문자열도 동기화
+  useEffect(() => {
+    if (isEditingPoints) return; // 입력 중엔 사용자가 타이핑한 값을 유지
+    setPointsInput(String(pointsToUse));
+  }, [pointsToUse, isEditingPoints]);
 
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -676,9 +689,11 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-600 dark:text-slate-400">배송비</span>
-                      <span className={`font-semibold ${shippingFee > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-emerald-500'}`}>{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}</span>
+                      <span className="font-semibold text-green-500">
+                        <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">(30,000원 이상 구매 시 무료배송) </span>
+                        {shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}
+                      </span>
                     </div>
-
                     {/* 교체 서비스비 (있는 경우에만 표시) */}
                     {serviceFee > 0 && (
                       <div className="flex justify-between items-center">
@@ -686,7 +701,6 @@ export default function CheckoutPage() {
                         <span className="font-semibold text-lg">{serviceFee.toLocaleString()}원</span>
                       </div>
                     )}
-
                     {/* 포인트 사용(로그인 유저만) */}
                     <div className="mt-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-4 rounded-lg border border-slate-200 dark:border-slate-600">
                       <div className="flex justify-between items-center">
@@ -704,17 +718,47 @@ export default function CheckoutPage() {
 
                         <div className="flex items-center gap-2">
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             min={0}
+                            step={POINT_UNIT}
                             max={maxPointsToUse}
                             className="w-28 text-right"
-                            value={pointsToUse}
+                            value={pointsInput}
                             disabled={!user || pointsBalance <= 0 || maxPointsToUse <= 0 || useAllPoints}
+                            onFocus={(e) => {
+                              setIsEditingPoints(true);
+                              const el = e.currentTarget;
+
+                              if (pointsInput === '0') setPointsInput('');
+
+                              setTimeout(() => {
+                                if (el && typeof el.select === 'function') el.select();
+                              }, 0);
+                            }}
                             onChange={(e) => {
-                              const n = Number(e.target.value);
-                              const v = Number.isFinite(n) ? Math.floor(n) : 0;
+                              // 숫자만 허용
+                              const onlyDigits = e.target.value.replace(/[^\d]/g, '');
+                              setPointsInput(onlyDigits);
                               setUseAllPoints(false);
-                              setPointsToUse(v);
+                              const n = Number(onlyDigits);
+                              setPointsToUse(Number.isFinite(n) ? Math.floor(n) : 0);
+                            }}
+                            onBlur={(e) => {
+                              setIsEditingPoints(false);
+
+                              // blur 시점에 최종 보정: 숫자만 → 정수 → 100P 단위 → 최대치(clamp)
+                              const rawText = e.currentTarget.value ?? '';
+                              const onlyDigits = String(rawText).replace(/[^\d]/g, '');
+                              const raw = Number(onlyDigits || '0');
+                              const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
+
+                              const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
+                              const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
+
+                              setPointsInput(String(clamped));
+                              setPointsToUse(clamped);
                             }}
                           />
                           <span className="text-sm text-slate-500">P</span>
@@ -724,37 +768,23 @@ export default function CheckoutPage() {
                       <p className="mt-2 text-xs text-slate-500">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
                       <p className="mt-1 text-xs text-slate-500">현재 단계에서는 UI만 반영됩니다. 다음 단계에서 주문 생성(/api/orders)까지 연결되면 실제 결제에 반영됩니다.</p>
                     </div>
-
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center">
                         <span className="text-slate-600 dark:text-slate-400">포인트 사용(예정)</span>
                         <span className="font-semibold text-rose-600">-{appliedPoints.toLocaleString()}원</span>
                       </div>
                     )}
-
                     <Separator />
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>총 결제 금액</span>
                       <span className="text-blue-600">{total.toLocaleString()}원</span>
                     </div>
-
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center text-lg font-bold">
                         <span className="text-slate-600 dark:text-slate-400">포인트 적용 후 결제 예정 금액</span>
                         <span className="text-blue-600">{payableTotal.toLocaleString()}원</span>
                       </div>
                     )}
-                  </div>
-
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="flex items-center gap-2 text-green-700 dark:text-green-400 mb-2">
-                      <Star className="h-4 w-4" />
-                      <span className="font-semibold">배송 혜택</span>
-                    </div>
-                    <p className="text-sm text-green-600 dark:text-green-400">
-                      30,000원 이상 구매 시 무료배송
-                      {subtotal < 30000 && <span className="block mt-1 font-semibold">{(30000 - subtotal).toLocaleString()}원 더 구매하면 무료배송!</span>}
-                    </p>
                   </div>
 
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -769,7 +799,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-4 p-6">
+                <CardFooter className="flex flex-col gap-4 p-6 shrink-0">
                   <CheckoutButton
                     disabled={!(agreeTerms && agreePrivacy && agreeRefund)}
                     name={name}
