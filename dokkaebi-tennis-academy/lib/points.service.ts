@@ -47,6 +47,18 @@ export async function getPointsBalance(db: Db, userId: ObjectId): Promise<number
   return typeof bal === 'number' && Number.isFinite(bal) ? bal : 0;
 }
 
+export async function getPointsState(db: Db, userId: ObjectId): Promise<{ balance: number; debt: number }> {
+  const users = db.collection('users');
+  const u = await users.findOne({ _id: userId as any }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
+  const balRaw = (u as any)?.pointsBalance;
+  const debtRaw = (u as any)?.pointsDebt;
+
+  const balance = typeof balRaw === 'number' && Number.isFinite(balRaw) ? Math.max(0, Math.trunc(balRaw)) : 0;
+  const debt = typeof debtRaw === 'number' && Number.isFinite(debtRaw) ? Math.max(0, Math.trunc(debtRaw)) : 0;
+
+  return { balance, debt };
+}
+
 export async function grantPoints(db: Db, params: GrantParams, opts: MongoSessionOptions = {}) {
   const now = new Date();
   const amount = asSafeInt(params.amount);
@@ -78,9 +90,34 @@ export async function grantPoints(db: Db, params: GrantParams, opts: MongoSessio
     throw e;
   }
 
-  // 2) 사용자 잔액 캐시 증가
-  const res = await users.updateOne({ _id: params.userId as any }, { $inc: { pointsBalance: amount }, $set: { updatedAt: now } }, { session: opts.session });
-
+  /**
+   * 2) 사용자 잔액 캐시 갱신
+   * - pointsBalance는 '사용 가능한 포인트'만 유지(절대 음수 금지)
+   * - pointsDebt는 '회수해야 하지만 이미 사용되어 잔액이 부족했던 혜택'을 누적(0 이상 정수)
+   * - 적립(+)이 들어오면 먼저 debt를 상계하고 남는 금액만 balance로 적립
+   */
+  const res = await users.updateOne(
+    { _id: params.userId as any },
+    [
+      {
+        $set: {
+          pointsBalance: { $ifNull: ['$pointsBalance', 0] },
+          pointsDebt: { $ifNull: ['$pointsDebt', 0] },
+        },
+      },
+      { $set: { __payDebt: { $min: ['$pointsDebt', amount] } } },
+      {
+        $set: {
+          pointsDebt: { $subtract: ['$pointsDebt', '$__payDebt'] },
+          pointsBalance: { $add: ['$pointsBalance', { $subtract: [amount, '$__payDebt'] }] },
+          updatedAt: now,
+        },
+      },
+      { $unset: '__payDebt' },
+    ] as any,
+    { session: opts.session } as any
+  );
+  
   if (res.matchedCount === 0) {
     // 사용자 없으면 원장 롤백 시도
     try {
@@ -117,25 +154,61 @@ export async function deductPoints(db: Db, params: DeductParams, opts: MongoSess
 
   await txCol.insertOne(tx, { session: opts.session });
 
-  // 2) 잔액 차감 (기본은 잔액 부족 시 실패)
-  const filter: any = { _id: params.userId as any };
+  // 2) 잔액 차감
+  // - 기본은 잔액 부족 시 실패
+  // - allowNegativeBalance=true(주로 환불/취소 회수)인 경우에도 users.pointsBalance는 음수로 만들지 않고,
+  //   부족분은 users.pointsDebt(미정산 차감분)로 누적한다.
+  let res: any;
 
-  if (!params.allowNegativeBalance) {
+  if (params.allowNegativeBalance) {
+    res = await users.updateOne(
+      { _id: params.userId as any },
+      [
+        {
+          $set: {
+            pointsBalance: { $ifNull: ['$pointsBalance', 0] },
+            pointsDebt: { $ifNull: ['$pointsDebt', 0] },
+          },
+        },
+        { $set: { _deductFromBalance: { $min: ['$pointsBalance', amount] } } },
+        {
+          $set: {
+            pointsBalance: { $subtract: ['$pointsBalance', '$_deductFromBalance'] },
+            pointsDebt: { $add: ['$pointsDebt', { $subtract: [amount, '$_deductFromBalance'] }] },
+            updatedAt: now,
+          },
+        },
+        { $unset: '_deductFromBalance' },
+      ] as any,
+      { session: opts.session }
+    );
+
+    if (res.matchedCount === 0) {
+      // 사용자 없음 → 원장 롤백
+      try {
+        await txCol.deleteOne({ _id: tx._id } as any, { session: opts.session });
+      } catch (e) {
+        console.error('[points] rollback failed (deduct)', e);
+      }
+      throw Object.assign(new Error('USER_NOT_FOUND'), { code: 'USER_NOT_FOUND' });
+    }
+  } else {
+    const filter: any = { _id: params.userId as any };
     // pointsBalance가 없으면 0으로 취급하여 비교
     filter.$expr = { $gte: [{ $ifNull: ['$pointsBalance', 0] }, amount] };
-  }
 
-  const res = await users.updateOne(filter, { $inc: { pointsBalance: -amount }, $set: { updatedAt: now } }, { session: opts.session });
+    res = await users.updateOne(filter, { $inc: { pointsBalance: -amount }, $set: { updatedAt: now } }, { session: opts.session });
 
-  if (res.matchedCount === 0 || res.modifiedCount === 0) {
-    // 잔액 부족/사용자 없음 등으로 차감 실패 → 원장 롤백
-    try {
-      await txCol.deleteOne({ _id: tx._id } as any, { session: opts.session });
-    } catch (e) {
-      console.error('[points] rollback failed (deduct)', e);
+    if (res.matchedCount === 0 || res.modifiedCount === 0) {
+      // 잔액 부족/사용자 없음 등으로 차감 실패 → 원장 롤백
+      try {
+        await txCol.deleteOne({ _id: tx._id } as any, { session: opts.session });
+      } catch (e) {
+        console.error('[points] rollback failed (deduct)', e);
+      }
+
+      throw Object.assign(new Error('INSUFFICIENT_POINTS'), { code: 'INSUFFICIENT_POINTS' });
     }
-
-    throw Object.assign(new Error('INSUFFICIENT_POINTS'), { code: 'INSUFFICIENT_POINTS' });
   }
 
   return { transactionId: tx._id.toString(), amount: -amount };

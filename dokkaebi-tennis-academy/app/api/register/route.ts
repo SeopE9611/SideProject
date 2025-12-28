@@ -64,6 +64,7 @@ export async function POST(req: Request) {
       addressDetail,
       postalCode,
       pointsBalance: 0, // 포인트(적립금) 잔액 캐시(원장 기반으로 증감). 신규 회원은 0에서 시작.
+      pointsDebt: 0, // 미정산 차감분(환불/회수로 잔액을 음수로 만들지 않기 위해 별도 누적)
       role: 'user',
       createdAt: new Date(),
       updatedAt: new Date(),

@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
       isDeleted: false,
       isSuspended: false,
       pointsBalance: 0,
+      pointsDebt: 0,
       phone: body.phone || '',
       postalCode: body.postalCode || '',
       address: body.address || '',

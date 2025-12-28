@@ -42,8 +42,9 @@ export async function GET(req: NextRequest) {
   const userId = new ObjectId(me.id);
 
   // 현재 잔액(캐시)
-  const user = await db.collection('users').findOne({ _id: userId }, { projection: { pointsBalance: 1 } as any });
+  const user = await db.collection('users').findOne({ _id: userId }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
   const balance = typeof user?.pointsBalance === 'number' && Number.isFinite(user.pointsBalance) ? user.pointsBalance : 0;
+  const debt = typeof (user as any)?.pointsDebt === 'number' && Number.isFinite((user as any).pointsDebt) ? (user as any).pointsDebt : 0;
 
   const col = db.collection('points_transactions');
   const filter = { userId };
@@ -56,5 +57,5 @@ export async function GET(req: NextRequest) {
     .limit(limit)
     .toArray();
 
-  return NextResponse.json({ ok: true, balance, items: docs.map(mapTx), total, page, limit }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
+  return NextResponse.json({ ok: true, balance, debt, items: docs.map(mapTx), total, page, limit }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
 }

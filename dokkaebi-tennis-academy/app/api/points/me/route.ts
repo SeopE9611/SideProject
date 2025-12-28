@@ -28,8 +28,9 @@ export async function GET() {
   const db = await getDb();
 
   // 1) 현재 잔액(캐시)
-  const user = await db.collection('users').findOne({ _id: new ObjectId(me.id) }, { projection: { pointsBalance: 1 } as any });
+  const user = await db.collection('users').findOne({ _id: new ObjectId(me.id) }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
   const balance = typeof user?.pointsBalance === 'number' && Number.isFinite(user.pointsBalance) ? user.pointsBalance : 0;
+  const debt = typeof (user as any)?.pointsDebt === 'number' && Number.isFinite((user as any).pointsDebt) ? (user as any).pointsDebt : 0;
 
   // 2) 최근 10개 내역(원장)
   const recentDocs = await db
@@ -40,7 +41,7 @@ export async function GET() {
     .toArray();
 
   return NextResponse.json(
-    { ok: true, balance, recent: recentDocs.map(mapTx) },
+    { ok: true, balance, debt, recent: recentDocs.map(mapTx) },
     { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } }
   );
 }
