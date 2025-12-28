@@ -91,7 +91,8 @@ export async function GET(req: NextRequest) {
 
   const meJson: any = await meRes.json();
   const kakaoId = meJson?.id;
-  const email = meJson?.kakao_account?.email;
+  const emailRaw = meJson?.kakao_account?.email ? String(meJson.kakao_account.email) : '';
+  const email = emailRaw.trim().toLowerCase();
   const nickname = meJson?.kakao_account?.profile?.nickname;
 
   // 이메일이 없으면(사용자 계정에 이메일이 없거나 동의 불가 케이스)

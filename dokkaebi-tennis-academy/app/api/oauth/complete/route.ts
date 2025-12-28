@@ -8,7 +8,7 @@ import { Collection } from 'mongodb';
 
 type PendingDoc = {
   _id: string; // token
-  provider: 'kakao';
+  provider: 'kakao' | 'naver';
   oauthId: string | null;
   email: string;
   name: string;
@@ -19,6 +19,7 @@ type PendingDoc = {
 
 type Body = {
   token: string;
+  name?: string;
   phone?: string;
   postalCode?: string;
   address?: string;
@@ -56,26 +57,52 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'pending signup not found (expired or invalid)' }, { status: 404 });
   }
 
-  const users = db.collection('users');
+  //  TTL 삭제 타이밍(지연)을 믿지 말고, 서버에서 만료도 직접 차단
   const now = new Date();
+  if (pending.expiresAt && pending.expiresAt <= now) {
+    await pendings.deleteOne({ _id: pending._id }).catch(() => {});
+    return NextResponse.json({ error: 'pending signup not found (expired or invalid)' }, { status: 404 });
+  }
+
+  //  이메일 정규화 (기존 register/login 정책과 정합)
+  const pendingEmailRaw = String(pending.email ?? '').trim();
+  const pendingEmail = pendingEmailRaw.toLowerCase();
+  if (!pendingEmail) {
+    await pendings.deleteOne({ _id: pending._id }).catch(() => {});
+    return NextResponse.json({ error: 'pending signup invalid (missing email)' }, { status: 400 });
+  }
+
+  //  사용자가 입력한 이름을 우선(없으면 pending.name fallback)
+  const incomingName = typeof body.name === 'string' ? body.name.trim() : '';
+
+  const users = db.collection('users');
 
   // 1) 같은 이메일 유저가 이미 있으면 "연동 + 로그인"으로 처리
-  let user = await users.findOne({ email: pending.email });
+  // 케이스 차이로 인한 매칭 실패 방지: raw/lower 둘 다 조회
+  let user = await users.findOne({ $or: [{ email: pendingEmail }, { email: pendingEmailRaw }] });
 
   if (user) {
-    const existingKakaoId = user?.oauth?.kakao?.id ?? null;
-    if (existingKakaoId && pending.oauthId && String(existingKakaoId) !== String(pending.oauthId)) {
-      return NextResponse.json({ error: '이미 다른 카카오 계정에 연결된 이메일입니다.' }, { status: 409 });
+    const providerKey = pending.provider; // 'kakao' | 'naver'
+    const providerLabel = providerKey === 'naver' ? '네이버' : '카카오';
+    const existingOauthId = (user as any)?.oauth?.[providerKey]?.id ?? null;
+
+    if (existingOauthId && pending.oauthId && String(existingOauthId) !== String(pending.oauthId)) {
+      return NextResponse.json({ error: `이미 다른 ${providerLabel} 계정에 연결된 이메일입니다.` }, { status: 409 });
     }
+
+    const shouldUpdateName = !!incomingName && (!user?.name || String(user.name).trim() === '');
 
     await users.updateOne(
       { _id: user._id },
       {
         $set: {
+          // 기존에 대문자/혼합 케이스로 저장된 이메일을 정규화(가능한 범위에서 정합 유지)
+          email: pendingEmail,
+          ...(shouldUpdateName ? { name: incomingName } : {}),
           updatedAt: now,
           lastLoginAt: now,
-          'oauth.kakao.id': pending.oauthId,
-          'oauth.kakao.connectedAt': now,
+          [`oauth.${providerKey}.id`]: pending.oauthId,
+          [`oauth.${providerKey}.connectedAt`]: now,
         },
       }
     );
@@ -83,8 +110,8 @@ export async function POST(req: NextRequest) {
   } else {
     // 2) 신규 생성
     const insertRes = await users.insertOne({
-      email: pending.email,
-      name: pending.name || pending.email.split('@')[0],
+      email: pendingEmail,
+      name: incomingName || pending.name || pendingEmail.split('@')[0],
       role: 'user',
       isDeleted: false,
       isSuspended: false,
@@ -98,7 +125,7 @@ export async function POST(req: NextRequest) {
       updatedAt: now,
       lastLoginAt: now,
       oauth: {
-        kakao: {
+        [pending.provider]: {
           id: pending.oauthId,
           connectedAt: now,
         },
@@ -107,7 +134,6 @@ export async function POST(req: NextRequest) {
 
     user = await users.findOne({ _id: insertRes.insertedId });
   }
-
   if (!user) {
     return NextResponse.json({ error: 'user create/link failed' }, { status: 500 });
   }
@@ -133,7 +159,7 @@ export async function POST(req: NextRequest) {
       ua,
     });
 
-    await Promise.all([autoLinkStringingByEmail(db, user._id, user.email), users.updateOne({ _id: user._id }, { $set: { lastLoginAt: now } })]);
+    await Promise.all([autoLinkStringingByEmail(db, user._id, String(user.email ?? pendingEmail).toLowerCase()), users.updateOne({ _id: user._id }, { $set: { lastLoginAt: now } })]);
   } catch (e) {
     console.warn('[oauth complete] post-login side effects fail:', e);
   }

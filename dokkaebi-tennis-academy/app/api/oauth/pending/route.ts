@@ -4,7 +4,7 @@ import { getDb } from '@/lib/mongodb';
 
 type PendingDoc = {
   _id: string;
-  provider: 'kakao';
+  provider: 'kakao' | 'naver';
   oauthId: string | null;
   email: string;
   name: string;
