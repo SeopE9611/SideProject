@@ -65,11 +65,11 @@ export default function CheckoutButton({
 
   const handleSubmit = async () => {
     // 동시 클릭 즉시 차단 (상태 업데이트 지연에도 안전)
-    if (submittingRef.current || isSubmitting) return;
+    if (submittingRef.current) return;
     submittingRef.current = true;
-    if (isSubmitting) return;
-
     setIsSubmitting(true);
+
+    let success = false;
 
     try {
       const shippingInfo = {
@@ -84,8 +84,10 @@ export default function CheckoutButton({
         withStringService,
       };
 
-      // 포인트 사용값(서버에서도 재검증/클램프할 예정이지만, 프론트에서도 최소한의 보정)
-      const safePointsToUse = user ? Math.max(0, Math.floor(Number(pointsToUse) || 0)) : 0;
+      // 포인트 사용값: 로그인 유저만 + 정수 + 100단위 보정(서버에서도 재검증 필수)
+      const raw = Number(pointsToUse) || 0;
+      const normalized = Math.floor(Math.max(0, raw) / 100) * 100;
+      const safePointsToUse = user ? normalized : 0;
 
       const orderData = {
         items: items.map((item) => ({
@@ -98,7 +100,7 @@ export default function CheckoutButton({
           method: '무통장입금',
           bank: selectedBank,
         },
-        totalPrice, // 이미 상품 + 배송비 + 서비스비가 포함된 값
+        totalPrice, // (gross) 상품+배송+서비스 포함
         shippingFee,
         serviceFee,
         pointsToUse: safePointsToUse,
@@ -107,7 +109,6 @@ export default function CheckoutButton({
         servicePickupMethod,
       };
 
-      //  아이도임포턴시 키 생성
       const idemKey = crypto.randomUUID();
 
       const res = await fetch('/api/orders', {
@@ -117,24 +118,19 @@ export default function CheckoutButton({
         credentials: 'include',
       });
 
-      // 회원이면 배송지 저장
-      if (user && saveAddress) {
-        await fetch('/api/users/me', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            phone,
-            address,
-            postalCode,
-            addressDetail,
-          }),
-        });
-      }
-
       const data = await res.json();
 
       if (data?.orderId) {
+        // 주문 성공한 경우에만 배송지 저장
+        if (user && saveAddress) {
+          await fetch('/api/users/me', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone, address, postalCode, addressDetail }),
+          });
+        }
+
+        success = true;
         const qs = withStringService ? `orderId=${data.orderId}&autoApply=1` : `orderId=${data.orderId}`;
         router.push(`/checkout/success?${qs}`);
         router.refresh();
@@ -155,12 +151,14 @@ export default function CheckoutButton({
       } else {
         showErrorToast(data?.error ?? '주문 실패: 서버 오류');
       }
-    } catch (e) {
+    } catch {
       showErrorToast('주문 처리 중 오류가 발생했습니다.');
     } finally {
-      // 실패 시에만 락 해제 (성공 시엔 다른 페이지로 이동)
-      submittingRef.current = false;
-      setIsSubmitting(false);
+      // 실패한 경우에만 락/로딩 해제 (성공 시엔 페이지 이동 중 유지)
+      if (!success) {
+        submittingRef.current = false;
+        setIsSubmitting(false);
+      }
     }
   };
 

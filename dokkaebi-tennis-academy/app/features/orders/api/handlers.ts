@@ -264,12 +264,21 @@ export async function createOrder(req: Request): Promise<Response> {
 
         if (userId && normalizedRequestedPointsToUse > 0 && maxPointsByPolicy > 0) {
           const userOid = new ObjectId(userId);
-          const u = await db.collection('users').findOne({ _id: userOid }, { projection: { pointsBalance: 1 }, session } as any);
+          const u = await db.collection('users').findOne({ _id: userOid }, { projection: { pointsBalance: 1, pointsDebt: 1 }, session } as any);
 
           const balanceRaw = Number((u as any)?.pointsBalance ?? 0);
-          const balance = Number.isFinite(balanceRaw) && balanceRaw > 0 ? Math.floor(balanceRaw) : 0;
+          const debtRaw = Number((u as any)?.pointsDebt ?? 0);
 
-          const maxPointsByBalanceAndPolicy = Math.min(balance, maxPointsByPolicy);
+          const balance = Number.isFinite(balanceRaw) && balanceRaw > 0 ? Math.floor(balanceRaw) : 0;
+          const debt = Number.isFinite(debtRaw) && debtRaw > 0 ? Math.floor(debtRaw) : 0;
+
+          // 실제 사용 가능 포인트 = balance - debt (0 미만 방지)
+          const available = Math.max(0, balance - debt);
+
+          // 정책(배송비 제외)과 available 둘 다 만족하는 범위로 클램프
+          const maxPointsByBalanceAndPolicy = Math.min(available, maxPointsByPolicy);
+
+          // 요청값(100P 단위 정규화)도 결국 서버가 최종 확정
           pointsToUse = Math.min(normalizedRequestedPointsToUse, maxPointsByBalanceAndPolicy);
         }
 

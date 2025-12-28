@@ -198,11 +198,16 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 포인트 결제 차감) - UI 상태
+  // 포인트(적립금) 상태
+  // - balance: 원장 기준 총 잔액(캐시)
+  // - debt:   회수해야 하지만 이미 사용되어 "부족했던" 금액(채무)
+  // - available: 실제로 지금 결제에 사용할 수 있는 포인트 = max(0, balance - debt)
   const [pointsBalance, setPointsBalance] = useState(0);
+  const [pointsDebt, setPointsDebt] = useState(0);
+  const [pointsAvailable, setPointsAvailable] = useState(0);
+
   const [useAllPoints, setUseAllPoints] = useState(false);
   const [pointsToUse, setPointsToUse] = useState(0);
-
   // 포인트 입력 UX용(0333 방지, 0 자동 제거)
   const [pointsInput, setPointsInput] = useState('0');
   const [isEditingPoints, setIsEditingPoints] = useState(false);
@@ -212,8 +217,11 @@ export default function CheckoutPage() {
   // - 로그인 유저만 사용 가능(비회원은 0으로 고정)
   const POINT_UNIT = 100; // 100원 단위
   const maxPointsByPolicy = user ? Math.max(0, total - shippingFee) : 0;
-  const maxPointsToUseRaw = Math.min(pointsBalance, maxPointsByPolicy);
+
+  // debt 방식에서는 "사용 가능 포인트" 기준으로 제한해야 함
+  const maxPointsToUseRaw = Math.min(pointsAvailable, maxPointsByPolicy);
   const maxPointsToUse = Math.floor(maxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
+
   const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
   const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
   const payableTotal = total - appliedPoints;
@@ -283,8 +291,11 @@ export default function CheckoutPage() {
     if (!user) {
       // 비회원/로그아웃 상태에서는 포인트 사용 불가
       setPointsBalance(0);
+      setPointsDebt(0);
+      setPointsAvailable(0);
       setUseAllPoints(false);
       setPointsToUse(0);
+
       return;
     }
 
@@ -293,13 +304,28 @@ export default function CheckoutPage() {
       .then((res) => res.json())
       .then((data) => {
         if (cancelled) return;
-        const raw = data?.ok ? Number(data.balance ?? 0) : 0;
-        const bal = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+
+        // 1) 신규 스키마: { balance, debt, available }
+        const balRaw = data?.ok ? Number(data.balance ?? 0) : 0;
+        const debtRaw = data?.ok ? Number(data.debt ?? 0) : 0;
+        const availRaw = data?.ok ? Number(data.available ?? 0) : NaN;
+
+        const bal = Number.isFinite(balRaw) ? Math.max(0, Math.trunc(balRaw)) : 0;
+        const debt = Number.isFinite(debtRaw) ? Math.max(0, Math.trunc(debtRaw)) : 0;
+
+        // available이 내려오면 그걸 최우선 사용
+        // (혹시 아직 API가 안 바뀐 상태면 fallback으로 balance - debt 계산)
+        const available = Number.isFinite(availRaw) ? Math.max(0, Math.trunc(availRaw)) : Math.max(0, bal - debt);
+
         setPointsBalance(bal);
+        setPointsDebt(debt);
+        setPointsAvailable(available);
       })
       .catch(() => {
         if (cancelled) return;
         setPointsBalance(0);
+        setPointsDebt(0);
+        setPointsAvailable(0);
       });
 
     return () => {
@@ -704,13 +730,15 @@ export default function CheckoutPage() {
                     {/* 포인트 사용(로그인 유저만) */}
                     <div className="mt-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-4 rounded-lg border border-slate-200 dark:border-slate-600">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-600 dark:text-slate-400">보유 포인트</span>
-                        <span className="font-semibold">{user ? `${pointsBalance.toLocaleString()}P` : '로그인 필요'}</span>
+                        <span className="text-slate-600 dark:text-slate-400">사용 가능 포인트</span>
+                        <span className="font-semibold">{user ? `${pointsAvailable.toLocaleString()}P` : '로그인 필요'}</span>
                       </div>
+
+                      {user && pointsDebt > 0 && <p className="mt-1 text-xs text-rose-600">회수 예정 포인트(채무): {pointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
 
                       <div className="mt-3 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                          <Checkbox id="useAllPoints" checked={useAllPoints} onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))} disabled={!user || pointsBalance <= 0 || maxPointsToUse <= 0} />
+                          <Checkbox id="useAllPoints" checked={useAllPoints} onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))} disabled={!user || pointsAvailable <= 0 || maxPointsToUse <= 0} />
                           <Label htmlFor="useAllPoints" className="text-sm font-medium">
                             전액 사용
                           </Label>
@@ -726,7 +754,7 @@ export default function CheckoutPage() {
                             max={maxPointsToUse}
                             className="w-28 text-right"
                             value={pointsInput}
-                            disabled={!user || pointsBalance <= 0 || maxPointsToUse <= 0 || useAllPoints}
+                            disabled={!user || pointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
                             onFocus={(e) => {
                               setIsEditingPoints(true);
                               const el = e.currentTarget;
