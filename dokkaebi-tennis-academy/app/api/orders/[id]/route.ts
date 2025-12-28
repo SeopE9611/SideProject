@@ -467,6 +467,51 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       }
     }
 
+    // 포인트 사용(차감) 복원:
+    // - 주문 생성 시점에 pointsToUse를 즉시 차감하기 때문에,
+    //   결제대기 상태에서 '취소'가 발생하면 사용 포인트를 되돌려줘야 함.
+    // - (중요) 멱등키(refKey)를 사용해 중복 복원을 방지
+    const becameCanceledBeforePaid = (existing.paymentStatus ?? null) !== '결제완료' && newPaymentStatus === '결제취소';
+
+    if (becameCanceledBeforePaid) {
+      try {
+        const updatedOrder = await orders.findOne({ _id });
+        if (!updatedOrder) return NextResponse.json({ ok: true });
+
+        const uid = (updatedOrder as any).userId;
+        const uidStr = uid ? String(uid) : '';
+        if (!ObjectId.isValid(uidStr)) return NextResponse.json({ ok: true });
+
+        const orderObjectId = String((updatedOrder as any)._id);
+
+        const txCol = db.collection('points_transactions');
+        const spendRefKey = `order:${orderObjectId}:spend`;
+        const restoreRefKey = `order:${orderObjectId}:spend_reversal`;
+
+        // 가능한 한 "실제로 차감된 amount"를 원장에서 찾아 복원(주문 문서 필드보다 안전)
+        const spendTx = await txCol.findOne({ refKey: spendRefKey, status: 'confirmed' });
+        const amountFromTx = Math.abs(Number((spendTx as any)?.amount ?? 0));
+
+        const amountFromOrder = Number((updatedOrder as any).pointsUsed ?? (updatedOrder as any).paymentInfo?.pointsUsed ?? 0);
+        const amountToRestore = Math.max(0, Math.trunc(amountFromTx || amountFromOrder || 0));
+
+        if (amountToRestore <= 0) return NextResponse.json({ ok: true });
+
+        await grantPoints(db, {
+          userId: new ObjectId(uidStr),
+          amount: amountToRestore,
+          type: 'reversal',
+          status: 'confirmed',
+          refKey: restoreRefKey, // 복원 멱등키
+          reason: `주문 취소로 사용 포인트 복원 (${(updatedOrder as any).orderId ?? ''})`.trim(),
+          ref: { orderId: (updatedOrder as any)._id },
+        });
+      } catch (e: any) {
+        // 복원 실패가 "주문 취소" 자체를 막으면 UX 최악 → 로그만 남기고 종료
+        console.error('restore spend points (before paid) error:', e);
+      }
+    }
+
     const becameCanceledOrRefunded = (existing.paymentStatus ?? null) === '결제완료' && ['결제취소', '환불'].includes(newPaymentStatus ?? '');
 
     if (becameCanceledOrRefunded) {
@@ -484,6 +529,29 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
         // "얼마를 회수해야 하는지"는 가능하면 적립 트랜잭션을 찾아서 그 amount를 쓰는 게 제일 안전
         const txCol = db.collection('points_transactions');
+
+        // (1) 사용 포인트 복원 (이미 복원된 경우 refKey 유니크로 자동 스킵)
+        const spendRefKey = `order:${orderObjectId}:spend`;
+        const restoreRefKey = `order:${orderObjectId}:spend_reversal`;
+
+        const spendTx = await txCol.findOne({ refKey: spendRefKey, status: 'confirmed' });
+        const amountFromTx = Math.abs(Number((spendTx as any)?.amount ?? 0));
+
+        const amountFromOrder = Number((updatedOrder as any).pointsUsed ?? (updatedOrder as any).paymentInfo?.pointsUsed ?? 0);
+        const amountToRestore = Math.max(0, Math.trunc(amountFromTx || amountFromOrder || 0));
+
+        if (amountToRestore > 0) {
+          await grantPoints(db, {
+            userId: new ObjectId(uidStr),
+            amount: amountToRestore,
+            type: 'reversal',
+            status: 'confirmed',
+            refKey: restoreRefKey,
+            reason: `주문 취소/환불로 사용 포인트 복원 (${(updatedOrder as any).orderId ?? ''})`.trim(),
+            ref: { orderId: (updatedOrder as any)._id },
+          });
+        }
+
         const rewardTx = await txCol.findOne({ refKey: rewardRefKey, status: 'confirmed' });
 
         // 적립이 없으면 회수할 것도 없음
@@ -498,6 +566,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
           refKey: revokeRefKey, // 회수 멱등
           reason: `주문 취소/환불로 적립 포인트 회수 (${(updatedOrder as any).orderId ?? ''})`.trim(),
           ref: { orderId: (updatedOrder as any)._id },
+          // 적립 포인트를 이미 사용한 상태에서도 환불이 발생할 수 있음 → 회수는 음수 잔액을 허용(정책)
+          allowNegativeBalance: true,
         });
       } catch (e: any) {
         // 여기서 throw로 터뜨리면 "주문 취소/환불" 자체가 실패하는 최악의 UX가 됨 → 로그만 남기고 종료
