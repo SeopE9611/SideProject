@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PointTransactionListItem } from '@/lib/types/points';
+import { fallbackReason, parsePointRefKey, pointTxStatusLabel, pointTxTypeLabel, safeLocalDateTime, shortId } from '@/lib/points.display';
+import Link from 'next/link';
 
 type PointsHistoryRes = {
   ok: boolean;
@@ -15,6 +17,7 @@ type PointsHistoryRes = {
   page: number;
   limit: number;
   error?: string;
+  debt?: number;
 };
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -67,6 +70,11 @@ export default function MyPointsTab() {
         <CardTitle>포인트</CardTitle>
         <div className="text-sm">
           보유 포인트: <span className="font-semibold">{fmt(data.balance)}P</span>
+          {typeof data.debt === 'number' ? (
+            <span className="ml-2 text-xs text-muted-foreground">
+              (사용 가능: <span className="font-medium">{fmt(Math.max(0, data.balance - data.debt))}P</span>)
+            </span>
+          ) : null}
         </div>
       </CardHeader>
 
@@ -85,12 +93,37 @@ export default function MyPointsTab() {
                     <div className="text-sm font-medium">
                       {it.amount >= 0 ? `+${fmt(it.amount)}` : fmt(it.amount)}P
                       <span className="ml-2 text-xs text-muted-foreground">
-                        {it.type} / {it.status}
+                        {pointTxTypeLabel(it.type)} · {pointTxStatusLabel(it.status)}
                       </span>
                     </div>
-                    {it.reason ? <div className="text-xs text-muted-foreground">{it.reason}</div> : null}
+                    {it.reason && it.reason.trim().length >= 2 ? <div className="text-xs text-muted-foreground">{it.reason}</div> : fallbackReason(it.type) ? <div className="text-xs text-muted-foreground">{fallbackReason(it.type)}</div> : null}
+                    {(() => {
+                      const ref = parsePointRefKey(it.refKey);
+                      if (!ref) return null;
+
+                      if (ref.kind === 'order') {
+                        return (
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            주문: <span className="font-mono">{shortId(ref.orderId)}</span>
+                            <Link className="ml-2 underline underline-offset-4" href={`/mypage/orders/${ref.orderId}`}>
+                              주문 보기
+                            </Link>
+                          </div>
+                        );
+                      }
+
+                      if (ref.kind === 'review') {
+                        return (
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            리뷰: <span className="font-mono">{shortId(ref.reviewId)}</span>
+                          </div>
+                        );
+                      }
+
+                      return null;
+                    })()}
                   </div>
-                  <div className="text-xs text-muted-foreground whitespace-nowrap">{new Date(it.createdAt).toLocaleString('ko-KR')}</div>
+                  <div className="text-xs text-muted-foreground whitespace-nowrap">{safeLocalDateTime(it.createdAt)}</div>
                 </li>
               ))}
             </ul>

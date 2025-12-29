@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { fallbackReason, parsePointRefKey, pointTxStatusLabel, pointTxTypeLabel, safeLocalDateTime } from '@/lib/points.display';
+import { Badge } from '@/components/ui/badge';
 
 type Props = {
   open: boolean;
@@ -27,9 +29,7 @@ type TxItem = {
 const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then((r) => r.json());
 
 function safeDateLabel(iso: string) {
-  const d = new Date(iso);
-  if (!Number.isFinite(d.getTime())) return '-';
-  return d.toLocaleString('ko-KR');
+  return safeLocalDateTime(iso);
 }
 
 export default function UserPointsDialog({ open, onOpenChange, userId, userName }: Props) {
@@ -57,6 +57,7 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
   const [refKey, setRefKey] = useState('');
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   async function onAdjust(delta: number) {
@@ -93,8 +94,7 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
 
       // 성공 처리
       showSuccessToast('포인트가 반영되었습니다.');
-      await mutate(); // 잔액/히스토리 새로고침
-      
+
       // 조정 성공 후: 현재 다이얼로그 데이터(잔액/히스토리)만 새로고침
       await mutate();
       setAmount('');
@@ -119,13 +119,26 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
 
         {/* 조정 폼 */}
         <div className="grid gap-2">
-          <div className="text-sm text-muted-foreground">amount는 양수(지급) / 음수(차감). refKey는 “중복 방지(멱등)”가 필요한 경우만.</div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <Input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="예: 1000 또는 -500" />
-            <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="사유(선택)" />
-            <Input value={refKey} onChange={(e) => setRefKey(e.target.value)} placeholder="refKey(선택)" />
+          <div className="text-sm text-muted-foreground">
+            amount는 <span className="font-medium">양수(지급)</span> / <span className="font-medium">음수(차감)</span>입니다. ‘중복 방지 키(고급)’는 같은 요청이 두 번 들어와도 <span className="font-medium">1번만 반영</span>되게 막고 싶을 때만
+            사용합니다.
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="금액 (예: 1000 또는 -500)" inputMode="numeric" />
+            <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="사유(선택) — 예: 이벤트 지급" />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <button type="button" className="text-xs text-muted-foreground underline underline-offset-4" onClick={() => setShowAdvanced((v) => !v)}>
+              {showAdvanced ? '고급 옵션 닫기' : '고급 옵션(중복 방지 키)'}
+            </button>
+            <div className="text-xs text-muted-foreground">
+              예: <span className="font-mono">order:&lt;주문ID&gt;:manual</span>
+            </div>
+          </div>
+
+          {showAdvanced ? <Input value={refKey} onChange={(e) => setRefKey(e.target.value)} placeholder="중복 방지 키(선택) — 예: order:694e...:manual" /> : null}
 
           <div className="flex gap-2">
             <Button disabled={!canSubmit || submitting} onClick={() => onAdjust(amountNum)}>
@@ -169,13 +182,43 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
                           {tx.amount >= 0 ? '+' : ''}
                           {tx.amount.toLocaleString()}P
                         </span>
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          {tx.type} / {tx.status}
+                        <span className="ml-2 inline-flex flex-wrap items-center gap-1">
+                          <Badge variant="secondary" className="h-5 px-2 text-[10px]">
+                            {pointTxTypeLabel(tx.type)}
+                          </Badge>
+                          <Badge variant="outline" className="h-5 px-2 text-[10px]">
+                            {pointTxStatusLabel(tx.status)}
+                          </Badge>
                         </span>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {tx.reason ?? '-'} {tx.refKey ? `(${tx.refKey})` : ''}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{tx.reason && tx.reason.trim().length >= 2 ? tx.reason : fallbackReason(tx.type) ?? '-'}</div>
+                      {(() => {
+                        const ref = parsePointRefKey(tx.refKey);
+                        if (!ref) return null;
+
+                        if (ref.kind === 'order') {
+                          return (
+                            <div className="text-[11px] text-muted-foreground">
+                              주문 ID: <span className="font-mono">{ref.orderId}</span>
+                              {ref.suffix ? <span className="ml-1">({ref.suffix})</span> : null}
+                            </div>
+                          );
+                        }
+
+                        if (ref.kind === 'review') {
+                          return (
+                            <div className="text-[11px] text-muted-foreground">
+                              리뷰 ID: <span className="font-mono">{ref.reviewId}</span>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="text-[11px] text-muted-foreground">
+                            중복 방지 키: <span className="font-mono">{ref.raw}</span>
+                          </div>
+                        );
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground">{safeDateLabel(tx.createdAt)}</div>
                   </div>
