@@ -96,6 +96,8 @@ export default function UsersClient() {
   const [limit] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
+  const [signupFilter, setSignupFilter] = useState<'all' | 'local' | 'kakao' | 'naver'>('all');
+
   const [sort, setSort] = useState<'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'>('created_desc');
 
   // 상태 필터 타입 보정 ('suspended' 포함)
@@ -110,6 +112,8 @@ export default function UsersClient() {
     if (roleFilter !== 'all') p.set('role', roleFilter);
     if (statusFilter !== 'all') p.set('status', statusFilter);
     if (loginFilter !== 'all') p.set('login', loginFilter);
+    if (signupFilter !== 'all') p.set('signup', signupFilter);
+
     if (sort) p.set('sort', sort);
     return `/api/admin/users?${p.toString()}`;
   })();
@@ -130,6 +134,7 @@ export default function UsersClient() {
       createdAt?: string;
       lastLoginAt?: string;
       isSuspended?: boolean;
+      socialProviders?: Array<'kakao' | 'naver'>;
     }>) || [];
 
   // 선택된 사용자 ID 목록 상태
@@ -499,6 +504,25 @@ export default function UsersClient() {
               </SelectContent>
             </Select>
 
+            {/* 가입유형 (SNS) */}
+            <Select
+              value={signupFilter}
+              onValueChange={(v) => {
+                setSignupFilter(v as 'all' | 'local' | 'kakao' | 'naver');
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="가입유형" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">가입유형 전체</SelectItem>
+                <SelectItem value="local">일반 가입</SelectItem>
+                <SelectItem value="kakao">카카오 가입</SelectItem>
+                <SelectItem value="naver">네이버 가입</SelectItem>
+              </SelectContent>
+            </Select>
+
             {/* 로그인 필터 */}
             <Select
               value={loginFilter}
@@ -730,6 +754,13 @@ export default function UsersClient() {
                                 <Copy className="w-3 h-3" />
                               </button>
                             </div>
+                            {/* 소셜 배지: 카카오/네이버 */}
+                            {Array.isArray(u.socialProviders) && u.socialProviders.length > 0 && (
+                              <div className="mt-1 flex items-center gap-1">
+                                {u.socialProviders.includes('kakao') && <Badge className="bg-[#FEE500] text-[#191919] hover:bg-[#FDD835] border-0 text-[10px] h-5 px-2">카카오</Badge>}
+                                {u.socialProviders.includes('naver') && <Badge className="bg-[#03C75A] text-white hover:bg-[#02B350] border-0 text-[10px] h-5 px-2">네이버</Badge>}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
 

@@ -16,6 +16,7 @@ export async function GET(req: Request) {
   const role = url.searchParams.get('role'); // 'user' | 'admin'
   const status = url.searchParams.get('status') || 'all'; // 'all' | 'active' | 'deleted' | 'suspended'
   const sortKey = url.searchParams.get('sort') || 'created_desc'; // 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'
+  const signup = (url.searchParams.get('signup') || 'all') as 'all' | 'local' | 'kakao' | 'naver';
 
   await db
     .collection('users')
@@ -58,6 +59,23 @@ export async function GET(req: Request) {
     and.push({ lastLoginAt: { $gte: cutoff } });
   }
 
+  // oauth 가 하나라도 있는 유저 (sns 계정 가입자) 필터
+  // 가입유형 필터: local / kakao / naver
+  if (signup === 'kakao') {
+    and.push({ 'oauth.kakao.id': { $exists: true, $ne: null } });
+  }
+
+  if (signup === 'naver') {
+    and.push({ 'oauth.naver.id': { $exists: true, $ne: null } });
+  }
+
+  if (signup === 'local') {
+    // "둘 다 없음" = 일반 가입자
+    and.push({
+      $and: [{ $or: [{ 'oauth.kakao.id': { $exists: false } }, { 'oauth.kakao.id': null }] }, { $or: [{ 'oauth.naver.id': { $exists: false } }, { 'oauth.naver.id': null }] }],
+    });
+  }
+
   // 최종 필터
   const filter: Filter<any> = and.length ? { $and: and } : {};
 
@@ -98,6 +116,8 @@ export async function GET(req: Request) {
         createdAt: 1,
         updatedAt: 1,
         lastLoginAt: 1,
+        'oauth.kakao.id': 1,
+        'oauth.naver.id': 1,
       },
     })
     .sort(sort)
@@ -109,29 +129,37 @@ export async function GET(req: Request) {
   // 전체 지표(필터 무시) 동시 계산
   const [grandTotal, activeTotal, deletedTotal, adminTotal, suspendedTotal] = await Promise.all([
     col.countDocuments({}),
-    col.countDocuments({ isDeleted: { $ne: true } }),
+    col.countDocuments({ isDeleted: { $ne: true }, isSuspended: { $ne: true } }),
     col.countDocuments({ isDeleted: true }),
     col.countDocuments({ role: 'admin' }),
-    col.countDocuments({ isSuspended: true }),
+    col.countDocuments({ isDeleted: { $ne: true }, isSuspended: true }),
   ]);
 
   return NextResponse.json({
-    items: items.map((u: any) => ({
-      id: u._id.toString(),
-      name: u.name ?? '',
-      email: u.email ?? '',
-      phone: u.phone ?? '',
-      address: u.address ?? '',
-      addressDetail: u.addressDetail ?? '',
-      postalCode: u.postalCode ?? '',
-      pointsBalance: typeof u.pointsBalance === 'number' && Number.isFinite(u.pointsBalance) ? u.pointsBalance : 0,
-      role: u.role ?? 'user',
-      isDeleted: !!u.isDeleted,
-      isSuspended: !!u.isSuspended,
-      createdAt: u.createdAt ?? null,
-      updatedAt: u.updatedAt ?? null,
-      lastLoginAt: u.lastLoginAt ?? null,
-    })),
+    items: items.map((u: any) => {
+      const socialProviders: Array<'kakao' | 'naver'> = [];
+      if (u?.oauth?.kakao?.id) socialProviders.push('kakao');
+      if (u?.oauth?.naver?.id) socialProviders.push('naver');
+
+      return {
+        id: u._id.toString(),
+        name: u.name ?? '',
+        email: u.email ?? '',
+        phone: u.phone ?? '',
+        address: u.address ?? '',
+        addressDetail: u.addressDetail ?? '',
+        postalCode: u.postalCode ?? '',
+        pointsBalance: typeof u.pointsBalance === 'number' && Number.isFinite(u.pointsBalance) ? u.pointsBalance : 0,
+        role: u.role ?? 'user',
+        isDeleted: !!u.isDeleted,
+        isSuspended: !!u.isSuspended,
+        createdAt: u.createdAt ?? null,
+        updatedAt: u.updatedAt ?? null,
+        lastLoginAt: u.lastLoginAt ?? null,
+
+        socialProviders,
+      };
+    }),
     total,
     counters: {
       total: grandTotal,
