@@ -22,23 +22,52 @@ const DISMISS_HOURS = 24;
 
 export default function SignupBonusPromoPopup({ promo, onPrimaryClick }: Props) {
   const [open, setOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const storageKey = useMemo(() => `signup-bonus-promo-dismissed:${promo.campaignId}`, [promo.campaignId]);
 
   useEffect(() => {
-    if (!promo.enabled) return;
+    let cancelled = false;
 
-    const raw = localStorage.getItem(storageKey);
-    if (raw) {
-      const last = new Date(raw);
-      if (Number.isFinite(last.getTime())) {
-        const diffMs = Date.now() - last.getTime();
-        const diffHours = diffMs / (1000 * 60 * 60);
-        if (diffHours < DISMISS_HOURS) return; // 아직 24시간 안 지남 -> 안 띄움
+    (async () => {
+      if (!promo.enabled) {
+        if (!cancelled) setAuthChecked(true);
+        return;
       }
-    }
 
-    setOpen(true);
+      // 로그인 상태면 “가입 이벤트 팝업”은 의미 없으니 아예 띄우지 않음
+      try {
+        const res = await fetch('/api/users/me', { credentials: 'include' });
+        if (!cancelled && res.ok) {
+          setOpen(false);
+          setAuthChecked(true);
+          return;
+        }
+      } catch {
+        // 네트워크 에러면 “비로그인처럼” 간주하고 계속 진행
+      }
+
+      if (cancelled) return;
+      setAuthChecked(true);
+
+      // 24시간 dismiss 체크
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const last = new Date(raw);
+        if (Number.isFinite(last.getTime())) {
+          const diffMs = Date.now() - last.getTime();
+          const diffHours = diffMs / (1000 * 60 * 60);
+          if (diffHours < DISMISS_HOURS) return;
+        }
+      }
+
+      // 최종 open
+      setOpen(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [promo.enabled, storageKey]);
 
   const dismiss = () => {
