@@ -15,6 +15,8 @@ import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MdSportsTennis } from 'react-icons/md';
 import { WeatherBadge } from '@/components/WeatherBadge';
+import { Badge } from '@/components/ui/badge';
+import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
 
 /** 재질 카테고리(스트링 타입) 노출 온/오프 */
 const SHOW_MATERIAL_MENU = false;
@@ -67,8 +69,14 @@ const Header = () => {
   const { items } = useCartStore();
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
-  const { user } = useCurrentUser();
+  const { user, loading } = useCurrentUser();
   const isAdmin = user?.role === 'admin';
+  const { count: unreadCount } = useUnreadMessageCount(!loading && !!user);
+
+  // 소셜 로그인 제공자 배지
+  const socialProviders = user?.socialProviders ?? [];
+  const hasKakao = socialProviders.includes('kakao');
+  const hasNaver = socialProviders.includes('naver');
 
   // 헤더 포인트 표시(로그인 유저만)
   const [pointsBalance, setPointsBalance] = useState<number | null>(null);
@@ -665,15 +673,13 @@ const Header = () => {
                 </div>
 
                 {/* 하단 고정 영역(모바일) */}
-                <div className="shrink-0 border-t border-slate-200 dark:border-slate-700 p-5 bg-white dark:bg-slate-900">
+                <div className="shrink-0 border-t border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-900 space-y-3">
                   {user ? (
                     <>
-                      <div
-                        className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r 
-                        from-blue-50/50 to-emerald-50/50 dark:from-blue-950/20 dark:to-emerald-950/20
-                        border border-slate-200 dark:border-slate-800"
-                      >
-                        {/* <Avatar className="h-10 w-10 border-2 border-white dark:border-slate-700 shadow-sm">
+                      {/* 사용자 정보 카드 */}
+                      <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50/50 to-emerald-50/50 dark:from-blue-950/20 dark:to-emerald-950/20 border border-slate-200 dark:border-slate-800">
+                        <div className="flex items-start justify-between">
+                          {/* <Avatar className="h-10 w-10 border-2 border-white dark:border-slate-700 shadow-sm">
                           <AvatarImage src={user.image || '/placeholder.svg'} />
                           <AvatarFallback
                             className="bg-gradient-to-br from-blue-500 to-emerald-500 
@@ -682,40 +688,25 @@ const Header = () => {
                             {user.name?.charAt(0) ?? 'U'}
                           </AvatarFallback>
                         </Avatar> */}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.name} 님</div>
-                          {isAdmin && (
-                            <span
-                              className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full 
-                              bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm mt-1"
-                            >
-                              관리자
-                            </span>
-                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.name} 님</span>
+                              {isAdmin && <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-0 px-2 py-0 text-[10px] h-5">관리자</Badge>}
+                            </div>
+                            {(hasKakao || hasNaver) && (
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {hasKakao && <Badge className="bg-[#FEE500] text-[#191919] hover:bg-[#FDD835] border-0 text-[10px] h-5 px-2">카카오</Badge>}
+                                {hasNaver && <Badge className="bg-[#03C75A] text-white hover:bg-[#02B350] border-0 text-[10px] h-5 px-2">네이버</Badge>}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="mt-3 grid grid-cols-2 gap-2">
+                      {/* 주요 액션 버튼 */}
+                      <div className="grid grid-cols-2 gap-2">
                         <Button
-                          variant="outline"
-                          className="w-full justify-center rounded-xl border-slate-300 dark:border-slate-700 
-                            bg-white dark:bg-slate-800 hover:bg-gradient-to-r hover:from-blue-50 
-                            hover:to-blue-100 dark:hover:from-blue-950 dark:hover:to-blue-900
-                            transition-all duration-200 shadow-sm"
-                          onClick={() => {
-                            setOpen(false);
-                            router.push('/cart');
-                          }}
-                          aria-label="장바구니 페이지로 이동"
-                        >
-                          <ShoppingCart className="mr-2 h-4 w-4" />
-                          장바구니{cartCount > 0 ? ` (${cartBadge})` : ''}
-                        </Button>
-
-                        <Button
-                          className="w-full justify-center rounded-xl bg-gradient-to-r from-blue-600 
-                            to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white 
-                            shadow-md transition-all duration-200"
+                          className="w-full justify-center rounded-xl h-11 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-sm transition-all duration-200"
                           onClick={() => {
                             setOpen(false);
                             router.push('/mypage');
@@ -724,43 +715,67 @@ const Header = () => {
                         >
                           마이페이지
                         </Button>
-                      </div>
 
-                      {isAdmin && (
                         <Button
                           variant="outline"
-                          className="w-full justify-center rounded-xl mt-2 border-emerald-300 
-                            dark:border-emerald-700 text-emerald-700 dark:text-emerald-300
-                            hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100
-                            dark:hover:from-emerald-950 dark:hover:to-emerald-900
-                            transition-all duration-200 shadow-sm bg-transparent"
+                          className="relative w-full justify-center rounded-xl h-11 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200"
                           onClick={() => {
                             setOpen(false);
-                            router.push('/admin/dashboard');
+                            router.push('/messages');
+                          }}
+                          aria-label="쪽지함으로 이동"
+                        >
+                          쪽지함
+                          {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                          )}
+                        </Button>
+                      </div>
+
+                      {/* 보조 액션 버튼 */}
+                      <div className="space-y-2">
+                        <Button
+                          variant="outline"
+                          className="w-full justify-center rounded-xl h-10 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200"
+                          onClick={() => {
+                            setOpen(false);
+                            router.push('/cart');
+                          }}
+                          aria-label="장바구니 페이지로 이동"
+                        >
+                          <ShoppingCart className="mr-2 h-4 w-4" />
+                          장바구니
+                          {cartCount > 0 && <span className="ml-1.5 rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-200">{cartBadge}</span>}
+                        </Button>
+
+                        {isAdmin && (
+                          <Button
+                            variant="outline"
+                            className="w-full justify-center rounded-xl h-10 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all duration-200 bg-transparent"
+                            onClick={() => {
+                              setOpen(false);
+                              router.push('/admin/dashboard');
+                            }}
+                          >
+                            관리자 페이지
+                          </Button>
+                        )}
+
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-center rounded-xl h-10 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all duration-200"
+                          onClick={async () => {
+                            await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+                            window.location.href = '/';
                           }}
                         >
-                          관리자 페이지
+                          로그아웃
                         </Button>
-                      )}
-
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-center rounded-xl mt-2 text-rose-600 
-                          hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30
-                          transition-all duration-200"
-                        onClick={async () => {
-                          await fetch('/api/logout', { method: 'POST', credentials: 'include' });
-                          window.location.href = '/';
-                        }}
-                      >
-                        로그아웃
-                      </Button>
+                      </div>
                     </>
                   ) : (
                     <Button
-                      className="w-full justify-center rounded-xl bg-gradient-to-r from-blue-600 
-                        to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white 
-                        shadow-md transition-all duration-200"
+                      className="w-full justify-center rounded-xl h-11 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-md transition-all duration-200"
                       onClick={() => {
                         setOpen(false);
                         router.push('/login');
@@ -770,7 +785,8 @@ const Header = () => {
                     </Button>
                   )}
 
-                  <div className="mt-4 flex justify-center">
+                  {/* 테마 토글 */}
+                  <div className="pt-2 flex justify-center">
                     <ThemeToggle />
                   </div>
                 </div>
