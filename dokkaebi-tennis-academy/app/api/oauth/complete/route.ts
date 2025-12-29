@@ -5,6 +5,8 @@ import { baseCookie } from '@/lib/cookieOptions';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from '@/lib/constants';
 import { autoLinkStringingByEmail } from '@/lib/claims';
 import { Collection } from 'mongodb';
+import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from '@/lib/points.policy';
+import { grantPoints } from '@/lib/points.service';
 
 type PendingDoc = {
   _id: string; // token
@@ -79,6 +81,7 @@ export async function POST(req: NextRequest) {
 
   // 1) 같은 이메일 유저가 이미 있으면 "연동 + 로그인"으로 처리
   // 케이스 차이로 인한 매칭 실패 방지: raw/lower 둘 다 조회
+  let isNewUser = false;
   let user = await users.findOne({ $or: [{ email: pendingEmail }, { email: pendingEmailRaw }] });
 
   if (user) {
@@ -109,6 +112,7 @@ export async function POST(req: NextRequest) {
     user = await users.findOne({ _id: user._id });
   } else {
     // 2) 신규 생성
+    isNewUser = true;
     const insertRes = await users.insertOne({
       email: pendingEmail,
       name: incomingName || pending.name || pendingEmail.split('@')[0],
@@ -140,6 +144,25 @@ export async function POST(req: NextRequest) {
 
   if (user.isDeleted) return NextResponse.json({ error: 'deleted user' }, { status: 403 });
   if (user.isSuspended) return NextResponse.json({ error: 'suspended user' }, { status: 403 });
+
+  // (이벤트) 회원가입 보너스 지급: "신규 생성"일 때만
+  // - 중복 호출/리트라이가 있어도 refKey(unique)로 멱등 보장
+  // - 지급 실패가 회원가입/로그인을 막지 않도록 try/catch로 격리
+  if (isNewUser) {
+    try {
+      if (isSignupBonusActive()) {
+        await grantPoints(db, {
+          userId: user._id,
+          amount: SIGNUP_BONUS_POINTS,
+          type: 'signup_bonus',
+          refKey: signupBonusRefKey(user._id),
+          reason: `회원가입 보너스 ${SIGNUP_BONUS_POINTS}P`,
+        });
+      }
+    } catch (e) {
+      console.warn('[oauth complete] signup bonus grant failed:', e);
+    }
+  }
 
   // 3) 로그인 쿠키 발급
   const accessToken = jwt.sign({ sub: user._id.toString(), email: user.email, role: user.role }, ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRES_IN });

@@ -9,6 +9,8 @@ import { Package, BadgeCheck, Wrench, BookOpen, Tags, MessageSquareText } from '
 import Link from 'next/link';
 import HomeMarketPreview from '@/components/HomeMarketPreview';
 import HomeNoticePreview from '@/components/HomeNoticePreview';
+import SignupBonusPromoPopup from '@/components/system/SignupBonusPromoPopup';
+import { isSignupBonusActive, SIGNUP_BONUS_CAMPAIGN_ID, SIGNUP_BONUS_END_DATE, SIGNUP_BONUS_POINTS, SIGNUP_BONUS_START_DATE } from '@/lib/points.policy';
 
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
 type ApiProduct = {
@@ -61,6 +63,19 @@ export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>('all');
   const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>('all');
   const router = useRouter();
+
+  // 회원가입 프로모션 이벤트
+  const signupPromo = useMemo(
+    () => ({
+      enabled: isSignupBonusActive(),
+      campaignId: SIGNUP_BONUS_CAMPAIGN_ID,
+      amount: SIGNUP_BONUS_POINTS,
+      startDate: SIGNUP_BONUS_START_DATE || null,
+      endDate: SIGNUP_BONUS_END_DATE || null,
+    }),
+    []
+  );
+
   // 마운트 후 URL에서 초깃값 한 번만 읽기
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -237,6 +252,13 @@ export default function Home() {
 
   return (
     <div>
+      <SignupBonusPromoPopup
+        promo={signupPromo}
+        onPrimaryClick={() => {
+          // 회원가입 탭으로 이동
+          router.push('/login?tab=register');
+        }}
+      />
       {/* 상단 배너 */}
       <HeroSlider slides={SLIDES} />
 

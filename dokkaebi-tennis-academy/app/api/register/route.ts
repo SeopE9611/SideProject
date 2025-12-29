@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb'; // 단일 DB 유틸 사용
 import { hash } from 'bcryptjs';
+import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from '@/lib/points.policy';
+import { grantPoints } from '@/lib/points.service';
 
 /**
  * POST /api/register
@@ -54,7 +56,7 @@ export async function POST(req: Request) {
     const hashedPassword = await hash(password, 10);
 
     // 5) 사용자 생성
-    await users.insertOne({
+    const insertRes = await users.insertOne({
       email,
       name,
       hashedPassword, // 평문 저장 금지
@@ -69,6 +71,22 @@ export async function POST(req: Request) {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+    // 6) 회원가입 보너스 지급(이벤트 ON + 기간 내)
+    // - 실패해도 회원가입 자체는 성공해야 하므로 try/catch로 격리
+    try {
+      if (isSignupBonusActive()) {
+        await grantPoints(db, {
+          userId: insertRes.insertedId,
+          amount: SIGNUP_BONUS_POINTS,
+          type: 'signup_bonus',
+          refKey: signupBonusRefKey(insertRes.insertedId),
+          reason: `회원가입 보너스 ${SIGNUP_BONUS_POINTS}P`,
+        });
+      }
+    } catch (e) {
+      console.warn('[register] signup bonus grant failed', e);
+    }
 
     return NextResponse.json({ message: '회원가입 완료' }, { status: 201 });
   } catch (err: any) {
