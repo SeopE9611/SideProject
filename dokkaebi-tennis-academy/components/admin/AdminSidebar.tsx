@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, PackageSearch, Boxes, Users, CalendarClock, MessageCircle, Settings, ChevronLeft, ChevronRight, Package, Cog, ChartArea, ChartBar, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, PackageSearch, Boxes, Users, CalendarClock, MessageCircle, Settings, ChevronLeft, ChevronRight, Package, Cog, ChartArea, ChartBar, ClipboardList, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
@@ -14,6 +14,7 @@ const SECTIONS = [
     label: '운영',
     items: [
       { title: '대시보드', href: '/admin/dashboard', icon: LayoutDashboard },
+      { title: '알림 관리', href: '/admin/notifications', icon: Bell },
       { title: '주문 관리', href: '/admin/orders', icon: PackageSearch, key: 'orders' as const },
       { title: '상품 관리', href: '/admin/products', icon: Boxes, key: 'products' as const },
       { title: '대여 관리', href: '/admin/rentals', icon: ClipboardList },
