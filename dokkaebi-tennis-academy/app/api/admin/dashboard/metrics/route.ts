@@ -1,0 +1,1164 @@
+import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/admin.guard';
+
+/**
+ * Admin Dashboard Metrics API
+ * - 대시보드에서 필요한 데이터를 "한 번에" 내려주기 위한 엔드포인트
+ * - 프론트에서 여러 API를 동시에 때리면 느려지거나, 지표 정의가 분산되어 서로 다른 숫자가 나올 수 있어서
+ *   서버에서 집계 기준을 통일해줍니다.
+ *
+ * 주의:
+ * - 프로젝트는 KST(Asia/Seoul, UTC+9) 기준으로 "일/월" 경계를 잡는 경우가 많아서,
+ *   집계에서도 KST 날짜 경계를 사용합니다.
+ */
+
+// ----------------------------- KST 유틸 -----------------------------
+
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+// "KST 기준" 날짜 파츠를 얻기 위해, 시간을 +9h 시프트한 뒤 UTC getter를 사용합니다.
+function getKstParts(dateUtc: Date) {
+  const shifted = new Date(dateUtc.getTime() + KST_OFFSET_MS);
+  return {
+    y: shifted.getUTCFullYear(),
+    m: shifted.getUTCMonth() + 1,
+    d: shifted.getUTCDate(),
+  };
+}
+
+function toYmd({ y, m, d }: { y: number; m: number; d: number }) {
+  const mm = String(m).padStart(2, '0');
+  const dd = String(d).padStart(2, '0');
+  return `${y}-${mm}-${dd}`;
+}
+
+// KST 자정(00:00)을 UTC Date로 변환
+function kstDayStartUtc(y: number, m: number, d: number) {
+  // KST 00:00 = UTC 전날 15:00
+  return new Date(Date.UTC(y, m - 1, d, -9, 0, 0, 0));
+}
+
+function addKstDays(parts: { y: number; m: number; d: number }, deltaDays: number) {
+  // parts를 "UTC 기준 날짜"로 만들기 위해, 임의로 UTC 00:00을 넣고 연산
+  // (어차피 우리는 UTC getter로 읽을 것이므로 문제 없음)
+  const base = new Date(Date.UTC(parts.y, parts.m - 1, parts.d, 0, 0, 0, 0));
+  base.setUTCDate(base.getUTCDate() + deltaDays);
+  return { y: base.getUTCFullYear(), m: base.getUTCMonth() + 1, d: base.getUTCDate() };
+}
+
+function buildYmdRange(endInclusiveUtc: Date, days: number) {
+  const endKst = getKstParts(endInclusiveUtc);
+  const startKst = addKstDays(endKst, -(days - 1));
+  const ymds: string[] = [];
+  for (let i = 0; i < days; i += 1) {
+    ymds.push(toYmd(addKstDays(startKst, i)));
+  }
+  return { startKst, endKst, ymds };
+}
+
+// 일별 시리즈 (Mongo) -> { 'YYYY-MM-DD': number } 형태로 변환
+function rowsToMap(rows: Array<{ _id: string; v: number }>) {
+  const map: Record<string, number> = {};
+  for (const r of rows) {
+    map[r._id] = Number(r.v || 0);
+  }
+  return map;
+}
+
+function mergeSeries(ymds: string[], ...maps: Array<Record<string, number>>) {
+  return ymds.map((date) => ({
+    date,
+    value: maps.reduce((sum, m) => sum + Number(m?.[date] || 0), 0),
+  }));
+}
+
+// ----------------------------- 응답 타입 -----------------------------
+
+type KpiBlock = {
+  total: number;
+  delta7d: number;
+};
+
+type Distribution = Array<{ label: string; count: number }>;
+
+type DashboardMetrics = {
+  generatedAt: string;
+
+  // 기준 범위(주로 그래프에 사용)
+  series: {
+    days: number;
+    fromYmd: string;
+    toYmd: string;
+
+    // 매출(결제완료 기준) - orders + applications + packageOrders 합산
+    dailyRevenue: Array<{ date: string; value: number }>;
+    // 매출 분해(결제완료 기준) - 주문/신청/패키지 별로 보기
+    dailyRevenueBySource: Array<{ date: string; orders: number; applications: number; packages: number; total: number }>;
+
+    // 생성량(결제와 무관) - 운영 트래픽 확인용
+    dailyOrders: Array<{ date: string; value: number }>;
+    dailyApplications: Array<{ date: string; value: number }>;
+    dailySignups: Array<{ date: string; value: number }>;
+    dailyReviews: Array<{ date: string; value: number }>;
+  };
+
+  kpi: {
+    users: KpiBlock & { active7d: number; byProvider: { local: number; kakao: number; naver: number } };
+    orders: KpiBlock & { paid7d: number; revenue7d: number; aov7d: number };
+    applications: KpiBlock & { paid7d: number; revenue7d: number };
+    rentals: KpiBlock & { paid7d: number; revenue7d: number };
+    packages: KpiBlock & { paid7d: number; revenue7d: number };
+
+    // 리뷰(상품/서비스)
+    reviews: KpiBlock & {
+      avg: number;
+      five: number;
+      byType: { product: number; service: number };
+      byRating: { one: number; two: number; three: number; four: number; five: number };
+    };
+
+    points: { issued7d: number; spent7d: number };
+    community: { posts7d: number; comments7d: number; pendingReports: number };
+    inventory: { lowStockProducts: number; outOfStockProducts: number; inactiveRackets: number };
+    queue: { cancelRequests: number; shippingPending: number; outboxQueued: number };
+  };
+
+  dist: {
+    orderStatus: Distribution;
+    orderPaymentStatus: Distribution;
+    applicationStatus: Distribution;
+  };
+
+  inventoryList: {
+    lowStock: Array<{ id: string; name: string; brand: string; stock: number; lowStock: number | null }>;
+    outOfStock: Array<{ id: string; name: string; brand: string; stock: number }>;
+  };
+
+  // 판매 상위(최근 7일, 결제완료 기준)
+  top: {
+    products7d: Array<{ productId: string; name: string; brand: string; qty: number; revenue: number }>;
+    brands7d: Array<{ brand: string; qty: number; revenue: number }>;
+  };
+
+  queueDetails: {
+    cancelRequests: Array<{
+      kind: 'order' | 'application' | 'rental';
+      id: string;
+      createdAt: string;
+      name: string;
+      amount: number;
+      status: string;
+      paymentStatus?: string;
+      href: string;
+    }>;
+
+    shippingPending: Array<{
+      kind: 'order' | 'application';
+      id: string;
+      createdAt: string;
+      name: string;
+      amount: number;
+      status: string;
+      paymentStatus: string;
+      href: string;
+    }>;
+
+    stringingAging: Array<{
+      id: string;
+      createdAt: string;
+      name: string;
+      status: string;
+      paymentStatus: string;
+      totalPrice: number;
+      ageDays: number;
+      href: string;
+    }>;
+
+    outboxBacklog: Array<{
+      id: string;
+      createdAt: string;
+      status: 'queued' | 'failed' | 'sent';
+      eventType: string;
+      to: string | null;
+      retries: number;
+      error: string | null;
+    }>;
+  };
+
+  recent: {
+    orders: Array<{ id: string; createdAt: string; name: string; totalPrice: number; status: string; paymentStatus: string }>;
+    applications: Array<{ id: string; createdAt: string; name: string; totalPrice: number; status: string; paymentStatus: string }>;
+    rentals: Array<{ id: string; createdAt: string; name: string; total: number; status: string }>;
+    reports: Array<{ id: string; createdAt: string; kind: 'post' | 'comment'; reason: string }>;
+  };
+};
+
+export async function GET(req: Request) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+  const { db } = guard;
+
+  const now = new Date();
+  // 3일(72h) 기준: 운영 큐에서 '장기 미처리' 판단에 사용
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+  // 그래프(최근 30일)
+  const CHART_DAYS = 30;
+  const { startKst: chartStartKst, endKst: chartEndKst, ymds } = buildYmdRange(now, CHART_DAYS);
+  const chartStartUtc = kstDayStartUtc(chartStartKst.y, chartStartKst.m, chartStartKst.d);
+
+  // 7일 KPI
+  const since7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  // 월 KPI(이번 달 1일 KST 00:00)
+  const kstNow = getKstParts(now);
+  const monthStartUtc = kstDayStartUtc(kstNow.y, kstNow.m, 1);
+
+  // ----------------------------- Users -----------------------------
+
+  const usersCol = db.collection('users');
+
+  const totalUsersP = usersCol.countDocuments({});
+  const newUsers7dP = usersCol.countDocuments({ createdAt: { $gte: since7d } });
+  const activeUsers7dP = usersCol.countDocuments({ lastLoginAt: { $gte: since7d } });
+
+  const usersByProviderP = (async () => {
+    const [kakao, naver] = await Promise.all([usersCol.countDocuments({ 'oauth.kakao.id': { $exists: true, $ne: null } }), usersCol.countDocuments({ 'oauth.naver.id': { $exists: true, $ne: null } })]);
+    const total = await usersCol.countDocuments({});
+    const local = Math.max(0, total - kakao - naver);
+    return { local, kakao, naver };
+  })();
+
+  const dailySignupsP = usersCol
+    .aggregate<{ _id: string; v: number }>([
+      { $match: { createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          v: { $sum: 1 },
+        },
+      },
+    ])
+    .toArray();
+
+  // ----------------------------- Orders -----------------------------
+
+  const ordersCol = db.collection('orders');
+
+  const totalOrdersP = ordersCol.countDocuments({});
+  const newOrders7dP = ordersCol.countDocuments({ createdAt: { $gte: since7d } });
+
+  // 결제완료(=매출 인정) 기준
+  const paidOrders7dP = ordersCol.countDocuments({ paymentStatus: '결제완료', createdAt: { $gte: since7d } });
+  const revenueOrders7dP = ordersCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
+
+  const revenueOrdersMonthP = ordersCol
+    .aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: '결제완료', createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }])
+    .toArray();
+
+  // 판매 상위(최근 7일, 결제완료 주문 기준)
+  const topProducts7dP = ordersCol
+    .aggregate<{
+      _id: any;
+      name: string;
+      brand: string;
+      qty: number;
+      revenue: number;
+    }>([
+      { $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } },
+      { $unwind: '$items' },
+      { $match: { 'items.kind': 'product' } },
+      {
+        $group: {
+          _id: '$items.productId',
+          name: { $first: { $ifNull: ['$items.name', ''] } },
+          brand: { $first: { $ifNull: ['$items.brand', ''] } },
+          qty: { $sum: { $ifNull: ['$items.quantity', 0] } },
+          revenue: {
+            $sum: {
+              $multiply: [{ $ifNull: ['$items.price', 0] }, { $ifNull: ['$items.quantity', 0] }],
+            },
+          },
+        },
+      },
+      { $sort: { revenue: -1, qty: -1 } },
+      { $limit: 10 },
+    ])
+    .toArray();
+
+  const topBrands7dP = ordersCol
+    .aggregate<{
+      _id: string;
+      qty: number;
+      revenue: number;
+    }>([
+      { $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } },
+      { $unwind: '$items' },
+      { $match: { 'items.kind': 'product' } },
+      {
+        $group: {
+          _id: { $ifNull: ['$items.brand', ''] },
+          qty: { $sum: { $ifNull: ['$items.quantity', 0] } },
+          revenue: {
+            $sum: {
+              $multiply: [{ $ifNull: ['$items.price', 0] }, { $ifNull: ['$items.quantity', 0] }],
+            },
+          },
+        },
+      },
+      { $sort: { revenue: -1, qty: -1 } },
+      { $limit: 10 },
+    ])
+    .toArray();
+
+  const dailyOrdersP = ordersCol
+    .aggregate<{ _id: string; v: number }>([
+      { $match: { createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          v: { $sum: 1 },
+        },
+      },
+    ])
+    .toArray();
+
+  const dailyOrderRevenueP = ordersCol
+    .aggregate<{ _id: string; v: number }>([
+      { $match: { paymentStatus: '결제완료', createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          v: { $sum: { $ifNull: ['$totalPrice', 0] } },
+        },
+      },
+    ])
+    .toArray();
+
+  const orderStatusDistP = ordersCol
+    .aggregate<{ _id: string; count: number }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ['$status', '미지정'] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+    .toArray();
+
+  const orderPayStatusDistP = ordersCol
+    .aggregate<{ _id: string; count: number }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ['$paymentStatus', '결제대기'] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+    .toArray();
+
+  const shippingPendingP = ordersCol.countDocuments({
+    paymentStatus: '결제완료',
+    // 방문 수령은 송장/운송장 개념이 없으므로 제외
+    $and: [
+      { $or: [{ 'shippingInfo.shippingMethod': { $ne: 'visit' } }, { 'shippingInfo.shippingMethod': { $exists: false } }] },
+      {
+        $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
+      },
+    ],
+    // 완료/취소 계열은 제외
+    status: { $nin: ['배송완료', '취소', '환불'] },
+  });
+
+  const shippingPendingOrdersListP = ordersCol
+    .find(
+      {
+        paymentStatus: '결제완료',
+        $and: [
+          { $or: [{ 'shippingInfo.shippingMethod': { $ne: 'visit' } }, { 'shippingInfo.shippingMethod': { $exists: false } }] },
+          {
+            $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
+          },
+        ],
+        status: { $nin: ['배송완료', '취소', '환불'] },
+      },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+      }
+    )
+    .toArray();
+
+  const orderCancelRequestsListP = ordersCol
+    .find(
+      { 'cancelRequest.status': 'requested' },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1, cancelRequest: 1 },
+      }
+    )
+    .toArray();
+
+  const orderCancelRequestsP = ordersCol.countDocuments({ 'cancelRequest.status': 'requested' });
+
+  const recentOrdersP = ordersCol
+    .find(
+      {},
+      {
+        sort: { createdAt: -1 },
+        limit: 5,
+        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+      }
+    )
+    .toArray();
+
+  // ----------------------------- Stringing Applications -----------------------------
+
+  const appsCol = db.collection('stringing_applications');
+
+  const totalAppsP = appsCol.countDocuments({});
+  const newApps7dP = appsCol.countDocuments({ createdAt: { $gte: since7d } });
+
+  const paidApps7dP = appsCol.countDocuments({ paymentStatus: '결제완료', createdAt: { $gte: since7d } });
+  const revenueApps7dP = appsCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
+
+  const dailyAppsP = appsCol
+    .aggregate<{ _id: string; v: number }>([
+      { $match: { createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          v: { $sum: 1 },
+        },
+      },
+    ])
+    .toArray();
+
+  const dailyAppRevenueP = appsCol
+    .aggregate<{ _id: string; v: number }>([
+      { $match: { paymentStatus: '결제완료', createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          v: { $sum: { $ifNull: ['$totalPrice', 0] } },
+        },
+      },
+    ])
+    .toArray();
+
+  const appStatusDistP = appsCol
+    .aggregate<{ _id: string; count: number }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ['$status', '미지정'] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+    .toArray();
+
+  const appCancelRequestsP = appsCol.countDocuments({ 'cancelRequest.status': 'requested' });
+
+  const shippingPendingAppsP = appsCol.countDocuments({
+    paymentStatus: '결제완료',
+    $and: [
+      {
+        $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
+      },
+    ],
+    status: { $nin: ['교체완료', '취소'] },
+  });
+
+  const shippingPendingAppsListP = appsCol
+    .find(
+      {
+        paymentStatus: '결제완료',
+        $and: [
+          {
+            $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
+          },
+        ],
+        status: { $nin: ['교체완료', '취소'] },
+      },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+      }
+    )
+    .toArray();
+
+  const appCancelRequestsListP = appsCol
+    .find(
+      { 'cancelRequest.status': 'requested' },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1, cancelRequest: 1 },
+      }
+    )
+    .toArray();
+
+  const stringingAgingListP = appsCol
+    .find(
+      {
+        status: { $in: ['검토 중', '접수완료', '작업 중'] },
+        createdAt: { $lte: threeDaysAgo },
+      },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+      }
+    )
+    .toArray();
+
+  const recentAppsP = appsCol
+    .find(
+      {},
+      {
+        sort: { createdAt: -1 },
+        limit: 5,
+        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+      }
+    )
+    .toArray();
+
+  // ----------------------------- Rentals -----------------------------
+
+  const rentalsCol = db.collection('rental_orders');
+
+  const totalRentalsP = rentalsCol.countDocuments({});
+  const newRentals7dP = rentalsCol.countDocuments({ createdAt: { $gte: since7d } });
+
+  const paidRentals7dP = rentalsCol.countDocuments({ status: { $in: ['paid', 'out', 'returned'] }, createdAt: { $gte: since7d } });
+  const revenueRentals7dP = rentalsCol
+    .aggregate<{ _id: null; v: number }>([{ $match: { status: { $in: ['paid', 'out', 'returned'] }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$amount.total', 0] } } } }])
+    .toArray();
+
+  const rentalCancelRequestsP = rentalsCol.countDocuments({ 'cancelRequest.status': 'requested' });
+
+  const rentalCancelRequestsListP = rentalsCol
+    .find(
+      { 'cancelRequest.status': 'requested' },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: { _id: 1, createdAt: 1, status: 1, amount: 1, fee: 1, deposit: 1, guest: 1, cancelRequest: 1 },
+      }
+    )
+    .toArray();
+
+  const recentRentalsP = rentalsCol.find({}, { sort: { createdAt: -1 }, limit: 5, projection: { _id: 1, createdAt: 1, status: 1, amount: 1, userEmail: 1 } }).toArray();
+
+  // ----------------------------- Packages -----------------------------
+
+  const packageOrdersCol = db.collection('packageOrders');
+
+  const totalPackageOrdersP = packageOrdersCol.countDocuments({});
+  const newPackageOrders7dP = packageOrdersCol.countDocuments({ createdAt: { $gte: since7d } });
+
+  const paidPackageOrders7dP = packageOrdersCol.countDocuments({ paymentStatus: '결제완료', createdAt: { $gte: since7d } });
+  const revenuePackageOrders7dP = packageOrdersCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
+
+  const dailyPackageRevenueP = packageOrdersCol
+    .aggregate<{ _id: string; v: number }>([
+      { $match: { paymentStatus: '결제완료', createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          v: { $sum: { $ifNull: ['$totalPrice', 0] } },
+        },
+      },
+    ])
+    .toArray();
+
+  // ----------------------------- Reviews -----------------------------
+
+  const reviewsCol = db.collection('reviews');
+
+  // 7일 신규 리뷰
+  const newReviews7dP = reviewsCol.countDocuments({ isDeleted: { $ne: true }, createdAt: { $gte: since7d } });
+
+  // 전체 리뷰 지표 (※ /api/admin/reviews/metrics 와 동일한 판별 로직을 최대한 유지)
+  const reviewsAggP = reviewsCol
+    .aggregate<{
+      _id: null;
+      total: number;
+      avg: number;
+      five: number;
+      four: number;
+      three: number;
+      two: number;
+      one: number;
+      product: number;
+      service: number;
+    }>([
+      { $match: { isDeleted: { $ne: true } } },
+      {
+        $addFields: {
+          // 문자열/객체형/레거시 키까지 폭넓게 인식
+          _pidStr: { $toString: { $ifNull: ['$productId', '$product_id'] } },
+          hasProductId: {
+            $or: [
+              { $ne: [{ $ifNull: ['$productId', null] }, null] },
+              { $ne: [{ $ifNull: ['$product_id', null] }, null] },
+              // 24자 헥사 문자열도 유효한 productId로 간주
+              { $regexMatch: { input: { $toString: { $ifNull: ['$productId', '$product_id'] } }, regex: /^[a-fA-F0-9]{24}$/ } },
+            ],
+          },
+          hasServiceMarker: {
+            $or: [{ $ne: [{ $ifNull: ['$serviceApplicationId', null] }, null] }, { $in: ['$service', ['stringing']] }],
+          },
+          // type이 명시되고 값이 정상일 때만 우선
+          typeValid: { $in: ['$type', ['product', 'service']] },
+        },
+      },
+      {
+        $addFields: {
+          resolvedType: {
+            $cond: [
+              '$typeValid',
+              '$type',
+              {
+                $cond: [
+                  '$hasProductId',
+                  'product',
+                  { $cond: ['$hasServiceMarker', 'service', 'service'] }, // 기본값은 service
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          avg: { $avg: '$rating' },
+          five: { $sum: { $cond: [{ $eq: ['$rating', 5] }, 1, 0] } },
+          four: { $sum: { $cond: [{ $eq: ['$rating', 4] }, 1, 0] } },
+          three: { $sum: { $cond: [{ $eq: ['$rating', 3] }, 1, 0] } },
+          two: { $sum: { $cond: [{ $eq: ['$rating', 2] }, 1, 0] } },
+          one: { $sum: { $cond: [{ $eq: ['$rating', 1] }, 1, 0] } },
+          product: { $sum: { $cond: [{ $eq: ['$resolvedType', 'product'] }, 1, 0] } },
+          service: { $sum: { $cond: [{ $eq: ['$resolvedType', 'service'] }, 1, 0] } },
+        },
+      },
+    ])
+    .toArray();
+
+  // 일별 리뷰 작성 수(그래프용)
+  const dailyReviewsP = reviewsCol
+    .aggregate<{ _id: string; v: number }>([
+      { $match: { isDeleted: { $ne: true }, createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          v: { $sum: 1 },
+        },
+      },
+    ])
+    .toArray();
+
+  // ----------------------------- Points -----------------------------
+
+  const pointsCol = db.collection('point_transactions');
+
+  const pointsIssued7dP = pointsCol.aggregate<{ _id: null; v: number }>([{ $match: { createdAt: { $gte: since7d }, amount: { $gt: 0 } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$amount', 0] } } } }]).toArray();
+
+  const pointsSpent7dP = pointsCol.aggregate<{ _id: null; v: number }>([{ $match: { createdAt: { $gte: since7d }, amount: { $lt: 0 } } }, { $group: { _id: null, v: { $sum: { $multiply: [{ $ifNull: ['$amount', 0] }, -1] } } } }]).toArray();
+
+  // ----------------------------- Community -----------------------------
+
+  const postsCol = db.collection('community_posts');
+  const commentsCol = db.collection('community_comments');
+  const reportsCol = db.collection('community_reports');
+
+  const posts7dP = postsCol.countDocuments({ createdAt: { $gte: since7d } });
+  const comments7dP = commentsCol.countDocuments({ createdAt: { $gte: since7d } });
+  const pendingReportsP = reportsCol.countDocuments({ status: 'pending' });
+
+  const recentReportsP = reportsCol.find({}, { sort: { createdAt: -1 }, limit: 5, projection: { _id: 1, createdAt: 1, reason: 1, postId: 1, commentId: 1 } }).toArray();
+
+  // ----------------------------- Inventory -----------------------------
+
+  const productsCol = db.collection('products');
+  const racketsCol = db.collection('used_rackets');
+
+  const lowStockProductsP = productsCol.countDocuments({
+    'inventory.stock': { $gt: 0 },
+    $expr: { $lte: ['$inventory.stock', '$inventory.lowStock'] },
+  });
+  const outOfStockProductsP = productsCol.countDocuments({ 'inventory.stock': { $lte: 0 } });
+  const inactiveRacketsP = racketsCol.countDocuments({ status: { $in: ['inactive'] } });
+
+  const lowStockListP = productsCol
+    .find(
+      {
+        isDeleted: { $ne: true },
+        'inventory.stock': { $gt: 0 },
+        'inventory.lowStock': { $ne: null },
+        $expr: { $lte: ['$inventory.stock', '$inventory.lowStock'] },
+      },
+      { projection: { _id: 1, name: 1, brand: 1, inventory: 1, updatedAt: 1, createdAt: 1 } }
+    )
+    .sort({ 'inventory.stock': 1, updatedAt: -1, createdAt: -1, _id: -1 })
+    .limit(8)
+    .toArray();
+
+  const outOfStockListP = productsCol
+    .find({ isDeleted: { $ne: true }, 'inventory.stock': { $lte: 0 } }, { projection: { _id: 1, name: 1, brand: 1, inventory: 1, updatedAt: 1, createdAt: 1 } })
+    .sort({ updatedAt: -1, createdAt: -1, _id: -1 })
+    .limit(8)
+    .toArray();
+
+  // ----------------------------- Notifications Outbox -----------------------------
+
+  const outboxCol = db.collection('notifications_outbox');
+  const outboxQueuedP = outboxCol.countDocuments({ status: 'queued' });
+
+  const outboxBacklogListP = outboxCol
+    .find(
+      { status: { $in: ['queued', 'failed'] } },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: { _id: 1, createdAt: 1, status: 1, eventType: 1, retries: 1, error: 1, rendered: 1 },
+      }
+    )
+    .toArray();
+
+  // ----------------------------- 실행(병렬) -----------------------------
+
+  const [
+    totalUsers,
+    newUsers7d,
+    activeUsers7d,
+    usersByProvider,
+    dailySignups,
+
+    totalOrders,
+    newOrders7d,
+    paidOrders7d,
+    revenueOrders7dRows,
+    revenueOrdersMonthRows,
+    topProducts7dRows,
+    topBrands7dRows,
+    dailyOrders,
+    dailyOrderRevenue,
+    orderStatusDistRows,
+    orderPayStatusDistRows,
+    shippingPending,
+    orderCancelRequests,
+    recentOrders,
+
+    totalApps,
+    newApps7d,
+    paidApps7d,
+    revenueApps7dRows,
+    dailyApps,
+    dailyAppRevenue,
+    appStatusDistRows,
+    appCancelRequests,
+    recentApps,
+
+    totalRentals,
+    newRentals7d,
+    paidRentals7d,
+    revenueRentals7dRows,
+    rentalCancelRequests,
+    recentRentals,
+
+    totalPackageOrders,
+    newPackageOrders7d,
+    paidPackageOrders7d,
+    revenuePackageOrders7dRows,
+    dailyPackageRevenue,
+
+    newReviews7d,
+    reviewsAggRows,
+    dailyReviews,
+
+    pointsIssued7dRows,
+    pointsSpent7dRows,
+
+    posts7d,
+    comments7d,
+    pendingReports,
+    recentReports,
+
+    lowStockProducts,
+    outOfStockProducts,
+    inactiveRackets,
+
+    lowStockListDocs,
+    outOfStockListDocs,
+
+    outboxQueued,
+    shippingPendingOrdersList,
+    shippingPendingApps,
+    shippingPendingAppsList,
+    orderCancelRequestsList,
+    appCancelRequestsList,
+    rentalCancelRequestsList,
+    stringingAgingList,
+    outboxBacklogList,
+  ] = await Promise.all([
+    totalUsersP,
+    newUsers7dP,
+    activeUsers7dP,
+    usersByProviderP,
+    dailySignupsP,
+
+    totalOrdersP,
+    newOrders7dP,
+    paidOrders7dP,
+    revenueOrders7dP,
+    revenueOrdersMonthP,
+    topProducts7dP,
+    topBrands7dP,
+    dailyOrdersP,
+    dailyOrderRevenueP,
+    orderStatusDistP,
+    orderPayStatusDistP,
+    shippingPendingP,
+    orderCancelRequestsP,
+    recentOrdersP,
+
+    totalAppsP,
+    newApps7dP,
+    paidApps7dP,
+    revenueApps7dP,
+    dailyAppsP,
+    dailyAppRevenueP,
+    appStatusDistP,
+    appCancelRequestsP,
+    recentAppsP,
+
+    totalRentalsP,
+    newRentals7dP,
+    paidRentals7dP,
+    revenueRentals7dP,
+    rentalCancelRequestsP,
+    recentRentalsP,
+
+    totalPackageOrdersP,
+    newPackageOrders7dP,
+    paidPackageOrders7dP,
+    revenuePackageOrders7dP,
+    dailyPackageRevenueP,
+
+    newReviews7dP,
+    reviewsAggP,
+    dailyReviewsP,
+
+    pointsIssued7dP,
+    pointsSpent7dP,
+
+    posts7dP,
+    comments7dP,
+    pendingReportsP,
+    recentReportsP,
+
+    lowStockProductsP,
+    outOfStockProductsP,
+    inactiveRacketsP,
+
+    lowStockListP,
+    outOfStockListP,
+
+    outboxQueuedP,
+
+    shippingPendingOrdersListP,
+    shippingPendingAppsP,
+    shippingPendingAppsListP,
+    orderCancelRequestsListP,
+    appCancelRequestsListP,
+    rentalCancelRequestsListP,
+    stringingAgingListP,
+    outboxBacklogListP,
+  ]);
+
+  const revenueOrders7d = Number(revenueOrders7dRows?.[0]?.v || 0);
+  const revenueOrdersMonth = Number(revenueOrdersMonthRows?.[0]?.v || 0);
+
+  const revenueApps7d = Number(revenueApps7dRows?.[0]?.v || 0);
+  const revenueRentals7d = Number(revenueRentals7dRows?.[0]?.v || 0);
+  const revenuePackageOrders7d = Number(revenuePackageOrders7dRows?.[0]?.v || 0);
+
+  const pointsIssued7d = Number(pointsIssued7dRows?.[0]?.v || 0);
+  const pointsSpent7d = Number(pointsSpent7dRows?.[0]?.v || 0);
+
+  const reviewsAgg = (reviewsAggRows as Array<any>)?.[0];
+  const totalReviews = Number(reviewsAgg?.total || 0);
+  const avgReview = Number(reviewsAgg?.avg || 0);
+  const fiveReviews = Number(reviewsAgg?.five || 0);
+  const reviewsByType = {
+    product: Number(reviewsAgg?.product || 0),
+    service: Number(reviewsAgg?.service || 0),
+  };
+  const reviewsByRating = {
+    one: Number(reviewsAgg?.one || 0),
+    two: Number(reviewsAgg?.two || 0),
+    three: Number(reviewsAgg?.three || 0),
+    four: Number(reviewsAgg?.four || 0),
+    five: Number(reviewsAgg?.five || 0),
+  };
+
+  const orderRevMap = rowsToMap(dailyOrderRevenue);
+  const appRevMap = rowsToMap(dailyAppRevenue);
+  const packageRevMap = rowsToMap(dailyPackageRevenue);
+
+  const dailyRevenueBySource = ymds.map((date) => {
+    const orders = Number(orderRevMap?.[date] || 0);
+    const applications = Number(appRevMap?.[date] || 0);
+    const packages = Number(packageRevMap?.[date] || 0);
+    const total = orders + applications + packages;
+    return { date, orders, applications, packages, total };
+  });
+
+  const dailyRevenue = dailyRevenueBySource.map((d) => ({ date: d.date, value: d.total }));
+
+  const toIso = (d: any) => (d instanceof Date ? d.toISOString() : new Date().toISOString());
+
+  const pickName = (doc: any) => String(doc?.shippingInfo?.name || doc?.shippingInfo?.receiverName || doc?.guest?.name || '고객');
+
+  const pickOutboxTo = (doc: any) => (doc?.rendered?.email?.to as string) || (doc?.rendered?.sms?.to as string) || null;
+
+  const calcAgeDays = (createdAt: any) => {
+    const t = createdAt instanceof Date ? createdAt.getTime() : new Date(createdAt).getTime();
+    return Math.max(0, Math.floor((now.getTime() - t) / (24 * 60 * 60 * 1000)));
+  };
+
+  // 목록 변환/통합
+  const cancelRequests = [
+    ...(orderCancelRequestsList as any[]).map((d) => ({
+      kind: 'order' as const,
+      id: String(d?._id),
+      createdAt: toIso(d?.createdAt),
+      name: pickName(d),
+      amount: Number(d?.totalPrice || 0),
+      status: String(d?.status || ''),
+      paymentStatus: String(d?.paymentStatus || ''),
+      href: `/admin/orders/${String(d?._id)}`,
+    })),
+    ...(appCancelRequestsList as any[]).map((d) => ({
+      kind: 'application' as const,
+      id: String(d?._id),
+      createdAt: toIso(d?.createdAt),
+      name: pickName(d),
+      amount: Number(d?.totalPrice || 0),
+      status: String(d?.status || ''),
+      paymentStatus: String(d?.paymentStatus || ''),
+      href: `/admin/applications/stringing/${String(d?._id)}`,
+    })),
+    ...(rentalCancelRequestsList as any[]).map((d) => ({
+      kind: 'rental' as const,
+      id: String(d?._id),
+      createdAt: toIso(d?.createdAt),
+      name: String(d?.guest?.name || '고객'),
+      amount: Number(d?.amount?.total || Number(d?.fee || 0) + Number(d?.deposit || 0)),
+      status: String(d?.status || ''),
+      href: `/admin/rentals/${String(d?._id)}`,
+    })),
+  ]
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .slice(0, 10);
+
+  const shippingPendingList = [
+    ...(shippingPendingOrdersList as any[]).map((d) => ({
+      kind: 'order' as const,
+      id: String(d?._id),
+      createdAt: toIso(d?.createdAt),
+      name: pickName(d),
+      amount: Number(d?.totalPrice || 0),
+      status: String(d?.status || ''),
+      paymentStatus: String(d?.paymentStatus || ''),
+      href: `/admin/orders/${String(d?._id)}/shipping-update`,
+    })),
+    ...(shippingPendingAppsList as any[]).map((d) => ({
+      kind: 'application' as const,
+      id: String(d?._id),
+      createdAt: toIso(d?.createdAt),
+      name: pickName(d),
+      amount: Number(d?.totalPrice || 0),
+      status: String(d?.status || ''),
+      paymentStatus: String(d?.paymentStatus || ''),
+      href: `/admin/applications/stringing/${String(d?._id)}/shipping-update`,
+    })),
+  ]
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .slice(0, 10);
+
+  const stringingAging = (stringingAgingList as any[]).map((d) => ({
+    id: String(d?._id),
+    createdAt: toIso(d?.createdAt),
+    name: pickName(d),
+    status: String(d?.status || ''),
+    paymentStatus: String(d?.paymentStatus || ''),
+    totalPrice: Number(d?.totalPrice || 0),
+    ageDays: calcAgeDays(d?.createdAt),
+    href: `/admin/applications/stringing/${String(d?._id)}`,
+  }));
+
+  const outboxBacklog = (outboxBacklogList as any[]).map((d) => ({
+    id: String(d?._id),
+    createdAt: toIso(d?.createdAt),
+    status: (d?.status || 'queued') as 'queued' | 'failed' | 'sent',
+    eventType: String(d?.eventType || ''),
+    to: pickOutboxTo(d),
+    retries: Number(d?.retries || 0),
+    error: d?.error ? String(d.error).slice(0, 140) : null,
+  }));
+
+  const resp: DashboardMetrics = {
+    generatedAt: now.toISOString(),
+
+    series: {
+      days: CHART_DAYS,
+      fromYmd: toYmd(chartStartKst),
+      toYmd: toYmd(chartEndKst),
+
+      dailyRevenue,
+      dailyRevenueBySource,
+      dailyOrders: mergeSeries(ymds, rowsToMap(dailyOrders)),
+      dailyApplications: mergeSeries(ymds, rowsToMap(dailyApps)),
+      dailySignups: mergeSeries(ymds, rowsToMap(dailySignups)),
+      dailyReviews: mergeSeries(ymds, rowsToMap(dailyReviews)),
+    },
+
+    kpi: {
+      users: {
+        total: totalUsers,
+        delta7d: newUsers7d,
+        active7d: activeUsers7d,
+        byProvider: usersByProvider,
+      },
+
+      orders: {
+        total: totalOrders,
+        delta7d: newOrders7d,
+        paid7d: paidOrders7d,
+        revenue7d: revenueOrders7d,
+        aov7d: paidOrders7d > 0 ? Math.round(revenueOrders7d / paidOrders7d) : 0,
+      },
+
+      applications: {
+        total: totalApps,
+        delta7d: newApps7d,
+        paid7d: paidApps7d,
+        revenue7d: revenueApps7d,
+      },
+
+      rentals: {
+        total: totalRentals,
+        delta7d: newRentals7d,
+        paid7d: paidRentals7d,
+        revenue7d: revenueRentals7d,
+      },
+
+      packages: {
+        total: totalPackageOrders,
+        delta7d: newPackageOrders7d,
+        paid7d: paidPackageOrders7d,
+        revenue7d: revenuePackageOrders7d,
+      },
+
+      reviews: {
+        total: totalReviews,
+        delta7d: newReviews7d,
+        avg: avgReview,
+        five: fiveReviews,
+        byType: reviewsByType,
+        byRating: reviewsByRating,
+      },
+
+      points: {
+        issued7d: pointsIssued7d,
+        spent7d: pointsSpent7d,
+      },
+
+      community: {
+        posts7d,
+        comments7d,
+        pendingReports,
+      },
+
+      inventory: {
+        lowStockProducts,
+        outOfStockProducts,
+        inactiveRackets,
+      },
+
+      queue: {
+        cancelRequests: Number(orderCancelRequests || 0) + Number(rentalCancelRequests || 0) + Number(appCancelRequests || 0),
+        shippingPending: Number(shippingPending || 0) + Number(shippingPendingApps || 0),
+        outboxQueued,
+      },
+    },
+
+    dist: {
+      orderStatus: orderStatusDistRows.map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
+      orderPaymentStatus: orderPayStatusDistRows.map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
+      applicationStatus: appStatusDistRows.map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
+    },
+
+    inventoryList: {
+      lowStock: (lowStockListDocs as Array<any>).map((d) => ({
+        id: String(d?._id),
+        name: String(d?.name || ''),
+        brand: String(d?.brand || ''),
+        stock: Number(d?.inventory?.stock || 0),
+        lowStock: d?.inventory?.lowStock === null || d?.inventory?.lowStock === undefined ? null : Number(d?.inventory?.lowStock),
+      })),
+      outOfStock: (outOfStockListDocs as Array<any>).map((d) => ({
+        id: String(d?._id),
+        name: String(d?.name || ''),
+        brand: String(d?.brand || ''),
+        stock: Number(d?.inventory?.stock || 0),
+      })),
+    },
+
+    top: {
+      products7d: (topProducts7dRows as Array<any>).map((r) => ({
+        productId: String(r?._id),
+        name: String(r?.name || ''),
+        brand: String(r?.brand || ''),
+        qty: Number(r?.qty || 0),
+        revenue: Number(r?.revenue || 0),
+      })),
+      brands7d: (topBrands7dRows as Array<any>).map((r) => ({
+        brand: String(r?._id || ''),
+        qty: Number(r?.qty || 0),
+        revenue: Number(r?.revenue || 0),
+      })),
+    },
+
+    // 운영 큐 상세(Top lists)
+    // - 프론트에서는 data.queueDetails.* 로 접근하고,
+    // - kpi.queue 는 카드 상단의 "건수" 요약에만 사용합니다.
+    queueDetails: {
+      cancelRequests,
+      shippingPending: shippingPendingList,
+      stringingAging,
+      outboxBacklog,
+    },
+
+    recent: {
+      orders: (recentOrders as Array<any>).map((d) => ({
+        id: String(d?._id),
+        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
+        name: String(d?.shippingInfo?.name || d?.shippingInfo?.receiverName || '고객'),
+        totalPrice: Number(d?.totalPrice || 0),
+        status: String(d?.status || '대기중'),
+        paymentStatus: String(d?.paymentStatus || '결제대기'),
+      })),
+      applications: (recentApps as Array<any>).map((d) => ({
+        id: String(d?._id),
+        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
+        name: String(d?.shippingInfo?.name || d?.shippingInfo?.receiverName || '고객'),
+        totalPrice: Number(d?.totalPrice || 0),
+        status: String(d?.status || '접수완료'),
+        paymentStatus: String(d?.paymentStatus || '결제대기'),
+      })),
+      rentals: (recentRentals as Array<any>).map((d) => ({
+        id: String(d?._id),
+        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
+        name: String(d?.userEmail || '고객'),
+        total: Number(d?.amount?.total || 0),
+        status: String(d?.status || 'pending'),
+      })),
+      reports: (recentReports as Array<any>).map((d) => ({
+        id: String(d?._id),
+        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
+        kind: d?.commentId ? 'comment' : 'post',
+        reason: String(d?.reason || '').slice(0, 120),
+      })),
+    },
+  };
+
+  // 캐시: 대시보드는 "실시간"에 가깝게 보고 싶지만, 초당 단위는 필요 없어서 10초만 캐싱합니다.
+  return NextResponse.json(resp, { headers: { 'Cache-Control': 'private, max-age=0, s-maxage=10' } });
+}
