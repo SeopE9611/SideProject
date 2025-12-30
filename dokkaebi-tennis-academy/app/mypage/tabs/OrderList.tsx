@@ -54,6 +54,8 @@ const getStatusIcon = (status: string) => {
       return <Clock className="h-4 w-4 text-yellow-500" />;
     case '결제완료':
       return <CheckCircle className="h-4 w-4 text-emerald-500" />;
+    case '구매확정':
+      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
     default:
       return <Ban className="h-4 w-4 text-red-500" />;
   }
