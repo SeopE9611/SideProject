@@ -1,580 +1,418 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import useSWR from 'swr';
 import Link from 'next/link';
-import { ArrowUpDown, ChevronDown, Filter, MoreHorizontal, Plus, Search, Trash2, FileText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Eye, EyeOff, RefreshCcw, ShieldAlert, CheckCircle2, XCircle, ExternalLink } from 'lucide-react';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
-const boardTypes = [
-  { id: 'notice', name: '공지사항', color: 'blue' },
-  { id: 'qna', name: 'Q&A', color: 'teal' },
-  { id: 'community', name: '커뮤니티', color: 'green' },
-  { id: 'faq', name: '자주 묻는 질문', color: 'cyan' },
-];
+type PostItem = {
+  id: string;
+  type: string;
+  postNo: number | null;
+  title: string;
+  nickname: string;
+  status: 'public' | 'hidden';
+  createdAt: string;
+  viewCount: number;
+  likeCount: number;
+  commentsCount: number;
+};
 
-const postStatuses = [
-  { id: 'published', name: '게시됨', color: 'blue' },
-  { id: 'draft', name: '임시저장', color: 'yellow' },
-  { id: 'hidden', name: '숨김', color: 'gray' },
-];
+type ReportItem = {
+  id: string;
+  targetType: 'post' | 'comment';
+  boardType: string;
+  reason: string;
+  status: 'pending' | 'resolved' | 'rejected';
+  reporterNickname: string;
+  createdAt: string;
+  resolvedAt: string | null;
+  post: { id: string | null; title: string; postNo: number | null; status: string } | null;
+  comment: { id: string | null; content: string; nickname: string; status: string } | null;
+};
 
-// 샘플 게시물 데이터
-const posts = [
-  {
-    id: 1,
-    title: '5월 스트링 할인 이벤트',
-    author: '관리자',
-    email: 'admin@dokkaebi.com',
-    boardType: 'notice',
-    category: '이벤트',
-    status: 'published',
-    isPinned: true,
-    commentCount: 0,
-    viewCount: 245,
-    createdAt: '2023-05-01T09:00:00',
-  },
-  {
-    id: 2,
-    title: '여름 아카데미 회원 모집',
-    author: '관리자',
-    email: 'admin@dokkaebi.com',
-    boardType: 'notice',
-    category: '아카데미',
-    status: 'published',
-    isPinned: true,
-    commentCount: 0,
-    viewCount: 187,
-    createdAt: '2023-05-10T11:30:00',
-  },
-  {
-    id: 3,
-    title: '스트링 장착 서비스 문의',
-    author: '테니스러버',
-    email: 'tennis@example.com',
-    boardType: 'qna',
-    category: '서비스',
-    status: 'published',
-    isPinned: false,
-    commentCount: 1,
-    viewCount: 56,
-    createdAt: '2023-05-05T14:22:00',
-  },
-  {
-    id: 4,
-    title: '주문 취소 가능한가요?',
-    author: '초보자',
-    email: 'beginner@example.com',
-    boardType: 'qna',
-    category: '주문/결제',
-    status: 'published',
-    isPinned: false,
-    commentCount: 0,
-    viewCount: 32,
-    createdAt: '2023-04-28T16:45:00',
-  },
-  {
-    id: 5,
-    title: '테니스 라켓 추천 부탁드립니다',
-    author: '테니스마니아',
-    email: 'mania@example.com',
-    boardType: 'community',
-    category: '장비추천',
-    status: 'published',
-    isPinned: false,
-    commentCount: 12,
-    viewCount: 189,
-    createdAt: '2023-05-12T08:15:00',
-  },
-  {
-    id: 6,
-    title: '테니스 초보 연습 방법',
-    author: '테니스초보',
-    email: 'newbie@example.com',
-    boardType: 'community',
-    category: '팁/노하우',
-    status: 'published',
-    isPinned: false,
-    commentCount: 8,
-    viewCount: 156,
-    createdAt: '2023-05-08T19:30:00',
-  },
-  {
-    id: 7,
-    title: '회원 등급은 어떻게 올라가나요?',
-    author: '관리자',
-    email: 'admin@dokkaebi.com',
-    boardType: 'faq',
-    category: '회원',
-    status: 'published',
-    isPinned: false,
-    commentCount: 0,
-    viewCount: 78,
-    createdAt: '2023-04-15T10:00:00',
-  },
-  {
-    id: 8,
-    title: '적립금 사용 방법',
-    author: '관리자',
-    email: 'admin@dokkaebi.com',
-    boardType: 'faq',
-    category: '적립금',
-    status: 'published',
-    isPinned: false,
-    commentCount: 0,
-    viewCount: 92,
-    createdAt: '2023-04-10T11:20:00',
-  },
-  {
-    id: 9,
-    title: '6월 휴무 안내',
-    author: '관리자',
-    email: 'admin@dokkaebi.com',
-    boardType: 'notice',
-    category: '공지',
-    status: 'draft',
-    isPinned: false,
-    commentCount: 0,
-    viewCount: 0,
-    createdAt: '2023-05-25T15:40:00',
-  },
-  {
-    id: 10,
-    title: '테니스 대회 후기',
-    author: '대회참가자',
-    email: 'player@example.com',
-    boardType: 'community',
-    category: '대회/이벤트',
-    status: 'hidden',
-    isPinned: false,
-    commentCount: 3,
-    viewCount: 45,
-    createdAt: '2023-05-20T20:15:00',
-  },
-];
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(await res.text().catch(() => 'Request failed'));
+  return res.json();
+};
 
-export default function BoardsPageClient() {
-  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [boardTypeFilter, setBoardTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+const boardLabel: Record<string, string> = {
+  notice: '공지',
+  qna: 'Q&A',
+  free: '자유',
+  gear: '장비',
+  market: '중고',
+  hot: '인기',
+  brands: '브랜드',
+};
 
-  // 모든 게시물 선택/해제
-  const toggleSelectAll = () => {
-    if (selectedPosts.length === filteredPosts.length) {
-      setSelectedPosts([]);
-    } else {
-      setSelectedPosts(filteredPosts.map((post) => post.id));
+function fmt(dt: string) {
+  try {
+    return new Date(dt).toLocaleString('ko-KR');
+  } catch {
+    return dt;
+  }
+}
+
+export default function BoardsClient() {
+  const router = useRouter();
+  const sp = useSearchParams();
+
+  const tab = sp.get('tab') === 'reports' ? 'reports' : 'posts';
+
+  // 게시글 필터
+  const [postType, setPostType] = useState<string>('all');
+  const [postStatus, setPostStatus] = useState<string>('all');
+  const [postQ, setPostQ] = useState<string>('');
+  const [postPage, setPostPage] = useState<number>(1);
+
+  // 신고 필터
+  const [reportType, setReportType] = useState<string>('all');
+  const [reportStatus, setReportStatus] = useState<string>('pending');
+  const [reportQ, setReportQ] = useState<string>('');
+  const [reportPage, setReportPage] = useState<number>(1);
+
+  const postsUrl = useMemo(() => {
+    const qs = new URLSearchParams({
+      page: String(postPage),
+      limit: '20',
+      type: postType,
+      status: postStatus,
+      q: postQ,
+      sort: 'createdAt',
+      dir: 'desc',
+    });
+    return `/api/admin/community/posts?${qs.toString()}`;
+  }, [postPage, postType, postStatus, postQ]);
+
+  const reportsUrl = useMemo(() => {
+    const qs = new URLSearchParams({
+      page: String(reportPage),
+      limit: '20',
+      boardType: reportType,
+      status: reportStatus,
+      q: reportQ,
+    });
+    return `/api/admin/community/reports?${qs.toString()}`;
+  }, [reportPage, reportType, reportStatus, reportQ]);
+
+  const { data: postsData, error: postsErr, isLoading: postsLoading, mutate: mutatePosts } = useSWR(tab === 'posts' ? postsUrl : null, fetcher);
+
+  const { data: reportsData, error: reportsErr, isLoading: reportsLoading, mutate: mutateReports } = useSWR(tab === 'reports' ? reportsUrl : null, fetcher);
+
+  const posts: PostItem[] = postsData?.items ?? [];
+  const postsTotal: number = postsData?.total ?? 0;
+
+  const reports: ReportItem[] = reportsData?.items ?? [];
+  const reportsTotal: number = reportsData?.total ?? 0;
+
+  const switchTab = (next: 'posts' | 'reports') => {
+    const qs = new URLSearchParams(sp.toString());
+    if (next === 'reports') qs.set('tab', 'reports');
+    else qs.delete('tab');
+    router.replace(`/admin/boards?${qs.toString()}`);
+  };
+
+  const togglePostVisibility = async (p: PostItem) => {
+    try {
+      const next = p.status === 'public' ? 'hidden' : 'public';
+      const res = await fetch(`/api/admin/community/posts/${p.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      showSuccessToast(next === 'hidden' ? '게시글을 숨김 처리했습니다.' : '게시글을 공개 처리했습니다.');
+      mutatePosts();
+    } catch (e: any) {
+      showErrorToast(e?.message ?? '상태 변경 실패');
     }
   };
 
-  // 개별 게시물 선택/해제
-  const togglePostSelection = (postId: number) => {
-    if (selectedPosts.includes(postId)) {
-      setSelectedPosts(selectedPosts.filter((id) => id !== postId));
-    } else {
-      setSelectedPosts([...selectedPosts, postId]);
+  const processReport = async (r: ReportItem, action: 'resolve' | 'reject' | 'resolve_hide_target') => {
+    try {
+      const res = await fetch(`/api/admin/community/reports/${r.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      showSuccessToast('신고 처리가 완료되었습니다.');
+      mutateReports();
+      // 대상 숨김까지 했다면 게시글 목록도 최신화하는 게 안전
+      mutatePosts();
+    } catch (e: any) {
+      showErrorToast(e?.message ?? '신고 처리 실패');
     }
   };
-
-  // 게시판 유형에 따른 배지 색상 가져오기
-  const getBoardTypeBadge = (type: string) => {
-    const boardType = boardTypes.find((b) => b.id === type);
-    return boardType ? boardType.name : type;
-  };
-
-  // 게시물 상태에 따른 배지 색상 가져오기
-  const getStatusBadge = (status: string) => {
-    const postStatus = postStatuses.find((s) => s.id === status);
-    return postStatus ? postStatus.name : status;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'published':
-        return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border-blue-200 dark:border-blue-800';
-      case 'draft':
-        return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/30 border-yellow-200 dark:border-yellow-800';
-      case 'hidden':
-        return 'bg-gray-500/20 text-gray-600 dark:text-gray-400 hover:bg-gray-500/30 border-gray-200 dark:border-gray-800';
-      default:
-        return 'bg-gray-500/20 text-gray-600 dark:text-gray-400 hover:bg-gray-500/30 border-gray-200 dark:border-gray-800';
-    }
-  };
-
-  const getBoardTypeColor = (type: string) => {
-    switch (type) {
-      case 'notice':
-        return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border-blue-200 dark:border-blue-800';
-      case 'qna':
-        return 'bg-teal-500/20 text-teal-600 dark:text-teal-400 hover:bg-teal-500/30 border-teal-200 dark:border-teal-800';
-      case 'community':
-        return 'bg-green-500/20 text-green-600 dark:text-green-400 hover:bg-green-500/30 border-green-200 dark:border-green-800';
-      case 'faq':
-        return 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/30 border-cyan-200 dark:border-cyan-800';
-      default:
-        return 'bg-gray-500/20 text-gray-600 dark:text-gray-400 hover:bg-gray-500/30 border-gray-200 dark:border-gray-800';
-    }
-  };
-
-  // 날짜 포맷팅
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
-  };
-
-  // 필터링된 게시물 목록
-  const filteredPosts = posts.filter((post) => {
-    // 검색어 필터링
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) || post.author.toLowerCase().includes(searchTerm.toLowerCase()) || post.category.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // 게시판 유형 필터링
-    const matchesBoardType = boardTypeFilter === 'all' || post.boardType === boardTypeFilter;
-
-    // 상태 필터링
-    const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
-
-    return matchesSearch && matchesBoardType && matchesStatus;
-  });
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="flex flex-col space-y-6 sm:space-y-8">
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
-                <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">게시판 관리</h1>
-                <p className="mt-1 sm:mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-300">웹사이트의 모든 게시판과 게시물을 관리합니다</p>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <Button asChild className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white shadow-lg">
-                <Link href="/admin/boards/new">
-                  <Plus className="mr-2 h-4 w-4" />새 게시물
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="bg-white/80 dark:bg-gray-800/80 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                <Link href="/admin/boards/categories">카테고리 관리</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>게시판 관리</CardTitle>
 
-        <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-4 mb-6 sm:mb-8">
-          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 게시물</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{posts.length}</p>
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
-                  <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <Tabs value={tab} onValueChange={(v) => switchTab(v as any)}>
+            <TabsList>
+              <TabsTrigger value="posts">게시글</TabsTrigger>
+              <TabsTrigger value="reports">신고</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardHeader>
 
-          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">게시됨</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{posts.filter((p) => p.status === 'published').length}</p>
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-3">
-                  <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">임시저장</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{posts.filter((p) => p.status === 'draft').length}</p>
-                </div>
-                <div className="bg-yellow-50 dark:bg-yellow-950/50 rounded-xl p-3">
-                  <FileText className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">총 조회수</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{posts.reduce((sum, p) => sum + p.viewCount, 0)}</p>
-                </div>
-                <div className="bg-teal-50 dark:bg-teal-950/50 rounded-xl p-3">
-                  <FileText className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-blue-600" />
-                <span>게시물 목록</span>
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                전체 게시물 {posts.length}개 중 {filteredPosts.length}개 표시 중
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="relative p-4 sm:p-6">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center gap-6 rounded-lg">
-              <div className="bg-gradient-to-r from-blue-600 to-teal-600 rounded-full p-4">
-                <FileText className="h-8 w-8 text-white" />
-              </div>
-              <p className="text-white text-xl sm:text-2xl md:text-4xl font-semibold">이 기능은 개발 중입니다</p>
-              <p className="text-base sm:text-lg text-gray-300">게시판 관리 기능이 곧 활성화됩니다</p>
-            </div>
-
-            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-                <Select value={boardTypeFilter} onValueChange={setBoardTypeFilter}>
-                  <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                    <SelectValue placeholder="게시판 유형" />
+        <CardContent>
+          {tab === 'posts' && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Select value={postType} onValueChange={(v) => (setPostPage(1), setPostType(v))}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="게시판" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>게시판 유형</SelectLabel>
-                      <SelectItem value="all">전체 게시판</SelectItem>
-                      {boardTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
+                    <SelectItem value="all">전체</SelectItem>
+                    {Object.keys(boardLabel).map((k) => (
+                      <SelectItem key={k} value={k}>
+                        {boardLabel[k]}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                    <SelectValue placeholder="게시물 상태" />
+                <Select value={postStatus} onValueChange={(v) => (setPostPage(1), setPostStatus(v))}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="상태" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>게시물 상태</SelectLabel>
-                      <SelectItem value="all">전체 상태</SelectItem>
-                      {postStatuses.map((status) => (
-                        <SelectItem key={status.id} value={status.id}>
-                          {status.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
+                    <SelectItem value="all">전체</SelectItem>
+                    <SelectItem value="public">공개</SelectItem>
+                    <SelectItem value="hidden">숨김</SelectItem>
                   </SelectContent>
                 </Select>
 
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                  <Filter className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                <Input type="search" placeholder="게시물 검색..." className="w-full pl-8 sm:w-[300px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-              </div>
-            </div>
-
-            {selectedPosts.length > 0 && (
-              <div className="mb-4 flex items-center gap-2 rounded-md bg-blue-50 dark:bg-blue-950/20 p-2 border border-blue-200 dark:border-blue-800">
-                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{selectedPosts.length}개 선택됨</span>
-                <div className="ml-auto flex gap-2">
-                  <Button variant="outline" size="sm" className="bg-white dark:bg-gray-700 border-blue-200 dark:border-blue-700">
-                    상태 변경
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    삭제
+                <div className="flex items-center gap-2">
+                  <Input value={postQ} onChange={(e) => setPostQ(e.target.value)} placeholder="제목/작성자/내용 검색" className="w-[260px]" />
+                  <Button variant="outline" onClick={() => (setPostPage(1), mutatePosts())}>
+                    <RefreshCcw className="h-4 w-4 mr-1" />
+                    새로고침
                   </Button>
                 </div>
-              </div>
-            )}
 
-            <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50 dark:bg-gray-700/50">
-                    <TableHead className="w-[40px]">
-                      <Checkbox checked={selectedPosts.length === filteredPosts.length && filteredPosts.length > 0} onCheckedChange={toggleSelectAll} aria-label="모두 선택" />
-                    </TableHead>
-                    <TableHead className="w-[80px]">번호</TableHead>
-                    <TableHead className="w-[120px]">게시판</TableHead>
-                    <TableHead>제목</TableHead>
-                    <TableHead className="w-[120px]">카테고리</TableHead>
-                    <TableHead className="w-[120px]">작성자</TableHead>
-                    <TableHead className="w-[100px]">
-                      <div className="flex items-center">
-                        조회수
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="w-[160px]">
-                      <div className="flex items-center">
-                        작성일
-                        <ArrowUpDown className="ml-1 h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="w-[100px]">상태</TableHead>
-                    <TableHead className="w-[80px]">고정</TableHead>
-                    <TableHead className="w-[80px]">작업</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPosts.length === 0 ? (
+                <div className="ml-auto text-sm text-muted-foreground">총 {postsTotal.toLocaleString()}건</div>
+              </div>
+
+              {postsLoading && (
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              )}
+
+              {postsErr && <div className="text-sm text-red-600">게시글 목록 로드 실패: {(postsErr as any)?.message ?? 'error'}</div>}
+
+              {!postsLoading && !postsErr && (
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={10} className="h-24 text-center text-gray-500 dark:text-gray-400">
-                        검색 결과가 없습니다.
-                      </TableCell>
+                      <TableHead className="w-[70px]">게시판</TableHead>
+                      <TableHead className="w-[90px]">번호</TableHead>
+                      <TableHead>제목</TableHead>
+                      <TableHead className="w-[140px]">작성자</TableHead>
+                      <TableHead className="w-[90px]">상태</TableHead>
+                      <TableHead className="w-[170px]">작성일</TableHead>
+                      <TableHead className="w-[70px]">조회</TableHead>
+                      <TableHead className="w-[70px]">추천</TableHead>
+                      <TableHead className="w-[70px]">댓글</TableHead>
+                      <TableHead className="w-[120px]">액션</TableHead>
                     </TableRow>
-                  ) : (
-                    filteredPosts.map((post) => (
-                      <TableRow key={post.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                        <TableCell>
-                          <Checkbox checked={selectedPosts.includes(post.id)} onCheckedChange={() => togglePostSelection(post.id)} aria-label={`${post.title} 선택`} />
+                  </TableHeader>
+
+                  <TableBody>
+                    {posts.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell>{boardLabel[p.type] ?? p.type}</TableCell>
+                        <TableCell>{p.postNo ?? '-'}</TableCell>
+                        <TableCell className="max-w-[520px] truncate">
+                          <Link href={`/board/${p.type}/${p.postNo ?? ''}`} className="hover:underline inline-flex items-center gap-1" target="_blank">
+                            {p.title}
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
                         </TableCell>
-                        <TableCell className="font-medium">{post.id}</TableCell>
+                        <TableCell>{p.nickname || '-'}</TableCell>
+                        <TableCell>{p.status === 'public' ? <Badge className="bg-blue-600 text-white">공개</Badge> : <Badge variant="secondary">숨김</Badge>}</TableCell>
+                        <TableCell>{fmt(p.createdAt)}</TableCell>
+                        <TableCell>{p.viewCount}</TableCell>
+                        <TableCell>{p.likeCount}</TableCell>
+                        <TableCell>{p.commentsCount}</TableCell>
                         <TableCell>
-                          <Badge className={getBoardTypeColor(post.boardType)} variant="outline">
-                            {getBoardTypeBadge(post.boardType)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Link href={`/admin/boards/${post.id}`} className="font-medium hover:underline">
-                              {post.title}
-                            </Link>
-                            {post.commentCount > 0 && (
-                              <Badge variant="outline" className="ml-2">
-                                댓글 {post.commentCount}
-                              </Badge>
+                          <Button variant="outline" size="sm" onClick={() => togglePostVisibility(p)}>
+                            {p.status === 'public' ? (
+                              <>
+                                <EyeOff className="h-4 w-4 mr-1" /> 숨김
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-4 w-4 mr-1" /> 공개
+                              </>
                             )}
-                          </div>
-                        </TableCell>
-                        <TableCell>{post.category}</TableCell>
-                        <TableCell>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger className="cursor-default">{post.author}</TooltipTrigger>
-                              <TooltipContent>
-                                <p>{post.email}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableCell>
-                        <TableCell>{post.viewCount}</TableCell>
-                        <TableCell>{formatDate(post.createdAt)}</TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(post.status)} variant="outline">
-                            {getStatusBadge(post.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Switch checked={post.isPinned} />
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">메뉴 열기</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>작업</DropdownMenuLabel>
-                              <DropdownMenuItem>
-                                <Link href={`/admin/boards/${post.id}`} className="flex w-full">
-                                  상세 보기
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Link href={`/admin/boards/${post.id}/edit`} className="flex w-full">
-                                  수정
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>
-                                <Link href={`/admin/boards/${post.id}/comments`} className="flex w-full">
-                                  댓글 관리
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">삭제</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          </Button>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    ))}
 
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-gray-600 dark:text-gray-400">총 {filteredPosts.length}개 게시물</div>
-              <div className="flex items-center space-x-6 lg:space-x-8">
-                <div className="flex items-center space-x-2">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">페이지당 항목</p>
-                  <Select defaultValue="10">
-                    <SelectTrigger className="h-8 w-[70px] bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                      <SelectValue placeholder="10" />
-                    </SelectTrigger>
-                    <SelectContent side="top">
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="20">20</SelectItem>
-                      <SelectItem value="30">30</SelectItem>
-                      <SelectItem value="40">40</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex w-[100px] items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-300">1 / 1</div>
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="icon" disabled className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                      <polyline points="15 18 9 12 15 6" />
-                    </svg>
-                  </Button>
-                  <Button variant="outline" size="icon" disabled className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </Button>
-                </div>
-              </div>
+                    {posts.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center text-sm text-muted-foreground py-10">
+                          표시할 게시글이 없습니다.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+
+          {tab === 'reports' && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Select value={reportType} onValueChange={(v) => (setReportPage(1), setReportType(v))}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="게시판" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    {Object.keys(boardLabel).map((k) => (
+                      <SelectItem key={k} value={k}>
+                        {boardLabel[k]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={reportStatus} onValueChange={(v) => (setReportPage(1), setReportStatus(v))}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="상태" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">대기</SelectItem>
+                    <SelectItem value="resolved">완료</SelectItem>
+                    <SelectItem value="rejected">반려</SelectItem>
+                    <SelectItem value="all">전체</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="flex items-center gap-2">
+                  <Input value={reportQ} onChange={(e) => setReportQ(e.target.value)} placeholder="사유/신고자 검색" className="w-[260px]" />
+                  <Button variant="outline" onClick={() => (setReportPage(1), mutateReports())}>
+                    <RefreshCcw className="h-4 w-4 mr-1" />
+                    새로고침
+                  </Button>
+                </div>
+
+                <div className="ml-auto text-sm text-muted-foreground">총 {reportsTotal.toLocaleString()}건</div>
+              </div>
+
+              {reportsLoading && (
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              )}
+
+              {reportsErr && <div className="text-sm text-red-600">신고 목록 로드 실패: {(reportsErr as any)?.message ?? 'error'}</div>}
+
+              {!reportsLoading && !reportsErr && (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[90px]">종류</TableHead>
+                      <TableHead className="w-[90px]">게시판</TableHead>
+                      <TableHead>사유</TableHead>
+                      <TableHead className="w-[140px]">신고자</TableHead>
+                      <TableHead>대상</TableHead>
+                      <TableHead className="w-[90px]">상태</TableHead>
+                      <TableHead className="w-[170px]">신고일</TableHead>
+                      <TableHead className="w-[260px]">처리</TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {reports.map((r) => {
+                      const isPending = r.status === 'pending';
+                      const postHref = r.post?.postNo != null ? `/board/${r.boardType}/${r.post.postNo}` : undefined;
+
+                      return (
+                        <TableRow key={r.id}>
+                          <TableCell>{r.targetType === 'post' ? <Badge className="bg-indigo-600 text-white">게시글</Badge> : <Badge className="bg-amber-600 text-white">댓글</Badge>}</TableCell>
+                          <TableCell>{boardLabel[r.boardType] ?? r.boardType}</TableCell>
+                          <TableCell className="max-w-[360px] truncate">{r.reason}</TableCell>
+                          <TableCell>{r.reporterNickname || '-'}</TableCell>
+                          <TableCell className="max-w-[420px] truncate">
+                            {postHref ? (
+                              <Link href={postHref} target="_blank" className="hover:underline inline-flex items-center gap-1">
+                                {r.post?.title ?? '(제목 없음)'}
+                                <ExternalLink className="h-3 w-3" />
+                              </Link>
+                            ) : (
+                              <span className="text-muted-foreground">(대상 글 정보 없음)</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {r.status === 'pending' && <Badge variant="secondary">대기</Badge>}
+                            {r.status === 'resolved' && <Badge className="bg-emerald-600 text-white">완료</Badge>}
+                            {r.status === 'rejected' && <Badge className="bg-gray-600 text-white">반려</Badge>}
+                          </TableCell>
+                          <TableCell>{fmt(r.createdAt)}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-2">
+                              <Button size="sm" variant="outline" disabled={!isPending} onClick={() => processReport(r, 'resolve')}>
+                                <CheckCircle2 className="h-4 w-4 mr-1" />
+                                완료
+                              </Button>
+
+                              <Button size="sm" variant="outline" disabled={!isPending} onClick={() => processReport(r, 'reject')}>
+                                <XCircle className="h-4 w-4 mr-1" />
+                                반려
+                              </Button>
+
+                              <Button size="sm" disabled={!isPending} onClick={() => processReport(r, 'resolve_hide_target')}>
+                                <ShieldAlert className="h-4 w-4 mr-1" />
+                                대상 숨김+완료
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+
+                    {reports.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-10">
+                          표시할 신고가 없습니다.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

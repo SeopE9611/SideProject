@@ -70,6 +70,21 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
+  // 숨김 글 접근 제어: 관리자/작성자만 조회 허용
+  if ((doc.status ?? 'public') === 'hidden') {
+    const jar = await cookies();
+    const token = jar.get('accessToken')?.value;
+
+    const payload = token ? verifyAccessToken(token) : null;
+
+    const isAdmin = payload?.role === 'admin';
+    const isOwner = payload?.sub && doc.userId && String(payload.sub) === String(doc.userId);
+
+    if (!isAdmin && !isOwner) {
+      return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    }
+  }
+
   // 로그인 사용자가 이미 좋아요를 눌렀는지 여부 계산
   let likedByMe = false;
   const userId = await getAuthUserId();
