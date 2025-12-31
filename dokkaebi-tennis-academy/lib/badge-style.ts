@@ -30,6 +30,7 @@ export const orderStatusColors: Record<string, string> = {
   결제완료: 'bg-green-500/10 text-green-500',
   배송중: 'bg-blue-500/10 text-blue-500',
   배송완료: 'bg-green-500/10 text-green-500',
+  구매확정: 'bg-green-500/10 text-green-500',
   취소: 'bg-red-500/10 text-red-500',
   환불: 'bg-purple-500/10 text-purple-500',
 };

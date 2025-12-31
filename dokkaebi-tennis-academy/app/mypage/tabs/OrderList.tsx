@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCirc
 import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
 import CancelOrderDialog from '@/app/mypage/orders/_components/CancelOrderDialog';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { mutate as globalMutate } from 'swr';
 
 //  주문 데이터 타입 정의
 type OrderResponse = {
@@ -99,6 +100,54 @@ export default function OrderList() {
     revalidateFirstPage: true,
   });
 
+  // 구매확정 처리 중인 주문 id (중복 클릭 방지)
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+
+  /**
+   * 구매확정
+   * - 서버(/api/orders/[id]/confirm)에서 배송완료/연동 서비스 완료 여부를 최종 검증합니다.
+   * - 성공 시 주문 상태 갱신 + (옵션) 포인트 탭도 즉시 갱신합니다.
+   */
+  const handleConfirmPurchase = async (orderId: string) => {
+    if (confirmingOrderId) return; // 이미 처리 중이면 무시
+
+    const ok = window.confirm('구매확정을 진행하시겠습니까?\n\n- 배송완료 이후에만 확정할 수 있습니다.\n- 확정 후에는 되돌릴 수 없습니다.');
+    if (!ok) return;
+
+    try {
+      setConfirmingOrderId(orderId);
+
+      const res = await fetch(`/api/orders/${orderId}/confirm`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      // 서버가 실패를 내려주면 그 메시지를 그대로 토스트로 노출
+      if (!res.ok) {
+        const msg = data?.error || data?.message || '구매확정 처리 중 오류가 발생했습니다.';
+        showErrorToast(msg);
+        return;
+      }
+
+      // alreadyConfirmed 케이스도 서버 응답에 따라 처리
+      if (data?.alreadyConfirmed) showSuccessToast('이미 구매확정된 주문입니다.');
+      else showSuccessToast('구매확정이 완료되었습니다.');
+
+      // 주문 목록 재조회 (상태 뱃지/버튼 상태 즉시 반영)
+      await mutate();
+
+      // 포인트 탭도 새로고침 없이 즉시 반영하고 싶으면 추가
+      await globalMutate((key) => typeof key === 'string' && key.startsWith('/api/points/me'), undefined, { revalidate: true });
+    } catch (e) {
+      console.error(e);
+      showErrorToast('구매확정 처리 중 오류가 발생했습니다.');
+    } finally {
+      setConfirmingOrderId(null);
+    }
+  };
+
   const handleWithdrawCancelRequest = async (orderId: string) => {
     if (!confirm('이 주문의 취소 요청을 철회하시겠습니까?')) return;
 
@@ -177,6 +226,9 @@ export default function OrderList() {
         const isCancelable = ['대기중', '결제완료'].includes(order.status) && (!order.cancelStatus || order.cancelStatus === 'none' || order.cancelStatus === 'rejected');
         // 스트링 관련 주문 여부 (스트링 서비스 가능 주문)
         const isStringOrder = order.shippingInfo?.withStringService === true;
+        // 상태 판정은 boolean으로 분리 (TS 좁힘/비교 에러 방지)
+        const isDelivered = order.status === '배송완료';
+        const isConfirmed = order.status === '구매확정';
         return (
           <Card key={order.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
@@ -262,7 +314,36 @@ export default function OrderList() {
                   </Button>
 
                   <OrderReviewCTA orderId={order.id} reviewAllDone={order.reviewAllDone} unreviewedCount={order.unreviewedCount} reviewNextTargetProductId={order.reviewNextTargetProductId} orderStatus={order.status} showOnlyWhenCompleted />
-
+                  {/** 구매확정 버튼 (항상 노출, 배송완료 전에는 disabled + 툴팁) */}
+                  {order.status !== '취소' && order.status !== '환불' ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-700 dark:hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent"
+                              disabled={!isDelivered || isConfirmed || confirmingOrderId === order.id}
+                              onClick={() => handleConfirmPurchase(order.id)}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              {confirmingOrderId === order.id ? '확정 중…' : isConfirmed ? '구매확정 완료' : '구매확정'}
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {isConfirmed ? (
+                          <TooltipContent side="top" className="text-sm">
+                            이미 구매확정된 주문입니다.
+                          </TooltipContent>
+                        ) : !isDelivered ? (
+                          <TooltipContent side="top" className="text-sm">
+                            배송완료 후 구매확정이 가능합니다.
+                          </TooltipContent>
+                        ) : null}
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : null}
                   <TooltipProvider>
                     {order.shippingInfo?.withStringService &&
                       (!order.isStringServiceApplied ? (

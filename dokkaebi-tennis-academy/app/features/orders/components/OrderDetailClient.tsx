@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, CreditCard, LinkIcon, Mail, MapPin, Package, Pencil, Phone, ShoppingCart, Truck, User, Settings, Edit3 } from 'lucide-react';
+import { ArrowLeft, Calendar, CreditCard, LinkIcon, Mail, MapPin, Package, Pencil, Phone, ShoppingCart, Truck, User, Settings, Edit3, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,7 @@ import RequestEditForm from '@/app/features/orders/components/RequestEditForm';
 import PaymentMethodDetail from '@/app/features/orders/components/PaymentMethodDetail';
 import OrderStatusSelect from '@/app/features/orders/components/OrderStatusSelect';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -151,6 +152,9 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   const [isProcessingCancelRequest, setIsProcessingCancelRequest] = useState(false);
 
+  //  구매확정 처리 중(중복 클릭 방지)
+  const [isConfirmingPurchase, setIsConfirmingPurchase] = useState(false);
+
   useEffect(() => {
     if (orderDetail && orderDetail.status !== localStatus) {
       setLocalStatus(orderDetail.status);
@@ -176,6 +180,53 @@ export default function OrderDetailClient({ orderId }: Props) {
   // 실제 cancelRequest.status 를 보고 "요청됨" 상태인지 여부
   const cancelStatus = (orderDetail as any).cancelRequest?.status ?? 'none';
   const isCancelRequested = cancelStatus === 'requested';
+
+  // 상태 판정은 boolean으로 분리 (조건/disabled/tooltip에서 안정적으로 사용)
+  const isDelivered = localStatus === '배송완료';
+  const isConfirmed = localStatus === '구매확정';
+  const isCanceled = ['취소', '결제취소', '환불'].includes(localStatus);
+  /**
+   *  구매확정(관리자 화면에서 처리 버튼)
+   * - 서버(/api/orders/[id]/confirm)가 관리자 세션에서도 허용되어 있어야 정상 동작합니다.
+   * - 성공 시: 상태를 '구매확정'으로 반영 + 주문/이력 재조회
+   */
+  const handleConfirmPurchase = async () => {
+    if (!orderId) return;
+    if (isConfirmingPurchase) return;
+
+    const ok = window.confirm('구매확정을 진행하시겠습니까?\n\n- 배송완료 이후에만 확정할 수 있습니다.\n- 확정 후에는 되돌릴 수 없습니다.');
+    if (!ok) return;
+
+    try {
+      setIsConfirmingPurchase(true);
+
+      const res = await fetch(`/api/orders/${orderId}/confirm`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = data?.error || data?.message || '구매확정 처리 중 오류가 발생했습니다.';
+        showErrorToast(msg);
+        return;
+      }
+
+      // 이미 확정된 케이스도 서버 응답 기준으로 토스트 처리
+      if (data?.alreadyConfirmed) showSuccessToast('이미 구매확정된 주문입니다.');
+      else showSuccessToast('구매확정이 완료되었습니다.');
+
+      // 화면 즉시 반영(옵티미스틱) + 최신 데이터 재조회
+      setLocalStatus('구매확정');
+      await mutateOrder();
+      await mutateHistory();
+    } catch (e) {
+      console.error(e);
+      showErrorToast('구매확정 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsConfirmingPurchase(false);
+    }
+  };
 
   // 페이지네이션 없이 가져온 모든 이력 합치기
   const allHistory: any[] = historyPages ? historyPages.flatMap((page) => page.history) : [];
@@ -420,7 +471,43 @@ export default function OrderDetailClient({ orderId }: Props) {
             </CardHeader>
             <CardFooter className="pt-4">
               <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
-                <OrderStatusSelect orderId={orderId!} currentStatus={localStatus} />
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <OrderStatusSelect orderId={orderId!} currentStatus={localStatus} />
+
+                  {/* 구매확정 버튼 (배송완료 전/확정 후/취소 주문은 disabled + tooltip) */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-700 dark:hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent"
+                            disabled={isCanceled || !isDelivered || isConfirmed || isConfirmingPurchase}
+                            onClick={handleConfirmPurchase}
+                          >
+                            <CheckCircle className="mr-1 h-4 w-4" />
+                            {isConfirmingPurchase ? '확정 중…' : isConfirmed ? '구매확정 완료' : '구매확정'}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+
+                      {isCanceled ? (
+                        <TooltipContent side="top" className="text-sm">
+                          취소/환불된 주문은 구매확정할 수 없습니다.
+                        </TooltipContent>
+                      ) : isConfirmed ? (
+                        <TooltipContent side="top" className="text-sm">
+                          이미 구매확정된 주문입니다.
+                        </TooltipContent>
+                      ) : !isDelivered ? (
+                        <TooltipContent side="top" className="text-sm">
+                          배송완료 후 구매확정이 가능합니다.
+                        </TooltipContent>
+                      ) : null}
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
 
                 {localStatus === '취소' ? (
                   <p className="text-sm text-muted-foreground italic mt-2">취소된 주문입니다. 상태 변경 및 취소가 불가능합니다.</p>
