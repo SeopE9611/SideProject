@@ -25,12 +25,21 @@ export async function findUserSnapshot(userId: string) {
 }
 
 // 관리자 주문 목록 조회 + 변환
-export async function fetchCombinedOrders() {
+export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: boolean }) {
   const client = await clientPromise;
   const db = client.db();
 
+  // /api/orders는 공용으로 호출될 수 있으므로, 기본적으로 사용자 스코프를 강제합니다.
+  // - admin: 전체 조회
+  // - non-admin: 본인 userId 기반 필터
+  const isAdmin = opts?.isAdmin === true;
+  const userId = opts?.userId;
+
+  const orderQuery = !isAdmin && userId ? { userId } : {};
+  const stringingQuery = !isAdmin && userId ? { userId } : {};
+
   // 일반 상품 주문 불러오기
-  const rawOrders = await db.collection('orders').find().toArray();
+  const rawOrders = await db.collection('orders').find(orderQuery).toArray();
 
   const usersColl = db.collection('users');
 
@@ -97,7 +106,8 @@ export async function fetchCombinedOrders() {
   const rawApps = await db
     .collection('stringing_applications')
     .find({
-      status: { $ne: 'draft' },
+      status: { $ne: 'draft' }, //  draft 제외
+      ...stringingQuery, //  non-admin이면 userId 필터 적용(관리자는 빈 객체라 영향 없음)
       // orderId: { $exists: true, $ne: null },
       // userId: { $exists: true, $ne: null },
     })

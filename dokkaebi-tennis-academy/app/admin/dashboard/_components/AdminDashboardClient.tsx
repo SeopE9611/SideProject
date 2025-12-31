@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { Activity, AlertTriangle, Bell, Boxes, ClipboardList, Package, ShoppingCart, Star, TrendingUp, Users, Wrench } from 'lucide-react';
+import { Activity, AlertTriangle, Bell, Boxes, ClipboardList, Clock, Timer, CalendarClock, Package, ShoppingCart, Star, TrendingUp, Users, Wrench } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,8 +42,19 @@ type DashboardMetrics = {
     points: { issued7d: number; spent7d: number };
     community: { posts7d: number; comments7d: number; pendingReports: number };
     inventory: { lowStockProducts: number; outOfStockProducts: number; inactiveRackets: number };
-    queue: { cancelRequests: number; shippingPending: number; outboxQueued: number };
+    queue: {
+      cancelRequests: number;
+      shippingPending: number;
+      paymentPending24h: number;
+      rentalOverdue: number;
+      rentalDueSoon: number;
+      passExpiringSoon: number;
+      outboxQueued: number;
+      outboxFailed: number;
+      stringingAging3d: number;
+    };
   };
+
   dist: {
     orderStatus: Array<{ label: string; count: number }>;
     orderPaymentStatus: Array<{ label: string; count: number }>;
@@ -82,6 +93,41 @@ type DashboardMetrics = {
       amount: number;
       status: string;
       paymentStatus: string;
+      href: string;
+    }>;
+    // 결제 대기(24h) "리스트" (Top 카드 상세 렌더링용)
+    paymentPending24h: Array<{
+      kind: 'order' | 'application' | 'rental' | 'package';
+      id: string;
+      createdAt: string;
+      name: string;
+      amount: number;
+      status: string;
+      href: string;
+      hoursAgo: number;
+    }>;
+    rentalOverdue: Array<{
+      id: string;
+      dueAt: string;
+      name: string;
+      amount: number;
+      overdueDays: number;
+      href: string;
+    }>;
+    rentalDueSoon: Array<{
+      id: string;
+      dueAt: string;
+      name: string;
+      amount: number;
+      dueInHours: number;
+      href: string;
+    }>;
+    passExpiringSoon: Array<{
+      id: string;
+      expiresAt: string;
+      name: string;
+      remainingCount: number;
+      daysLeft: number;
       href: string;
     }>;
     stringingAging: Array<{
@@ -420,12 +466,66 @@ export default function AdminDashboardClient() {
             </div>
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2">
+                {/* 미결제 장기건은 운영 누락이 자주 나서 경고 아이콘 사용 */}
+                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                결제 대기(24h+)
+              </span>
+              <Badge variant={data.kpi.queue.paymentPending24h > 0 ? 'destructive' : 'secondary'}>{formatNumber(data.kpi.queue.paymentPending24h)}</Badge>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                대여 연체
+              </span>
+              <Badge variant={data.kpi.queue.rentalOverdue > 0 ? 'destructive' : 'secondary'}>{formatNumber(data.kpi.queue.rentalOverdue)}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Timer className="h-4 w-4 text-muted-foreground" />
+                반납 임박(48h)
+              </span>
+              <Badge variant={data.kpi.queue.rentalDueSoon > 0 ? 'secondary' : 'outline'}>{formatNumber(data.kpi.queue.rentalDueSoon)}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                패스 만료 임박(30d)
+              </span>
+              <Badge variant={data.kpi.queue.passExpiringSoon > 0 ? 'secondary' : 'outline'}>{formatNumber(data.kpi.queue.passExpiringSoon)}</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
                 <Bell className="h-4 w-4 text-muted-foreground" />
                 알림 큐(Outbox)
               </span>
               <Badge variant={data.kpi.queue.outboxQueued > 0 ? 'secondary' : 'outline'}>{formatNumber(data.kpi.queue.outboxQueued)}</Badge>
             </div>
-            <div className="pt-2">
+            {/* 교체서비스 장기 미처리(3d+) */}
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Wrench className="h-4 w-4 text-muted-foreground" />
+                교체서비스 장기 미처리(3d+)
+              </span>
+              <Badge variant={data.kpi.queue.stringingAging3d > 0 ? 'destructive' : 'secondary'}>{formatNumber(data.kpi.queue.stringingAging3d)}</Badge>
+            </div>
+
+            {/* Outbox 실패 */}
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Bell className="h-4 w-4 text-muted-foreground" />
+                알림 실패(Outbox)
+              </span>
+              <Badge variant={data.kpi.queue.outboxFailed > 0 ? 'destructive' : 'outline'}>{formatNumber(data.kpi.queue.outboxFailed)}</Badge>
+            </div>
+
+            <div className="pt-2 space-y-2">
+              <Button size="sm" variant="outline" asChild className="w-full">
+                <Link href="/admin/packages?status=활성&sort=expiryDate:asc">패키지 관리</Link>
+              </Button>
+              <Button size="sm" variant="outline" asChild className="w-full">
+                <Link href="/admin/rentals?status=out">대여 관리</Link>
+              </Button>
               <Button size="sm" variant="outline" asChild className="w-full">
                 <Link href="/admin/notifications">알림 관리</Link>
               </Button>
@@ -705,7 +805,7 @@ export default function AdminDashboardClient() {
         {/* 취소요청 */}
         <Card>
           <CardHeader>
-            <CardTitle>취소 요청(Top)</CardTitle>
+            <CardTitle className="text-base">취소 요청(Top)</CardTitle>
             <CardDescription>주문/교체서비스/대여 취소요청을 오래된 순으로 표시</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -733,7 +833,7 @@ export default function AdminDashboardClient() {
             )}
             <div className="pt-2">
               <Button size="sm" variant="outline" asChild className="w-full">
-                <Link href="/admin/orders?cancelStatus=requested">관련 목록에서 더 보기</Link>
+                <Link href="/admin/orders?preset=cancelRequests">관련 목록에서 더 보기</Link>
               </Button>
             </div>
           </CardContent>
@@ -741,9 +841,9 @@ export default function AdminDashboardClient() {
 
         {/* 송장 미등록 */}
         <Card>
-          <CardHeader>
-            <CardTitle>송장 미등록(Top)</CardTitle>
-            <CardDescription>결제완료 + 배송건 + 운송장번호 없음</CardDescription>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">송장 미등록(Top)</CardTitle>
+            <CardDescription className="text-xs">결제완료 + 배송건 + 운송장번호 없음</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {data.queueDetails.shippingPending.length === 0 ? (
@@ -770,16 +870,161 @@ export default function AdminDashboardClient() {
             )}
             <div className="pt-2">
               <Button size="sm" variant="outline" asChild className="w-full">
-                <Link href="/admin/orders?paymentStatus=결제완료&shipping=missing_invoice">주문/신청 목록에서 처리</Link>
+                <Link href="/admin/orders?preset=shippingPending">주문/신청 목록에서 처리</Link>
               </Button>
             </div>
           </CardContent>
         </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">결제 대기(24h+ Top)</CardTitle>
+            <CardDescription>paymentStatus=결제대기(또는 rental pending) & createdAt ≤ now-24h</CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-3">
+            {data.queueDetails.paymentPending24h.length === 0 ? (
+              <div className="text-sm text-muted-foreground">24시간 이상 결제 대기 건이 없습니다.</div>
+            ) : (
+              <div className="space-y-2">
+                {data.queueDetails.paymentPending24h.map((it) => (
+                  <div key={`${it.kind}:${it.id}`} className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link href={it.href} className="text-sm font-medium hover:underline">
+                        {it.name || '(이름 없음)'}
+                      </Link>
+                      <div className="text-xs text-muted-foreground">
+                        {it.kind} · {formatIsoToKstShort(it.createdAt)} · {formatKRW(it.amount)}
+                      </div>
+                    </div>
+
+                    {/* 경과시간을 강하게 보여주기 */}
+                    <Badge variant="destructive">{it.hoursAgo}h</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="pt-1">
+              <Button size="sm" variant="outline" asChild className="w-full">
+                <Link href="/admin/orders?preset=paymentPending24h">주문/신청 목록에서 처리</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">대여 연체(Top)</CardTitle>
+            <CardDescription className="text-xs">status=out &amp; dueAt &lt; now</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {data.queueDetails.rentalOverdue.length === 0 ? (
+              <div className="text-sm text-muted-foreground">연체 없음</div>
+            ) : (
+              <div className="space-y-2">
+                {data.queueDetails.rentalOverdue.map((r) => (
+                  <div key={r.id} className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link href={r.href} className="text-sm font-medium hover:underline line-clamp-1">
+                        {r.name}
+                      </Link>
+                      <div className="text-xs text-muted-foreground">
+                        반납기한: {formatIsoToKstShort(r.dueAt)} · {formatKRW(r.amount)}
+                      </div>
+                    </div>
+                    <Badge variant="destructive" className="shrink-0">
+                      {r.overdueDays}일
+                    </Badge>
+                  </div>
+                ))}
+
+                <div className="pt-1">
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href="/admin/rentals?status=out&due=overdue">대여 관리</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">반납 임박(Top)</CardTitle>
+            <CardDescription className="text-xs">status=out &amp; dueAt ∈ [now, now+48h]</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {data.queueDetails.rentalDueSoon.length === 0 ? (
+              <div className="text-sm text-muted-foreground">임박 없음</div>
+            ) : (
+              <div className="space-y-2">
+                {data.queueDetails.rentalDueSoon.map((r) => {
+                  // 24시간 이상이면 "N일", 아니면 "N시간"으로 표시
+                  const badgeLabel = r.dueInHours >= 24 ? `${Math.ceil(r.dueInHours / 24)}일` : `${r.dueInHours}h`;
+                  return (
+                    <div key={r.id} className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <Link href={r.href} className="text-sm font-medium hover:underline line-clamp-1">
+                          {r.name}
+                        </Link>
+                        <div className="text-xs text-muted-foreground">
+                          반납기한: {formatIsoToKstShort(r.dueAt)} · {formatKRW(r.amount)}
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="shrink-0">
+                        {badgeLabel}
+                      </Badge>
+                    </div>
+                  );
+                })}
+                <div className="pt-1">
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href="/admin/rentals?status=out&due=soon">대여 관리</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">패스 만료 임박(Top)</CardTitle>
+            <CardDescription className="text-xs">status=active &amp; expiresAt ∈ [now, now+30d]</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {data.queueDetails.passExpiringSoon.length === 0 ? (
+              <div className="text-sm text-muted-foreground">만료 임박 없음</div>
+            ) : (
+              <div className="space-y-2">
+                {data.queueDetails.passExpiringSoon.map((p) => (
+                  <div key={p.id} className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link href={p.href} className="text-sm font-medium hover:underline line-clamp-1">
+                        {p.name}
+                      </Link>
+                      <div className="text-xs text-muted-foreground">
+                        만료일: {formatIsoToKstShort(p.expiresAt)} · 잔여 {formatNumber(p.remainingCount)}회
+                      </div>
+                    </div>
+                    <Badge variant={p.daysLeft <= 7 ? 'destructive' : 'secondary'} className="shrink-0">
+                      {p.daysLeft}일
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="pt-2">
+              <Button size="sm" variant="outline" asChild className="w-full">
+                <Link href="/admin/packages?preset=passExpiringSoon">패키지 목록에서 더 보기</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
         {/* 스트링 장기 미처리 */}
         <Card>
           <CardHeader>
-            <CardTitle>스트링 장기 미처리(3d+)</CardTitle>
+            <CardTitle className="text-base">스트링 장기 미처리(3d+)</CardTitle>
             <CardDescription>검토/접수/작업 중인데 3일 이상 지난 신청</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -806,7 +1051,7 @@ export default function AdminDashboardClient() {
             )}
             <div className="pt-2">
               <Button size="sm" variant="outline" asChild className="w-full">
-                <Link href="/admin/applications/stringing?aging=3d">신청 목록에서 더 보기</Link>
+                <Link href="/admin/orders?preset=stringingAging3d">신청 목록에서 더 보기</Link>
               </Button>
             </div>
           </CardContent>

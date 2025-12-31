@@ -405,6 +405,28 @@ export async function createOrder(req: Request): Promise<Response> {
 
 // 관리자 주문 목록 GET 핸들러
 export async function getOrders(req: NextRequest): Promise<Response> {
+  // 인증 토큰 확인
+  const token = req.cookies.get('accessToken')?.value;
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const payload = verifyAccessToken(token);
+  const sub = (payload as any)?.sub;
+  if (!sub || typeof sub !== 'string') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // 사용자 role 확인 (admin 여부 판단)
+  const client = await clientPromise;
+  const db = client.db();
+  const userIdObj = new ObjectId(sub);
+  const me = await db.collection('users').findOne({ _id: userIdObj }, { projection: { role: 1 } });
+  if (!me) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const isAdmin = me.role === 'admin';
+
   // 쿼리에서 page, limit 파싱
   const sp = req.nextUrl.searchParams;
   const page = parseInt(sp.get('page') || '1', 10);
@@ -412,8 +434,7 @@ export async function getOrders(req: NextRequest): Promise<Response> {
   const skip = (page - 1) * limit;
 
   // 통합된 주문 목록 불러오기
-  const combined = await fetchCombinedOrders();
-
+  const combined = await fetchCombinedOrders({ userId: userIdObj, isAdmin });
   // 서버 사이드 페이징
   const paged = combined.slice(skip, skip + limit);
   const total = combined.length;

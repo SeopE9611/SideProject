@@ -120,7 +120,17 @@ type DashboardMetrics = {
     points: { issued7d: number; spent7d: number };
     community: { posts7d: number; comments7d: number; pendingReports: number };
     inventory: { lowStockProducts: number; outOfStockProducts: number; inactiveRackets: number };
-    queue: { cancelRequests: number; shippingPending: number; outboxQueued: number };
+    queue: {
+      cancelRequests: number;
+      shippingPending: number;
+      paymentPending24h: number;
+      rentalOverdue: number;
+      rentalDueSoon: number;
+      passExpiringSoon: number;
+      outboxQueued: number;
+      outboxFailed: number;
+      stringingAging3d: number;
+    };
   };
 
   dist: {
@@ -163,6 +173,45 @@ type DashboardMetrics = {
       href: string;
     }>;
 
+    // 결제 대기(24h) "리스트" (Top 카드 상세 목록용)
+    paymentPending24h: Array<{
+      kind: 'order' | 'application' | 'rental' | 'package';
+      id: string;
+      createdAt: string;
+      name: string;
+      amount: number;
+      status: string;
+      href: string;
+      hoursAgo: number; // 몇 시간 경과했는지 (배지 표시)
+    }>;
+
+    passExpiringSoon: Array<{
+      id: string;
+      expiresAt: string;
+      name: string;
+      remainingCount: number;
+      daysLeft: number;
+      href: string;
+    }>;
+
+    rentalOverdue: Array<{
+      id: string;
+      dueAt: string;
+      name: string;
+      amount: number;
+      overdueDays: number;
+      href: string;
+    }>;
+
+    rentalDueSoon: Array<{
+      id: string;
+      dueAt: string;
+      name: string;
+      amount: number;
+      dueInHours: number;
+      href: string;
+    }>;
+
     stringingAging: Array<{
       id: string;
       createdAt: string;
@@ -201,6 +250,10 @@ export async function GET(req: Request) {
   const now = new Date();
   // 3일(72h) 기준: 운영 큐에서 '장기 미처리' 판단에 사용
   const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+  // 결제 대기(24h+) 기준 시각
+  // - now 기준 24시간 이전(<=)에 생성됐는데 아직 결제대기인 건을 운영 큐로 올린다.
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
   // 그래프(최근 30일)
   const CHART_DAYS = 30;
@@ -335,6 +388,49 @@ export async function GET(req: Request) {
     ])
     .toArray();
 
+  // [P0] 패스 만료 임박(30일) 모니터링
+  // - status='active' 이면서 expiresAt이 "지금~30일" 구간이면 운영 선제 대응 대상
+  // - expiresAt이 Date/string 혼재 가능성에 대비해 타입 방어
+  const passesCol = db.collection('service_passes');
+  const soon30d = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const nowIsoPass = now.toISOString();
+  const soon30Iso = soon30d.toISOString();
+
+  const passExpiringSoonP = passesCol.countDocuments({
+    status: 'active',
+    expiresAt: { $exists: true },
+    $or: [{ expiresAt: { $type: 'date', $gte: now, $lte: soon30d } }, { expiresAt: { $type: 'string', $ne: '', $gte: nowIsoPass, $lte: soon30Iso } }],
+  });
+
+  // Top 리스트는 user.name 까지 같이 보여주면 나나 재민이가 바로 알아볼 수 있어서 P0에서도 lookup 포함
+  const passExpiringSoonListP = passesCol
+    .aggregate<any>([
+      {
+        $match: {
+          status: 'active',
+          expiresAt: { $exists: true },
+          $or: [{ expiresAt: { $type: 'date', $gte: now, $lte: soon30d } }, { expiresAt: { $type: 'string', $ne: '', $gte: nowIsoPass, $lte: soon30Iso } }],
+        },
+      },
+      { $sort: { expiresAt: 1 } },
+      { $limit: 10 },
+      { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+      { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          orderId: 1,
+          packageSize: 1,
+          remainingCount: 1,
+          expiresAt: 1,
+          userName: '$user.name',
+          userEmail: '$user.email',
+        },
+      },
+    ])
+    .toArray();
+
   const orderStatusDistP = ordersCol
     .aggregate<{ _id: string; count: number }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ['$status', '미지정'] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
     .toArray();
@@ -372,6 +468,39 @@ export async function GET(req: Request) {
         sort: { createdAt: 1 },
         limit: 10,
         projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+      }
+    )
+    .toArray();
+
+  // 결제 대기(24h+) - 일반 주문(Order)
+  const paymentPending24hOrdersP = ordersCol.countDocuments({
+    paymentStatus: '결제대기',
+    createdAt: { $lte: oneDayAgo },
+
+    // 취소 요청으로 넘어간 건은 "취소 요청" 카드에서 관리하므로 여기서는 제외
+    'cancelRequest.status': { $ne: 'requested' },
+  });
+
+  const paymentPending24hOrdersListP = ordersCol
+    .find(
+      {
+        paymentStatus: '결제대기',
+        createdAt: { $lte: oneDayAgo },
+        'cancelRequest.status': { $ne: 'requested' },
+      },
+      {
+        sort: { createdAt: 1 }, // 오래된 순(운영 우선순위)
+        limit: 10,
+        projection: {
+          _id: 1,
+          userId: 1,
+          guest: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          shippingInfo: 1,
+        },
       }
     )
     .toArray();
@@ -450,6 +579,37 @@ export async function GET(req: Request) {
     status: { $nin: ['교체완료', '취소'] },
   });
 
+  // 결제 대기(24h+) - 교체 서비스 신청(StringingApplication)
+  const paymentPending24hAppsP = appsCol.countDocuments({
+    paymentStatus: '결제대기',
+    createdAt: { $lte: oneDayAgo },
+    'cancelRequest.status': { $ne: 'requested' },
+  });
+
+  const paymentPending24hAppsListP = appsCol
+    .find(
+      {
+        paymentStatus: '결제대기',
+        createdAt: { $lte: oneDayAgo },
+        'cancelRequest.status': { $ne: 'requested' },
+      },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: {
+          _id: 1,
+          userId: 1,
+          guest: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          shippingInfo: 1,
+        },
+      }
+    )
+    .toArray();
+
   const shippingPendingAppsListP = appsCol
     .find(
       {
@@ -494,6 +654,12 @@ export async function GET(req: Request) {
     )
     .toArray();
 
+  // 3일 이상 장기 미처리 “건수” (Top 리스트와 동일 조건)
+  const stringingAging3dP = appsCol.countDocuments({
+    status: { $in: ['검토 중', '접수완료', '작업 중'] },
+    createdAt: { $lte: threeDaysAgo },
+  });
+
   const recentAppsP = appsCol
     .find(
       {},
@@ -530,6 +696,87 @@ export async function GET(req: Request) {
     )
     .toArray();
 
+  // [P0] 대여 연체(기한 초과) 모니터링
+  // - status='out' 인데 dueAt이 현재보다 과거라면 "연체"로 봅니다.
+  // - dueAt이 Date가 아니라 string(ISO)로 저장된 케이스도 방어합니다(기존 데이터 혼재 대비).
+  const overdueRentalsP = rentalsCol.countDocuments({
+    status: 'out',
+    dueAt: { $exists: true },
+    $or: [{ dueAt: { $type: 'date', $lte: now } }, { dueAt: { $type: 'string', $ne: '', $lte: now.toISOString() } }],
+  });
+
+  const overdueRentalsListP = rentalsCol
+    .find(
+      {
+        status: 'out',
+        dueAt: { $exists: true },
+        $or: [{ dueAt: { $type: 'date', $lte: now } }, { dueAt: { $type: 'string', $ne: '', $lte: now.toISOString() } }],
+      },
+      {
+        sort: { dueAt: 1 },
+        limit: 10,
+        projection: { _id: 1, dueAt: 1, amount: 1, fee: 1, deposit: 1, brand: 1, model: 1, guest: 1, userEmail: 1, userId: 1, shipping: 1, status: 1 },
+      }
+    )
+    .toArray();
+
+  // 반납 임박(48시간 이내) 모니터링
+  // - 연체 "이전" 단계에서 미리 잡아서 운영자가 선제 대응할 수 있게 합니다.
+  const soon48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+  const nowIso = now.toISOString();
+  const soonIso = soon48h.toISOString();
+
+  const dueSoonRentalsP = rentalsCol.countDocuments({
+    status: 'out',
+    dueAt: { $exists: true },
+    $or: [{ dueAt: { $type: 'date', $gte: now, $lte: soon48h } }, { dueAt: { $type: 'string', $ne: '', $gte: nowIso, $lte: soonIso } }],
+  });
+
+  // 결제 대기(24h+) - 대여 주문(Rental) (status=pending + 24h+)
+  const paymentPending24hRentalsP = rentalsCol.countDocuments({
+    status: 'pending',
+    createdAt: { $lte: oneDayAgo },
+  });
+
+  const paymentPending24hRentalsListP = rentalsCol
+    .find(
+      {
+        status: 'pending',
+        createdAt: { $lte: oneDayAgo },
+      },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: {
+          _id: 1,
+          userId: 1,
+          createdAt: 1,
+          status: 1,
+          amount: 1,
+          brand: 1,
+          model: 1,
+          shipping: 1, // pickRentalName에서 쓸 가능성이 높음
+        },
+      }
+    )
+    .toArray();
+
+  const dueSoonRentalsListP = rentalsCol
+    .find(
+      {
+        status: 'out',
+        dueAt: { $exists: true },
+        $or: [{ dueAt: { $type: 'date', $gte: now, $lte: soon48h } }, { dueAt: { $type: 'string', $ne: '', $gte: nowIso, $lte: soonIso } }],
+      },
+      {
+        sort: { dueAt: 1 },
+        limit: 10,
+        // 기존 연체 리스트와 동일한 투영 필드를 유지
+        projection: { _id: 1, dueAt: 1, amount: 1, fee: 1, deposit: 1, brand: 1, model: 1, guest: 1, userEmail: 1, userId: 1, shipping: 1, status: 1 },
+      }
+    )
+    .toArray();
+
   const recentRentalsP = rentalsCol.find({}, { sort: { createdAt: -1 }, limit: 5, projection: { _id: 1, createdAt: 1, status: 1, amount: 1, userEmail: 1 } }).toArray();
 
   // ----------------------------- Packages -----------------------------
@@ -552,6 +799,34 @@ export async function GET(req: Request) {
         },
       },
     ])
+    .toArray();
+
+  // 결제 대기(24h+) - 패키지 주문(PackageOrder)
+  const paymentPending24hPackagesP = packageOrdersCol.countDocuments({
+    paymentStatus: '결제대기',
+    createdAt: { $lte: oneDayAgo },
+  });
+
+  const paymentPending24hPackagesListP = packageOrdersCol
+    .find(
+      {
+        paymentStatus: '결제대기',
+        createdAt: { $lte: oneDayAgo },
+      },
+      {
+        sort: { createdAt: 1 },
+        limit: 10,
+        projection: {
+          _id: 1,
+          userId: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          userSnapshot: 1, // 이름 표시 안정화
+        },
+      }
+    )
     .toArray();
 
   // ----------------------------- Reviews -----------------------------
@@ -699,6 +974,9 @@ export async function GET(req: Request) {
   const outboxCol = db.collection('notifications_outbox');
   const outboxQueuedP = outboxCol.countDocuments({ status: 'queued' });
 
+  // 실패 건은 “즉시 조치 필요”라 queued와 분리해서 카운트
+  const outboxFailedP = outboxCol.countDocuments({ status: 'failed' });
+
   const outboxBacklogListP = outboxCol
     .find(
       { status: { $in: ['queued', 'failed'] } },
@@ -749,6 +1027,8 @@ export async function GET(req: Request) {
     paidRentals7d,
     revenueRentals7dRows,
     rentalCancelRequests,
+    overdueRentals,
+    dueSoonRentals,
     recentRentals,
 
     totalPackageOrders,
@@ -756,6 +1036,8 @@ export async function GET(req: Request) {
     paidPackageOrders7d,
     revenuePackageOrders7dRows,
     dailyPackageRevenue,
+    passExpiringSoon,
+    passExpiringSoonListRaw,
 
     newReviews7d,
     reviewsAggRows,
@@ -777,13 +1059,28 @@ export async function GET(req: Request) {
     outOfStockListDocs,
 
     outboxQueued,
+    outboxFailed,
+
+    // 결제 대기(24h+)
+    paymentPending24hOrders,
+    paymentPending24hOrdersList,
+    paymentPending24hApps,
+    paymentPending24hAppsList,
+    paymentPending24hRentals,
+    paymentPending24hRentalsList,
+    paymentPending24hPackages,
+    paymentPending24hPackagesList,
+
     shippingPendingOrdersList,
     shippingPendingApps,
     shippingPendingAppsList,
     orderCancelRequestsList,
     appCancelRequestsList,
     rentalCancelRequestsList,
+    overdueRentalsList,
+    dueSoonRentalsList,
     stringingAgingList,
+    stringingAging3d,
     outboxBacklogList,
   ] = await Promise.all([
     totalUsersP,
@@ -822,6 +1119,8 @@ export async function GET(req: Request) {
     paidRentals7dP,
     revenueRentals7dP,
     rentalCancelRequestsP,
+    overdueRentalsP,
+    dueSoonRentalsP,
     recentRentalsP,
 
     totalPackageOrdersP,
@@ -829,6 +1128,8 @@ export async function GET(req: Request) {
     paidPackageOrders7dP,
     revenuePackageOrders7dP,
     dailyPackageRevenueP,
+    passExpiringSoonP,
+    passExpiringSoonListP,
 
     newReviews7dP,
     reviewsAggP,
@@ -850,6 +1151,17 @@ export async function GET(req: Request) {
     outOfStockListP,
 
     outboxQueuedP,
+    outboxFailedP,
+
+    // 결제 대기(24h+)
+    paymentPending24hOrdersP,
+    paymentPending24hOrdersListP,
+    paymentPending24hAppsP,
+    paymentPending24hAppsListP,
+    paymentPending24hRentalsP,
+    paymentPending24hRentalsListP,
+    paymentPending24hPackagesP,
+    paymentPending24hPackagesListP,
 
     shippingPendingOrdersListP,
     shippingPendingAppsP,
@@ -857,7 +1169,10 @@ export async function GET(req: Request) {
     orderCancelRequestsListP,
     appCancelRequestsListP,
     rentalCancelRequestsListP,
+    overdueRentalsListP,
+    dueSoonRentalsListP,
     stringingAgingListP,
+    stringingAging3dP,
     outboxBacklogListP,
   ]);
 
@@ -910,6 +1225,30 @@ export async function GET(req: Request) {
   const calcAgeDays = (createdAt: any) => {
     const t = createdAt instanceof Date ? createdAt.getTime() : new Date(createdAt).getTime();
     return Math.max(0, Math.floor((now.getTime() - t) / (24 * 60 * 60 * 1000)));
+  };
+
+  const toIsoAny = (v: any) => (v instanceof Date ? v.toISOString() : typeof v === 'string' ? v : new Date().toISOString());
+  const pickRentalName = (doc: any) => {
+    // 대여는 shippingInfo가 없을 수 있으므로, 라켓(브랜드/모델) + 고객 식별자를 함께 보여줍니다.
+    const racket = [doc?.brand, doc?.model].filter(Boolean).join(' ');
+    const who = String(
+      doc?.guest?.name || // 비회원/게스트 이름(있으면)
+        doc?.shipping?.name || //  대여 문서에 있는 수령인/신청자 이름
+        doc?.userEmail || // 저장돼 있으면 이메일
+        (doc?.userId ? `회원#${String(doc.userId).slice(-6)}` : '') ||
+        '고객'
+    );
+    return racket ? `${racket} · ${who}` : who;
+  };
+  const calcOverdueDays = (dueAt: any) => {
+    const t = dueAt instanceof Date ? dueAt.getTime() : new Date(dueAt).getTime();
+    return Number.isFinite(t) ? Math.max(0, Math.floor((now.getTime() - t) / (24 * 60 * 60 * 1000))) : 0;
+  };
+
+  const calcDueInHours = (dueAt: any) => {
+    const t = dueAt instanceof Date ? dueAt.getTime() : new Date(dueAt).getTime();
+    // ceil: 1분 남아도 "1시간"처럼 보이게(운영자가 놓치지 않도록)
+    return Number.isFinite(t) ? Math.max(0, Math.ceil((t - now.getTime()) / (60 * 60 * 1000))) : 0;
   };
 
   // 목록 변환/통합
@@ -971,6 +1310,100 @@ export async function GET(req: Request) {
   ]
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .slice(0, 10);
+
+  // 결제 대기(24h+) 총합 (주문 + 신청 + 대여 + 패키지)
+  const paymentPending24h = paymentPending24hOrders + paymentPending24hApps + paymentPending24hRentals + paymentPending24hPackages;
+
+  // createdAt → "몇 시간 지났는지" 계산 (대시보드 뱃지용)
+  const hoursAgo = (createdAtIso: string) => {
+    const t = Date.parse(createdAtIso);
+    if (!Number.isFinite(t)) return 0;
+    return Math.max(0, Math.floor((now.getTime() - t) / (60 * 60 * 1000)));
+  };
+
+  // 결제 대기(24h+) Top 리스트 (오래된 순)
+  const paymentPending24hList = [
+    ...(paymentPending24hOrdersList as any[]).map((d) => ({
+      kind: 'order' as const,
+      id: String(d._id),
+      createdAt: toIsoAny(d.createdAt),
+      name: pickName(d),
+      amount: Number(d.totalPrice ?? 0),
+      status: String(d.status ?? ''),
+      href: `/admin/orders/${String(d._id)}`,
+      hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
+    })),
+    ...(paymentPending24hAppsList as any[]).map((d) => ({
+      kind: 'application' as const,
+      id: String(d._id),
+      createdAt: toIsoAny(d.createdAt),
+      name: pickName(d),
+      amount: Number(d.totalPrice ?? 0),
+      status: String(d.status ?? ''),
+      href: `/admin/applications/stringing/${String(d._id)}`,
+      hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
+    })),
+    ...(paymentPending24hPackagesList as any[]).map((d) => ({
+      kind: 'package' as const,
+      id: String(d._id),
+      createdAt: toIsoAny(d.createdAt),
+      name: String(d?.userSnapshot?.name ?? ''),
+      amount: Number(d.totalPrice ?? 0),
+      status: String(d.status ?? ''),
+      href: `/admin/packages/${String(d._id)}`,
+      hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
+    })),
+    ...(paymentPending24hRentalsList as any[]).map((d) => ({
+      kind: 'rental' as const,
+      id: String(d._id),
+      createdAt: toIsoAny(d.createdAt),
+      name: pickRentalName(d),
+      amount: Number(d?.amount?.total ?? 0),
+      status: String(d.status ?? ''),
+      href: `/admin/rentals/${String(d._id)}`,
+      hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
+    })),
+  ]
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .slice(0, 10);
+
+  const rentalOverdueList = (overdueRentalsList as any[]).map((d) => ({
+    id: String(d?._id),
+    dueAt: toIsoAny(d?.dueAt),
+    name: pickRentalName(d),
+    amount: Number(d?.amount?.total || Number(d?.fee || 0) + Number(d?.deposit || 0)),
+    overdueDays: calcOverdueDays(d?.dueAt),
+    href: `/admin/rentals/${String(d?._id)}`,
+  }));
+
+  const rentalDueSoonList = (dueSoonRentalsList as any[]).map((d) => ({
+    id: String(d?._id),
+    dueAt: toIsoAny(d?.dueAt),
+    name: pickRentalName(d),
+    amount: Number(d?.amount?.total || Number(d?.fee || 0) + Number(d?.deposit || 0)),
+    dueInHours: calcDueInHours(d?.dueAt),
+    href: `/admin/rentals/${String(d?._id)}`,
+  }));
+
+  // expiresAt → daysLeft 계산 (운영 시 “n일 남음”이 가장 직관적)
+  const calcDaysLeft = (expiresAt: any) => {
+    const t = expiresAt instanceof Date ? expiresAt.getTime() : new Date(expiresAt).getTime();
+    return Number.isFinite(t) ? Math.max(0, Math.ceil((t - now.getTime()) / (24 * 60 * 60 * 1000))) : 0;
+  };
+  const pickPassName = (doc: any) => {
+    const who = String(doc?.userName || doc?.userEmail || (doc?.userId ? `회원#${String(doc.userId).slice(-6)}` : '') || '고객');
+    const size = Number(doc?.packageSize || 0);
+    const label = size > 0 ? `${size}회권` : '패스';
+    return `${who} · ${label}`;
+  };
+  const passExpiringSoonList = (passExpiringSoonListRaw as any[]).map((d) => ({
+    id: String(d?._id),
+    expiresAt: toIsoAny(d?.expiresAt),
+    name: pickPassName(d),
+    remainingCount: Number(d?.remainingCount || 0),
+    daysLeft: calcDaysLeft(d?.expiresAt),
+    href: d?.orderId ? `/admin/packages/${String(d.orderId)}` : '/admin/packages',
+  }));
 
   const stringingAging = (stringingAgingList as any[]).map((d) => ({
     id: String(d?._id),
@@ -1075,7 +1508,13 @@ export async function GET(req: Request) {
       queue: {
         cancelRequests: Number(orderCancelRequests || 0) + Number(rentalCancelRequests || 0) + Number(appCancelRequests || 0),
         shippingPending: Number(shippingPending || 0) + Number(shippingPendingApps || 0),
+        paymentPending24h,
+        rentalOverdue: Number(overdueRentals || 0),
+        rentalDueSoon: Number(dueSoonRentals || 0),
+        passExpiringSoon: Number(passExpiringSoon || 0),
         outboxQueued,
+        outboxFailed,
+        stringingAging3d: stringingAging3d,
       },
     },
 
@@ -1122,8 +1561,12 @@ export async function GET(req: Request) {
     queueDetails: {
       cancelRequests,
       shippingPending: shippingPendingList,
+      rentalOverdue: rentalOverdueList,
+      rentalDueSoon: rentalDueSoonList,
+      passExpiringSoon: passExpiringSoonList,
       stringingAging,
       outboxBacklog,
+      paymentPending24h: paymentPending24hList,
     },
 
     recent: {
