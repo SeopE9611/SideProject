@@ -38,10 +38,53 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
   const orderQuery = !isAdmin && userId ? { userId } : {};
   const stringingQuery = !isAdmin && userId ? { userId } : {};
 
-  // 일반 상품 주문 불러오기
-  const rawOrders = await db.collection('orders').find(orderQuery).toArray();
+  // 필요한 필드만 가져오고, 생성일 내림차순으로 정렬(서버에서 1차 정렬)
+  const rawOrders = await db
+    .collection('orders')
+    .find(orderQuery, {
+      projection: {
+        _id: 1,
+        customer: 1,
+        userSnapshot: 1,
+        guestInfo: 1,
+        userId: 1,
+        createdAt: 1,
+        status: 1,
+        paymentStatus: 1,
+        paymentInfo: 1,
+        totalPrice: 1,
+        items: 1,
+        shippingInfo: 1,
+        cancelRequest: 1,
+      },
+    })
+    .sort({ createdAt: -1 })
+    .toArray();
 
-  const usersColl = db.collection('users');
+  // 표시용 정규화 유틸 (UI에 영문 상태가 그대로 노출되는 것 방지)
+  const normalizeOrderStatus = (v: any) => {
+    const s = typeof v === 'string' ? v.trim() : '';
+    if (!s) return '대기중';
+    // 영문/코드값 → 한글로 통일(표시용)
+    if (s === 'pending') return '대기중';
+    if (s === 'paid') return '결제완료';
+    if (s === 'cancelled' || s === 'canceled') return '취소';
+    return s; // 이미 한글이면 그대로
+  };
+  const normalizePaymentStatus = (v: any) => {
+    const s = typeof v === 'string' ? v.trim() : '';
+    if (!s) return '결제대기';
+    if (s === 'pending') return '결제대기';
+    if (s === 'paid' || s === 'confirmed') return '결제완료';
+    if (s === 'cancelled' || s === 'canceled') return '결제취소';
+    return s;
+  };
+
+  // 날짜 정렬/표시 안전화: Invalid Date → 0 처리
+  const safeToTime = (d: any) => {
+    const t = new Date(d as any).getTime();
+    return Number.isFinite(t) ? t : 0;
+  };
 
   const orders = await Promise.all(
     rawOrders.map(async (order) => {
@@ -69,31 +112,38 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
         cancelStatus = undefined;
       }
 
+      const si: any = (order as any)?.shippingInfo ?? {};
+      const invoice: any = si?.invoice ?? {};
+
+      // 결제상태는 order.paymentStatus가 없을 수도 있어서 paymentInfo.status도 fallback(표시용)
+      const paymentStatusRaw = (order as any)?.paymentStatus ?? (order as any)?.paymentInfo?.status;
+
       return {
         id: order._id.toString(),
         __type: 'order' as const,
         customer,
         userId: order.userId ? order.userId.toString() : null,
         date: order.createdAt,
-        status: order.status || '대기중',
-        paymentStatus: order.paymentStatus || '결제대기',
+        status: normalizeOrderStatus((order as any)?.status),
+        paymentStatus: normalizePaymentStatus(paymentStatusRaw),
         type: '상품',
         total: order.totalPrice,
         items: order.items || [],
         shippingInfo: {
-          name: order.shippingInfo.name,
-          phone: order.shippingInfo.phone,
-          address: order.shippingInfo.address,
-          addressDetail: order.shippingInfo.addressDetail ?? '-',
-          postalCode: order.shippingInfo.postalCode,
-          depositor: order.shippingInfo.depositor,
-          deliveryRequest: order.shippingInfo.deliveryRequest,
-          shippingMethod: order.shippingInfo.shippingMethod,
-          estimatedDate: order.shippingInfo.estimatedDate,
-          withStringService: order.shippingInfo.withStringService ?? false,
+          // shippingInfo 누락/부분누락 방어
+          name: si?.name ?? customer.name ?? '-',
+          phone: si?.phone ?? customer.phone ?? '-',
+          address: si?.address ?? '-',
+          addressDetail: si?.addressDetail ?? '-',
+          postalCode: si?.postalCode ?? '-',
+          depositor: si?.depositor ?? '-',
+          deliveryRequest: si?.deliveryRequest,
+          shippingMethod: si?.shippingMethod,
+          estimatedDate: si?.estimatedDate,
+          withStringService: si?.withStringService ?? false,
           invoice: {
-            courier: order.shippingInfo.invoice?.courier ?? null,
-            trackingNumber: order.shippingInfo.invoice?.trackingNumber ?? null,
+            courier: invoice?.courier ?? null,
+            trackingNumber: invoice?.trackingNumber ?? null,
           },
         },
         cancelStatus,
@@ -105,12 +155,32 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
   // draft 제외 + 필수 참조(orderId, userId) 없는 고아 문서 제외
   const rawApps = await db
     .collection('stringing_applications')
-    .find({
-      status: { $ne: 'draft' }, //  draft 제외
-      ...stringingQuery, //  non-admin이면 userId 필터 적용(관리자는 빈 객체라 영향 없음)
-      // orderId: { $exists: true, $ne: null },
-      // userId: { $exists: true, $ne: null },
-    })
+    .find(
+      {
+        status: { $ne: 'draft' }, // draft 제외
+        ...stringingQuery,
+      },
+      {
+        projection: {
+          _id: 1,
+          orderId: 1,
+          userId: 1,
+          createdAt: 1,
+          status: 1,
+          paymentStatus: 1,
+          customer: 1,
+          userSnapshot: 1,
+          guestName: 1,
+          guestEmail: 1,
+          guestPhone: 1,
+          stringDetails: 1,
+          totalPrice: 1,
+          shippingInfo: 1,
+          cancelRequest: 1,
+        },
+      }
+    )
+    .sort({ createdAt: -1 })
     .toArray();
   const stringingOrders = (
     await Promise.all(
@@ -177,7 +247,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
           userId: app.userId ? app.userId.toString() : null, // 비회원 null 허용
           date: app.createdAt,
           status: app.status,
-          paymentStatus: app.paymentStatus ?? '결제대기',
+          paymentStatus: normalizePaymentStatus(app.paymentStatus ?? '결제대기'),
           type: '서비스',
           total: totalFromDoc ?? totalCalculated,
           items,
@@ -203,10 +273,6 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
       })
     )
   ).filter(Boolean); // ← null 제거
-
-  // 일반 주문 + 스트링 신청 통합 후 날짜 내림차순 정렬
-  // 날짜 없으면 0으로 간주해서 정렬
-  const toTime = (d: any) => (d ? new Date(d as any).getTime() : 0);
 
   // 현재 관리자/사용자 주문 목록에서는
   // "일반 주문 + 스트링 교체 서비스 신청(stringing_applications)"만 통합해서 사용한다.
@@ -284,6 +350,6 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
     })
   );
 */
-  const combined = [...orders, ...(stringingOrders as any[])].sort((a: any, b: any) => toTime(b?.date) - toTime(a?.date));
+  const combined = [...orders, ...(stringingOrders as any[])].sort((a: any, b: any) => safeToTime(b?.date) - safeToTime(a?.date));
   return combined;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import type { ApiResponse, OrderWithType } from '@/lib/types/order';
 import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Search, Truck, X } from 'lucide-react';
@@ -61,8 +61,49 @@ export default function OrdersClient() {
   // 한 페이지에 보여줄 항목 수
   const limit = 10;
 
-  // SWR 훅: 서버 사이드 페이징을 위해 page, limit 쿼리 포함
-  const { data, error } = useSWR<ApiResponse>(`/api/orders?page=${page}&limit=${limit}`, fetcher);
+  /**
+   * 서버로 "검색/필터/날짜"까지 같이 전달하기 위한 쿼리스트링
+   * - 서버가 아직 이 파라미터를 무시하더라도(미구현) 안전함
+   * - 다음 단계에서 /api/orders가 이 값을 받아 "필터 → 페이징"으로 처리하면
+   *   '현재 페이지 10개만 필터링' 문제가 구조적으로 해결됨
+   */
+  const qs = useMemo(() => {
+    const sp = new URLSearchParams();
+    sp.set('page', String(page));
+    sp.set('limit', String(limit));
+
+    if (searchTerm.trim()) sp.set('q', searchTerm.trim());
+    if (statusFilter !== 'all') sp.set('status', statusFilter);
+    if (typeFilter !== 'all') sp.set('type', typeFilter);
+    if (paymentFilter !== 'all') sp.set('payment', paymentFilter);
+    if (shippingFilter !== 'all') sp.set('shipping', shippingFilter);
+    if (customerTypeFilter !== 'all') sp.set('customerType', customerTypeFilter);
+
+    // 날짜는 KST 기준 YYYY-MM-DD로 보내는 게 안전함(UTC toISOString 오차 방지)
+    if (selectedDate) {
+      const kstDay = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(selectedDate); // e.g. "2025-12-31"
+      sp.set('date', kstDay);
+    }
+
+    return sp.toString();
+  }, [page, limit, searchTerm, statusFilter, typeFilter, paymentFilter, shippingFilter, customerTypeFilter, selectedDate]);
+
+  /**
+   * 필터/검색/날짜가 바뀌면 1페이지부터 다시 조회
+   * - 안 하면, 기존에 page가 3~5 같은 상태에서 조건이 바뀌어
+   *   "비어 보이는 페이지"가 나올 수 있음
+   */
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, statusFilter, typeFilter, paymentFilter, shippingFilter, customerTypeFilter, selectedDate]);
+
+  // SWR 훅: page/limit + 검색/필터/날짜까지 쿼리로 포함
+  const { data, error } = useSWR<ApiResponse>(`/api/orders?${qs}`, fetcher);
 
   // 데이터 준비: data.items, data.total
   const orders = data?.items ?? []; // 현재 페이지 항목 배열

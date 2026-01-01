@@ -7,6 +7,7 @@ import { findUserSnapshot, fetchCombinedOrders } from './db';
 import clientPromise from '@/lib/mongodb';
 import { createStringingApplicationFromOrder } from '@/app/features/stringing-applications/api/create-from-order';
 import { deductPoints } from '@/lib/points.service';
+import { getShippingBadge } from '@/lib/badge-style';
 // 주문 생성 핸들러
 export async function createOrder(req: Request): Promise<Response> {
   try {
@@ -429,16 +430,72 @@ export async function getOrders(req: NextRequest): Promise<Response> {
 
   // 쿼리에서 page, limit 파싱
   const sp = req.nextUrl.searchParams;
-  const page = parseInt(sp.get('page') || '1', 10);
-  const limit = parseInt(sp.get('limit') || '10', 10);
+  const pageRaw = parseInt(sp.get('page') || '1', 10);
+  const limitRaw = parseInt(sp.get('limit') || '10', 10);
+  const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 10;
   const skip = (page - 1) * limit;
+
+  // 클라이언트가 보내는 검색/필터 파라미터들
+  const q = (sp.get('q') || '').trim().toLowerCase();
+  const status = sp.get('status') || 'all';
+  const type = sp.get('type') || 'all';
+  const payment = sp.get('payment') || 'all';
+  const shipping = sp.get('shipping') || 'all';
+  const customerType = sp.get('customerType') || 'all'; // member | guest | all
+  const dateYmd = sp.get('date') || ''; // "YYYY-MM-DD" (OrdersClient에서 KST로 보냄)
+
+  // KST 기준 YYYY-MM-DD 변환 (클라 DateFilter와 동일 기준 맞추기)
+  const toKstYmd = (input: any) => {
+    const d = new Date(input);
+    if (!Number.isFinite(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(d); // e.g. "2025-12-31"
+  };
+
+  const safeLower = (v: any) => (typeof v === 'string' ? v.toLowerCase() : '');
 
   // 통합된 주문 목록 불러오기
   const combined = await fetchCombinedOrders({ userId: userIdObj, isAdmin });
-  // 서버 사이드 페이징
-  const paged = combined.slice(skip, skip + limit);
-  const total = combined.length;
 
+  // 1) 필터 먼저 적용 (전체 기준)
+  const filtered = combined.filter((order: any) => {
+    // --- 검색(q): id, 고객명, 이메일 ---
+    const idStr = safeLower(order?.id ?? order?._id);
+    const nameStr = safeLower(order?.customer?.name);
+    const emailStr = safeLower(order?.customer?.email);
+    const searchMatch = !q || idStr.includes(q) || nameStr.includes(q) || emailStr.includes(q);
+
+    // --- 상태/유형/결제 ---
+    const statusMatch = status === 'all' || order?.status === status;
+    const typeMatch = type === 'all' || order?.type === type;
+    const paymentMatch = payment === 'all' || order?.paymentStatus === payment;
+
+    // --- 고객유형(member/guest) ---
+    const customerTypeMatch =
+      customerType === 'all' ||
+      (customerType === 'member' && !!order?.userId) ||
+      (customerType === 'guest' && !order?.userId);
+
+    // --- 운송장(shipping): OrdersClient의 기준(getShippingBadge.label)과 동일하게 ---
+    const shippingLabel = getShippingBadge(order).label;
+    const shippingMatch = shipping === 'all' || shippingLabel === shipping;
+
+    // --- 날짜(date): KST YYYY-MM-DD 기준 일치 여부 ---
+    const orderYmd = dateYmd ? toKstYmd(order?.date ?? order?.createdAt) : '';
+    const dateMatch = !dateYmd || (orderYmd && orderYmd === dateYmd);
+
+    return searchMatch && statusMatch && typeMatch && paymentMatch && customerTypeMatch && shippingMatch && dateMatch;
+  });
+
+  // 2) 필터된 결과에 대해 페이징
+  const paged = filtered.slice(skip, skip + limit);
+  const total = filtered.length;
   // 응답 반환
+  
   return NextResponse.json({ items: paged, total });
 }
