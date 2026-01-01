@@ -62,7 +62,7 @@ export default function OrderStatusSelect({ orderId, currentStatus }: Props) {
       await mutateStatus();
       await mutateOrderDetail();
       await mutateHistory();
-      await mutate('/api/orders');
+      await mutate((key) => typeof key === 'string' && key.startsWith('/api/orders'));
 
       showSuccessToast(`주문 상태가 '${nextStatus}'(으)로 변경되었습니다.`);
     } catch (err: any) {

@@ -79,7 +79,7 @@ export default function AdminCancelOrderDialog({
       // 처리 이력 (무한스크롤 키 전체)
       await mutate((key: string) => typeof key === 'string' && key.startsWith(`/api/orders/${orderId}/history`));
       // 관리자 주문 목록
-      await mutate('/api/orders');
+      await mutate((key) => typeof key === 'string' && key.startsWith('/api/orders'));
 
       // OrderDetailClient 쪽에서 넘겨 준 옵티미스틱 콜백이 있다면 호출
       if (onCancelSuccess) {
