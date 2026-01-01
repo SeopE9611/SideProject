@@ -68,14 +68,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             {/* 데스크탑 전용 좌측 사이드 메뉴(고정) */}
             <SideMenu />
             <main className="flex-1 lg:pl-60 xl:pl-64">
-              {/* 
-     헤더와 동일한 폭/여백 적용
-    - max-w-7xl: 전체 폭 제한(가독성 향상)
-    - mx-auto  : 가운데 정렬
-    - px-4/md:px-6/lg:px-8: 좌우 여백(반응형)
-    - 결과: 로고/메뉴/검색 라인과 메인 콘텐츠의 좌우 라인이 ‘일자’로 정렬됨
-  */}
-              <div className="max-w-9xl mx-auto px-4 md:px-6 lg:px-8">{children}</div>
+              <div className="max-w-screen-x mx-auto px-4 md:px-6 lg:px-8">{children}</div>
             </main>
 
             <Footer />
