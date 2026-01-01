@@ -20,10 +20,9 @@ export default async function ProductsPage({
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 py-16 md:py-24">
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 py-10 sm:py-12 md:py-24">
         <div className="absolute inset-0 bg-black/10 dark:bg-black/30" />
-        {/* Tennis court line pattern background */}
-        <div className="absolute inset-0 opacity-20 dark:opacity-10">
+        <div className="hidden md:block absolute inset-0 opacity-20 dark:opacity-10">
           <svg className="w-full h-full" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="court-lines" patternUnits="userSpaceOnUse" width="200" height="100">
@@ -37,36 +36,19 @@ export default async function ProductsPage({
           </svg>
         </div>
 
-        <div className="absolute top-10 left-4 md:left-10 w-16 h-16 md:w-20 md:h-20 bg-white/10 rounded-full blur-xl animate-float" />
-        <div className="absolute bottom-10 right-4 md:right-10 w-24 h-24 md:w-32 md:h-32 bg-white/5 rounded-full blur-2xl animate-float-delayed" />
-        <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-blue-300/20 rounded-full blur-lg animate-pulse" />
+        <div className="hidden md:block absolute top-10 left-4 md:left-10 w-16 h-16 md:w-20 md:h-20 bg-white/10 rounded-full blur-xl animate-float" />
+        <div className="hidden md:block absolute bottom-10 right-4 md:right-10 w-24 h-24 md:w-32 md:h-32 bg-white/5 rounded-full blur-2xl animate-float-delayed" />
+        <div className="hidden md:block absolute top-1/2 left-1/4 w-12 h-12 bg-blue-300/20 rounded-full blur-lg animate-pulse" />
 
         <div className="relative container mx-auto px-4 md:px-6">
           <div className="text-center text-white">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
-            <p className="text-lg sm:text-xl md:text-2xl mb-6 md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">
-              도깨비 테니스 스트링으로
-              플레이를 한 단계 업그레이드하세요
-            </p>
-            {/* <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-sm md:text-base">
-              <div className="flex items-center gap-2 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-full px-4 py-2">
-                <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse" />
-                <span>100% 정품 보장</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-full px-4 py-2">
-                <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse" />
-                <span>전국 무료배송</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-full px-4 py-2">
-                <div className="w-3 h-3 bg-indigo-400 rounded-full animate-pulse" />
-                <span>전문가 상담</span>
-              </div>
-            </div> */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
+            <p className="text-base sm:text-lg md:text-2xl mb-5 sm:mb-6 md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스 스트링으로 플레이를 한 단계 업그레이드하세요</p>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 md:px-6 py-8 md:py-12">
+      <div className="container mx-auto px-4 md:px-6 py-6 sm:py-8 md:py-12">
         <Suspense>
           <FilterableProductList initialBrand={initialBrand} initialMaterial={initialMaterial} />
         </Suspense>

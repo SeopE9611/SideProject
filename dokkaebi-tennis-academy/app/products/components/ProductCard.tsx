@@ -110,7 +110,7 @@ const ProductCard = React.memo(
           </div>
 
           <div className="flex flex-col md:flex-row relative z-10">
-            <div className="relative w-full md:w-48 h-48 flex-shrink-0">
+            <div className="relative w-full md:w-48 h-40 sm:h-48 flex-shrink-0">
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
               {product.isNew && <Badge className="absolute right-2 top-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
             </div>
@@ -134,22 +134,30 @@ const ProductCard = React.memo(
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 mb-4">
-                {product.features ? (
-                  Object.entries(product.features).map(([key, value]) => (
-                    <div key={key} className="flex justify-between items-center p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800">
-                      <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <div key={i} className={`w-2 h-2 rounded-full ${i < value ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-600'}`} />
-                        ))}
+              {product.features ? (
+                <>
+                  <div className="sm:hidden text-xs text-muted-foreground mb-3">
+                    {Object.entries(product.features)
+                      .slice(0, 3)
+                      .map(([k, v]) => `${keyMap[k as keyof typeof keyMap] || k} ${v}/5`)
+                      .join(' · ')}
+                  </div>
+                  <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 mb-4">
+                    {Object.entries(product.features).map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800">
+                        <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className={`w-2 h-2 rounded-full ${i < value ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-600'}`} />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-muted-foreground text-sm">성능 정보 없음</div>
-                )}
-              </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="text-muted-foreground text-sm">성능 정보 없음</div>
+              )}
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <Link href={`/products/${product._id}`} className="flex-1">
@@ -214,7 +222,7 @@ const ProductCard = React.memo(
               alt={product.name}
               width={300}
               height={300}
-              className="h-48 md:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="h-36 sm:h-48 md:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
             {product.isNew && <Badge className="absolute right-3 top-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -253,9 +261,9 @@ const ProductCard = React.memo(
             </div>
           </div>
 
-          <CardContent className="p-4 md:p-5">
-            <div className="text-sm text-muted-foreground mb-2 font-medium">{brandLabel}</div>
-            <CardTitle className="text-base md:text-lg mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{product.name}</CardTitle>
+          <CardContent className="p-3 sm:p-4 md:p-5">
+            <div className="text-xs sm:text-sm text-muted-foreground mb-2 font-medium">{brandLabel}</div>
+            <CardTitle className="text-sm sm:text-base md:text-lg mb-2 sm:mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{product.name}</CardTitle>
 
             <div className="flex items-center gap-2 mb-3">
               <div className="flex items-center">
@@ -266,7 +274,7 @@ const ProductCard = React.memo(
               <span className="text-xs text-muted-foreground">(128)</span>
             </div>
 
-            <div className="space-y-2 mb-4 text-xs">
+            <div className="hidden sm:block space-y-2 mb-4 text-xs">
               {product.features ? (
                 Object.entries(product.features)
                   .slice(0, 3)
@@ -289,13 +297,15 @@ const ProductCard = React.memo(
             </div>
           </CardContent>
 
-          <CardFooter className="p-4 md:p-5 pt-0 flex gap-2">
-            <Button type="button" variant="outline" className="flex-1 rounded-xl" onClick={handleStringSingleBuy}>
-              스트링 단품 구매
+          <CardFooter className="p-3 sm:p-4 md:p-5 pt-0 flex gap-2">
+            <Button type="button" variant="outline" className="flex-1 rounded-lg sm:rounded-xl h-9 sm:h-10 text-xs sm:text-sm" onClick={handleStringSingleBuy}>
+              <span className="sm:hidden">스트링 단품 구매</span>
+              <span className="hidden sm:inline">스트링 단품 구매</span>
             </Button>
 
-            <Button type="button" variant="outline" className="flex-1 rounded-xl" onClick={handleStringServiceApply}>
-              스트링 작업의뢰
+            <Button type="button" variant="outline" className="flex-1 rounded-lg sm:rounded-xl h-9 sm:h-10 text-xs sm:text-sm" onClick={handleStringServiceApply}>
+              <span className="sm:hidden">스트링 작업의뢰</span>
+              <span className="hidden sm:inline">스트링 작업의뢰</span>
             </Button>
           </CardFooter>
         </Card>

@@ -298,26 +298,32 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
       {/* 상품 목록 */}
       <div className="lg:col-span-3">
-        {/* 상단 컨트롤 바 */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4">
-          <div className="flex items-center gap-4">
-            <div className="text-lg font-semibold dark:text-white">
-              총 <span className="text-blue-600 dark:text-blue-400 font-bold">{(productsList ?? []).length}</span> 개 상품
+        <div className="mb-6 md:mb-8 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+          <div className="flex items-center justify-between gap-3 sm:justify-start">
+            <div className="text-base sm:text-lg font-semibold dark:text-white">
+              총 <span className="text-blue-600 dark:text-blue-400 font-bold">{(productsList ?? []).length}</span>개 상품
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowFilters((f) => !f)} className="lg:hidden border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" aria-expanded={showFilters} aria-label="필터 열기">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters((f) => !f)}
+              className="lg:hidden h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+              aria-expanded={showFilters}
+              aria-label="필터 열기"
+            >
               <Filter className="w-4 h-4 mr-2" />
-              필터 {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+              필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
             </Button>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
             {/* 뷰 모드 토글 */}
             <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-white dark:bg-slate-800">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className={cn('px-3', viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
+                className={cn('h-8 w-9 p-0', viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
               >
                 <Grid3X3 className="w-4 h-4" />
               </Button>
@@ -325,7 +331,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-                className={cn('px-3', viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
+                className={cn('h-8 w-9 p-0', viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
               >
                 <List className="w-4 h-4" />
               </Button>
@@ -333,8 +339,8 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
             {/* 정렬 */}
             <Select value={sortOption} onValueChange={setSortOption}>
-              <SelectTrigger className="w-[160px] md:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800">
-                <SelectValue placeholder="정렬 기준" />
+              <SelectTrigger className="h-9 w-[150px] sm:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800 text-sm">
+                <SelectValue placeholder="정렬" />
               </SelectTrigger>
               <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
                 <SelectItem value="latest">최신순</SelectItem>

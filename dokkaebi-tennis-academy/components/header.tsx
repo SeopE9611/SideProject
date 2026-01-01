@@ -366,7 +366,7 @@ const Header = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto scrollbar-hide p-4 bg-white dark:bg-slate-900">
-                  <Accordion type="multiple" defaultValue={['strings', 'rackets', 'service', 'packages', 'support', 'boards']}>
+                  <Accordion type="single">
                     {/* 스트링 */}
                     <AccordionItem value="strings" className="border-none">
                       <AccordionTrigger
