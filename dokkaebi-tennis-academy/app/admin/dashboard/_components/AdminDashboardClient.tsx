@@ -193,7 +193,9 @@ function formatKRW(n: number) {
 function formatIsoToKstShort(iso: string) {
   // 서버에서 ISO로 내려오므로, 브라우저 로컬(한국)에서는 자연스럽게 KST로 표시됨
   // (해외에서 접속해도 '일자' 정도만 읽히면 괜찮도록 "YYYY-MM-DD HH:mm" 형태로만)
-  const d = new Date(iso);
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return '-';
+  const d = new Date(ms);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
@@ -202,47 +204,118 @@ function formatIsoToKstShort(iso: string) {
   return `${y}-${m}-${day} ${hh}:${mm}`;
 }
 
+// ----------------------------- 상태 라벨(표시용) -----------------------------
+// DB 값은 그대로 두고, 화면에서만 "pending" 같은 레거시 영문 상태를 한글로 정리
+function labelPaymentStatus(raw?: string) {
+  const v = String(raw ?? '').trim();
+  if (!v) return '결제대기';
+  const lower = v.toLowerCase();
+
+  if (v === '결제대기' || v === '대기중' || lower === 'pending' || lower === 'payment_pending' || lower === 'unpaid') return '결제대기';
+  if (v === '결제완료' || lower === 'paid' || lower === 'payment_complete' || lower === 'payment_completed') return '결제완료';
+  if (v === '취소' || lower === 'canceled' || lower === 'cancelled') return '취소';
+  if (v === '환불' || lower === 'refunded' || lower === 'refund') return '환불';
+  return v;
+}
+
+function labelOrderStatus(raw?: string) {
+  const v = String(raw ?? '').trim();
+  if (!v) return '대기중';
+  const lower = v.toLowerCase();
+
+  // 이미 한글이면 그대로
+  if (['대기중', '배송준비중', '배송중', '배송완료', '취소', '환불'].includes(v)) return v;
+
+  // 레거시 영문 → 한글
+  if (lower === 'pending') return '대기중';
+  if (lower === 'processing' || lower === 'preparing') return '배송준비중';
+  if (lower === 'shipped' || lower === 'shipping') return '배송중';
+  if (lower === 'delivered' || lower === 'completed') return '배송완료';
+  if (lower === 'canceled' || lower === 'cancelled') return '취소';
+  if (lower === 'refunded' || lower === 'refund') return '환불';
+  return v;
+}
+
+function labelStringingStatus(raw?: string) {
+  const v = String(raw ?? '').trim();
+  if (!v) return '접수완료';
+  const lower = v.toLowerCase();
+
+  if (['접수완료', '검토중', '완료', '교체완료', '취소'].includes(v)) return v;
+  // 레거시 영문이 섞인 경우 최소 대응
+  if (lower === 'pending') return '접수완료';
+  if (lower === 'reviewing' || lower === 'in_review' || lower === 'processing') return '검토중';
+  if (lower === 'completed') return '완료';
+  if (lower === 'canceled' || lower === 'cancelled') return '취소';
+  return v;
+}
+
 // ----------------------------- 그래프(가벼운 SVG) -----------------------------
 
 function SparkLine({ data, height = 56 }: { data: Array<{ date: string; value: number }>; height?: number }) {
   const width = 220;
   const padding = 6;
-  const values = data.map((d) => d.value);
+
+  // 데이터가 비어있거나 1개뿐이면 2포인트로 보정해서 차트 깨짐 방지
+  const safeData =
+    data.length >= 2
+      ? data
+      : data.length === 1
+      ? [data[0], data[0]]
+      : [
+          { date: '', value: 0 },
+          { date: '', value: 0 },
+        ];
+
+  const values = safeData.map((d) => d.value);
   const max = Math.max(1, ...values);
   const min = Math.min(0, ...values);
 
-  const toX = (i: number) => padding + (i * (width - padding * 2)) / Math.max(1, data.length - 1);
+  const toX = (i: number) => padding + (i * (width - padding * 2)) / Math.max(1, safeData.length - 1);
   const toY = (v: number) => height - padding - ((v - min) * (height - padding * 2)) / Math.max(1, max - min);
 
-  const d = data.map((p, i) => `${i === 0 ? 'M' : 'L'} ${toX(i).toFixed(2)} ${toY(p.value).toFixed(2)}`).join(' ');
+  const d = safeData.map((p, i) => `${i === 0 ? 'M' : 'L'} ${toX(i).toFixed(2)} ${toY(p.value).toFixed(2)}`).join(' ');
+
+  // SVG id 충돌 방지: SparkLine이 여러 개라 id는 유니크해야 안전
+  const gradientId = `sparkGradient-${Math.random().toString(36).slice(2, 10)}`;
+
+  const firstX = toX(0).toFixed(2);
+  const lastX = toX(safeData.length - 1).toFixed(2);
+  const baseY = (height - padding).toFixed(2);
+  const areaD = `${d} L ${lastX} ${baseY} L ${firstX} ${baseY} Z`;
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="text-primary">
       <defs>
-        <linearGradient id="sparkGradient" x1="0" x2="0" y1="0" y2="1">
+        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stopColor="currentColor" stopOpacity="0.3" />
           <stop offset="100%" stopColor="currentColor" stopOpacity="0.05" />
         </linearGradient>
       </defs>
-      <path d={`${d} L ${toX(data.length - 1)} ${height - padding} L ${padding} ${height - padding} Z`} fill="url(#sparkGradient)" />
+
+      <path d={areaD} fill={`url(#${gradientId})`} />
       <path d={d} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 function BarChart({ data, height = 180 }: { data: Array<{ date: string; value: number }>; height?: number }) {
+  if (!data || data.length === 0) {
+    return <div className="py-12 text-center text-sm text-muted-foreground">집계 데이터가 없습니다</div>;
+  }
+
   const width = 700;
   const padding = 20;
-  const max = Math.max(1, ...data.map((d) => d.value));
+  const max = Math.max(1, ...data.map((d) => Number(d.value || 0)));
   const barW = (width - padding * 2) / data.length;
 
   return (
     <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
       {data.map((d, i) => {
-        const h = ((Number(d.value) || 0) / max) * (height - padding * 2);
+        const h = (Number(d.value || 0) / max) * (height - padding * 2);
         const x = padding + i * barW;
         const y = height - padding - h;
-        return <rect key={d.date} x={x + 1} y={y} width={Math.max(1, barW - 2)} height={h} rx="3" className="fill-primary/20 transition-all hover:fill-primary/30" />;
+        return <rect key={`${d.date}-${i}`} x={x + 1} y={y} width={Math.max(1, barW - 2)} height={h} rx="3" className="fill-primary/20 transition-all hover:fill-primary/30" />;
       })}
     </svg>
   );
@@ -791,7 +864,7 @@ export default function AdminDashboardClient() {
                         </Link>
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge variant="outline" className="text-xs">
-                            {it.status}
+                            {labelStringingStatus(it.status)}
                           </Badge>
                           <span className="text-xs text-muted-foreground">{it.ageDays}일 경과</span>
                         </div>
@@ -1049,21 +1122,21 @@ export default function AdminDashboardClient() {
             <CardContent>
               <div className="space-y-3">
                 {data.recent.orders.map((o) => (
-                  <div key={o.id} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                  <Link key={o.id} href={`/admin/orders/${o.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
                     <div className="min-w-0 flex-1 space-y-1">
                       <p className="truncate text-sm font-medium">{o.name}</p>
                       <p className="text-xs text-muted-foreground">{formatIsoToKstShort(o.createdAt)}</p>
                       <div className="flex flex-wrap gap-1">
                         <Badge variant="secondary" className="text-xs">
-                          {o.paymentStatus}
+                          {labelPaymentStatus(o.paymentStatus)}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                          {o.status}
+                          {labelOrderStatus(o.status)}
                         </Badge>
                       </div>
                     </div>
                     <div className="shrink-0 text-sm font-semibold">{formatKRW(o.totalPrice)}</div>
-                  </div>
+                  </Link>
                 ))}
                 <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                   <Link href="/admin/orders">전체 주문 보기</Link>
@@ -1080,21 +1153,21 @@ export default function AdminDashboardClient() {
             <CardContent>
               <div className="space-y-3">
                 {data.recent.applications.map((a) => (
-                  <div key={a.id} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                  <Link key={a.id} href={`/admin/applications/stringing/${a.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
                     <div className="min-w-0 flex-1 space-y-1">
                       <p className="truncate text-sm font-medium">{a.name}</p>
                       <p className="text-xs text-muted-foreground">{formatIsoToKstShort(a.createdAt)}</p>
                       <div className="flex flex-wrap gap-1">
                         <Badge variant="secondary" className="text-xs">
-                          {a.paymentStatus}
+                          {labelPaymentStatus(a.paymentStatus)}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                          {a.status}
+                          {labelStringingStatus(a.status)}
                         </Badge>
                       </div>
                     </div>
                     <div className="shrink-0 text-sm font-semibold">{formatKRW(a.totalPrice)}</div>
-                  </div>
+                  </Link>
                 ))}
                 <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                   <Link href="/admin/applications/stringing">전체 신청 보기</Link>
@@ -1144,7 +1217,7 @@ export default function AdminDashboardClient() {
               <div className="space-y-2">
                 {data.dist.orderStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
-                    <span className="truncate">{d.label}</span>
+                    <span className="truncate">{labelOrderStatus(d.label)}</span>
                     <Badge variant="outline">{formatNumber(d.count)}</Badge>
                   </div>
                 ))}
@@ -1161,7 +1234,7 @@ export default function AdminDashboardClient() {
               <div className="space-y-2">
                 {data.dist.orderPaymentStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
-                    <span className="truncate">{d.label}</span>
+                    <span className="truncate">{labelPaymentStatus(d.label)}</span>
                     <Badge variant="outline">{formatNumber(d.count)}</Badge>
                   </div>
                 ))}
@@ -1178,7 +1251,7 @@ export default function AdminDashboardClient() {
               <div className="space-y-2">
                 {data.dist.applicationStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
-                    <span className="truncate">{d.label}</span>
+                    <span className="truncate">{labelStringingStatus(d.label)}</span>
                     <Badge variant="outline">{formatNumber(d.count)}</Badge>
                   </div>
                 ))}

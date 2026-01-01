@@ -72,6 +72,12 @@ function mergeSeries(ymds: string[], ...maps: Array<Record<string, number>>) {
   }));
 }
 
+// ----------------------------- 상태값 정규화(집계용) -----------------------------
+// DB에 한글/영문 상태가 섞여 있어도 KPI/운영큐 집계가 누락되지 않도록, $in 매칭 기준을 통일
+const PAYMENT_PAID_VALUES = ['결제완료', 'paid', 'confirmed'];
+const PAYMENT_PENDING_VALUES = ['결제대기', 'pending'];
+const CANCEL_REQUESTED_VALUES = ['requested', '요청'];
+
 // ----------------------------- 응답 타입 -----------------------------
 
 type KpiBlock = {
@@ -302,11 +308,11 @@ export async function GET(req: Request) {
   const newOrders7dP = ordersCol.countDocuments({ createdAt: { $gte: since7d } });
 
   // 결제완료(=매출 인정) 기준
-  const paidOrders7dP = ordersCol.countDocuments({ paymentStatus: '결제완료', createdAt: { $gte: since7d } });
-  const revenueOrders7dP = ordersCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
+  const paidOrders7dP = ordersCol.countDocuments({ paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } });
+  const revenueOrders7dP = ordersCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
 
   const revenueOrdersMonthP = ordersCol
-    .aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: '결제완료', createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }])
+    .aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }])
     .toArray();
 
   // 판매 상위(최근 7일, 결제완료 주문 기준)
@@ -318,7 +324,7 @@ export async function GET(req: Request) {
       qty: number;
       revenue: number;
     }>([
-      { $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } },
+      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } },
       { $unwind: '$items' },
       { $match: { 'items.kind': 'product' } },
       {
@@ -345,7 +351,7 @@ export async function GET(req: Request) {
       qty: number;
       revenue: number;
     }>([
-      { $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } },
+      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } },
       { $unwind: '$items' },
       { $match: { 'items.kind': 'product' } },
       {
@@ -378,7 +384,7 @@ export async function GET(req: Request) {
 
   const dailyOrderRevenueP = ordersCol
     .aggregate<{ _id: string; v: number }>([
-      { $match: { paymentStatus: '결제완료', createdAt: { $gte: chartStartUtc, $lte: now } } },
+      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: chartStartUtc, $lte: now } } },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
@@ -440,7 +446,7 @@ export async function GET(req: Request) {
     .toArray();
 
   const shippingPendingP = ordersCol.countDocuments({
-    paymentStatus: '결제완료',
+    paymentStatus: { $in: PAYMENT_PAID_VALUES },
     // 방문 수령은 송장/운송장 개념이 없으므로 제외
     $and: [
       { $or: [{ 'shippingInfo.shippingMethod': { $ne: 'visit' } }, { 'shippingInfo.shippingMethod': { $exists: false } }] },
@@ -455,7 +461,7 @@ export async function GET(req: Request) {
   const shippingPendingOrdersListP = ordersCol
     .find(
       {
-        paymentStatus: '결제완료',
+        paymentStatus: { $in: PAYMENT_PAID_VALUES },
         $and: [
           { $or: [{ 'shippingInfo.shippingMethod': { $ne: 'visit' } }, { 'shippingInfo.shippingMethod': { $exists: false } }] },
           {
@@ -474,19 +480,19 @@ export async function GET(req: Request) {
 
   // 결제 대기(24h+) - 일반 주문(Order)
   const paymentPending24hOrdersP = ordersCol.countDocuments({
-    paymentStatus: '결제대기',
+    paymentStatus: { $in: PAYMENT_PENDING_VALUES },
     createdAt: { $lte: oneDayAgo },
 
     // 취소 요청으로 넘어간 건은 "취소 요청" 카드에서 관리하므로 여기서는 제외
-    'cancelRequest.status': { $ne: 'requested' },
+    'cancelRequest.status': { $nin: CANCEL_REQUESTED_VALUES },
   });
 
   const paymentPending24hOrdersListP = ordersCol
     .find(
       {
-        paymentStatus: '결제대기',
+        paymentStatus: { $in: PAYMENT_PENDING_VALUES },
         createdAt: { $lte: oneDayAgo },
-        'cancelRequest.status': { $ne: 'requested' },
+        'cancelRequest.status': { $nin: CANCEL_REQUESTED_VALUES },
       },
       {
         sort: { createdAt: 1 }, // 오래된 순(운영 우선순위)
@@ -507,7 +513,7 @@ export async function GET(req: Request) {
 
   const orderCancelRequestsListP = ordersCol
     .find(
-      { 'cancelRequest.status': 'requested' },
+      { 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } },
       {
         sort: { createdAt: 1 },
         limit: 10,
@@ -516,7 +522,7 @@ export async function GET(req: Request) {
     )
     .toArray();
 
-  const orderCancelRequestsP = ordersCol.countDocuments({ 'cancelRequest.status': 'requested' });
+  const orderCancelRequestsP = ordersCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
 
   const recentOrdersP = ordersCol
     .find(
@@ -536,8 +542,8 @@ export async function GET(req: Request) {
   const totalAppsP = appsCol.countDocuments({});
   const newApps7dP = appsCol.countDocuments({ createdAt: { $gte: since7d } });
 
-  const paidApps7dP = appsCol.countDocuments({ paymentStatus: '결제완료', createdAt: { $gte: since7d } });
-  const revenueApps7dP = appsCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
+  const paidApps7dP = appsCol.countDocuments({ paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } });
+  const revenueApps7dP = appsCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
 
   const dailyAppsP = appsCol
     .aggregate<{ _id: string; v: number }>([
@@ -553,7 +559,7 @@ export async function GET(req: Request) {
 
   const dailyAppRevenueP = appsCol
     .aggregate<{ _id: string; v: number }>([
-      { $match: { paymentStatus: '결제완료', createdAt: { $gte: chartStartUtc, $lte: now } } },
+      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: chartStartUtc, $lte: now } } },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
@@ -567,10 +573,10 @@ export async function GET(req: Request) {
     .aggregate<{ _id: string; count: number }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ['$status', '미지정'] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
     .toArray();
 
-  const appCancelRequestsP = appsCol.countDocuments({ 'cancelRequest.status': 'requested' });
+  const appCancelRequestsP = appsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
 
   const shippingPendingAppsP = appsCol.countDocuments({
-    paymentStatus: '결제완료',
+    paymentStatus: { $in: PAYMENT_PAID_VALUES },
     $and: [
       {
         $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
@@ -581,17 +587,17 @@ export async function GET(req: Request) {
 
   // 결제 대기(24h+) - 교체 서비스 신청(StringingApplication)
   const paymentPending24hAppsP = appsCol.countDocuments({
-    paymentStatus: '결제대기',
+    paymentStatus: { $in: PAYMENT_PENDING_VALUES },
     createdAt: { $lte: oneDayAgo },
-    'cancelRequest.status': { $ne: 'requested' },
+    'cancelRequest.status': { $nin: CANCEL_REQUESTED_VALUES },
   });
 
   const paymentPending24hAppsListP = appsCol
     .find(
       {
-        paymentStatus: '결제대기',
+        paymentStatus: { $in: PAYMENT_PENDING_VALUES },
         createdAt: { $lte: oneDayAgo },
-        'cancelRequest.status': { $ne: 'requested' },
+        'cancelRequest.status': { $nin: CANCEL_REQUESTED_VALUES },
       },
       {
         sort: { createdAt: 1 },
@@ -613,7 +619,7 @@ export async function GET(req: Request) {
   const shippingPendingAppsListP = appsCol
     .find(
       {
-        paymentStatus: '결제완료',
+        paymentStatus: { $in: PAYMENT_PAID_VALUES },
         $and: [
           {
             $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
@@ -631,7 +637,7 @@ export async function GET(req: Request) {
 
   const appCancelRequestsListP = appsCol
     .find(
-      { 'cancelRequest.status': 'requested' },
+      { 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } },
       {
         sort: { createdAt: 1 },
         limit: 10,
@@ -683,11 +689,11 @@ export async function GET(req: Request) {
     .aggregate<{ _id: null; v: number }>([{ $match: { status: { $in: ['paid', 'out', 'returned'] }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$amount.total', 0] } } } }])
     .toArray();
 
-  const rentalCancelRequestsP = rentalsCol.countDocuments({ 'cancelRequest.status': 'requested' });
+  const rentalCancelRequestsP = rentalsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
 
   const rentalCancelRequestsListP = rentalsCol
     .find(
-      { 'cancelRequest.status': 'requested' },
+      { 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } },
       {
         sort: { createdAt: 1 },
         limit: 10,
@@ -755,7 +761,7 @@ export async function GET(req: Request) {
           amount: 1,
           brand: 1,
           model: 1,
-          shipping: 1, // pickRentalName에서 쓸 가능성이 높음
+          shipping: 1,
         },
       }
     )
@@ -786,12 +792,14 @@ export async function GET(req: Request) {
   const totalPackageOrdersP = packageOrdersCol.countDocuments({});
   const newPackageOrders7dP = packageOrdersCol.countDocuments({ createdAt: { $gte: since7d } });
 
-  const paidPackageOrders7dP = packageOrdersCol.countDocuments({ paymentStatus: '결제완료', createdAt: { $gte: since7d } });
-  const revenuePackageOrders7dP = packageOrdersCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: '결제완료', createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
+  const paidPackageOrders7dP = packageOrdersCol.countDocuments({ paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } });
+  const revenuePackageOrders7dP = packageOrdersCol
+    .aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }])
+    .toArray();
 
   const dailyPackageRevenueP = packageOrdersCol
     .aggregate<{ _id: string; v: number }>([
-      { $match: { paymentStatus: '결제완료', createdAt: { $gte: chartStartUtc, $lte: now } } },
+      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: chartStartUtc, $lte: now } } },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
@@ -803,14 +811,14 @@ export async function GET(req: Request) {
 
   // 결제 대기(24h+) - 패키지 주문(PackageOrder)
   const paymentPending24hPackagesP = packageOrdersCol.countDocuments({
-    paymentStatus: '결제대기',
+    paymentStatus: { $in: PAYMENT_PENDING_VALUES },
     createdAt: { $lte: oneDayAgo },
   });
 
   const paymentPending24hPackagesListP = packageOrdersCol
     .find(
       {
-        paymentStatus: '결제대기',
+        paymentStatus: { $in: PAYMENT_PENDING_VALUES },
         createdAt: { $lte: oneDayAgo },
       },
       {
@@ -1216,7 +1224,7 @@ export async function GET(req: Request) {
 
   const dailyRevenue = dailyRevenueBySource.map((d) => ({ date: d.date, value: d.total }));
 
-  const toIso = (d: any) => (d instanceof Date ? d.toISOString() : new Date().toISOString());
+  const toIso = (v: any) => (v instanceof Date ? v.toISOString() : typeof v === 'string' ? v : new Date().toISOString());
 
   const pickName = (doc: any) => String(doc?.shippingInfo?.name || doc?.shippingInfo?.receiverName || doc?.guest?.name || '고객');
 
@@ -1260,7 +1268,7 @@ export async function GET(req: Request) {
       name: pickName(d),
       amount: Number(d?.totalPrice || 0),
       status: String(d?.status || ''),
-      paymentStatus: String(d?.paymentStatus || ''),
+      paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       href: `/admin/orders/${String(d?._id)}`,
     })),
     ...(appCancelRequestsList as any[]).map((d) => ({
@@ -1270,7 +1278,7 @@ export async function GET(req: Request) {
       name: pickName(d),
       amount: Number(d?.totalPrice || 0),
       status: String(d?.status || ''),
-      paymentStatus: String(d?.paymentStatus || ''),
+      paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       href: `/admin/applications/stringing/${String(d?._id)}`,
     })),
     ...(rentalCancelRequestsList as any[]).map((d) => ({
@@ -1294,7 +1302,7 @@ export async function GET(req: Request) {
       name: pickName(d),
       amount: Number(d?.totalPrice || 0),
       status: String(d?.status || ''),
-      paymentStatus: String(d?.paymentStatus || ''),
+      paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       href: `/admin/orders/${String(d?._id)}/shipping-update`,
     })),
     ...(shippingPendingAppsList as any[]).map((d) => ({
@@ -1304,7 +1312,7 @@ export async function GET(req: Request) {
       name: pickName(d),
       amount: Number(d?.totalPrice || 0),
       status: String(d?.status || ''),
-      paymentStatus: String(d?.paymentStatus || ''),
+      paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       href: `/admin/applications/stringing/${String(d?._id)}/shipping-update`,
     })),
   ]
@@ -1410,7 +1418,7 @@ export async function GET(req: Request) {
     createdAt: toIso(d?.createdAt),
     name: pickName(d),
     status: String(d?.status || ''),
-    paymentStatus: String(d?.paymentStatus || ''),
+    paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
     totalPrice: Number(d?.totalPrice || 0),
     ageDays: calcAgeDays(d?.createdAt),
     href: `/admin/applications/stringing/${String(d?._id)}`,
@@ -1425,6 +1433,34 @@ export async function GET(req: Request) {
     retries: Number(d?.retries || 0),
     error: d?.error ? String(d.error).slice(0, 140) : null,
   }));
+
+  // dist 라벨 merge:
+  // - DB에 결제상태가 'paid'/'pending' 또는 '결제완료'/'결제대기'처럼 섞여 있어도
+  //   대시보드 분포에서는 한 라벨로 합쳐 보이게 합니다.
+  function normalizePaymentStatusLabel(v: any) {
+    const raw = String(v ?? '').trim();
+    const lower = raw.toLowerCase();
+
+    // NOTE: PAYMENT_*_VALUES는 이미 'paid/pending' + '결제완료/결제대기'를 포함하도록 구성되어 있음
+    if (PAYMENT_PAID_VALUES.some((x) => String(x).toLowerCase() === lower)) return '결제완료';
+    if (PAYMENT_PENDING_VALUES.some((x) => String(x).toLowerCase() === lower)) return '결제대기';
+
+    return raw || '기타';
+  }
+
+  const mergeDistByLabel = (rows: any[], normalize: (v: any) => string) => {
+    const acc = new Map<string, number>();
+    for (const r of rows ?? []) {
+      const label = normalize(r?._id);
+      const count = Number(r?.count || 0);
+      acc.set(label, (acc.get(label) ?? 0) + count);
+    }
+    return Array.from(acc.entries())
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count);
+  };
+
+  const orderPaymentStatusDist = mergeDistByLabel(orderPayStatusDistRows as any[], normalizePaymentStatusLabel);
 
   const resp: DashboardMetrics = {
     generatedAt: now.toISOString(),
@@ -1520,7 +1556,7 @@ export async function GET(req: Request) {
 
     dist: {
       orderStatus: orderStatusDistRows.map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
-      orderPaymentStatus: orderPayStatusDistRows.map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
+      orderPaymentStatus: orderPaymentStatusDist,
       applicationStatus: appStatusDistRows.map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
     },
 
@@ -1576,7 +1612,7 @@ export async function GET(req: Request) {
         name: String(d?.shippingInfo?.name || d?.shippingInfo?.receiverName || '고객'),
         totalPrice: Number(d?.totalPrice || 0),
         status: String(d?.status || '대기중'),
-        paymentStatus: String(d?.paymentStatus || '결제대기'),
+        paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus || '결제대기'),
       })),
       applications: (recentApps as Array<any>).map((d) => ({
         id: String(d?._id),
@@ -1584,7 +1620,7 @@ export async function GET(req: Request) {
         name: String(d?.shippingInfo?.name || d?.shippingInfo?.receiverName || '고객'),
         totalPrice: Number(d?.totalPrice || 0),
         status: String(d?.status || '접수완료'),
-        paymentStatus: String(d?.paymentStatus || '결제대기'),
+        paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus || '결제대기'),
       })),
       rentals: (recentRentals as Array<any>).map((d) => ({
         id: String(d?._id),
