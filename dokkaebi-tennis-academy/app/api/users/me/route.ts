@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
+import { performance } from 'node:perf_hooks';
 
 // 환경변수에서 JWT 비밀키 로딩
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
@@ -18,6 +19,29 @@ export async function GET() {
     console.log('[API users/me] No cookie token!');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const dbg = process.env.DEBUG_USERS_ME === '1';
+  const t0 = performance.now();
+
+  dbg && console.log('[me] cookies', (performance.now() - t0).toFixed(1), 'ms');
+
+  if (!accessToken) {
+    dbg && console.log('[me] no token total', (performance.now() - t0).toFixed(1), 'ms');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const t1 = performance.now();
+  const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as JwtPayload;
+  dbg && console.log('[me] jwt.verify', (performance.now() - t1).toFixed(1), 'ms');
+
+  const t2 = performance.now();
+  const db = await getDb();
+  dbg && console.log('[me] getDb', (performance.now() - t2).toFixed(1), 'ms');
+
+  const t3 = performance.now();
+  const user = await db.collection('users').findOne({ _id: new ObjectId(decoded.sub as string) }, { projection: { hashedPassword: 0 } });
+  dbg && console.log('[me] findOne', (performance.now() - t3).toFixed(1), 'ms');
+
+  dbg && console.log('[me] total', (performance.now() - t0).toFixed(1), 'ms');
 
   try {
     // sub(= user._id)를 사용

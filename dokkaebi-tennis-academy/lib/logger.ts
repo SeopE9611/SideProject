@@ -1,3 +1,13 @@
+// lib/logger.ts (상단 근처에 추가)
+const LOG_LEVEL = (process.env.LOG_LEVEL ?? 'info') as LogBase['level'];
+const rank = { debug: 10, info: 20, warn: 30, error: 40 } as const;
+const enabled = (lvl: LogBase['level']) => rank[lvl] >= (rank[LOG_LEVEL] ?? 20);
+
+export function logInfo(data: Omit<LogBase, 'level'>) {
+  if (!enabled('info')) return;
+  jlog({ level: 'info', ...data });
+}
+
 // 가벼운 구조화 로거 (console 기반). 필요하면 pino/winston으로 교체 가능.
 export type LogBase = {
   level: 'info' | 'error' | 'warn' | 'debug';
@@ -28,9 +38,9 @@ export function startTimer() {
   return () => Math.round(performance.now() - t0);
 }
 
-export function logInfo(data: Omit<LogBase, 'level'>) {
-  jlog({ level: 'info', ...data });
-}
+// export function logInfo(data: Omit<LogBase, 'level'>) {
+//   jlog({ level: 'info', ...data });
+// }
 
 export function logError(data: Omit<LogBase, 'level'> & { error?: unknown }) {
   const extra = { ...(data.extra || {}), error: serializeError(data.error) };

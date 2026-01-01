@@ -10,8 +10,8 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 export function useUnreadMessageCount(enabled: boolean) {
   const { data, error, isLoading, mutate } = useSWR<UnreadCountRes>(enabled ? '/api/messages/unread-count' : null, fetcher, {
     dedupingInterval: 10_000,
-    refreshInterval: 30_000,
-    revalidateOnFocus: true,
+    refreshInterval: 60_000,
+    revalidateOnFocus: false,
   });
 
   const count = data && data.ok ? data.count : 0;
