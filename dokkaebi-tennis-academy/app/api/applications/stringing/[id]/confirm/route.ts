@@ -140,32 +140,30 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
       return NextResponse.json({ ok: true, already: true, message: '이미 확정된 신청입니다.', earnedPoints: 0 });
     }
 
-    await db.collection('stringing_applications').updateOne({ _id, $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }] }, { $set: { userConfirmedAt: new Date() } });
+    const now = new Date();
 
     const totalPrice = Number(app.totalPrice ?? 0);
     const earnedPoints = calcOrderEarnPoints(totalPrice);
 
+    // 포인트가 0원이어도, '확정' 자체는 기록한다(단, now로 한 번만 찍는다).
     if (earnedPoints <= 0) {
-      await db.collection('stringing_applications').updateOne({ _id, $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }] }, { $set: { userConfirmedAt: new Date() } });
+      await db.collection('stringing_applications').updateOne({ _id, $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }] }, { $set: { userConfirmedAt: now } });
       return NextResponse.json({ ok: true, message: '서비스 확정 완료', earnedPoints: 0 });
     }
 
     const rewardRefKey = `stringing_application_reward:${String(_id)}`;
-    try {
-      await grantPoints(db, {
-        userId: new ObjectId(userId),
-        amount: earnedPoints,
-        type: 'order_reward',
-        status: 'confirmed',
-        refKey: rewardRefKey,
-        reason: '서비스 확정 적립',
-      });
-    } catch (e) {
-      // 포인트 지급 실패 시에는 확정도 찍지 않고 500으로 끝내야 "재시도"로 복구 가능
-      throw e;
-    }
 
-    await db.collection('stringing_applications').updateOne({ _id, $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }] }, { $set: { userConfirmedAt: new Date() } });
+    // 포인트 지급이 실패하면(예: DB 오류) 확정도 찍지 않아야 재시도(복구)가 가능하다.
+    await grantPoints(db, {
+      userId: new ObjectId(userId),
+      amount: earnedPoints,
+      type: 'order_reward', // PointTransactionType에 이미 있는 값 사용
+      status: 'confirmed',
+      refKey: rewardRefKey,
+      reason: '서비스 확정 적립',
+    });
+
+    await db.collection('stringing_applications').updateOne({ _id, $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }] }, { $set: { userConfirmedAt: now } });
 
     return NextResponse.json({ ok: true, message: '서비스 확정 완료', earnedPoints });
   } catch (e) {

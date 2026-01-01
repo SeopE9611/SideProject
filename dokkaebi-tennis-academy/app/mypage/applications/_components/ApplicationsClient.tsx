@@ -8,13 +8,14 @@ import { useRouter } from 'next/navigation';
 import useSWRInfinite from 'swr/infinite';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { useMemo, useState } from 'react';
-import useSWRImmutable from 'swr/immutable';
-import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
+import { useSWRConfig } from 'swr';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { showInfoToast, showSuccessToast, showErrorToast } from '@/lib/toast';
 import { Badge } from '@/components/ui/badge';
 import CancelStringingDialog from './CancelStringingDialog';
 import { MdSportsTennis } from 'react-icons/md';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 export interface Application {
   id: string;
   type: '스트링 장착 서비스' | '아카데미 수강 신청';
@@ -38,6 +39,9 @@ export interface Application {
 
   // 이 신청이 어떤 주문에서 생성되었는지 연결 정보
   orderId?: string | null;
+
+  // 사용자 확정 시각(없으면 null) - 교체확정 완료 여부 판단용
+  userConfirmedAt?: string | null;
 }
 
 type AppResponse = { items: Application[]; total: number };
@@ -113,6 +117,9 @@ const getApplicationStatusIcon = (status: Application['status']) => {
 export default function ApplicationsClient() {
   const router = useRouter();
 
+  const { mutate: globalMutate } = useSWRConfig();
+  // 교체확정 요청 중(신청서별로 1개만)
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   // SWR Infinite 키 생성
   const getKey = (pageIndex: number, previousPageData: AppResponse | null) => {
     // 직전 페이지가 LIMIT 미만이면 다음 페이지 없음
@@ -203,6 +210,49 @@ export default function ApplicationsClient() {
     } catch (e) {
       console.error(e);
       showErrorToast('취소 요청 철회 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 교체확정(사용자) - 교체완료 상태에서만 가능
+  const handleConfirmService = async (applicationId: string) => {
+    if (confirmingId) return;
+
+    const ok = confirm('교체확정을 진행할까요?\n\n확정 후에는 포인트가 지급되며, 되돌릴 수 없습니다.');
+    if (!ok) return;
+
+    try {
+      setConfirmingId(applicationId);
+
+      const res = await fetch(`/api/applications/stringing/${applicationId}/confirm`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || data?.ok === false) {
+        showErrorToast(data?.message || data?.error || '교체확정 처리 중 오류가 발생했습니다.');
+        return;
+      }
+
+      if (data?.already) {
+        showSuccessToast(data?.message || '이미 교체확정된 신청입니다.');
+      } else {
+        const earned = Number(data?.earnedPoints ?? 0);
+        showSuccessToast(earned > 0 ? `교체확정 완료 (+${earned}P 적립)` : '교체확정 완료');
+      }
+
+      // 신청 목록 재검증
+      await mutate();
+
+      // 다른 탭(포인트/주문)도 UX상 갱신되도록 재검증
+      await globalMutate((key) => typeof key === 'string' && key.startsWith('/api/points/me'), undefined, { revalidate: true });
+      await globalMutate((key) => typeof key === 'string' && key.startsWith('/api/users/me/orders'), undefined, { revalidate: true });
+    } catch (e) {
+      console.error(e);
+      showErrorToast('교체확정 처리 중 오류가 발생했습니다.');
+    } finally {
+      setConfirmingId(null);
     }
   };
 
@@ -420,6 +470,55 @@ export default function ApplicationsClient() {
                           {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
                         </Button>
                       ))}
+
+                    {/* 교체확정(항상 노출) - 스트링 장착 서비스에만 표시 */}
+                    {isStringService && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            {/* disabled 버튼에서도 Tooltip이 뜨도록 span으로 감싼다 */}
+                            <span className="inline-block">
+                              {(() => {
+                                const userConfirmedAt = (app as any).userConfirmedAt ?? null;
+                                const isUserConfirmed = Boolean(userConfirmedAt);
+
+                                const canConfirm = app.status === '교체완료' && !isUserConfirmed && !isCancelRequested && confirmingId !== app.id;
+
+                                const label = confirmingId === app.id ? '확정 중…' : isUserConfirmed ? '교체확정 완료' : '교체확정';
+
+                                return (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!canConfirm}
+                                    onClick={() => handleConfirmService(app.id)}
+                                    className="border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 dark:border-slate-700 dark:hover:bg-emerald-950 transition-colors"
+                                  >
+                                    <CheckCircle className="mr-1 h-4 w-4" />
+                                    {label}
+                                  </Button>
+                                );
+                              })()}
+                            </span>
+                          </TooltipTrigger>
+
+                          <TooltipContent>
+                            {(() => {
+                              const userConfirmedAt = (app as any).userConfirmedAt ?? null;
+                              const isUserConfirmed = Boolean(userConfirmedAt);
+
+                              if (confirmingId === app.id) return <p>교체확정 처리 중입니다.</p>;
+                              if (isUserConfirmed) return <p>이미 교체확정된 신청입니다.</p>;
+                              if (isCancelRequested) return <p>취소 요청 처리 중에는 확정할 수 없습니다.</p>;
+                              if (app.status !== '교체완료') return <p>교체완료 상태에서만 교체확정이 가능합니다.</p>;
+
+                              // 활성 상태일 때도 안내 문구는 하나 넣어두면 UX가 좋아짐
+                              return <p>교체확정 시 포인트가 지급됩니다.</p>;
+                            })()}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
 
                     {isCancelRequested ? (
                       <Button variant="destructive" size="sm" onClick={() => handleWithdrawCancelRequest(app.id)} className="gap-2">

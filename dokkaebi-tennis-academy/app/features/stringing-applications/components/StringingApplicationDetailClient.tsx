@@ -301,6 +301,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   // 취소 요청 철회 로딩 상태
   const [isWithdrawingCancel, setIsWithdrawingCancel] = useState(false);
 
+  // 교체 확정 전용 로딩 상태
+  const [isConfirmSubmitting, setIsConfirmSubmitting] = useState(false);
+
   // 1) 버튼에서 모달 여는 함수
   const handleOpenCancelDialog = () => {
     if (isCancelled || isCancelRequested) return;
@@ -456,6 +459,36 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     });
   };
 
+  const handleConfirmExchange = async () => {
+    if (!canConfirmExchange || isConfirmSubmitting) return;
+
+    if (!window.confirm('교체 작업을 확정하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.')) return;
+
+    try {
+      setIsConfirmSubmitting(true);
+
+      const res = await fetch(`${baseUrl}/api/applications/stringing/${applicationId}/confirm`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        console.error('confirm failed', res.status, msg);
+        throw new Error('confirm failed');
+      }
+
+      showSuccessToast('교체 확정이 완료되었습니다.');
+      await mutate();
+      await historyMutateRef.current?.();
+    } catch (e) {
+      console.error(e);
+      showErrorToast('교체 확정 중 오류가 발생했습니다.');
+    } finally {
+      setIsConfirmSubmitting(false);
+    }
+  };
+
   // // 기존 store 아이디
   // const storeId = useStringingStore((state) => state.selectedApplicationId);
   // // 새로고침 대비 fallback: prop 으로 내려준 id 를 쓰거나, storeId 사용
@@ -467,18 +500,19 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   useEffect(() => {
     useStringingStore.setState({ selectedApplicationId: id });
   }, [id]);
-  // SWR 키가 항상 applicationId 로 고정 (새로고침해도 fetch가 정상 동작하기 위함)
-  const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, (url: any) => fetch(url, { credentials: 'include' }).then((r) => r.json()));
-  // 관리자는 항상, 일반 사용자는 지정된 상태에서만 편집 허용
-  const [isEditable, setIsEditable] = useState(isAdmin || userEditableStatuses.includes(data?.status || ''));
+  const swrFetcher = async (url: string) => {
+    const res = await fetch(url, { credentials: 'include' });
+    if (!res.ok) throw new Error(await res.text().catch(() => 'fetch failed'));
+    return res.json();
+  };
 
-  if (isLoading || !data) {
-    return <StringingApplicationDetailSkeleton />;
-  }
-  // 관리자이거나(isAdmin), 또는 상태가 userEditableStatuses에 포함될 때를 판단
-  const isEditableAllowed = isAdmin || userEditableStatuses.includes(data.status);
+  const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, swrFetcher);
 
   if (error) return <div className="text-red-500 p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
+  if (isLoading || !data) return <StringingApplicationDetailSkeleton />;
+
+  // 관리자이거나(isAdmin), 또는 상태가 userEditableStatuses에 포함될 때를 판단
+  const isEditableAllowed = isAdmin || userEditableStatuses.includes(data.status);
 
   // 요약 표시용 파생 값
   const stringTypeCount = data.stringDetails?.stringTypes?.length ?? 0;
@@ -503,6 +537,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const isCancelApproved = rawCancelStatus === '승인' || rawCancelStatus === 'approved';
   const isCancelRejected = rawCancelStatus === '거절' || rawCancelStatus === 'rejected';
 
+  // 확정 여부 필드가 서버에서 내려온다는 전제
+  const isUserConfirmed = Boolean((data as any).userConfirmedAt);
+
+  // 확정 버튼 노출/활성 조건 (ApplicationsClient 규칙에 맞게 "상태 기반"으로 단순화)
+  const confirmableStatuses = ['반송완료', '교체완료', '완료'];
+  const canConfirmExchange = !isAdmin && !isCancelled && !isCancelRequested && !isUserConfirmed && confirmableStatuses.includes(data.status);
+
   // 라켓 종류 요약 문자열
   const racketTypeSummary =
     data.stringDetails?.racketType && data.stringDetails.racketType.trim().length > 0
@@ -520,10 +561,14 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const cancelInfo = getAdminApplicationCancelRequestInfo(data);
 
   // 자가발송/운송장 등록 여부 계산
-  const collectionMethod = data?.shippingInfo?.collectionMethod ?? data?.shippingInfo?.shippingMethod ?? null;
-  const isSelfShip = typeof collectionMethod === 'string' && ['self_ship', 'self', '자가발송'].includes(collectionMethod.toLowerCase());
-  const isVisit = normalizeCollection(collectionMethod ?? 'self_ship') === 'visit';
+  // "고객→매장" 기준은 collectionMethod만 사용
+  const collectionMethodRaw = data.shippingInfo?.collectionMethod ?? null;
+  const cm = normalizeCollection(collectionMethodRaw ?? 'self_ship');
+  const isSelfShip = cm === 'self_ship';
+  const isVisit = cm === 'visit';
 
+  // "매장→고객" 배송은 shippingMethod로 별도 유지
+  const shippingMethod = data.shippingInfo?.shippingMethod;
   // 방문 예약인 경우에만 의미 있는 희망 일시 라벨
   const visitTimeLabel = isVisit ? formatVisitTimeRange(data.stringDetails.preferredDate, data.stringDetails.preferredTime, data.visitDurationMinutes ?? null, data.visitSlotCount ?? null) : '예약 불필요';
 
@@ -532,7 +577,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const selfShip = data.shippingInfo?.selfShip;
   const invoice = data.shippingInfo?.invoice;
 
-  const shippingMethod = data.shippingInfo?.shippingMethod;
   const hasStoreShippingInfo = Boolean(shippingMethod) || Boolean(invoice?.trackingNumber) || Boolean(invoice?.shippedAt);
 
   // 일반 사용자도 편집 가능 상태일 때만 노출하고, 완료/취소 등엔 비활성화
@@ -630,6 +674,20 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {!isEditableAllowed && <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>}
                 </Tooltip>
               </div>
+              {/* 사용자: 교체확정 버튼 */}
+              {!isAdmin && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-block">
+                      <Button size="sm" disabled={!canConfirmExchange || isConfirmSubmitting} onClick={handleConfirmExchange}>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        {isConfirmSubmitting ? '확정 중...' : isUserConfirmed ? '확정 완료' : '교체 확정'}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {!canConfirmExchange && <TooltipContent>{isUserConfirmed ? '이미 교체 확정된 신청입니다.' : '교체완료/반송완료 이후에 확정할 수 있습니다.'}</TooltipContent>}
+                </Tooltip>
+              )}
             </TooltipProvider>
           </div>
 
