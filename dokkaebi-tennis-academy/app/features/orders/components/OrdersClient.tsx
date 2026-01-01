@@ -470,7 +470,7 @@ export default function OrdersClient() {
                           <div className="flex flex-col items-center">
                             <span className="flex items-center">
                               {/* "이름"만 남기기 */}
-                              {order.customer.name.replace(/\s*$$비회원$$$/, '').replace(/\s*$$탈퇴한 회원$$$/, '')}
+                              {order.customer.name.replace(/\s*\(비회원\)\s*$/, '').replace(/\s*\(탈퇴한 회원\)\s*$/, '')}
                               {/*  탈퇴한 회원 레이블 (기존 getDisplayUserType) */}
                               {getDisplayUserType(order) && <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">{getDisplayUserType(order)}</span>}
                               {/*  비회원 레이블 */}

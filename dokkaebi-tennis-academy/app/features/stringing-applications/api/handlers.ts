@@ -198,6 +198,8 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
+      // 사용자 확정 시각 (없으면 null)
+      userConfirmedAt: (app as any).userConfirmedAt instanceof Date ? (app as any).userConfirmedAt.toISOString() : typeof (app as any).userConfirmedAt === 'string' ? (app as any).userConfirmedAt : null,
       orderCancelStatus: order?.cancelRequest?.status ?? 'none',
       customer: {
         name: app.customer?.name ?? app.userSnapshot?.name ?? app.guestName ?? '-',
