@@ -6,7 +6,6 @@ import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { issuePassesForPaidOrder } from '@/lib/passes.service';
 import jwt from 'jsonwebtoken';
 import { deductPoints, grantPoints } from '@/lib/points.service';
-import { calcOrderEarnPoints } from '@/lib/points.policy';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -423,7 +422,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     // 패스 발급 멱등 트리거
-    // 기존 결제상태가 결제완료가 아니었고, 이번에 결제완료가 되었다면 발급
     const becamePaid = (existing.paymentStatus ?? null) !== '결제완료' && newPaymentStatus === '결제완료';
 
     if (becamePaid) {
@@ -431,39 +429,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         const updatedOrder = await orders.findOne({ _id }); // 최신 문서 읽어서 전달
         if (updatedOrder) {
           await issuePassesForPaidOrder(db, updatedOrder);
-          // 주문 결제완료 시 회원 포인트 자동 적립 (비회원 주문은 userId가 없을 수 있음)
-          try {
-            const uid = (updatedOrder as any).userId;
-            const uidStr = uid ? String(uid) : '';
-            if (ObjectId.isValid(uidStr)) {
-              const total = Number((updatedOrder as any).totalPrice ?? (updatedOrder as any).paymentInfo?.amount ?? 0);
-              const earn = calcOrderEarnPoints(total);
-              if (earn > 0) {
-                //  주문 결제완료 시 회원 포인트 자동 적립
-                const rewardRefKey = `order_reward:${String((updatedOrder as any)._id)}`;
-
-                await grantPoints(db, {
-                  userId: new ObjectId(uidStr),
-                  amount: earn,
-                  type: 'order_reward',
-                  status: 'confirmed',
-                  refKey: rewardRefKey,
-                  reason: `주문 결제완료 적립 (${(updatedOrder as any).orderId ?? ''})`.trim(),
-                  ref: { orderId: (updatedOrder as any)._id },
-                });
-              }
-            }
-          } catch (e: any) {
-            // 중복(refKey) 등은 무시: 이미 적립된 케이스로 간주
-            const msg = String(e?.message ?? '');
-            if (e?.code !== 11000 && !msg.includes('E11000')) {
-              console.error('grantPoints(order_reward) error:', e);
-            }
-          }
+          // - 포인트는 "구매확정" 시점(/api/orders/[id]/confirm)에서만 지급
+          // - 중복 지급 방지는 points_transactions.refKey로 멱등 보장
         }
       } catch (e) {
         console.error('issuePassesForPaidOrder error:', e);
-        // 필요하면 여기서 history에 "발급 실패" 로그를 더 남길 수 있음
       }
     }
 
