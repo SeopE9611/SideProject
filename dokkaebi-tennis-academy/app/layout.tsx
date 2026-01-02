@@ -17,6 +17,7 @@ import TokenRefresher from '@/components/system/TokenRefresher';
 import SessionWatcher from '@/components/system/SessionWatcher';
 import ClaimsAutoLinker from '@/components/system/ClaimsAutoLinker';
 import SideMenu from '@/components/nav/SideMenu';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -67,8 +68,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <Header />
             {/* 데스크탑 전용 좌측 사이드 메뉴(고정) */}
             <SideMenu />
-            <main className="flex-1">
-              <div className="px-4 bp-md:px-6 bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16">{children}</div>
+            <main id="main" className="flex-1">
+              {/* 데스크탑 사이드메뉴 회피 패딩은 “바깥”에서 처리 */}
+              <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16">
+                <SiteContainer className="bp-lg:mx-0 bp-lg:max-w-none">{children}</SiteContainer>
+              </div>
             </main>
 
             <Footer />

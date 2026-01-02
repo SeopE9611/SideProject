@@ -17,6 +17,7 @@ import { MdSportsTennis } from 'react-icons/md';
 import { WeatherBadge } from '@/components/WeatherBadge';
 import { Badge } from '@/components/ui/badge';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 /** 재질 카테고리(스트링 타입) 노출 온/오프 */
 const SHOW_MATERIAL_MENU = false;
@@ -65,6 +66,11 @@ const Header = () => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // 라우트 이동(검색 결과 클릭 등)으로 페이지가 바뀌면 모바일 Sheet를 자동으로 닫아 UX를 안정화
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   const { items } = useCartStore();
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -227,8 +233,8 @@ const Header = () => {
             bg-white/70 dark:bg-slate-900/60 backdrop-blur-md
             border-b border-slate-200 dark:border-slate-700`}
         />
-        <div
-          className="w-full mx-auto px-4 bp-md:px-6 bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
+        <SiteContainer
+          className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
           style={{
             transform: isScrolled ? 'translateY(-8px) scale(0.96)' : 'translateY(0) scale(1)',
             transformOrigin: 'center',
@@ -794,7 +800,7 @@ const Header = () => {
               </SheetContent>
             </Sheet>
           </div>
-        </div>
+        </SiteContainer>
       </header>
     </>
   );
