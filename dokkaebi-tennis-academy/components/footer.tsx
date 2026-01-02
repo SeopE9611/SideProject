@@ -21,7 +21,7 @@ const Footer = () => {
   return (
     <footer className="w-full bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 relative overflow-hidden mt-12">
       <div className="absolute inset-0 pointer-events-none opacity-5 bg-[radial-gradient(circle_at_20%_20%,theme(colors.slate.400/40),transparent_40%),radial-gradient(circle_at_80%_0%,theme(colors.purple.400/30),transparent_35%),radial-gradient(circle_at_0%_80%,theme(colors.blue.400/30),transparent_35%)]" />
-      <div className="max-w-7xl mx-auto px-4 bp-sm:px-6 py-8 bp-sm:py-12 bp-lg:py-16 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 bp-sm:px-6 bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-8 bp-sm:py-12 bp-lg:py-16 relative z-10">
         <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4 gap-6 bp-sm:gap-8 mb-8">
           {/* 브랜드 섹션 - 모바일에서 전체 너비 */}
           <div className="bp-sm:col-span-2 bp-lg:col-span-1">
@@ -100,7 +100,7 @@ const Footer = () => {
       </div>
 
       <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-950/50">
-        <div className="max-w-7xl mx-auto px-4 bp-sm:px-6 py-4 bp-sm:py-5">
+         <div className="max-w-7xl mx-auto px-4 bp-sm:px-6 bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-4 bp-sm:py-5">
           <div className="flex flex-col bp-sm:flex-row items-start bp-sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
             <div className="space-y-1">
               <p>&copy; {new Date().getFullYear()} 도깨비 테니스. All rights reserved.</p>

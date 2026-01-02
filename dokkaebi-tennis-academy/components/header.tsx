@@ -219,7 +219,7 @@ const Header = () => {
         메인 콘텐츠로 건너뛰기
       </a>
 
-      <header className="sticky top-0 z-[50] w-full isolate h-[72px]" data-scrolled={isScrolled}>
+      <header ref={headerRef as any} className="sticky top-0 z-[50] w-full isolate h-[72px]" data-scrolled={isScrolled}>
         <div
           aria-hidden="true"
           className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300
@@ -228,7 +228,7 @@ const Header = () => {
             border-b border-slate-200 dark:border-slate-700`}
         />
         <div
-          className="w-full mx-auto px-4 bp-md:px-6 bp-lg:px-8 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
+          className="w-full mx-auto px-4 bp-md:px-6 bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
           style={{
             transform: isScrolled ? 'translateY(-8px) scale(0.96)' : 'translateY(0) scale(1)',
             transformOrigin: 'center',
