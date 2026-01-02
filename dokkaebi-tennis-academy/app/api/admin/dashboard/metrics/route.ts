@@ -231,6 +231,7 @@ type DashboardMetrics = {
 
     outboxBacklog: Array<{
       id: string;
+      href: string;
       createdAt: string;
       status: 'queued' | 'failed' | 'sent';
       eventType: string;
@@ -1601,7 +1602,16 @@ export async function GET(req: Request) {
       rentalDueSoon: rentalDueSoonList,
       passExpiringSoon: passExpiringSoonList,
       stringingAging,
-      outboxBacklog,
+      outboxBacklog: outboxBacklogList.map((d) => ({
+        id: String(d._id),
+        href: `/admin/notifications/outbox/${String(d._id)}`,
+        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : typeof d?.createdAt === 'string' ? d.createdAt : new Date().toISOString(),
+        status: (d?.status as any) || 'queued',
+        eventType: String(d?.eventType || ''),
+        to: pickOutboxTo(d),
+        retries: Number(d?.retries || 0),
+        error: d?.error ? String(d.error) : d?.lastError ? String(d.lastError) : null,
+      })),
       paymentPending24h: paymentPending24hList,
     },
 

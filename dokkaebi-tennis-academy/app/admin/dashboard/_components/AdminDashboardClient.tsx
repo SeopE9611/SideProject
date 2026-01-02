@@ -161,6 +161,7 @@ type DashboardMetrics = {
     }>;
     outboxBacklog: Array<{
       id: string;
+      href: string;
       createdAt: string;
       status: 'queued' | 'failed' | 'sent';
       eventType: string;

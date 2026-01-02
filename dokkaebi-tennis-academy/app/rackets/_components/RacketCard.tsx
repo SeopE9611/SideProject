@@ -87,7 +87,7 @@ const RacketCard = React.memo(
           </div>
 
           <div className="flex flex-col md:flex-row relative z-10">
-            <div className="relative w-full md:w-48 lg:w-56 h-56 sm:h-64 md:h-48 lg:h-56 flex-shrink-0">
+            <div className="relative w-full md:w-48 lg:w-56 h-40 sm:h-64 md:h-48 lg:h-56 overflow-hidden">
               <Image src={racket.images?.[0] || '/placeholder.svg?height=200&width=200&query=tennis+racket'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" />
               <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 z-10">
                 <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ const RacketCard = React.memo(
                 </div>
               </div>
             </div>
-            <div className="flex-1 p-5 sm:p-6 md:p-7">
+            <div className="flex-1 p-3 sm:p-6 md:p-7">
               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-3 sm:mb-4 gap-3 sm:gap-4">
                 <div className="flex-1">
                   <div className="text-sm sm:text-base text-muted-foreground mb-1.5 font-medium">{brandLabel}</div>
@@ -107,15 +107,16 @@ const RacketCard = React.memo(
                   </div>
                 </div>
                 <div className="text-left lg:text-right">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+                  <div className="text-lg sm:text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
                 </div>
               </div>
 
               <div className="mt-2 flex justify-end gap-2">
                 <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                  <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-sm sm:text-base">
+                  <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs sm:text-base">
                     <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
-                    상세보기
+                    <span className="sm:hidden">상세</span>
+                    <span className="hidden sm:inline">상세보기</span>
                   </Button>
                 </Link>
 
@@ -145,7 +146,7 @@ const RacketCard = React.memo(
             alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
             width={300}
             height={300}
-            className="h-60 sm:h-64 md:h-72 lg:h-80 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="h-40 sm:h-64 md:h-72 lg:h-80 w-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
             <div className="flex items-center gap-2">
@@ -157,16 +158,18 @@ const RacketCard = React.memo(
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
             <div className="flex gap-2">
               <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-sm sm:text-base">
+                <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs sm:text-base">
                   <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
-                  상세보기
+
+                  <span className="sm:hidden">상세</span>
+                  <span className="hidden sm:inline">상세보기</span>
                 </Button>
               </Link>
             </div>
           </div>
         </div>
-        <CardContent className="p-5 sm:p-6">
-          <div className="text-sm sm:text-base text-muted-foreground mb-2 font-medium">{brandLabel}</div>
+        <CardContent className="p-3 sm:p-6">
+          <div className="text-xs sm:text-base text-muted-foreground mb-2 font-medium">{brandLabel}</div>
           <CardTitle className="text-base sm:text-lg md:text-xl mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
 
           <div className="flex items-center gap-2 mb-3">
@@ -181,9 +184,9 @@ const RacketCard = React.memo(
           </div>
         </CardContent>
 
-        <CardFooter className="p-5 sm:p-6 pt-0 flex justify-between items-center">
+        <CardFooter className="p-3 sm:p-6 pt-0 flex justify-between items-center">
           <div>
-            <div className="font-bold text-lg sm:text-xl md:text-2xl text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+            <div className="font-bold text-base sm:text-xl md:text-2xl text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
           </div>
 
           {racket.rental?.enabled ? (

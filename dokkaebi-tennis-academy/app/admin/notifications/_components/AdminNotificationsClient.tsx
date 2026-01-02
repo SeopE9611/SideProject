@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { Loader2, RefreshCcw, Send, Search, Mail, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import Link from 'next/link';
 
 type Status = 'all' | 'queued' | 'failed' | 'sent';
 
@@ -55,7 +56,8 @@ function useDebounced<T>(value: T, delay = 350) {
 function formatIsoToKstShort(iso?: string | null) {
   if (!iso) return '-';
   const d = new Date(iso);
-  if (Number.isNaN(d)) return String(iso);
+  // Invalid Date 방어 (getTime()이 NaN이면 잘못된 날짜)
+  if (Number.isNaN(d.getTime())) return String(iso);
   const pad = (n: number) => String(n).padStart(2, '0');
   // 브라우저 로컬(KST) 기준 표기
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -83,20 +85,25 @@ function getStatusIcon(status: OutboxItem['status']) {
 export default function AdminNotificationsClient() {
   const router = useRouter();
   const sp = useSearchParams();
+  const spStr = sp.toString();
+
+  const pathname = usePathname();
 
   const initialStatus = (sp.get('status') || 'all') as Status;
   const initialQ = sp.get('q') || '';
+  const initialPage = Math.max(1, parseInt(sp.get('page') || '1', 10) || 1);
 
   const [status, setStatus] = useState<Status>(['all', 'queued', 'failed', 'sent'].includes(initialStatus) ? initialStatus : 'all');
   const [qRaw, setQRaw] = useState(initialQ);
   const qDebounced = useDebounced(qRaw, 350);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
 
   useEffect(() => {
     setPage(1);
-  }, [status, qDebounced]);
+  }, [status, qRaw]);
 
   useEffect(() => {
+    const basePath = pathname || '/admin/notifications/outbox';
     const p = new URLSearchParams(sp.toString());
     if (status === 'all') p.delete('status');
     else p.set('status', status);
@@ -105,12 +112,16 @@ export default function AdminNotificationsClient() {
     if (!q) p.delete('q');
     else p.set('q', q);
 
-    p.delete('page');
+    if (page <= 1) p.delete('page');
+    else p.set('page', String(page));
 
     const qs = p.toString();
-    router.replace(qs ? `/admin/notifications?${qs}` : '/admin/notifications');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, qRaw]);
+    const nextUrl = qs ? `${basePath}?${qs}` : basePath;
+
+    if (qs !== spStr) {
+      router.replace(nextUrl);
+    }
+  }, [status, qRaw, page, pathname, router, spStr]);
 
   const key = useMemo(() => {
     const p = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
@@ -394,10 +405,12 @@ export default function AdminNotificationsClient() {
                         </div>
                       </div>
 
-                      {/* Right side - Actions */}
                       <div className="flex shrink-0 flex-wrap items-center gap-2 lg:flex-col">
+                        <Button size="sm" variant="outline" asChild className="border-border/40 hover:border-border/60">
+                          <Link href={`/admin/notifications/outbox/${it.id}`}>상세 페이지</Link>
+                        </Button>
                         <Button size="sm" variant="outline" onClick={() => openDetail(it.id)} className="border-border/40 hover:border-border/60">
-                          상세 보기
+                          미리보기
                         </Button>
 
                         {it.status === 'failed' && (
@@ -496,6 +509,12 @@ export default function AdminNotificationsClient() {
                 강제 발송
               </Button>
             )}
+            {detailId && (
+              <Button variant="outline" asChild className="border-border/40">
+                <Link href={`/admin/notifications/outbox/${detailId}`}>상세 페이지</Link>
+              </Button>
+            )}
+
             <Button variant="outline" onClick={() => setDetailOpen(false)} className="border-border/40">
               닫기
             </Button>

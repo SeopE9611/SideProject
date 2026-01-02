@@ -10,6 +10,7 @@ import useSWR from 'swr';
 import RacketCard from './RacketCard';
 import RacketFilterPanel from './RacketFilterPanel';
 import { SkeletonProductCard } from '@/app/products/components/SkeletonProductCard';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -60,6 +61,16 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   // 검색어
   const [searchQuery, setSearchQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
+
+  // 모바일(Sheet) 전용 임시 선택값(draft)
+  // - Sheet에서 선택해도 즉시 SWR 재요청이 일어나지 않게 함
+  // - "검색/적용" 버튼에서만 selectedXXX로 커밋
+  const [draftBrand, setDraftBrand] = useState<string | null>(initialBrand);
+  const [draftCondition, setDraftCondition] = useState<string | null>(initialCondition);
+  const [draftPriceMin, setDraftPriceMin] = useState<number | null>(null);
+  const [draftPriceMax, setDraftPriceMax] = useState<number | null>(null);
+  const [draftSearchQuery, setDraftSearchQuery] = useState('');
+  const [draftResetKey, setDraftResetKey] = useState(0);
 
   // 토글 (모바일용)
   const [showFilters, setShowFilters] = useState(false);
@@ -177,9 +188,85 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     setSearchQuery('');
   }, []);
 
+  // draft를 현재 applied(selected) 값으로 동기화 (Sheet 열 때/취소할 때)
+  const syncDraftFromApplied = useCallback(() => {
+    setDraftBrand(selectedBrand);
+    setDraftCondition(selectedCondition);
+    setDraftPriceMin(priceMin);
+    setDraftPriceMax(priceMax);
+    setDraftSearchQuery(searchQuery);
+  }, [selectedBrand, selectedCondition, priceMin, priceMax, searchQuery]);
+
+  // Sheet 열기: 열릴 때마다 draft를 applied로 맞춰서 "현재 상태"를 보여줌
+  const openFiltersSheet = useCallback(() => {
+    syncDraftFromApplied();
+    setShowFilters(true);
+  }, [syncDraftFromApplied]);
+
+  // Sheet 취소(닫기): draft를 applied로 되돌리고 닫기
+  const cancelFiltersSheet = useCallback(() => {
+    syncDraftFromApplied();
+    setShowFilters(false);
+  }, [syncDraftFromApplied]);
+
+  // Sheet 적용(=검색): draft -> applied로 커밋 + 닫기
+  const applyFiltersSheet = useCallback(() => {
+    setSelectedBrand(draftBrand);
+    setSelectedCondition(draftCondition);
+    setPriceMin(draftPriceMin);
+    setPriceMax(draftPriceMax);
+
+    // 검색어는 submittedQuery만 서버 요청에 반영되므로 적용 시점에 커밋
+    setSearchQuery(draftSearchQuery);
+    setSubmittedQuery(draftSearchQuery);
+
+    setShowFilters(false);
+    // key가 바뀌면 SWR이 자동으로 새로 fetch함 (mutate 강제 호출은 불필요)
+  }, [draftBrand, draftCondition, draftPriceMin, draftPriceMax, draftSearchQuery]);
+
+  // 모바일 Sheet에서만 "초기화"(draft만 초기화)
+  const handleResetAllDraft = useCallback(() => {
+    setDraftResetKey((k) => k + 1);
+    setDraftBrand(null);
+    setDraftCondition(null);
+    setDraftPriceMin(null);
+    setDraftPriceMax(null);
+    setDraftSearchQuery('');
+  }, []);
+
+  // overlay/ESC로 닫히는 경우도 "취소"로 처리
+  const handleSheetOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) openFiltersSheet();
+      else cancelFiltersSheet();
+    },
+    [openFiltersSheet, cancelFiltersSheet]
+  );
+
+  // 뷰포트가 lg(>=1024)로 커지면 Sheet는 자동으로 "취소 닫기"
+  useEffect(() => {
+    if (!showFilters) return;
+
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) cancelFiltersSheet();
+    };
+
+    // 이미 lg 이상이면 즉시 닫기
+    if (mql.matches) {
+      cancelFiltersSheet();
+      return;
+    }
+
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, [showFilters, cancelFiltersSheet]);
+
   // active filter 개수
   const priceChanged = priceMin !== null || priceMax !== null;
   const activeFiltersCount = [selectedBrand, selectedCondition, submittedQuery, priceChanged].filter(Boolean).length;
+  const draftPriceChanged = draftPriceMin !== null || draftPriceMax !== null;
+  const activeDraftCount = [draftBrand, draftCondition, draftSearchQuery, draftPriceChanged].filter(Boolean).length;
 
   // 상태 -> URL 반영
   useEffect(() => {
@@ -201,119 +288,165 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     router.replace(`${pathname}?${newSearch}`, { scroll: false });
   }, [selectedBrand, selectedCondition, submittedQuery, sortOption, viewMode, priceMin, priceMax, router, pathname]);
 
+  // 데스크톱(좌측 고정 패널): 선택 즉시 반영(=기존 selected 사용)
+  const desktopFilterPanelProps = {
+    selectedBrand,
+    setSelectedBrand,
+    selectedCondition,
+    setSelectedCondition,
+    searchQuery,
+    setSearchQuery,
+    priceMin,
+    priceMax,
+    onChangePriceMin: setPriceMin,
+    onChangePriceMax: setPriceMax,
+    resetKey,
+    activeFiltersCount,
+    onReset: handleResetAll,
+    isLoadingInitial: isLoading,
+    showFilters,
+    setShowFilters,
+    brands,
+    onClose: undefined,
+    onSearchSubmit: handleSearchSubmit,
+    onClearSearch: handleClearSearch,
+    onClearInput: handleClearInput,
+  };
+
+  // 모바일(Sheet): draft만 변경 → "검색/적용"에서만 커밋
+  const mobileFilterPanelProps = {
+    selectedBrand: draftBrand,
+    setSelectedBrand: setDraftBrand,
+    selectedCondition: draftCondition,
+    setSelectedCondition: setDraftCondition,
+    searchQuery: draftSearchQuery,
+    setSearchQuery: setDraftSearchQuery,
+    priceMin: draftPriceMin,
+    priceMax: draftPriceMax,
+    onChangePriceMin: setDraftPriceMin,
+    onChangePriceMax: setDraftPriceMax,
+    resetKey: draftResetKey,
+    activeFiltersCount: activeDraftCount,
+    onReset: handleResetAllDraft,
+    isLoadingInitial: isLoading,
+    showFilters,
+    setShowFilters,
+    brands,
+    onClose: cancelFiltersSheet, // X/닫기 = 취소
+    onSearchSubmit: applyFiltersSheet, // "검색" = 적용+닫기
+    onClearSearch: () => setDraftSearchQuery(''),
+    onClearInput: () => setDraftSearchQuery(''),
+  };
+
   return (
-    <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-4">
-      {/* 필터 사이드바 */}
-      <div className={cn(showFilters ? 'block' : 'hidden', 'lg:block', 'space-y-6 lg:col-span-1')}>
-        <div className="sticky top-20 self-start">
-          <RacketFilterPanel
-            selectedBrand={selectedBrand}
-            setSelectedBrand={setSelectedBrand}
-            selectedCondition={selectedCondition}
-            setSelectedCondition={setSelectedCondition}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            priceMin={priceMin}
-            priceMax={priceMax}
-            onChangePriceMin={setPriceMin}
-            onChangePriceMax={setPriceMax}
-            resetKey={resetKey}
-            activeFiltersCount={activeFiltersCount}
-            onReset={handleResetAll}
-            isLoadingInitial={isLoading}
-            showFilters={showFilters}
-            setShowFilters={setShowFilters}
-            brands={brands}
-            onClose={() => setShowFilters(false)}
-            onSearchSubmit={handleSearchSubmit}
-            onClearSearch={handleClearSearch}
-            onClearInput={handleClearInput}
-          />
-        </div>
-      </div>
+    <>
+      <Sheet open={showFilters} onOpenChange={setShowFilters}>
+        <SheetContent side="right" className="w-full sm:w-[420px] md:w-[480px] max-w-none p-0 overflow-y-auto">
+          <RacketFilterPanel {...mobileFilterPanelProps} />
+        </SheetContent>
+      </Sheet>
 
-      {/* 상품 목록 */}
-      <div className="lg:col-span-3">
-        {/* 상단 컨트롤 바 */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4">
-          <div className="flex items-center gap-4">
-            <div className="text-lg font-semibold dark:text-white">
-              총 <span className="text-blue-600 dark:text-blue-400 font-bold">{products.length}</span> 개 라켓
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setShowFilters((f) => !f)} className="lg:hidden border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" aria-expanded={showFilters} aria-label="필터 열기">
-              <Filter className="w-4 h-4 mr-2" />
-              필터 {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* 뷰 모드 토글 */}
-            <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-white dark:bg-slate-800">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className={cn('px-3', viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
-              >
-                <Grid3X3 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className={cn('px-3', viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
-              >
-                <List className="w-4 h-4" />
-              </Button>
-            </div>
-
-            {/* 정렬 */}
-            <Select value={sortOption} onValueChange={setSortOption}>
-              <SelectTrigger className="w-[160px] md:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800">
-                <SelectValue placeholder="정렬 기준" />
-              </SelectTrigger>
-              <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                <SelectItem value="latest">최신순</SelectItem>
-                <SelectItem value="price-low">가격 낮은순</SelectItem>
-                <SelectItem value="price-high">가격 높은순</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-4">
+        {/* 필터 사이드바 */}
+        <div className={cn('hidden lg:block', 'space-y-6 lg:col-span-1')}>
+          <div className="sticky top-20 self-start">
+            <RacketFilterPanel {...desktopFilterPanelProps} />
           </div>
         </div>
 
-        {/* 콘텐츠 */}
-        {isLoading ? (
-          <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonProductCard key={i} />
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center py-16">
-            <p className="text-red-500 dark:text-red-400 mb-2">불러오는 중 오류가 발생했습니다.</p>
-            <Button onClick={() => mutate()} className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
-              다시 시도
-            </Button>
-          </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
-              <Search className="w-10 h-10 md:w-12 md:h-12 text-blue-600 dark:text-blue-400" />
+        {/* 상품 목록 */}
+        <div className="lg:col-span-3">
+          {/* 상단 컨트롤 바 */}
+          <div className="mb-6 md:mb-8 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-base sm:text-lg font-semibold dark:text-white">
+                총 <span className="text-blue-600 dark:text-blue-400 font-bold">{products.length}</span>개 라켓
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (showFilters) cancelFiltersSheet();
+                  else openFiltersSheet();
+                }}
+                className="lg:hidden h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                aria-expanded={showFilters}
+                aria-label="필터 열기"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                필터{activeDraftCount > 0 && `(${activeDraftCount})`}
+              </Button>
             </div>
-            <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>
-            <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
-            <Button onClick={handleResetAll} variant="outline" className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-transparent">
-              필터 초기화
-            </Button>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-white dark:bg-slate-800">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={cn('h-8 w-9 p-0', viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </Button>
+
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={cn('h-8 w-9 p-0', viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="h-9 w-[150px] sm:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800 text-sm">
+                  <SelectValue placeholder="정렬" />
+                </SelectTrigger>
+                <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                  <SelectItem value="latest">최신순</SelectItem>
+                  <SelectItem value="price-low">가격 낮은순</SelectItem>
+                  <SelectItem value="price-high">가격 높은순</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        ) : (
-          <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
-            {products.map((racket) => (
-              <RacketCard key={racket.id} racket={racket} viewMode={viewMode} brandLabel={brandLabelMap[racket.brand.toLowerCase()] ?? racket.brand} />
-            ))}
-          </div>
-        )}
+
+          {/* 콘텐츠 */}
+          {isLoading ? (
+            <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonProductCard key={i} />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <p className="text-red-500 dark:text-red-400 mb-2">불러오는 중 오류가 발생했습니다.</p>
+              <Button onClick={() => mutate()} className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+                다시 시도
+              </Button>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
+                <Search className="w-10 h-10 md:w-12 md:h-12 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>
+              <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
+              <Button onClick={handleResetAll} variant="outline" className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-transparent">
+                필터 초기화
+              </Button>
+            </div>
+          ) : (
+            <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+              {products.map((racket) => (
+                <RacketCard key={racket.id} racket={racket} viewMode={viewMode} brandLabel={brandLabelMap[racket.brand.toLowerCase()] ?? racket.brand} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

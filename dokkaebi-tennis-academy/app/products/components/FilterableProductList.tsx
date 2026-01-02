@@ -10,7 +10,7 @@ import { FilterPanel } from '@/app/products/components/FilterPanel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SkeletonProductCard } from '@/app/products/components/SkeletonProductCard';
 import ProductCard from '@/app/products/components/ProductCard';
-
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 // 브랜드 리스트
 const brands = [
   { label: '럭실론', value: 'luxilon' },
@@ -54,6 +54,21 @@ export default function FilterableProductList({ initialBrand = null, initialMate
   const [selectedComfort, setSelectedComfort] = useState<number | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
 
+  // 모바일(Sheet) 전용: 임시 선택값(draft)
+  // - Sheet 안에서 선택해도 즉시 서버 조회가 일어나지 않게 하기 위함
+  // - "적용"을 눌렀을 때만 selectedXXX로 커밋한다
+  const [draftBrand, setDraftBrand] = useState<string | null>(initialBrand);
+  const [draftMaterial, setDraftMaterial] = useState<string | null>(initialMaterial);
+  const [draftBounce, setDraftBounce] = useState<number | null>(null);
+  const [draftDurability, setDraftDurability] = useState<number | null>(null);
+  const [draftSpin, setDraftSpin] = useState<number | null>(null);
+  const [draftControl, setDraftControl] = useState<number | null>(null);
+  const [draftComfort, setDraftComfort] = useState<number | null>(null);
+  const [draftPriceRange, setDraftPriceRange] = useState<[number, number]>([0, 50000]);
+
+  // 모바일에서 검색 입력도 draft로만 관리 (취소 시 되돌리기 위함)
+  const [draftSearchQuery, setDraftSearchQuery] = useState('');
+
   // 검색어: 입력 중인 것 / 실제 제출되어 조회에 쓰이는 것
   const [searchQuery, setSearchQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
@@ -63,6 +78,9 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
   // 애니메이션 / 리셋 key
   const [resetKey, setResetKey] = useState(0);
+
+  // 모바일 Sheet 안에서만 리셋 애니메이션/초기화 트리거
+  const [draftResetKey, setDraftResetKey] = useState(0);
 
   // URL sync 초기화/변경 관리 (루프 방지)
   const isInitializingRef = useRef(true);
@@ -212,9 +230,98 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     setSearchQuery('');
   }, []);
 
+  // draft를 현재 applied(selectedXXX) 상태로 동기화 (Sheet 열 때 / 취소할 때 사용)
+  const syncDraftFromApplied = useCallback(() => {
+    setDraftBrand(selectedBrand);
+    setDraftMaterial(selectedMaterial);
+    setDraftBounce(selectedBounce);
+    setDraftDurability(selectedDurability);
+    setDraftSpin(selectedSpin);
+    setDraftControl(selectedControl);
+    setDraftComfort(selectedComfort);
+    setDraftPriceRange(priceRange);
+    setDraftSearchQuery(searchQuery);
+  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, priceRange, searchQuery]);
+
+  // Sheet 열기: 열릴 때마다 draft를 applied로 맞춰서 "현재 상태"를 보여준다
+  const openFiltersSheet = useCallback(() => {
+    syncDraftFromApplied();
+    setShowFilters(true);
+  }, [syncDraftFromApplied]);
+
+  // Sheet 취소(닫기): draft를 applied로 되돌리고 닫는다
+  const cancelFiltersSheet = useCallback(() => {
+    syncDraftFromApplied();
+    setShowFilters(false);
+  }, [syncDraftFromApplied]);
+
+  // Sheet 적용: draft -> applied로 커밋 + 페이징 리셋 + 닫기
+  const applyFiltersSheet = useCallback(() => {
+    setSelectedBrand(draftBrand);
+    setSelectedMaterial(draftMaterial);
+    setSelectedBounce(draftBounce);
+    setSelectedDurability(draftDurability);
+    setSelectedSpin(draftSpin);
+    setSelectedControl(draftControl);
+    setSelectedComfort(draftComfort);
+    setPriceRange(draftPriceRange);
+
+    // 검색은 "제출된 값"만 서버 조회에 쓰이므로, 적용 시점에 submittedQuery를 갱신
+    setSearchQuery(draftSearchQuery);
+    setSubmittedQuery(draftSearchQuery);
+
+    resetInfinite(); // 여기서만 서버 재조회 발생
+    setShowFilters(false); // 적용 후 닫기
+  }, [draftBrand, draftMaterial, draftBounce, draftDurability, draftSpin, draftControl, draftComfort, draftPriceRange, draftSearchQuery, resetInfinite]);
+
+  // 모바일에서만 "초기화" (draft만 초기화; 적용 전까진 실제 결과는 안 바뀜)
+  const handleResetAllDraft = useCallback(() => {
+    setDraftResetKey((k) => k + 1);
+    setDraftBrand(null);
+    setDraftMaterial(null);
+    setDraftBounce(null);
+    setDraftDurability(null);
+    setDraftSpin(null);
+    setDraftControl(null);
+    setDraftComfort(null);
+    setDraftPriceRange([0, 50000]);
+    setDraftSearchQuery('');
+  }, []);
+
+  // Sheet overlay/ESC로 닫히는 경우도 "취소"로 처리
+  const handleSheetOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) openFiltersSheet();
+      else cancelFiltersSheet();
+    },
+    [openFiltersSheet, cancelFiltersSheet]
+  );
+
+  // 뷰포트가 lg(>=1024)로 커지면 Sheet는 자동으로 닫기(취소)
+  useEffect(() => {
+    if (!showFilters) return;
+
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) cancelFiltersSheet();
+    };
+
+    // 이미 lg 이상이면 즉시 닫기
+    if (mql.matches) {
+      cancelFiltersSheet();
+      return;
+    }
+
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, [showFilters, cancelFiltersSheet]);
+
   // active filter 개수 계산
   const priceChanged = priceRange[0] > 0 || priceRange[1] < 50000;
   const activeFiltersCount = [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, priceChanged].filter(Boolean).length;
+
+  const draftPriceChanged = draftPriceRange[0] > 0 || draftPriceRange[1] < 50000;
+  const activeDraftCount = [draftBrand, draftMaterial, draftBounce, draftDurability, draftSpin, draftControl, draftComfort, draftSearchQuery, draftPriceChanged].filter(Boolean).length;
 
   // 상태 -> URL 반영 (검색어는 submittedQuery만)
   useEffect(() => {
@@ -257,149 +364,196 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     [isFetchingMore, hasMore, loadMore]
   );
 
+  // ✅ 데스크톱(좌측 고정 패널): 선택 즉시 적용(=기존대로 selectedXXX 사용)
+  const desktopFilterPanelProps = {
+    selectedBrand,
+    setSelectedBrand,
+    selectedMaterial,
+    setSelectedMaterial,
+    selectedBounce,
+    setSelectedBounce,
+    selectedControl,
+    setSelectedControl,
+    selectedSpin,
+    setSelectedSpin,
+    selectedDurability,
+    setSelectedDurability,
+    selectedComfort,
+    setSelectedComfort,
+    searchQuery,
+    setSearchQuery,
+    priceRange,
+    setPriceRange,
+    resetKey,
+    activeFiltersCount,
+    onReset: handleResetAll,
+    isLoadingInitial,
+    showFilters,
+    setShowFilters,
+    brands,
+    onClose: undefined,
+    onSearchSubmit: handleSearchSubmit,
+    onClearSearch: handleClearSearch,
+    onClearInput: handleClearInput,
+  };
+
+  // ✅ 모바일(Sheet): draft만 변경 → "적용"에서만 커밋
+  const mobileFilterPanelProps = {
+    selectedBrand: draftBrand,
+    setSelectedBrand: setDraftBrand,
+    selectedMaterial: draftMaterial,
+    setSelectedMaterial: setDraftMaterial,
+    selectedBounce: draftBounce,
+    setSelectedBounce: setDraftBounce,
+    selectedControl: draftControl,
+    setSelectedControl: setDraftControl,
+    selectedSpin: draftSpin,
+    setSelectedSpin: setDraftSpin,
+    selectedDurability: draftDurability,
+    setSelectedDurability: setDraftDurability,
+    selectedComfort: draftComfort,
+    setSelectedComfort: setDraftComfort,
+    searchQuery: draftSearchQuery,
+    setSearchQuery: setDraftSearchQuery,
+    priceRange: draftPriceRange,
+    setPriceRange: setDraftPriceRange,
+    resetKey: draftResetKey,
+    activeFiltersCount: activeDraftCount,
+    onReset: handleResetAllDraft,
+    isLoadingInitial,
+    showFilters,
+    setShowFilters,
+    brands,
+    onClose: cancelFiltersSheet, // X/닫기 = 취소
+    onSearchSubmit: applyFiltersSheet, // "검색" 버튼/엔터 = 적용+닫기+조회
+    onClearSearch: () => setDraftSearchQuery(''),
+    onClearInput: () => setDraftSearchQuery(''),
+  };
+
   return (
-    <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-4">
-      {/* 필터 사이드바 */}
-      <div className={cn(showFilters ? 'block' : 'hidden', 'lg:block', 'space-y-6 lg:col-span-1')}>
-        <div className="sticky top-20 self-start">
-          <FilterPanel
-            selectedBrand={selectedBrand}
-            setSelectedBrand={setSelectedBrand}
-            selectedMaterial={selectedMaterial}
-            setSelectedMaterial={setSelectedMaterial}
-            selectedBounce={selectedBounce}
-            setSelectedBounce={setSelectedBounce}
-            selectedControl={selectedControl}
-            setSelectedControl={setSelectedControl}
-            selectedSpin={selectedSpin}
-            setSelectedSpin={setSelectedSpin}
-            selectedDurability={selectedDurability}
-            setSelectedDurability={setSelectedDurability}
-            selectedComfort={selectedComfort}
-            setSelectedComfort={setSelectedComfort}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
-            resetKey={resetKey}
-            activeFiltersCount={activeFiltersCount}
-            onReset={handleResetAll}
-            isLoadingInitial={isLoadingInitial}
-            showFilters={showFilters}
-            setShowFilters={setShowFilters}
-            brands={brands}
-            onClose={() => setShowFilters(false)}
-            onSearchSubmit={handleSearchSubmit}
-            onClearSearch={handleClearSearch}
-            onClearInput={handleClearInput}
-          />
-        </div>
-      </div>
+    <>
+      <Sheet open={showFilters} onOpenChange={setShowFilters}>
+        <SheetContent side="right" className="w-[92vw] max-w-sm p-0 overflow-y-auto">
+          <FilterPanel {...mobileFilterPanelProps} />
+        </SheetContent>
+      </Sheet>
 
-      {/* 상품 목록 */}
-      <div className="lg:col-span-3">
-        <div className="mb-6 md:mb-8 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
-          <div className="flex items-center justify-between gap-3 sm:justify-start">
-            <div className="text-base sm:text-lg font-semibold dark:text-white">
-              총 <span className="text-blue-600 dark:text-blue-400 font-bold">{(productsList ?? []).length}</span>개 상품
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters((f) => !f)}
-              className="lg:hidden h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-              aria-expanded={showFilters}
-              aria-label="필터 열기"
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between gap-3 sm:justify-end">
-            {/* 뷰 모드 토글 */}
-            <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-white dark:bg-slate-800">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className={cn('h-8 w-9 p-0', viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
-              >
-                <Grid3X3 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className={cn('h-8 w-9 p-0', viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
-              >
-                <List className="w-4 h-4" />
-              </Button>
-            </div>
-
-            {/* 정렬 */}
-            <Select value={sortOption} onValueChange={setSortOption}>
-              <SelectTrigger className="h-9 w-[150px] sm:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800 text-sm">
-                <SelectValue placeholder="정렬" />
-              </SelectTrigger>
-              <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                <SelectItem value="latest">최신순</SelectItem>
-                <SelectItem value="popular">인기순</SelectItem>
-                <SelectItem value="price-low">가격 낮은순</SelectItem>
-                <SelectItem value="price-high">가격 높은순</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-4">
+        {/* 필터 사이드바 */}
+        <div className={cn('hidden lg:block', 'space-y-6 lg:col-span-1')}>
+          <div className="sticky top-20 self-start">
+            <FilterPanel {...desktopFilterPanelProps} />
           </div>
         </div>
 
-        {/* 콘텐츠 */}
-        {isLoadingInitial ? (
-          <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonProductCard key={i} />
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center py-16">
-            <p className="text-red-500 dark:text-red-400 mb-2">불러오는 중 오류가 발생했습니다.</p>
-            <Button onClick={() => loadMore()} className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
-              다시 시도
-            </Button>
-          </div>
-        ) : (productsList ?? []).length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
-              <Search className="w-10 h-10 md:w-12 md:h-12 text-blue-600 dark:text-blue-400" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>
-            <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
-            <Button onClick={handleResetAll} variant="outline" className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-transparent">
-              필터 초기화
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
-              {productsList.map((product, i) => {
-                const isLast = i === productsList.length - 1;
-                return (
-                  <div key={product._id} ref={isLast ? lastProductRef : undefined}>
-                    <ProductCard product={product} viewMode={viewMode} brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand} />
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* 추가 로딩 표시 */}
-            {isFetchingMore && (
-              <div aria-live="polite" className="text-center py-4 flex justify-center items-center gap-2">
-                <div className="h-4 w-4 rounded-full border-2 border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
-                <span className="dark:text-white">더 불러오는 중...</span>
+        {/* 상품 목록 */}
+        <div className="lg:col-span-3">
+          <div className="mb-6 md:mb-8 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+            <div className="flex items-center justify-between gap-3 sm:justify-start">
+              <div className="text-base sm:text-lg font-semibold dark:text-white">
+                총 <span className="text-blue-600 dark:text-blue-400 font-bold">{(productsList ?? []).length}</span>개 상품
               </div>
-            )}
-          </>
-        )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (showFilters) cancelFiltersSheet();
+                  else openFiltersSheet();
+                }}
+                className="lg:hidden h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                aria-expanded={showFilters}
+                aria-label="필터 열기"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 sm:justify-end">
+              {/* 뷰 모드 토글 */}
+              <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-white dark:bg-slate-800">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={cn('h-8 w-9 p-0', viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={cn('h-8 w-9 p-0', viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* 정렬 */}
+              <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="h-9 w-[150px] sm:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800 text-sm">
+                  <SelectValue placeholder="정렬" />
+                </SelectTrigger>
+                <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                  <SelectItem value="latest">최신순</SelectItem>
+                  <SelectItem value="popular">인기순</SelectItem>
+                  <SelectItem value="price-low">가격 낮은순</SelectItem>
+                  <SelectItem value="price-high">가격 높은순</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* 콘텐츠 */}
+          {isLoadingInitial ? (
+            <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonProductCard key={i} />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <p className="text-red-500 dark:text-red-400 mb-2">불러오는 중 오류가 발생했습니다.</p>
+              <Button onClick={() => loadMore()} className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+                다시 시도
+              </Button>
+            </div>
+          ) : (productsList ?? []).length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
+                <Search className="w-10 h-10 md:w-12 md:h-12 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>
+              <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
+              <Button onClick={handleResetAll} variant="outline" className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-transparent">
+                필터 초기화
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+                {productsList.map((product, i) => {
+                  const isLast = i === productsList.length - 1;
+                  return (
+                    <div key={product._id} ref={isLast ? lastProductRef : undefined}>
+                      <ProductCard product={product} viewMode={viewMode} brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand} />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 추가 로딩 표시 */}
+              {isFetchingMore && (
+                <div aria-live="polite" className="text-center py-4 flex justify-center items-center gap-2">
+                  <div className="h-4 w-4 rounded-full border-2 border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
+                  <span className="dark:text-white">더 불러오는 중...</span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
