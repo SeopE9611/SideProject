@@ -228,7 +228,7 @@ const Header = () => {
             border-b border-slate-200 dark:border-slate-700`}
         />
         <div
-          className="max-w-screen-x mx-auto px-4 md:px-6 lg:px-8 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
+          className="w-full mx-auto px-4 bp-md:px-6 bp-lg:px-8 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
           style={{
             transform: isScrolled ? 'translateY(-8px) scale(0.96)' : 'translateY(0) scale(1)',
             transformOrigin: 'center',
@@ -236,14 +236,14 @@ const Header = () => {
           }}
         >
           {/* 하나의 수평 그리드로: 로고(좌) / 검색(가운데) / 아이콘(우) */}
-          <div className="flex items-center justify-between w-full gap-3 lg:gap-6">
+          <div className="flex items-center justify-between w-full min-w-0 gap-3 bp-lg:gap-6">
             <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈">
-              <div className="font-black text-lg lg:text-xl tracking-[-0.01em] whitespace-nowrap text-slate-900 dark:text-white">도깨비 테니스</div>
+              <div className="font-black text-lg bp-lg:text-xl tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">도깨비 테니스</div>
               <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
             </Link>
 
             {/* 데스크탑 메뉴 (임시용) */}
-            <nav className="hidden lg:flex items-center gap-2 xl:gap-3 ml-2">
+            <nav className="hidden xl:flex items-center gap-1 xl:gap-2 ml-2 whitespace-nowrap shrink-0">
               {menuItems.map((item) => {
                 // 서비스(부모) 항목은 자식 경로와 매칭시키지 않고 정확히 비교하여
                 // '/services/packages'에서 '/services'가 활성화되는 문제를 방지 (기억해놓자.)
@@ -252,7 +252,8 @@ const Header = () => {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`px-3 py-2 rounded-lg text-sm transition
+                    className={`px-2 xl:px-3 py-2 rounded-lg text-[13px] xl:text-sm transition whitespace-nowrap
+
                       ${active ? 'text-blue-600 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/30 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50'}`}
                     aria-current={active ? 'page' : undefined}
                     aria-label={`${item.name} 페이지로 이동`}
@@ -268,8 +269,8 @@ const Header = () => {
             </div> */}
 
             {/* 검색 (PC 전용) */}
-            <div className="hidden lg:flex flex-1 justify-end">
-              <div className="w-full max-w-[560px] min-w-[360px] xl:max-w-[640px]">
+            <div className="hidden bp-lg:flex flex-1 min-w-0 justify-end">
+              <div className="w-full max-w-[560px] min-w-[240px] xl:min-w-[320px] xl:max-w-[640px]">
                 <SearchPreview
                   placeholder="스트링 / 라켓 검색..."
                   className="
@@ -284,7 +285,7 @@ const Header = () => {
             </div>
 
             {/* 아이콘/유저 */}
-            <div className="hidden lg:flex items-center gap-3 xl:gap-4 pl-2 shrink-0">
+            <div className="hidden bp-lg:flex items-center gap-3 xl:gap-4 pl-2 shrink-0">
               <Link href="/cart">
                 <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 transition-all duration-300 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
                   <ShoppingCart className="h-5 w-5" />
@@ -309,8 +310,8 @@ const Header = () => {
           </div>
 
           {/* 모바일 우측: 햄버거 + 카트 */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <Link href="/cart" className="sm:hidden">
+          <div className="flex items-center gap-2 bp-lg:hidden">
+            <Link href="/cart">
               <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">{cartBadge}</span>}
@@ -337,7 +338,7 @@ const Header = () => {
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="w-[300px] sm:w-[320px] bg-white dark:bg-slate-900 p-0 flex flex-col border-r border-slate-200 dark:border-slate-800"
+                className="w-[300px] bp-sm:w-[320px] bg-white dark:bg-slate-900 p-0 flex flex-col border-r border-slate-200 dark:border-slate-800"
                 onOpenAutoFocus={(e) => {
                   if (typeof window !== 'undefined' && window.innerWidth < 768) e.preventDefault();
                 }}
@@ -350,7 +351,7 @@ const Header = () => {
                   <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈" onClick={() => setOpen(false)}>
                     <div
                       className="font-bold text-lg bg-gradient-to-r from-blue-600 to-emerald-600 
-                      bg-clip-text text-transparent"
+                      bg-clip-text text-transparent whitespace-nowrap"
                     >
                       도깨비 테니스
                     </div>

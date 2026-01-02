@@ -51,11 +51,7 @@ export default function SideMenu() {
 
   return (
     <aside
-      className="
-        hidden lg:block
-        fixed left-0 z-30
-        h-[calc(100vh-var(--header-h,4rem))] w-60 lg:w-64
-        shadow-[inset_-1px_0_0_0_theme(colors.slate.200/50)]
+      className="hidden bp-lg:block fixed left-0 z-30 h-[calc(100vh-var(--header-h,4rem))] w-60 bp-lg:w-64 xl:w-72 shadow-[inset_-1px_0_0_0_theme(colors.slate.200/50)]
         dark:shadow-[inset_-1px_0_0_0_theme(colors.slate.700/40)]
         bg-gradient-to-b from-background via-background to-slate-50/30
         dark:to-slate-950/30

@@ -13,6 +13,20 @@ const config: Config = {
       },
     },
     extend: {
+      /**
+       * 반응형 기준(벤치마크: Tennis Warehouse)
+       * - bp-sm: 576+
+       * - bp-md: 768+
+       * - bp-lg: 1200+
+       *
+       * 기존 sm/md/lg는 유지(전역 깨짐 방지)하고,
+       * 메인/헤더/푸터부터 bp-* 기준으로 점진적 이관한다.
+       */
+      screens: {
+        'bp-sm': '576px',
+        'bp-md': '768px',
+        'bp-lg': '1200px',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

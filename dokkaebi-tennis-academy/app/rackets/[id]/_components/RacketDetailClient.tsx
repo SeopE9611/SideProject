@@ -31,6 +31,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
   const soldOut = stock.available <= 0;
 
+  // 라켓 ID 정규화
+  const racketId = String(racket?.id ?? racket?._id ?? '');
+  const canBuy = !soldOut && racketId !== '';
+
   // 대여중 수량(상세는 count를 굳이 안 받아도 quantity-available로 복원 가능)
   const rentedCount = Math.max(0, stock.quantity - stock.available);
 
@@ -190,8 +194,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   <div ref={rentSectionRef} className="space-y-3 pt-4 border-t">
                     <div className="flex gap-2">
                       <Button
-                        className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600"
-                        onClick={() => router.push(`/rackets/${racket.id}/select-string`)}
+                        className="flex-1 min-w-0 h-12 bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600"
+                        onClick={() => router.push(`/rackets/${racketId}/select-string`)}
                         disabled={soldOut}
                         title={soldOut ? (isAllRented ? '현재 전량 대여중이라 구매/대여가 불가합니다. 반납 시 다시 가능합니다.' : '판매가 종료된 상품입니다.') : undefined}
                       >
@@ -206,7 +210,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                             품절(대여 불가)
                           </Button>
                         ) : (
-                          <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} />
+                          <div className="flex-1 min-w-0">
+                            <RentDialog id={racketId} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} />
+                          </div>
                         )
                       ) : (
                         <Button className="flex-1 bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500" disabled>
@@ -357,7 +363,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       {/* 모바일 전용 하단 Sticky */}
       <div className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-slate-200 dark:border-slate-800">
         <div className="bg-white dark:bg-slate-900 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
-          <div className="mx-auto max-w-6xl px-4 py-3">
+          <div className="mx-auto max-w-6xl px-4 py-3 pb-[env(safe-area-inset-bottom)]">
             <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="relative w-14 h-14 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
                 {images[0] ? (
@@ -378,12 +384,20 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             </div>
 
             <div className="pt-3 flex gap-2">
-              <button type="button" disabled className="flex-1 h-12 rounded-lg bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => router.push(`/rackets/${racketId}/select-string`)}
+                disabled={!canBuy}
+                title={!canBuy ? (racketId === '' ? '상품 ID가 없어 구매 경로를 만들 수 없습니다.' : isAllRented ? '현재 전량 대여중입니다.' : '판매가 종료된 상품입니다.') : undefined}
+                className={`flex-1 h-12 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${
+                  canBuy ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white' : 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+                }`}
+              >
                 <ShoppingCart className="h-4 w-4" />
-                구매(준비중)
+                {soldOut ? '품절(구매 불가)' : '구매하기'}
               </button>
-              {racket?.rental?.enabled && !soldOut ? (
-                <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} />
+              {racket?.rental?.enabled && !soldOut && racketId !== '' ? (
+                <RentDialog id={racketId} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} />
               ) : (
                 <button
                   type="button"

@@ -67,8 +67,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <Header />
             {/* 데스크탑 전용 좌측 사이드 메뉴(고정) */}
             <SideMenu />
-            <main className="flex-1 lg:pl-60 xl:pl-64">
-              <div className="max-w-screen-x mx-auto px-4 md:px-6 lg:px-8">{children}</div>
+            <main className="flex-1">
+              <div className="px-4 bp-md:px-6 bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16">{children}</div>
             </main>
 
             <Footer />
