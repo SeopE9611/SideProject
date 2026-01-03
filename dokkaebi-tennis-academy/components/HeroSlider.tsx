@@ -25,13 +25,17 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
 
   return (
     <section className="relative">
-      <div className="overflow-hidden rounded-2xl m-3 sm:m-4" ref={emblaRef}>
+      <div className="overflow-hidden rounded-2xl mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0" ref={emblaRef}>
         <div className="flex">
           {slides.map((s, i) => {
             const body = (
               <div
-                className="relative h-[260px] sm:h-[360px] md:h-[520px] lg:h-[560px] w-full flex-[0_0_100%]
-                           select-none "
+                className="relative
+  h-[200px]              /* ≤575 */
+  bp-sm:h-[240px]        /* 576~767 */
+  bp-md-only:h-[340px]   /* 768~1199 */
+  bp-lg:h-[520px]        /* ≥1200 */
+  w-full flex-[0_0_100%] select-none"
               >
                 <img src={s.img} alt={s.alt ?? `slide-${i + 1}`} className="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="async" />
                 {/* 상단 그라데이션/얇은 라인으로 품질감 */}

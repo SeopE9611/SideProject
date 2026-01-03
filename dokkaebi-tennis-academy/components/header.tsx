@@ -249,7 +249,7 @@ const Header = () => {
             </Link>
 
             {/* 데스크탑 메뉴 (임시용) */}
-            <nav className="hidden xl:flex items-center gap-1 xl:gap-2 ml-2 whitespace-nowrap shrink-0">
+            <nav className="hidden bp-lg:flex items-center gap-1 xl:gap-2 ml-2 whitespace-nowrap shrink-0">
               {menuItems.map((item) => {
                 // 서비스(부모) 항목은 자식 경로와 매칭시키지 않고 정확히 비교하여
                 // '/services/packages'에서 '/services'가 활성화되는 문제를 방지 (기억해놓자.)
@@ -275,7 +275,7 @@ const Header = () => {
             </div> */}
 
             {/* 검색 (PC 전용) */}
-            <div className="hidden bp-lg:flex flex-1 min-w-0 justify-end">
+            <div className="hidden bp-md-only:flex bp-lg:flex flex-1 min-w-0 justify-end">
               <div className="w-full max-w-[560px] min-w-[240px] xl:min-w-[320px] xl:max-w-[640px]">
                 <SearchPreview
                   placeholder="스트링 / 라켓 검색..."
@@ -291,7 +291,7 @@ const Header = () => {
             </div>
 
             {/* 아이콘/유저 */}
-            <div className="hidden bp-lg:flex items-center gap-3 xl:gap-4 pl-2 shrink-0">
+            <div className="hidden bp-md-only:flex bp-lg:flex items-center gap-3 xl:gap-4 pl-2 shrink-0">
               <Link href="/cart">
                 <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 transition-all duration-300 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
                   <ShoppingCart className="h-5 w-5" />
@@ -316,7 +316,7 @@ const Header = () => {
           </div>
 
           {/* 모바일 우측: 햄버거 + 카트 */}
-          <div className="flex items-center gap-2 bp-lg:hidden">
+          <div className="flex items-center gap-2 bp-md-only:hidden bp-lg:hidden">
             <Link href="/cart">
               <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
                 <ShoppingCart className="h-5 w-5" />
@@ -365,9 +365,10 @@ const Header = () => {
                   </Link>
                   <div className="mt-4">
                     <SearchPreview
-                      placeholder="스트링 / 라켓 검색..."
-                      className="w-full rounded-lg border-slate-300 dark:border-slate-700 
-                        focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-colors"
+                      placeholder="스트링 / 라켓 검색."
+                      className="w-full rounded-lg border-slate-300 dark:border-slate-700
+        focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-colors"
+                      onSelect={() => setOpen(false)}
                     />
                   </div>
                 </div>

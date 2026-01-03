@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Search, SearchX } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
-export default function SearchPreview({ placeholder = '상품 검색...', className = '' }: { placeholder?: string; className?: string }) {
+export default function SearchPreview({ placeholder = '상품 검색...', className = '', onSelect }: { placeholder?: string; className?: string; onSelect?: () => void }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -93,7 +93,10 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
           hover:bg-cyan-50 dark:hover:bg-cyan-900/30
           transition-all group
         "
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    onSelect?.(); // 바깥(=Header Sheet)에게 "선택됨" 알림
+                  }}
                 >
                   {item.image ? <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl shadow" /> : <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-xl" />}
 
