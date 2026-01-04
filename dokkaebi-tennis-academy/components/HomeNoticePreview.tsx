@@ -31,7 +31,7 @@ export default function HomeNoticePreview() {
           items.map((p, idx) => (
             <li key={p.id ?? `${p.createdAt}-${idx}`}>
               <Link className="group flex items-start justify-between gap-3 sm:gap-4 rounded-lg px-4 sm:px-5 py-3 sm:py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900" href={`/board/notice/${p.id}`}>
-                <span className="flex-1 truncate text-sm sm:text-base text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white">{p.title}</span>
+                <span className="flex-1 line-clamp-2 bp-lg:line-clamp-1 text-sm sm:text-base text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white">{p.title}</span>
                 <span className="shrink-0 text-xs sm:text-sm text-slate-500 dark:text-slate-400">{new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
               </Link>
             </li>
