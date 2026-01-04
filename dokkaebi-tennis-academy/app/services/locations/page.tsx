@@ -8,21 +8,19 @@ export default function LocationsPage() {
   const locations = [
     {
       name: '도깨비 테니스',
-      address: '서울시 강남구 테헤란로 123',
-      phone: '02-123-4567',
+      address: '서울 동작구 노량진로 22 B1',
+      phone: '0507-1392-3493',
       email: 'info@dokkaebi-tennis.com',
       hours: {
-        weekday: '09:00 - 18:00',
-        weekend: '09:00 - 12:00',
+        weekday: '10:00 - 22:00',
+        weekend: '09:00 - 18:00',
         holiday: '휴무',
       },
       services: ['스트링 장착', '텐션 가이드', '스트링 추천', '라켓 상담'],
       parking: '무료 주차 가능',
-      transport: ['강남역 3번 출구 도보 5분', '버스 146, 740번'],
-      rating: 4.9,
-      reviews: 1247,
+      transport: ['대방역 2번출구'],
       isMain: true,
-      specialNote: '15년 경력의 전문가가 직접 서비스를 제공합니다',
+      specialNote: '매장에 방문하시면 친절하게 상담해드립니다.',
     },
   ];
 
@@ -87,11 +85,6 @@ export default function LocationsPage() {
                   <CardTitle className="flex items-start justify-between">
                     <div>
                       <h3 className="text-xl font-bold">{location.name}</h3>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                        <span className="text-sm font-semibold">{location.rating}</span>
-                        <span className="text-sm text-slate-500 dark:text-slate-400">({location.reviews}개 리뷰)</span>
-                      </div>
                     </div>
                   </CardTitle>
                 </CardHeader>
@@ -151,7 +144,7 @@ export default function LocationsPage() {
                   </div>
 
                   <Button className="w-full" asChild>
-                    <Link href="/services">스트링 장착 예약하기</Link>
+                    <Link href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5">네이버 지도 검색</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -159,8 +152,7 @@ export default function LocationsPage() {
           </div>
         </div>
 
-        {/* Reservation Process */}
-        <div className="mb-16">
+        {/* <div className="mb-16">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 text-center">예약 절차</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {reservationSteps.map((step, index) => (
@@ -173,10 +165,9 @@ export default function LocationsPage() {
               </Card>
             ))}
           </div>
-        </div>
+        </div> */}
 
-        {/* Contact Info */}
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-blue-200 dark:border-blue-800">
+        {/* <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-blue-200 dark:border-blue-800">
           <CardContent className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
@@ -226,7 +217,7 @@ export default function LocationsPage() {
               </Button>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

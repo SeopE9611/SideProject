@@ -70,7 +70,7 @@ const Footer = () => {
                 <Phone className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
                 <div>
                   <span className="text-sm font-semibold text-slate-900 dark:text-white block">0507-1392-3493</span>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">24시간 상담 가능</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">영업 시간 내 상담 가능</p>
                 </div>
               </div>
 

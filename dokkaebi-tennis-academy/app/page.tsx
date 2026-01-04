@@ -394,7 +394,7 @@ export default function Home() {
         </SiteContainer>
       </section>
 
-      {/* 프리미엄 스트링 섹션 */}
+      {/* 스트링 섹션 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-6 sm:mb-8 text-center">
