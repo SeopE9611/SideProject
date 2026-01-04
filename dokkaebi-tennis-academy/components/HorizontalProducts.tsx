@@ -43,14 +43,18 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
 
     const update = () => {
       const w = window.innerWidth;
-      if (w < 640) {
-        // 모바일
+      // 프로젝트 공용 BP(≤575 / 576~767 / 768~1199 / ≥1200)
+      if (w <= 575) {
+        // Mobile S
         setItemsPerPage(2);
-      } else if (w < 1024) {
-        // 태블릿
+      } else if (w <= 767) {
+        // Mobile L
+        setItemsPerPage(2);
+      } else if (w <= 1199) {
+        // Tablet
         setItemsPerPage(3);
       } else {
-        // 데스크톱
+        // Desktop
         setItemsPerPage(4);
       }
     };
@@ -109,8 +113,8 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
 
   const shouldCenter = slides.length <= itemsPerPage;
 
-  // 슬라이드 폭: 2 / 3 / 4 장이 gap까지 포함해서 딱 맞도록 calc 사용
-  const slideClass = cardWidthClass ?? 'flex-none basis-[calc((100%-12px)/2)] sm:basis-[calc((100%-32px)/2)] md:basis-[calc((100%-48px)/3)] lg:basis-[calc((100%-72px)/4)]';
+  // 슬라이드 폭
+  const slideClass = cardWidthClass ?? 'flex-none basis-[calc((100%-12px)/2)] ' + 'bp-sm:basis-[calc((100%-16px)/2)] ' + 'bp-md-only:basis-[calc((100%-40px)/3)] ' + 'bp-lg:basis-[calc((100%-72px)/4)]';
 
   // Embla 설정
   //    - slidesToScroll 을 itemsPerPage 로 줘서
@@ -261,7 +265,7 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
 
         <div className="relative">
           <div ref={viewportRef} className="overflow-hidden">
-            <div className={`flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 ${shouldCenter ? 'justify-center' : ''}`}>
+            <div className={`flex gap-3 bp-sm:gap-4 bp-md-only:gap-5 bp-lg:gap-6 ${shouldCenter ? 'justify-center' : ''}`}>
               {slides.map((s, i) => {
                 if (s.kind === 'item') {
                   return (
