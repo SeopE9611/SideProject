@@ -63,24 +63,17 @@ export default function LocationsPage() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 px-4 py-2 rounded-full mb-6">
             <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">매장 위치 안내</span>
+            <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">오프라인 매장 찾기</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">매장 & 예약 안내</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">매장 위치 안내</h1>
           <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">가까운 매장을 찾아 편리하게 서비스를 이용하세요</p>
         </div>
 
         {/* Locations */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 text-center">매장 정보</h2>
           <div className="max-w-2xl mx-auto">
             {locations.map((location, index) => (
               <Card key={index} className="hover:shadow-lg transition-all duration-300 ring-2 ring-blue-500 dark:ring-blue-400">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-blue-600 hover:bg-blue-600">
-                    <Star className="h-3 w-3 mr-1" />
-                    전문 매장
-                  </Badge>
-                </div>
                 <CardHeader>
                   <CardTitle className="flex items-start justify-between">
                     <div>
