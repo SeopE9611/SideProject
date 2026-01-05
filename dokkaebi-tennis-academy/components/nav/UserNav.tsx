@@ -7,16 +7,22 @@ import { LogOut, LayoutDashboard, Settings, UserIcon, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { mutate } from 'swr';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
 import { Badge } from '@/components/ui/badge';
 
-export function UserNav() {
+type UserNavProps = {
+  /** Header에서 unreadCount를 전달하는 경우(중복 폴링 방지) */
+  unreadCount?: number;
+};
+
+export function UserNav({ unreadCount }: UserNavProps) {
   const router = useRouter();
-  const { user, loading, refresh } = useCurrentUser();
+  const { user, loading } = useCurrentUser();
   const { logout } = useAuthStore();
-  const { count: unreadCount } = useUnreadMessageCount(!loading && !!user);
+  const shouldPollUnread = unreadCount == null;
+  const { count } = useUnreadMessageCount(shouldPollUnread && !loading && !!user);
+  const resolvedUnread = unreadCount ?? count;
 
   if (loading) {
     return (
@@ -99,7 +105,7 @@ export function UserNav() {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/messages')}>
           <Mail className="mr-2 h-4 w-4" />
-          쪽지함 {unreadCount > 0 && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-1.5 py-[2px]">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+          쪽지함 {resolvedUnread > 0 && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-1.5 py-[2px]">{resolvedUnread > 99 ? '99+' : resolvedUnread}</span>}
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem onClick={() => router.push('/admin/dashboard')}>
