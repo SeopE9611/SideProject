@@ -340,11 +340,11 @@ export default function Home() {
       <section className="py-8 bp-sm:py-10 bp-md:py-12">
         <SiteContainer>
           <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 p-6 bp-sm:p-8 dark:from-slate-900 dark:to-slate-800">
-            <div className="mb-6 sm:mb-8 text-center">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">스트링 교체 프로세스</h2>
-              <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">처음 방문해도 쉽게 이해할 수 있어요</p>
+            <div className="mb-6 bp-sm:mb-8 text-center">
+              <h2 className="text-xl bp-sm:text-2xl font-bold text-slate-900 dark:text-white">스트링 교체 프로세스</h2>
+              <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-400">처음 방문해도 쉽게 이해할 수 있어요</p>
             </div>
-            <div className="mb-6 sm:mb-8 grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+            <div className="mb-6 bp-sm:mb-8 grid gap-4 bp-sm:gap-6 grid-cols-2 bp-lg:grid-cols-4">
               <div className="flex flex-col items-center text-center">
                 <div className="mb-2 sm:mb-3 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
                   <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -384,9 +384,9 @@ export default function Home() {
             <div className="text-center">
               <Link
                 href="/services/apply"
-                className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 bp-sm:px-6 py-2.5 bp-sm:py-3 text-xs bp-sm:text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
               >
-                <Wrench className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <Wrench className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
                 지금 신청하기
               </Link>
             </div>
