@@ -179,7 +179,7 @@ const Header = () => {
   /** 스크롤/리사이즈 핸들링 */
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) setOpen(false);
+      if (window.innerWidth >= 1200) setOpen(false);
     };
 
     let ticking = false;

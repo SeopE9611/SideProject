@@ -46,7 +46,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
   const onSubmit = () => {
     setLoading(true);
     setOpen(false);
-    router.push(`/rentals/${id}/checkout?period=${period}`);
+    router.push(`/rentals/${id}/select-string?period=${period}`);
   };
 
   return (

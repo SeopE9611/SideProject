@@ -28,6 +28,8 @@ type Initial = {
   period: 7 | 15 | 30;
   fee: number;
   deposit: number;
+  requestStringing?: boolean;
+  selectedString?: { id: string; name: string; price: number; image: string | null } | null;
   racket: {
     id: string;
     brand: string;
@@ -39,6 +41,8 @@ type Initial = {
 
 export default function RentalsCheckoutClient({ initial }: { initial: Initial }) {
   const router = useRouter();
+  const [requestStringing, setRequestStringing] = useState(Boolean(initial.requestStringing));
+  const selectedString = initial.selectedString ?? null;
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -104,6 +108,12 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   };
 
   const onPay = async () => {
+    if (requestStringing && !selectedString?.id) {
+      alert('스트링 교체를 함께 진행하려면 먼저 스트링을 선택해주세요.');
+      router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`);
+      return;
+    }
+
     if (!name || !phone || !postalCode || !address) {
       alert('필수 정보를 모두 입력해주세요.');
       return;
@@ -226,6 +236,49 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       <span className="text-xs text-slate-500 dark:text-slate-400">대여 기간 {initial.period}일</span>
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 스트링 교체 옵션 */}
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-fuchsia-500/10 p-6">
+                <CardTitle className="flex items-center gap-3">
+                  <Package className="h-5 w-5 text-indigo-600" />
+                  스트링 교체 옵션
+                </CardTitle>
+                <CardDescription className="mt-2">대여 결제(보증금 포함) 후, 교체 신청서를 작성해 스트링 작업을 진행할 수 있어요.</CardDescription>
+              </div>
+
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Checkbox id="request-stringing" checked={requestStringing} onCheckedChange={(v) => setRequestStringing(!!v)} />
+                  <label htmlFor="request-stringing" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    스트링 교체 신청도 함께 진행할게요
+                  </label>
+                </div>
+
+                <div className="rounded-lg border border-slate-200/60 dark:border-slate-600/60 p-4 bg-slate-50/40 dark:bg-slate-700/30">
+                  {selectedString ? (
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">선택된 스트링</div>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200">{selectedString.name}</div>
+                        <div className="text-sm text-slate-600 dark:text-slate-300">{selectedString.price.toLocaleString()}원</div>
+                      </div>
+
+                      <Button type="button" variant="outline" onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
+                        스트링 변경
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="text-sm text-slate-600 dark:text-slate-300">아직 스트링이 선택되지 않았습니다.</div>
+                      <Button type="button" onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
+                        스트링 선택
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
