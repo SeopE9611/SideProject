@@ -166,66 +166,66 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
       key={p._id}
       href={p.href ?? `/products/${p._id}`}
       className="group block h-full
-        bg-white dark:bg-slate-900 rounded-xl p-4 sm:p-5 md:p-6 lg:p-7
+        bg-white dark:bg-slate-900 rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
         transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
     >
-      <div className="relative mb-3 sm:mb-4 md:mb-5 aspect-square rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
         {p.images?.[0] ? (
-          <img src={p.images[0] || '/placeholder.svg'} alt={p.name} className="w-full h-full object-contain p-2 sm:p-3 md:p-4" loading="lazy" />
+          <img src={p.images[0] || '/placeholder.svg'} alt={p.name} className="w-full h-full object-contain p-2 bp-sm:p-3 bp-md:p-4" loading="lazy" />
         ) : (
-          <div className="flex items-center justify-center h-full text-3xl sm:text-4xl md:text-5xl font-bold text-slate-300 dark:text-slate-600">{(p.brand ?? 'D').charAt(0)}</div>
+          <div className="flex items-center justify-center h-full text-3xl bp-sm:text-4xl bp-md:text-5xl font-bold text-slate-300 dark:text-slate-600">{(p.brand ?? 'D').charAt(0)}</div>
         )}
 
         {(typeof p.rentalEnabled === 'boolean' || p.condition) && (
-          <div className="absolute top-2 left-2 right-2 sm:top-2.5 sm:left-2.5 sm:right-2.5 flex items-center gap-1.5 sm:gap-2 z-10">
+          <div className="absolute top-2 left-2 right-2 bp-sm:top-2.5 bp-sm:left-2.5 bp-sm:right-2.5 flex items-center gap-1.5 bp-sm:gap-2 z-10">
             {typeof p.rentalEnabled === 'boolean' && !p.rentalEnabled && <StatusBadge kind="rental" state="unavailable" />}
             {p.condition && <StatusBadge kind="condition" state={p.condition} />}
           </div>
         )}
       </div>
 
-      <div className="space-y-1.5 sm:space-y-2 md:space-y-2.5">
-        <div className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
+      <div className="space-y-1.5 bp-sm:space-y-2 bp-md:space-y-2.5">
+        <div className="text-xs bp-sm:text-sm bp-md:text-base text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
         <h3
-          className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-slate-900 dark:text-white 
-          line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] md:min-h-[3.5rem] leading-snug"
+          className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-slate-900 dark:text-white 
+          line-clamp-2 min-h-[2.5rem] bp-sm:min-h-[3rem] bp-md:min-h-[3.5rem] leading-snug"
         >
           {p.name}
         </h3>
-        <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-slate-900 dark:text-white pt-1 sm:pt-1.5">{Number(p.price).toLocaleString()}원</div>
+        <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-slate-900 dark:text-white pt-1 bp-sm:pt-1.5">{Number(p.price).toLocaleString()}원</div>
       </div>
     </Link>
   );
 
   const PlaceholderCard = () => (
     <div
-      className="h-full rounded-xl p-4 sm:p-5 md:p-6 lg:p-7
+      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
       bg-slate-50 dark:bg-slate-800/50 
       flex flex-col items-center justify-center"
     >
       <div
-        className="relative mb-3 sm:mb-4 md:mb-5 aspect-square w-full rounded-lg bg-slate-100 dark:bg-slate-700 
+        className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-slate-100 dark:bg-slate-700 
         flex items-center justify-center"
       >
-        <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-slate-200 dark:bg-slate-600" />
+        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-slate-200 dark:bg-slate-600" />
       </div>
       <div className="text-center space-y-1.5">
-        <div className="text-sm sm:text-base md:text-lg font-semibold text-slate-400 dark:text-slate-500">준비 중</div>
-        <div className="text-xs sm:text-sm md:text-base text-slate-400 dark:text-slate-600">곧 업데이트</div>
+        <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-slate-400 dark:text-slate-500">준비 중</div>
+        <div className="text-xs bp-sm:text-sm bp-md:text-base text-slate-400 dark:text-slate-600">곧 업데이트</div>
       </div>
     </div>
   );
 
   const SkeletonCard = () => (
     <div
-      className="h-full rounded-xl p-4 sm:p-5 md:p-6 lg:p-7
+      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
       bg-white dark:bg-slate-900 animate-pulse"
     >
-      <div className="relative mb-3 sm:mb-4 md:mb-5 aspect-square rounded-lg bg-slate-100 dark:bg-slate-800" />
-      <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
-        <div className="h-3 sm:h-4 md:h-5 w-20 sm:w-24 md:w-28 rounded bg-slate-100 dark:bg-slate-800" />
-        <div className="h-4 sm:h-5 md:h-6 w-32 sm:w-40 md:w-48 rounded bg-slate-100 dark:bg-slate-800" />
-        <div className="h-5 sm:h-6 md:h-7 w-20 sm:w-24 md:w-28 rounded bg-slate-100 dark:bg-slate-800" />
+      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg bg-slate-100 dark:bg-slate-800" />
+      <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
+        <div className="h-3 bp-sm:h-4 bp-md:h-5 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-4 bp-sm:h-5 bp-md:h-6 w-32 bp-sm:w-40 bp-md:w-48 rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-5 bp-sm:h-6 bp-md:h-7 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-slate-100 dark:bg-slate-800" />
       </div>
     </div>
   );
@@ -233,20 +233,20 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
   const MoreCard = () => (
     <Link
       href={moreHref}
-      className="group h-full bg-slate-50 dark:bg-slate-800 rounded-xl p-4 sm:p-5 md:p-6 lg:p-7
+      className="group h-full bg-slate-50 dark:bg-slate-800 rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
         hover:bg-slate-100 dark:hover:bg-slate-700
         transition-all duration-300 flex items-center justify-center hover:scale-[1.02] hover:shadow-lg"
     >
-      <div className="text-center space-y-2 sm:space-y-3 md:space-y-4">
+      <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
         <div
-          className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto 
+          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto 
           flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
         >
-          <ArrowRight className="h-6 w-6 sm:h-7 sm:w-7 md:h-9 md:w-9 text-slate-600 dark:text-slate-400" />
+          <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-slate-600 dark:text-slate-400" />
         </div>
-        <div className="space-y-1 sm:space-y-1.5">
-          <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-slate-900 dark:text-white">더 많은 상품</h3>
-          <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-400">전체 보기</p>
+        <div className="space-y-1 bp-sm:space-y-1.5">
+          <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-bold text-slate-900 dark:text-white">더 많은 상품</h3>
+          <p className="text-xs bp-sm:text-sm bp-md:text-base text-slate-600 dark:text-slate-400">전체 보기</p>
         </div>
       </div>
     </Link>
@@ -257,9 +257,9 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
     <section className="relative">
       <div className="relative z-10">
         {showHeader && (
-          <div className="text-center mb-6 sm:mb-8 md:mb-12 lg:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-1.5 sm:mb-2">{title}</h2>
-            {subtitle && <p className="text-xs sm:text-sm md:text-base lg:text-xl text-slate-600 dark:text-slate-400">{subtitle}</p>}
+          <div className="text-center mb-6 bp-sm:mb-8 bp-md:mb-12 bp-lg:mb-16">
+            <h2 className="text-2xl bp-sm:text-3xl bp-md:text-4xl bp-lg:text-5xl font-bold text-slate-900 dark:text-white mb-1.5 bp-sm:mb-2">{title}</h2>
+            {subtitle && <p className="text-xs bp-sm:text-sm bp-md:text-base bp-lg:text-xl text-slate-600 dark:text-slate-400">{subtitle}</p>}
           </div>
         )}
 
@@ -301,14 +301,14 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
           </div>
 
           {slides.length > itemsPerPage && (
-            <div className="mt-4 sm:mt-6 md:mt-8 flex flex-col items-center gap-2">
-              <div className="flex gap-2 sm:gap-3">
+            <div className="mt-4 bp-sm:mt-6 bp-md:mt-8 flex flex-col items-center gap-2">
+              <div className="flex gap-2 bp-sm:gap-3">
                 <Button
                   variant="outline"
                   size="sm"
                   aria-label="이전 상품 보기"
                   disabled={!canPrev}
-                  className="rounded-full w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 p-0 
+                  className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 
                     bg-white dark:bg-slate-900 
                     border-0 shadow-md
                     hover:shadow-xl hover:scale-105
@@ -316,7 +316,7 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
                     transition-all duration-300"
                   onClick={() => scrollByPage('left')}
                 >
-                  <ChevronLeft className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                  <ChevronLeft className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
                 </Button>
 
                 <Button
@@ -324,7 +324,7 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
                   size="sm"
                   aria-label="다음 상품 보기"
                   disabled={!canNext}
-                  className="rounded-full w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 p-0 
+                  className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 
                     bg-white dark:bg-slate-900 
                     border-0 shadow-md
                     hover:shadow-xl hover:scale-105
@@ -332,11 +332,11 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
                     transition-all duration-300"
                   onClick={() => scrollByPage('right')}
                 >
-                  <ChevronRight className="h-4 w-4 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                  <ChevronRight className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
                 </Button>
               </div>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">드래그하거나 터치로 넘겨보세요</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 hidden bp-sm:block">드래그하거나 터치로 넘겨보세요</p>
             </div>
           )}
         </div>

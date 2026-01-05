@@ -297,11 +297,11 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     [openFiltersSheet, cancelFiltersSheet]
   );
 
-  // 뷰포트가 lg(>=1024)로 커지면 Sheet는 자동으로 닫기(취소)
+  // 뷰포트가 bp-lg(>=1200)로 커지면 Sheet는 자동으로 닫기(취소)
   useEffect(() => {
     if (!showFilters) return;
 
-    const mql = window.matchMedia('(min-width: 1024px)');
+    const mql = window.matchMedia('(min-width: 1200px)');
     const onChange = (e: MediaQueryListEvent) => {
       if (e.matches) cancelFiltersSheet();
     };
@@ -346,7 +346,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     lastSerializedRef.current = newSearch;
 
     router.replace(`${pathname}?${newSearch}`, { scroll: false });
-  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, submittedQuery, sortOption, viewMode, priceRange, router, pathname]);
+  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, sortOption, viewMode, priceRange, router, pathname]);
 
   // infinite scroll 관찰자
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -432,25 +432,25 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
   return (
     <>
-      <Sheet open={showFilters} onOpenChange={setShowFilters}>
+      <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
         <SheetContent side="right" className="w-[92vw] max-w-sm p-0 overflow-y-auto">
           <FilterPanel {...mobileFilterPanelProps} />
         </SheetContent>
       </Sheet>
 
-      <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 md:gap-8 bp-lg:grid-cols-4">
         {/* 필터 사이드바 */}
-        <div className={cn('hidden lg:block', 'space-y-6 lg:col-span-1')}>
+        <div className={cn('hidden bp-lg:block', 'space-y-6 bp-lg:col-span-1')}>
           <div className="sticky top-20 self-start">
             <FilterPanel {...desktopFilterPanelProps} />
           </div>
         </div>
 
         {/* 상품 목록 */}
-        <div className="lg:col-span-3">
-          <div className="mb-6 md:mb-8 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
-            <div className="flex items-center justify-between gap-3 sm:justify-start">
-              <div className="text-base sm:text-lg font-semibold dark:text-white">
+        <div className="bp-lg:col-span-3">
+          <div className="mb-6 md:mb-8 space-y-3 bp-sm:space-y-0 bp-sm:flex bp-sm:items-center bp-sm:justify-between">
+            <div className="flex items-center justify-between gap-3 bp-sm:justify-start">
+              <div className="text-base bp-sm:text-lg font-semibold dark:text-white">
                 총 <span className="text-blue-600 dark:text-blue-400 font-bold">{(productsList ?? []).length}</span>개 상품
               </div>
               <Button
@@ -460,7 +460,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="lg:hidden h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                className="bp-lg:hidden h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                 aria-expanded={showFilters}
                 aria-label="필터 열기"
               >
@@ -469,7 +469,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
               </Button>
             </div>
 
-            <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <div className="flex items-center justify-between gap-3 bp-sm:justify-end">
               {/* 뷰 모드 토글 */}
               <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-white dark:bg-slate-800">
                 <Button
@@ -492,7 +492,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
               {/* 정렬 */}
               <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="h-9 w-[150px] sm:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800 text-sm">
+                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800 text-sm">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
@@ -507,7 +507,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
           {/* 콘텐츠 */}
           {isLoadingInitial ? (
-            <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+            <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3' : 'grid-cols-1')}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonProductCard key={i} />
               ))}
@@ -532,7 +532,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
             </div>
           ) : (
             <>
-              <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+              <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3' : 'grid-cols-1')}>
                 {productsList.map((product, i) => {
                   const isLast = i === productsList.length - 1;
                   return (

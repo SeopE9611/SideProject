@@ -346,39 +346,38 @@ export default function Home() {
             </div>
             <div className="mb-6 bp-sm:mb-8 grid gap-4 bp-sm:gap-6 grid-cols-2 bp-lg:grid-cols-4">
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 sm:mb-3 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
-                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
+                  <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
-                <div className="mb-0.5 sm:mb-1 text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 1</div>
-                <h3 className="mb-0.5 sm:mb-1 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">신청서 작성</h3>
-                <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400">라켓/스트링/옵션 선택</p>
+                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 1</div>
+                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">신청서 작성</h3>
+                <p className="text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">라켓/스트링/옵션 선택</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300">
+                  <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+                </div>
+                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 2</div>
+                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">방문·택배</h3>
+                <p className="text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">방문 예약 또는 택배 발송</p>
               </div>
 
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 sm:mb-3 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300">
-                  <Package className="h-5 w-5 sm:h-6 sm:w-6" />
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300">
+                  <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
-                <div className="mb-0.5 sm:mb-1 text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 2</div>
-                <h3 className="mb-0.5 sm:mb-1 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">방문·택배</h3>
-                <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400">방문 예약 또는 택배 발송</p>
+                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 3</div>
+                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">작업 진행</h3>
+                <p className="text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">장착/텐션 세팅 후 검수</p>
               </div>
 
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 sm:mb-3 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300">
-                  <Wrench className="h-5 w-5 sm:h-6 sm:w-6" />
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-violet-100 text-violet-600 dark:bg-violet-900 dark:text-violet-300">
+                  <BadgeCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
-                <div className="mb-0.5 sm:mb-1 text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 3</div>
-                <h3 className="mb-0.5 sm:mb-1 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">작업 진행</h3>
-                <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400">장착/텐션 세팅 후 검수</p>
-              </div>
-
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-2 sm:mb-3 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-violet-100 text-violet-600 dark:bg-violet-900 dark:text-violet-300">
-                  <BadgeCheck className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div className="mb-0.5 sm:mb-1 text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 4</div>
-                <h3 className="mb-0.5 sm:mb-1 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">수령</h3>
-                <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400">방문 수령 또는 배송</p>
+                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 4</div>
+                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">수령</h3>
+                <p className="text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">방문 수령 또는 배송</p>
               </div>
             </div>
             <div className="text-center">
@@ -397,18 +396,17 @@ export default function Home() {
       {/* 스트링 섹션 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <div className="mb-6 sm:mb-8 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">스트링</h2>
-            <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">프로가 선택하는 테니스 스트링</p>
+          <div className="mb-6 bp-sm:mb-8 text-center">
+            <h2 className="text-2xl bp-sm:text-3xl font-bold text-slate-900 dark:text-white">스트링</h2>
+            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-400">프로가 선택하는 테니스 스트링</p>
           </div>
-
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-6 bp-sm:mb-8">
             <div className="flex justify-center">
-              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex items-center gap-1.5 bp-sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveStringBrand('all')}
                   className={`
-                  shrink-0 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold 
+                  shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
                   transition-all duration-300 whitespace-nowrap
                   ${activeStringBrand === 'all' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
                 `}
@@ -420,7 +418,7 @@ export default function Home() {
                     key={b.value}
                     onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
                     className={`
-                    shrink-0 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold 
+                    shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
                     transition-all duration-300 whitespace-nowrap
                     ${activeStringBrand === b.value ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
                   `}
@@ -448,18 +446,17 @@ export default function Home() {
       {/* 중고 라켓 섹션 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <div className="mb-6 sm:mb-8 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">중고 라켓</h2>
-            <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p>
+          <div className="mb-6 bp-sm:mb-8 text-center">
+            <h2 className="text-2xl bp-sm:text-3xl font-bold text-slate-900 dark:text-white">중고 라켓</h2>
+            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-400">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p>
           </div>
-
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-6 bp-sm:mb-8">
             <div className="flex justify-center">
-              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex items-center gap-1.5 bp-sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveBrand('all')}
                   className={`
-                  shrink-0 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold 
+                  shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
                   transition-all duration-300 whitespace-nowrap
                   ${activeBrand === 'all' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
                 `}
@@ -471,7 +468,7 @@ export default function Home() {
                     key={b.value}
                     onClick={() => setActiveBrand(b.value as BrandKey)}
                     className={`
-                    shrink-0 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold 
+                    shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
                     transition-all duration-300 whitespace-nowrap
                     ${activeBrand === b.value ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
                   `}
@@ -482,7 +479,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
           <HorizontalProducts
             title="중고 라켓"
             subtitle={activeBrand === 'all' ? '도깨비 테니스 중고' : `${racketBrandLabel(activeBrand)} 중고`}
