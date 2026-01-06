@@ -577,7 +577,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <rect width="100%" height="100%" fill="url(#detail-court-lines)" />
           </svg>
         </div>
-        <div className="container relative z-10 px-4">
+        <div className="relative mx-auto w-full max-w-[1200px] px-4 bp-md:px-6">
           <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm mb-3 sm:mb-4 opacity-90 overflow-x-auto scrollbar-hide">
             <Link href="/" className="hover:text-blue-200 transition-colors whitespace-nowrap">
               홈
@@ -596,7 +596,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </div>
       </div>
 
-      <div className="container py-4 sm:py-6 md:py-8 px-4 sm:px-6">
+      <div className="mx-auto w-full max-w-[1200px] py-4 bp-sm:py-6 bp-md:py-8 px-4 bp-sm:px-6">
         <div className="grid grid-cols-1 gap-4 sm:gap-6 bp-lg:grid-cols-5">
           <div className="bp-lg:col-span-3 space-y-3 sm:space-y-4">
             <Card className="overflow-hidden border-0 shadow-xl sm:shadow-2xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">

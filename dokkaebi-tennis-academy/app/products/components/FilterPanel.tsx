@@ -91,28 +91,28 @@ export const FilterPanel = React.memo(function FilterPanel({
 
   if (isLoadingInitial) {
     return (
-      <div className="rounded-xl bg-white/70 dark:bg-slate-800/70 p-4 sm:p-6 shadow-lg">
+      <div className="rounded-xl bg-white/70 dark:bg-slate-800/70 p-4 bp-sm:p-6 shadow-lg">
         <SkeletonFilterDetailed />
       </div>
     );
   }
 
   return (
-    <div className={cn('rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 sm:p-6 shadow-xl')}>
+    <div className={cn('rounded-lg bp-sm:rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 bp-sm:p-6 shadow-xl')}>
       <AnimatePresence mode="wait">
         <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex items-center justify-between mb-4 bp-sm:mb-6">
             <div className="flex gap-2 items-center">
-              <h2 className="font-bold text-lg sm:text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">필터</h2>
+              <h2 className="font-bold text-lg bp-sm:text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">필터</h2>
               {onClose && (
-                <Button variant="outline" size="sm" onClick={onClose} className="sm:hidden h-7 px-2 text-xs bg-transparent">
+                <Button variant="outline" size="sm" onClick={onClose} className="bp-sm:hidden h-7 px-2 text-xs bg-transparent">
                   닫기
                 </Button>
               )}
             </div>
             <div className="flex gap-2">
               {activeFiltersCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={onReset} className="text-xs h-7 sm:h-8 px-2 sm:px-3">
+                <Button variant="ghost" size="sm" onClick={onReset} className="text-xs h-7 bp-sm:h-8 px-2 bp-sm:px-3">
                   초기화 ({activeFiltersCount})
                 </Button>
               )}
@@ -124,16 +124,16 @@ export const FilterPanel = React.memo(function FilterPanel({
               e.preventDefault();
               onSearchSubmit();
             }}
-            className="mb-4 sm:mb-6 flex gap-2"
+            className="mb-4 bp-sm:mb-6 flex gap-2"
           >
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <Search className="absolute left-2.5 bp-sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <Input
                 id="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="상품명 검색..."
-                className="pl-9 sm:pl-10 pr-9 sm:pr-10 h-9 sm:h-10 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400 transition-colors w-full"
+                className="pl-9 bp-sm:pl-10 pr-9 bp-sm:pr-10 h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400 transition-colors w-full"
               />
               {searchQuery && (
                 <button
@@ -145,23 +145,23 @@ export const FilterPanel = React.memo(function FilterPanel({
                     const el = document.getElementById('search') as HTMLInputElement | null;
                     el?.focus();
                   }}
-                  className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                  className="absolute right-2.5 bp-sm:right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                 >
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               )}
             </div>
-            <Button type="submit" size="sm" className="h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shrink-0">
+            <Button type="submit" size="sm" className="h-9 bp-sm:h-10 px-3 bp-sm:px-4 text-xs bp-sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shrink-0">
               검색
             </Button>
           </form>
 
-          <div className="mb-4 sm:mb-6">
-            <Label htmlFor="brand" className="mb-2 sm:mb-3 block font-medium text-sm">
+          <div className="mb-4 bp-sm:mb-6">
+            <Label htmlFor="brand" className="mb-2 bp-sm:mb-3 block font-medium text-sm">
               브랜드
             </Label>
             <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
-              <SelectTrigger className="h-9 sm:h-10 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400">
+              <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400">
                 <SelectValue placeholder="브랜드 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -175,10 +175,10 @@ export const FilterPanel = React.memo(function FilterPanel({
             </Select>
           </div>
 
-          <div className="space-y-1.5 mb-4 sm:mb-6">
+          <div className="space-y-1.5 mb-4 bp-sm:mb-6">
             <Label className="text-sm">재질</Label>
             <Select value={selectedMaterial ?? 'all'} onValueChange={(v) => setSelectedMaterial(v === 'all' ? null : v)}>
-              <SelectTrigger className="h-9 sm:h-10 text-sm">
+              <SelectTrigger className="h-9 bp-sm:h-10 text-sm">
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
@@ -192,13 +192,13 @@ export const FilterPanel = React.memo(function FilterPanel({
             </Select>
           </div>
 
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="font-medium text-base sm:text-lg">성능</h3>
+          <div className="space-y-3 bp-sm:space-y-4">
+            <h3 className="font-medium text-base bp-sm:text-lg">성능</h3>
             {performanceFiltersConfig.map(({ label, state, setter, featureKey }) => (
               <div key={featureKey}>
-                <Label className="mb-1.5 sm:mb-2 block text-xs sm:text-sm font-medium">{label}</Label>
+                <Label className="mb-1.5 bp-sm:mb-2 block text-xs bp-sm:text-sm font-medium">{label}</Label>
                 <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={state !== null ? String(state) : 'all'}>
-                  <SelectTrigger className="h-9 sm:h-10 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400">
+                  <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400">
                     <SelectValue placeholder="선택" />
                   </SelectTrigger>
                   <SelectContent>

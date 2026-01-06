@@ -109,12 +109,12 @@ const ProductCard = React.memo(
             </svg>
           </div>
 
-          <div className="flex flex-col md:flex-row relative z-10">
-            <div className="relative w-full md:w-48 h-48 md:h-56 flex-shrink-0">
+          <div className="flex flex-col bp-md:flex-row relative z-10">
+            <div className="relative w-full bp-md:w-48 h-48 bp-md:h-56 flex-shrink-0">
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
               {product.isNew && <Badge className="absolute right-2 top-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
             </div>
-            <div className="flex-1 p-4 md:p-5">
+            <div className="flex-1 p-4 bp-md:p-5">
               <div className="flex flex-col gap-3 mb-4">
                 <div className="flex-1">
                   <div className="text-xs sm:text-sm text-muted-foreground mb-1 font-medium">{brandLabel}</div>
@@ -148,10 +148,10 @@ const ProductCard = React.memo(
                 </div>
               )}
 
-              <div className="grid grid-cols-2 sm:flex gap-2">
-                <Link href={`/products/${product._id}`} className="sm:flex-1">
+              <div className="grid grid-cols-2 bp-sm:flex gap-2">
+                <Link href={`/products/${product._id}`} className="bp-sm:flex-1">
                   <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-                    <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
+                    <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
                     상세보기
                   </Button>
                 </Link>
@@ -211,7 +211,7 @@ const ProductCard = React.memo(
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div className="flex gap-2">
                 <Button size="sm" className="h-8 sm:h-9 text-xs sm:text-sm bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg" onClick={(e) => e.stopPropagation()}>
-                  <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
                   보기
                 </Button>
 

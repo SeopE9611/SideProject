@@ -113,7 +113,7 @@ export default function MypageClient({ user }: Props) {
 
           <div className="relative container mx-auto px-4 py-16">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center gap-6 mb-8">
+              <div className="flex flex-col bp-sm:flex-row bp-sm:items-center items-start gap-6 mb-8">
                 <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 shadow-lg"></div>
                 <div>
                   <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">안녕하세요, {user.name}님!</h1>
@@ -146,9 +146,9 @@ export default function MypageClient({ user }: Props) {
 
         {/* 메인 콘텐츠 */}
         <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-4">
             {/* 사이드바 */}
-            <div className="lg:col-span-1">
+            <div className="bp-lg:col-span-1">
               <div className="sticky top-8">
                 <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
                   <CardHeader className="pb-4">
@@ -190,12 +190,12 @@ export default function MypageClient({ user }: Props) {
             </div>
 
             {/* 메인 콘텐츠 */}
-            <div className="lg:col-span-3">
+            <div className="bp-lg:col-span-3">
               <Tabs value={currentTab} onValueChange={handleTabChange}>
                 {/* 탭 네비게이션 */}
                 <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm mb-8">
                   <CardContent className="p-6">
-                    <TabsList className="grid w-full grid-cols-8 h-auto p-1 bg-slate-100 dark:bg-slate-700">
+                    <TabsList className="grid w-full grid-cols-4 bp-md:grid-cols-8 h-auto p-1 bg-slate-100 dark:bg-slate-700">
                       <TabsTrigger value="orders" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
                         <ClipboardList className="h-5 w-5" />
                         <span className="text-xs font-medium">주문 내역</span>

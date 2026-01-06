@@ -28,7 +28,7 @@ type PriceSummaryCommonProps = {
 
 export function ApplyPriceSummaryMobile({ preferredDate, preferredTime, collectionMethod, stringTypes, usingPackage, base, pickupFee, total, racketPrice, stringPrice, totalLabel }: PriceSummaryCommonProps) {
   return (
-    <div className="mt-8 xl:hidden">
+    <div className="mt-6 bp-sm:mt-8 xl:hidden">
       <PriceSummaryCard
         preferredDate={preferredDate ?? undefined}
         preferredTime={preferredTime ?? undefined}
@@ -53,7 +53,7 @@ type DesktopProps = PriceSummaryCommonProps & {
 export function ApplyPriceSummaryDesktop({ stickyTop, preferredDate, preferredTime, collectionMethod, stringTypes, usingPackage, base, pickupFee, total, racketPrice, stringPrice, totalLabel }: DesktopProps) {
   return (
     <div
-      className="hidden xl:block"
+      className="hidden 2xl:block"
       style={{
         position: 'absolute',
         width: '320px',

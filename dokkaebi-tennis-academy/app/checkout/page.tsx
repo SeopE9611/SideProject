@@ -346,7 +346,7 @@ export default function CheckoutPage() {
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white dark:from-blue-700 dark:via-purple-700 dark:to-teal-700">
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
         <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
-        <div className="relative container py-6 bp-sm:py-10 bp-md:py-14">
+        <div className="relative mx-auto w-full max-w-[1200px] px-3 bp-sm:px-4 bp-md:px-6 py-6 bp-sm:py-10 bp-md:py-14">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full">
               <CreditCard className="h-8 w-8" />
@@ -374,10 +374,10 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      <div className="container py-6 bp-sm:py-8">
-        <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 lg:grid-cols-3">
+      <div className="mx-auto w-full max-w-[1200px] px-3 bp-sm:px-4 bp-md:px-6 py-6 bp-sm:py-8">
+        <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
           {/* 주문 정보 입력 폼 */}
-          <div className="lg:col-span-2 space-y-4 bp-sm:space-y-6">
+          <div className="bp-lg:col-span-2 space-y-4 bp-sm:space-y-6">
             {/* 주문 상품 */}
             <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-3 bp-sm:p-4 bp-lg:p-6">
@@ -390,18 +390,38 @@ export default function CheckoutPage() {
               <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
                 <div className="space-y-4">
                   {orderItems.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-slate-200/50 dark:border-slate-600/50">
-                      <div className="relative">
-                        <Image src={item.image || '/placeholder.svg?height=80&width=80&query=tennis+product'} alt={item.name} width={80} height={80} className="rounded-lg border-2 border-white shadow-lg" />
-                        <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">{item.quantity}</div>
+                    <div
+                      key={item.id}
+                      className="
+      flex flex-col bp-sm:flex-row bp-sm:items-center
+      gap-3 bp-sm:gap-4
+      p-3 bp-sm:p-4
+      bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30
+      rounded-lg border border-slate-200/50 dark:border-slate-600/50
+    "
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="relative shrink-0">
+                          <Image
+                            src={item.image || '/placeholder.svg?height=80&width=80&query=tennis+product'}
+                            alt={item.name}
+                            width={80}
+                            height={80}
+                            loading="lazy"
+                            className="h-14 w-14 bp-sm:h-20 bp-sm:w-20 rounded-lg border-2 border-white shadow-lg object-cover"
+                          />
+                          <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">{item.quantity}</div>
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2">{item.name}</h3>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">수량: {item.quantity}개</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-800 dark:text-slate-200">{item.name}</h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">수량: {item.quantity}개</p>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-lg text-blue-600">{(item.price * item.quantity).toLocaleString()}원</div>
-                        <div className="text-sm text-slate-500">단가: {item.price.toLocaleString()}원</div>
+
+                      <div className="flex items-center justify-between bp-sm:flex-col bp-sm:items-end bp-sm:justify-center bp-sm:text-right">
+                        <div className="text-xs bp-sm:text-sm text-slate-500">단가: {item.price.toLocaleString()}원</div>
+                        <div className="font-bold text-base bp-sm:text-lg text-blue-600">{(item.price * item.quantity).toLocaleString()}원</div>
                       </div>
                     </div>
                   ))}
@@ -497,7 +517,7 @@ export default function CheckoutPage() {
                 </CardTitle>
                 <CardDescription className="mt-2">상품을 어떻게 예약하실지 선택해주세요.</CardDescription>
               </div>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-4 bp-sm:p-6 space-y-4">
                 <RadioGroup defaultValue="택배수령" onValueChange={(value) => setDeliveryMethod(value as '택배수령' | '방문수령')}>
                   <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <RadioGroupItem value="택배수령" id="택배수령" />
@@ -827,7 +847,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-4 p-6 shrink-0">
+                <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
                   <CheckoutButton
                     disabled={!(agreeTerms && agreePrivacy && agreeRefund)}
                     name={name}

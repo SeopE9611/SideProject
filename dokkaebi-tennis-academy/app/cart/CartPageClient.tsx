@@ -81,7 +81,7 @@ export default function CartPageClient() {
             <rect width="100%" height="100%" fill="url(#court-lines)" />
           </svg>
         </div>
-        <div className="relative container py-16">
+        <div className="relative mx-auto w-full max-w-[1200px] px-4 bp-md:px-6 py-16">
           <div className="mb-4 flex items-center gap-4">
             <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-sm shadow-lg">
               <ShoppingBag className="h-8 w-8" />
@@ -107,11 +107,11 @@ export default function CartPageClient() {
         </div>
       </div>
 
-      <div className="container py-8">
+      <div className="mx-auto w-full max-w-[1200px] px-4 bp-md:px-6 py-8">
         {cartItems.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-3">
             {/* 목록 */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="bp-lg:col-span-2 space-y-6">
               <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl">
                 <CardHeader className="rounded-t-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
                   <div className="flex items-start justify-between gap-3">
@@ -139,7 +139,7 @@ export default function CartPageClient() {
                   </div>
                 </CardHeader>
 
-                <CardContent className="p-4 md:p-6 space-y-4">
+                <CardContent className="p-4 bp-md:p-6 space-y-4">
                   {cartItems.map((item) => {
                     // 버튼 비활성 판단
                     const stock = item.stock ?? Number.POSITIVE_INFINITY;
@@ -228,7 +228,7 @@ export default function CartPageClient() {
                 </CardContent>
 
                 {/* 선택 작업 바 */}
-                <div className="px-4 pb-4 md:px-6">
+                <div className="px-4 pb-4 bp-md:px-6">
                   <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-slate-50/70 p-3 dark:bg-slate-700/40">
                     <span className="text-sm text-slate-600 dark:text-slate-300">선택 {selectedIds.length}개</span>
                     <Button variant="ghost" size="sm" onClick={removeSelected} className="text-red-600 hover:bg-red-50/70 dark:hover:bg-red-900/20">
@@ -238,7 +238,7 @@ export default function CartPageClient() {
                 </div>
 
                 <CardFooter className="rounded-b-lg bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20">
-                  <div className="flex w-full flex-col justify-between gap-4 sm:flex-row">
+                  <div className="flex w-full flex-col justify-between gap-4 bp-sm:flex-row">
                     <Button variant="outline" className="group border-0 shadow-sm hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
                       <Link href="/products" className="flex items-center gap-2">
                         <ArrowRight className="h-4 w-4 -rotate-180 transition-transform group-hover:-translate-x-1" />
@@ -263,10 +263,10 @@ export default function CartPageClient() {
             </div>
 
             {/* 요약 */}
-            <div className="lg:col-span-1">
+            <div className="bp-lg:col-span-1">
               <div className="sticky top-20">
                 <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-6 text-white">
+                  <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-4 bp-sm:p-6 text-white">
                     <CardTitle className="flex items-center gap-3 text-xl">
                       <div className="rounded-2xl bg-white/20 p-2 shadow-lg">
                         <Package className="h-5 w-5" />
@@ -274,7 +274,7 @@ export default function CartPageClient() {
                       주문 요약
                     </CardTitle>
                   </div>
-                  <CardContent className="space-y-6 p-6">
+                  <CardContent className="space-y-5 bp-sm:space-y-6 p-4 bp-sm:p-6">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-slate-600 dark:text-slate-400">상품 금액</span>
@@ -302,7 +302,7 @@ export default function CartPageClient() {
                       </p>
                     </div>
                   </CardContent>
-                  <CardFooter className="p-6 pt-0">
+                  <CardFooter className="p-4 bp-sm:p-6 pt-0">
                     <Button
                       className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
                       size="lg"
@@ -350,7 +350,7 @@ export default function CartPageClient() {
 
       {/* 모바일 하단 결제 바 */}
       {cartItems.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 bp-md:hidden">
           <div className="mx-auto max-w-screen-sm rounded-t-2xl bg-white/95 p-4 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-slate-800/95">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-sm text-slate-600 dark:text-slate-300">결제 금액</span>

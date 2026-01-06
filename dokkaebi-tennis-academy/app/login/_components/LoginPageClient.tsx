@@ -342,7 +342,7 @@ export default function LoginPageClient() {
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg"></div>
-              <h1 className="text-2xl sm:text-3xl font-black">도깨비 테니스</h1>
+              <h1 className="text-2xl bp-sm:text-3xl font-black">도깨비 테니스</h1>
               <p className="text-emerald-100 mt-2 font-medium">프리미엄 테니스 스트링 전문점</p>
             </div>
           </div>
@@ -470,11 +470,11 @@ export default function LoginPageClient() {
                 </div>
 
                 <form onSubmit={handleRegister} className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-6">
                     {/* 이메일 */}
-                    <div className="lg:col-span-2 space-y-2">
+                    <div className="bp-lg:col-span-2 space-y-2">
                       <Label className="text-slate-700 dark:text-slate-300 font-medium">이메일 주소</Label>
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                      <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start">
                         <div className="flex w-full items-center gap-2 min-w-0">
                           <div className="relative flex-1 min-w-0">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -648,7 +648,7 @@ export default function LoginPageClient() {
                     </div>
 
                     {/* 우편번호 */}
-                    <div className="lg:col-span-2 space-y-2">
+                    <div className="bp-lg:col-span-2 space-y-2">
                       <div className="flex items-center justify-between">
                         <Label className="text-slate-700 dark:text-slate-300 font-medium">우편번호</Label>
                         <Button
@@ -672,13 +672,13 @@ export default function LoginPageClient() {
                     </div>
 
                     {/* 기본 주소 */}
-                    <div className="lg:col-span-2 space-y-2">
+                    <div className="bp-lg:col-span-2 space-y-2">
                       <Label className="text-slate-700 dark:text-slate-300 font-medium">기본 배송지 주소</Label>
                       <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소를 입력하세요" readOnly className="bg-slate-50 dark:bg-slate-700 cursor-not-allowed h-12 border-slate-200 dark:border-slate-600" />
                     </div>
 
                     {/* 상세 주소 */}
-                    <div className="lg:col-span-2 space-y-2">
+                    <div className="bp-lg:col-span-2 space-y-2">
                       <Label className="text-slate-700 dark:text-slate-300 font-medium">상세 주소</Label>
                       <Input
                         value={addressDetail}

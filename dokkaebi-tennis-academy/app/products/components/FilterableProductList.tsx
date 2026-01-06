@@ -438,7 +438,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
         </SheetContent>
       </Sheet>
 
-      <div className="grid grid-cols-1 gap-6 md:gap-8 bp-lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 bp-md:gap-8 bp-lg:grid-cols-4">
         {/* 필터 사이드바 */}
         <div className={cn('hidden bp-lg:block', 'space-y-6 bp-lg:col-span-1')}>
           <div className="sticky top-20 self-start">
@@ -448,7 +448,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
         {/* 상품 목록 */}
         <div className="bp-lg:col-span-3">
-          <div className="mb-6 md:mb-8 space-y-3 bp-sm:space-y-0 bp-sm:flex bp-sm:items-center bp-sm:justify-between">
+          <div className="mb-6 bp-md:mb-8 space-y-3 bp-sm:space-y-0 bp-sm:flex bp-sm:items-center bp-sm:justify-between">
             <div className="flex items-center justify-between gap-3 bp-sm:justify-start">
               <div className="text-base bp-sm:text-lg font-semibold dark:text-white">
                 총 <span className="text-blue-600 dark:text-blue-400 font-bold">{(productsList ?? []).length}</span>개 상품
@@ -507,7 +507,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
           {/* 콘텐츠 */}
           {isLoadingInitial ? (
-            <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3' : 'grid-cols-1')}>
+            <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3' : 'grid-cols-1')}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonProductCard key={i} />
               ))}
@@ -521,8 +521,8 @@ export default function FilterableProductList({ initialBrand = null, initialMate
             </div>
           ) : (productsList ?? []).length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
-                <Search className="w-10 h-10 md:w-12 md:h-12 text-blue-600 dark:text-blue-400" />
+              <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
+                <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>
               <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
@@ -532,7 +532,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
             </div>
           ) : (
             <>
-              <div className={cn('grid gap-4 md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3' : 'grid-cols-1')}>
+              <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3' : 'grid-cols-1')}>
                 {productsList.map((product, i) => {
                   const isLast = i === productsList.length - 1;
                   return (

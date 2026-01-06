@@ -86,8 +86,8 @@ const RacketCard = React.memo(
             </svg>
           </div>
 
-          <div className="flex flex-col md:flex-row relative z-10">
-            <div className="relative w-full md:w-48 lg:w-56 h-40 sm:h-64 md:h-48 lg:h-56 overflow-hidden">
+          <div className="flex flex-col bp-md:flex-row relative z-10">
+            <div className="relative w-full bp-md:w-48 bp-lg:w-56 h-40 bp-sm:h-64 bp-md:h-48 bp-lg:h-56 overflow-hidden">
               <Image src={racket.images?.[0] || '/placeholder.svg?height=200&width=200&query=tennis+racket'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" />
               <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 z-10">
                 <div className="flex items-center gap-2">
@@ -96,35 +96,35 @@ const RacketCard = React.memo(
                 </div>
               </div>
             </div>
-            <div className="flex-1 p-3 sm:p-6 md:p-7">
-              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-3 sm:mb-4 gap-3 sm:gap-4">
+            <div className="flex-1 p-3 bp-sm:p-6 bp-md:p-7">
+              <div className="flex flex-col bp-lg:flex-row bp-lg:justify-between bp-lg:items-start mb-3 bp-sm:mb-4 gap-3 bp-sm:gap-4">
                 <div className="flex-1">
-                  <div className="text-sm sm:text-base text-muted-foreground mb-1.5 font-medium">{brandLabel}</div>
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 dark:text-white">{racket.model}</h3>
-                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <div className="text-sm bp-sm:text-base text-muted-foreground mb-1.5 font-medium">{brandLabel}</div>
+                  <h3 className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold mb-2 bp-sm:mb-3 dark:text-white">{racket.model}</h3>
+                  <div className="flex items-center gap-2 mb-2 bp-sm:mb-3">
                     <StatusBadge kind="condition" state={racket.condition} />
                     {racket.rental?.enabled ? <RacketAvailBadge id={racket.id} /> : <StatusBadge kind="rental" state="unavailable" />}
                   </div>
                 </div>
-                <div className="text-left lg:text-right">
-                  <div className="text-lg sm:text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+                <div className="text-left bp-lg:text-right">
+                  <div className="text-lg bp-sm:text-2xl bp-md:text-3xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
                 </div>
               </div>
 
               <div className="mt-2 flex justify-end gap-2">
                 <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                  <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs sm:text-base">
-                    <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
-                    <span className="sm:hidden">상세</span>
-                    <span className="hidden sm:inline">상세보기</span>
+                  <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs bp-sm:text-base">
+                    <Eye className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
+                    <span className="bp-sm:hidden">상세</span>
+                    <span className="hidden bp-sm:inline">상세보기</span>
                   </Button>
                 </Link>
 
                 {racket.rental?.enabled ? (
                   <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
                 ) : (
-                  <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm sm:text-base" disabled aria-disabled title="대여 불가 상태입니다">
-                    <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
+                  <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm bp-sm:text-base" disabled aria-disabled title="대여 불가 상태입니다">
+                    <Briefcase className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
                     대여 불가
                   </Button>
                 )}
@@ -146,7 +146,7 @@ const RacketCard = React.memo(
             alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
             width={300}
             height={300}
-            className="h-40 sm:h-64 md:h-72 lg:h-80 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="h-40 bp-sm:h-64 bp-md:h-72 bp-lg:h-80 w-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
             <div className="flex items-center gap-2">
@@ -158,19 +158,19 @@ const RacketCard = React.memo(
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
             <div className="flex gap-2">
               <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs sm:text-base">
-                  <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
+                <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs bp-sm:text-base">
+                  <Eye className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
 
-                  <span className="sm:hidden">상세</span>
-                  <span className="hidden sm:inline">상세보기</span>
+                  <span className="bp-sm:hidden">상세</span>
+                  <span className="hidden bp-sm:inline">상세보기</span>
                 </Button>
               </Link>
             </div>
           </div>
         </div>
-        <CardContent className="p-3 sm:p-6">
-          <div className="text-xs sm:text-base text-muted-foreground mb-2 font-medium">{brandLabel}</div>
-          <CardTitle className="text-base sm:text-lg md:text-xl mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
+        <CardContent className="p-3 bp-sm:p-6">
+          <div className="text-xs bp-sm:text-base text-muted-foreground mb-2 font-medium">{brandLabel}</div>
+          <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
 
           <div className="flex items-center gap-2 mb-3">
             <StatusBadge kind="condition" state={racket.condition} />
@@ -184,16 +184,16 @@ const RacketCard = React.memo(
           </div>
         </CardContent>
 
-        <CardFooter className="p-3 sm:p-6 pt-0 flex justify-between items-center">
+        <CardFooter className="p-3 bp-sm:p-6 pt-0 flex justify-between items-center">
           <div>
-            <div className="font-bold text-base sm:text-xl md:text-2xl text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+            <div className="font-bold text-base bp-sm:text-xl bp-md:text-2xl text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
           </div>
 
           {racket.rental?.enabled ? (
             <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
           ) : (
-            <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm sm:text-base" disabled aria-disabled>
-              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
+            <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm bp-sm:text-base" disabled aria-disabled>
+              <Briefcase className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
               대여 불가
             </Button>
           )}
