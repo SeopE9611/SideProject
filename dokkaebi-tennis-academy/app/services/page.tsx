@@ -160,7 +160,7 @@ export default function ServicesPage() {
   return (
     <div className="flex flex-col">
       {/* Hero 섹션 */}
-      <section className="relative min-h-[120vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[90vh] bp-md:min-h-[100vh] bp-lg:min-h-[110vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500">
           <div className="absolute inset-0 opacity-20">
             <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -196,15 +196,15 @@ export default function ServicesPage() {
                 </p>
               </div>
 
-              <CardContent className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <CardContent className="p-5 bp-md:p-8">
+                <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 bp-md:gap-8 mb-6 bp-md:mb-8">
                   <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
                     <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
                       <PhoneCall className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">전화 예약</h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-4">가장 빠른 예약은 전화로 문의해 주세요.</p>
-                    <div className="text-3xl font-bold text-blue-600 mb-2">0507-1392-3493</div>
+                    <div className="text-2xl bp-md:text-3xl font-bold text-blue-600 mb-2">0507-1392-3493</div>
                     <p className="text-sm text-gray-500">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
                   </div>
 
@@ -332,7 +332,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 서비스 소개 섹션 */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800" id="string-types">
+      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800" id="string-types">
         <div className="container">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -347,7 +347,7 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-8">
             {stringTypes.map((type) => (
               <Card key={type.id} className="group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
                 <div className="h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
@@ -426,7 +426,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 가격 안내 섹션 */}
-      <section className="py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500 relative overflow-hidden" id="pricing">
+      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500 relative overflow-hidden" id="pricing">
         <div className="absolute inset-0 opacity-10">
           <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -455,7 +455,7 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-6 mb-16">
             {pricingInfo.map((item) => (
               <Card
                 key={item.service}
@@ -532,7 +532,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 장착 과정 섹션 */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
+      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
         <div className="container">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -547,13 +547,13 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-8">
             {processSteps.map((step) => (
               <div key={step.step} className="relative group">
-                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 transform translate-x-4 z-0"></div>}
+                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 transform translate-x-4 z-0"></div>}
 
                 <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white dark:bg-gray-800">
-                  <CardContent className="p-8">
+                  <CardContent className="p-5 bp-md:p-8">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
                       <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg">{step.step}</div>
@@ -569,13 +569,13 @@ export default function ServicesPage() {
       </section>
 
       {/* 예약 안내 섹션 */}
-      {/* <section className="py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500 relative overflow-hidden" id="booking">
+      {/* <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500 relative overflow-hidden" id="booking">
         <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
         <div className="absolute bottom-10 right-10 w-24 h-24 bg-indigo-400/20 rounded-full blur-lg  "></div>
       </section> */}
 
       {/* 고객 후기 섹션 */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
         <div className="container">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">고객 후기</h2>
@@ -585,7 +585,7 @@ export default function ServicesPage() {
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {reviews.map((review, index) => (
               <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white dark:bg-gray-800">
-                <CardContent className="p-8">
+                <CardContent className="p-5 bp-md:p-8">
                   <div className="flex items-center mb-4">
                     <Image src={review.avatar || '/placeholder.svg'} alt={review.name} width={60} height={60} className="rounded-full mr-4" />
                     <div>

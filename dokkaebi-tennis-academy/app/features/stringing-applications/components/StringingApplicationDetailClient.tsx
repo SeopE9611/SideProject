@@ -36,6 +36,7 @@ interface Props {
 interface ApplicationDetail {
   id: string;
   orderId?: string;
+  rentalId?: string;
   orderCancelStatus?: string;
   customer: {
     name: string;
@@ -761,6 +762,37 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <Link href={isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&orderId=${data.orderId}`}>
                   <Button variant="outline" size="sm">
                     주문 상세 보기
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+            {/* 연결된 대여 정보 (대여에서 생성된 신청인 경우만 표시) */}
+        {data.rentalId && (
+          <Card className="mb-8 border border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                연결된 대여
+                <Badge variant="outline" className="text-[11px]">
+                  대여 기반 신청
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+                이 신청은 아래 라켓 대여 주문으로부터 생성된 신청입니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-sm">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  대여 ID 끝자리 <span className="font-mono font-semibold">{String(data.rentalId).slice(-6)}</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link href={isAdmin ? `/admin/rentals/${encodeURIComponent(String(data.rentalId))}` : `/mypage/rentals/${encodeURIComponent(String(data.rentalId))}`}>
+                  <Button variant="outline" size="sm">
+                    대여 상세 보기
                   </Button>
                 </Link>
               </div>

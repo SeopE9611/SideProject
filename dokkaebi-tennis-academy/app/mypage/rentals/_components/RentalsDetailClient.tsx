@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getDepositBanner } from '@/app/features/rentals/utils/ui';
-import { ArrowLeft, Briefcase, Calendar, Clock, CreditCard, Package, CheckCircle, AlertCircle, XCircle, TrendingUp, Truck } from 'lucide-react';
+import { ArrowLeft, Briefcase, Calendar, Clock, CreditCard, Package, CheckCircle, AlertCircle, XCircle, TrendingUp, Truck, Wrench } from 'lucide-react';
 import { racketBrandLabel } from '@/lib/constants';
 import CancelRentalDialog from '@/app/mypage/rentals/_components/CancelRentalDialog';
 
@@ -16,12 +16,30 @@ type Rental = {
   model: string;
   days: number;
   status: 'pending' | 'paid' | 'out' | 'returned' | 'canceled';
-  amount?: { fee?: number; deposit?: number; total?: number };
+  amount?: {
+    fee?: number;
+    deposit?: number;
+    /**
+     * 스트링 상품 금액 (스트링 선택 + 교체 신청한 경우에만 존재)
+     * - 과거 데이터 호환을 위해 optional
+     */
+    stringPrice?: number;
+    /**
+     * 교체 서비스비(장착비) (스트링 선택 + 교체 신청한 경우에만 존재)
+     */
+    stringingFee?: number;
+    total?: number;
+  };
   createdAt?: string;
   dueAt?: string | null;
   outAt?: string | null;
   returnedAt?: string | null;
   depositRefundedAt?: string | null;
+
+  //  대여 기반 교체 서비스 신청서 연결
+  stringingApplicationId?: string | null;
+  isStringServiceApplied?: boolean;
+
   shipping?: {
     outbound?: {
       courier?: string;
@@ -35,6 +53,7 @@ type Rental = {
       note?: string;
     } | null;
   } | null;
+
   // 취소 요청 정보 (상세 화면에서 상태 판단용)
   cancelRequest?: {
     status: 'requested' | 'approved' | 'rejected';
@@ -231,9 +250,22 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     );
   }
 
+  // 결제 금액(표시용): 서버/DB 저장 구조와 동일하게 분해
+  // - stringPrice/stringingFee는 과거 데이터에는 없을 수 있으니 0 fallback
   const fee = data.amount?.fee ?? 0;
   const deposit = data.amount?.deposit ?? 0;
-  const total = data.amount?.total ?? fee + deposit;
+  const stringPrice = data.amount?.stringPrice ?? 0;
+  const stringingFee = data.amount?.stringingFee ?? 0;
+  // 서버가 total을 계산해 저장하지만, 혹시 없을 경우를 대비해 동일 로직으로 fallback
+  const total = data.amount?.total ?? fee + deposit + stringPrice + stringingFee;
+
+  // 연결된 신청서 링크(있을 때만)
+  const applicationHref = useMemo(() => {
+    const appId = data.stringingApplicationId;
+    if (!appId) return null;
+    // 마이페이지 신청서 상세 경로(프로젝트 내 기존 구조에 맞춰 사용)
+    return `/mypage/applications/${encodeURIComponent(appId)}`;
+  }, [data.stringingApplicationId]);
 
   const banner = getDepositBanner({
     status: data.status,
@@ -290,6 +322,15 @@ export default function RentalsDetailClient({ id }: { id: string }) {
                 목록으로 돌아가기
               </Link>
             </Button>
+            {/* 교체 서비스 신청서 보기 CTA (대여 기반 신청서가 연결된 경우에만) */}
+            {applicationHref && (
+              <Link href={applicationHref}>
+                <Button className="gap-2">
+                  <Wrench className="h-4 w-4" />
+                  교체 서비스 신청서 보기
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -371,6 +412,27 @@ export default function RentalsDetailClient({ id }: { id: string }) {
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-4">
+              {/* 스트링 상품 금액: 있을 때만 표시(대여만 한 경우 UI가 지저분해지지 않도록) */}
+              {stringPrice > 0 && (
+                <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <Package className="h-4 w-4 text-slate-500" />
+                  <div className="flex-1">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">스트링 상품</p>
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{stringPrice.toLocaleString()}원</p>
+                  </div>
+                </div>
+              )}
+
+              {/* 교체 서비스비(장착비): 있을 때만 표시 */}
+              {stringingFee > 0 && (
+                <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <Wrench className="h-4 w-4 text-slate-500" />
+                  <div className="flex-1">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">교체 서비스비</p>
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{stringingFee.toLocaleString()}원</p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <Briefcase className="h-4 w-4 text-slate-500" />
                 <div>

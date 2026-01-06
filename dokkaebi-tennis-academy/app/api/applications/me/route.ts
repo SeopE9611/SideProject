@@ -122,6 +122,7 @@ export async function GET(req: Request) {
         hasTracking,
         // 이 신청이 연결된 주문 ID (없으면 null)
         orderId: (doc as any).orderId ? String((doc as any).orderId) : null,
+        rentalId: (doc as any).rentalId ? String((doc as any).rentalId) : null,
         // 사용자 확정 시각 (없으면 null)
         userConfirmedAt: (doc as any).userConfirmedAt instanceof Date ? (doc as any).userConfirmedAt.toISOString() : typeof (doc as any).userConfirmedAt === 'string' ? (doc as any).userConfirmedAt : null,
         // 마이페이지 목록 카드용 취소 요청 정보

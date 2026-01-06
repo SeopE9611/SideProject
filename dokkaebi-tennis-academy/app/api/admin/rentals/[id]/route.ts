@@ -50,12 +50,17 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     model: doc.model,
     days: doc.days,
     status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status,
-    amount: doc.amount, // { deposit, fee, total }
+    amount: doc.amount, // { deposit, fee, stringPrice?, stringingFee?, total }
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null,
     dueAt: doc.dueAt ?? null,
     returnedAt: doc.returnedAt ?? null,
     depositRefundedAt: doc.depositRefundedAt ?? null,
+
+    // 대여 기반 교체 서비스 신청서 연결 정보 (있으면 관리자 상세에서 CTA 노출 가능)
+    isStringServiceApplied: !!(doc as any).isStringServiceApplied,
+    stringingApplicationId: (doc as any).stringingApplicationId ?? null,
+
     shipping: {
       outbound: doc.shipping?.outbound ?? null,
       return: doc.shipping?.return ?? null,

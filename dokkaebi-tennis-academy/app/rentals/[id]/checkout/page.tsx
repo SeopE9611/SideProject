@@ -26,15 +26,22 @@ async function getInitialForRacket(racketId: string, period: number, stringId?: 
   const deposit = Number(racket.rental?.deposit ?? 0);
 
   //  선택 스트링(옵션): stringId가 있으면 products에서 미니 정보 조회
-  let selectedString: null | { id: string; name: string; price: number; image: string | null } = null;
+  let selectedString: null | {
+    id: string;
+    name: string;
+    price: number;
+    mountingFee: number; // 상품별 교체비(장착비)
+    image: string | null;
+  } = null;
   if (stringId && ObjectId.isValid(stringId)) {
-    const p = await db.collection('products').findOne({ _id: new ObjectId(stringId) }, { projection: { name: 1, price: 1, images: 1, thumbnail: 1 } });
+    const p = await db.collection('products').findOne({ _id: new ObjectId(stringId) }, { projection: { name: 1, price: 1, mountingFee: 1, images: 1, thumbnail: 1 } });
     if (p) {
       const img = (typeof (p as any).thumbnail === 'string' && (p as any).thumbnail) || (Array.isArray((p as any).images) && (p as any).images[0] ? (p as any).images[0] : null);
       selectedString = {
         id: stringId,
         name: (p as any).name ?? '',
         price: Number((p as any).price ?? 0),
+        mountingFee: Number((p as any).mountingFee ?? 0),
         image: img,
       };
     }

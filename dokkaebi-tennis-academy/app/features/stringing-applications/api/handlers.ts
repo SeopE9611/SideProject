@@ -198,6 +198,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     return NextResponse.json({
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
+      rentalId: (app as any).rentalId?.toString?.() || null,
       // 사용자 확정 시각 (없으면 null)
       userConfirmedAt: (app as any).userConfirmedAt instanceof Date ? (app as any).userConfirmedAt.toISOString() : typeof (app as any).userConfirmedAt === 'string' ? (app as any).userConfirmedAt : null,
       orderCancelStatus: order?.cancelRequest?.status ?? 'none',
@@ -1546,6 +1547,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       preferredTime,
       requirements,
       orderId, // 문자열 | undefined (단독 신청 허용)
+      rentalId, // 문자열 | undefined (대여 기반 신청 허용)
       packageOptOut,
       lines,
     } = await req.json();
@@ -1586,7 +1588,40 @@ export async function handleSubmitStringingApplication(req: Request) {
     // orderId 선택값 처리(단독 신청 허용): 유효하면 ObjectId, 아니면 null
     const orderObjectId = typeof orderId === 'string' && ObjectId.isValid(orderId) ? new ObjectId(orderId) : null;
 
+    // rentalId 선택값 처리(대여 기반 신청 허용): 유효하면 ObjectId, 아니면 null
+    const rentalObjectId = typeof rentalId === 'string' && ObjectId.isValid(rentalId) ? new ObjectId(rentalId) : null;
+
+    // 방어: 동시에 들어오면 어떤 기준으로 연결할지 애매하므로 차단
+    if (orderObjectId && rentalObjectId) {
+      return NextResponse.json({ message: 'orderId와 rentalId는 동시에 제출할 수 없습니다.' }, { status: 400 });
+    }
+
     const db = await getDb();
+
+    /**
+     * rentalId 기반 제출 권한/존재 검증
+     * - 회원 대여: rental.userId === 현재 로그인 userId 여야 함
+     * - 비회원 대여(guestInfo): 입력 email/phone이 guestInfo와 일치할 때만 허용(최소 방어)
+     * - 둘 다 확인 불가하면(forbidden) 차단
+     */
+    if (rentalObjectId) {
+      const rental = await db.collection('rental_orders').findOne({ _id: rentalObjectId }, { projection: { userId: 1, guestInfo: 1 } });
+      if (!rental) {
+        return NextResponse.json({ message: '유효하지 않은 rentalId' }, { status: 400 });
+      }
+
+      const isAdmin = payload?.role === 'admin';
+      const isMemberOwner = !!(rental?.userId && userId && String(rental.userId) === String(userId));
+
+      // guest 대여의 경우: 최소 방어(완전한 보안은 guest 토큰이 있어야 가능)
+      const guestEmail = normalizeEmail((rental as any)?.guestInfo?.email);
+      const guestPhone = ((rental as any)?.guestInfo?.phone ?? '').replace(/\D/g, '');
+      const isGuestOwner = (!!guestEmail && !!contactEmail && guestEmail === contactEmail) || (!!guestPhone && !!contactPhone && guestPhone === contactPhone);
+
+      if (!isAdmin && !isMemberOwner && !isGuestOwner) {
+        return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+      }
+    }
 
     // === 2) 동일 시간대 수용 인원 체크 (draft/취소 제외) ===
     const EXCLUDED_STATUSES = ['취소', 'draft'] as const;
@@ -2067,6 +2102,7 @@ export async function handleSubmitStringingApplication(req: Request) {
     const baseDoc = {
       _id: applicationId,
       orderId: orderObjectId,
+      rentalId: rentalObjectId,
       name,
       phone,
       email,
@@ -2107,6 +2143,7 @@ export async function handleSubmitStringingApplication(req: Request) {
           },
           $set: {
             orderId: baseDoc.orderId,
+            rentalId: baseDoc.rentalId,
             name: baseDoc.name,
             phone: baseDoc.phone,
             email: baseDoc.email,
@@ -2145,6 +2182,19 @@ export async function handleSubmitStringingApplication(req: Request) {
     if (orderObjectId) {
       await db.collection('orders').updateOne({ _id: orderObjectId }, { $set: { isStringServiceApplied: true, stringingApplicationId: applicationId.toString() } });
     }
+    // 대여가 있을 때만 (구매 주문과 동일한 “연결” 필드 기록)
+    if (rentalObjectId) {
+      await db.collection('rental_orders').updateOne(
+        { _id: rentalObjectId },
+        {
+          $set: {
+            isStringServiceApplied: true,
+            stringingApplicationId: applicationId.toString(),
+            updatedAt: new Date(),
+          },
+        }
+      );
+    }
 
     // === 9) 알림 ===
     const STATUS_VALUES = ['draft', '검토 중', '접수완료', '작업 중', '교체완료', '취소'] as const;
@@ -2154,6 +2204,7 @@ export async function handleSubmitStringingApplication(req: Request) {
     const appCtx = {
       applicationId: String(applicationId),
       orderId: orderObjectId ? String(orderObjectId) : null,
+      rentalId: rentalObjectId ? String(rentalObjectId) : null,
       status: '검토 중' as AppStatus,
       stringDetails: { preferredDate, preferredTime, racket: racketType, stringTypes },
       shippingInfo,

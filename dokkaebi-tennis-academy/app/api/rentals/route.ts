@@ -58,6 +58,7 @@ export async function POST(req: Request) {
     stringId: ObjectId;
     name: string;
     price: number;
+    mountingFee: number;
     image: string | null;
     requestedAt: Date;
   } = null;
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'BAD_STRING_ID' }, { status: 400 });
     }
 
-    const s = await db.collection('products').findOne({ _id: new ObjectId(sid) }, { projection: { name: 1, price: 1, images: 1 } });
+    const s = await db.collection('products').findOne({ _id: new ObjectId(sid) }, { projection: { name: 1, price: 1, mountingFee: 1, images: 1 } });
     if (!s) {
       return NextResponse.json({ message: 'STRING_NOT_FOUND' }, { status: 404 });
     }
@@ -81,6 +82,7 @@ export async function POST(req: Request) {
       stringId: (s as any)._id,
       name: String((s as any).name ?? ''),
       price: Number((s as any).price ?? 0),
+      mountingFee: Number((s as any).mountingFee ?? 0),
       image: firstImg,
       requestedAt: new Date(),
     };
@@ -106,7 +108,21 @@ export async function POST(req: Request) {
   const feeMap = { 7: racket.rental?.fee?.d7 ?? 0, 15: racket.rental?.fee?.d15 ?? 0, 30: racket.rental?.fee?.d30 ?? 0 } as const;
   const fee = feeMap[days] ?? 0;
   const deposit = Number(racket.rental?.deposit ?? 0);
-  const amount = { deposit, fee, total: deposit + fee };
+  const stringPrice = requested ? Number(stringingSnap?.price ?? 0) : 0;
+  /**
+   *  교체 서비스비(장착비)는 "선택한 스트링 상품의 mountingFee"를 사용
+   * - UI(RentalsCheckoutClient)와 서버가 같은 원천 데이터를 보게 만들어
+   *   결제요약/DB저장 금액 불일치를 방지
+   */
+  const stringingFee = requested ? Number(stringingSnap?.mountingFee ?? 0) : 0;
+
+  const amount = {
+    deposit,
+    fee,
+    stringPrice,
+    stringingFee,
+    total: deposit + fee + stringPrice + stringingFee,
+  };
 
   // 반납 예정일
   const now = new Date();

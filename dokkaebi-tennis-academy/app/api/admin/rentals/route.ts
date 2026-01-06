@@ -108,6 +108,20 @@ export async function GET(req: Request) {
     const ret = r?.shipping?.return ?? null;
     const cust = (r.userId && userMap.get(String(r.userId))) || (r.guest ? { name: r.guest.name, email: r.guest.email } : { name: '', email: '' });
 
+    /**
+     * ✅ amount 정규화 (프론트/AdminRentalsClient 표시 정합성 보장)
+     * - 신규 데이터: r.amount에 stringPrice/stringingFee가 이미 포함될 수 있음
+     * - 구버전 데이터: amount가 없거나, amount에 fee/deposit/total만 있을 수 있음
+     * - 또한 스트링 스냅샷이 r.stringing에 저장되어 있으므로(요청된 경우),
+     *   amount에 값이 없으면 stringing 기반으로 보완.
+     */
+    const fee = Number(r?.amount?.fee ?? r?.fee ?? 0);
+    const deposit = Number(r?.amount?.deposit ?? r?.deposit ?? 0);
+    const requested = !!r?.stringing?.requested;
+    const stringPrice = Number(r?.amount?.stringPrice ?? (requested ? r?.stringing?.price ?? 0 : 0));
+    const stringingFee = Number(r?.amount?.stringingFee ?? (requested ? r?.stringing?.mountingFee ?? 0 : 0));
+    const total = Number(r?.amount?.total ?? fee + deposit + stringPrice + stringingFee);
+
     return {
       id: r._id?.toString(),
       racketId: r.racketId?.toString(),
@@ -115,7 +129,7 @@ export async function GET(req: Request) {
       model: r.model || '',
       status: r.status,
       days: r.days ?? r.period ?? 0,
-      amount: r.amount ?? { fee: r.fee ?? 0, deposit: r.deposit ?? 0, total: (r.fee ?? 0) + (r.deposit ?? 0) },
+      amount: { fee, deposit, stringPrice, stringingFee, total },
       createdAt: r.createdAt,
       outAt: r.outAt ?? null,
       dueAt: r.dueAt ?? null,

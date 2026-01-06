@@ -3,7 +3,7 @@
 import useSWR from 'swr';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { ArrowLeft, Calendar, CreditCard, Loader2, Package, Settings, Truck } from 'lucide-react';
+import { ArrowLeft, Calendar, CreditCard, Loader2, Package, Settings, Truck, Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -254,6 +254,16 @@ export default function AdminRentalDetailClient() {
                   </Link>
                 </Button>
 
+                {/* 교체 서비스 신청서 보기 (대여 기반 신청서가 연결된 경우에만 노출) */}
+                {!!data?.stringingApplicationId && (
+                  <Button asChild variant="outline" size="sm" className="whitespace-nowrap">
+                    <Link href={`/admin/applications/stringing/${encodeURIComponent(data.stringingApplicationId)}`}>
+                      <Wrench className="h-4 w-4 mr-2" />
+                      교체 서비스 신청서 보기
+                    </Link>
+                  </Button>
+                )}
+
                 {data?.status !== 'canceled' && (
                   <Button asChild variant="outline" size="sm" className="h-8 border-slate-300 text-slate-900 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-50 dark:hover:bg-slate-700/60 whitespace-nowrap">
                     <Link href={`/admin/rentals/${id}/shipping-update`}>
@@ -478,6 +488,12 @@ export default function AdminRentalDetailClient() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
+                  {/*
+                    금액 표시 정합성
+                    - 서버(/api/rentals)가 amount.stringPrice / amount.stringingFee를 저장하므로
+                      관리자 상세에서도 해당 금액 근거를 그대로 노출시킴.
+                    - 대여만 한 케이스(스트링 미선택)는 UI가 지저분해지지 않도록 조건부 렌더링.
+                  */}
                   <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-800/70 rounded-lg border border-gray-100 dark:border-slate-700/60">
                     <div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">브랜드</p>
@@ -528,6 +544,27 @@ export default function AdminRentalDetailClient() {
                       <p className="font-semibold text-gray-900 dark:text-gray-100">{won(data.amount?.deposit)}</p>
                     </div>
                   </div>
+                  {/* 스트링 상품 금액: 있을 때만 표시 */}
+                  {(data.amount?.stringPrice ?? 0) > 0 && (
+                    <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-800/70 rounded-lg border border-gray-100 dark:border-slate-700/60">
+                      <Package className="h-4 w-4 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">스트링 상품</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{won(data.amount?.stringPrice ?? 0)}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 교체 서비스비(장착비): 있을 때만 표시 */}
+                  {(data.amount?.stringingFee ?? 0) > 0 && (
+                    <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-800/70 rounded-lg border border-gray-100 dark:border-slate-700/60">
+                      <Wrench className="h-4 w-4 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">교체 서비스비</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{won(data.amount?.stringingFee ?? 0)}</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-100 dark:border-purple-800/50">
                     <div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">총 결제 금액</p>

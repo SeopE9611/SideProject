@@ -25,6 +25,12 @@ export type RentalStringing = {
   stringId: string; // ObjectId 문자열
   name: string;
   price: number;
+  /**
+   *  상품별 장착비(교체비)
+   * - 신상품/정책 변경으로 mountingFee가 바뀌더라도,
+   *   주문 당시 기준 금액을 스냅샷으로 보존하기 위해 저장.
+   */
+  mountingFee?: number;
   image?: string | null;
   requestedAt?: string;
 };
@@ -38,11 +44,20 @@ export type RentalOrder = {
   days: 7 | 15 | 30; // 기간: UI·API에서 실사용하는 7/15/30일 단위
   status: RentalStatus;
 
-  // 금액: 보증금/수수료/총액
+  // 금액: 보증금/수수료/스트링/교체비/총액
   amount: {
     fee: number; // 기간별 대여 수수료
     deposit: number; // 보증금(선결제)
-    total: number; // fee + deposit
+    /**
+     *  스트링 상품 가격 (스트링 교체 신청 시에만 존재)
+     * - 과거 데이터/일부 플로우에서는 없을 수 있어 optional로 처리
+     */
+    stringPrice?: number;
+    /**
+     * 교체 서비스비(장착비) (스트링 교체 신청 시에만 존재)
+     */
+    stringingFee?: number;
+    total: number; // deposit + fee + (stringPrice ?? 0) + (stringingFee ?? 0)
   };
 
   shipping?: any; // 최소형(후속 작업에서 스키마 분리)

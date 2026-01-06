@@ -39,12 +39,15 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     model: doc.model,
     days: doc.days,
     status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status, // pending | paid | out | returned
-    amount: doc.amount, // { fee, deposit, total }
+    amount: doc.amount, // { fee, deposit, stringPrice?, stringingFee?, total }
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null, // 출고 시각
     dueAt: doc.dueAt ?? null, // 반납 예정
     returnedAt: doc.returnedAt ?? null, // 반납 완료
     depositRefundedAt: doc.depositRefundedAt ?? null, // 보증금 환불 시각
+    // 스트링 교체 신청서 연결 정보 (대여 기반 신청 시 저장됨)
+    isStringServiceApplied: !!(doc as any).isStringServiceApplied,
+    stringingApplicationId: (doc as any).stringingApplicationId ?? null,
     shipping: {
       // 운송장/배송 정보
       outbound: doc.shipping?.outbound ?? null,

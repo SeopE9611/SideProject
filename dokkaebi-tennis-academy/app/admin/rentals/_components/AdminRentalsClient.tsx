@@ -28,7 +28,13 @@ type RentalRow = {
   model: string;
   status: 'pending' | 'paid' | 'out' | 'returned' | 'canceled';
   days: number;
-  amount: { fee: number; deposit: number; total: number };
+  amount: {
+    fee: number;
+    deposit: number;
+    stringPrice?: number; // 스트링 상품 금액
+    stringingFee?: number; //  교체 서비스비(장착비)
+    total: number;
+  };
   dueAt?: string;
   depositRefundedAt?: string;
   customer?: {
@@ -663,6 +669,14 @@ export default function AdminRentalsClient() {
                           <span className="text-[10px] text-muted-foreground">
                             수수료: {won(r.amount.fee)} / 보증금: {won(r.amount.deposit)}
                           </span>
+                          {/* 스트링/교체비: 있을 때만 추가 노출 (대여만 한 케이스 UI 과밀 방지) */}
+                          {((r.amount.stringPrice ?? 0) > 0 || (r.amount.stringingFee ?? 0) > 0) && (
+                            <span className="text-[10px] text-muted-foreground">
+                              {(r.amount.stringPrice ?? 0) > 0 ? `스트링: ${won(r.amount.stringPrice ?? 0)}` : ''}
+                              {(r.amount.stringPrice ?? 0) > 0 && (r.amount.stringingFee ?? 0) > 0 ? ' / ' : ''}
+                              {(r.amount.stringingFee ?? 0) > 0 ? `교체비: ${won(r.amount.stringingFee ?? 0)}` : ''}
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className={tdClasses}>

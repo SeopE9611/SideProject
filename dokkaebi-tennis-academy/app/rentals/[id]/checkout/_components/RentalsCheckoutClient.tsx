@@ -29,7 +29,13 @@ type Initial = {
   fee: number;
   deposit: number;
   requestStringing?: boolean;
-  selectedString?: { id: string; name: string; price: number; image: string | null } | null;
+  selectedString?: {
+    id: string;
+    name: string;
+    price: number;
+    mountingFee: number; //  상품별 교체비(장착비)
+    image: string | null;
+  };
   racket: {
     id: string;
     brand: string;
@@ -55,7 +61,17 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
   const [selectedBank, setSelectedBank] = useState<'shinhan' | 'kookmin' | 'woori' | ''>('');
   const [depositor, setDepositor] = useState('');
-  const total = initial.fee + initial.deposit;
+
+  /**
+   * 스트링 교체 신청 시 결제에 포함될 금액
+   * - stringPrice: 선택한 스트링 상품 가격
+   * - stringingFee: 선택한 스트링 상품의 mountingFee(장착비/교체비)
+   */
+  const stringPrice = requestStringing ? selectedString?.price ?? 0 : 0;
+  const stringingFee = requestStringing ? selectedString?.mountingFee ?? 0 : 0;
+
+  // 총 결제 금액 = 대여수수료 + 보증금 + 스트링 + 교체비
+  const total = initial.fee + initial.deposit + stringPrice + stringingFee;
 
   const [refundBank, setRefundBank] = useState<'shinhan' | 'kookmin' | 'woori' | ''>('');
   const [refundAccount, setRefundAccount] = useState(''); // 계좌번호
@@ -202,6 +218,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         // 라켓 정보도 전달 → apply에서 라켓 타입 프리필
         if (initial.racket?.brand) qs.set('racketBrand', String(initial.racket.brand));
         if (initial.racket?.model) qs.set('racketModel', String(initial.racket.model));
+        if (initial.selectedString?.id) {
+          qs.set('stringId', initial.selectedString.id);
+          qs.set('productId', initial.selectedString.id);
+        }
 
         router.push(`/services/apply?${qs.toString()}`);
         return;
@@ -581,6 +601,20 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       <span className="text-slate-600 dark:text-slate-400">보증금</span>
                       <span className="font-semibold text-lg">{initial.deposit.toLocaleString()}원</span>
                     </div>
+                    {requestStringing && initial.selectedString && (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-600 dark:text-slate-400">스트링 금액</span>
+                          <span className="font-semibold text-lg">{initial.selectedString.price.toLocaleString()}원</span>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-600 dark:text-slate-400">교체 서비스비</span>
+                          <span className="font-semibold text-lg">{stringingFee.toLocaleString()}원</span>
+                        </div>
+                      </>
+                    )}
+
                     <Separator />
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>총 결제 금액</span>

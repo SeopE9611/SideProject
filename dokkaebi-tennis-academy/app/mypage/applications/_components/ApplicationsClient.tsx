@@ -39,6 +39,7 @@ export interface Application {
 
   // 이 신청이 어떤 주문에서 생성되었는지 연결 정보
   orderId?: string | null;
+  rentalId?: string | null;
 
   // 사용자 확정 시각(없으면 null) - 교체확정 완료 여부 판단용
   userConfirmedAt?: string | null;
@@ -303,9 +304,14 @@ export default function ApplicationsClient() {
           const collectionLabel = !isStringService ? null : cm === 'self_ship' ? '수령 방법: 자가 발송(택배)' : cm === 'visit' ? '수령 방법: 매장 방문' : '수령 방법: 기타';
           // 운송장 등록 여부
           const hasTracking = app.hasTracking;
-          // 연결된 주문 ID
+          // 연결된 주문/대여 ID
           const orderId = (app as any).orderId as string | null | undefined;
+          const rentalId = (app as any).rentalId as string | null | undefined;
+
+          // 우선순위: 주문 기반(orderId) > 대여 기반(rentalId)
           const hasOrderLink = Boolean(orderId);
+          const hasRentalLink = !hasOrderLink && Boolean(rentalId);
+
           // 종료 상태(수정 금지)
           const CLOSED = ['작업 중', '교체완료'];
           const isClosed = CLOSED.includes(String((app as any).status));
@@ -357,6 +363,18 @@ export default function ApplicationsClient() {
                             </Badge>
                           </Link>
                           <span className="text-[11px] text-slate-400 dark:text-slate-500">주문 ID 끝자리 {orderId.slice(-6)}</span>
+                        </div>
+                      )}
+
+                      {/* 이 신청이 어떤 대여에서 생성되었는지 링크 */}
+                      {hasRentalLink && rentalId && (
+                        <div className="mt-1 flex items-center gap-2">
+                          <Link href={`/mypage?tab=rentals&rentalId=${rentalId}`}>
+                            <Badge variant="outline" className="border-slate-200 text-slate-700 hover:bg-slate-50">
+                              원 대여 상세 보기
+                            </Badge>
+                          </Link>
+                          <span className="text-xs text-muted-foreground">대여 ID 끝자리 {rentalId.slice(-6)}</span>
                         </div>
                       )}
 
