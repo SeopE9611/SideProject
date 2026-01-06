@@ -98,7 +98,7 @@ export default function StringServiceApplyPage() {
   const isRentalBased = Boolean(rentalId);
 
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
-  const pdpProductId = isOrderBased ? null : searchParams.get('productId');
+  const pdpProductId = isOrderBased ? null : searchParams.get('productId') ?? searchParams.get('stringId');
 
   /**
    * 옵션 A: 교체 서비스 신청은 "주문(orderId)" 기반으로만 진행합니다.
@@ -1105,6 +1105,97 @@ export default function StringServiceApplyPage() {
     fetchOrder();
   }, [orderId]);
 
+  /**
+   * 대여 기반(rentalId) 프리필
+   * - /api/rentals/[id]에서 선택 스트링(stringing.stringId)을 읽어와 stringTypes를 세팅
+   * - /api/products/[id]/mini로 mountingFee를 가져와 pdpMountingFee에 저장
+   *   (※ apply 페이지의 기존 가격 계산 로직은 "orderId가 없을 때 pdpMountingFee"를 우선 사용하므로
+   *    rental 기반에서도 교체비가 정확히 계산.)
+   *
+   * 주의:
+   * - orderId 기반 프리필과 충돌하지 않도록 orderId가 있으면 실행X
+   * - 로그인 회원은 아래 "주문서 없는 단독 신청" 훅(/api/users/me)이 이미 주소까지 채워줄 수 있으므로,
+   *   rental 프리필은 필수 항목(스트링 선택/신청자 정보) 위주로만 안전하게 보완.
+   */
+  useEffect(() => {
+    if (!rentalId) return;
+    if (orderId) return; // orderId가 있으면 order 기반이 우선
+
+    let cancelled = false;
+
+    (async () => {
+      setIsUserLoading(true);
+      try {
+        const res = await fetch(`/api/rentals/${encodeURIComponent(rentalId)}`, {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+
+        const rental = await res.json().catch(() => ({} as any));
+        if (cancelled) return;
+
+        // 1) 신청자 정보(가능한 범위에서만 보완)
+        if (rental?.user?.email) {
+          setIsMember(true);
+          setFormData((prev) => ({
+            ...prev,
+            // 비어있을 때만 채우기(사용자 입력/기존 프리필을 덮어쓰지 않기)
+            name: prev.name || rental.user.name || '',
+            email: prev.email || rental.user.email || '',
+            phone: prev.phone || rental.user.phone || '',
+            shippingName: prev.shippingName || rental.user.name || '',
+            shippingEmail: prev.shippingEmail || rental.user.email || '',
+            shippingPhone: prev.shippingPhone || rental.user.phone || '',
+          }));
+        }
+
+        // 2) 스트링 선택 프리필
+        const sid = rental?.stringing?.requested ? rental?.stringing?.stringId : null;
+        if (!sid) return;
+
+        const stringId = String(sid);
+        setFormData((prev) => {
+          // 이미 선택되어 있으면 그대로 유지
+          if (prev.stringTypes.includes(stringId)) return prev;
+          return {
+            ...prev,
+            stringTypes: [stringId],
+            // 수량/라인 로직은 기존 방식 유지 (기본 1회)
+            stringUseCounts: { ...prev.stringUseCounts, [stringId]: prev.stringUseCounts[stringId] ?? 1 },
+          };
+        });
+
+        // 3) mountingFee 확보(교체비 계산 근거) + 미니 상품 정보 세팅
+        setIsLoadingPdpProduct(true);
+        try {
+          const miniRes = await fetch(`/api/products/${encodeURIComponent(stringId)}/mini`, { cache: 'no-store' });
+          const mini = await miniRes.json().catch(() => ({} as any));
+          if (!cancelled && mini?.ok) {
+            setPdpProduct({
+              name: mini.name,
+              image: mini.image ?? null,
+              price: typeof mini.price === 'number' ? mini.price : undefined,
+            });
+            if (typeof mini.mountingFee === 'number') {
+              setFormData((prev) => ({ ...prev, pdpMountingFee: mini.mountingFee }));
+            }
+          }
+        } finally {
+          if (!cancelled) setIsLoadingPdpProduct(false);
+        }
+      } catch (e) {
+        console.error('[apply][rental prefill] failed:', e);
+      } finally {
+        if (!cancelled) setIsUserLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [rentalId, orderId]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -1162,6 +1253,7 @@ export default function StringServiceApplyPage() {
       requirements: formData.requirements,
       packageOptOut: !!formData.packageOptOut,
       orderId,
+      rentalId,
       shippingInfo: {
         name: formData.shippingName,
         phone: formData.shippingPhone,
@@ -1313,15 +1405,15 @@ export default function StringServiceApplyPage() {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-full bg-white dark:bg-slate-950 bp-lg:bg-gradient-to-br bp-lg:from-slate-50 bp-lg:via-blue-50 bp-lg:to-indigo-100 bp-lg:dark:from-slate-900 bp-lg:dark:via-slate-800 bp-lg:dark:to-slate-900">
       {/* Hero Section */}
       <ApplyHero />
 
       {/* Main */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 bp-sm:py-12">
         <div className="mx-auto max-w-7xl">
           {/* Progress Steps: 폼 폭(800px)에 맞춰 중앙 정렬 */}
-          <div ref={stepsRef} className="mb-8">
+          <div ref={stepsRef} className="mb-6 bp-sm:mb-8">
             <ProgressSteps steps={steps} currentStep={currentStep} />
           </div>
 
@@ -1329,8 +1421,8 @@ export default function StringServiceApplyPage() {
           <div className="relative">
             {/* 중앙 메인 폼 */}
             <div className="mx-auto w-full md:w-[800px]">
-              <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl">
-                <CardContent className="p-8">
+              <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-2xl">
+                <CardContent className="p-4 bp-sm:p-6 bp-lg:p-8">
                   {/* 라켓 주문 프리필 배지 */}
                   <OrderPrefillBadge orderId={orderId} />
                   <form onSubmit={handleSubmit}>
