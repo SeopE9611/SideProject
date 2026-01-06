@@ -70,9 +70,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <SideMenu />
             <main id="main" className="flex-1">
               {/* 데스크탑 사이드메뉴 회피 패딩은 “바깥”에서 처리 */}
-              <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16">
-                <SiteContainer className="bp-lg:mx-0 bp-lg:max-w-none">{children}</SiteContainer>
-              </div>
+              <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16">{children}</div>
             </main>
 
             <Footer />
