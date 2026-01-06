@@ -191,19 +191,24 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
       const rentalId = String(json?.id ?? '');
 
-      // 스트링 교체 요청이 켜져 있으면: 결제 완료 → 교체 신청서 작성으로 연결
-      // 교체 신청서에서 금액/결제는 다루지 않고 "신청서"만 작성
-      if (requestStringing && selectedString?.id && rentalId) {
-        const qs = new URLSearchParams({
-          rentalId,
-          productId: selectedString.id, // services/apply에서 PDP 통합모드로 스트링 미니 정보를 가져오는 키
-        });
+      //  스트링 교체 신청을 체크했다면: 결제 완료 후 바로 신청서 작성 흐름으로 연결
+      if (requestStringing) {
+        const qs = new URLSearchParams();
+        qs.set('rentalId', String(json.id));
+
+        // 스트링 상품을 선택했다면 apply에서 미리 선택되게 전달
+        if (rentalId) qs.set('stringId', String(rentalId));
+
+        // 라켓 정보도 전달 → apply에서 라켓 타입 프리필
+        if (initial.racket?.brand) qs.set('racketBrand', String(initial.racket.brand));
+        if (initial.racket?.model) qs.set('racketModel', String(initial.racket.model));
+
         router.push(`/services/apply?${qs.toString()}`);
         return;
       }
 
-      // 미요청이면 기존대로 대여 성공 페이지
-      router.push(`/rentals/success?id=${rentalId}`);
+      // 기본: 대여 성공 페이지
+      router.push(`/rentals/success?id=${json.id}`);
     } finally {
       setLoading(false);
     }
