@@ -375,9 +375,9 @@ export default function CheckoutPage() {
       </div>
 
       <div className="container py-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-3">
           {/* 주문 정보 입력 폼 */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="bp-lg:col-span-2 space-y-6">
             {/* 주문 상품 */}
             <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
               <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-6">
@@ -696,8 +696,8 @@ export default function CheckoutPage() {
           </div>
 
           {/* 주문 요약 */}
-          <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-20">
+          <div className="bp-lg:col-span-1">
+            <div className="bp-lg:sticky bp-lg:top-20">
               <Card className="backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-0 shadow-2xl overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 p-6 text-white">
                   <CardTitle className="flex items-center gap-3 text-xl">

@@ -42,7 +42,7 @@ export default async function ProductsPage({
 
         <div className="relative container mx-auto px-4 md:px-6">
           <div className="text-center text-white">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl bp-lg:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
             <p className="text-base sm:text-lg md:text-2xl mb-5 sm:mb-6 md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스 스트링으로 플레이를 한 단계 업그레이드하세요</p>
           </div>
         </div>

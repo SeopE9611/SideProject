@@ -597,8 +597,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
       </div>
 
       <div className="container py-4 sm:py-6 md:py-8 px-4 sm:px-6">
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-5">
-          <div className="lg:col-span-3 space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 bp-lg:grid-cols-5">
+          <div className="bp-lg:col-span-3 space-y-3 sm:space-y-4">
             <Card className="overflow-hidden border-0 shadow-xl sm:shadow-2xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
               <div className="relative aspect-square">
                 <Image src={images[selectedImageIndex] || '/placeholder.svg'} alt={product.name} fill className="object-cover transition-transform duration-300 hover:scale-105" />
@@ -632,7 +632,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             )}
           </div>
 
-          <div className="lg:col-span-2 space-y-3 sm:space-y-4">
+          <div className="bp-lg:col-span-2 space-y-3 sm:space-y-4">
             <Card className="border-0 shadow-lg sm:shadow-xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
               <CardContent className="p-4 sm:p-6">
                 <div className="space-y-3 sm:space-y-4">
@@ -641,7 +641,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Badge variant="outline" className="mb-2 text-xs text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-800">
                       {BRAND_MAP[(product?.brand ?? '').toLowerCase()] ?? product.brand}
                     </Badge>
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent leading-tight">{product.name}</h1>
+                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent leading-tight">{product.name}</h1>
                     <div className="mt-2 flex items-center gap-2 sm:gap-3">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
