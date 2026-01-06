@@ -161,6 +161,14 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             account: refundAccount,
             holder: refundHolder,
           },
+          // --- 스트링 교체 요청 ---
+          // A안: 결제금액(대여료/보증금)은 그대로 두고,
+          //      "요청 여부 + 선택 스트링"만 서버/DB에 저장한다.
+          stringing: {
+            requested: !!requestStringing,
+            // requestStringing이 false면 stringId는 보내지 않아 서버가 무시하도록 함
+            stringId: requestStringing ? selectedString?.id : undefined,
+          },
         }),
       });
 

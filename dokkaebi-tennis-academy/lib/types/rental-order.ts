@@ -20,6 +20,15 @@ export type RentalCancelRequest = {
   processedByAdminId?: string; // 처리한 관리자 ID (선택)
 };
 
+export type RentalStringing = {
+  requested: boolean;
+  stringId: string; // ObjectId 문자열
+  name: string;
+  price: number;
+  image?: string | null;
+  requestedAt?: string;
+};
+
 export type RentalOrder = {
   id: string;
   userId?: string; // 비회원 대여 지원 시 undefined 가능
@@ -58,4 +67,7 @@ export type RentalOrder = {
 
   // 취소 요청 정보
   cancelRequest?: RentalCancelRequest;
+
+  // 스트링 교체 요청
+  stringing?: RentalStringing | null;
 };

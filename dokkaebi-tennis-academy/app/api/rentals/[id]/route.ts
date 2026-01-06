@@ -29,6 +29,17 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     days: doc.days,
     status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status,
     amount: doc.amount, // { deposit, fee, total }
+    // 스트링 교체 요청
+    stringing: doc.stringing
+      ? {
+          requested: !!doc.stringing.requested,
+          stringId: doc.stringing.stringId?.toString?.() ?? null,
+          name: doc.stringing.name ?? '',
+          price: Number(doc.stringing.price ?? 0),
+          image: doc.stringing.image ?? null,
+          requestedAt: doc.stringing.requestedAt ?? null,
+        }
+      : null,
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null, // 출고 시각
     dueAt: doc.dueAt ?? null, // 반납 예정

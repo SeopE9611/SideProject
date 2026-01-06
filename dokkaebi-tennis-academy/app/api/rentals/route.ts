@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: 'INVALID_JSON' }, { status: 400 });
   }
 
-  const { racketId, days, payment, shipping, refundAccount } = body as {
+  const { racketId, days, payment, shipping, refundAccount, stringing } = body as {
     racketId: string;
     days: 7 | 15 | 30;
     payment?: { method: 'bank_transfer'; bank?: string; depositor?: string };
@@ -29,6 +29,8 @@ export async function POST(req: Request) {
       deliveryRequest?: string;
     };
     refundAccount?: { bank: 'shinhan' | 'kookmin' | 'woori'; account: string; holder: string };
+    // 스트링 교체 요청(선택)
+    stringing?: { requested?: boolean; stringId?: string };
   };
 
   const db = (await clientPromise).db();
@@ -48,6 +50,42 @@ export async function POST(req: Request) {
   if (!racket) {
     return NextResponse.json({ message: '라켓 없음' }, { status: 404 });
   }
+
+  // --- 스트링 교체 요청 ---
+  // 결제 금액에는 반영하지 않고 "요청 + 선택 스트링 스냅샷"만 저장
+  let stringingSnap: null | {
+    requested: true;
+    stringId: ObjectId;
+    name: string;
+    price: number;
+    image: string | null;
+    requestedAt: Date;
+  } = null;
+
+  const requested = !!stringing?.requested;
+  if (requested) {
+    const sid = stringing?.stringId;
+    if (!sid || !ObjectId.isValid(sid)) {
+      return NextResponse.json({ message: 'BAD_STRING_ID' }, { status: 400 });
+    }
+
+    const s = await db.collection('products').findOne({ _id: new ObjectId(sid) }, { projection: { name: 1, price: 1, images: 1 } });
+    if (!s) {
+      return NextResponse.json({ message: 'STRING_NOT_FOUND' }, { status: 404 });
+    }
+
+    const firstImg = Array.isArray((s as any).images) && (s as any).images[0] ? String((s as any).images[0]) : null;
+
+    stringingSnap = {
+      requested: true,
+      stringId: (s as any)._id,
+      name: String((s as any).name ?? ''),
+      price: Number((s as any).price ?? 0),
+      image: firstImg,
+      requestedAt: new Date(),
+    };
+  }
+
   //진행 중 대여 수량 계산: paid|out만 재고 점유
   const activeCount = await db.collection('rental_orders').countDocuments({
     racketId: racketObjectId,
@@ -89,6 +127,7 @@ export async function POST(req: Request) {
     payment: payment ?? null, // 무통장 입금 은행/입금자
     shipping: shipping ?? null, // 배송지 정보
     refundAccount: refundAccount ?? null, // 보증금 환불 계좌
+    ...(stringingSnap ? { stringing: stringingSnap } : {}),
   };
   const res = await db.collection('rental_orders').insertOne(doc);
   return NextResponse.json({ ok: true, id: res.insertedId.toString() });
