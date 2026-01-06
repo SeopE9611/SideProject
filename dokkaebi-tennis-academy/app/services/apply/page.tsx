@@ -82,6 +82,7 @@ export default function StringServiceApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+  const rentalId = searchParams.get('rentalId');
 
   // PDP에서 넘어온 상품의 미니 정보(이름, 이미지)
   const [pdpProduct, setPdpProduct] = useState<PdpMiniProduct | null>(null);
@@ -94,6 +95,7 @@ export default function StringServiceApplyPage() {
   const [isUserLoading, setIsUserLoading] = useState(false);
 
   const isOrderBased = Boolean(orderId);
+  const isRentalBased = Boolean(rentalId);
 
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
   const pdpProductId = isOrderBased ? null : searchParams.get('productId');
@@ -104,12 +106,13 @@ export default function StringServiceApplyPage() {
    * - (이유) 스트링 금액/요금요약/성공페이지 정합성을 주문 데이터로 보장하기 위함
    */
   useEffect(() => {
-    if (isOrderBased) return;
+    // 주문 기반(orderId)이거나, 대여 기반(rentalId)이면 "직접진입 차단"을 하지 않는다.
+    if (isOrderBased || isRentalBased) return;
     if (!pdpProductId) return;
 
     showErrorToast('교체 서비스 신청은 결제(주문) 이후 진행됩니다. 상품 페이지로 이동합니다.');
     router.replace(`/products/${encodeURIComponent(String(pdpProductId))}`);
-  }, [isOrderBased, pdpProductId, router]);
+  }, [isOrderBased, isRentalBased, pdpProductId, router]);
 
   // null 또는 빈문자열("")이면 NaN 처리, 그 외에는 Number 변환
   const mountingFeeParam = isOrderBased ? null : searchParams.get('mountingFee');
