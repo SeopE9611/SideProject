@@ -178,8 +178,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             holder: refundHolder,
           },
           // --- 스트링 교체 요청 ---
-          // A안: 결제금액(대여료/보증금)은 그대로 두고,
-          //      "요청 여부 + 선택 스트링"만 서버/DB에 저장한다.
+          // 결제금액(대여료/보증금)은 그대로 두고,
+          // "요청 여부 + 선택 스트링"만 서버/DB에 저장.
           stringing: {
             requested: !!requestStringing,
             // requestStringing이 false면 stringId는 보내지 않아 서버가 무시하도록 함
@@ -212,15 +212,14 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         const qs = new URLSearchParams();
         qs.set('rentalId', String(json.id));
 
-        // 스트링 상품을 선택했다면 apply에서 미리 선택되게 전달
-        if (rentalId) qs.set('stringId', String(rentalId));
-
         // 라켓 정보도 전달 → apply에서 라켓 타입 프리필
         if (initial.racket?.brand) qs.set('racketBrand', String(initial.racket.brand));
         if (initial.racket?.model) qs.set('racketModel', String(initial.racket.model));
-        if (initial.selectedString?.id) {
-          qs.set('stringId', initial.selectedString.id);
-          qs.set('productId', initial.selectedString.id);
+
+        // stringId/productId는 "선택된 스트링 상품 id"만
+        if (selectedString?.id) {
+          qs.set('stringId', selectedString.id);
+          qs.set('productId', selectedString.id);
         }
 
         router.push(`/services/apply?${qs.toString()}`);
@@ -239,7 +238,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white dark:from-blue-700 dark:via-purple-700 dark:to-teal-700">
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
-        <div className="relative container py-16">
+        <div className="relative container mx-auto px-4 py-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full">
               <CreditCard className="h-8 w-8" />
@@ -252,9 +251,9 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         </div>
       </div>
 
-      <div className="container py-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-3">
+          <div className="bp-lg:col-span-2 space-y-6">
             {/* 대여 상품 정보 */}
             <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
               <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-6">
@@ -341,7 +340,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
               </div>
               <CardContent className="p-6">
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="flex items-center gap-2">
                         <UserIcon className="h-4 w-4 text-blue-600" />
@@ -356,7 +355,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       </Label>
                       <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="예: user@example.com" className="border-2 focus:border-blue-500 transition-colors" />
                     </div>
-                    <div className="space-y-2 sm:col-span-2">
+                    <div className="space-y-2 bp-sm:col-span-2">
                       <Label htmlFor="phone" className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-teal-600" />
                         연락처
@@ -580,8 +579,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
           </div>
 
           {/* 주문 요약 */}
-          <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-20">
+          <div className="bp-lg:col-span-1">
+            <div className="bp-lg:sticky bp-lg:top-20">
               <Card className="backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-0 shadow-2xl overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 p-6 text-white">
                   <CardTitle className="flex items-center gap-3 text-xl">

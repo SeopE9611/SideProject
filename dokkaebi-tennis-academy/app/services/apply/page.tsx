@@ -163,6 +163,9 @@ export default function StringServiceApplyPage() {
 
   // PDP 상품 미니 정보 로딩 (이미지/이름/장착비)
   useEffect(() => {
+    // rental 기반은 아래 rental prefill 훅에서 mini를 1회만 조회하도록 통일
+    if (rentalId) return;
+
     if (!pdpProductId) {
       setPdpProduct(null);
       return;
@@ -184,7 +187,7 @@ export default function StringServiceApplyPage() {
             price: typeof data.price === 'number' ? data.price : undefined,
           });
 
-          // 🔥 mountingFee를 formData에 저장
+          // mountingFee를 formData에 저장
           if (typeof data.mountingFee === 'number') {
             setFormData((prev) => ({
               ...prev,
@@ -207,7 +210,7 @@ export default function StringServiceApplyPage() {
     return () => {
       cancelled = true;
     };
-  }, [pdpProductId]);
+  }, [pdpProductId, rentalId]);
 
   // PDP에서 넘어오면 STEP2 자동 선택 + 장착비 기억 + 플래그 on
   useEffect(() => {
@@ -840,7 +843,7 @@ export default function StringServiceApplyPage() {
   const handleStringTypesChange = (ids: string[]) => {
     // PDP에서 넘어온 경우: 상품 상세에서 이미 스트링을 확정하고 넘어온 상황이므로 잠금
     // 단, 주문 기반(orderId) 진입이면 주문 품목에서 고르는 UX가 필요하므로 잠금 해제
-    if (fromPDP && !orderId) return;
+    if (fromPDP && !orderId && !rentalId) return;
 
     setFormData((prev) => {
       // 기존 카운트 복사

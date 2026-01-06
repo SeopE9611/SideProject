@@ -1,15 +1,10 @@
 import FilterableProductList from '@/app/products/components/FilterableProductList';
+import SiteContainer from '@/components/layout/SiteContainer';
 import { Suspense } from 'react';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function ProductsPage({
-  // Promise 타입으로 선언 (자주 겪는 오류임에 따라 주석유지)
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  // 먼저 풀어서(spread 금지) 로컬 변수로 사용
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
 
   // 유틸: string | string[] | undefined → string | null 로 정리
@@ -40,19 +35,19 @@ export default async function ProductsPage({
         <div className="hidden bp-md:block absolute bottom-10 right-4 bp-md:right-10 w-24 h-24 bp-md:w-32 bp-md:h-32 bg-white/5 rounded-full blur-2xl animate-float-delayed" />
         <div className="hidden bp-md:block absolute top-1/2 left-1/4 w-12 h-12 bg-blue-300/20 rounded-full blur-lg animate-pulse" />
 
-        <div className="relative mx-auto w-full max-w-[1200px] px-4 bp-md:px-6">
+        <SiteContainer variant="wide" className="relative">
           <div className="text-center text-white">
             <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
             <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스 스트링으로 플레이를 한 단계 업그레이드하세요</p>
           </div>
-        </div>
+        </SiteContainer>
       </div>
 
-     <div className="mx-auto w-full max-w-[1200px] px-4 bp-md:px-6 py-6 bp-sm:py-8 bp-md:py-12">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
         <Suspense>
           <FilterableProductList initialBrand={initialBrand} initialMaterial={initialMaterial} />
         </Suspense>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

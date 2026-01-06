@@ -20,6 +20,7 @@ import { useSearchParams } from 'next/navigation';
 import { bankLabelMap } from '@/lib/constants';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
 import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 declare global {
   interface Window {
@@ -346,7 +347,7 @@ export default function CheckoutPage() {
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white dark:from-blue-700 dark:via-purple-700 dark:to-teal-700">
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
         <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
-        <div className="relative mx-auto w-full max-w-[1200px] px-3 bp-sm:px-4 bp-md:px-6 py-6 bp-sm:py-10 bp-md:py-14">
+        <SiteContainer variant="wide" className="relative py-6 bp-sm:py-10 bp-md:py-14">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full">
               <CreditCard className="h-8 w-8" />
@@ -371,10 +372,10 @@ export default function CheckoutPage() {
               <span>30,000원 이상 무료배송</span>
             </div>
           </div> */}
-        </div>
+        </SiteContainer>
       </div>
 
-      <div className="mx-auto w-full max-w-[1200px] px-3 bp-sm:px-4 bp-md:px-6 py-6 bp-sm:py-8">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8">
         <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
           {/* 주문 정보 입력 폼 */}
           <div className="bp-lg:col-span-2 space-y-4 bp-sm:space-y-6">
@@ -877,7 +878,7 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

@@ -356,9 +356,8 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
 
         {/* 상품 목록 */}
         <div className="bp-lg:col-span-3">
-          {/* 상단 컨트롤 바 */}
-          <div className="mb-6 bp-md:mb-8 space-y-3">
-            <div className="flex items-center justify-between gap-3">
+          <div className="mb-6 bp-md:mb-8 space-y-3 bp-sm:space-y-0 bp-sm:flex bp-sm:items-center bp-sm:justify-between">
+            <div className="flex items-center justify-between gap-3 bp-sm:justify-start">
               <div className="text-base bp-sm:text-lg font-semibold dark:text-white">
                 총 <span className="text-blue-600 dark:text-blue-400 font-bold">{products.length}</span>개 라켓
               </div>

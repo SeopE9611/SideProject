@@ -13,8 +13,10 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
   // 고객 정보
   let user: { name?: string; email?: string; phone?: string } | null = null;
-  if (doc.userId) {
-    const u = await db.collection('users').findOne({ _id: doc.userId });
+
+  const userId = doc.userId ? String(doc.userId) : '';
+  if (ObjectId.isValid(userId)) {
+    const u = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (u) user = { name: u.name ?? '', email: u.email ?? '', phone: u.phone ?? '' };
   }
 
@@ -36,6 +38,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
           stringId: doc.stringing.stringId?.toString?.() ?? null,
           name: doc.stringing.name ?? '',
           price: Number(doc.stringing.price ?? 0),
+          mountingFee: Number(doc.stringing.mountingFee ?? 0),
           image: doc.stringing.image ?? null,
           requestedAt: doc.stringing.requestedAt ?? null,
         }
