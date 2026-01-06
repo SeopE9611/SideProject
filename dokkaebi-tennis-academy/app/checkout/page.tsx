@@ -341,32 +341,32 @@ export default function CheckoutPage() {
     );
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-full bg-white dark:bg-slate-950 bp-lg:bg-gradient-to-br bp-lg:from-slate-50 bp-lg:via-blue-50/30 bp-lg:to-purple-50/20 bp-lg:dark:from-slate-900 bp-lg:dark:via-slate-800 bp-lg:dark:to-slate-900">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white dark:from-blue-700 dark:via-purple-700 dark:to-teal-700">
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
         <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
-        <div className="relative container py-16">
+        <div className="relative container py-6 bp-sm:py-10 bp-md:py-14">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full">
               <CreditCard className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold mb-2">주문/결제</h1>
+              <h1 className="text-2xl bp-sm:text-4xl bp-md:text-5xl font-bold mb-2">주문/결제</h1>
               <p className="text-blue-100">고객님의 배송/수령/결제정보를 확인 후 주문을 완료하세요</p>
             </div>
           </div>
 
           {/* <div className="flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-sm">
               <Shield className="h-4 w-4 text-green-400" />
               <span>SSL 보안 결제</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-sm">
               <Truck className="h-4 w-4 text-blue-400" />
               <span>빠른 배송</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-sm">
               <Star className="h-4 w-4 text-yellow-400" />
               <span>30,000원 이상 무료배송</span>
             </div>
@@ -374,20 +374,20 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      <div className="container py-8">
-        <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-3">
+      <div className="container py-6 bp-sm:py-8">
+        <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 lg:grid-cols-3">
           {/* 주문 정보 입력 폼 */}
-          <div className="bp-lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 bp-sm:space-y-6">
             {/* 주문 상품 */}
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-6">
-                <CardTitle className="flex items-center gap-3">
+            <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-3 bp-sm:p-4 bp-lg:p-6">
+                <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <Package className="h-5 w-5 text-blue-600" />
                   주문 상품
                 </CardTitle>
                 <CardDescription className="mt-2">장바구니에서 선택한 상품 목록입니다.</CardDescription>
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
                 <div className="space-y-4">
                   {orderItems.map((item) => (
                     <div key={item.id} className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-slate-200/50 dark:border-slate-600/50">
@@ -410,33 +410,33 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 배송 정보 */}
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 p-6">
-                <CardTitle className="flex items-center gap-3">
+            <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 p-3 bp-sm:p-4 bp-lg:p-6">
+                <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <MapPin className="h-5 w-5 text-green-600" />
                   배송 정보
                 </CardTitle>
                 <CardDescription className="mt-2">상품을 받으실 배송지 정보를 입력해주세요.</CardDescription>
               </div>
-              <CardContent className="p-6">
-                <div className="space-y-6">
+              <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
+                <div className="space-y-4 bp-sm:space-y-6">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="recipient-name" className="flex items-center gap-2">
+                      <Label htmlFor="recipient-name" className="flex items-center gap-2 text-sm">
                         <UserIcon className="h-4 w-4 text-blue-600" />
                         수령인 이름
                       </Label>
                       <Input id="recipient-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="수령인 이름을 입력하세요" className="border-2 focus:border-blue-500 transition-colors" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="recipient-email" className="flex items-center gap-2">
+                      <Label htmlFor="recipient-email" className="flex items-center gap-2 text-sm">
                         <Mail className="h-4 w-4 text-purple-600" />
                         이메일
                       </Label>
                       <Input id="recipient-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@naver.com" className="border-2 focus:border-purple-500 transition-colors" />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
-                      <Label htmlFor="recipient-phone" className="flex items-center gap-2">
+                      <Label htmlFor="recipient-phone" className="flex items-center gap-2 text-sm">
                         <Phone className="h-4 w-4 text-teal-600" />
                         연락처
                       </Label>
@@ -446,7 +446,7 @@ export default function CheckoutPage() {
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="address-postal" className="flex items-center gap-2">
+                      <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
                         <Home className="h-4 w-4 text-orange-600" />
                         우편번호
                       </Label>
@@ -468,7 +468,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="delivery-request" className="flex items-center gap-2">
+                    <Label htmlFor="delivery-request" className="flex items-center gap-2 text-sm">
                       <MessageSquare className="h-4 w-4 text-green-600" />
                       배송 요청사항
                     </Label>
@@ -489,9 +489,9 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 수령 방식 및 장착 서비스 카드 */}
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-red-500/10 p-6">
-                <CardTitle className="flex items-center gap-3">
+            <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-red-500/10 p-4 bp-sm:p-6">
+                <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <Truck className="h-5 w-5 text-purple-600" />
                   상품 접수 예약 방식
                 </CardTitle>
@@ -534,12 +534,12 @@ export default function CheckoutPage() {
                     ) : (
                       // 택배 수령: **선택지는 자가 발송만** 노출
                       <div className="ml-7 mt-2 grid gap-2 text-sm">
-                        <label className="flex items-center gap-2">
+                        <label className="flex items-center gap-2 text-base bp-sm:text-lg">
                           <input type="radio" name="pickup" checked={servicePickupMethod === 'SELF_SEND'} onChange={() => setServicePickupMethod('SELF_SEND')} />
                           <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
                         </label>
                         {/* 기사 방문 수거 옵션은 잠정 비노출
-                        <label className="flex items-center gap-2">
+                        <label className="flex items-center gap-2 text-base bp-sm:text-lg">
                           <input type="radio" name="pickup" checked={servicePickupMethod === 'COURIER_VISIT'} onChange={() => setServicePickupMethod('COURIER_VISIT')} />
                           <span>택배 기사 방문 수거 (+3,000원 예상)</span>
                         </label>
@@ -551,16 +551,16 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 결제 정보 */}
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 p-6">
-                <CardTitle className="flex items-center gap-3">
+            <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 p-4 bp-sm:p-6">
+                <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <CreditCard className="h-5 w-5 text-emerald-600" />
                   결제 정보
                 </CardTitle>
                 <CardDescription className="mt-2">결제 방법을 선택하고 필요한 정보를 입력해주세요.</CardDescription>
               </div>
-              <CardContent className="p-6">
-                <div className="space-y-6">
+              <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
+                <div className="space-y-4 bp-sm:space-y-6">
                   <div className="space-y-3">
                     <Label>결제 방법</Label>
                     <RadioGroup defaultValue="bank-transfer" className="space-y-3">
@@ -605,15 +605,15 @@ export default function CheckoutPage() {
                       <p className="font-semibold text-blue-700 dark:text-blue-400">무통장입금 안내</p>
                     </div>
                     <ul className="space-y-2 text-sm text-blue-600 dark:text-blue-400">
-                      <li className="flex items-center gap-2">
+                      <li className="flex items-center gap-2 text-base bp-sm:text-lg">
                         <CheckCircle className="h-4 w-4" />
                         주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
                       </li>
-                      <li className="flex items-center gap-2">
+                      <li className="flex items-center gap-2 text-base bp-sm:text-lg">
                         <CheckCircle className="h-4 w-4" />
                         입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
                       </li>
-                      <li className="flex items-center gap-2">
+                      <li className="flex items-center gap-2 text-base bp-sm:text-lg">
                         <CheckCircle className="h-4 w-4" />
                         입금 확인 후 배송이 시작됩니다.
                       </li>
@@ -624,14 +624,14 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 주문자 동의 */}
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-red-500/10 via-pink-500/10 to-rose-500/10 p-6">
-                <CardTitle className="flex items-center gap-3">
+            <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-red-500/10 via-pink-500/10 to-rose-500/10 p-4 bp-sm:p-6">
+                <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <Shield className="h-5 w-5 text-red-600" />
                   주문자 동의
                 </CardTitle>
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
                 <div className="space-y-4">
                   <div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-4 rounded-lg">
                     <div className="flex items-center space-x-2">
@@ -699,7 +699,7 @@ export default function CheckoutPage() {
           <div className="bp-lg:col-span-1">
             <div className="bp-lg:sticky bp-lg:top-20">
               <Card className="backdrop-blur-sm bg-white/90 dark:bg-slate-800/90 border-0 shadow-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 p-6 text-white">
+                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 p-4 bp-sm:p-6 text-white">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <div className="p-2 bg-white/20 rounded-full">
                       <CreditCard className="h-5 w-5" />
@@ -707,7 +707,7 @@ export default function CheckoutPage() {
                     주문 요약
                   </CardTitle>
                 </div>
-                <CardContent className="p-6 space-y-6">
+                <CardContent className="p-4 bp-sm:p-6 space-y-4 bp-sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-slate-600 dark:text-slate-400">상품 금액</span>
@@ -728,7 +728,7 @@ export default function CheckoutPage() {
                       </div>
                     )}
                     {/* 포인트 사용(로그인 유저만) */}
-                    <div className="mt-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-4 rounded-lg border border-slate-200 dark:border-slate-600">
+                    <div className="mt-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-3 bp-sm:p-4 rounded-lg border border-slate-200 dark:border-slate-600">
                       <div className="flex justify-between items-center">
                         <span className="text-slate-600 dark:text-slate-400">사용 가능 포인트</span>
                         <span className="font-semibold">{user ? `${pointsAvailable.toLocaleString()}P` : '로그인 필요'}</span>
@@ -737,14 +737,14 @@ export default function CheckoutPage() {
                       {user && pointsDebt > 0 && <p className="mt-1 text-xs text-rose-600">회수 예정 포인트(채무): {pointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
 
                       <div className="mt-3 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 text-sm">
                           <Checkbox id="useAllPoints" checked={useAllPoints} onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))} disabled={!user || pointsAvailable <= 0 || maxPointsToUse <= 0} />
                           <Label htmlFor="useAllPoints" className="text-sm font-medium">
                             전액 사용
                           </Label>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 text-sm">
                           <Input
                             type="text"
                             inputMode="numeric"
