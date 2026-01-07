@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Menu, ChevronRight, Wrench, Gift, MessageSquareText, Grid2X2, Package, MessageSquare, UserIcon, Mail } from 'lucide-react';
+import { ShoppingCart, Menu, ChevronRight, Gift, MessageSquareText, Grid2X2, Package, MessageSquare, UserIcon, Mail } from 'lucide-react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetOverlay, SheetTrigger } from '@/components/ui/sheet';
@@ -298,36 +298,72 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-                           text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                           hover:from-amber-50/50 hover:to-orange-50/50 transition-all"
+            text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+            hover:from-amber-50/50 hover:to-orange-50/50 transition-all"
                     onClick={() => {
                       setOpen(false);
                       router.push('/services/apply');
                     }}
                   >
-                    장착 서비스 즉시 예약
+                    <span className="font-semibold text-amber-700 dark:text-amber-400">장착 서비스 즉시 예약</span>
                     <ChevronRight className="h-3.5 w-3.5" />
                   </Button>
 
-                  {/* 브랜드 서브메뉴 */}
-                  <div className="mt-2 pl-2 space-y-0.5">
-                    <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1">브랜드</div>
-                    {NAV_LINKS.strings.brands.map((b) => (
-                      <Button
-                        key={b.href}
-                        variant="ghost"
-                        className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] 
-                                text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                                hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
-                        onClick={() => {
-                          setOpen(false);
-                          router.push(b.href);
-                        }}
-                      >
-                        {b.name}
-                        <ChevronRight className="h-3 w-3" />
-                      </Button>
-                    ))}
+                  {/* 접어두는 하위 그룹(안내/브랜드) */}
+                  <div className="mt-2 pl-2">
+                    <Accordion type="single" className="space-y-1">
+                      <AccordionItem value="strings-service" className="border-none">
+                        <AccordionTrigger
+                          value="strings-service"
+                          className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
+                            hover:bg-slate-50 dark:hover:bg-slate-800"
+                        >
+                          장착 서비스 안내
+                        </AccordionTrigger>
+                        <AccordionContent value="strings-service" className="pb-0">
+                          <div className="space-y-0.5">
+                            {NAV_LINKS.services.map((it) => (
+                              <Button
+                                key={it.name}
+                                variant="ghost"
+                                className="w-full justify-between rounded-md px-3 py-1.5 text-[13px]
+              text-muted-foreground hover:text-foreground
+              hover:bg-gradient-to-r hover:from-amber-50/50 hover:to-orange-50/50
+              dark:hover:from-amber-950/20 dark:hover:to-orange-950/20 transition-all"
+                                onClick={() => {
+                                  setOpen(false);
+                                  router.push(it.href);
+                                }}
+                              >
+                                {it.name}
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </Button>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="strings-brand" className="border-none">
+                        <AccordionTrigger
+                          value="strings-brand"
+                          className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
+                            hover:bg-slate-50 dark:hover:bg-slate-800"
+                        >
+                          브랜드
+                        </AccordionTrigger>
+                        <AccordionContent value="strings-brand" className="pb-0">
+                          <div className="px-1 pt-2">
+                            <MobileBrandGrid
+                              brands={NAV_LINKS.strings.brands}
+                              onPick={(href) => {
+                                setOpen(false);
+                                router.push(href);
+                              }}
+                            />
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -390,48 +426,6 @@ const Header = () => {
                       </Button>
                     ))}
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* 장착 서비스 */}
-              <AccordionItem value="service" className="border-none">
-                <AccordionTrigger
-                  value="service"
-                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100/50 
-                          dark:hover:from-amber-950/30 dark:hover:to-amber-900/20 hover:no-underline transition-all group"
-                >
-                  <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                    <div
-                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
-                            from-amber-500 to-amber-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
-                    >
-                      <Wrench className="h-4 w-4" />
-                    </div>
-                    <span
-                      className="bg-gradient-to-r from-amber-700 to-amber-600 dark:from-amber-400 
-                            dark:to-amber-300 bg-clip-text text-transparent"
-                    >
-                      장착 서비스
-                    </span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent value="service" className="pb-2 pt-1 space-y-0.5">
-                  {NAV_LINKS.services.map((it) => (
-                    <Button
-                      key={it.name}
-                      variant="ghost"
-                      className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-                              text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                              hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
-                      onClick={() => {
-                        setOpen(false);
-                        router.push(it.href);
-                      }}
-                    >
-                      {it.name}
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </Button>
-                  ))}
                 </AccordionContent>
               </AccordionItem>
 

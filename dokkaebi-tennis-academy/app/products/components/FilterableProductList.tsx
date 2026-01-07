@@ -364,7 +364,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     [isFetchingMore, hasMore, loadMore]
   );
 
-  // ✅ 데스크톱(좌측 고정 패널): 선택 즉시 적용(=기존대로 selectedXXX 사용)
+  // 데스크톱(좌측 고정 패널): 선택 즉시 적용(=기존대로 selectedXXX 사용)
   const desktopFilterPanelProps = {
     selectedBrand,
     setSelectedBrand,
@@ -397,7 +397,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     onClearInput: handleClearInput,
   };
 
-  // ✅ 모바일(Sheet): draft만 변경 → "적용"에서만 커밋
+  // 모바일(Sheet): draft만 변경 → "적용"에서만 커밋
   const mobileFilterPanelProps = {
     selectedBrand: draftBrand,
     setSelectedBrand: setDraftBrand,

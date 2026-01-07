@@ -85,7 +85,7 @@ export default function OutboxDetailClient({ id }: { id: string }) {
     if (!data) return [];
     if (Array.isArray(data.channels) && data.channels.length > 0) return data.channels;
 
-    // ✅ 폴백: 과거 필드/단일 렌더 구조 대응
+    // 폴백: 과거 필드/단일 렌더 구조 대응
     const rendered = (data.rendered?.email ?? data.rendered) as any;
     return [
       {

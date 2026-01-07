@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 type Props = {
   data: {
@@ -64,7 +65,7 @@ export default function RentalsSuccessClient({ data }: Props) {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white dark:from-green-700 dark:via-emerald-700 dark:to-teal-700">
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
-        <div className="relative container py-16">
+        <SiteContainer variant="wide" className="relative py-16">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full mb-6">
               <CheckCircle className="h-12 w-12 text-white" />
@@ -72,10 +73,10 @@ export default function RentalsSuccessClient({ data }: Props) {
             <h1 className="text-4xl md:text-5xl font-bold mb-4">대여 신청 접수 완료</h1>
             <p className="text-xl text-green-100 mb-6">입금 확인 후 결제완료로 상태가 변경되며, 이후 출고가 진행됩니다.</p>
           </div>
-        </div>
+        </SiteContainer>
       </div>
 
-      <div className="container py-8">
+      <SiteContainer variant="wide" className="py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* 대여 정보 카드 */}
           <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
@@ -260,7 +261,7 @@ export default function RentalsSuccessClient({ data }: Props) {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

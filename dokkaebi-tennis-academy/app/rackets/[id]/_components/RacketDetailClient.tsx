@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
 import { racketBrandLabel } from '@/lib/constants';
 import StatusBadge from '@/components/badges/StatusBadge';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 interface RacketDetailClientProps {
   racket: any;
@@ -83,7 +84,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             <rect width="100%" height="100%" fill="url(#detail-court-lines)" />
           </svg>
         </div>
-        <div className="container relative z-10">
+        <SiteContainer variant="wide" className="relative z-10">
           <div className="flex items-center gap-2 text-sm mb-4 opacity-90">
             <Link href="/" className="hover:text-blue-200 transition-colors">
               홈
@@ -101,10 +102,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             <ArrowLeft className="mr-2 h-4 w-4" />
             이전 페이지로
           </Button>
-        </div>
+        </SiteContainer>
       </div>
 
-      <div className="container py-8 pb-28 md:pb-24">
+      <SiteContainer variant="wide" className="py-8 pb-28 md:pb-24">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
           {/* 상품 이미지 */}
           <div className="lg:col-span-3 space-y-4">
@@ -211,7 +212,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                           </Button>
                         ) : (
                           <div className="flex-1 min-w-0">
-                            <RentDialog id={racketId} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} />
+                            <RentDialog id={racketId} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} full />
                           </div>
                         )
                       ) : (
@@ -358,7 +359,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             </Tabs>
           </CardContent>
         </Card>
-      </div>
+      </SiteContainer>
 
       {/* 모바일 전용 하단 Sticky */}
       <div className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-slate-200 dark:border-slate-800">
@@ -397,7 +398,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 {soldOut ? '품절(구매 불가)' : '구매하기'}
               </button>
               {racket?.rental?.enabled && !soldOut && racketId !== '' ? (
-                <RentDialog id={racketId} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} />
+                <div className="flex-1 min-w-0">
+                  <RentDialog id={racketId} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} full />
+                </div>
               ) : (
                 <button
                   type="button"

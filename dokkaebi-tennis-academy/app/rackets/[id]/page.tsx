@@ -1,4 +1,5 @@
 import RacketDetailClient from '@/app/rackets/[id]/_components/RacketDetailClient';
+import SiteContainer from '@/components/layout/SiteContainer';
 import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
@@ -30,11 +31,11 @@ export default async function RacketDetailPage({ params }: { params: Promise<{ i
   if (!doc) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
-        <div className="container py-12">
+        <SiteContainer variant="wide" className="py-12">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200">존재하지 않는 라켓입니다.</h1>
           </div>
-        </div>
+        </SiteContainer>
       </div>
     );
   }

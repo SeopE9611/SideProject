@@ -16,6 +16,7 @@ import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
 import { getMyInfo } from '@/lib/auth.client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 declare global {
   interface Window {
@@ -50,6 +51,20 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   const [requestStringing, setRequestStringing] = useState(Boolean(initial.requestStringing));
   const selectedString = initial.selectedString ?? null;
 
+  // --- 수령 방식(택배/방문수령) ---
+  type DeliveryMethod = '택배수령' | '방문수령';
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('택배수령');
+
+  /**
+   * 스트링 교체 신청서(/services/apply)에서 기본 수거/방문 방식을 결정하는 값
+   * - SELF_SEND: 택배로 보내기(자가 발송)
+   * - SHOP_VISIT: 매장 방문(방문 시간 선택 UI가 열리는 쪽)
+   */
+  const servicePickupMethod = deliveryMethod === '방문수령' ? 'SHOP_VISIT' : 'SELF_SEND';
+
+  // 로그인 여부/포인트 조회를 위한 최소 상태(게스트면 null 유지)
+  const [userId, setUserId] = useState<string | null>(null);
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -73,6 +88,30 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   // 총 결제 금액 = 대여수수료 + 보증금 + 스트링 + 교체비
   const total = initial.fee + initial.deposit + stringPrice + stringingFee;
 
+  // --- 포인트(보증금 제외) ---
+  const POINT_UNIT = 100; // 구매 체크아웃과 동일: 100P 단위
+  const [pointsBalance, setPointsBalance] = useState(0);
+  const [pointsDebt, setPointsDebt] = useState(0);
+  const pointsAvailable = Math.max(0, pointsBalance - pointsDebt);
+
+  const [useAllPoints, setUseAllPoints] = useState(false);
+  const [pointsInput, setPointsInput] = useState('0');
+  const [pointsToUse, setPointsToUse] = useState(0);
+
+  // 정책: 보증금(initial.deposit)에는 포인트 적용 금지 → (총액 - 보증금)까지만 가능
+  const maxPointsByPolicy = Math.max(0, total - initial.deposit);
+  const maxPointsToUse = Math.min(pointsAvailable, maxPointsByPolicy);
+  const normalizePoints = (raw: number) => Math.floor(raw / POINT_UNIT) * POINT_UNIT;
+  const clampPoints = (raw: number) => {
+    const normalized = normalizePoints(raw);
+    const maxNormalized = normalizePoints(maxPointsToUse);
+    return Math.max(0, Math.min(normalized, maxNormalized));
+  };
+
+  // 실제 적용될 포인트(게스트면 0으로 강제)
+  const appliedPoints = userId ? clampPoints(pointsToUse) : 0;
+  const payableTotal = Math.max(0, total - appliedPoints);
+
   const [refundBank, setRefundBank] = useState<'shinhan' | 'kookmin' | 'woori' | ''>('');
   const [refundAccount, setRefundAccount] = useState(''); // 계좌번호
   const [refundHolder, setRefundHolder] = useState(''); // 예금주
@@ -88,6 +127,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
     getMyInfo({ quiet: true })
       .then(async ({ user }) => {
         if (!user || cancelled) return;
+        setUserId(String((user as any)?._id ?? (user as any)?.id ?? ''));
         const res = await fetch('/api/users/me', { credentials: 'include' });
         if (!res.ok) return;
         const data = await res.json();
@@ -106,6 +146,55 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       cancelled = true;
     };
   }, []);
+
+  // 포인트 조회(로그인한 경우에만)
+  useEffect(() => {
+    let cancelled = false;
+
+    // 게스트면 포인트 0으로 정리
+    if (!userId) {
+      setPointsBalance(0);
+      setPointsDebt(0);
+      setUseAllPoints(false);
+      setPointsToUse(0);
+      setPointsInput('0');
+      return;
+    }
+
+    fetch('/api/points/me', { credentials: 'include' })
+      .then(async (res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data || cancelled) return;
+        setPointsBalance(Number(data.balance ?? 0));
+        setPointsDebt(Number(data.debt ?? 0));
+      })
+      .catch(() => {
+        /* 포인트 조회 실패해도 결제 자체는 진행 가능 */
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  // 전액 사용 체크 시: 가능한 최대치로 자동 세팅
+  useEffect(() => {
+    if (!useAllPoints) return;
+    const v = clampPoints(maxPointsToUse);
+    setPointsToUse(v);
+    setPointsInput(String(v));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useAllPoints, maxPointsToUse]);
+
+  // 총액/포인트한도 변화로 기존 입력이 한도를 넘으면 자동 clamp
+  useEffect(() => {
+    const v = clampPoints(pointsToUse);
+    if (v !== pointsToUse) {
+      setPointsToUse(v);
+      setPointsInput(String(v));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maxPointsToUse]);
 
   // 우편번호 검색기
   const openPostcode = () => {
@@ -159,6 +248,11 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         body: JSON.stringify({
           racketId: initial.racketId,
           days: initial.period,
+
+          // 포인트(보증금 제외)
+          pointsToUse: appliedPoints,
+          servicePickupMethod,
+
           payment: {
             method: 'bank_transfer',
             bank: selectedBank,
@@ -171,6 +265,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             address,
             addressDetail,
             deliveryRequest,
+            shippingMethod: deliveryMethod === '방문수령' ? 'pickup' : 'delivery',
           },
           refundAccount: {
             bank: refundBank,
@@ -212,15 +307,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         const qs = new URLSearchParams();
         qs.set('rentalId', String(json.id));
 
-        // 라켓 정보도 전달 → apply에서 라켓 타입 프리필
-        if (initial.racket?.brand) qs.set('racketBrand', String(initial.racket.brand));
-        if (initial.racket?.model) qs.set('racketModel', String(initial.racket.model));
-
-        // stringId/productId는 "선택된 스트링 상품 id"만
-        if (selectedString?.id) {
-          qs.set('stringId', selectedString.id);
-          qs.set('productId', selectedString.id);
-        }
+        // apply 페이지의 "PDP 프리필" 키는 pdpProductId
+        // (orderId 없이도 선택 스트링을 카드로 고정 표시 + 가격/교체비 계산에 활용됨)
+        if (selectedString?.id) qs.set('pdpProductId', selectedString.id);
+        qs.set('servicePickupMethod', servicePickupMethod);
 
         router.push(`/services/apply?${qs.toString()}`);
         return;
@@ -238,7 +328,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white dark:from-blue-700 dark:via-purple-700 dark:to-teal-700">
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
-        <div className="relative container mx-auto px-4 py-16">
+        <SiteContainer variant="wide" className="relative py-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full">
               <CreditCard className="h-8 w-8" />
@@ -248,10 +338,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
               <p className="text-blue-100">배송 정보를 입력하고 대여를 완료하세요</p>
             </div>
           </div>
-        </div>
+        </SiteContainer>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <SiteContainer variant="wide" className="py-8">
         <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-3">
           <div className="bp-lg:col-span-2 space-y-6">
             {/* 대여 상품 정보 */}
@@ -283,6 +373,49 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* 라켓 수령 방식 */}
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-slate-500/10 via-blue-500/10 to-purple-500/10 p-6">
+                <CardTitle className="flex items-center gap-3">
+                  <Truck className="h-5 w-5 text-slate-700 dark:text-slate-200" />
+                  라켓 수령 방식
+                </CardTitle>
+                <CardDescription className="mt-2">택배 수령 또는 방문수령을 선택하세요. (주소/우편번호 입력은 회원 기본 정보로 그대로 유지합니다)</CardDescription>
+              </div>
+
+              <CardContent className="p-6 space-y-3">
+                <RadioGroup value={deliveryMethod} onValueChange={(v) => setDeliveryMethod(v as any)} className="space-y-3">
+                  <div
+                    className={cn(
+                      'flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors',
+                      deliveryMethod === '택배수령' ? 'bg-blue-50/60 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-slate-50/40 dark:bg-slate-700/30 border-slate-200/60 dark:border-slate-600/60'
+                    )}
+                  >
+                    <RadioGroupItem value="택배수령" id="delivery-courier" />
+                    <Label htmlFor="delivery-courier" className="flex-1 cursor-pointer font-medium">
+                      택배 수령
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">결제 완료 후 택배 발송으로 진행됩니다.</div>
+                    </Label>
+                    <Truck className="h-5 w-5 text-blue-600" />
+                  </div>
+
+                  <div
+                    className={cn(
+                      'flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors',
+                      deliveryMethod === '방문수령' ? 'bg-purple-50/60 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800' : 'bg-slate-50/40 dark:bg-slate-700/30 border-slate-200/60 dark:border-slate-600/60'
+                    )}
+                  >
+                    <RadioGroupItem value="방문수령" id="delivery-visit" />
+                    <Label htmlFor="delivery-visit" className="flex-1 cursor-pointer font-medium">
+                      방문수령
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">스트링 교체 신청 시 신청서에서 “방문 시간” 선택 흐름으로 이어집니다.</div>
+                    </Label>
+                    <Building2 className="h-5 w-5 text-purple-600" />
+                  </div>
+                </RadioGroup>
               </CardContent>
             </Card>
 
@@ -614,10 +747,72 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       </>
                     )}
 
+                    {/* 포인트 차감 표시 */}
+                    {appliedPoints > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-600 dark:text-slate-400">포인트 사용</span>
+                        <span className="font-semibold text-lg text-rose-600">- {appliedPoints.toLocaleString()}P</span>
+                      </div>
+                    )}
+
+                    {/* 포인트 입력 UI (보증금 제외) */}
+                    <div className="rounded-lg border border-slate-200/60 dark:border-slate-600/60 p-4 bg-slate-50/40 dark:bg-slate-700/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">포인트 사용</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">사용 가능 {pointsAvailable.toLocaleString()}P</span>
+                      </div>
+
+                      {!userId ? (
+                        <div className="text-sm text-slate-500 dark:text-slate-400">로그인 시 포인트 사용이 가능합니다.</div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="use-all-points"
+                              checked={useAllPoints}
+                              onCheckedChange={(v) => {
+                                const checked = !!v;
+                                setUseAllPoints(checked);
+                                if (!checked) {
+                                  setPointsToUse(0);
+                                  setPointsInput('0');
+                                }
+                              }}
+                            />
+                            <label htmlFor="use-all-points" className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                              전액 사용 (보증금 제외)
+                            </label>
+                          </div>
+
+                          <Input
+                            value={pointsInput}
+                            disabled={useAllPoints || maxPointsToUse <= 0}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^\d]/g, '');
+                              setPointsInput(raw);
+                              setUseAllPoints(false);
+                              setPointsToUse(Number(raw || 0));
+                            }}
+                            onBlur={() => {
+                              const v = clampPoints(Number(pointsInput || 0));
+                              setPointsToUse(v);
+                              setPointsInput(String(v));
+                            }}
+                            placeholder="0"
+                            className="border-2"
+                          />
+
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            보증금({initial.deposit.toLocaleString()}원)에는 포인트가 적용되지 않습니다. (최대 {normalizePoints(maxPointsToUse).toLocaleString()}P)
+                          </div>
+                        </>
+                      )}
+                    </div>
+
                     <Separator />
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>총 결제 금액</span>
-                      <span className="text-blue-600">{total.toLocaleString()}원</span>
+                      <span className="text-blue-600">{payableTotal.toLocaleString()}원</span>
                     </div>
                   </div>
 
@@ -657,7 +852,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             </div>
           </div>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

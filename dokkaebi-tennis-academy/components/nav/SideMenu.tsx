@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { Grid2X2, Wrench, Gift, MessageSquareText, ChevronRight, MessageSquare } from 'lucide-react';
+import { Grid2X2, Gift, MessageSquareText, ChevronRight, MessageSquare } from 'lucide-react';
 import { NAV_FLAGS, NAV_LINKS } from './nav.config';
 import { MdSportsTennis } from 'react-icons/md';
 import { cn } from '@/lib/utils';
@@ -62,7 +62,7 @@ export default function SideMenu() {
       aria-label="사이드 내비게이션"
     >
       <div className="h-full overflow-y-auto scrollbar-hide p-4 space-y-1">
-        <Accordion type="multiple" defaultValue={['strings', 'rackets', 'service', 'packages', 'support', 'boards']}>
+        <Accordion type="multiple" defaultValue={['strings', 'rackets', 'packages', 'support', 'boards']}>
           {/* 스트링 */}
           <AccordionItem value="strings" className="border-none">
             <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100/50 dark:hover:from-blue-950/30 dark:hover:to-blue-900/20 hover:no-underline transition-all group">
@@ -87,21 +87,56 @@ export default function SideMenu() {
                   <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </span>
               </Link>
+              {/* 접어두는 하위 그룹(안내/브랜드) */}
+              <div className="mt-2 pl-2">
+                <Accordion type="single" className="space-y-1">
+                  <AccordionItem value="strings-service" className="border-none">
+                    <AccordionTrigger
+                      value="strings-service"
+                      className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
+                        hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                      장착 서비스 안내
+                    </AccordionTrigger>
+                    <AccordionContent value="strings-service" className="pb-0">
+                      <div className="space-y-0.5">
+                        {NAV_LINKS.services.map((it) => (
+                          <Link key={it.name} href={it.href} className={brandLinkClass(it.href)}>
+                            <span className="flex items-center justify-between">
+                              {it.name}
+                              <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
 
-              {/* 브랜드 서브메뉴 */}
-              {NAV_FLAGS.SHOW_BRAND_MENU && NAV_LINKS.strings.brands?.length ? (
-                <div className="mt-2 pl-2 space-y-0.5">
-                  <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1">브랜드</div>
-                  {NAV_LINKS.strings.brands.map((b) => (
-                    <Link key={b.href} href={b.href} className={brandLinkClass(b.href)}>
-                      <span className="flex items-center justify-between">
-                        {b.name}
-                        <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
+                  {NAV_FLAGS.SHOW_BRAND_MENU && NAV_LINKS.strings.brands?.length ? (
+                    <AccordionItem value="strings-brand" className="border-none">
+                      <AccordionTrigger
+                        value="strings-brand"
+                        className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
+                          hover:bg-slate-50 dark:hover:bg-slate-800"
+                      >
+                        브랜드
+                      </AccordionTrigger>
+                      <AccordionContent value="strings-brand" className="pb-0">
+                        <div className="grid grid-cols-2 gap-1">
+                          {NAV_LINKS.strings.brands.map((b) => (
+                            <Link key={b.href} href={b.href} className={cn(brandLinkClass(b.href), 'px-2 py-1 text-[12px]')}>
+                              <span className="flex items-center justify-between">
+                                {b.name}
+                                <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ) : null}
+                </Accordion>
+              </div>
             </AccordionContent>
           </AccordionItem>
 
@@ -137,28 +172,6 @@ export default function SideMenu() {
                   ))}
                 </div>
               ) : null}
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* 장착 서비스 */}
-          <AccordionItem value="service" className="border-none">
-            <AccordionTrigger value="service" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-amber-50 hover:to-amber-100/50 dark:hover:from-amber-950/30 dark:hover:to-amber-900/20 hover:no-underline transition-all group">
-              <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
-                  <Wrench className="h-4 w-4" />
-                </div>
-                <span className="bg-gradient-to-r from-amber-700 to-amber-600 dark:from-amber-400 dark:to-amber-300 bg-clip-text text-transparent">장착 서비스</span>
-              </span>
-            </AccordionTrigger>
-            <AccordionContent value="service" className="pb-2 pt-1 space-y-0.5">
-              {NAV_LINKS.services.map((it) => (
-                <Link key={it.name} href={it.href} className={linkClass(it.href)}>
-                  <span className="flex items-center justify-between">
-                    {it.name}
-                    <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </span>
-                </Link>
-              ))}
             </AccordionContent>
           </AccordionItem>
 

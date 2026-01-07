@@ -51,7 +51,11 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
 
   return (
     <>
-      <Button size={size} className={cn(full ? 'flex-1' : '', 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg', className)} onClick={() => setOpen(true)}>
+      <Button
+        size={size}
+        className={cn(full ? 'w-full h-12 min-w-0 justify-center gap-2' : '', 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg', className)}
+        onClick={() => setOpen(true)}
+      >
         <Calendar className="mr-2 h-4 w-4" />
         대여하기
       </Button>

@@ -14,6 +14,7 @@ import BackButtonGuard from '@/app/checkout/success/_components/BackButtonGuard'
 import ClearCartOnMount from '@/app/checkout/success/_components/ClearCartOnMount';
 import SetGuestOrderToken from '@/app/checkout/success/_components/SetGuestOrderToken';
 import CheckoutApplyHandoffClient from '@/app/checkout/success/_components/CheckoutApplyHandoffClient';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 type PopulatedItem = {
   name: string;
@@ -61,7 +62,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
 
         <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-          <div className="container mx-auto px-4 py-12">
+          <SiteContainer variant="wide" className="py-12">
             <CheckoutApplyHandoffClient href={appHref} orderId={order._id.toString()} seconds={8} />
 
             <div className="mt-6 flex justify-center">
@@ -71,7 +72,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 </Link>
               </Button>
             </div>
-          </div>
+          </SiteContainer>
         </div>
       </>
     );
@@ -114,7 +115,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white dark:from-green-700 dark:via-emerald-700 dark:to-teal-700">
           <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
           <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
-          <div className="relative container mx-auto px-4 py-16">
+          <SiteContainer variant="wide" className="relative py-16">
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full mb-6  ">
                 <CheckCircle className="h-12 w-12 text-white" />
@@ -161,10 +162,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 </div>
               </div>
             )}
-          </div>
+          </SiteContainer>
         </div>
 
-        <div className="container mx-auto px-4 py-8">
+        <SiteContainer variant="wide" className="py-8">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* 주문 정보 카드 */}
             <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
@@ -378,7 +379,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
               </CardContent>
             </Card>
           </div>
-        </div>
+        </SiteContainer>
       </div>
     </>
   );

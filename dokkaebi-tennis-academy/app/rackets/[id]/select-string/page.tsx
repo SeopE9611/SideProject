@@ -2,6 +2,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { racketBrandLabel } from '@/lib/constants';
 import RacketSelectStringClient from '@/app/rackets/[id]/select-string/RacketSelectStringClient';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,9 +15,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   if (!ObjectId.isValid(id)) {
     return (
-      <div className="container py-10">
+      <SiteContainer variant="wide" className="py-10">
         <h1 className="text-lg font-semibold">라켓을 찾을 수 없습니다.</h1>
-      </div>
+      </SiteContainer>
     );
   }
   const racketObjectId = new ObjectId(id);
@@ -24,9 +25,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
   if (!doc) {
     return (
-      <div className="container py-10">
+      <SiteContainer variant="wide" className="py-10">
         <h1 className="text-lg font-semibold">라켓을 찾을 수 없습니다.</h1>
-      </div>
+      </SiteContainer>
     );
   }
 
@@ -43,13 +44,13 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   if (sellableQty < 1) {
     const reasonLabel = activeRentalCount > 0 ? '현재 대여중인 라켓이라 구매할 수 없습니다.' : '현재 판매 가능한 상태가 아닙니다.';
     return (
-      <div className="container py-10 space-y-2">
+      <SiteContainer variant="wide" className="py-10 space-y-2">
         <h1 className="text-lg font-semibold">현재 구매할 수 없는 라켓입니다.</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">{reasonLabel}</p>
         <a className="text-sm underline" href={`/rackets/${id}`}>
           상세로 돌아가기
         </a>
-      </div>
+      </SiteContainer>
     );
   }
 

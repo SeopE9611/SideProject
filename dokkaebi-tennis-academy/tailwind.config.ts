@@ -7,10 +7,13 @@ const config: Config = {
   theme: {
     container: {
       center: true,
-      padding: '2rem',
-      screens: {
-        '2xl': '1400px',
+      padding: {
+        DEFAULT: '0.75rem', // 12px (모바일)
+        sm: '1rem', // 16px
+        md: '1.5rem', // 24px
+        lg: '2rem', // 32px (데스크탑)
       },
+      screens: { '2xl': '1400px' },
     },
     extend: {
       /**

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { racketBrandLabel } from '@/lib/constants';
 import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 type RacketMini = {
   id: string;
@@ -43,19 +44,19 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
 
   if (isLoadingInitial) {
     return (
-      <div className="container py-16">
+      <SiteContainer variant="wide" className="py-16">
         <div className="flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
             <p className="text-sm text-slate-500">스트링을 불러오는 중...</p>
           </div>
         </div>
-      </div>
+      </SiteContainer>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <SiteContainer variant="wide" className="py-8 space-y-6">
       <Card className="border-0 shadow-xl overflow-hidden">
         <div className="p-6 flex flex-col md:flex-row gap-6">
           <div className="w-full md:w-56">
@@ -114,6 +115,6 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
           {!hasMore ? '마지막 상품입니다' : isFetchingMore ? '불러오는 중...' : '더 불러오기'}
         </button>
       </div>
-    </div>
+    </SiteContainer>
   );
 }

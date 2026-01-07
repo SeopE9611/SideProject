@@ -109,7 +109,7 @@ export async function GET(req: Request) {
     const cust = (r.userId && userMap.get(String(r.userId))) || (r.guest ? { name: r.guest.name, email: r.guest.email } : { name: '', email: '' });
 
     /**
-     * ✅ amount 정규화 (프론트/AdminRentalsClient 표시 정합성 보장)
+     * amount 정규화 (프론트/AdminRentalsClient 표시 정합성 보장)
      * - 신규 데이터: r.amount에 stringPrice/stringingFee가 이미 포함될 수 있음
      * - 구버전 데이터: amount가 없거나, amount에 fee/deposit/total만 있을 수 있음
      * - 또한 스트링 스냅샷이 r.stringing에 저장되어 있으므로(요청된 경우),

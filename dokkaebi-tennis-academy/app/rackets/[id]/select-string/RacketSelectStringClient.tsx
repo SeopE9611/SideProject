@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
 import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
 import { CheckCircle2, ShoppingCart } from 'lucide-react';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 type RacketMini = {
   id: string;
@@ -39,34 +40,34 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
   if (isLoadingInitial) {
     return (
-      <div className="container py-16">
+      <SiteContainer variant="wide" className="py-16">
         <div className="flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
             <p className="text-sm text-slate-500">스트링을 불러오는 중...</p>
           </div>
         </div>
-      </div>
+      </SiteContainer>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <div className="container py-12 space-y-10">
+      <SiteContainer variant="wide" className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">스트링 선택</h1>
-          <p className="text-base text-slate-600 leading-relaxed">라켓과 함께 구매하실 스트링을 선택해주세요. 선택한 스트링은 라켓과 함께 한 번에 결제됩니다.</p>
+          <h1 className="text-2xl bp-md:text-4xl font-bold tracking-tight text-slate-900">스트링 선택</h1>
+          <p className="text-sm bp-md:text-base text-slate-600 leading-relaxed">라켓과 함께 구매하실 스트링을 선택해주세요. 선택한 스트링은 라켓과 함께 한 번에 결제됩니다.</p>
         </div>
 
         <div className="max-w-3xl mx-auto">
           <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl opacity-50 -z-0" />
-            <div className="relative z-10 p-6 flex gap-6 items-center">
+            <div className="relative z-10 p-4 bp-md:p-6 flex gap-4 bp-md:gap-6 items-center">
               <div className="flex-shrink-0">
                 {racket.image ? (
-                  <img src={racket.image || '/placeholder.svg'} alt={racket.name} className="w-24 h-24 object-cover rounded-xl shadow-md ring-2 ring-slate-100" />
+                  <img src={racket.image || '/placeholder.svg'} alt={racket.name} className="w-20 h-20 bp-md:w-24 bp-md:h-24 object-cover rounded-xl shadow-md ring-2 ring-slate-100" />
                 ) : (
-                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-md">
+                  <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-md">
                     <ShoppingCart className="w-10 h-10 text-slate-400" />
                   </div>
                 )}
@@ -87,7 +88,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-slate-900 text-center">사용 가능한 스트링</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
             {products.map((p: any) => {
               const stringImage = p?.images?.[0] ?? p?.imageUrl;
 
@@ -153,7 +154,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
             </Button>
           </div>
         )}
-      </div>
+      </SiteContainer>
     </div>
   );
 }

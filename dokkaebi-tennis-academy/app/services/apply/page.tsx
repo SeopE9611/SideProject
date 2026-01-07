@@ -1138,6 +1138,12 @@ export default function StringServiceApplyPage() {
         const rental = await res.json().catch(() => ({} as any));
         if (cancelled) return;
 
+        // 라켓 타입 프리필 (대여 라켓 brand/model 기반)
+        const rentalRacketType = [rental?.brand, rental?.model].filter(Boolean).join(' ').trim();
+        if (rentalRacketType) {
+          setFormData((prev) => (prev.racketType ? prev : { ...prev, racketType: rentalRacketType }));
+        }
+
         // 1) 신청자 정보(가능한 범위에서만 보완)
         if (rental?.user?.email) {
           setIsMember(true);
