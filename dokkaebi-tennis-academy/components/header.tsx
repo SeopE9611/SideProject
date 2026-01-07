@@ -35,10 +35,12 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
           <Button
             key={b.name}
             variant="outline"
-            className="h-9 justify-center rounded-lg border-slate-200 dark:border-slate-700 text-sm
+            className="relative z-0 h-9 justify-center rounded-lg border-slate-200 dark:border-slate-700 text-sm
               hover:bg-gradient-to-r hover:from-blue-50 hover:to-emerald-50 
               dark:hover:from-blue-950/20 dark:hover:to-emerald-950/20
-              transition-all duration-200 bg-transparent"
+              transition-all duration-200 bg-transparent
+              hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-200/60 hover:z-10 active:scale-[0.99]
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             onClick={() => onPick(b.href)}
           >
             {b.name}
@@ -283,21 +285,24 @@ const Header = () => {
                 <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
                             text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                            hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+                          hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+                            relative z-0
+                            hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-200/70 hover:z-10
+                            active:scale-[0.99]
+                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     onClick={() => {
-                      setOpen(false);
                       router.push(NAV_LINKS.strings.root);
                     }}
                   >
                     전체 보기
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Button>
 
                   <Button
                     variant="ghost"
-                    className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
             text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
             hover:from-amber-50/50 hover:to-orange-50/50 transition-all"
                     onClick={() => {
@@ -306,7 +311,7 @@ const Header = () => {
                     }}
                   >
                     <span className="font-semibold text-amber-700 dark:text-amber-400">장착 서비스 즉시 예약</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Button>
 
                   {/* 접어두는 하위 그룹(안내/브랜드) */}
@@ -336,7 +341,7 @@ const Header = () => {
                                 }}
                               >
                                 {it.name}
-                                <ChevronRight className="h-3.5 w-3.5" />
+                                <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                               </Button>
                             ))}
                           </div>
@@ -394,16 +399,17 @@ const Header = () => {
                 <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
                   <Button
                     variant="ghost"
-                    className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                    className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
                             text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                            hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+                             hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+"
                     onClick={() => {
                       setOpen(false);
                       router.push(NAV_LINKS.rackets.root);
                     }}
                   >
                     전체 보기
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Button>
 
                   {/* 브랜드 서브메뉴 */}
@@ -456,16 +462,17 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
                               text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                              hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+                               hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+ "
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
                       }}
                     >
                       {it.name}
-                      <ChevronRight className="h-3.5 w-3.5" />
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                     </Button>
                   ))}
                 </AccordionContent>
@@ -498,16 +505,17 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
             text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-            hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+             hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+ "
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
                       }}
                     >
                       {it.name}
-                      <ChevronRight className="h-3.5 w-3.5" />
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                     </Button>
                   ))}
                 </AccordionContent>
@@ -540,16 +548,17 @@ const Header = () => {
                     <Button
                       key={it.name}
                       variant="ghost"
-                      className="w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
                               text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                              hover:from-blue-50/50 hover:to-emerald-50/50 transition-all"
+                               hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+ "
                       onClick={() => {
                         setOpen(false);
                         router.push(it.href);
                       }}
                     >
                       {it.name}
-                      <ChevronRight className="h-3.5 w-3.5" />
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                     </Button>
                   ))}
                 </AccordionContent>
