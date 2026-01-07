@@ -3,8 +3,12 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { deductPoints, getPointsSummary } from '@/lib/points.service';
 
 export const dynamic = 'force-dynamic';
+
+// 주문 체크아웃과 동일한 포인트 사용 단위(=100P 단위)
+const POINT_UNIT = 100;
 
 export async function POST(req: Request) {
   const raw = await req.text();
@@ -16,7 +20,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: 'INVALID_JSON' }, { status: 400 });
   }
 
-  const { racketId, days, payment, shipping, refundAccount, stringing } = body as {
+  const { racketId, days, payment, shipping, refundAccount, stringing, pointsToUse, servicePickupMethod } = body as {
     racketId: string;
     days: 7 | 15 | 30;
     payment?: { method: 'bank_transfer'; bank?: string; depositor?: string };
@@ -31,13 +35,37 @@ export async function POST(req: Request) {
     refundAccount?: { bank: 'shinhan' | 'kookmin' | 'woori'; account: string; holder: string };
     // 스트링 교체 요청(선택)
     stringing?: { requested?: boolean; stringId?: string };
+
+    // 포인트 사용 (주문 체크아웃과 동일: 100P 단위)
+    pointsToUse?: number;
+
+    // 라켓 수령 방식 (택배/방문)
+    servicePickupMethod?: 'delivery' | 'pickup';
   };
 
-  const db = (await clientPromise).db();
+  const client = await clientPromise;
+  const db = client.db();
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
   const payload = at ? verifyAccessToken(at) : null;
   const userObjectId = payload?.sub ? new ObjectId(payload.sub) : null;
+
+  // --- 공통 입력 정리 ---
+  // (1) 수령 방식: 잘못된 값이 들어오면 서버에서 즉시 차단
+  const pickupMethod: 'delivery' | 'pickup' = servicePickupMethod ?? 'delivery';
+  if (pickupMethod !== 'delivery' && pickupMethod !== 'pickup') {
+    return NextResponse.json({ ok: false, message: 'INVALID_PICKUP_METHOD' }, { status: 400 });
+  }
+
+  // (2) 포인트: 숫자/정수/단위(100P) 정규화
+  const requestedPointsRaw = Number(pointsToUse ?? 0);
+  const requestedPoints = Number.isFinite(requestedPointsRaw) ? Math.max(0, Math.floor(requestedPointsRaw)) : 0;
+  const normalizedRequestedPointsToUse = Math.floor(requestedPoints / POINT_UNIT) * POINT_UNIT;
+
+  // 로그인하지 않았는데 포인트를 쓰려는 경우는 거절
+  if (!userObjectId && normalizedRequestedPointsToUse > 0) {
+    return NextResponse.json({ ok: false, message: 'LOGIN_REQUIRED_FOR_POINTS' }, { status: 401 });
+  }
 
   // 입력 검증: 허용 기간만 통과
   if (![7, 15, 30].includes(days as any)) {
@@ -124,17 +152,44 @@ export async function POST(req: Request) {
     total: deposit + fee + stringPrice + stringingFee,
   };
 
+  // --- 포인트 적용 (보증금 제외) ---
+  // 정책: 보증금(deposit)은 포인트 적용 제외
+  const originalTotal = Number(amount.total ?? 0);
+  const maxPointsByPolicy = Math.max(0, originalTotal - deposit);
+
+  let pointsUsed = 0;
+  if (userObjectId && normalizedRequestedPointsToUse > 0) {
+    const summary = await getPointsSummary(db, userObjectId);
+
+    // pointsDebt가 남아있으면(=음수 잔액 상환 중) 사용을 막음
+    if (summary.debt > 0) {
+      return NextResponse.json({ ok: false, message: 'POINTS_DEBT_EXISTS' }, { status: 409 });
+    }
+
+    // 사용 가능 포인트와 정책상 최대치(=보증금 제외 금액) 중 더 작은 값까지만 허용
+    const maxSpendable = Math.min(summary.available, maxPointsByPolicy);
+    pointsUsed = Math.min(normalizedRequestedPointsToUse, maxSpendable);
+  }
+
+  // 최종 결제 금액(=포인트 차감 후)
+  const payableTotal = Math.max(0, originalTotal - pointsUsed);
+  const finalAmount = { ...amount, total: payableTotal };
+
   // 반납 예정일
   const now = new Date();
   // const dueAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
-  // 대여 주문 생성(status: created) — 결제 완료 시에만 used_rackets.status = 'rented' 로 전환됨
+  // 대여 주문 생성(status: pending) — 결제 완료 시에만 used_rackets.status = 'rented' 로 전환됨
+  // 여기서 amount.total은 "포인트 차감 후 최종 결제 금액"으로 저장
   const doc = {
     racketId: racket._id,
     brand: racket.brand,
     model: racket.model,
     days,
-    amount,
+    amount: finalAmount,
+    originalTotal,
+    pointsUsed,
+    servicePickupMethod: pickupMethod,
     status: 'pending' as const, // pending -> paid -> out -> returned
     createdAt: now,
     updatedAt: now,
@@ -145,6 +200,42 @@ export async function POST(req: Request) {
     refundAccount: refundAccount ?? null, // 보증금 환불 계좌
     ...(stringingSnap ? { stringing: stringingSnap } : {}),
   };
-  const res = await db.collection('rental_orders').insertOne(doc);
-  return NextResponse.json({ ok: true, id: res.insertedId.toString() });
+
+  // --- 포인트 즉시 차감 + 대여 주문 생성은 같은 트랜잭션으로 묶어서 처리 ---
+  // (insert는 되었는데 포인트 차감이 실패하는...) 같은 찢김을 방지
+  const session = client.startSession();
+  try {
+    let insertedId: ObjectId | null = null;
+
+    await session.withTransaction(async () => {
+      const res = await db.collection('rental_orders').insertOne(doc, { session });
+      insertedId = res.insertedId;
+      const rentalIdStr = String(res.insertedId);
+      if (pointsUsed > 0 && userObjectId) {
+        // refKey를 rental:* 로 둬서 "주문" 상세 링크로 잘못 연결되는 것을 방지
+        await deductPoints(
+          db,
+          {
+            userId: userObjectId,
+            amount: pointsUsed,
+            type: 'spend_on_order', // 기존 포인트 타입 재사용(라벨: '포인트 사용')
+            refKey: `rental:${rentalIdStr}:spend`,
+            reason: `라켓 대여 결제 포인트 사용 (대여ID: ${rentalIdStr})`,
+          },
+          { session }
+        );
+      }
+    });
+
+    if (!insertedId) throw new Error('RENTAL_INSERT_FAILED');
+    return NextResponse.json({ ok: true, id: String(insertedId) });
+  } catch (e: any) {
+    const msg = e instanceof Error ? e.message : 'UNKNOWN_ERROR';
+    // deductPoints가 던지는 대표 에러 메시지를 그대로 프론트로 전달
+    // - INSUFFICIENT_POINTS
+    // - POINTS_DEBT_EXISTS
+    return NextResponse.json({ ok: false, message: msg }, { status: 409 });
+  } finally {
+    await session.endSession();
+  }
 }
