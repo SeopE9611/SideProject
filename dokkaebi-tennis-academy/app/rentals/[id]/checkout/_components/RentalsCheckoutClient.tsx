@@ -376,87 +376,89 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
               </CardContent>
             </Card>
 
-            {/* 라켓 수령 방식 */}
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-slate-500/10 via-blue-500/10 to-purple-500/10 p-6">
+            {/* 라켓 수령 방식 및 스트링 교체 옵션 */}
+            <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-red-500/10 p-6">
                 <CardTitle className="flex items-center gap-3">
-                  <Truck className="h-5 w-5 text-slate-700 dark:text-slate-200" />
+                  <Truck className="h-5 w-5 text-purple-600" />
                   라켓 수령 방식
                 </CardTitle>
-                <CardDescription className="mt-2">택배 수령 또는 방문수령을 선택하세요. (주소/우편번호 입력은 회원 기본 정보로 그대로 유지합니다)</CardDescription>
+                <CardDescription className="mt-2">라켓을 어떻게 수령하실지 선택해주세요.</CardDescription>
               </div>
 
-              <CardContent className="p-6 space-y-3">
-                <RadioGroup value={deliveryMethod} onValueChange={(v) => setDeliveryMethod(v as any)} className="space-y-3">
-                  <div
-                    className={cn(
-                      'flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors',
-                      deliveryMethod === '택배수령' ? 'bg-blue-50/60 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-slate-50/40 dark:bg-slate-700/30 border-slate-200/60 dark:border-slate-600/60'
-                    )}
-                  >
-                    <RadioGroupItem value="택배수령" id="delivery-courier" />
-                    <Label htmlFor="delivery-courier" className="flex-1 cursor-pointer font-medium">
-                      택배 수령
+              <CardContent className="p-6 space-y-4">
+                <RadioGroup value={deliveryMethod} onValueChange={(value) => setDeliveryMethod(value as any)} className="space-y-3">
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <RadioGroupItem value="택배수령" id="rentals-delivery-courier" />
+                    <Label htmlFor="rentals-delivery-courier" className="flex-1 cursor-pointer font-medium">
+                      택배 수령 (자택 또는 지정 장소로 배송)
                       <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">결제 완료 후 택배 발송으로 진행됩니다.</div>
                     </Label>
                     <Truck className="h-5 w-5 text-blue-600" />
                   </div>
 
-                  <div
-                    className={cn(
-                      'flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors',
-                      deliveryMethod === '방문수령' ? 'bg-purple-50/60 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800' : 'bg-slate-50/40 dark:bg-slate-700/30 border-slate-200/60 dark:border-slate-600/60'
-                    )}
-                  >
-                    <RadioGroupItem value="방문수령" id="delivery-visit" />
-                    <Label htmlFor="delivery-visit" className="flex-1 cursor-pointer font-medium">
-                      방문수령
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                    <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
+                    <Label htmlFor="rentals-delivery-visit" className="flex-1 cursor-pointer font-medium">
+                      오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
                       <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">스트링 교체 신청 시 신청서에서 “방문 시간” 선택 흐름으로 이어집니다.</div>
                     </Label>
                     <Building2 className="h-5 w-5 text-purple-600" />
                   </div>
                 </RadioGroup>
-              </CardContent>
-            </Card>
 
-            {/* 스트링 교체 옵션 */}
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-fuchsia-500/10 p-6">
-                <CardTitle className="flex items-center gap-3">
-                  <Package className="h-5 w-5 text-indigo-600" />
-                  스트링 교체 옵션
-                </CardTitle>
-                <CardDescription className="mt-2">대여 결제(보증금 포함) 후, 교체 신청서를 작성해 스트링 작업을 진행할 수 있어요.</CardDescription>
-              </div>
+                {/* 구매 체크아웃과 동일하게: 수령 방식 카드 안에서 “스트링 교체 옵션”을 같이 묶어 표시 */}
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox id="request-stringing" checked={requestStringing} onCheckedChange={(checked) => setRequestStringing(!!checked)} />
+                    <Label htmlFor="request-stringing" className="font-medium text-orange-700 dark:text-orange-400">
+                      스트링 교체 신청도 함께 진행할게요
+                    </Label>
+                  </div>
 
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Checkbox id="request-stringing" checked={requestStringing} onCheckedChange={(v) => setRequestStringing(!!v)} />
-                  <label htmlFor="request-stringing" className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                    스트링 교체 신청도 함께 진행할게요
-                  </label>
-                </div>
+                  <p className="text-sm text-orange-600 dark:text-orange-400 ml-6">
+                    {deliveryMethod === '방문수령' ? '방문 수령을 선택하면 매장 방문 접수로 스트링 교체가 진행됩니다. 신청서에서 방문 시간을 선택하세요.' : '택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 스트링 교체가 진행됩니다.'}
+                  </p>
 
-                <div className="rounded-lg border border-slate-200/60 dark:border-slate-600/60 p-4 bg-slate-50/40 dark:bg-slate-700/30">
-                  {selectedString ? (
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">선택된 스트링</div>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">{selectedString.name}</div>
-                        <div className="text-sm text-slate-600 dark:text-slate-300">{selectedString.price.toLocaleString()}원</div>
+                  {/* 서비스 ON일 때만 세부 안내 / 스트링 선택 UI 노출 */}
+                  {requestStringing && (
+                    <>
+                      {deliveryMethod === '방문수령' ? (
+                        <div className="ml-7 mt-2 text-sm">
+                          <span className="px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">매장 방문 접수로 진행됩니다. (신청서에서 방문 시간 선택)</span>
+                        </div>
+                      ) : (
+                        <div className="ml-7 mt-2 grid gap-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-3 ml-6 rounded-lg border border-slate-200/60 dark:border-slate-600/60 p-4 bg-white/60 dark:bg-slate-800/40">
+                        {selectedString ? (
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400">선택된 스트링</div>
+                              <div className="font-semibold text-slate-800 dark:text-slate-200">{selectedString.name}</div>
+                              <div className="text-sm text-slate-600 dark:text-slate-300">{selectedString.price.toLocaleString()}원</div>
+                            </div>
+
+                            <Button type="button" variant="outline" onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
+                              스트링 변경
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="text-sm text-slate-600 dark:text-slate-300">아직 스트링이 선택되지 않았습니다.</div>
+                            <Button type="button" onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
+                              스트링 선택
+                            </Button>
+                          </div>
+                        )}
                       </div>
-
-                      <Button type="button" variant="outline" onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
-                        스트링 변경
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="text-sm text-slate-600 dark:text-slate-300">아직 스트링이 선택되지 않았습니다.</div>
-                      <Button type="button" onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
-                        스트링 선택
-                      </Button>
-                    </div>
+                    </>
                   )}
                 </div>
               </CardContent>
