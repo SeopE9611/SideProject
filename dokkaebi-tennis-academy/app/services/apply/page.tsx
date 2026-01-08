@@ -1406,6 +1406,7 @@ export default function StringServiceApplyPage() {
             handleInputChange={handleInputChange}
             fromPDP={fromPDP}
             orderId={orderId}
+            rentalId={rentalId}
             pdpProductId={pdpProductId}
             isLoadingPdpProduct={isLoadingPdpProduct}
             pdpProduct={pdpProduct}

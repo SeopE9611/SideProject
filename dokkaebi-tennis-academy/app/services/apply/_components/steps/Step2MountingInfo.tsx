@@ -19,6 +19,7 @@ type Props = {
 
   fromPDP: boolean;
   orderId: string | null | undefined;
+  rentalId?: string | null | undefined;
   pdpProductId: string | null | undefined;
   isLoadingPdpProduct: boolean;
   pdpProduct: any;
@@ -68,6 +69,7 @@ export default function Step2MountingInfo(props: Props) {
     handleInputChange,
     fromPDP,
     orderId,
+    rentalId,
     pdpProductId,
     isLoadingPdpProduct,
     pdpProduct,
@@ -102,6 +104,13 @@ export default function Step2MountingInfo(props: Props) {
     visitDurationMinutesUi,
     visitTimeRange,
   } = props;
+
+  // 주문(orderId)이 아닌데도 스트링이 이미 확정된 흐름(PDP/대여)에서는
+  // - 체크박스/직접입력 UI를 잠그고(보기 전용)
+  // - 선택된 스트링 1개를 대표 아이템으로 노출
+  const isLockedNonOrder = !orderId && (fromPDP || Boolean(rentalId));
+  const lockedStringId = Array.isArray(formData.stringTypes) ? formData.stringTypes[0] : null;
+  const lockedMountingFee = typeof priceView?.base === 'number' ? priceView.base : lineCount > 0 ? Math.round(price / lineCount) : 0;
 
   return (
     <div className="space-y-6">
@@ -140,7 +149,7 @@ export default function Step2MountingInfo(props: Props) {
             </div>
           </div>
           {/* PDP에서 이어졌을 때 노출되는 스트링 정보 카드 */}
-          {fromPDP && !orderId && Array.isArray(formData.stringTypes) && formData.stringTypes[0] === pdpProductId && (
+          {isLockedNonOrder && lockedStringId && lockedStringId !== 'custom' && (
             <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/70 p-3">
               {isLoadingPdpProduct ? (
                 // 로딩 중에는 간단한 안내 문구만 표시
@@ -156,9 +165,9 @@ export default function Step2MountingInfo(props: Props) {
 
                   {/* 상품 텍스트 정보 */}
                   <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-blue-700">상품 상세에서 선택한 스트링</span>
+                    <span className="text-xs font-semibold text-blue-700">{rentalId ? '대여 신청에서 선택한 스트링' : '상품 상세에서 선택한 스트링'}</span>
                     <span className="text-sm font-medium text-gray-900">{pdpProduct?.name ?? '선택한 스트링으로 신청 중입니다.'}</span>
-                    <span className="mt-1 text-xs text-gray-600">이 신청서는 위 스트링을 기준으로 장착 서비스가 진행됩니다.</span>
+                    <span className="mt-1 text-xs text-gray-600">{rentalId ? '대여 신청 시 선택한 스트링 기준으로 진행됩니다.' : '이 신청서는 위 스트링을 기준으로 장착 서비스가 진행됩니다.'}</span>
                   </div>
                 </div>
               )}
@@ -187,7 +196,7 @@ export default function Step2MountingInfo(props: Props) {
             </p>
           )}
 
-          <div className={fromPDP && !orderId ? 'pointer-events-none opacity-60' : ''}>
+          <div className={isLockedNonOrder ? 'pointer-events-none opacity-60' : ''}>
             <StringCheckboxes
               items={
                 orderId && order
@@ -199,11 +208,21 @@ export default function Step2MountingInfo(props: Props) {
                         name: i.name,
                         mountingFee: i.mountingFee,
                       }))
-                  : [] // 주문이 없으면 빈 배열
+                  : // 주문이 없더라도(PDP/대여) 이미 확정된 스트링은 1개 아이템으로 노출
+                  isLockedNonOrder && lockedStringId && lockedStringId !== 'custom'
+                  ? [
+                      {
+                        id: lockedStringId,
+                        name: pdpProduct?.name ?? '선택된 스트링',
+                        mountingFee: lockedMountingFee,
+                      },
+                    ]
+                  : [] // 단독 신청(직접 입력) 등은 빈 배열
               }
               stringTypes={formData.stringTypes}
               customInput={formData.customStringType}
-              hideCustom={Boolean(orderId)}
+              hideCustom={Boolean(orderId) || isLockedNonOrder}
+              disabled={isLockedNonOrder}
               onChange={handleStringTypesChange}
               onCustomInputChange={handleCustomInputChange}
             />

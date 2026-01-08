@@ -373,6 +373,92 @@ const Header = () => {
                 </AccordionContent>
               </AccordionItem>
 
+              {/* 게시판 */}
+              <AccordionItem value="boards" className="border-none">
+                <AccordionTrigger
+                  value="boards"
+                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-rose-50 hover:to-rose-100/50 
+                          dark:hover:from-rose-950/30 dark:hover:to-rose-900/20 hover:no-underline transition-all group"
+                >
+                  <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
+                            from-rose-500 to-rose-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                    >
+                      <MessageSquareText className="h-4 w-4" />
+                    </div>
+                    <span
+                      className="bg-gradient-to-r from-rose-700 to-rose-600 dark:from-rose-400 
+                            dark:to-rose-300 bg-clip-text text-transparent"
+                    >
+                      게시판
+                    </span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
+                  {NAV_LINKS.boards.map((it) => (
+                    <Button
+                      key={it.name}
+                      variant="ghost"
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                              text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                               hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+ "
+                      onClick={() => {
+                        setOpen(false);
+                        router.push(it.href);
+                      }}
+                    >
+                      {it.name}
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </Button>
+                  ))}
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* 패키지 */}
+              <AccordionItem value="packages" className="border-none">
+                <AccordionTrigger
+                  value="packages"
+                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100/50 
+                          dark:hover:from-purple-950/30 dark:hover:to-purple-900/20 hover:no-underline transition-all group"
+                >
+                  <span className="inline-flex items-center gap-2.5 text-base font-bold">
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
+                            from-purple-500 to-purple-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                    >
+                      <Gift className="h-4 w-4" />
+                    </div>
+                    <span
+                      className="bg-gradient-to-r from-purple-700 to-purple-600 dark:from-purple-400 
+                            dark:to-purple-300 bg-clip-text text-transparent"
+                    >
+                      패키지
+                    </span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent value="packages" className="pb-2 pt-1 space-y-0.5">
+                  {NAV_LINKS.packages.map((it) => (
+                    <Button
+                      key={it.name}
+                      variant="ghost"
+                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
+                              text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
+                               hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+ "
+                      onClick={() => {
+                        setOpen(false);
+                        router.push(it.href);
+                      }}
+                    >
+                      {it.name}
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </Button>
+                  ))}
+                </AccordionContent>
+              </AccordionItem>
+
               {/* 중고 라켓 */}
               <AccordionItem value="rackets" className="border-none">
                 <AccordionTrigger
@@ -435,49 +521,6 @@ const Header = () => {
                 </AccordionContent>
               </AccordionItem>
 
-              {/* 패키지 */}
-              <AccordionItem value="packages" className="border-none">
-                <AccordionTrigger
-                  value="packages"
-                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100/50 
-                          dark:hover:from-purple-950/30 dark:hover:to-purple-900/20 hover:no-underline transition-all group"
-                >
-                  <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                    <div
-                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
-                            from-purple-500 to-purple-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
-                    >
-                      <Gift className="h-4 w-4" />
-                    </div>
-                    <span
-                      className="bg-gradient-to-r from-purple-700 to-purple-600 dark:from-purple-400 
-                            dark:to-purple-300 bg-clip-text text-transparent"
-                    >
-                      패키지
-                    </span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent value="packages" className="pb-2 pt-1 space-y-0.5">
-                  {NAV_LINKS.packages.map((it) => (
-                    <Button
-                      key={it.name}
-                      variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-                              text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                               hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
- "
-                      onClick={() => {
-                        setOpen(false);
-                        router.push(it.href);
-                      }}
-                    >
-                      {it.name}
-                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-                    </Button>
-                  ))}
-                </AccordionContent>
-              </AccordionItem>
-
               {/* 고객센터 */}
               <AccordionItem value="support" className="border-none">
                 <AccordionTrigger
@@ -508,49 +551,6 @@ const Header = () => {
                       className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
             text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
              hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
- "
-                      onClick={() => {
-                        setOpen(false);
-                        router.push(it.href);
-                      }}
-                    >
-                      {it.name}
-                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-                    </Button>
-                  ))}
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* 게시판 */}
-              <AccordionItem value="boards" className="border-none">
-                <AccordionTrigger
-                  value="boards"
-                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-rose-50 hover:to-rose-100/50 
-                          dark:hover:from-rose-950/30 dark:hover:to-rose-900/20 hover:no-underline transition-all group"
-                >
-                  <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                    <div
-                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
-                            from-rose-500 to-rose-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
-                    >
-                      <MessageSquareText className="h-4 w-4" />
-                    </div>
-                    <span
-                      className="bg-gradient-to-r from-rose-700 to-rose-600 dark:from-rose-400 
-                            dark:to-rose-300 bg-clip-text text-transparent"
-                    >
-                      게시판
-                    </span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
-                  {NAV_LINKS.boards.map((it) => (
-                    <Button
-                      key={it.name}
-                      variant="ghost"
-                      className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-                              text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                               hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
  "
                       onClick={() => {
                         setOpen(false);

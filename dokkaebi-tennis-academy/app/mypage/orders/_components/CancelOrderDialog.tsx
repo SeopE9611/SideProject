@@ -15,9 +15,12 @@ import { XCircle } from 'lucide-react';
 // props: 주문 ID만 전달받음
 interface CancelOrderDialogProps {
   orderId: string;
+  children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
+const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrderDialogProps) => {
   const router = useRouter();
 
   //  로컬 상태: 사유 선택값, 기타 입력값, 제출 중 여부
@@ -60,7 +63,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
           reasonCode: finalReason,
           // 기타 사유 텍스트
           reasonText: selectedReason === '기타' ? otherReason.trim() : undefined,
-          // ⚠️ 연결된 교체 서비스 신청도 함께 취소되도록 요청하는지 여부
+          // 연결된 교체 서비스 신청도 함께 취소되도록 요청하는지 여부
           withStringing: confirmWithStringing ? true : false,
         }),
       });
@@ -108,6 +111,7 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
       // - 연결된 신청이 없거나
       // - 있더라도 사용자가 "신청도 함께 취소되도록" 동의(withStringing: true)한 상태
       showSuccessToast(confirmWithStringing ? '주문과 연결된 교체 서비스 신청을 함께 취소 요청했습니다. 관리자 확인 후 처리됩니다.' : '취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.');
+      onOpenChange?.(false);
       // status 전용 버튼/Badge 갱신 (OrderStatusBadge가 /api/orders/{orderId}/status 를 SWR로 가져오는 경우)
       await mutate(`/api/orders/${orderId}/status`, undefined, { revalidate: true });
 
@@ -135,14 +139,8 @@ const CancelOrderDialog = ({ orderId }: CancelOrderDialogProps) => {
     }
   };
   return (
-    <Dialog>
-      {/*  다이얼로그 트리거 버튼 */}
-      <DialogTrigger asChild>
-        <Button variant="destructive" size="sm">
-          <XCircle className="mr-2 h-4 w-4" />
-          주문 취소 요청
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {children ? <DialogTrigger asChild>{children}</DialogTrigger> : null}
 
       {/*  다이얼로그 본문 */}
       <DialogContent>
