@@ -1138,6 +1138,29 @@ export default function StringServiceApplyPage() {
         const rental = await res.json().catch(() => ({} as any));
         if (cancelled) return;
 
+        // 수거 방식(교체 신청서용) 프리필
+        // - 대여 체크아웃에서 방문수령(매장 픽업)이면, 교체 신청서도 'visit' 기본값으로 맞춘다
+        // - apply 페이지의 방문시간(step2)은 collectionMethod='visit' 일 때만 자연스럽게 열리므로, 여기서 먼저 정렬
+        setFormData((prev) => {
+          // 사용자가 이미 수거 방식을 바꿨다면(= 기본값이 아닌 상태), 서버/프리필로 덮어쓰지 않는다
+          if (prev.collectionMethod !== 'self_ship') return prev;
+
+          const rentalShippingMethod = String((rental as any)?.shipping?.shippingMethod ?? '');
+          const rentalPickupMethod = String((rental as any)?.servicePickupMethod ?? '');
+
+          const isVisit =
+            // 대여 주문에 pickup(매장수령)로 저장된 경우
+            rentalShippingMethod === 'pickup' ||
+            // 일부 흐름에서 visit로 저장되는 경우까지 방어
+            rentalShippingMethod === 'visit' ||
+            // rental_orders.servicePickupMethod가 pickup or SHOP_VISIT로 저장된 경우까지 방어
+            rentalPickupMethod === 'pickup' ||
+            rentalPickupMethod === 'SHOP_VISIT';
+
+          if (!isVisit) return prev;
+          return { ...prev, collectionMethod: 'visit' };
+        });
+
         // 라켓 타입 프리필 (대여 라켓 brand/model 기반)
         const rentalRacketType = [rental?.brand, rental?.model].filter(Boolean).join(' ').trim();
         if (rentalRacketType) {
@@ -1329,7 +1352,7 @@ export default function StringServiceApplyPage() {
   // 방문 수령 여부(한글/영문 데이터 모두 허용)
   const isVisitDelivery = (order?.shippingInfo as any)?.deliveryMethod === '방문수령' || order?.shippingInfo?.shippingMethod === 'visit'; // 방문이면 매장만 선택 가능
   // 주문 기반 진입 시(= orderId 존재)에는 수거 방식 전체 잠금
-  const lockCollection = Boolean(orderId);
+  const lockCollection = Boolean(orderId || rentalId);
 
   const getCurrentStepContent = () => {
     switch (currentStep) {

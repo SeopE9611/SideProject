@@ -307,9 +307,9 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         const qs = new URLSearchParams();
         qs.set('rentalId', String(json.id));
 
-        // apply 페이지의 "PDP 프리필" 키는 pdpProductId
+        // apply 페이지의 "PDP 프리필" 키는 stringId(또는 productId)
         // (orderId 없이도 선택 스트링을 카드로 고정 표시 + 가격/교체비 계산에 활용됨)
-        if (selectedString?.id) qs.set('pdpProductId', selectedString.id);
+        if (selectedString?.id) qs.set('stringId', selectedString.id);
         qs.set('servicePickupMethod', servicePickupMethod);
 
         router.push(`/services/apply?${qs.toString()}`);

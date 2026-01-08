@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { orderStatusColors } from '@/lib/badge-style';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck, MessageSquarePlus, Ban, Undo2 } from 'lucide-react';
+import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck, Ban, MoreVertical, MessageSquarePlus, Undo2 } from 'lucide-react';
 import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
 import CancelOrderDialog from '@/app/mypage/orders/_components/CancelOrderDialog';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { mutate as globalMutate } from 'swr';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 //  주문 데이터 타입 정의
 type OrderResponse = {
@@ -229,22 +230,32 @@ export default function OrderList() {
         // 상태 판정은 boolean으로 분리 (TS 좁힘/비교 에러 방지)
         const isDelivered = order.status === '배송완료';
         const isConfirmed = order.status === '구매확정';
+        const detailHref = `/mypage?tab=orders&orderId=${order.id}`;
+        const showConfirm = order.status !== '취소' && order.status !== '환불';
+        const canConfirm = showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;
+
+        // 모바일에서는 버튼을 최소화하고(핵심 1~2개) 나머지는 '더보기' 드롭다운으로 묶습니다.
+        // - 핵심: "상세보기" (+ 스트링 교체 신청이 필요한 경우만 1개 추가)
+        // - 그 외: 구매확정 / 리뷰 / 취소·철회 등
+        const showMobileStringApply = order.shippingInfo?.withStringService && !order.isStringServiceApplied;
+
         return (
           <Card key={order.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
               <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
             </div>
 
-            <CardContent className="relative p-6">
+            <CardContent className="relative p-4 bp-sm:p-6">
               {/* Header */}
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between mb-6">
+                <div className="flex items-start gap-3 min-w-0">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 shadow-lg">
                     <ShoppingBag className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">{isStringOrder ? '스트링 주문 + 교체 서비스 신청' : `스트링 단일 주문 #${order.id}`}</h3>
-                    <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{isStringOrder ? '스트링 주문 + 교체 서비스 신청' : `스트링 단일 주문 #${order.id}`}</h3>
+                    {/* 모바일에서는 날짜가 아래로 내려가도 OK: 줄바꿈/랩 허용 */}
+                    <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
                       <Calendar className="h-3 w-3" />
                       {formatDate(order.date)}
                     </div>
@@ -252,7 +263,7 @@ export default function OrderList() {
                 </div>
 
                 {/* 상태/취소 관련 영역 */}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {getStatusIcon(order.status)}
                   <Badge className={`px-3 py-1 text-xs font-medium ${orderStatusColors[order.status]}`}>{order.status}</Badge>
 
@@ -284,38 +295,44 @@ export default function OrderList() {
                 </div>
                 <div className="space-y-2">
                   {order.items.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800 space-x-4">
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
                       {/* 상품 썸네일 */}
-                      {item.imageUrl && <img src={item.imageUrl || '/placeholder.svg'} alt={item.name} className="w-10 h-10 object-cover rounded" />}
-                      {/* 상품명 */}
-                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.name}</span>
-                      {/* 가격 × 수량 */}
-                      <span className="text-xs text-slate-600 dark:text-slate-400">
-                        {(item.price ?? 0).toLocaleString()} × {item.quantity}
-                      </span>
+                      {item.imageUrl ? <img src={item.imageUrl || '/placeholder.svg'} alt={item.name} className="h-10 w-10 shrink-0 rounded object-cover" /> : <div className="h-10 w-10 shrink-0 rounded bg-slate-200 dark:bg-slate-700" />}
+
+                      {/* 상품명 + 가격/수량 (모바일에서 자연스럽게 줄바꿈) */}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium text-slate-900 dark:text-slate-100 break-words">{item.name}</div>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+                          <span>{(item.price ?? 0).toLocaleString()}원</span>
+                          <span className="text-slate-400">×</span>
+                          <span>{item.quantity}개</span>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                   <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{typeof order.totalPrice === 'number' ? `${order.totalPrice.toLocaleString()}원` : '총 결제 금액 정보 없음'}</span>
                 </div>
 
-                <div className="flex items-center gap-3">
+                {/* Desktop(>=bp-sm): 기존처럼 버튼을 모두 노출 */}
+                <div className="hidden bp-sm:flex items-center gap-3">
                   <Button size="sm" variant="outline" asChild className="border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 dark:border-slate-700 dark:hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
-                    <Link href={`/mypage?tab=orders&orderId=${order.id}`} className="inline-flex items-center gap-1">
+                    <Link href={detailHref} className="inline-flex items-center gap-1">
                       상세보기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
 
                   <OrderReviewCTA orderId={order.id} reviewAllDone={order.reviewAllDone} unreviewedCount={order.unreviewedCount} reviewNextTargetProductId={order.reviewNextTargetProductId} orderStatus={order.status} showOnlyWhenCompleted />
+
                   {/** 구매확정 버튼 (항상 노출, 배송완료 전에는 disabled + 툴팁) */}
-                  {order.status !== '취소' && order.status !== '환불' ? (
+                  {showConfirm ? (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -344,6 +361,7 @@ export default function OrderList() {
                       </Tooltip>
                     </TooltipProvider>
                   ) : null}
+
                   <TooltipProvider>
                     {order.shippingInfo?.withStringService &&
                       (!order.isStringServiceApplied ? (
@@ -367,14 +385,99 @@ export default function OrderList() {
                         </Tooltip>
                       ))}
                   </TooltipProvider>
+
                   {order.cancelStatus === 'requested' ? (
                     <Button size="sm" variant="destructive" onClick={() => handleWithdrawCancelRequest(order.id)} className="gap-2">
-                      <Undo2 className="h-4 w-4" />
-                      주문 취소 요청 철회
+                      취소 요청 철회
                     </Button>
                   ) : (
                     isCancelable && <CancelOrderDialog orderId={order.id} />
                   )}
+                </div>
+
+                {/* Mobile(<bp-sm): 핵심 1~2개만 노출 + 나머지는 더보기 */}
+                <div className="flex bp-sm:hidden items-center gap-2">
+                  <Button size="sm" variant="outline" asChild className="flex-1 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 bg-transparent">
+                    <Link href={detailHref} className="inline-flex w-full items-center justify-center gap-1">
+                      상세보기
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </Button>
+
+                  {showMobileStringApply ? (
+                    <Button size="sm" className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white" asChild>
+                      <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex w-full items-center justify-center gap-1">
+                        교체 신청
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </Button>
+                  ) : null}
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="outline" className="h-9 w-9 border-slate-200 bg-transparent">
+                        <MoreVertical className="h-4 w-4" />
+                        <span className="sr-only">더보기</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>더보기</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+
+                      {/* 리뷰 CTA: 완료 상태일 때만 노출(기존 컴포넌트 정책과 동일) */}
+                      {(['배송완료', '구매확정'].includes(order.status) || order.cancelStatus === 'requested') && (
+                        <DropdownMenuItem asChild>
+                          <Link href={detailHref} className="flex items-center gap-2">
+                            <MessageSquarePlus className="h-4 w-4" />
+                            리뷰/문의 등 관리
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+
+                      {showConfirm ? (
+                        <DropdownMenuItem disabled={!canConfirm} onSelect={() => handleConfirmPurchase(order.id)} className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4" />
+                          {isConfirmed ? '구매확정 완료' : '구매확정'}
+                        </DropdownMenuItem>
+                      ) : null}
+
+                      {order.shippingInfo?.withStringService ? (
+                        order.isStringServiceApplied ? (
+                          <DropdownMenuItem disabled className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            교체 신청 완료
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem asChild>
+                            <Link href={`/services/apply?orderId=${order.id}`} className="flex items-center gap-2">
+                              <ArrowRight className="h-4 w-4" />
+                              스트링 교체 신청
+                            </Link>
+                          </DropdownMenuItem>
+                        )
+                      ) : null}
+
+                      {(order.cancelStatus === 'requested' || isCancelable) && <DropdownMenuSeparator />}
+
+                      {/* 취소 요청 철회는 목록에서도 바로 가능 */}
+                      {order.cancelStatus === 'requested' ? (
+                        <DropdownMenuItem onSelect={() => handleWithdrawCancelRequest(order.id)} className="flex items-center gap-2">
+                          <Undo2 className="h-4 w-4" />
+                          취소 요청 철회
+                        </DropdownMenuItem>
+                      ) : null}
+
+                      {/* 취소 요청은 상세에서 다이얼로그로 처리(목록에서는 메뉴만 제공) */}
+                      {order.cancelStatus !== 'requested' && isCancelable ? (
+                        <DropdownMenuItem asChild>
+                          <Link href={detailHref} className="flex items-center gap-2">
+                            <Ban className="h-4 w-4" />
+                            주문 취소 요청(상세에서)
+                          </Link>
+                        </DropdownMenuItem>
+                      ) : null}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </CardContent>

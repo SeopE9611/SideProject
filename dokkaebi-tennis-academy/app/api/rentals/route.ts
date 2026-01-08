@@ -39,8 +39,11 @@ export async function POST(req: Request) {
     // 포인트 사용 (주문 체크아웃과 동일: 100P 단위)
     pointsToUse?: number;
 
-    // 라켓 수령 방식 (택배/방문)
-    servicePickupMethod?: 'delivery' | 'pickup';
+    // 교체 신청서(/services/apply)에서 기본 수거/방문 방식을 결정하는 값
+    // - SELF_SEND: 택배로 보내기(자가 발송)
+    // - SHOP_VISIT: 매장 방문(방문 시간 선택 UI가 열리는 쪽)
+    // (하위 호환) delivery/pickup 값도 허용
+    servicePickupMethod?: 'SELF_SEND' | 'SHOP_VISIT' | 'delivery' | 'pickup';
   };
 
   const client = await clientPromise;
@@ -51,9 +54,23 @@ export async function POST(req: Request) {
   const userObjectId = payload?.sub ? new ObjectId(payload.sub) : null;
 
   // --- 공통 입력 정리 ---
-  // (1) 수령 방식: 잘못된 값이 들어오면 서버에서 즉시 차단
-  const pickupMethod: 'delivery' | 'pickup' = servicePickupMethod ?? 'delivery';
-  if (pickupMethod !== 'delivery' && pickupMethod !== 'pickup') {
+  // (1) 수령 방식: RentalsCheckoutClient에서 보내는 값(SELF_SEND/SHOP_VISIT)을 기준으로 저장
+  // - SELF_SEND: 택배로 보내기(자가 발송)
+  // - SHOP_VISIT: 매장 방문(방문 시간 선택 UI가 열리는 쪽)
+  // (하위 호환) 과거 값 delivery/pickup 도 허용
+  const rawPickup = servicePickupMethod ?? null;
+
+  let pickupMethod: 'SELF_SEND' | 'SHOP_VISIT';
+  if (!rawPickup) {
+    // 값이 없으면 shipping.shippingMethod를 기준으로 기본값을 맞춤
+    pickupMethod = shipping?.shippingMethod === 'pickup' ? 'SHOP_VISIT' : 'SELF_SEND';
+  } else if (rawPickup === 'SHOP_VISIT' || rawPickup === 'SELF_SEND') {
+    pickupMethod = rawPickup;
+  } else if (rawPickup === 'pickup') {
+    pickupMethod = 'SHOP_VISIT';
+  } else if (rawPickup === 'delivery') {
+    pickupMethod = 'SELF_SEND';
+  } else {
     return NextResponse.json({ ok: false, message: 'INVALID_PICKUP_METHOD' }, { status: 400 });
   }
 
