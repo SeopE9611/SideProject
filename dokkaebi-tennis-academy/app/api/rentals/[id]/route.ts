@@ -30,6 +30,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     model: doc.model,
     days: doc.days,
     status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status,
+    servicePickupMethod: doc.servicePickupMethod ?? null,
     amount: doc.amount, // { deposit, fee, total }
     // 스트링 교체 요청
     stringing: doc.stringing

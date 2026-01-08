@@ -230,13 +230,11 @@ export default function OrderList() {
         // 상태 판정은 boolean으로 분리 (TS 좁힘/비교 에러 방지)
         const isDelivered = order.status === '배송완료';
         const isConfirmed = order.status === '구매확정';
+
+        // 버튼/메뉴 분기용 값 (모바일 핵심 1~2개 + 더보기)
         const detailHref = `/mypage?tab=orders&orderId=${order.id}`;
         const showConfirm = order.status !== '취소' && order.status !== '환불';
         const canConfirm = showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;
-
-        // 모바일에서는 버튼을 최소화하고(핵심 1~2개) 나머지는 '더보기' 드롭다운으로 묶습니다.
-        // - 핵심: "상세보기" (+ 스트링 교체 신청이 필요한 경우만 1개 추가)
-        // - 그 외: 구매확정 / 리뷰 / 취소·철회 등
         const showMobileStringApply = order.shippingInfo?.withStringService && !order.isStringServiceApplied;
 
         return (
@@ -435,7 +433,14 @@ export default function OrderList() {
                       )}
 
                       {showConfirm ? (
-                        <DropdownMenuItem disabled={!canConfirm} onSelect={() => handleConfirmPurchase(order.id)} className="flex items-center gap-2">
+                        <DropdownMenuItem
+                          disabled={!canConfirm}
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            handleConfirmPurchase(order.id);
+                          }}
+                          className="flex items-center gap-2"
+                        >
                           <CheckCircle className="h-4 w-4" />
                           {isConfirmed ? '구매확정 완료' : '구매확정'}
                         </DropdownMenuItem>
@@ -461,7 +466,13 @@ export default function OrderList() {
 
                       {/* 취소 요청 철회는 목록에서도 바로 가능 */}
                       {order.cancelStatus === 'requested' ? (
-                        <DropdownMenuItem onSelect={() => handleWithdrawCancelRequest(order.id)} className="flex items-center gap-2">
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            handleWithdrawCancelRequest(order.id);
+                          }}
+                          className="flex items-center gap-2"
+                        >
                           <Undo2 className="h-4 w-4" />
                           취소 요청 철회
                         </DropdownMenuItem>

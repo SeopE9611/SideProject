@@ -90,6 +90,13 @@ export default function StringServiceApplyPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
+  const [rentalAmount, setRentalAmount] = useState<null | {
+    deposit?: number;
+    fee?: number;
+    stringPrice?: number;
+    total?: number;
+  }>(null);
+
   const [isMember, setIsMember] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isUserLoading, setIsUserLoading] = useState(false);
@@ -118,7 +125,7 @@ export default function StringServiceApplyPage() {
   const mountingFeeParam = isOrderBased ? null : searchParams.get('mountingFee');
   const pdpMountingFee = mountingFeeParam === null || mountingFeeParam.trim() === '' ? Number.NaN : Number(mountingFeeParam);
 
-  const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(!isOrderBased && pdpProductId));
+  const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(!isOrderBased && !isRentalBased && pdpProductId));
 
   // ===== 유틸 =====
   const normalizePhone = (s: string) => (s || '').replace(/[^0-9]/g, '');
@@ -215,6 +222,7 @@ export default function StringServiceApplyPage() {
   // PDP에서 넘어오면 STEP2 자동 선택 + 장착비 기억 + 플래그 on
   useEffect(() => {
     if (!pdpProductId) return;
+    if (isRentalBased) return;
 
     // 주문 데이터 로딩 완료를 기다림
     if (orderId && !order) return;
@@ -230,7 +238,8 @@ export default function StringServiceApplyPage() {
       };
     });
     setFromPDP(true);
-  }, [pdpProductId, pdpMountingFee, orderId, order]); // order 의존성 추가
+  }, [pdpProductId, pdpMountingFee, orderId, order, isRentalBased]);
+
   // 초안 보장: 주문 기반 진입 시, 진행 중 신청서(draft/received)를 "항상" 1개로 맞춘다.
   // - 이미 있으면 재사용(reused=true), 없으면 자동 생성
   // - UI에는 영향 없음(프리필/흐름 그대로), 서버/DB 일관성만 강화
@@ -750,8 +759,26 @@ export default function StringServiceApplyPage() {
   // PDP 통합 모드인지 여부: orderId가 있고, PDP에서 넘어온 경우
   const isCombinedPdpMode = Boolean(orderId && fromPDP);
 
+  // 대여용 계산값 1
+  const rentalRacketPrice = useMemo(() => {
+    if (!isRentalBased) return 0;
+    const d = Number(rentalAmount?.deposit ?? 0);
+    const f = Number(rentalAmount?.fee ?? 0);
+    return d + f;
+  }, [isRentalBased, rentalAmount]);
+
+  // 대여용 계산값 2
+  const rentalStringPrice = useMemo(() => {
+    if (!isRentalBased) return 0;
+    const a = Number(rentalAmount?.stringPrice ?? 0);
+    if (a > 0) return a;
+    // amount에 없으면 mini price로 fallback
+    const p = typeof pdpProduct?.price === 'number' ? pdpProduct.price : 0;
+    return Number(p ?? 0);
+  }, [isRentalBased, rentalAmount, pdpProduct]);
+
   // racketPrice: 주문 기반일 때만 의미가 있으니 그대로 사용(이미 0/양수로 잘 계산됨)
-  const summaryRacketPrice = isOrderBased ? racketPrice : 0;
+  const summaryRacketPrice = isOrderBased ? racketPrice : isRentalBased ? rentalRacketPrice : 0;
 
   // 라벨도 케이스별로
   const totalLabel = isOrderBased ? '이번 주문 총 결제 금액' : fromPDP ? '이번 신청 예상 결제 금액' : '이번 교체 서비스 예상 비용';
@@ -759,7 +786,7 @@ export default function StringServiceApplyPage() {
   /** PDP에서 넘어온 스트링 상품 금액 (없으면 0원) */
   const pdpStringPrice = isCombinedPdpMode && pdpProduct && typeof pdpProduct.price === 'number' ? pdpProduct.price : 0;
   // stringPrice: 주문 기반이면 주문에서, 아니면 PDP에서(기존 유지)
-  const summaryStringPrice = isOrderBased ? orderStringPrice : pdpStringPrice;
+  const summaryStringPrice = isOrderBased ? orderStringPrice : isRentalBased ? rentalStringPrice : pdpStringPrice;
   // 교체비(서비스비) 부분
   const summaryBase = price; // linesForSubmit 기반 교체비 총합
 
@@ -769,9 +796,8 @@ export default function StringServiceApplyPage() {
   // 기존 그대로: 패키지면 교체비 0
   const baseTotal = serviceCost;
 
-  // 합계: 주문 기반(or PDP 기반)일 때만 라켓/스트링을 합산
-  const checkoutTotal = isOrderBased || fromPDP ? baseTotal + summaryRacketPrice + summaryStringPrice : baseTotal;
-
+  // 합계: 주문 기반(or PDP 기반 or 대여 기반)일 때 라켓/스트링을 합산
+  const checkoutTotal = isOrderBased || fromPDP || isRentalBased ? baseTotal + summaryRacketPrice + summaryStringPrice : baseTotal;
   const summaryTotal = serviceCost;
 
   const won = (n: number) => n.toLocaleString('ko-KR') + '원';
@@ -1136,6 +1162,7 @@ export default function StringServiceApplyPage() {
         if (!res.ok) return;
 
         const rental = await res.json().catch(() => ({} as any));
+        setRentalAmount((rental as any)?.amount ?? null);
         if (cancelled) return;
 
         // 수거 방식(교체 신청서용) 프리필
@@ -1470,7 +1497,7 @@ export default function StringServiceApplyPage() {
                       base={summaryBase}
                       pickupFee={priceView.pickupFee}
                       total={checkoutTotal}
-                      racketPrice={racketPrice}
+                      racketPrice={summaryRacketPrice}
                       stringPrice={summaryStringPrice}
                       totalLabel={totalLabel}
                     />
@@ -1500,7 +1527,7 @@ export default function StringServiceApplyPage() {
               base={summaryBase}
               pickupFee={priceView.pickupFee}
               total={checkoutTotal}
-              racketPrice={racketPrice}
+              racketPrice={summaryRacketPrice}
               stringPrice={summaryStringPrice}
               totalLabel={totalLabel}
             />
