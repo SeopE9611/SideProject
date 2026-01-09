@@ -205,7 +205,7 @@ const ProductCard = React.memo(
               alt={product.name}
               width={300}
               height={300}
-              className="h-40 sm:h-48 md:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="h-40 bp-sm:h-48 bp-md:h-44 bp-lg:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
             {product.isNew && <Badge className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -270,7 +270,7 @@ const ProductCard = React.memo(
             </div>
           </CardContent>
 
-          <CardFooter className="p-2.5 sm:p-3 md:p-4 pt-0 flex gap-1.5 sm:gap-2">
+          <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2 max-[360px]:flex-col">
             <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs bg-transparent" onClick={handleStringSingleBuy}>
               단품 구매
             </Button>

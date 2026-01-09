@@ -448,8 +448,8 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
         {/* 상품 목록 */}
         <div className="bp-lg:col-span-3">
-          <div className="mb-6 bp-md:mb-8 space-y-3 bp-sm:space-y-0 bp-sm:flex bp-sm:items-center bp-sm:justify-between">
-            <div className="flex items-center justify-between gap-3 bp-sm:justify-start">
+          <div className="mb-6 bp-md:mb-8 space-y-3">
+            <div className="flex items-center justify-between">
               <div className="text-base bp-sm:text-lg font-semibold dark:text-white">
                 총 <span className="text-blue-600 dark:text-blue-400 font-bold">{(productsList ?? []).length}</span>개 상품
               </div>
@@ -460,7 +460,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="bp-lg:hidden h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                className="bp-lg:hidden h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 shrink-0"
                 aria-expanded={showFilters}
                 aria-label="필터 열기"
               >
@@ -507,7 +507,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
           {/* 콘텐츠 */}
           {isLoadingInitial ? (
-            <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3' : 'grid-cols-1')}>
+            <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-3' : 'grid-cols-1')}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonProductCard key={i} />
               ))}
@@ -532,7 +532,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
             </div>
           ) : (
             <>
-              <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3' : 'grid-cols-1')}>
+              <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-3' : 'grid-cols-1')}>
                 {productsList.map((product, i) => {
                   const isLast = i === productsList.length - 1;
                   return (
