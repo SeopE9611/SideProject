@@ -37,6 +37,10 @@ type Props = {
   handleCustomInputChange: (next: any) => void;
   handleUseQtyChange: (stringTypeId: string, qty: number) => void;
 
+  lockedStringStock?: number | null;
+  lockedRacketQuantity?: number | null;
+  maxNonOrderQty?: number | null;
+
   selectedOrderItem: any;
   isCombinedPdpMode: boolean;
   pdpStringPrice: number;
@@ -83,6 +87,9 @@ export default function Step2MountingInfo(props: Props) {
     handleStringTypesChange,
     handleCustomInputChange,
     handleUseQtyChange,
+    lockedStringStock,
+    lockedRacketQuantity,
+    maxNonOrderQty,
     selectedOrderItem,
     isCombinedPdpMode,
     pdpStringPrice,
@@ -111,6 +118,15 @@ export default function Step2MountingInfo(props: Props) {
   const isLockedNonOrder = !orderId && (fromPDP || Boolean(rentalId));
   const lockedStringId = Array.isArray(formData.stringTypes) ? formData.stringTypes[0] : null;
   const lockedMountingFee = typeof priceView?.base === 'number' ? priceView.base : lineCount > 0 ? Math.round(price / lineCount) : 0;
+  // 비-주문 기반에서(대여/PDP) 보통 스트링 1개가 고정이므로 첫 번째 id를 사용
+  const lockedId = formData.stringTypes?.[0];
+  const isNonOrderLocked = !orderId && (Boolean(rentalId) || Boolean(fromPDP));
+  const canShowQty = isNonOrderLocked && lockedId && lockedId !== 'custom';
+  const currentQty = lockedId ? formData.stringUseCounts?.[lockedId] ?? 1 : 1;
+
+  const limitReasons: string[] = [];
+  if (typeof lockedStringStock === 'number') limitReasons.push(`스트링 재고 ${lockedStringStock}개`);
+  if (typeof lockedRacketQuantity === 'number') limitReasons.push(`라켓 수량 ${lockedRacketQuantity}자루`);
 
   return (
     <div className="space-y-6">
@@ -349,6 +365,37 @@ export default function Step2MountingInfo(props: Props) {
             </div>
           </div>
         </div>
+
+      {/* (대여/PDP) 가용 수량 표기 + 수량 입력 (max 제한) */}
+      {canShowQty && (
+        <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">사용 수량</div>
+              <div className="mt-1 text-xs text-slate-500">
+                {typeof maxNonOrderQty === 'number'
+                  ? `현재 가용 수량: ${maxNonOrderQty}개${limitReasons.length ? ` (기준: ${limitReasons.join(', ')})` : ''}`
+                  : '현재 가용 수량 정보를 불러오는 중이거나, 재고 관리가 꺼져 있습니다.'}
+              </div>
+            </div>
+          </div>
+
+         <div className="mt-3 flex items-center gap-2">
+            <input
+              className="h-10 w-24 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm"
+              type="number"
+              min={1}
+              max={typeof maxNonOrderQty === 'number' ? maxNonOrderQty : undefined}
+              value={currentQty}
+              onChange={(e) => handleUseQtyChange(String(lockedId), Number(e.target.value))}
+            />
+            {typeof maxNonOrderQty === 'number' && (
+              <span className="text-xs text-slate-500">최대 {maxNonOrderQty}개</span>
+            )}
+          </div>
+        </div>
+      )}
+
         {/* 패키지 요약 - 장착 정보 단계 */}
         <div className="mt-4">
           <div

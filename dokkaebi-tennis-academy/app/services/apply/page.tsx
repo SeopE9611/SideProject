@@ -88,6 +88,12 @@ export default function StringServiceApplyPage() {
   const [pdpProduct, setPdpProduct] = useState<PdpMiniProduct | null>(null);
   const [isLoadingPdpProduct, setIsLoadingPdpProduct] = useState(false);
 
+  // (비-주문 기반: PDP/대여) 수량 상한 계산에 필요한 실제 데이터
+  // - lockedStringStock: 상품(스트링) 재고
+  // - lockedRacketQuantity: 라켓 보유 수량(대여 기반에서 의미)
+  const [lockedStringStock, setLockedStringStock] = useState<number | null>(null);
+  const [lockedRacketQuantity, setLockedRacketQuantity] = useState<number | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
   const [rentalAmount, setRentalAmount] = useState<null | {
@@ -194,6 +200,10 @@ export default function StringServiceApplyPage() {
             price: typeof data.price === 'number' ? data.price : undefined,
           });
 
+          // 현재 가용 재고(관리자 설정 stock) 기억
+          // - manageStock=false면 서버에서 null로 내려주도록(아래 mini API diff 참고)
+          setLockedStringStock(typeof data.stock === 'number' ? data.stock : null);
+
           // mountingFee를 formData에 저장
           if (typeof data.mountingFee === 'number') {
             setFormData((prev) => ({
@@ -234,6 +244,7 @@ export default function StringServiceApplyPage() {
       return {
         ...prev,
         stringTypes: [pdpProductId], // 무조건 선택
+        stringUseCounts: { ...(prev.stringUseCounts ?? {}), [pdpProductId]: prev.stringUseCounts?.[pdpProductId] ?? 1 },
         pdpMountingFee: Number.isFinite(pdpMountingFee) ? pdpMountingFee : undefined,
       };
     });
@@ -489,6 +500,38 @@ export default function StringServiceApplyPage() {
   // 실제로 이번 신청에서 패키지를 사용하는지 여부(옵트아웃까지 반영)
   const usingPackage = !!(canApplyPackage && !formData.packageOptOut);
 
+  // (비-주문 기반) 실제로 허용 가능한 최대 수량
+  // - 기준이 2개면 min() (예: 스트링 재고 3, 라켓 수량 2 → max=2)
+  const maxNonOrderQty = useMemo(() => {
+    // 주문 기반이면 기존 로직(주문수량/remainingSlots)이 상한이므로 여기선 사용 X
+    if (orderId && order) return null;
+
+    const candidates: number[] = [];
+    if (typeof lockedStringStock === 'number' && lockedStringStock > 0) candidates.push(lockedStringStock);
+    if (isRentalBased && typeof lockedRacketQuantity === 'number' && lockedRacketQuantity > 0) candidates.push(lockedRacketQuantity);
+
+    if (!candidates.length) return null; // 상한 정보를 못 얻으면(= manageStock false 등) 제한을 강제하지 않음
+    return Math.max(1, Math.min(...candidates));
+  }, [orderId, order, lockedStringStock, lockedRacketQuantity, isRentalBased]);
+
+  // 재고/수량 정보가 로딩된 뒤, 현재 입력값이 상한을 넘으면 강제로 보정(clamp)
+  useEffect(() => {
+    if (orderId && order) return;
+    if (typeof maxNonOrderQty !== 'number') return;
+
+    setFormData((prev) => {
+      if (!prev.stringTypes?.length) return prev;
+
+      const next = { ...(prev.stringUseCounts ?? {}) };
+      prev.stringTypes.forEach((id) => {
+        const cur = typeof next[id] === 'number' ? next[id] : 1;
+        next[id] = Math.min(Math.max(cur, 1), maxNonOrderQty);
+      });
+
+      return { ...prev, stringUseCounts: next };
+    });
+  }, [maxNonOrderQty, orderId, order]);
+
   // 패키지가 있지만, 이번 신청에 필요한 횟수보다 적게 남은 경우
   const packageInsufficient = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining < requiredPassCount);
 
@@ -679,17 +722,24 @@ export default function StringServiceApplyPage() {
         return;
       }
 
-      // 단독/PDP 경로: 선택한 스트링 1개 기준 1라인만 만든다.
-      lines.push({
-        id: `${prodId}-0`,
-        racketType: formData.racketType,
-        stringProductId: prodId,
-        stringName,
-        tensionMain: '',
-        tensionCross: '',
-        note: formData.requirements,
-        mountingFee: lineFee,
-      });
+      // 단독/PDP 경로: 선택한 스트링 1개 기준 1라인
+      const useQty = formData.stringUseCounts[prodId] ?? 1;
+
+      for (let i = 0; i < useQty; i++) {
+        const alias = (formData.racketType || '').trim() || `라켓 ${lines.length + 1}`;
+
+        lines.push({
+          id: `${prodId}-${i}`,
+          racketType: alias,
+          stringProductId: prodId,
+          stringName,
+          tensionMain: '',
+          tensionCross: '',
+          note: formData.requirements,
+          mountingFee: lineFee,
+        });
+      }
+      return;
     });
     return lines;
   }, [formData.lines, formData.stringTypes, formData.stringUseCounts, formData.racketType, formData.requirements, priceView.base, order, orderId, pdpProductId, pdpProduct, pdpMountingFee]);
@@ -962,31 +1012,35 @@ export default function StringServiceApplyPage() {
 
   // 특정 스트링(productId)에 대해 "이번 신청에서 사용할 개수"를 수정하는 헬퍼
   const handleUseQtyChange = (id: string, value: number) => {
-    // 지금은 주문 기반(orderId + order)일 때만 쓸 예정
-    if (!orderId || !order) return;
-
     const raw = Number.isFinite(value) ? value : 0;
     const min = 0;
-
     let max: number;
 
-    if (id === 'custom') {
-      // 커스텀은 이론상 99개까지 허용 (단, 아래에서 남은 슬롯으로 다시 한번 제한)
-      max = 99;
-    } else {
-      const item = order.items.find((it) => it.id === id);
-      max = item?.quantity ?? 1; // 기본 상한 = 해당 상품 주문 수량
+    // 1) 주문 기반
+    if (orderId && order) {
+      if (id === 'custom') {
+        max = 99;
+      } else {
+        const item = order.items.find((it) => it.id === id);
+        max = item?.quantity ?? 1;
+      }
+
+      if (typeof orderRemainingSlots === 'number') {
+        const otherTotal = Object.entries(formData.stringUseCounts)
+          .filter(([key]) => key !== id)
+          .reduce((sum, [, v]) => sum + (typeof v === 'number' ? v : 0), 0);
+        const remainForThis = Math.max(orderRemainingSlots - otherTotal, 0);
+        max = Math.min(max, remainForThis);
+      }
     }
-
-    // 남은 슬롯 정보가 있으면, "다른 스트링에서 이미 쓴 개수"를 빼고
-    //    이 스트링에 할당할 수 있는 최대치만큼으로 한 번 더 제한
-    if (typeof orderRemainingSlots === 'number') {
-      const otherTotal = Object.entries(formData.stringUseCounts)
-        .filter(([key]) => key !== id)
-        .reduce((sum, [, v]) => sum + (typeof v === 'number' ? v : 0), 0);
-
-      const remainForThis = Math.max(orderRemainingSlots - otherTotal, 0);
-      max = Math.min(max, remainForThis);
+    // 2) 비-주문 기반(PDP/대여): "관리자 재고/수량" 기반 상한 적용
+    else {
+      if (id === 'custom') {
+        max = 99; // 커스텀은 재고 개념이 없으니 기존 유지
+      } else {
+        // maxNonOrderQty가 있으면 그게 절대 상한
+        max = typeof maxNonOrderQty === 'number' ? maxNonOrderQty : 99;
+      }
     }
 
     const safe = Math.min(Math.max(raw, min), max);
@@ -1165,6 +1219,11 @@ export default function StringServiceApplyPage() {
         setRentalAmount((rental as any)?.amount ?? null);
         if (cancelled) return;
 
+        // 라켓 수량(대여 기반에서 수량 상한 계산용)
+        // rental 응답 구조가 다를 수 있어 방어적으로 탐색
+        const rq = Number((rental as any)?.racket?.quantity) || Number((rental as any)?.racketQuantity) || Number((rental as any)?.quantity) || 1;
+        setLockedRacketQuantity(Number.isFinite(rq) && rq > 0 ? rq : 1);
+
         // 수거 방식(교체 신청서용) 프리필
         // - 대여 체크아웃에서 방문수령(매장 픽업)이면, 교체 신청서도 'visit' 기본값으로 맞춘다
         // - apply 페이지의 방문시간(step2)은 collectionMethod='visit' 일 때만 자연스럽게 열리므로, 여기서 먼저 정렬
@@ -1239,6 +1298,8 @@ export default function StringServiceApplyPage() {
             if (typeof mini.mountingFee === 'number') {
               setFormData((prev) => ({ ...prev, pdpMountingFee: mini.mountingFee }));
             }
+            // 현재 가용 재고(관리자 설정 stock) 기억
+            setLockedStringStock(typeof mini.stock === 'number' ? mini.stock : null);
           }
         } finally {
           if (!cancelled) setIsLoadingPdpProduct(false);
@@ -1440,6 +1501,9 @@ export default function StringServiceApplyPage() {
             visitSlotCountUi={visitSlotCountUi}
             visitDurationMinutesUi={visitDurationMinutesUi}
             visitTimeRange={visitTimeRange}
+            lockedStringStock={lockedStringStock}
+            lockedRacketQuantity={lockedRacketQuantity}
+            maxNonOrderQty={maxNonOrderQty}
           />
         );
 
