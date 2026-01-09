@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 // 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
@@ -1124,7 +1125,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
         toUserId={composeTo?.id ?? ''}
         toName={composeTo?.name}
       />
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 상단 헤더 (브레드크럼 + 버튼) */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -1772,7 +1773,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
             </DialogContent>
           </Dialog>
         )}
-      </div>
+      </SiteContainer>
     </div>
   );
 }

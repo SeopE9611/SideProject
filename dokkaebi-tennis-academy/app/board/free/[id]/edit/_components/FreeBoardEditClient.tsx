@@ -18,6 +18,7 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_OPTIONS } from '@/app/board/free/_components/FreeBoardWriteClient';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 type Props = {
   id: string;
@@ -246,7 +247,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-4 py-8 space-y-8">
+        <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Skeleton className="h-4 w-16" />
             <span>›</span>
@@ -266,7 +267,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </SiteContainer>
       </div>
     );
   }
@@ -295,7 +296,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 상단 헤더 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -481,7 +482,7 @@ export default function FreeBoardEditClient({ id }: Props) {
             </form>
           </CardContent>
         </Card>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

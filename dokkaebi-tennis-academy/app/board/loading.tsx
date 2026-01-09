@@ -1,10 +1,11 @@
+import SiteContainer from '@/components/layout/SiteContainer';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function BoardLoading() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <SiteContainer className="container mx-auto px-4 py-8 space-y-8">
         {/* 헤더 스켈레톤 */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-3 mb-4">
@@ -74,7 +75,7 @@ export default function BoardLoading() {
             </div>
           </div>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

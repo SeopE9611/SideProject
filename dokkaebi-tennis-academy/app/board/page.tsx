@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor, getReviewTypeColor, noticePinColor, getNoticeCategoryColor, attachImageColor, attachFileColor } from '@/lib/badge-style';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ReactNode } from 'react';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 type BoardKind = 'free' | 'market' | 'gear';
 
@@ -653,7 +654,7 @@ export default function BoardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 섹션 */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-3 mb-4">
@@ -712,7 +713,7 @@ export default function BoardPage() {
             emptyText="등록된 장비 사용기 글이 없습니다."
           />
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

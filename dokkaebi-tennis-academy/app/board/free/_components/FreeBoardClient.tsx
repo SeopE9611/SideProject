@@ -16,6 +16,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { showErrorToast } from '@/lib/toast';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 // API 응답 타입
 type ListResponse = {
@@ -255,7 +256,7 @@ export default function FreeBoardClient() {
         toName={composeTo?.name}
       />
 
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -676,7 +677,7 @@ export default function FreeBoardClient() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

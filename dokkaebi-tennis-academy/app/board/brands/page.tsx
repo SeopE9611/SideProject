@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Grid2X2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 export const metadata = {
   title: '브랜드별 게시판 (준비중) | 도깨비 테니스',
@@ -12,7 +13,7 @@ export const metadata = {
 export default function BrandBoardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 영역 */}
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -54,7 +55,7 @@ export default function BrandBoardPage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </SiteContainer>
     </div>
   );
 }
