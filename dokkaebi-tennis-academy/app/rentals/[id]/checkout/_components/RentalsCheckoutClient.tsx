@@ -17,6 +17,7 @@ import { getMyInfo } from '@/lib/auth.client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { showErrorToast } from '@/lib/toast';
 
 declare global {
   interface Window {
@@ -214,28 +215,28 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
   const onPay = async () => {
     if (requestStringing && !selectedString?.id) {
-      alert('스트링 교체를 함께 진행하려면 먼저 스트링을 선택해주세요.');
+      showErrorToast('스트링 교체를 함께 진행하려면 먼저 스트링을 선택해주세요.');
       router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`);
       return;
     }
 
     if (!name || !phone || !postalCode || !address) {
-      alert('필수 정보를 모두 입력해주세요.');
+      showErrorToast('필수 정보를 모두 입력해주세요.');
       return;
     }
 
     if (!selectedBank || !depositor) {
-      alert('입금 은행과 입금자명을 입력해주세요.');
+      showErrorToast('입금 은행과 입금자명을 입력해주세요.');
       return;
     }
 
     if (!refundBank || !refundAccount || !refundHolder) {
-      alert('보증금 환급 계좌(은행/계좌번호/예금주)를 모두 입력해주세요.');
+      showErrorToast('보증금 환급 계좌(은행/계좌번호/예금주)를 모두 입력해주세요.');
       return;
     }
 
     if (!agreeTerms || !agreePrivacy || !agreeRefund) {
-      alert('필수 약관에 모두 동의해주세요.');
+      showErrorToast('필수 약관에 모두 동의해주세요.');
       return;
     }
 
