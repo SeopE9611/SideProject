@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle } from 'lucide-react';
 
 type Props = {
   currentStep: number;
+  totalSteps: number;
   onPrev: () => void;
   onNext: () => void;
 

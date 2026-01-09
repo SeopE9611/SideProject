@@ -40,6 +40,13 @@ export type RentalOrder = {
   userId?: string; // 비회원 대여 지원 시 undefined 가능
   guestInfo?: { name: string; email?: string; phone?: string };
 
+  /**
+   * 스트링 교체 서비스 신청서(stringing_applications)와의 연결 키
+   * - 구매(order) 플로우의 stringingApplicationId와 동일한 역할
+   * - 1단계에서는 타입만 추가(실제 저장/연결은 다음 단계에서 /api/rentals POST에 반영)
+   */
+  stringingApplicationId?: string;
+
   racketId: string; // used_rackets._id
   days: 7 | 15 | 30; // 기간: UI·API에서 실사용하는 7/15/30일 단위
   status: RentalStatus;

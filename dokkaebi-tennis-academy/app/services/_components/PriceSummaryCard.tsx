@@ -18,11 +18,12 @@ interface PriceSummaryProps {
   racketPrice?: number; // 라켓 금액(정보용)
   stringPrice?: number; // 스트링 상품 금액(정보용)
   totalLabel?: string; // 합계 라벨 커스터마이징
+  headerHint?: string; // 헤더 하단 안내문(대여/주문 기반에서 혼선 제거용)
 }
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
-export default function PriceSummaryCard({ preferredDate, preferredTime, collectionMethod, stringTypes, stringIncluded = false, usingPackage, base, pickupFee, total, racketPrice = 0, stringPrice = 0, totalLabel }: PriceSummaryProps) {
+export default function PriceSummaryCard({ preferredDate, preferredTime, collectionMethod, stringTypes, stringIncluded = false, usingPackage, base, pickupFee, total, racketPrice = 0, stringPrice = 0, totalLabel, headerHint }: PriceSummaryProps) {
   const isCustom = stringTypes.includes('custom');
 
   const MethodIcon = collectionMethod === 'courier_pickup' ? Truck : collectionMethod === 'visit' ? Store : Box;
@@ -36,7 +37,7 @@ export default function PriceSummaryCard({ preferredDate, preferredTime, collect
           <ReceiptText className="h-4 w-4" />
           <p className="text-sm font-semibold">요금 요약</p>
         </div>
-        <p className="text-[11px] text-slate-300 dark:text-slate-400 mt-1">입력에 따라 실시간 반영됩니다</p>
+        <p className="text-[11px] text-slate-300 dark:text-slate-400 mt-1">{headerHint ?? '입력에 따라 실시간 반영됩니다'}</p>
       </div>
 
       <CardContent className="pt-5">

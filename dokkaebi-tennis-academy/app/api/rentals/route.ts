@@ -4,6 +4,8 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { deductPoints, getPointsSummary } from '@/lib/points.service';
+import { createStringingApplicationFromRental } from '@/app/features/stringing-applications/api/create-from-rental';
+import { ensureStringingTTLIndexes } from '@/app/features/stringing-applications/api/indexes';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +33,16 @@ export async function POST(req: Request) {
       address?: string;
       addressDetail?: string;
       deliveryRequest?: string;
+
+      /**
+       * (레거시/하위호환) 예전 대여 플로우에서 쓰던 값
+       * - pickup: 매장 방문
+       * - delivery: 택배 발송
+       * 현재는 servicePickupMethod(SELF_SEND/SHOP_VISIT)를 우선 사용하지만,
+       * 값이 없을 때 기본값 추정용으로만 사용한다.
+       */
+
+      shippingMethod?: 'pickup' | 'delivery';
     };
     refundAccount?: { bank: 'shinhan' | 'kookmin' | 'woori'; account: string; holder: string };
     // 스트링 교체 요청(선택)
@@ -48,6 +60,10 @@ export async function POST(req: Request) {
 
   const client = await clientPromise;
   const db = client.db();
+
+  // Ensure stringing_applications indexes are correct before starting a transaction.
+  // (Fixes legacy uniq_draft_per_order partial filter that can collide on orderId=null for rental drafts.)
+  await ensureStringingTTLIndexes(db);
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
   const payload = at ? verifyAccessToken(at) : null;
@@ -224,25 +240,72 @@ export async function POST(req: Request) {
   try {
     let insertedId: ObjectId | null = null;
 
-    await session.withTransaction(async () => {
-      const res = await db.collection('rental_orders').insertOne(doc, { session });
-      insertedId = res.insertedId;
-      const rentalIdStr = String(res.insertedId);
-      if (pointsUsed > 0 && userObjectId) {
-        // refKey를 rental:* 로 둬서 "주문" 상세 링크로 잘못 연결되는 것을 방지
-        await deductPoints(
-          db,
-          {
-            userId: userObjectId,
-            amount: pointsUsed,
-            type: 'spend_on_order', // 기존 포인트 타입 재사용(라벨: '포인트 사용')
-            refKey: `rental:${rentalIdStr}:spend`,
-            reason: `라켓 대여 결제 포인트 사용 (대여ID: ${rentalIdStr})`,
-          },
-          { session }
-        );
+    // 스트링 교체 신청서(stringing_application) 연결용
+    // - requested=true인 경우에만 채워짐
+    let stringingApplicationId: string | null = null;
+
+    // ✅ TransientTransactionError / NoSuchTransaction(251) 발생 시, 전체 트랜잭션을 짧게 재시도
+    const isTransientTxnError = (e: any) => {
+      const labels = Array.isArray(e?.errorLabels) ? e.errorLabels : [];
+      return labels.includes('TransientTransactionError') || e?.code === 251;
+    };
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await session.startTransaction();
+
+        const res = await db.collection('rental_orders').insertOne(doc, { session });
+        insertedId = res.insertedId;
+        const rentalIdStr = String(res.insertedId);
+
+        // --- (2단계) 대여 기반 신청서 초안 자동 생성 + rental_orders에 연결 저장 ---
+        if (stringingSnap?.requested) {
+          const app = await createStringingApplicationFromRental(
+            {
+              _id: res.insertedId,
+              userId: userObjectId ?? undefined,
+              createdAt: now,
+              servicePickupMethod: pickupMethod,
+              shipping: shipping ?? undefined,
+              stringing: stringingSnap ?? undefined,
+              serviceFeeHint: (doc as any)?.amount?.stringingFee ?? 0,
+            },
+            { db, session }
+          );
+          stringingApplicationId = String(app._id);
+          if (stringingApplicationId) {
+            await db.collection('rental_orders').updateOne({ _id: res.insertedId }, { $set: { stringingApplicationId, updatedAt: new Date() } }, { session });
+          }
+        }
+
+        if (pointsUsed > 0 && userObjectId) {
+          await deductPoints(
+            db,
+            {
+              userId: userObjectId,
+              amount: pointsUsed,
+              type: 'spend_on_order',
+              refKey: `rental:${rentalIdStr}:spend`,
+              reason: `라켓 대여 결제 포인트 사용 (대여ID: ${rentalIdStr})`,
+            },
+            { session }
+          );
+        }
+
+        await session.commitTransaction();
+        break; // ✅ 성공하면 루프 종료
+      } catch (e: any) {
+        // 트랜잭션 실패 시 abort 시도(이미 abort된 경우도 있으니 무시)
+        await session.abortTransaction().catch(() => {});
+
+        // ✅ transient면 짧게 대기 후 재시도
+        if (attempt < 3 && isTransientTxnError(e)) {
+          await new Promise((r) => setTimeout(r, 50 * attempt));
+          continue;
+        }
+        throw e;
       }
-    });
+    }
 
     if (!insertedId) throw new Error('RENTAL_INSERT_FAILED');
     return NextResponse.json({ ok: true, id: String(insertedId) });
@@ -251,7 +314,14 @@ export async function POST(req: Request) {
     // deductPoints가 던지는 대표 에러 메시지를 그대로 프론트로 전달
     // - INSUFFICIENT_POINTS
     // - POINTS_DEBT_EXISTS
-    return NextResponse.json({ ok: false, message: msg }, { status: 409 });
+    console.error('[POST /api/rentals] failed', {
+      message: msg,
+      code: e?.code,
+      codeName: e?.codeName,
+      errorLabels: e?.errorLabels,
+      stack: e?.stack,
+    });
+    return NextResponse.json({ ok: false, message: msg, code: e?.code, codeName: e?.codeName, errorLabels: e?.errorLabels }, { status: 409 });
   } finally {
     await session.endSession();
   }

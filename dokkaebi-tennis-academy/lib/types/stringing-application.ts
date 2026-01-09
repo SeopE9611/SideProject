@@ -54,6 +54,14 @@ export interface StringingApplication {
   _id: string;
   userId: string | null; // 게스트 가능
   orderId?: string | null; // 주문 연동 시
+
+  /**
+   * 라켓 대여(rental_orders) 연동 시
+   * - 주문(order) 플로우와 동일하게 “결제/대여 문서 1건 ↔ 신청서(draft) 1건”을 연결하기 위한 키
+   * - DB에는 ObjectId 또는 string이 혼재할 수 있으므로(레거시/마이그레이션) API에서는 둘 다 매칭 처리 권장
+   */
+  rentalId?: string | null;
+  
   createdAt: string; // ISO
   updatedAt: string; // ISO
 

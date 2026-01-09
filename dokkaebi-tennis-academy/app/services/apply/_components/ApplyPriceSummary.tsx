@@ -16,6 +16,9 @@ type PriceSummaryCommonProps = {
   collectionMethod: any;
   stringTypes: any;
 
+  stringIncluded?: boolean; // 스트링 금액이 결제에 포함되는지(주문/대여 기반)
+  headerHint?: string; // 헤더 안내문(대여/주문 기반 혼선 방지)
+
   usingPackage: boolean;
   base: number;
   pickupFee: number;
@@ -26,7 +29,7 @@ type PriceSummaryCommonProps = {
   totalLabel: string;
 };
 
-export function ApplyPriceSummaryMobile({ preferredDate, preferredTime, collectionMethod, stringTypes, usingPackage, base, pickupFee, total, racketPrice, stringPrice, totalLabel }: PriceSummaryCommonProps) {
+export function ApplyPriceSummaryMobile({ preferredDate, preferredTime, collectionMethod, stringTypes, stringIncluded = false, headerHint, usingPackage, base, pickupFee, total, racketPrice, stringPrice, totalLabel }: PriceSummaryCommonProps) {
   return (
     <div className="mt-6 bp-sm:mt-8 xl:hidden">
       <PriceSummaryCard
@@ -34,6 +37,8 @@ export function ApplyPriceSummaryMobile({ preferredDate, preferredTime, collecti
         preferredTime={preferredTime ?? undefined}
         collectionMethod={collectionMethod}
         stringTypes={stringTypes}
+        stringIncluded={stringIncluded}
+        headerHint={headerHint}
         usingPackage={usingPackage}
         base={base}
         pickupFee={pickupFee}
@@ -50,7 +55,7 @@ type DesktopProps = PriceSummaryCommonProps & {
   stickyTop: number;
 };
 
-export function ApplyPriceSummaryDesktop({ stickyTop, preferredDate, preferredTime, collectionMethod, stringTypes, usingPackage, base, pickupFee, total, racketPrice, stringPrice, totalLabel }: DesktopProps) {
+export function ApplyPriceSummaryDesktop({ stickyTop, preferredDate, preferredTime, collectionMethod, stringTypes, stringIncluded = false, headerHint, usingPackage, base, pickupFee, total, racketPrice, stringPrice, totalLabel }: DesktopProps) {
   return (
     <div
       className="hidden 2xl:block"
@@ -69,6 +74,8 @@ export function ApplyPriceSummaryDesktop({ stickyTop, preferredDate, preferredTi
           preferredTime={preferredTime}
           collectionMethod={collectionMethod}
           stringTypes={stringTypes}
+          stringIncluded={stringIncluded}
+          headerHint={headerHint}
           usingPackage={usingPackage}
           base={base}
           pickupFee={pickupFee}

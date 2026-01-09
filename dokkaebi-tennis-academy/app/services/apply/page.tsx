@@ -100,6 +100,7 @@ export default function StringServiceApplyPage() {
     deposit?: number;
     fee?: number;
     stringPrice?: number;
+    stringingFee?: number; // 대여 결제에 포함된 교체비(있으면 이 값을 우선 사용)
     total?: number;
   }>(null);
 
@@ -173,6 +174,30 @@ export default function StringServiceApplyPage() {
       }
     })();
   }, [orderId]);
+
+  /**
+   * 2-1) by-rental로 신청서(draft) id 조회
+   * - 대여 기반(rentalId) 제출은 서버가 draft를 rentalId로 자동 재사용하지 않음
+   * - 따라서 프론트에서 applicationId를 확보해서 submit body에 함께 실어야 "draft 승격(update)"이 됨
+   */
+  useEffect(() => {
+    if (!rentalId) return;
+    (async () => {
+      try {
+        const res = await fetch(`/api/applications/stringing/by-rental/${rentalId}`, {
+          cache: 'no-store',
+          credentials: 'include',
+        });
+        if (!res.ok) return; // 404면(초안 없음) → 대여 생성 단계(2단계) 점검 필요
+        const data = await res.json();
+        if (data?.found) {
+          setApplicationId(data.applicationId);
+        }
+      } catch (e) {
+        console.error('[apply] fetch by-rental id failed:', e);
+      }
+    })();
+  }, [rentalId]);
 
   // PDP 상품 미니 정보 로딩 (이미지/이름/장착비)
   useEffect(() => {
@@ -376,7 +401,8 @@ export default function StringServiceApplyPage() {
 
   // “다음” 버튼 disabled 계산용
   const isStepValid = (step: number) => {
-    const ok = validateStep(step, true);
+    const stepId = steps[step - 1]?.id ?? step;
+    const ok = validateStep(stepId, true);
     if (!ok) return false;
     if (step === 2 && !!slotsError) return false;
     return true;
@@ -827,18 +853,37 @@ export default function StringServiceApplyPage() {
     return Number(p ?? 0);
   }, [isRentalBased, rentalAmount, pdpProduct]);
 
+  // 교체비(서비스비) 부분
+  const summaryBase = price; // linesForSubmit 기반 교체비 총합
+
+  // 대여 기반: 교체비(이미 결제된 값)를 우선 사용
+  // - amount.stringingFee가 있으면 그 값을 신뢰(결제 당시 스냅샷)
+  // - 없으면 (하위호환) 현재 apply 계산값(summaryBase)을 fallback
+  const rentalStringingFee = useMemo(() => {
+    if (!isRentalBased) return 0;
+    const v = Number((rentalAmount as any)?.stringingFee ?? 0);
+    if (Number.isFinite(v) && v > 0) return v;
+    return Number.isFinite(summaryBase) ? summaryBase : 0;
+  }, [isRentalBased, rentalAmount, summaryBase]);
+
+  const rentalPaidTotal = useMemo(() => {
+    if (!isRentalBased) return 0;
+    return rentalRacketPrice + rentalStringPrice + rentalStringingFee;
+  }, [isRentalBased, rentalRacketPrice, rentalStringPrice, rentalStringingFee]);
+
   // racketPrice: 주문 기반일 때만 의미가 있으니 그대로 사용(이미 0/양수로 잘 계산됨)
   const summaryRacketPrice = isOrderBased ? racketPrice : isRentalBased ? rentalRacketPrice : 0;
 
   // 라벨도 케이스별로
-  const totalLabel = isOrderBased ? '이번 주문 총 결제 금액' : fromPDP ? '이번 신청 예상 결제 금액' : '이번 교체 서비스 예상 비용';
+  const totalLabel = isOrderBased ? '이번 주문 총 결제 금액' : isRentalBased ? '대여 결제 완료 금액' : fromPDP ? '이번 신청 예상 결제 금액' : '이번 교체 서비스 예상 비용';
 
   /** PDP에서 넘어온 스트링 상품 금액 (없으면 0원) */
   const pdpStringPrice = isCombinedPdpMode && pdpProduct && typeof pdpProduct.price === 'number' ? pdpProduct.price : 0;
   // stringPrice: 주문 기반이면 주문에서, 아니면 PDP에서(기존 유지)
   const summaryStringPrice = isOrderBased ? orderStringPrice : isRentalBased ? rentalStringPrice : pdpStringPrice;
-  // 교체비(서비스비) 부분
-  const summaryBase = price; // linesForSubmit 기반 교체비 총합
+
+  // 요금요약 카드에 보여줄 base/total은 케이스별로 분리
+  const summaryBaseForCard = isRentalBased ? rentalStringingFee : summaryBase;
 
   // 패키지면 0, 아니면 교체비 그대로
   const serviceCost = priceView.usingPackage ? 0 : summaryBase;
@@ -847,7 +892,16 @@ export default function StringServiceApplyPage() {
   const baseTotal = serviceCost;
 
   // 합계: 주문 기반(or PDP 기반 or 대여 기반)일 때 라켓/스트링을 합산
-  const checkoutTotal = isOrderBased || fromPDP || isRentalBased ? baseTotal + summaryRacketPrice + summaryStringPrice : baseTotal;
+  const checkoutTotal = isRentalBased
+    ? rentalPaidTotal // 대여 기반은 “이미 결제된 합계”로 고정
+    : isOrderBased || fromPDP
+    ? baseTotal + summaryRacketPrice + summaryStringPrice
+    : baseTotal;
+  // 스트링 포함 여부(라벨/설명용)
+  const stringIncludedForCard = isOrderBased || isRentalBased;
+  // 헤더 안내문(혼선 방지)
+  const headerHintForCard = isRentalBased ? '대여 결제 기준으로 표시됩니다' : isOrderBased ? '주문 결제 금액 기준으로 표시됩니다' : undefined;
+
   const summaryTotal = serviceCost;
 
   const won = (n: number) => n.toLocaleString('ko-KR') + '원';
@@ -1340,17 +1394,19 @@ export default function StringServiceApplyPage() {
     }).open();
   };
 
-  const steps = APPLY_STEPS;
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const steps = useMemo(() => (isRentalBased ? APPLY_STEPS.filter((s) => s.id !== 3) : APPLY_STEPS), [isRentalBased]);
+  const totalSteps = steps.length;
+  const currentStepId = steps[currentStep - 1]?.id ?? steps[0]?.id ?? 1;
 
+  const doSubmit = async () => {
     // 마지막 단계(4단계)가 아니면 제출하지 않음
     if (currentStep !== steps.length) return;
 
-    // 1~3 스텝 전부 재검증: 실패 스텝으로 이동 + 토스트
-    for (let s = 1; s <= 3; s++) {
-      if (!validateStep(s, false)) {
-        setCurrentStep(s);
+    // 마지막 단계 직전까지 전부 재검증: 실패 스텝으로 이동
+    for (let idx = 1; idx <= totalSteps - 1; idx++) {
+      const stepId = steps[idx - 1]?.id ?? idx;
+      if (!validateStep(stepId, false)) {
+        setCurrentStep(idx);
         return;
       }
     }
@@ -1362,6 +1418,13 @@ export default function StringServiceApplyPage() {
     // 이하 payload 생성/POST 로직은 그대로 유지
 
     const payload = {
+      /**
+       * 중요:
+       * - orderId 기반은 서버가 draft를 orderId로 찾아 승격할 수 있지만,
+       * - rentalId 기반은 서버가 draft를 rentalId로 자동 탐색/재사용하지 않으므로
+       *   applicationId(=draft _id)를 반드시 함께 보내야 한다.
+       */
+      applicationId: applicationId ?? undefined,
       name: formData.name,
       email: formData.email,
       phone: cleaned,
@@ -1432,9 +1495,14 @@ export default function StringServiceApplyPage() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void doSubmit();
+  };
+
   const handleNext = () => {
-    if (!validateStep(currentStep, false)) return; // 실패 시 토스트 + 스텝 유지
-    setCurrentStep((s) => Math.min(4, s + 1));
+    if (!validateStep(currentStepId, false)) return; // 대여 모드에서도 올바른 stepId 검증
+    setCurrentStep((s) => Math.min(totalSteps, s + 1));
   };
 
   // 방문 수령 여부(한글/영문 데이터 모두 허용)
@@ -1443,7 +1511,7 @@ export default function StringServiceApplyPage() {
   const lockCollection = Boolean(orderId || rentalId);
 
   const getCurrentStepContent = () => {
-    switch (currentStep) {
+    switch (currentStepId) {
       case 1:
         return (
           <Step1ApplicantInfo
@@ -1522,7 +1590,38 @@ export default function StringServiceApplyPage() {
         );
 
       case 4:
-        return <Step4FinalRequest formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} orderId={orderId} isMember={isMember} usingPackage={usingPackage} packageInsufficient={packageInsufficient} />;
+        return (
+          <div className="space-y-6">
+            {isRentalBased && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">대여 결제 완료</CardTitle>
+                  <CardDescription className="text-sm">대여 결제에 스트링/교체 서비스 비용까지 포함되어 있어 추가 결제정보 입력이 필요하지 않습니다.</CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-300">라켓 대여</span>
+                    <span className="font-medium">{won(summaryRacketPrice)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-300">스트링 상품</span>
+                    <span className="font-medium">{won(summaryStringPrice)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-300">교체 서비스</span>
+                    <span className="font-medium">{won(summaryBaseForCard)}</span>
+                  </div>
+                  <div className="pt-2 border-t flex items-center justify-between">
+                    <span className="font-semibold">합계</span>
+                    <span className="font-semibold">{won(checkoutTotal)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            <Step4FinalRequest formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} orderId={orderId} isMember={isMember} usingPackage={usingPackage} packageInsufficient={packageInsufficient} />
+          </div>
+        );
+
       default:
         return null;
     }
@@ -1558,8 +1657,10 @@ export default function StringServiceApplyPage() {
                       preferredTime={formData.preferredTime ?? undefined}
                       collectionMethod={formData.collectionMethod as CollectionMethod}
                       stringTypes={formData.stringTypes}
-                      usingPackage={priceView.usingPackage}
-                      base={summaryBase}
+                      stringIncluded={stringIncludedForCard}
+                      headerHint={headerHintForCard}
+                      usingPackage={isRentalBased ? false : priceView.usingPackage}
+                      base={summaryBaseForCard}
                       pickupFee={priceView.pickupFee}
                       total={checkoutTotal}
                       racketPrice={summaryRacketPrice}
@@ -1570,12 +1671,13 @@ export default function StringServiceApplyPage() {
                     {/* 하단 네비게이션 */}
                     <ApplyStepFooter
                       currentStep={currentStep}
+                      totalSteps={totalSteps}
                       onPrev={() => setCurrentStep(Math.max(1, currentStep - 1))}
                       onNext={handleNext}
                       isStepValid={isStepValid}
                       isSubmitting={isSubmitting}
                       isOrderSlotBlocked={isOrderSlotBlocked}
-                      handleSubmit={handleSubmit}
+                      handleSubmit={doSubmit}
                     />
                   </form>
                 </CardContent>
@@ -1588,8 +1690,10 @@ export default function StringServiceApplyPage() {
               preferredTime={formData.preferredTime}
               collectionMethod={formData.collectionMethod as any}
               stringTypes={formData.stringTypes}
-              usingPackage={priceView.usingPackage}
-              base={summaryBase}
+              stringIncluded={stringIncludedForCard}
+              headerHint={headerHintForCard}
+              usingPackage={isRentalBased ? false : priceView.usingPackage}
+              base={summaryBaseForCard}
               pickupFee={priceView.pickupFee}
               total={checkoutTotal}
               racketPrice={summaryRacketPrice}
