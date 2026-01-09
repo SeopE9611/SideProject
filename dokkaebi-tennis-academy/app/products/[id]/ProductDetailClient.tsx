@@ -24,6 +24,7 @@ import PhotosUploader from '@/components/reviews/PhotosUploader';
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor } from '@/lib/badge-style';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 export default function ProductDetailClient({ product }: { product: any }) {
   // 방어: 간헐적으로 images/reviews가 undefined인 데이터가 섞이면 상세페이지가 바로 크래시 나는 현상 대비
@@ -560,7 +561,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const canInc = quantity < stock;
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 pb-20 md:pb-8">
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 pb-20 bp-md:pb-8">
       {/* Hero Section with Breadcrumb */}
       <div className="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-6 sm:py-8">
         <div className="absolute inset-0 bg-black/20"></div>
@@ -577,7 +578,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <rect width="100%" height="100%" fill="url(#detail-court-lines)" />
           </svg>
         </div>
-        <div className="relative mx-auto w-full max-w-[1200px] px-4 bp-md:px-6">
+        <SiteContainer variant="wide" className="relative">
           <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm mb-3 sm:mb-4 opacity-90 overflow-x-auto scrollbar-hide">
             <Link href="/" className="hover:text-blue-200 transition-colors whitespace-nowrap">
               홈
@@ -593,10 +594,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             이전 페이지로
           </Button>
-        </div>
+        </SiteContainer>
       </div>
 
-      <div className="mx-auto w-full max-w-[1200px] py-4 bp-sm:py-6 bp-md:py-8 px-4 bp-sm:px-6">
+      <SiteContainer variant="wide" className="py-4 bp-sm:py-6 bp-md:py-8">
         <div className="grid grid-cols-1 gap-4 sm:gap-6 bp-lg:grid-cols-5">
           <div className="bp-lg:col-span-3 space-y-3 sm:space-y-4">
             <Card className="overflow-hidden border-0 shadow-xl sm:shadow-2xl bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
@@ -726,7 +727,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             즉시 구매하기
                           </Button>
 
-                          <Button className="w-full h-10 sm:h-11 text-sm" disabled={loading || quantity > stock} onClick={handleBuyNowWithService}>
+                          <Button
+                            className="flex-1 h-12 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 text-slate-900 dark:text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                            disabled={loading || quantity > stock}
+                            onClick={handleBuyNowWithService}
+                          >
                             <CreditCard className="mr-2 h-4 w-4" />
                             교체 서비스 포함 즉시 결제
                           </Button>
@@ -775,7 +780,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6 sm:mt-8">
+        <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-4 sm:gap-6 mt-6 sm:mt-8">
           <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm dark:bg-slate-800/90">
             <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
               <CardTitle className="text-base sm:text-lg font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-2">
@@ -1435,12 +1440,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+      </SiteContainer>
       {/* ===== 모바일 전용 하단 Sticky ===== */}
       {showSticky && (
-        <div className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-slate-200 dark:border-slate-800">
+        <div className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-slate-200 dark:border-slate-800">
           <div className="bg-white dark:bg-slate-900 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
-            <div className="mx-auto max-w-6xl px-4 py-3">
+            <SiteContainer variant="wide" className="py-3">
               {/* 상품 정보 섹션 */}
               <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                 {/* 썸네일 */}
@@ -1493,12 +1498,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <div className="pt-3 flex gap-2">
                 <button
                   type="button"
-                  onClick={handleAddToCart}
-                  disabled={loading || quantity > stock}
+                  onClick={handleBuyNow}
+                  disabled={loading || stock <= 0 || quantity > stock}
                   className="flex-1 h-12 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold text-sm transition-colors shadow-sm disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  <ShoppingCart className="h-4 w-4" />
-                  장바구니
+                  <CreditCard className="h-4 w-4" />
+                  즉시 구매하기
                 </button>
                 <button
                   type="button"
@@ -1509,7 +1514,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   교체 포함 결제
                 </button>
               </div>
-            </div>
+            </SiteContainer>
           </div>
         </div>
       )}
