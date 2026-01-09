@@ -12,9 +12,13 @@ import { getMyInfo } from '@/lib/auth.client';
 import { useEffect, useMemo, useState } from 'react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import WishlistSidebar from '@/app/cart/_components/WishlistSidebar';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 // 통화 포맷 유틸 (일관성)
 const formatKRW = (n: number) => n.toLocaleString('ko-KR');
+
+// 장바구니 아이템에 저장된 재고(가용 수량) 값을 안전하게 해석
+const getMaxStock = (stock?: number) => (typeof stock === 'number' && Number.isFinite(stock) ? stock : Number.POSITIVE_INFINITY);
 
 export default function CartPageClient() {
   const { logout } = useAuthStore(); // 사용 여부와 관계없이 훅 순서 안정
@@ -81,14 +85,14 @@ export default function CartPageClient() {
             <rect width="100%" height="100%" fill="url(#court-lines)" />
           </svg>
         </div>
-        <div className="relative mx-auto w-full max-w-[1200px] px-4 bp-md:px-6 py-16">
+        <SiteContainer variant="wide" className="relative py-10 bp-sm:py-12 bp-md:py-14">
           <div className="mb-4 flex items-center gap-4">
             <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-sm shadow-lg">
               <ShoppingBag className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="mb-2 text-4xl font-black">장바구니</h1>
-              <p className="  text-blue-100">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
+              <h1 className="mb-2 text-2xl bp-sm:text-3xl bp-md:text-4xl font-black">장바구니</h1>
+              <p className="text-blue-100">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
             </div>
           </div>
 
@@ -104,14 +108,14 @@ export default function CartPageClient() {
               </div>
             </div>
           )}
-        </div>
+        </SiteContainer>
       </div>
 
-      <div className="mx-auto w-full max-w-[1200px] px-4 bp-md:px-6 py-8">
+      <SiteContainer variant="wide" className="pt-6 bp-sm:pt-8 pb-40 bp-sm:pb-32 bp-md:py-8">
         {cartItems.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-3">
             {/* 목록 */}
-            <div className="bp-lg:col-span-2 space-y-6">
+            <div className="bp-lg:col-span-2 space-y-5">
               <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl">
                 <CardHeader className="rounded-t-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
                   <div className="flex items-start justify-between gap-3">
@@ -126,11 +130,11 @@ export default function CartPageClient() {
                     </div>
 
                     {/* 전체선택 / 선택n개 / 선택삭제 */}
-                    <div className="flex items-center gap-3 text-sm">
+                    <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
                       <Button variant="ghost" size="sm" onClick={toggleAll} className="hover:bg-white/60 dark:hover:bg-slate-800/60">
                         {selectedIds.length === cartItems.length ? '전체 해제' : '전체 선택'}
                       </Button>
-                      <div className="h-4 w-px bg-black/10 dark:bg-white/10" />
+                      <div className="hidden bp-sm:block h-4 w-px bg-black/10 dark:bg-white/10" />
                       <span className="text-slate-500 dark:text-slate-400">선택 {selectedIds.length}개</span>
                       <Button variant="ghost" size="sm" onClick={removeSelected} className="text-red-600 hover:bg-red-50/70 dark:hover:bg-red-900/20">
                         선택 삭제
@@ -139,71 +143,73 @@ export default function CartPageClient() {
                   </div>
                 </CardHeader>
 
-                <CardContent className="p-4 bp-md:p-6 space-y-4">
+                <CardContent className="p-3 bp-sm:p-4 bp-md:p-6 space-y-3 bp-sm:space-y-4">
                   {cartItems.map((item) => {
                     // 버튼 비활성 판단
                     const stock = item.stock ?? Number.POSITIVE_INFINITY;
                     const canDec = item.quantity > 1;
-                    const canInc = item.quantity < stock;
+                    const maxStock = getMaxStock(item.stock);
+                    const canInc = item.quantity < maxStock;
 
                     return (
-                      <div key={item.id} className="rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md dark:bg-slate-800">
-                        <div className="flex items-center gap-4">
-                          {/* 선택 체크박스 */}
-                          <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} className="h-4 w-4 accent-blue-600" aria-label={`${item.name} 선택`} />
-
-                          {/* 썸네일 (비율 고정 + lazy) */}
-                          <Link href={`/products/${item.id}`} className="shrink-0">
-                            <Image src={item.image || '/placeholder.svg?height=72&width=72'} alt={item.name} width={72} height={72} loading="lazy" className="aspect-square rounded-lg object-cover" />
-                          </Link>
-
-                          {/* 이름 / 개당 가격 */}
-                          <div className="min-w-0 flex-1">
-                            <Link href={`/products/${item.id}`} className="block line-clamp-1 font-medium text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400">
-                              {item.name}
+                      <div key={item.id} className="rounded-xl bg-white p-3 bp-sm:p-4 shadow-sm transition hover:shadow-md dark:bg-slate-800">
+                        <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
+                          {/* 상단(모바일): 체크+썸네일+이름 */}
+                          <div className="flex items-center gap-3 min-w-0">
+                            <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} className="h-4 w-4 accent-blue-600" aria-label={`${item.name} 선택`} />
+                            <Link href={`/products/${item.id}`} className="shrink-0">
+                              <Image src={item.image || '/placeholder.svg?height=72&width=72'} alt={item.name} width={72} height={72} loading="lazy" className="aspect-square rounded-lg object-cover" />
                             </Link>
-                            <div className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-                              개당 <span className="tabular-nums font-medium text-slate-700 dark:text-slate-200">{formatKRW(item.price)}원</span>
+                            <div className="min-w-0 flex-1">
+                              <Link href={`/products/${item.id}`} className="block line-clamp-2 bp-sm:line-clamp-1 font-medium text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400">
+                                {item.name}
+                              </Link>
+                              <div className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                                개당 <span className="tabular-nums font-medium text-slate-700 dark:text-slate-200">{formatKRW(item.price)}원</span>
+                              </div>
                             </div>
                           </div>
 
-                          {/* 우측: 합계 / 수량 / 삭제 */}
-                          <div className="flex items-end gap-3">
-                            {/* 합계 */}
-                            <div className="text-right">
-                              <div className="text-xs text-slate-500 dark:text-slate-400">합계</div>
-                              <div className="tabular-nums text-lg font-semibold text-slate-900 dark:text-slate-100">{formatKRW(item.price * item.quantity)}원</div>
+                          {/* 하단(모바일) */}
+                          <div className="flex flex-wrap items-center gap-3 bp-sm:flex-nowrap bp-sm:justify-end bp-sm:flex-1">
+                            {/* 수량 스테퍼 (pill, 비활성 표시) */}
+                            <div className="order-1 flex flex-col items-center">
+                              <div className="flex items-center rounded-full bg-slate-100 px-1 dark:bg-slate-700">
+                                <Button variant="ghost" size="sm" className="h-8 w-8 disabled:opacity-40" aria-label={`${item.name} 수량 감소`} disabled={!canDec} onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                                <span className="tabular-nums w-8 select-none text-center font-medium">{item.quantity}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 disabled:opacity-40"
+                                  aria-label={`${item.name} 수량 증가`}
+                                  disabled={!canInc}
+                                  onClick={() => {
+                                    if (!canInc) {
+                                      showErrorToast(
+                                        <>
+                                          <p>
+                                            <strong>{item.name}</strong>의 최대 주문 수량은 {maxStock}개입니다.
+                                          </p>
+                                          <p>더 이상 수량을 늘릴 수 없습니다.</p>
+                                        </>
+                                      );
+                                      return;
+                                    }
+                                    updateQuantity(item.id, item.quantity + 1);
+                                  }}
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              </div>
+
+                              {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>현재 가용 수량: {maxStock}개</span>}
                             </div>
 
-                            {/* 수량 스테퍼 (pill, 비활성 표시) */}
-                            <div className="flex items-center rounded-full bg-slate-100 px-1 dark:bg-slate-700">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 disabled:opacity-40" aria-label={`${item.name} 수량 감소`} disabled={!canDec} onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                                <Minus className="h-4 w-4" />
-                              </Button>
-                              <span className="tabular-nums w-8 select-none text-center font-medium">{item.quantity}</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 disabled:opacity-40"
-                                aria-label={`${item.name} 수량 증가`}
-                                disabled={!canInc}
-                                onClick={() => {
-                                  if (!canInc) {
-                                    showErrorToast(
-                                      <>
-                                        <p>
-                                          <strong>{item.name}</strong>의 최대 주문 수량은 {stock}개입니다.
-                                        </p>
-                                        <p>더 이상 수량을 늘릴 수 없습니다.</p>
-                                      </>
-                                    );
-                                    return;
-                                  }
-                                  updateQuantity(item.id, item.quantity + 1);
-                                }}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
+                            <div className="order-2 ml-auto text-right">
+                              <div className="text-xs text-slate-500 dark:text-slate-400">합계</div>
+                              <div className="tabular-nums text-lg font-semibold text-slate-900 dark:text-slate-100">{formatKRW(item.price * item.quantity)}원</div>
                             </div>
 
                             {/* 삭제 버튼 (컨펌) */}
@@ -216,7 +222,7 @@ export default function CartPageClient() {
                                   removeItem(item.id);
                                 }
                               }}
-                              className="text-slate-400 hover:text-red-600"
+                              className="order-3 text-slate-400 hover:text-red-600"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -226,16 +232,6 @@ export default function CartPageClient() {
                     );
                   })}
                 </CardContent>
-
-                {/* 선택 작업 바 */}
-                <div className="px-4 pb-4 bp-md:px-6">
-                  <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-slate-50/70 p-3 dark:bg-slate-700/40">
-                    <span className="text-sm text-slate-600 dark:text-slate-300">선택 {selectedIds.length}개</span>
-                    <Button variant="ghost" size="sm" onClick={removeSelected} className="text-red-600 hover:bg-red-50/70 dark:hover:bg-red-900/20">
-                      선택 삭제
-                    </Button>
-                  </div>
-                </div>
 
                 <CardFooter className="rounded-b-lg bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20">
                   <div className="flex w-full flex-col justify-between gap-4 bp-sm:flex-row">
@@ -264,7 +260,7 @@ export default function CartPageClient() {
 
             {/* 요약 */}
             <div className="bp-lg:col-span-1">
-              <div className="sticky top-20">
+              <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
                 <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-4 bp-sm:p-6 text-white">
                     <CardTitle className="flex items-center gap-3 text-xl">
@@ -346,19 +342,21 @@ export default function CartPageClient() {
             </div>
           </div>
         )}
-      </div>
+      </SiteContainer>
 
       {/* 모바일 하단 결제 바 */}
       {cartItems.length > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-40 bp-md:hidden">
-          <div className="mx-auto max-w-screen-sm rounded-t-2xl bg-white/95 p-4 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-slate-800/95">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm text-slate-600 dark:text-slate-300">결제 금액</span>
-              <span className="tabular-nums text-lg font-bold text-blue-600 dark:text-blue-400">{formatKRW(total)}원</span>
-            </div>
-            <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
-              <Link href="/checkout?withService=1">주문하기</Link>
-            </Button>
+          <div className="rounded-t-2xl bg-white/95 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-slate-800/95">
+            <SiteContainer variant="full" className="max-w-screen-sm py-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm text-slate-600 dark:text-slate-300">결제 금액</span>
+                <span className="tabular-nums text-lg font-bold text-blue-600 dark:text-blue-400">{formatKRW(total)}원</span>
+              </div>
+              <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
+                <Link href="/checkout?withService=1">주문하기</Link>
+              </Button>
+            </SiteContainer>
           </div>
         </div>
       )}
