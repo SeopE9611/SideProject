@@ -16,6 +16,9 @@ type Props = {
     period: 7 | 15 | 30;
     fee: number;
     deposit: number;
+    stringPrice: number;
+    stringingFee: number;
+    total: number;
     status: string;
     racket: { brand: string; model: string; condition: 'A' | 'B' | 'C' } | null;
     payment?: {
@@ -63,7 +66,7 @@ export default function RentalsSuccessClient({ data }: Props) {
     } catch {}
   }, []);
 
-  const total = data.fee + data.deposit;
+  const total = typeof data.total === 'number' ? data.total : data.fee + data.deposit + (data.stringPrice ?? 0) + (data.stringingFee ?? 0);
   const bankKeyFromServer = data.payment?.bank || '';
   const depositorFromServer = data.payment?.depositor || '';
   const bankKeyFallback = (typeof window !== 'undefined' && sessionStorage.getItem('rentals-last-bank')) || '';
@@ -161,6 +164,18 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <span className="text-slate-600 dark:text-slate-400">보증금</span>
                   <span className="font-semibold text-lg">{data.deposit.toLocaleString()}원</span>
                 </div>
+                {data.stringPrice > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-600 dark:text-slate-400">스트링 상품</span>
+                    <span className="font-semibold text-lg">{data.stringPrice.toLocaleString()}원</span>
+                  </div>
+                )}
+                {data.stringingFee > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-600 dark:text-slate-400">교체 서비스</span>
+                    <span className="font-semibold text-lg">{data.stringingFee.toLocaleString()}원</span>
+                  </div>
+                )}
                 <Separator />
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
                   <div className="flex justify-between items-center text-2xl font-bold">

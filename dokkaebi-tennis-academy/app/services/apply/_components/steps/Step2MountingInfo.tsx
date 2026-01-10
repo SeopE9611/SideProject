@@ -157,8 +157,17 @@ export default function Step2MountingInfo(props: Props) {
                   <Zap className="h-5 w-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-red-700 dark:text-red-200">
                     <p className="font-medium mb-1">⚠️ 중요 안내</p>
-                    <p>• 스트링을 구매하시고 난 후 신청서를 작성하셔야 구매한 스트링 종류가 나옵니다.</p>
-                    <p>• 고객님께서 보유하고 계신 스트링으로 단일 신청서를 작성하시려는 경우 "직접 입력하기" 를 클릭하여 신청해주세요.</p>
+                    {rentalId ? (
+                      <>
+                        <p>• 대여 신청에서 선택한 스트링/교체 옵션 기준으로 신청이 진행됩니다.</p>
+                        <p>• 스트링 변경은 대여 신청 단계에서 다시 선택해 주세요.</p>
+                      </>
+                    ) : (
+                      <>
+                        <p>• 스트링을 구매하시고 난 후 신청서를 작성하셔야 구매한 스트링 종류가 나옵니다.</p>
+                        <p>• 고객님께서 보유하고 계신 스트링으로 단일 신청서를 작성하시려는 경우 "직접 입력하기" 를 클릭하여 신청해주세요.</p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -397,7 +406,8 @@ export default function Step2MountingInfo(props: Props) {
       )}
 
         {/* 패키지 요약 - 장착 정보 단계 */}
-        <div className="mt-4">
+        {!rentalId && (
+          <div className="mt-4">
           <div
             className={
               packagePreview?.has
@@ -457,7 +467,8 @@ export default function Step2MountingInfo(props: Props) {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
         {/* 라켓/라인 세부 입력 (선택 사항) */}
         {lineCount > 0 && (
           <Card className="border-none bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-slate-800/30 dark:to-slate-900/40 shadow-sm">

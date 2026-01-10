@@ -12,12 +12,18 @@ async function getData(id: string) {
   const period = r.days ?? r.period ?? 0;
   const fee = r.amount?.fee ?? r.fee ?? 0;
   const deposit = r.amount?.deposit ?? r.deposit ?? 0;
+  const stringPrice = r.amount?.stringPrice ?? 0;
+  const stringingFee = r.amount?.stringingFee ?? 0;
+  const total = r.amount?.total ?? fee + deposit + stringPrice + stringingFee;
 
   return {
     id,
     period,
     fee,
     deposit,
+    stringPrice,
+    stringingFee,
+    total,
     status: r.status,
     racket: rk ? { brand: rk.brand, model: rk.model, condition: rk.condition } : null,
     payment: r.payment
