@@ -17,6 +17,7 @@ import { APPLY_STEPS } from '@/app/services/apply/_components/applySteps';
 import Step1ApplicantInfo from '@/app/services/apply/_components/steps/Step1ApplicantInfo';
 import Step2MountingInfo from '@/app/services/apply/_components/steps/Step2MountingInfo';
 import Step3PaymentInfo from '@/app/services/apply/_components/steps/Step3PaymentInfo';
+import Step3PaymentInfoRentalReadonly from '@/app/services/apply/_components/steps/Step3PaymentInfoRentalReadonly';
 import Step4FinalRequest from '@/app/services/apply/_components/steps/Step4FinalRequest';
 import ApplyStepFooter from '@/app/services/apply/_components/steps/ApplyStepFooter';
 import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
@@ -388,6 +389,9 @@ export default function StringServiceApplyPage() {
     }
 
     if (step === 3) {
+      // 대여 기반 신청서는 '대여 결제'에서 이미 결제가 완료됨
+      // → 구매 UX처럼 결제 스텝은 유지하되, 입력 검증은 생략
+      if (isRentalBased) return true;
       if (!usingPackage) {
         if (!formData.shippingBank) return toast('은행을 선택해주세요.'), false;
         if (!formData.shippingDepositor.trim()) return toast('입금자명을 입력해주세요.'), false;
@@ -521,10 +525,11 @@ export default function StringServiceApplyPage() {
   const packageRemaining = Math.max(0, packagePreview?.remaining ?? 0);
 
   // 패키지 자체는 있지만, "이번 신청에 필요한 횟수"만큼 남아 있는지 여부
-  const canApplyPackage = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining >= requiredPassCount);
+  // ※ 대여 기반 신청서는 '대여 결제'에서 이미 결제가 완료되므로 패키지(교체권) 적용을 허용하지 않음
+  const canApplyPackage = !!(!isRentalBased && packagePreview?.has && requiredPassCount > 0 && packageRemaining >= requiredPassCount);
 
   // 실제로 이번 신청에서 패키지를 사용하는지 여부(옵트아웃까지 반영)
-  const usingPackage = !!(canApplyPackage && !formData.packageOptOut);
+  const usingPackage = !!(!isRentalBased && canApplyPackage && !formData.packageOptOut);
 
   // (비-주문 기반) 실제로 허용 가능한 최대 수량
   // - 기준이 2개면 min() (예: 스트링 재고 3, 라켓 수량 2 → max=2)
@@ -559,7 +564,7 @@ export default function StringServiceApplyPage() {
   }, [maxNonOrderQty, orderId, order]);
 
   // 패키지가 있지만, 이번 신청에 필요한 횟수보다 적게 남은 경우
-  const packageInsufficient = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining < requiredPassCount);
+  const packageInsufficient = !!(!isRentalBased && packagePreview?.has && requiredPassCount > 0 && packageRemaining < requiredPassCount);
 
   // 이런 경우에는 강제적으로 "사용 안 함"으로 고정
   useEffect(() => {
@@ -1394,7 +1399,8 @@ export default function StringServiceApplyPage() {
     }).open();
   };
 
-  const steps = useMemo(() => (isRentalBased ? APPLY_STEPS.filter((s) => s.id !== 3) : APPLY_STEPS), [isRentalBased]);
+  // 구매 UX와 동일한 체감: 대여 기반도 스텝 구성을 동일하게 유지(결제 스텝 포함)
+  const steps = useMemo(() => APPLY_STEPS, []);
   const totalSteps = steps.length;
   const currentStepId = steps[currentStep - 1]?.id ?? steps[0]?.id ?? 1;
 
@@ -1434,7 +1440,8 @@ export default function StringServiceApplyPage() {
       preferredDate: formData.preferredDate,
       preferredTime: formData.preferredTime,
       requirements: formData.requirements,
-      packageOptOut: !!formData.packageOptOut,
+      // 대여 기반 신청서는 결제가 이미 완료되어 있어 패키지 적용을 허용하지 않음
+      packageOptOut: isRentalBased ? true : !!formData.packageOptOut,
       orderId,
       rentalId,
       shippingInfo: {
@@ -1576,7 +1583,17 @@ export default function StringServiceApplyPage() {
         );
 
       case 3:
-        return (
+        return isRentalBased ? (
+          <Step3PaymentInfoRentalReadonly
+            won={won}
+            deposit={Number(rentalAmount?.deposit ?? 0)}
+            fee={Number(rentalAmount?.fee ?? 0)}
+            stringPrice={Number(rentalAmount?.stringPrice ?? 0)}
+            stringingFee={Number(rentalAmount?.stringingFee ?? 0)}
+            total={Number(rentalAmount?.total ?? checkoutTotal)}
+            rentalId={rentalId}
+          />
+        ) : (
           <Step3PaymentInfo
             formData={formData}
             setFormData={setFormData}
@@ -1590,37 +1607,7 @@ export default function StringServiceApplyPage() {
         );
 
       case 4:
-        return (
-          <div className="space-y-6">
-            {isRentalBased && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">대여 결제 완료</CardTitle>
-                  <CardDescription className="text-sm">대여 결제에 스트링/교체 서비스 비용까지 포함되어 있어 추가 결제정보 입력이 필요하지 않습니다.</CardDescription>
-                </CardHeader>
-                <CardContent className="text-sm space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-300">라켓 대여</span>
-                    <span className="font-medium">{won(summaryRacketPrice)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-300">스트링 상품</span>
-                    <span className="font-medium">{won(summaryStringPrice)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-300">교체 서비스</span>
-                    <span className="font-medium">{won(summaryBaseForCard)}</span>
-                  </div>
-                  <div className="pt-2 border-t flex items-center justify-between">
-                    <span className="font-semibold">합계</span>
-                    <span className="font-semibold">{won(checkoutTotal)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            <Step4FinalRequest formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} orderId={orderId} isMember={isMember} usingPackage={usingPackage} packageInsufficient={packageInsufficient} />
-          </div>
-        );
+        return <Step4FinalRequest formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} orderId={orderId} isMember={isMember} usingPackage={usingPackage} packageInsufficient={packageInsufficient} />;
 
       default:
         return null;
@@ -1663,7 +1650,9 @@ export default function StringServiceApplyPage() {
                       base={summaryBaseForCard}
                       pickupFee={priceView.pickupFee}
                       total={checkoutTotal}
-                      racketPrice={summaryRacketPrice}
+                      racketPrice={isRentalBased ? 0 : summaryRacketPrice}
+                      rentalDeposit={isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined}
+                      rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
                       stringPrice={summaryStringPrice}
                       totalLabel={totalLabel}
                     />
@@ -1696,7 +1685,9 @@ export default function StringServiceApplyPage() {
               base={summaryBaseForCard}
               pickupFee={priceView.pickupFee}
               total={checkoutTotal}
-              racketPrice={summaryRacketPrice}
+              racketPrice={isRentalBased ? 0 : summaryRacketPrice}
+              rentalDeposit={isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined}
+              rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
               stringPrice={summaryStringPrice}
               totalLabel={totalLabel}
             />

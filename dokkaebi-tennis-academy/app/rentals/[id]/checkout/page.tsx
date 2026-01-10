@@ -6,7 +6,7 @@ import RentalsCheckoutClient from '@/app/rentals/[id]/checkout/_components/Renta
 export const dynamic = 'force-dynamic';
 
 // [id] = racketId, period = 7|15|30
-async function getInitialForRacket(racketId: string, period: number, stringId?: string, requestStringing?: boolean) {
+async function getInitialForRacket(racketId: string, period: number, stringId?: string) {
   const db = (await clientPromise).db();
   const racket = await db.collection('used_rackets').findOne({
     _id: new ObjectId(racketId),
@@ -26,13 +26,15 @@ async function getInitialForRacket(racketId: string, period: number, stringId?: 
   const deposit = Number(racket.rental?.deposit ?? 0);
 
   //  선택 스트링(옵션): stringId가 있으면 products에서 미니 정보 조회
-  let selectedString: null | {
-    id: string;
-    name: string;
-    price: number;
-    mountingFee: number; // 상품별 교체비(장착비)
-    image: string | null;
-  } = null;
+  let selectedString:
+    | undefined
+    | {
+        id: string;
+        name: string;
+        price: number;
+        mountingFee: number; // 상품별 교체비(장착비)
+        image: string | null;
+      } = undefined;
   if (stringId && ObjectId.isValid(stringId)) {
     const p = await db.collection('products').findOne({ _id: new ObjectId(stringId) }, { projection: { name: 1, price: 1, mountingFee: 1, images: 1, thumbnail: 1 } });
     if (p) {
@@ -52,7 +54,8 @@ async function getInitialForRacket(racketId: string, period: number, stringId?: 
     period: days,
     fee,
     deposit,
-    requestStringing: Boolean(requestStringing),
+    // 구매 플로우와 동일하게: stringId(=선택된 스트링) 유무가 곧 신청 여부
+    requestStringing: Boolean(selectedString?.id),
     selectedString,
     racket: {
       id: racket._id.toString(),
@@ -64,14 +67,13 @@ async function getInitialForRacket(racketId: string, period: number, stringId?: 
   };
 }
 
-export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ period?: string; stringId?: string; requestStringing?: string }> }) {
+export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ period?: string; stringId?: string }> }) {
   const [{ id }, s] = await Promise.all([params, searchParams]);
   const rawPeriod = Number((s?.period as string | undefined) ?? NaN);
   const period = rawPeriod === 7 || rawPeriod === 15 || rawPeriod === 30 ? rawPeriod : 7;
   const stringId = (s?.stringId as string | undefined) ?? undefined;
-  const requestStringing = (s?.requestStringing as string | undefined) === '1';
 
-  const data = await getInitialForRacket(id, period, stringId, requestStringing);
+  const data = await getInitialForRacket(id, period, stringId);
   if (!data) notFound();
 
   return <RentalsCheckoutClient initial={data} />;

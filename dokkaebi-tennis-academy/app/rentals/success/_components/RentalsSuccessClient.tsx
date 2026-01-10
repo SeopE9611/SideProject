@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, Package, Clock, ArrowRight, Shield, Truck, Phone, CreditCard, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +32,21 @@ type Props = {
 };
 
 export default function RentalsSuccessClient({ data }: Props) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const withService = searchParams.get('withService') === '1';
+
+  // 구매 플로우와 동일한 UX
+  // - "대여 결제 완료 → (선택한 경우) 곧바로 교체 서비스 신청서 작성으로 연결"
+  // - 결제 완료 직후에 draft 신청서를 생성해둔 상태이므로, apply 페이지는 rentalId로 이어받아 진행한다.
+  useEffect(() => {
+    if (!withService) return;
+    const t = setTimeout(() => {
+      router.push(`/services/apply?rentalId=${data.id}`);
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [withService, router, data.id]);
+
   useEffect(() => {
     try {
       sessionStorage.setItem('rentals-success', '1');
@@ -78,6 +94,31 @@ export default function RentalsSuccessClient({ data }: Props) {
 
       <SiteContainer variant="wide" className="py-8">
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* 스트링 교체 서비스 신청서로 이어가기 */}
+          {withService && (
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-rose-500/10 p-6">
+                <CardTitle className="flex items-center gap-3 text-2xl">
+                  <Truck className="h-6 w-6 text-orange-600" /> 스트링 교체 신청서로 이동 중
+                </CardTitle>
+                <CardDescription className="mt-2 text-base">
+                  결제 완료 후 생성된 <span className="font-semibold">교체 서비스 초안</span>으로 자동 연결합니다. (1.5초)
+                </CardDescription>
+              </div>
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button asChild className="h-11">
+                    <Link href={`/services/apply?rentalId=${data.id}`}>지금 바로 이동</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="h-11">
+                    <Link href={`/mypage/rentals/${data.id}`}>대여 상세로 이동</Link>
+                  </Button>
+                </div>
+                <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">참고: 교체 서비스 신청서는 "스트링 선택" 기반으로만 생성됩니다. (선택하지 않았다면 이 카드가 표시되지 않습니다.)</p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* 대여 정보 카드 */}
           <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
             <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-6">

@@ -25,7 +25,11 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     clear();
   }, [clear]);
 
-  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({ limit: 6 });
+  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({
+    limit: 6,
+    // 교체 서비스에 사용되는 "스트링"만 노출
+    purpose: 'stringing',
+  });
 
   const handleSelectString = (p: any) => {
     const stringImage = p?.images?.[0] ?? p?.imageUrl;

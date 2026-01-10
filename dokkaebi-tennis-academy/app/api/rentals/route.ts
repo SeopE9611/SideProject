@@ -244,7 +244,7 @@ export async function POST(req: Request) {
     // - requested=true인 경우에만 채워짐
     let stringingApplicationId: string | null = null;
 
-    // ✅ TransientTransactionError / NoSuchTransaction(251) 발생 시, 전체 트랜잭션을 짧게 재시도
+    // TransientTransactionError / NoSuchTransaction(251) 발생 시, 전체 트랜잭션을 짧게 재시도
     const isTransientTxnError = (e: any) => {
       const labels = Array.isArray(e?.errorLabels) ? e.errorLabels : [];
       return labels.includes('TransientTransactionError') || e?.code === 251;
@@ -293,12 +293,12 @@ export async function POST(req: Request) {
         }
 
         await session.commitTransaction();
-        break; // ✅ 성공하면 루프 종료
+        break; // 성공하면 루프 종료
       } catch (e: any) {
         // 트랜잭션 실패 시 abort 시도(이미 abort된 경우도 있으니 무시)
         await session.abortTransaction().catch(() => {});
 
-        // ✅ transient면 짧게 대기 후 재시도
+        // transient면 짧게 대기 후 재시도
         if (attempt < 3 && isTransientTxnError(e)) {
           await new Promise((r) => setTimeout(r, 50 * attempt));
           continue;

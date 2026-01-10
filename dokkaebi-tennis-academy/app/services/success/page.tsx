@@ -131,6 +131,19 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   const combinedTotal = order ? racketSubtotal + stringSubtotal + serviceSubtotal : serviceSubtotal;
 
+  // (대여 기반 신청서) rentalId가 있으면 대여 주문을 조회해서
+  // 결제 요약을 '대여 결제 완료 금액' 기준으로 표시한다.
+  const rentalObjectId = application.rentalId && ObjectId.isValid(application.rentalId) ? new ObjectId(application.rentalId) : null;
+  const rental = rentalObjectId ? await db.collection('rental_orders').findOne({ _id: rentalObjectId }) : null;
+
+  const rentalDeposit = rental ? Number(rental.amount?.deposit ?? 0) : 0;
+  const rentalFee = rental ? Number(rental.amount?.fee ?? 0) : 0;
+  const rentalStringPrice = rental ? Number(rental.stringing?.price ?? 0) : 0;
+  const rentalStringingFee = rental ? Number(rental.stringing?.mountingFee ?? 0) : 0;
+  const rentalTotal = rental ? Number(rental.amount?.total ?? rentalDeposit + rentalFee + rentalStringPrice + rentalStringingFee) : 0;
+
+  const displayTotal = rental ? rentalTotal : Number(order ? combinedTotal : serviceSubtotal);
+
   // 로그인 여부 확인
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refreshToken')?.value;
@@ -244,10 +257,33 @@ export default async function StringServiceSuccessPage(props: Props) {
                       <h3 className="font-semibold text-gray-900 dark:text-white">결제 요약</h3>
                     </div>
 
-                    <p className="text-2xl font-bold text-indigo-600">{Number(order ? combinedTotal : serviceSubtotal).toLocaleString()}원</p>
+                    <p className="text-2xl font-bold text-indigo-600">{Number(displayTotal).toLocaleString()}원</p>
 
                     {/* order가 있으면 상세 breakdown 유지 */}
-                    {order ? (
+                    {rental ? (
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">보증금</span>
+                          <span>{rentalDeposit.toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">대여료</span>
+                          <span>{rentalFee.toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">스트링 상품</span>
+                          <span>{rentalStringPrice.toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">교체 서비스</span>
+                          <span>{rentalStringingFee.toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between items-center border-t pt-3">
+                          <span className="font-semibold">합계</span>
+                          <span className="font-semibold text-green-600 dark:text-green-400">{Number(displayTotal).toLocaleString()}원</span>
+                        </div>
+                      </div>
+                    ) : order ? (
                       <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                         {[racketSubtotal > 0 ? `라켓 ${racketSubtotal.toLocaleString()}원` : null, stringSubtotal > 0 ? `스트링 ${stringSubtotal.toLocaleString()}원` : null, `교체비 ${serviceSubtotal.toLocaleString()}원`].filter(Boolean).join(' + ')}
                       </p>
@@ -354,7 +390,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                           </div>
                           <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">입금 금액</p>
-                            <p className="font-bold text-lg text-green-600">{Number(order ? combinedTotal : serviceSubtotal).toLocaleString()}원</p>
+                            <p className="font-bold text-lg text-green-600">{Number(displayTotal).toLocaleString()}원</p>
                           </div>
                         </div>
                         <div className="mt-4 p-4 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-lg border border-orange-200 dark:border-orange-700">

@@ -85,7 +85,7 @@ export async function createStringingApplicationFromRental(rental: DBRentalLite,
   const col = db.collection<StringingAppDoc>('stringing_applications');
 
   /**
-   * ✅ 멱등(upsert)로 변경
+   * 멱등(upsert)로 변경
    * - 같은 rentalId로 동시 요청이 들어와도 "한 문서만" 생성되도록 보장
    * - 중복키(E11000)로 트랜잭션이 abort되는 문제를 원천 차단
    *
@@ -141,7 +141,7 @@ export async function createStringingApplicationFromRental(rental: DBRentalLite,
   };
 
   /**
-   * ⚠️ findOneAndUpdate(upsert) + returnDocument 조합이
+   * findOneAndUpdate(upsert) + returnDocument 조합이
    * 특정 환경(특히 트랜잭션/세션 포함)에서 value=null로 반환되는 케이스가 있어,
    * “업서트 성공인데도 실패로 오판”되는 문제가 발생할 수 있음.
    *

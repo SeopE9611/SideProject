@@ -49,8 +49,15 @@ type Initial = {
 
 export default function RentalsCheckoutClient({ initial }: { initial: Initial }) {
   const router = useRouter();
-  const [requestStringing, setRequestStringing] = useState(Boolean(initial.requestStringing));
+  /**
+   * 구매 플로우와 동일한 규칙
+   * - "스트링 교체 신청 여부"는 체크박스 토글이 아니라 **선택된 스트링(stringId) 유무**로 결정한다.
+   * - 이유:
+   *   1) 사용자가 실수로 "신청 체크"만 하고 스트링을 안 고르는 케이스를 원천 차단
+   *   2) URL/서버/DB 로직이 단순해지고, 구매 UX와 체감이 동일해짐
+   */
   const selectedString = initial.selectedString ?? null;
+  const requestStringing = Boolean(selectedString?.id);
 
   // --- 수령 방식(택배/방문수령) ---
   type DeliveryMethod = '택배수령' | '방문수령';
@@ -303,22 +310,15 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
       const rentalId = String(json?.id ?? '');
 
-      //  스트링 교체 신청을 체크했다면: 결제 완료 후 바로 신청서 작성 흐름으로 연결
-      if (requestStringing) {
-        const qs = new URLSearchParams();
-        qs.set('rentalId', String(json.id));
-
-        // apply 페이지의 "PDP 프리필" 키는 stringId(또는 productId)
-        // (orderId 없이도 선택 스트링을 카드로 고정 표시 + 가격/교체비 계산에 활용됨)
-        if (selectedString?.id) qs.set('stringId', selectedString.id);
-        qs.set('servicePickupMethod', servicePickupMethod);
-
-        router.push(`/services/apply?${qs.toString()}`);
-        return;
-      }
-
-      // 기본: 대여 성공 페이지
-      router.push(`/rentals/success?id=${json.id}`);
+      /**
+       * 구매 UX와 동일한 흐름
+       * 1) 결제(대여 신청) 완료 → 항상 대여 성공 페이지로 이동
+       * 2) 스트링이 선택되어 있었다면(success 페이지에서) 신청서 작성(/services/apply?rentalId=...)로 자연스럽게 이어주 ...
+       */
+      const qs = new URLSearchParams();
+      qs.set('id', rentalId);
+      if (requestStringing) qs.set('withService', '1');
+      router.push(`/rentals/success?${qs.toString()}`);
     } finally {
       setLoading(false);
     }
@@ -402,65 +402,44 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
                     <Label htmlFor="rentals-delivery-visit" className="flex-1 cursor-pointer font-medium">
                       오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">스트링 교체 신청 시 신청서에서 “방문 시간” 선택 흐름으로 이어집니다.</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">스트링 교체 신청 시 신청서에서 "방문 시간" 선택 흐름으로 이어집니다.</div>
                     </Label>
                     <Building2 className="h-5 w-5 text-purple-600" />
                   </div>
                 </RadioGroup>
 
-                {/* 구매 체크아웃과 동일하게: 수령 방식 카드 안에서 “스트링 교체 옵션”을 같이 묶어 표시 */}
+                {/* 구매 체크아웃과 동일하게: 수령 방식 카드 안에서 "스트링 교체 옵션"을 같이 묶어 표시 */}
                 <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Checkbox id="request-stringing" checked={requestStringing} onCheckedChange={(checked) => setRequestStringing(!!checked)} />
-                    <Label htmlFor="request-stringing" className="font-medium text-orange-700 dark:text-orange-400">
-                      스트링 교체 신청도 함께 진행할게요
-                    </Label>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="font-medium text-orange-700 dark:text-orange-400">스트링 교체 서비스 (선택)</p>
+                      <p className="text-sm text-orange-600 dark:text-orange-400">
+                        {deliveryMethod === '방문수령' ? '방문 수령을 선택하면 매장 방문 접수로 교체가 진행됩니다. (신청서에서 방문 시간 선택)' : '택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 교체가 진행됩니다.'}
+                      </p>
+                    </div>
+
+                    <Button type="button" variant={selectedString ? 'outline' : 'default'} onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
+                      {selectedString ? '스트링 변경' : '스트링 선택'}
+                    </Button>
                   </div>
 
-                  <p className="text-sm text-orange-600 dark:text-orange-400 ml-6">
-                    {deliveryMethod === '방문수령' ? '방문 수령을 선택하면 매장 방문 접수로 스트링 교체가 진행됩니다. 신청서에서 방문 시간을 선택하세요.' : '택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 스트링 교체가 진행됩니다.'}
-                  </p>
-
-                  {/* 서비스 ON일 때만 세부 안내 / 스트링 선택 UI 노출 */}
-                  {requestStringing && (
-                    <>
-                      {deliveryMethod === '방문수령' ? (
-                        <div className="ml-7 mt-2 text-sm">
-                          <span className="px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">매장 방문 접수로 진행됩니다. (신청서에서 방문 시간 선택)</span>
+                  <div className="mt-3 rounded-lg border border-slate-200/60 dark:border-slate-600/60 p-4 bg-white/60 dark:bg-slate-800/40">
+                    {selectedString ? (
+                      <div className="space-y-1">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">선택된 스트링</div>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200">{selectedString.name}</div>
+                        <div className="text-sm text-slate-600 dark:text-slate-300">
+                          {selectedString.price.toLocaleString()}원 + 교체 {selectedString.mountingFee.toLocaleString()}원
                         </div>
-                      ) : (
-                        <div className="ml-7 mt-2 grid gap-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
-                          </div>
-                        </div>
-                      )}
 
-                      <div className="mt-3 ml-6 rounded-lg border border-slate-200/60 dark:border-slate-600/60 p-4 bg-white/60 dark:bg-slate-800/40">
-                        {selectedString ? (
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400">선택된 스트링</div>
-                              <div className="font-semibold text-slate-800 dark:text-slate-200">{selectedString.name}</div>
-                              <div className="text-sm text-slate-600 dark:text-slate-300">{selectedString.price.toLocaleString()}원</div>
-                            </div>
-
-                            <Button type="button" variant="outline" onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
-                              스트링 변경
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="text-sm text-slate-600 dark:text-slate-300">아직 스트링이 선택되지 않았습니다.</div>
-                            <Button type="button" onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
-                              스트링 선택
-                            </Button>
-                          </div>
-                        )}
+                        <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">* 대여 결제 완료 후, 스트링 교체 신청서(/services/apply) 초안이 자동 생성되어 이어집니다.</div>
                       </div>
-                    </>
-                  )}
+                    ) : (
+                      <div className="text-sm text-slate-600 dark:text-slate-300">
+                        현재는 <b>교체 서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러 교체 서비스를 함께 진행할 수 있습니다.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -553,7 +532,6 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       </div>
                     </RadioGroup>
                   </div>
-
                   <div className="space-y-3">
                     <Label htmlFor="bank-account">입금 계좌 선택</Label>
                     <Select value={selectedBank} onValueChange={(v) => setSelectedBank(v as any)}>
@@ -736,11 +714,11 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       <span className="text-slate-600 dark:text-slate-400">보증금</span>
                       <span className="font-semibold text-lg">{initial.deposit.toLocaleString()}원</span>
                     </div>
-                    {requestStringing && initial.selectedString && (
+                    {requestStringing && selectedString && (
                       <>
                         <div className="flex justify-between items-center">
                           <span className="text-slate-600 dark:text-slate-400">스트링 금액</span>
-                          <span className="font-semibold text-lg">{initial.selectedString.price.toLocaleString()}원</span>
+                          <span className="font-semibold text-lg">{selectedString.price.toLocaleString()}원</span>
                         </div>
 
                         <div className="flex justify-between items-center">

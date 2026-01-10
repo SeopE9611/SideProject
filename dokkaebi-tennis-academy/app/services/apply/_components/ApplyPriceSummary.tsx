@@ -25,11 +25,29 @@ type PriceSummaryCommonProps = {
   total: number;
 
   racketPrice: number;
+  rentalDeposit?: number;
+  rentalFee?: number;
   stringPrice: number;
   totalLabel: string;
 };
 
-export function ApplyPriceSummaryMobile({ preferredDate, preferredTime, collectionMethod, stringTypes, stringIncluded = false, headerHint, usingPackage, base, pickupFee, total, racketPrice, stringPrice, totalLabel }: PriceSummaryCommonProps) {
+export function ApplyPriceSummaryMobile({
+  preferredDate,
+  preferredTime,
+  collectionMethod,
+  stringTypes,
+  stringIncluded = false,
+  headerHint,
+  usingPackage,
+  base,
+  pickupFee,
+  total,
+  racketPrice,
+  rentalDeposit,
+  rentalFee,
+  stringPrice,
+  totalLabel,
+}: PriceSummaryCommonProps) {
   return (
     <div className="mt-6 bp-sm:mt-8 xl:hidden">
       <PriceSummaryCard
@@ -44,6 +62,8 @@ export function ApplyPriceSummaryMobile({ preferredDate, preferredTime, collecti
         pickupFee={pickupFee}
         total={total}
         racketPrice={racketPrice}
+        rentalDeposit={rentalDeposit}
+        rentalFee={rentalFee}
         stringPrice={stringPrice}
         totalLabel={totalLabel}
       />
@@ -55,7 +75,24 @@ type DesktopProps = PriceSummaryCommonProps & {
   stickyTop: number;
 };
 
-export function ApplyPriceSummaryDesktop({ stickyTop, preferredDate, preferredTime, collectionMethod, stringTypes, stringIncluded = false, headerHint, usingPackage, base, pickupFee, total, racketPrice, stringPrice, totalLabel }: DesktopProps) {
+export function ApplyPriceSummaryDesktop({
+  stickyTop,
+  preferredDate,
+  preferredTime,
+  collectionMethod,
+  stringTypes,
+  stringIncluded = false,
+  headerHint,
+  usingPackage,
+  base,
+  pickupFee,
+  total,
+  racketPrice,
+  rentalDeposit,
+  rentalFee,
+  stringPrice,
+  totalLabel,
+}: DesktopProps) {
   return (
     <div
       className="hidden 2xl:block"
@@ -81,6 +118,8 @@ export function ApplyPriceSummaryDesktop({ stickyTop, preferredDate, preferredTi
           pickupFee={pickupFee}
           total={total}
           racketPrice={racketPrice}
+          rentalDeposit={rentalDeposit}
+          rentalFee={rentalFee}
           stringPrice={stringPrice}
           totalLabel={totalLabel}
         />

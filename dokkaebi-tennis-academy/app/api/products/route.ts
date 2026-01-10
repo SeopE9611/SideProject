@@ -93,6 +93,9 @@ export async function GET(req: NextRequest) {
     const q = params.get('q') || '';
     const sort = params.get('sort') || 'latest';
     const material = params.get('material');
+    const minPrice = params.get('minPrice');
+    const maxPrice = params.get('maxPrice');
+    const purpose = params.get('purpose');
     const isFeatured = params.get('isFeatured'); // 'true' | 'false'
     const exclude = params.get('exclude'); // string(ObjectId)
 
@@ -112,6 +115,25 @@ export async function GET(req: NextRequest) {
     if (material) filter.material = material;
     if (isFeatured === 'true') filter['inventory.isFeatured'] = true;
 
+    // 가격 범위 필터(기존 훅(useInfiniteProducts)에서 이미 사용중인 파라미터를 서버에서 반영)
+    if (minPrice || maxPrice) {
+      const priceFilter: Record<string, number> = {};
+      if (minPrice !== null && minPrice !== undefined && minPrice !== '') {
+        const min = Number(minPrice);
+        if (Number.isFinite(min)) priceFilter.$gte = min;
+      }
+      if (maxPrice !== null && maxPrice !== undefined && maxPrice !== '') {
+        const max = Number(maxPrice);
+        if (Number.isFinite(max)) priceFilter.$lte = max;
+      }
+      if (Object.keys(priceFilter).length > 0) filter.price = priceFilter;
+    }
+
+    // purpose 필터: 특정 "용도"에 맞는 상품만 노출
+    // - stringing: 교체 서비스에 쓰는 스트링 상품(=mountingFee가 있는 상품)만 보여준다.
+    if (purpose === 'stringing') {
+      filter.mountingFee = { $gt: 0 };
+    }
     const client = await clientPromise;
     const db = client.db();
     const collection = db.collection('products');

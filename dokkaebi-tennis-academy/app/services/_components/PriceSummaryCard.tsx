@@ -16,6 +16,8 @@ interface PriceSummaryProps {
   pickupFee: number;
   total: number;
   racketPrice?: number; // 라켓 금액(정보용)
+  rentalDeposit?: number; // 대여 보증금(정보용)
+  rentalFee?: number; // 대여료(정보용)
   stringPrice?: number; // 스트링 상품 금액(정보용)
   totalLabel?: string; // 합계 라벨 커스터마이징
   headerHint?: string; // 헤더 하단 안내문(대여/주문 기반에서 혼선 제거용)
@@ -23,8 +25,25 @@ interface PriceSummaryProps {
 
 const won = (n: number) => n.toLocaleString('ko-KR') + '원';
 
-export default function PriceSummaryCard({ preferredDate, preferredTime, collectionMethod, stringTypes, stringIncluded = false, usingPackage, base, pickupFee, total, racketPrice = 0, stringPrice = 0, totalLabel, headerHint }: PriceSummaryProps) {
+export default function PriceSummaryCard({
+  preferredDate,
+  preferredTime,
+  collectionMethod,
+  stringTypes,
+  stringIncluded = false,
+  usingPackage,
+  base,
+  pickupFee,
+  total,
+  racketPrice = 0,
+  rentalDeposit = 0,
+  rentalFee = 0,
+  stringPrice = 0,
+  totalLabel,
+  headerHint,
+}: PriceSummaryProps) {
   const isCustom = stringTypes.includes('custom');
+  const isRentalBreakdown = Number(rentalDeposit) > 0 || Number(rentalFee) > 0;
 
   const MethodIcon = collectionMethod === 'courier_pickup' ? Truck : collectionMethod === 'visit' ? Store : Box;
   const methodText = collectionMethod === 'courier_pickup' ? '기사 방문(+3,000원)' : collectionMethod === 'visit' ? '매장 방문' : '자가 발송';
@@ -81,15 +100,40 @@ export default function PriceSummaryCard({ preferredDate, preferredTime, collect
 
             <p className="text-sm">{won(base)}</p>
           </div>
-          {/* 라켓 금액 */}
-          {racketPrice > 0 && (
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                <p className="text-sm font-medium">라켓 금액</p>
+          {/* 대여 기반이면: 보증금/대여료를 분리 표시 */}
+          {isRentalBreakdown ? (
+            <>
+              {rentalDeposit > 0 && (
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                    <p className="text-sm font-medium">보증금</p>
+                  </div>
+                  <p className="text-sm">{won(rentalDeposit)}</p>
+                </div>
+              )}
+
+              {rentalFee > 0 && (
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                    <p className="text-sm font-medium">대여료</p>
+                  </div>
+                  <p className="text-sm">{won(rentalFee)}</p>
+                </div>
+              )}
+            </>
+          ) : (
+            /* 구매(주문) 기반이면: 라켓 금액 */
+            racketPrice > 0 && (
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                  <p className="text-sm font-medium">라켓 금액</p>
+                </div>
+                <p className="text-sm">{won(racketPrice)}</p>
               </div>
-              <p className="text-sm">{won(racketPrice)}</p>
-            </div>
+            )
           )}
 
           {stringPrice > 0 && (

@@ -27,6 +27,9 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({
     limit: 6,
     q: q.trim(),
+    // 교체 서비스에 사용되는 "스트링"만 노출
+    // - purpose=stringing → API에서 mountingFee가 있는 상품만 필터링
+    purpose: 'stringing',
   });
 
   const title = useMemo(() => {
@@ -35,7 +38,8 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
   }, [racket.brand, racket.model]);
 
   const goCheckout = (stringId: string) => {
-    router.push(`/rentals/${encodeURIComponent(racket.id)}/checkout?period=${period}&stringId=${stringId}&requestStringing=1`);
+    // 구매 플로우와 동일: stringId가 곧 '교체 서비스 포함'을 의미
+    router.push(`/rentals/${encodeURIComponent(racket.id)}/checkout?period=${period}&stringId=${stringId}`);
   };
 
   const skip = () => {
