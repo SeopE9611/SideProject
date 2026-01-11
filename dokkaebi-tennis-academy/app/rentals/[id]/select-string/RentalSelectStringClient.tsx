@@ -1,16 +1,14 @@
 'use client';
 
-import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 import { racketBrandLabel } from '@/lib/constants';
 import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
 import SiteContainer from '@/components/layout/SiteContainer';
+
+import { CheckCircle2, ShoppingCart } from 'lucide-react';
 
 type RacketMini = {
   id: string;
@@ -22,11 +20,10 @@ type RacketMini = {
 
 export default function RentalSelectStringClient({ racket, period }: { racket: RacketMini; period: 7 | 15 | 30 }) {
   const router = useRouter();
-  const [q, setQ] = useState('');
 
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({
     limit: 6,
-    q: q.trim(),
+    // q 제거 (diff 반영)
     // 교체 서비스에 사용되는 "스트링"만 노출
     // - purpose=stringing → API에서 mountingFee가 있는 상품만 필터링
     purpose: 'stringing',
@@ -34,16 +31,14 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
 
   const title = useMemo(() => {
     const brand = racketBrandLabel(racket.brand) ?? racket.brand;
-    return `${brand} ${racket.model}`;
-  }, [racket.brand, racket.model]);
+    const condition = racket.condition ? `컨디션 ${racket.condition}` : '';
+    return `${brand} ${racket.model}${condition ? ` · ${condition}` : ''}`;
+  }, [racket.brand, racket.model, racket.condition]);
 
-  const goCheckout = (stringId: string) => {
-    // 구매 플로우와 동일: stringId가 곧 '교체 서비스 포함'을 의미
-    router.push(`/rentals/${encodeURIComponent(racket.id)}/checkout?period=${period}&stringId=${stringId}`);
-  };
-
-  const skip = () => {
-    router.push(`/rentals/${encodeURIComponent(racket.id)}/checkout?period=${period}`);
+  const goCheckout = (stringId?: string) => {
+    const base = `/rentals/${encodeURIComponent(racket.id)}/checkout?period=${period}`;
+    const url = stringId ? `${base}&stringId=${encodeURIComponent(stringId)}` : base;
+    router.push(url);
   };
 
   if (isLoadingInitial) {
@@ -60,65 +55,123 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
   }
 
   return (
-    <SiteContainer variant="wide" className="py-8 space-y-6">
-      <Card className="border-0 shadow-xl overflow-hidden">
-        <div className="p-6 flex flex-col md:flex-row gap-6">
-          <div className="w-full md:w-56">
-            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-slate-100">
-              {racket.image ? <Image src={racket.image} alt={title} fill className="object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">이미지 없음</div>}
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <SiteContainer variant="wide" className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10">
+        {/* Header */}
+        <div className="text-center space-y-3 max-w-2xl mx-auto">
+          <h1 className="text-2xl bp-md:text-4xl font-bold tracking-tight text-slate-900">스트링 선택</h1>
+          <p className="text-sm bp-md:text-base text-slate-600 leading-relaxed">대여 라켓에 장착할 스트링을 선택해주세요. 선택한 스트링은 대여 결제에 포함됩니다.</p>
+        </div>
+
+        {/* Selected Racket Summary (구매 select-string과 동일 골격) */}
+        <div className="max-w-3xl mx-auto space-y-4">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl opacity-50 -z-0" />
+
+            <div className="relative z-10 p-4 bp-md:p-6 flex gap-4 bp-md:gap-6 items-center">
+              <div className="flex-shrink-0">
+                {racket.image ? (
+                  <img src={racket.image || '/placeholder.svg'} alt={title} className="w-20 h-20 bp-md:w-24 bp-md:h-24 object-cover rounded-xl shadow-md ring-2 ring-slate-100" />
+                ) : (
+                  <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-md">
+                    <ShoppingCart className="w-10 h-10 text-slate-400" />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-medium text-green-600 mb-1">선택된 라켓 (대여)</p>
+                    <h3 className="text-xl font-bold text-slate-900 mb-1">{title}</h3>
+                    <p className="text-sm text-slate-600">
+                      대여 기간: <span className="font-semibold text-slate-800">{period}일</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Skip CTA (대여 전용) */}
+              <div className="hidden bp-md:block flex-shrink-0">
+                <Button variant="outline" className="h-11" onClick={() => goCheckout()}>
+                  스트링 없이 결제하기
+                </Button>
+              </div>
             </div>
           </div>
 
-          <div className="flex-1 space-y-2">
-            <CardTitle className="text-xl md:text-2xl">{title}</CardTitle>
-            <CardDescription className="text-sm">
-              대여 기간: <span className="font-medium">{period}일</span> · 스트링 교체를 원하면 아래에서 스트링을 선택하세요.
-            </CardDescription>
-
-            <div className="pt-3 flex flex-col sm:flex-row gap-3">
-              <Button onClick={skip} variant="outline" className="h-11">
-                스트링 교체 없이 계속하기
-              </Button>
-              <Button onClick={() => router.push(`/rackets/${encodeURIComponent(racket.id)}`)} variant="ghost" className="h-11">
-                라켓 상세로 돌아가기
-              </Button>
-            </div>
+          {/* Mobile Skip CTA */}
+          <div className="bp-md:hidden flex justify-center">
+            <Button variant="outline" className="h-11 w-full max-w-xs" onClick={() => goCheckout()}>
+              스트링 없이 결제하기
+            </Button>
           </div>
         </div>
-      </Card>
 
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-        <div className="flex-1">
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="스트링 검색 (예: 폴리, RPM, 알루파워...)" className="h-11" />
+        {/* Strings */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-slate-900 text-center">사용 가능한 스트링</h2>
+
+          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
+            {(products ?? []).map((p: any) => {
+              const stringImage = p?.images?.[0] ?? p?.imageUrl;
+              const id = String(p?._id ?? '');
+
+              return (
+                <div key={id} className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <div className="p-5 flex flex-col h-full">
+                    {/* String Image */}
+                    <div className="mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 aspect-square flex items-center justify-center">
+                      {stringImage ? <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">이미지 없음</div>}
+                    </div>
+
+                    {/* String Info */}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-slate-900 mb-2 line-clamp-2">{p.name}</h3>
+                      {p.shortDescription ? <p className="text-sm text-slate-600 mb-3 line-clamp-2">{p.shortDescription}</p> : null}
+                      <p className="text-xl font-bold text-slate-900">{Number(p.price ?? 0).toLocaleString()}원</p>
+                    </div>
+
+                    {/* Select Button */}
+                    <Button className="mt-4 w-full bg-slate-900 text-white hover:bg-slate-800 transition-all duration-300" onClick={() => goCheckout(id)}>
+                      <span className="flex items-center justify-center gap-2">
+                        선택하기
+                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Load More */}
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <Button variant="outline" className="w-full max-w-xs mx-auto h-11 border-slate-300 hover:bg-slate-50" onClick={loadMore} disabled={isFetchingMore}>
+                {isFetchingMore ? (
+                  <span className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900" />
+                    불러오는 중...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    더 보기
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </span>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {!hasMore && (products ?? []).length > 0 ? <p className="text-center text-sm text-slate-500">마지막 상품입니다</p> : null}
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-        {(products ?? []).map((prod: any) => {
-          const img = prod?.thumbnail || (Array.isArray(prod?.images) && prod.images.length > 0 ? prod.images[0] : null);
-
-          return (
-            <Card key={prod._id} className={cn('border shadow-sm hover:shadow-md transition cursor-pointer')} onClick={() => goCheckout(prod._id)}>
-              <CardContent className="p-4 space-y-3">
-                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-slate-100">
-                  {img ? <Image src={img} alt={prod?.name ?? 'string'} fill className="object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">이미지 없음</div>}
-                </div>
-                <div className="space-y-1">
-                  <div className="text-sm font-semibold line-clamp-2">{prod?.name}</div>
-                  <div className="text-xs text-slate-500">{Number(prod?.price ?? 0).toLocaleString()}원</div>
-                </div>
-                <Button className="w-full h-10">이 스트링 선택</Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      <div className="flex justify-center pt-2">
-        <button onClick={loadMore} disabled={isFetchingMore || !hasMore} className="h-11 px-8 border rounded">
-          {!hasMore ? '마지막 상품입니다' : isFetchingMore ? '불러오는 중...' : '더 불러오기'}
-        </button>
-      </div>
-    </SiteContainer>
+      </SiteContainer>
+    </div>
   );
 }
