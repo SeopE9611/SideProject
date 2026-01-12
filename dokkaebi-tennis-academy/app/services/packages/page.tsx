@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Package, Star, CheckCircle, Clock, Shield, Award, Zap, Target, Users, ArrowRight, Gift, Percent, Calendar, Phone } from 'lucide-react';
+import { Package, Star, CheckCircle, Clock, Shield, Award, Zap, Target, Users, ArrowRight, Gift, Percent, Calendar, Phone, MessageSquare } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SiteContainer from '@/components/layout/SiteContainer';
@@ -312,7 +312,7 @@ export default function StringPackagesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
-      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[70svh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600">
           <div className="absolute inset-0 opacity-20">
             <svg className="w-full h-full" viewBox="0 0 400 300" fill="none">
@@ -336,9 +336,9 @@ export default function StringPackagesPage() {
               프리미엄 스트링 패키지
             </Badge>
 
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">스트링 교체 패키지</h1>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">스트링 교체 패키지</h1>
 
-            <p className="text-xl md:text-2xl mb-8 text-blue-100 leading-relaxed">
+            <p className="text-base sm:text-xl md:text-2xl mb-8 text-blue-100 leading-relaxed">
               정기적인 스트링 교체로 최상의 경기력을 유지하세요
               <br />
               <span className="text-indigo-300 font-semibold">패키지 구매 시 최대 20만원 절약</span>
@@ -560,15 +560,15 @@ export default function StringPackagesPage() {
                 },
                 {
                   question: '다른 사람과 패키지를 공유할 수 있나요?',
-                  answer: '패키지는 구매자 본인만 사용 가능하며, 가족 구성원에 한해 사용 가능합니다.',
+                  answer: '패키지는 구매자 본인만 사용 가능합니다.',
                 },
                 {
                   question: '패키지 환불이 가능한가요?',
                   answer: '미사용 횟수에 대해서는 구매일로부터 7일 이내 100% 환불 가능합니다.',
                 },
                 {
-                  question: '예약은 어떻게 하나요?',
-                  answer: '패키지 구매 후 전화 또는 온라인으로 예약 가능하며, 패키지 회원은 우선 예약 혜택이 있습니다.',
+                  question: '패키지 사용은 어떻게 하나요?',
+                  answer: '패키지 구매 후 교체 신청서에서 사용 가능합니다. 자세한 문의는 매장으로 연락 주세요.',
                 },
               ].map((faq, index) => (
                 <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -583,8 +583,8 @@ export default function StringPackagesPage() {
 
           <div className="text-center mt-12">
             <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
-              <Link href="/contact">
-                <Phone className="w-5 h-5 mr-2" />더 궁금한 점이 있으신가요?
+              <Link href="/board/qna">
+                <MessageSquare className="w-5 h-5 mr-2" />더 궁금한 점이 있으신가요?
               </Link>
             </Button>
           </div>
