@@ -6,11 +6,11 @@ import { CreditCard, ReceiptText } from 'lucide-react';
 type Props = {
   won: (n: number) => string;
   deposit: number;
- fee: number;
+  fee: number;
   stringPrice: number;
   stringingFee: number;
   total: number;
-  rentalId?: string | null;
+  // rentalId?: string | null;
 };
 
 /**
@@ -18,13 +18,14 @@ type Props = {
  * - 구매 UX와 동일하게 '결제 정보' 스텝은 유지하되,
  * - 대여 결제에서 이미 결제가 완료되므로 입력 UI 대신 '확인용 요약'만 제공한다.
  */
-export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stringPrice, stringingFee, total, rentalId }: Props) {
+// export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stringPrice, stringingFee, total, rentalId }: Props) {
+export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stringPrice, stringingFee, total }: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 mb-4">
           <CreditCard className="h-8 w-8 text-white" />
-       </div>
+        </div>
         <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
         <p className="text-muted-foreground">대여 결제에서 이미 결제가 완료되었습니다</p>
       </div>
@@ -37,7 +38,7 @@ export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stri
           </CardTitle>
           <CardDescription className="text-sm">
             대여 결제에 <span className="font-medium">스트링 상품</span>과 <span className="font-medium">교체 서비스 비용</span>까지 포함되어 있어 추가 결제정보 입력이 필요하지 않습니다.
-            {rentalId ? <span className="ml-1 text-xs text-muted-foreground">(rentalId: {rentalId})</span> : null}
+            {/* {rentalId ? <span className="ml-1 text-xs text-muted-foreground">(rentalId: {rentalId})</span> : null} */}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm space-y-2">

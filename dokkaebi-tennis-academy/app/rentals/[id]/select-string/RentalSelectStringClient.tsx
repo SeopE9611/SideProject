@@ -23,15 +23,12 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
 
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({
     limit: 6,
-    // q 제거 (diff 반영)
-    // 교체 서비스에 사용되는 "스트링"만 노출
-    // - purpose=stringing → API에서 mountingFee가 있는 상품만 필터링
     purpose: 'stringing',
   });
 
   const title = useMemo(() => {
     const brand = racketBrandLabel(racket.brand) ?? racket.brand;
-    const condition = racket.condition ? `컨디션 ${racket.condition}` : '';
+    const condition = racket.condition ? `상태 ${racket.condition}` : '';
     return `${brand} ${racket.model}${condition ? ` · ${condition}` : ''}`;
   }, [racket.brand, racket.model, racket.condition]);
 

@@ -105,6 +105,10 @@ export default function StringServiceApplyPage() {
     total?: number;
   }>(null);
 
+  // 대여 기반 프리필에서 '스트링 변경' CTA 링크를 만들기 위해 보관
+  const [rentalRacketId, setRentalRacketId] = useState<string | null>(null);
+  const [rentalDays, setRentalDays] = useState<number | null>(null);
+
   const [isMember, setIsMember] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isUserLoading, setIsUserLoading] = useState(false);
@@ -1153,6 +1157,8 @@ export default function StringServiceApplyPage() {
 
     const checkUser = async () => {
       setIsUserLoading(true);
+      setRentalRacketId(null);
+      setRentalDays(null);
       try {
         const res = await fetch('/api/users/me', { credentials: 'include' });
         const user = await res.json();
@@ -1190,6 +1196,8 @@ export default function StringServiceApplyPage() {
 
     const fetchOrder = async () => {
       setIsUserLoading(true);
+      setRentalRacketId(null);
+      setRentalDays(null);
       try {
         const orderRes = await fetch(`/api/orders/${orderId}`, { credentials: 'include' });
         const orderData = await orderRes.json();
@@ -1267,6 +1275,8 @@ export default function StringServiceApplyPage() {
 
     (async () => {
       setIsUserLoading(true);
+      setRentalRacketId(null);
+      setRentalDays(null);
       try {
         const res = await fetch(`/api/rentals/${encodeURIComponent(rentalId)}`, {
           credentials: 'include',
@@ -1276,6 +1286,12 @@ export default function StringServiceApplyPage() {
 
         const rental = await res.json().catch(() => ({} as any));
         setRentalAmount((rental as any)?.amount ?? null);
+
+        // 대여 라켓/기간 정보는 '스트링 변경' CTA 링크에 사용
+        const rid = String((rental as any)?.racketId ?? (rental as any)?.racket?._id ?? '');
+        setRentalRacketId(rid && rid !== 'undefined' ? rid : null);
+        const daysNum = Number((rental as any)?.days);
+        setRentalDays(Number.isFinite(daysNum) && daysNum > 0 ? daysNum : null);
         if (cancelled) return;
 
         // 라켓 수량(대여 기반에서 수량 상한 계산용)
@@ -1400,7 +1416,11 @@ export default function StringServiceApplyPage() {
   };
 
   // 구매 UX와 동일한 체감: 대여 기반도 스텝 구성을 동일하게 유지(결제 스텝 포함)
-  const steps = useMemo(() => APPLY_STEPS, []);
+  // 단, 대여 기반은 결제 입력이 아니라 '결제 완료/확인' 단계.
+  const steps = useMemo(() => {
+    if (!isRentalBased) return APPLY_STEPS;
+    return APPLY_STEPS.map((s) => (s.id === 3 ? { ...s, description: '결제 내역을 확인해주세요' } : s));
+  }, [isRentalBased]);
   const totalSteps = steps.length;
   const currentStepId = steps[currentStep - 1]?.id ?? steps[0]?.id ?? 1;
 
@@ -1543,6 +1563,8 @@ export default function StringServiceApplyPage() {
             fromPDP={fromPDP}
             orderId={orderId}
             rentalId={rentalId}
+            rentalRacketId={rentalRacketId}
+            rentalDays={rentalDays}
             pdpProductId={pdpProductId}
             isLoadingPdpProduct={isLoadingPdpProduct}
             pdpProduct={pdpProduct}
@@ -1591,7 +1613,7 @@ export default function StringServiceApplyPage() {
             stringPrice={Number(rentalAmount?.stringPrice ?? 0)}
             stringingFee={Number(rentalAmount?.stringingFee ?? 0)}
             total={Number(rentalAmount?.total ?? checkoutTotal)}
-            rentalId={rentalId}
+            // rentalId={rentalId}
           />
         ) : (
           <Step3PaymentInfo
@@ -1634,7 +1656,7 @@ export default function StringServiceApplyPage() {
               <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-2xl">
                 <CardContent className="p-4 bp-sm:p-6 bp-lg:p-8">
                   {/* 라켓 주문 프리필 배지 */}
-                  <OrderPrefillBadge orderId={orderId} />
+                  <OrderPrefillBadge orderId={orderId} rentalId={rentalId} />
                   <form onSubmit={handleSubmit}>
                     {getCurrentStepContent()}
 

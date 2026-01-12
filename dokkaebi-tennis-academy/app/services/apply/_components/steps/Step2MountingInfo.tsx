@@ -11,6 +11,8 @@ import { ClipboardList, DollarSign, Ticket, Zap } from 'lucide-react';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 type Props = {
   formData: any;
@@ -20,6 +22,8 @@ type Props = {
   fromPDP: boolean;
   orderId: string | null | undefined;
   rentalId?: string | null | undefined;
+  rentalRacketId?: string | null;
+  rentalDays?: number | null;
   pdpProductId: string | null | undefined;
   isLoadingPdpProduct: boolean;
   pdpProduct: any;
@@ -74,6 +78,8 @@ export default function Step2MountingInfo(props: Props) {
     fromPDP,
     orderId,
     rentalId,
+    rentalRacketId,
+    rentalDays,
     pdpProductId,
     isLoadingPdpProduct,
     pdpProduct,
@@ -123,6 +129,8 @@ export default function Step2MountingInfo(props: Props) {
   const isNonOrderLocked = !orderId && (Boolean(rentalId) || Boolean(fromPDP));
   const canShowQty = isNonOrderLocked && lockedId && lockedId !== 'custom';
   const currentQty = lockedId ? formData.stringUseCounts?.[lockedId] ?? 1 : 1;
+  const shouldHideStringSelection = Boolean(rentalId) && isLockedNonOrder && lockedStringId && lockedStringId !== 'custom';
+  const rentalSelectStringHref = rentalId && rentalRacketId ? `/rentals/${encodeURIComponent(String(rentalRacketId))}/select-string?period=${encodeURIComponent(String(rentalDays ?? 7))}` : null;
 
   const limitReasons: string[] = [];
   if (typeof lockedStringStock === 'number') limitReasons.push(`스트링 재고 ${lockedStringStock}개`);
@@ -161,6 +169,13 @@ export default function Step2MountingInfo(props: Props) {
                       <>
                         <p>• 대여 신청에서 선택한 스트링/교체 옵션 기준으로 신청이 진행됩니다.</p>
                         <p>• 스트링 변경은 대여 신청 단계에서 다시 선택해 주세요.</p>
+                        {rentalSelectStringHref && (
+                          <div className="mt-2">
+                            <Button asChild variant="outline" size="sm">
+                              <Link href={rentalSelectStringHref}>스트링 변경하기</Link>
+                            </Button>
+                          </div>
+                        )}
                       </>
                     ) : (
                       <>
@@ -221,37 +236,39 @@ export default function Step2MountingInfo(props: Props) {
             </p>
           )}
 
-          <div className={isLockedNonOrder ? 'pointer-events-none opacity-60' : ''}>
-            <StringCheckboxes
-              items={
-                orderId && order
-                  ? (order?.items ?? [])
-                      // 모든 상품 중 mountingFee가 있는 것만 (kind 체크 제거)
-                      .filter((i: any) => typeof i.mountingFee === 'number' && i.mountingFee > 0)
-                      .map((i: any) => ({
-                        id: i.id,
-                        name: i.name,
-                        mountingFee: i.mountingFee,
-                      }))
-                  : // 주문이 없더라도(PDP/대여) 이미 확정된 스트링은 1개 아이템으로 노출
-                  isLockedNonOrder && lockedStringId && lockedStringId !== 'custom'
-                  ? [
-                      {
-                        id: lockedStringId,
-                        name: pdpProduct?.name ?? '선택된 스트링',
-                        mountingFee: lockedMountingFee,
-                      },
-                    ]
-                  : [] // 단독 신청(직접 입력) 등은 빈 배열
-              }
-              stringTypes={formData.stringTypes}
-              customInput={formData.customStringType}
-              hideCustom={Boolean(orderId) || isLockedNonOrder}
-              disabled={isLockedNonOrder}
-              onChange={handleStringTypesChange}
-              onCustomInputChange={handleCustomInputChange}
-            />
-          </div>
+          {!shouldHideStringSelection && (
+            <div className={isLockedNonOrder ? 'pointer-events-none opacity-60' : ''}>
+              <StringCheckboxes
+                items={
+                  orderId && order
+                    ? (order?.items ?? [])
+                        // 모든 상품 중 mountingFee가 있는 것만 (kind 체크 제거)
+                        .filter((i: any) => typeof i.mountingFee === 'number' && i.mountingFee > 0)
+                        .map((i: any) => ({
+                          id: i.id,
+                          name: i.name,
+                          mountingFee: i.mountingFee,
+                        }))
+                    : // 주문이 없더라도(PDP/대여) 이미 확정된 스트링은 1개 아이템으로 노출
+                    isLockedNonOrder && lockedStringId && lockedStringId !== 'custom'
+                    ? [
+                        {
+                          id: lockedStringId,
+                          name: pdpProduct?.name ?? '선택된 스트링',
+                          mountingFee: lockedMountingFee,
+                        },
+                      ]
+                    : [] // 단독 신청(직접 입력) 등은 빈 배열
+                }
+                stringTypes={formData.stringTypes}
+                customInput={formData.customStringType}
+                hideCustom={Boolean(orderId) || isLockedNonOrder}
+                disabled={isLockedNonOrder}
+                onChange={handleStringTypesChange}
+                onCustomInputChange={handleCustomInputChange}
+              />
+            </div>
+          )}
 
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
@@ -260,7 +277,7 @@ export default function Step2MountingInfo(props: Props) {
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-blue-200 bg-blue-50/70 dark:border-blue-700">
-                <span className="text-sm text-gray-600 dark:text-gray-300">기본 장착비</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">{rentalId ? '교체비' : '기본 장착비'}</span>
                 <span className="font-medium text-gray-900 dark:text-white">
                   {formData.stringTypes.includes('custom') ? '15,000원' : order && lineCount > 0 ? price.toLocaleString('ko-KR') + '원' : (priceView.base * Math.max(lineCount, 1)).toLocaleString('ko-KR') + '원'}
                 </span>
@@ -375,98 +392,98 @@ export default function Step2MountingInfo(props: Props) {
           </div>
         </div>
 
-      {/* (대여/PDP) 가용 수량 표기 + 수량 입력 (max 제한) */}
-      {canShowQty && (
-        <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">사용 수량</div>
-              <div className="mt-1 text-xs text-slate-500">
-                {typeof maxNonOrderQty === 'number'
-                  ? `현재 가용 수량: ${maxNonOrderQty}개${limitReasons.length ? ` (기준: ${limitReasons.join(', ')})` : ''}`
-                  : '현재 가용 수량 정보를 불러오는 중이거나, 재고 관리가 꺼져 있습니다.'}
+        {/* (대여/PDP) 가용 수량 표기 + 수량 입력 (max 제한) */}
+        {canShowQty && (
+          <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">사용 수량</div>
+                <div className="mt-1 text-xs text-slate-500">
+                  {typeof maxNonOrderQty === 'number' ? `현재 가용 수량: ${maxNonOrderQty}개${limitReasons.length ? ` (기준: ${limitReasons.join(', ')})` : ''}` : '현재 가용 수량 정보를 불러오는 중이거나, 재고 관리가 꺼져 있습니다.'}
+                </div>
               </div>
             </div>
-          </div>
 
-         <div className="mt-3 flex items-center gap-2">
-            <input
-              className="h-10 w-24 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm"
-              type="number"
-              min={1}
-              max={typeof maxNonOrderQty === 'number' ? maxNonOrderQty : undefined}
-              value={currentQty}
-              onChange={(e) => handleUseQtyChange(String(lockedId), Number(e.target.value))}
-            />
-            {typeof maxNonOrderQty === 'number' && (
-              <span className="text-xs text-slate-500">최대 {maxNonOrderQty}개</span>
+            {typeof maxNonOrderQty === 'number' && maxNonOrderQty <= 1 ? (
+              <div className="text-sm font-medium text-slate-900 dark:text-slate-100">1개 (고정)</div>
+            ) : (
+              <>
+                <input
+                  className="h-10 w-24 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm"
+                  type="number"
+                  min={1}
+                  max={typeof maxNonOrderQty === 'number' ? maxNonOrderQty : undefined}
+                  value={currentQty}
+                  onChange={(e) => handleUseQtyChange(String(lockedId), Number(e.target.value))}
+                />
+                {typeof maxNonOrderQty === 'number' && <span className="text-xs text-slate-500">최대 {maxNonOrderQty}개</span>}
+              </>
             )}
           </div>
-        </div>
-      )}
+        )}
 
         {/* 패키지 요약 - 장착 정보 단계 */}
         {!rentalId && (
           <div className="mt-4">
-          <div
-            className={
-              packagePreview?.has
-                ? canApplyPackage
-                  ? 'rounded-xl border border-emerald-200 bg-emerald-50/80 dark:border-emerald-800/60 dark:bg-emerald-950/40 px-4 py-3'
-                  : 'rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-800/60 dark:bg-amber-950/40 px-4 py-3'
-                : 'rounded-xl border border-slate-200 bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-950/40 px-4 py-3'
-            }
-          >
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5">
-                <Ticket className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
-              </div>
-              <div className="flex-1 text-[12px] leading-relaxed">
-                <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <span className="text-base font-semibold tracking-tight text-slate-800 dark:text-slate-50">패키지 사용 가능 여부</span>
-
-                  {packagePreview?.has ? (
-                    canApplyPackage ? (
-                      <Badge className="h-5 rounded-full border-emerald-300/60 bg-emerald-100 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100">자동 적용 대상</Badge>
-                    ) : (
-                      <Badge className="h-5 rounded-full border-amber-300/60 bg-amber-100 text-xs font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-100">이번 구성에는 적용 불가</Badge>
-                    )
-                  ) : (
-                    <Badge className="h-5 rounded-full border-slate-300/60 bg-slate-100 text-xs font-medium text-slate-700 dark:bg-slate-900/40 dark:text-slate-100">보유 패키지 없음</Badge>
-                  )}
+            <div
+              className={
+                packagePreview?.has
+                  ? canApplyPackage
+                    ? 'rounded-xl border border-emerald-200 bg-emerald-50/80 dark:border-emerald-800/60 dark:bg-emerald-950/40 px-4 py-3'
+                    : 'rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-800/60 dark:bg-amber-950/40 px-4 py-3'
+                  : 'rounded-xl border border-slate-200 bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-950/40 px-4 py-3'
+              }
+            >
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5">
+                  <Ticket className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                 </div>
+                <div className="flex-1 text-[12px] leading-relaxed">
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <span className="text-base font-semibold tracking-tight text-slate-800 dark:text-slate-50">패키지 사용 가능 여부</span>
 
-                {packagePreview?.has ? (
-                  packageInsufficient ? (
-                    <p className="text-sm text-amber-800 dark:text-amber-100">
-                      현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>이고, 이번 신청에는 <span className="font-semibold">{requiredPassCount}회</span>가 필요하여 패키지가 자동 적용되지 않습니다.
-                    </p>
-                  ) : (
-                    <p className="text-sm text-slate-700 dark:text-slate-100">
-                      이번 신청에는 패키지로 <span className="font-semibold">{requiredPassCount}회</span>가 필요합니다. 현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
-                      이며, 결제 단계에서 사용 여부를 선택할 수 있습니다.
-                    </p>
-                  )
-                ) : (
-                  <p className="text-sm text-slate-600 dark:text-slate-200">현재 보유 중인 패키지가 없어 이번 신청은 일반 교체비 기준으로 결제됩니다.</p>
-                )}
-
-                {packagePreview?.has && (
-                  <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-200">
-                    <span>필요 {requiredPassCount}회</span>
-                    <span className="h-3 w-px bg-slate-300/60 dark:bg-slate-700/80" />
-                    <span>잔여 {packageRemaining}회</span>
-                    {packagePreview.expiresAt && (
-                      <>
-                        <span className="h-3 w-px bg-slate-300/60 dark:bg-slate-700/80" />
-                        <span>만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}</span>
-                      </>
+                    {packagePreview?.has ? (
+                      canApplyPackage ? (
+                        <Badge className="h-5 rounded-full border-emerald-300/60 bg-emerald-100 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100">자동 적용 대상</Badge>
+                      ) : (
+                        <Badge className="h-5 rounded-full border-amber-300/60 bg-amber-100 text-xs font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-100">이번 구성에는 적용 불가</Badge>
+                      )
+                    ) : (
+                      <Badge className="h-5 rounded-full border-slate-300/60 bg-slate-100 text-xs font-medium text-slate-700 dark:bg-slate-900/40 dark:text-slate-100">보유 패키지 없음</Badge>
                     )}
                   </div>
-                )}
+
+                  {packagePreview?.has ? (
+                    packageInsufficient ? (
+                      <p className="text-sm text-amber-800 dark:text-amber-100">
+                        현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>이고, 이번 신청에는 <span className="font-semibold">{requiredPassCount}회</span>가 필요하여 패키지가 자동 적용되지 않습니다.
+                      </p>
+                    ) : (
+                      <p className="text-sm text-slate-700 dark:text-slate-100">
+                        이번 신청에는 패키지로 <span className="font-semibold">{requiredPassCount}회</span>가 필요합니다. 현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
+                        이며, 결제 단계에서 사용 여부를 선택할 수 있습니다.
+                      </p>
+                    )
+                  ) : (
+                    <p className="text-sm text-slate-600 dark:text-slate-200">현재 보유 중인 패키지가 없어 이번 신청은 일반 교체비 기준으로 결제됩니다.</p>
+                  )}
+
+                  {packagePreview?.has && (
+                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-200">
+                      <span>필요 {requiredPassCount}회</span>
+                      <span className="h-3 w-px bg-slate-300/60 dark:bg-slate-700/80" />
+                      <span>잔여 {packageRemaining}회</span>
+                      {packagePreview.expiresAt && (
+                        <>
+                          <span className="h-3 w-px bg-slate-300/60 dark:bg-slate-700/80" />
+                          <span>만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
           </div>
         )}
         {/* 라켓/라인 세부 입력 (선택 사항) */}
