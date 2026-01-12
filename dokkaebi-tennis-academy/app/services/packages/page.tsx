@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Package, Star, CheckCircle, Clock, Shield, Award, Zap, Target, Users, ArrowRight, Gift, Percent, Calendar, Phone } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import SiteContainer from '@/components/layout/SiteContainer';
 
 interface PackageOption {
   id: string;
@@ -328,7 +329,7 @@ export default function StringPackagesPage() {
           <div className="absolute inset-0 bg-black/20"></div>
         </div>
 
-        <div className="container relative z-10 text-center text-white">
+        <SiteContainer variant="wide" className="relative z-10 text-center text-white">
           <div className="max-w-4xl mx-auto">
             <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">
               <Package className="w-4 h-4 mr-2" />
@@ -374,12 +375,12 @@ export default function StringPackagesPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </SiteContainer>
       </section>
 
       {/* Package Cards Section */}
       <section id="packages" ref={packagesSectionRef} className="py-20 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 scroll-mt-24">
-        <div className="container">
+        <SiteContainer variant="wide">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
               <Star className="w-4 h-4 mr-2" />
@@ -397,7 +398,7 @@ export default function StringPackagesPage() {
             {packages.map((pkg) => (
               <Card
                 key={pkg.id}
-                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'scale-105 ring-4 ring-indigo-200 dark:ring-indigo-800' : ''} ${
+                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-indigo-200 dark:ring-indigo-800' : ''} ${
                   selectedPackage === pkg.id ? 'ring-4 ring-blue-400' : ''
                 }`}
                 onClick={() => setSelectedPackage(pkg.id)}
@@ -502,7 +503,7 @@ export default function StringPackagesPage() {
               </Card>
             ))}
           </div>
-        </div>
+        </SiteContainer>
       </section>
 
       {/* Additional Benefits Section */}
@@ -511,7 +512,7 @@ export default function StringPackagesPage() {
           <div className="w-full h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)]"></div>
         </div>
 
-        <div className="container relative z-10">
+        <SiteContainer variant="wide" className="relative z-10">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-white/20 text-white border-white/30">
               <Award className="w-4 h-4 mr-2" />
@@ -536,12 +537,12 @@ export default function StringPackagesPage() {
               </div>
             ))}
           </div>
-        </div>
+        </SiteContainer>
       </section>
 
       {/* FAQ Section */}
       <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="container">
+        <SiteContainer variant="wide">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
               <Zap className="w-4 h-4 mr-2" />
@@ -587,7 +588,7 @@ export default function StringPackagesPage() {
               </Link>
             </Button>
           </div>
-        </div>
+        </SiteContainer>
       </section>
     </div>
   );
