@@ -264,7 +264,7 @@ export default function OrderList() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
-                      <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{isStringOrder ? '주문 + 교체 서비스 포함' : `주문 #${order.id.slice(-6)}`}</h3>
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{isStringOrder ? '스트링 주문 + 교체 서비스 포함' : `스트링 주문`}</h3>
 
                       {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
                       {order.stringingApplicationId ? (

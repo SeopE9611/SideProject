@@ -40,6 +40,12 @@ type Rental = {
   stringingApplicationId?: string | null;
   isStringServiceApplied?: boolean;
 
+  /**
+   * 교체 서비스 포함 여부 (레거시/예외 케이스 보강)
+   * - 목록 API(/api/me/rentals)에서 내려주는 withStringService와 동일한 목적
+   */
+  withStringService?: boolean;
+
   shipping?: {
     outbound?: {
       courier?: string;
@@ -213,13 +219,22 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     })();
   }, [id]);
 
-  // 연결된 신청서 링크(있을 때만)
+  // 교체 서비스 포함 여부(상세에서도 리스트와 동일한 분기 기준이 필요)
+  // - stringingApplicationId가 있으면: 이미 신청서가 연결된 상태
+  // - isStringServiceApplied=true인데 신청서 ID가 비어있는 레거시/예외 케이스를 대비
+  const withStringService = Boolean(data?.withStringService) || Boolean(data?.isStringServiceApplied) || Boolean(data?.stringingApplicationId);
+  // 신청서 ID가 없는데 교체 서비스가 포함된 경우 => "교체 신청하기" CTA 노출
+  const canApplyStringService = withStringService && !data?.stringingApplicationId;
+
+  // 신청서 보기 링크: "마이페이지 탭" 방식으로 통일
   const applicationHref = useMemo(() => {
     const appId = data?.stringingApplicationId;
     if (!appId) return null;
-    // 마이페이지 신청서 상세 경로(프로젝트 내 기존 구조에 맞춰 사용)
-    return `/mypage/applications/${encodeURIComponent(appId)}`;
+    return `/mypage?tab=applications&applicationId=${encodeURIComponent(appId)}`;
   }, [data?.stringingApplicationId]);
+
+  // 교체 신청하기 링크(대여 기반 신청)
+  const applyHref = `/services/apply?rentalId=${encodeURIComponent(id)}`;
 
   if (loading) {
     return (
@@ -300,8 +315,15 @@ export default function RentalsDetailClient({ id }: { id: string }) {
               <Briefcase className="h-8 w-8 text-indigo-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">대여 상세정보</h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">대여번호: {data.id}</p>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <p className="text-slate-600 dark:text-slate-400">대여번호: {data.id}</p>
+
+                {data.stringingApplicationId ? (
+                  <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200">신청서 연결됨</Badge>
+                ) : withStringService ? (
+                  <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200">교체 서비스 포함</Badge>
+                ) : null}
+              </div>
             </div>
           </div>
 
@@ -322,15 +344,24 @@ export default function RentalsDetailClient({ id }: { id: string }) {
                 목록으로 돌아가기
               </Link>
             </Button>
-            {/* 교체 서비스 신청서 보기 CTA (대여 기반 신청서가 연결된 경우에만) */}
-            {applicationHref && (
+            {/* 교체 서비스 CTA
+                - 신청서 ID가 있으면: 신청서 보기
+                - ID가 없지만 교체 서비스 포함이면: 교체 신청하기(레거시/예외 케이스 보정) */}
+            {applicationHref ? (
               <Link href={applicationHref}>
                 <Button className="gap-2">
                   <Wrench className="h-4 w-4" />
-                  교체 서비스 신청서 보기
+                  신청서 보기
                 </Button>
               </Link>
-            )}
+            ) : canApplyStringService ? (
+              <Link href={applyHref}>
+                <Button className="gap-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200">
+                  <Wrench className="h-4 w-4" />
+                  교체 신청하기
+                </Button>
+              </Link>
+            ) : null}
           </div>
         </div>
 

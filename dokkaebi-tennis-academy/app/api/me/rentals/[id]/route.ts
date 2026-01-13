@@ -47,7 +47,16 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     depositRefundedAt: doc.depositRefundedAt ?? null, // 보증금 환불 시각
     // 스트링 교체 신청서 연결 정보 (대여 기반 신청 시 저장됨)
     isStringServiceApplied: !!(doc as any).isStringServiceApplied,
-    stringingApplicationId: (doc as any).stringingApplicationId ?? null,
+    // ObjectId로 저장된 경우를 대비해 string으로 정규화
+    stringingApplicationId: (doc as any).stringingApplicationId ? (doc as any).stringingApplicationId.toString?.() ?? String((doc as any).stringingApplicationId) : null,
+
+    /**
+     * 교체 서비스 포함 여부(레거시/예외 케이스 보강)
+     * - 신청서 ID가 비어있는 데이터가 있을 수 있으므로 boolean도 같이 내려준다.
+     * - 상세 화면에서 "교체 신청하기" CTA 노출 여부 판단에 사용
+     */
+    withStringService: Boolean((doc as any)?.stringing?.requested) || Boolean((doc as any)?.isStringServiceApplied) || Boolean((doc as any)?.stringingApplicationId),
+
     shipping: {
       // 운송장/배송 정보
       outbound: doc.shipping?.outbound ?? null,
