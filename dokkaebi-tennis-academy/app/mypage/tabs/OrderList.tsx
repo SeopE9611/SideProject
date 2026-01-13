@@ -486,7 +486,7 @@ export default function OrderList() {
                         order.isStringServiceApplied ? (
                           order.stringingApplicationId ? (
                             <DropdownMenuItem asChild>
-                              <Link href={`/services/success?applicationId=${order.stringingApplicationId}`} className="flex items-center gap-2">
+                              <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="flex items-center gap-2">
                                 <ArrowRight className="h-4 w-4" />
                                 신청서 보기
                               </Link>

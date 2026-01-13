@@ -145,7 +145,7 @@ export default function RentalsList() {
         <Card
           key={r.id}
           className={`group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1
-            ${r.stringingApplicationId ? 'ring-1 ring-emerald-200/80 dark:ring-emerald-800/60' : ''}`}
+            ${r.stringingApplicationId || r.withStringService ? 'ring-1 ring-emerald-200/80 dark:ring-emerald-800/60' : ''}`}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
@@ -166,6 +166,8 @@ export default function RentalsList() {
                     {/* 교체 신청서가 연결된 대여임을 한눈에 표시 */}
                     {r.stringingApplicationId ? (
                       <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">신청서 연결됨</span>
+                    ) : r.withStringService ? (
+                      <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">교체 서비스 포함</span>
                     ) : null}
                   </div>
                   <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
@@ -260,19 +262,31 @@ export default function RentalsList() {
 
               {/* Mobile (sm 미만): 핵심 CTA를 1줄 그리드로 고정 */}
               <div className="grid sm:hidden grid-cols-12 items-center gap-2 w-full">
-                {/* 상세보기: 신청서가 있으면 6칸, 없으면 12칸 */}
-                <Button size="sm" variant="outline" asChild className={`${r.stringingApplicationId ? 'col-span-6' : 'col-span-12'} w-full hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent`}>
+                {/* 상세보기: (신청서 보기 / 교체 신청하기) 2차 CTA가 있으면 6칸, 없으면 12칸 */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  asChild
+                  className={`${r.stringingApplicationId || (r.withStringService && !r.stringingApplicationId) ? 'col-span-6' : 'col-span-12'} w-full hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent`}
+                >
                   <Link href={`/mypage?tab=rentals&rentalId=${r.id}`} className="inline-flex w-full items-center justify-center gap-1">
                     상세보기
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 </Button>
 
-                {/* 신청서 보기: 있을 때만 노출(없으면 아예 안 뜸) */}
+                {/* 신청서 보기: 있을 때만 노출 */}
                 {r.stringingApplicationId ? (
                   <Button size="sm" variant="outline" asChild className="col-span-6 w-full hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
                     <Link href={`/mypage?tab=applications&applicationId=${r.stringingApplicationId}`} className="inline-flex w-full items-center justify-center gap-1">
                       신청서 보기
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </Button>
+                ) : r.withStringService ? (
+                  <Button size="sm" className="col-span-6 w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                    <Link href={`/services/apply?rentalId=${r.id}`} className="inline-flex w-full items-center justify-center gap-1">
+                      교체 신청하기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
