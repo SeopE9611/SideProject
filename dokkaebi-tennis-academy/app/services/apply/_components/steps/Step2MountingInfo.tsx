@@ -119,17 +119,37 @@ export default function Step2MountingInfo(props: Props) {
   } = props;
 
   // 주문(orderId)이 아닌데도 스트링이 이미 확정된 흐름(PDP/대여)에서는
-  // - 체크박스/직접입력 UI를 잠그고(보기 전용)
-  // - 선택된 스트링 1개를 대표 아이템으로 노출
-  const isLockedNonOrder = !orderId && (fromPDP || Boolean(rentalId));
-  const lockedStringId = Array.isArray(formData.stringTypes) ? formData.stringTypes[0] : null;
+  // - (PDP) 체크박스/직접입력 UI를 잠그고(보기 전용)
+  // - (대여) 체크박스 토글은 가능(다자루/다품목 대비), 다만 stringTypes가 비면 다음 단계로 진행 불가
+  // - 선택된(혹은 직전에 선택했던) 스트링 1개를 대표 아이템으로 노출
+  const isPdpLockedNonOrder = !orderId && Boolean(fromPDP);
+  const isRentalNonOrder = !orderId && Boolean(rentalId);
+
+  // 대여/비-주문 흐름에서 사용자가 체크 해제해도(= stringTypes가 빈 배열) 체크박스 리스트가 사라지지 않도록,
+  // 마지막으로 선택된 스트링 id를 ref에 보관
+  const nonOrderPrimaryStringIdRef = React.useRef<string | null>(null);
+  const selectedFirstId = Array.isArray(formData.stringTypes) ? formData.stringTypes[0] : null;
+  if ((isRentalNonOrder || isPdpLockedNonOrder) && selectedFirstId && selectedFirstId !== 'custom') {
+    nonOrderPrimaryStringIdRef.current = selectedFirstId;
+  }
+
+  // 체크 해제 시에도 ref 값을 사용해서 UI(아이템/수량 카드)를 유지할 수 있게 합니다.
+  const lockedStringId = selectedFirstId ?? nonOrderPrimaryStringIdRef.current;
   const lockedMountingFee = typeof priceView?.base === 'number' ? priceView.base : lineCount > 0 ? Math.round(price / lineCount) : 0;
-  // 비-주문 기반에서(대여/PDP) 보통 스트링 1개가 고정이므로 첫 번째 id를 사용
-  const lockedId = formData.stringTypes?.[0];
-  const isNonOrderLocked = !orderId && (Boolean(rentalId) || Boolean(fromPDP));
-  const canShowQty = isNonOrderLocked && lockedId && lockedId !== 'custom';
+
+  // PDP에서 이어졌을 때만 체크박스/직접입력을 잠금 처리(대여는 토글 가능해야 다자루 확장에 유리)
+  const isLockedNonOrder = isPdpLockedNonOrder;
+
+  // (대여/PDP) 단일 대표 스트링 기준 수량 입력 카드
+  const lockedId = lockedStringId;
+  const isLockedIdSelected = Boolean(lockedId && Array.isArray(formData.stringTypes) && formData.stringTypes.includes(lockedId));
+  const canShowQty = Boolean((isRentalNonOrder || isPdpLockedNonOrder) && lockedId && lockedId !== 'custom' && isLockedIdSelected);
+
   const currentQty = lockedId ? formData.stringUseCounts?.[lockedId] ?? 1 : 1;
-  const shouldHideStringSelection = Boolean(rentalId) && isLockedNonOrder && lockedStringId && lockedStringId !== 'custom';
+
+  // (대여) 체크박스를 숨기지 않는다. 체크 해제는 가능하되, stringTypes가 비면 다음 단계로 진행이 막히는 것이 정상.
+  const shouldHideStringSelection = false;
+
   const rentalSelectStringHref = rentalId && rentalRacketId ? `/rentals/${encodeURIComponent(String(rentalRacketId))}/select-string?period=${encodeURIComponent(String(rentalDays ?? 7))}` : null;
 
   const limitReasons: string[] = [];
@@ -189,7 +209,7 @@ export default function Step2MountingInfo(props: Props) {
             </div>
           </div>
           {/* PDP에서 이어졌을 때 노출되는 스트링 정보 카드 */}
-          {isLockedNonOrder && lockedStringId && lockedStringId !== 'custom' && (
+          {(isLockedNonOrder || isRentalNonOrder) && lockedStringId && lockedStringId !== 'custom' && (
             <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/70 p-3">
               {isLoadingPdpProduct ? (
                 // 로딩 중에는 간단한 안내 문구만 표시
@@ -250,7 +270,7 @@ export default function Step2MountingInfo(props: Props) {
                           mountingFee: i.mountingFee,
                         }))
                     : // 주문이 없더라도(PDP/대여) 이미 확정된 스트링은 1개 아이템으로 노출
-                    isLockedNonOrder && lockedStringId && lockedStringId !== 'custom'
+                    (isLockedNonOrder || isRentalNonOrder) && lockedStringId && lockedStringId !== 'custom'
                     ? [
                         {
                           id: lockedStringId,
@@ -262,7 +282,7 @@ export default function Step2MountingInfo(props: Props) {
                 }
                 stringTypes={formData.stringTypes}
                 customInput={formData.customStringType}
-                hideCustom={Boolean(orderId) || isLockedNonOrder}
+                hideCustom={Boolean(orderId) || isLockedNonOrder || isRentalNonOrder}
                 disabled={isLockedNonOrder}
                 onChange={handleStringTypesChange}
                 onCustomInputChange={handleCustomInputChange}
@@ -277,7 +297,7 @@ export default function Step2MountingInfo(props: Props) {
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-blue-200 bg-blue-50/70 dark:border-blue-700">
-                <span className="text-sm text-gray-600 dark:text-gray-300">{rentalId ? '교체비' : '기본 장착비'}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">기본 장착비</span>
                 <span className="font-medium text-gray-900 dark:text-white">
                   {formData.stringTypes.includes('custom') ? '15,000원' : order && lineCount > 0 ? price.toLocaleString('ko-KR') + '원' : (priceView.base * Math.max(lineCount, 1)).toLocaleString('ko-KR') + '원'}
                 </span>
@@ -355,6 +375,54 @@ export default function Step2MountingInfo(props: Props) {
                 </div>
               )}
 
+              {/* (대여/PDP) 비-주문 기반 진입 시 스트링 사용 개수 입력(구매 UX와 동일한 리스트 형태) */}
+              {canShowQty && lineCount > 0 && (
+                <div className="mt-3 space-y-2 text-xs text-blue-700/90 dark:text-blue-100/90">
+                  <p>
+                    이번 신청에서 장착할 라켓 수: <span className="font-semibold text-foreground">{lineCount}자루</span>
+                  </p>
+
+                  <div className="space-y-1">
+                    {formData.stringTypes
+                      ?.filter((id: string) => id !== 'custom')
+                      .map((id: string) => {
+                        const useQty = id === lockedId ? currentQty : formData.stringUseCounts?.[id] ?? 1;
+                        const maxQty = typeof maxNonOrderQty === 'number' ? maxNonOrderQty : 99;
+                        const name = pdpProduct?.name ?? (id === lockedId ? '선택한 스트링' : `스트링 (${id})`);
+
+                        return (
+                          <div key={id} className="flex items-center justify-between gap-2">
+                            <span className="truncate">
+                              • {name} {typeof maxNonOrderQty === 'number' ? <span className="text-[11px] text-blue-800/80 dark:text-blue-100/80">(가용 {maxNonOrderQty}개 중)</span> : null}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <Label htmlFor={`useQty-${id}`} className="sr-only">
+                                사용할 개수
+                              </Label>
+                              <Input
+                                id={`useQty-${id}`}
+                                type="number"
+                                className="h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500"
+                                min={0}
+                                max={maxQty}
+                                value={useQty}
+                                onChange={(e) => handleUseQtyChange(id, Number(e.target.value) || 0)}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+
+                  {typeof maxNonOrderQty === 'number' && (
+                    <p className="text-[11px] text-muted-foreground">
+                      사용 개수는 <span className="font-semibold">{maxNonOrderQty}개</span>를 초과할 수 없습니다
+                      {limitReasons.length ? ` (기준: ${limitReasons.join(', ')})` : ''}.
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* 주문 기반 진입 + 스트링 1개만 선택 시 상세 안내 */}
               {orderId && selectedOrderItem && lineCount === 1 && (
                 <div className="mt-1 text-[11px] text-muted-foreground space-y-1">
@@ -391,36 +459,6 @@ export default function Step2MountingInfo(props: Props) {
             </div>
           </div>
         </div>
-
-        {/* (대여/PDP) 가용 수량 표기 + 수량 입력 (max 제한) */}
-        {canShowQty && (
-          <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">사용 수량</div>
-                <div className="mt-1 text-xs text-slate-500">
-                  {typeof maxNonOrderQty === 'number' ? `현재 가용 수량: ${maxNonOrderQty}개${limitReasons.length ? ` (기준: ${limitReasons.join(', ')})` : ''}` : '현재 가용 수량 정보를 불러오는 중이거나, 재고 관리가 꺼져 있습니다.'}
-                </div>
-              </div>
-            </div>
-
-            {typeof maxNonOrderQty === 'number' && maxNonOrderQty <= 1 ? (
-              <div className="text-sm font-medium text-slate-900 dark:text-slate-100">1개 (고정)</div>
-            ) : (
-              <>
-                <input
-                  className="h-10 w-24 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm"
-                  type="number"
-                  min={1}
-                  max={typeof maxNonOrderQty === 'number' ? maxNonOrderQty : undefined}
-                  value={currentQty}
-                  onChange={(e) => handleUseQtyChange(String(lockedId), Number(e.target.value))}
-                />
-                {typeof maxNonOrderQty === 'number' && <span className="text-xs text-slate-500">최대 {maxNonOrderQty}개</span>}
-              </>
-            )}
-          </div>
-        )}
 
         {/* 패키지 요약 - 장착 정보 단계 */}
         {!rentalId && (
