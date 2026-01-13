@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
-import { bankLabelMap } from '@/lib/constants';
+import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
 import jwt from 'jsonwebtoken';
 import Link from 'next/link';
 import { CheckCircle, Calendar, CreditCard, MapPin, Phone, Mail, User, Rocket as Racquet, Clock, Home, FileText, Shield, Award, Zap, Ticket, Package, ArrowRight } from 'lucide-react';
@@ -66,6 +66,9 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   const application = await db.collection('stringing_applications').findOne({ _id: new ObjectId(applicationId) });
 
+  // applicationId는 유효하지만, 실제 문서가 없으면 404 처리
+  if (!application) return notFound();
+
   // 수거 방식 표준화
   const rawMethod = application?.shippingInfo?.collectionMethod ?? application?.collectionMethod ?? null; // (레거시 대비)
   const cm = normalizeCollection(typeof rawMethod === 'string' ? rawMethod : 'self_ship'); // 'visit' | 'self_ship' | 'courier_pickup'
@@ -113,8 +116,6 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   const racketLines = Array.isArray(application?.stringDetails?.racketLines) ? application.stringDetails.racketLines : [];
 
-  if (!application) return notFound();
-
   // (통합결제) 주문 금액(라켓+스트링)까지 함께 보여주기 위한 주문 조회
   const orderObjectId = application.orderId && ObjectId.isValid(String(application.orderId)) ? new ObjectId(String(application.orderId)) : null;
 
@@ -133,16 +134,28 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   // (대여 기반 신청서) rentalId가 있으면 대여 주문을 조회해서
   // 결제 요약을 '대여 결제 완료 금액' 기준으로 표시한다.
-  const rentalObjectId = application.rentalId && ObjectId.isValid(application.rentalId) ? new ObjectId(application.rentalId) : null;
+  const rentalIdStr = application.rentalId ? String(application.rentalId) : '';
+  const rentalObjectId = ObjectId.isValid(rentalIdStr) ? new ObjectId(rentalIdStr) : null;
   const rental = rentalObjectId ? await db.collection('rental_orders').findOne({ _id: rentalObjectId }) : null;
 
   const rentalDeposit = rental ? Number(rental.amount?.deposit ?? 0) : 0;
   const rentalFee = rental ? Number(rental.amount?.fee ?? 0) : 0;
-  const rentalStringPrice = rental ? Number(rental.stringing?.price ?? 0) : 0;
-  const rentalStringingFee = rental ? Number(rental.stringing?.mountingFee ?? 0) : 0;
+  const rentalStringPrice = rental ? Number(rental.amount?.stringPrice ?? 0) : 0;
+  const rentalStringingFee = rental ? Number(rental.amount?.stringingFee ?? 0) : 0;
   const rentalTotal = rental ? Number(rental.amount?.total ?? rentalDeposit + rentalFee + rentalStringPrice + rentalStringingFee) : 0;
 
   const displayTotal = rental ? rentalTotal : Number(order ? combinedTotal : serviceSubtotal);
+
+  // 무통장 입금 정보 우선순위:
+  // 1) 대여 기반 신청서면 rental.payment 우선
+  // 2) 통합결제(구매+서비스)면 order.payment/paymentInfo 우선
+  // 3) 그 외에는 신청서 shippingInfo 기준
+  const orderBankKey = (order as any)?.payment?.bank ?? (order as any)?.paymentInfo?.bank ?? null;
+  const orderDepositor = (order as any)?.payment?.depositor ?? (order as any)?.paymentInfo?.depositor ?? null;
+
+  const bankKey = rental?.payment?.bank ?? orderBankKey ?? application.shippingInfo?.bank ?? null;
+  const depositor = rental?.payment?.depositor ?? orderDepositor ?? application.shippingInfo?.depositor ?? null; // 신청서에도 depositor가 있으면 보조
+  const bankInfo = bankKey ? (bankLabelMap as any)[bankKey] : null;
 
   // 로그인 여부 확인
   const cookieStore = await cookies();
@@ -301,6 +314,100 @@ export default async function StringServiceSuccessPage(props: Props) {
                     <p className="text-lg font-bold text-purple-600">{visitTimeLabel}</p>
                   </div>
                 </div>
+                {rental && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <Package className="h-6 w-6 mr-3 text-blue-600" />
+                      대여 정보
+                    </h3>
+
+                    <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-blue-200 dark:border-slate-500">
+                      {/* 상단: 대여 번호 */}
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">대여 번호</p>
+                        <p className="font-mono font-semibold text-blue-600">{String(rental._id)}</p>
+                      </div>
+
+                      {/* 라켓 정보 */}
+                      <div className="mb-6 bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">대여 라켓</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">{rental.brand ? `${racketBrandLabel(rental.brand)} ${rental.model ?? ''}` : '라켓 정보 없음'}</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200">대여 {Number(rental.days ?? 0)}일</Badge>
+                        </div>
+                      </div>
+
+                      {/* 금액 breakdown: RentalsSuccessClient 구조 그대로 */}
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">대여 수수료</span>
+                          <span>{rentalFee.toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">보증금</span>
+                          <span>{rentalDeposit.toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">스트링 상품</span>
+                          <span>{rentalStringPrice.toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">교체 서비스</span>
+                          <span>{rentalStringingFee.toLocaleString()}원</span>
+                        </div>
+
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800 mt-4">
+                          <div className="flex justify-between items-center font-bold">
+                            <span className="text-slate-800 dark:text-slate-200">총 결제 금액</span>
+                            <span className="text-blue-600">{Number(displayTotal).toLocaleString()}원</span>
+                          </div>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">* 반납 완료 후 보증금 환불 (연체/파손 시 차감)</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {order && !rental && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <Package className="h-6 w-6 mr-3 text-blue-600" />
+                      구매 정보
+                    </h3>
+
+                    <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-blue-200 dark:border-slate-500">
+                      {/* 상단: 주문 번호 */}
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">주문 번호</p>
+                        <p className="font-mono font-semibold text-blue-600">{String(order._id)}</p>
+                      </div>
+
+                      {/* 금액 breakdown: 대여 카드 톤에 맞춰 동일 패턴 */}
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">라켓</span>
+                          <span>{Number(racketSubtotal).toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">스트링</span>
+                          <span>{Number(stringSubtotal).toLocaleString()}원</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">교체 서비스</span>
+                          <span>{Number(serviceSubtotal).toLocaleString()}원</span>
+                        </div>
+
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800 mt-4">
+                          <div className="flex justify-between items-center font-bold">
+                            <span className="text-slate-800 dark:text-slate-200">총 결제 금액</span>
+                            <span className="text-blue-600">{Number(displayTotal).toLocaleString()}원</span>
+                          </div>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">* 라켓/스트링/교체비 합산 기준</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {application.packageApplied ? (
                   // ===== 패키지 적용 카드 =====
@@ -367,32 +474,42 @@ export default async function StringServiceSuccessPage(props: Props) {
                   </div>
                 ) : (
                   // ===== 기존 입금 계좌 정보 (패키지 미적용 시에만 노출) =====
-                  application.shippingInfo?.bank && (
+                  bankInfo && (
                     <div className="mb-8">
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
                         <CreditCard className="h-6 w-6 mr-3 text-blue-600" />
-                        입금 정보
+                        무통장 입금 안내
                       </h3>
 
                       <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-blue-200 dark:border-slate-500">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가 변경됩니다.</p>
+
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">은행</p>
-                            <p className="font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.label}</p>
+                            <p className="font-bold text-lg text-gray-900 dark:text-white">{bankInfo.label}</p>
                           </div>
                           <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">계좌번호</p>
-                            <p className="font-mono font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.account}</p>
+                            <p className="font-mono font-bold text-lg text-gray-900 dark:text-white">{bankInfo.account}</p>
                           </div>
                           <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">예금주</p>
-                            <p className="font-bold text-lg text-gray-900 dark:text-white">{bankLabelMap[application.shippingInfo.bank]?.holder}</p>
+                            <p className="font-bold text-lg text-gray-900 dark:text-white">{bankInfo.holder}</p>
                           </div>
                           <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm">
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">입금 금액</p>
                             <p className="font-bold text-lg text-green-600">{Number(displayTotal).toLocaleString()}원</p>
                           </div>
                         </div>
+
+                        {depositor && (
+                          <div className="mt-4 p-4 bg-white/70 dark:bg-slate-800/70 rounded-lg border border-slate-200/60 dark:border-slate-600/60">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">입금자명</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">{String(depositor)}</p>
+                          </div>
+                        )}
+
                         <div className="mt-4 p-4 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-lg border border-orange-200 dark:border-orange-700">
                           <div className="flex items-center">
                             <Zap className="h-5 w-5 text-orange-600 mr-2" />
