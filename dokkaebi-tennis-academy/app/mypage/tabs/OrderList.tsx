@@ -31,6 +31,7 @@ interface Order {
   userSnapshot?: { name: string; email: string };
   shippingInfo?: { deliveryMethod?: string; withStringService?: boolean };
   isStringServiceApplied?: boolean;
+  stringingApplicationId?: string | null; // 연결된 교체 서비스 신청서 ID(있으면 '신청서 보기' CTA로 연결)
   reviewAllDone?: boolean;
   unreviewedCount?: number;
   reviewNextTargetProductId?: string | null;
@@ -239,7 +240,14 @@ export default function OrderList() {
         const detailHref = `/mypage?tab=orders&orderId=${order.id}`;
         const showConfirm = order.status !== '취소' && order.status !== '환불';
         const canConfirm = showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;
-        const showMobileStringApply = order.shippingInfo?.withStringService && !order.isStringServiceApplied;
+        // 신청서 연결 여부(있으면 "교체 신청" 대신 "신청서 보기"로 유도)
+        const hasLinkedApplication = Boolean(order.stringingApplicationId);
+
+        // 모바일 보조 CTA: "교체 신청" 또는 "신청서 보기" 중 하나라도 있으면 2버튼 레이아웃
+        const showMobileSecondCTA = (Boolean(order.shippingInfo?.withStringService) && !order.isStringServiceApplied && !hasLinkedApplication) || hasLinkedApplication;
+
+        // "교체 신청"은 신청서가 아직 없을 때만 노출
+        const showMobileStringApply = Boolean(order.shippingInfo?.withStringService) && !order.isStringServiceApplied && !hasLinkedApplication;
 
         return (
           <Card key={order.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md transition-all duration-300 bp-sm:hover:shadow-xl bp-sm:hover:-translate-y-1">
@@ -255,7 +263,14 @@ export default function OrderList() {
                     <ShoppingBag className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{isStringOrder ? '스트링 주문 + 교체 서비스 신청' : `스트링 단일 주문 #${order.id}`}</h3>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{isStringOrder ? '주문 + 교체 서비스 포함' : `주문 #${order.id.slice(-6)}`}</h3>
+
+                      {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
+                      {order.stringingApplicationId ? (
+                        <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">신청서 연결됨</span>
+                      ) : null}
+                    </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
                       <Calendar className="h-3 w-3" />
                       {formatDate(order.date)}
@@ -362,8 +377,17 @@ export default function OrderList() {
                   ) : null}
 
                   <TooltipProvider>
-                    {order.shippingInfo?.withStringService &&
-                      (!order.isStringServiceApplied ? (
+                    {order.shippingInfo?.withStringService ? (
+                      // 신청서 ID가 있으면 무조건 "신청서 보기"
+                      order.stringingApplicationId ? (
+                        <Button size="sm" variant="outline" className="border-emerald-300 hover:border-emerald-400 hover:bg-emerald-50 dark:border-emerald-600 dark:hover:border-emerald-500 dark:hover:bg-emerald-950 bg-transparent" asChild>
+                          {/* 성공페이지(/services/success) 대신 "마이페이지 신청내역 상세"로 보내는게 더 자연스러움 */}
+                          <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="inline-flex items-center gap-1">
+                            신청서 보기
+                            <ArrowRight className="h-3 w-3" />
+                          </Link>
+                        </Button>
+                      ) : !order.isStringServiceApplied ? (
                         <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
                           <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">
                             스트링 교체 신청
@@ -382,7 +406,8 @@ export default function OrderList() {
                             이미 신청이 완료된 주문입니다
                           </TooltipContent>
                         </Tooltip>
-                      ))}
+                      )
+                    ) : null}
                   </TooltipProvider>
 
                   {order.cancelStatus === 'requested' ? (
@@ -402,14 +427,20 @@ export default function OrderList() {
 
                 {/* Mobile(<bp-sm): 핵심 1~2개만 노출 + 나머지는 더보기 */}
                 <div className="grid bp-sm:hidden grid-cols-12 items-center gap-2">
-                  <Button size="sm" variant="outline" asChild className={`${showMobileStringApply ? 'col-span-5' : 'col-span-10'} w-full whitespace-nowrap border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 bg-transparent`}>
+                  <Button size="sm" variant="outline" asChild className={`${showMobileSecondCTA ? 'col-span-5' : 'col-span-10'} w-full whitespace-nowrap border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 bg-transparent`}>
                     <Link href={detailHref} className="inline-flex w-full items-center justify-center gap-1">
                       상세보기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
-
-                  {showMobileStringApply ? (
+                  {order.stringingApplicationId ? (
+                    <Button size="sm" variant="outline" asChild className="col-span-5 w-full whitespace-nowrap hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
+                      <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="inline-flex w-full items-center justify-center gap-1">
+                        신청서 보기
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </Button>
+                  ) : showMobileStringApply ? (
                     <Button size="sm" className="col-span-5 w-full whitespace-nowrap bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white" asChild>
                       <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex w-full items-center justify-center gap-1">
                         교체 신청
@@ -417,7 +448,6 @@ export default function OrderList() {
                       </Link>
                     </Button>
                   ) : null}
-
                   <DropdownMenu open={openMenuOrderId === order.id} onOpenChange={(open) => setOpenMenuOrderId(open ? order.id : null)}>
                     <DropdownMenuTrigger asChild>
                       <Button size="icon" variant="outline" className="col-span-2 h-9 w-full border-slate-200 bg-transparent">
@@ -454,10 +484,20 @@ export default function OrderList() {
 
                       {order.shippingInfo?.withStringService ? (
                         order.isStringServiceApplied ? (
-                          <DropdownMenuItem disabled className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4" />
-                            교체 신청 완료
-                          </DropdownMenuItem>
+                          order.stringingApplicationId ? (
+                            <DropdownMenuItem asChild>
+                              <Link href={`/services/success?applicationId=${order.stringingApplicationId}`} className="flex items-center gap-2">
+                                <ArrowRight className="h-4 w-4" />
+                                신청서 보기
+                              </Link>
+                            </DropdownMenuItem>
+                          ) : (
+                            // (안전장치) 신청 완료 상태인데 ID가 없으면 기존처럼 완료만 표시
+                            <DropdownMenuItem disabled className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4" />
+                              교체 신청 완료
+                            </DropdownMenuItem>
+                          )
                         ) : (
                           <DropdownMenuItem asChild>
                             <Link href={`/services/apply?orderId=${order.id}`} className="flex items-center gap-2">

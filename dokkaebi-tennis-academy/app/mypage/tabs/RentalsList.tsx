@@ -142,7 +142,11 @@ export default function RentalsList() {
   return (
     <div className="space-y-6">
       {flat.map((r: any) => (
-        <Card key={r.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <Card
+          key={r.id}
+          className={`group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1
+            ${r.stringingApplicationId ? 'ring-1 ring-emerald-200/80 dark:ring-emerald-800/60' : ''}`}
+        >
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
           </div>
@@ -154,9 +158,16 @@ export default function RentalsList() {
                   <Briefcase className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-                    {racketBrandLabel(r.brand)} {r.model}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">
+                      {racketBrandLabel(r.brand)} {r.model}
+                    </h3>
+
+                    {/* 교체 신청서가 연결된 대여임을 한눈에 표시 */}
+                    {r.stringingApplicationId ? (
+                      <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">신청서 연결됨</span>
+                    ) : null}
+                  </div>
                   <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
                     <Calendar className="h-3 w-3" />
                     대여 기간: {r.days}일
@@ -204,13 +215,32 @@ export default function RentalsList() {
                 {r.hasReturnShipping ? <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200">반납 운송장 등록됨</Badge> : <Badge variant="secondary">반납 운송장 미등록</Badge>}
               </div>
 
-              <div className="flex flex-wrap items-center justify-end gap-2">
+              {/* Desktop (sm 이상): 기존 동작 유지 */}
+              <div className="hidden sm:flex flex-wrap items-center justify-end gap-2">
                 <Button size="sm" variant="outline" asChild className="hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent">
                   <Link href={`/mypage?tab=rentals&rentalId=${r.id}`} className="inline-flex items-center gap-1">
                     상세보기
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 </Button>
+
+                {/* 대여 기반 교체 신청서가 있으면: 신청서 상세로 바로 이동 */}
+                {r.stringingApplicationId ? (
+                  <Button size="sm" variant="outline" asChild className="hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
+                    <Link href={`/mypage?tab=applications&applicationId=${r.stringingApplicationId}`} className="inline-flex items-center gap-1">
+                      신청서 보기
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </Button>
+                ) : r.withStringService ? (
+                  // 교체 서비스가 포함된 대여인데 아직 신청서가 없다면: 바로 신청서 작성으로 유도
+                  <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                    <Link href={`/services/apply?rentalId=${r.id}`} className="inline-flex items-center gap-1">
+                      교체 신청하기
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </Button>
+                ) : null}
 
                 {r.cancelStatus === 'requested' && (
                   <Button size="sm" variant="destructive" onClick={() => handleWithdrawCancelRequest(r.id)} className="gap-2">
@@ -226,6 +256,44 @@ export default function RentalsList() {
                     }}
                   />
                 )}
+              </div>
+
+              {/* Mobile (sm 미만): 핵심 CTA를 1줄 그리드로 고정 */}
+              <div className="grid sm:hidden grid-cols-12 items-center gap-2 w-full">
+                {/* 상세보기: 신청서가 있으면 6칸, 없으면 12칸 */}
+                <Button size="sm" variant="outline" asChild className={`${r.stringingApplicationId ? 'col-span-6' : 'col-span-12'} w-full hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent`}>
+                  <Link href={`/mypage?tab=rentals&rentalId=${r.id}`} className="inline-flex w-full items-center justify-center gap-1">
+                    상세보기
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </Button>
+
+                {/* 신청서 보기: 있을 때만 노출(없으면 아예 안 뜸) */}
+                {r.stringingApplicationId ? (
+                  <Button size="sm" variant="outline" asChild className="col-span-6 w-full hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
+                    <Link href={`/mypage?tab=applications&applicationId=${r.stringingApplicationId}`} className="inline-flex w-full items-center justify-center gap-1">
+                      신청서 보기
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </Button>
+                ) : null}
+
+                {/* 취소 관련 액션은 모바일에서 아래 줄(12칸)로 내려 레이아웃 안정화 */}
+                {r.cancelStatus === 'requested' ? (
+                  <Button size="sm" variant="destructive" onClick={() => handleWithdrawCancelRequest(r.id)} className="col-span-12 w-full gap-2">
+                    <Undo2 className="h-4 w-4" />
+                    대여 취소 요청 철회
+                  </Button>
+                ) : ['pending', 'paid'].includes(r.status) && !r.hasOutboundShipping ? (
+                  <div className="col-span-12">
+                    <CancelRentalDialog
+                      rentalId={r.id}
+                      onSuccess={async () => {
+                        await mutate(); // 목록 다시 불러오기
+                      }}
+                    />
+                  </div>
+                ) : null}
               </div>
             </div>
           </CardContent>

@@ -43,6 +43,14 @@ export async function GET(req: Request) {
 
     return {
       id: d._id.toString(),
+      
+      /**
+       * 대여 기반 교체 신청서 연결용 ID
+       * - 대여 신청 시 교체 서비스가 포함되면 rental_orders에 stringingApplicationId가 저장됨
+       * - 마이페이지(대여 내역)에서 "신청서 보기" 버튼을 띄우기 위해 내려준다.
+       */
+      stringingApplicationId: d.stringingApplicationId ? d.stringingApplicationId.toString() : null,
+
       brand: d.brand,
       model: d.model,
       days: d.days,
