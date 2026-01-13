@@ -188,7 +188,13 @@ export default function Step2MountingInfo(props: Props) {
                     {rentalId ? (
                       <>
                         <p>• 대여 신청에서 선택한 스트링/교체 옵션 기준으로 신청이 진행됩니다.</p>
-                        <p>• 스트링 변경은 대여 신청 단계에서 다시 선택해 주세요.</p>
+
+                        {isLockedIdSelected ? (
+                          <p>• 스트링 변경은 대여 신청 단계에서 다시 선택해 주세요.</p>
+                        ) : (
+                          <p className="font-semibold">• 현재 스트링이 체크 해제되어 신청을 진행할 수 없습니다. 아래 체크박스에서 다시 선택하거나, ‘스트링 변경하기’로 이동해 다시 선택해 주세요.</p>
+                        )}
+
                         {rentalSelectStringHref && (
                           <div className="mt-2">
                             <Button asChild variant="outline" size="sm">
@@ -212,27 +218,53 @@ export default function Step2MountingInfo(props: Props) {
           {(isLockedNonOrder || isRentalNonOrder) && lockedStringId && lockedStringId !== 'custom' && (
             <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/70 p-3">
               {isLoadingPdpProduct ? (
-                // 로딩 중에는 간단한 안내 문구만 표시
                 <div className="text-xs text-blue-700">선택한 스트링 정보를 불러오는 중입니다...</div>
               ) : (
-                <div className="flex items-center gap-3">
-                  {/* 상품 이미지 */}
-                  {pdpProduct?.image && (
-                    <div className="relative h-16 w-16 overflow-hidden rounded-md bg-white shadow-sm">
-                      <img src={pdpProduct.image} alt={pdpProduct.name} className="h-full w-full object-cover" />
+                <>
+                  <div className="flex items-center gap-3">
+                    {pdpProduct?.image && (
+                      <div className="relative h-16 w-16 overflow-hidden rounded-md bg-white shadow-sm">
+                        <img src={pdpProduct.image} alt={pdpProduct.name} className="h-full w-full object-cover" />
+                      </div>
+                    )}
+
+                    <div className="flex flex-col">
+                      {/* 상단 라벨 + 포함/미포함 배지(대여 비-주문에서만) */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-blue-700">{rentalId ? '대여 신청에서 선택한 스트링' : '상품 상세에서 선택한 스트링'}</span>
+
+                        {isRentalNonOrder && (
+                          <Badge variant={isLockedIdSelected ? 'secondary' : 'destructive'} className="h-5 px-2 text-[11px]">
+                            {isLockedIdSelected ? '포함됨' : '미포함'}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <span className="text-sm font-medium text-gray-900">{pdpProduct?.name ?? '선택한 스트링으로 신청 중입니다.'}</span>
+                      <span className="mt-1 text-xs text-gray-600">{rentalId ? '대여 신청 시 선택한 스트링 기준으로 진행됩니다.' : '이 신청서는 위 스트링을 기준으로 장착 서비스가 진행됩니다.'}</span>
+                    </div>
+                  </div>
+
+                  {/* (대여) 체크 해제 상태를 “체감”으로 확실히 보이게: 경고 + 즉시 복구 CTA */}
+                  {isRentalNonOrder && !isLockedIdSelected && (
+                    <div className="mt-3 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="leading-relaxed">
+                          <p className="font-medium">현재 이 스트링이 체크 해제되어 신청서에 포함되지 않았습니다.</p>
+                          <p className="mt-1">아래 체크박스에서 다시 선택하거나, 오른쪽 버튼으로 다시 포함하세요.</p>
+                        </div>
+
+                        <Button type="button" variant="outline" size="sm" className="h-8 shrink-0 px-3 text-xs" onClick={() => handleStringTypesChange(Array.from(new Set([...(formData.stringTypes ?? []), lockedStringId])))}>
+                          다시 포함하기
+                        </Button>
+                      </div>
                     </div>
                   )}
-
-                  {/* 상품 텍스트 정보 */}
-                  <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-blue-700">{rentalId ? '대여 신청에서 선택한 스트링' : '상품 상세에서 선택한 스트링'}</span>
-                    <span className="text-sm font-medium text-gray-900">{pdpProduct?.name ?? '선택한 스트링으로 신청 중입니다.'}</span>
-                    <span className="mt-1 text-xs text-gray-600">{rentalId ? '대여 신청 시 선택한 스트링 기준으로 진행됩니다.' : '이 신청서는 위 스트링을 기준으로 장착 서비스가 진행됩니다.'}</span>
-                  </div>
-                </div>
+                </>
               )}
             </div>
           )}
+
           {/* 주문 기반 진입 시 안내 문구 */}
           {orderId && typeof orderRemainingSlots === 'number' && (
             <div className="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-200">
