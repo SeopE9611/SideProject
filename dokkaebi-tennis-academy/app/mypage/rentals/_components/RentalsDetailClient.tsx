@@ -213,6 +213,14 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     })();
   }, [id]);
 
+  // 연결된 신청서 링크(있을 때만)
+  const applicationHref = useMemo(() => {
+    const appId = data?.stringingApplicationId;
+    if (!appId) return null;
+    // 마이페이지 신청서 상세 경로(프로젝트 내 기존 구조에 맞춰 사용)
+    return `/mypage/applications/${encodeURIComponent(appId)}`;
+  }, [data?.stringingApplicationId]);
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -258,14 +266,6 @@ export default function RentalsDetailClient({ id }: { id: string }) {
   const stringingFee = data.amount?.stringingFee ?? 0;
   // 서버가 total을 계산해 저장하지만, 혹시 없을 경우를 대비해 동일 로직으로 fallback
   const total = data.amount?.total ?? fee + deposit + stringPrice + stringingFee;
-
-  // 연결된 신청서 링크(있을 때만)
-  const applicationHref = useMemo(() => {
-    const appId = data.stringingApplicationId;
-    if (!appId) return null;
-    // 마이페이지 신청서 상세 경로(프로젝트 내 기존 구조에 맞춰 사용)
-    return `/mypage/applications/${encodeURIComponent(appId)}`;
-  }, [data.stringingApplicationId]);
 
   const banner = getDepositBanner({
     status: data.status,
