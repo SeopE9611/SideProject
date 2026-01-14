@@ -534,7 +534,7 @@ export default function ActivityFeed() {
       </div>
 
       {(actionTop.length > 0 || activeTop.length > 0) && (
-        <div className="grid gap-4 bp-lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 bp-lg:grid-cols-2 min-w-0">
           {actionTop.length > 0 && (
             <div className="min-w-0 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-amber-950/20 p-5 bp-sm:p-6 border border-amber-200/50 dark:border-amber-800/30 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
@@ -575,7 +575,7 @@ export default function ActivityFeed() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
-                                {kindLabel(g.kind)}
+                                {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                               </Badge>
                               <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</span>
                             </div>
@@ -651,7 +651,7 @@ export default function ActivityFeed() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
-                              {kindLabel(g.kind)}
+                              {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                             </Badge>
                             <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</span>
                           </div>
@@ -707,7 +707,7 @@ export default function ActivityFeed() {
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
                   </div>
 
-                  <div className="grid gap-3 bp-sm:gap-4">
+                  <div className="grid grid-cols-1 gap-3 bp-sm:gap-4 min-w-0">
                     {dayItems.map((g, itemIndex) => {
                       const title = groupTitle(g);
                       const date = groupDate(g);
@@ -718,26 +718,39 @@ export default function ActivityFeed() {
                       return (
                         <div
                           key={g.key}
-                          className="rounded-xl bp-sm:rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-4 bp-sm:p-6 activity-card-hover"
+                          className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-4 bp-sm:p-6 activity-card-hover"
                           style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}
                         >
                           <div className="flex flex-col bp-sm:flex-row bp-sm:items-start gap-4">
-                            <div className="rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 p-3 bp-sm:p-4 shrink-0">{kindIcon(g.kind)}</div>
+                            <div
+                              className={cn(
+                                'hidden bp-sm:flex', // ✅ 모바일 숨김, bp-sm 이상 표시
+                                'rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 p-3 bp-sm:p-4 shrink-0',
+                                'w-fit self-start'
+                              )}
+                            >
+                              {kindIcon(g.kind)}
+                            </div>
 
                             <div className="flex-1 min-w-0 space-y-3">
                               <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-2 bp-sm:gap-4">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                    <span className="inline-flex bp-sm:hidden rounded-lg bg-slate-100 dark:bg-slate-700 p-2 shrink-0">{kindIcon(g.kind)}</span>
+
                                     <Badge variant="outline" className={cn('text-xs rounded-md font-medium', statusBadgeClass(g))}>
                                       {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                                     </Badge>
+
                                     <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</span>
+
                                     {hasAction && (
                                       <Badge variant="outline" className="text-xs rounded-md bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800">
                                         액션 필요
                                       </Badge>
                                     )}
                                   </div>
+
                                   <h3 className="text-base bp-sm:text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 truncate">{title}</h3>
                                   <p className="text-sm text-slate-600 dark:text-slate-400">{kindLabel(g.kind)}</p>
                                 </div>
