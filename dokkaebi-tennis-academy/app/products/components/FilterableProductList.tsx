@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Grid3X3, List } from 'lucide-react';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SkeletonProductCard } from '@/app/products/components/SkeletonProductCard';
 import ProductCard from '@/app/products/components/ProductCard';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
 // 브랜드 리스트
 const brands = [
   { label: '럭실론', value: 'luxilon' },
@@ -25,6 +26,11 @@ const brands = [
 
 // 브랜드 라벨 매핑 (소문자 key)
 const brandLabelMap: Record<string, string> = Object.fromEntries(brands.map(({ value, label }) => [value, label]));
+
+// 가격 필터 기본값
+const DEFAULT_MIN_PRICE = 0;
+const DEFAULT_MAX_PRICE = 200000;
+const DEFAULT_PRICE_RANGE: [number, number] = [DEFAULT_MIN_PRICE, DEFAULT_MAX_PRICE];
 
 /**
  * 필터 가능한 상품 리스트 (infinite scroll 포함)
@@ -52,7 +58,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
   const [selectedSpin, setSelectedSpin] = useState<number | null>(null);
   const [selectedControl, setSelectedControl] = useState<number | null>(null);
   const [selectedComfort, setSelectedComfort] = useState<number | null>(null);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>(DEFAULT_PRICE_RANGE);
 
   // 모바일(Sheet) 전용: 임시 선택값(draft)
   // - Sheet 안에서 선택해도 즉시 서버 조회가 일어나지 않게 하기 위함
@@ -64,7 +70,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
   const [draftSpin, setDraftSpin] = useState<number | null>(null);
   const [draftControl, setDraftControl] = useState<number | null>(null);
   const [draftComfort, setDraftComfort] = useState<number | null>(null);
-  const [draftPriceRange, setDraftPriceRange] = useState<[number, number]>([0, 50000]);
+  const [draftPriceRange, setDraftPriceRange] = useState<[number, number]>(DEFAULT_PRICE_RANGE);
 
   // 모바일에서 검색 입력도 draft로만 관리 (취소 시 되돌리기 위함)
   const [draftSearchQuery, setDraftSearchQuery] = useState('');
@@ -112,7 +118,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
       const minPrice = searchParams.get('minPrice');
       const maxPrice = searchParams.get('maxPrice');
-      setPriceRange([minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 50000]);
+      setPriceRange([minPrice ? Number(minPrice) : DEFAULT_MIN_PRICE, maxPrice ? Number(maxPrice) : DEFAULT_MAX_PRICE]);
 
       setSortOption(searchParams.get('sort') || 'latest');
 
@@ -158,7 +164,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
-    const pr: [number, number] = [minPrice ? Number(minPrice) : 0, maxPrice ? Number(maxPrice) : 50000];
+    const pr: [number, number] = [minPrice ? Number(minPrice) : DEFAULT_MIN_PRICE, maxPrice ? Number(maxPrice) : DEFAULT_MAX_PRICE];
     if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
 
     const sort = searchParams.get('sort') || 'latest';
@@ -169,9 +175,14 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     if (desiredView !== viewMode) setViewMode(desiredView as 'grid' | 'list');
   }, [searchParams]);
 
+  // 기본 범위면 아예 min/max를 안 보내서 "가격 필터 미적용" 상태 유지
+  const minPriceParam = priceRange[0] > DEFAULT_MIN_PRICE ? priceRange[0] : undefined;
+  const maxPriceParam = priceRange[1] < DEFAULT_MAX_PRICE ? priceRange[1] : undefined;
+
   // 서버 필터링 + 무한 스크롤
   const {
     products: productsList,
+    total,
     isLoadingInitial,
     isFetchingMore,
     error,
@@ -189,15 +200,68 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     q: submittedQuery,
     sort: sortOption,
     limit: 6,
-    minPrice: priceRange[0],
-    maxPrice: priceRange[1],
+    minPrice: minPriceParam,
+    maxPrice: maxPriceParam,
   });
+
+  /**
+   * 전환(Transition) 플래그
+   * - 필터/검색 변경 직후 products가 먼저 비워지면서 "0개"가 1프레임 찍히는 문제를 막는다.
+   * - useLayoutEffect로 "페인트 전에" 플래그를 켜서 사용자가 깜빡임을 보지 않게 한다.
+   */
+  const [isUiTransitioning, setIsUiTransitioning] = useState(false);
+  const sawLoadingRef = useRef(false);
+
+  // "서버 조회에 영향을 주는 값"들만 묶어서 키로 만든다. (viewMode 같은 UI-only 값은 제외)
+  const filterKey = useMemo(() => {
+    return [selectedBrand ?? '', selectedMaterial ?? '', selectedBounce ?? '', selectedDurability ?? '', selectedSpin ?? '', selectedControl ?? '', selectedComfort ?? '', submittedQuery ?? '', sortOption ?? '', priceRange[0], priceRange[1]].join(
+      '|'
+    );
+  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, sortOption, priceRange]);
+
+  // 필터 키가 바뀌는 "그 순간"에 전환 플래그 ON (페인트 전에 실행)
+  useLayoutEffect(() => {
+    // 초기 URL → 상태 동기화 중에는 기존 로딩 흐름을 우선한다
+    if (isInitializingRef.current) return;
+
+    setIsUiTransitioning(true);
+    sawLoadingRef.current = false;
+  }, [filterKey]);
+
+  // 전환 플래그 OFF 조건:
+  // - 전환 중(isUiTransitioning)이고,
+  // - 로딩을 한 번이라도 봤고(isLoadingInitial을 true로 봤고),
+  // - 다시 isLoadingInitial이 false가 되면(= 1페이지 응답 완료) 전환 종료
+  useEffect(() => {
+    if (!isUiTransitioning) return;
+
+    if (isLoadingInitial) {
+      sawLoadingRef.current = true;
+      return;
+    }
+
+    if (sawLoadingRef.current && !isLoadingInitial) {
+      setIsUiTransitioning(false);
+      sawLoadingRef.current = false;
+    }
+
+    // 에러 시에도 스켈레톤이 붙잡고 있지 않도록 해제
+    if (error) {
+      setIsUiTransitioning(false);
+      sawLoadingRef.current = false;
+    }
+  }, [isUiTransitioning, isLoadingInitial, error]);
+
+  const loadedCount = (productsList ?? []).length;
+  const isInitialLikeLoading = isLoadingInitial || isUiTransitioning;
+  const isCountLoading = isInitialLikeLoading || total === null;
 
   // 검색 제출 handler
   const handleSearchSubmit = useCallback(() => {
     // 새 검색이면 submittedQuery 바꾸고 페이징 리셋
     setSubmittedQuery(searchQuery);
     // resetInfinite를 직접 호출해서 새로 고침 보장 (훅 내부에서 감지 안할 경우 대비)
+    setIsUiTransitioning(true);
     resetInfinite();
   }, [searchQuery, resetInfinite]);
 
@@ -205,6 +269,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
   const handleClearSearch = useCallback(() => {
     setSearchQuery('');
     setSubmittedQuery('');
+    setIsUiTransitioning(true);
     resetInfinite();
   }, [resetInfinite]);
 
@@ -218,11 +283,12 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     setSelectedSpin(null);
     setSelectedControl(null);
     setSelectedComfort(null);
-    setPriceRange([0, 50000]);
+    setPriceRange(DEFAULT_PRICE_RANGE);
     setSortOption('latest');
     setViewMode('grid');
     setSearchQuery('');
     setSubmittedQuery('');
+    setIsUiTransitioning(true);
     resetInfinite();
   }, [resetInfinite]);
 
@@ -269,7 +335,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     // 검색은 "제출된 값"만 서버 조회에 쓰이므로, 적용 시점에 submittedQuery를 갱신
     setSearchQuery(draftSearchQuery);
     setSubmittedQuery(draftSearchQuery);
-
+    setIsUiTransitioning(true);
     resetInfinite(); // 여기서만 서버 재조회 발생
     setShowFilters(false); // 적용 후 닫기
   }, [draftBrand, draftMaterial, draftBounce, draftDurability, draftSpin, draftControl, draftComfort, draftPriceRange, draftSearchQuery, resetInfinite]);
@@ -284,7 +350,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     setDraftSpin(null);
     setDraftControl(null);
     setDraftComfort(null);
-    setDraftPriceRange([0, 50000]);
+    setDraftPriceRange(DEFAULT_PRICE_RANGE);
     setDraftSearchQuery('');
   }, []);
 
@@ -317,10 +383,10 @@ export default function FilterableProductList({ initialBrand = null, initialMate
   }, [showFilters, cancelFiltersSheet]);
 
   // active filter 개수 계산
-  const priceChanged = priceRange[0] > 0 || priceRange[1] < 50000;
+  const priceChanged = priceRange[0] > DEFAULT_MIN_PRICE || priceRange[1] < DEFAULT_MAX_PRICE;
   const activeFiltersCount = [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, priceChanged].filter(Boolean).length;
 
-  const draftPriceChanged = draftPriceRange[0] > 0 || draftPriceRange[1] < 50000;
+  const draftPriceChanged = draftPriceRange[0] > DEFAULT_MIN_PRICE || draftPriceRange[1] < DEFAULT_MAX_PRICE;
   const activeDraftCount = [draftBrand, draftMaterial, draftBounce, draftDurability, draftSpin, draftControl, draftComfort, draftSearchQuery, draftPriceChanged].filter(Boolean).length;
 
   // 상태 -> URL 반영 (검색어는 submittedQuery만)
@@ -338,8 +404,8 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     if (submittedQuery) params.set('q', submittedQuery);
     if (sortOption && sortOption !== 'latest') params.set('sort', sortOption);
     if (viewMode !== 'grid') params.set('view', viewMode);
-    if (priceRange[0] > 0) params.set('minPrice', String(priceRange[0]));
-    if (priceRange[1] < 50000) params.set('maxPrice', String(priceRange[1]));
+    if (priceRange[0] > DEFAULT_MIN_PRICE) params.set('minPrice', String(priceRange[0]));
+    if (priceRange[1] < DEFAULT_MAX_PRICE) params.set('maxPrice', String(priceRange[1]));
 
     const newSearch = params.toString();
     if (newSearch === lastSerializedRef.current) return;
@@ -450,8 +516,9 @@ export default function FilterableProductList({ initialBrand = null, initialMate
         <div className="bp-lg:col-span-3">
           <div className="mb-6 bp-md:mb-8 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="text-base bp-sm:text-lg font-semibold dark:text-white">
-                총 <span className="text-blue-600 dark:text-blue-400 font-bold">{(productsList ?? []).length}</span>개 상품
+              <div className="text-base bp-sm:text-lg font-semibold dark:text-white tabular-nums" aria-live="polite">
+                총 {isCountLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{total}</span>}개 ·{' '}
+                {isCountLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="text-slate-700 dark:text-slate-200 font-bold">{loadedCount}</span>}개 표시 중
               </div>
               <Button
                 variant="outline"
@@ -506,7 +573,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
           </div>
 
           {/* 콘텐츠 */}
-          {isLoadingInitial ? (
+          {isInitialLikeLoading ? (
             <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-3' : 'grid-cols-1')}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonProductCard key={i} />
@@ -519,7 +586,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
                 다시 시도
               </Button>
             </div>
-          ) : (productsList ?? []).length === 0 ? (
+          ) : loadedCount === 0 ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
                 <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-blue-600 dark:text-blue-400" />
