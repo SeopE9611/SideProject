@@ -11,8 +11,19 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const brand = searchParams.get('brand')?.trim();
   const cond = searchParams.get('cond')?.trim(); // 'A' | 'B' | 'C'
-  const minStr = searchParams.get('min');
-  const maxStr = searchParams.get('max');
+  const keyword = searchParams.get('q')?.trim() || null;
+
+  // 가격 범위 파라미터: min/max + minPrice/maxPrice(별칭) 둘 다 지원
+  const minStr = searchParams.get('min') ?? searchParams.get('minPrice');
+  const maxStr = searchParams.get('max') ?? searchParams.get('maxPrice');
+
+  // /api/rackets 기본 응답은 "배열" 유지(기존 호환).
+  // withTotal=1(또는 true)인 경우에만 total을 포함한 객체로 반환.
+  const withTotal = (() => {
+    const v = (searchParams.get('withTotal') ?? '').toLowerCase();
+    return v === '1' || v === 'true' || v === 'yes';
+  })();
+
   const q: any = { $or: [{ status: { $exists: false } }, { status: { $nin: ['inactive', '비노출', 'sold'] } }] };
 
   // 브랜드(대소문자 무시) — 예: ?brand=yonex
@@ -20,6 +31,16 @@ export async function GET(req: Request) {
 
   // 상태등급 필터 — 예: ?cond=A
   if (cond === 'A' || cond === 'B' || cond === 'C') q.condition = cond;
+
+  // 키워드 검색: model(기본) + brand(보조)
+  if (keyword) {
+    q.$and = [
+      ...(q.$and ?? []),
+      {
+        $or: [{ model: { $regex: keyword, $options: 'i' } }, { brand: { $regex: keyword, $options: 'i' } }],
+      },
+    ];
+  }
 
   // 가격 범위 — 예: ?min=100000&max=200000
   if (minStr !== null && minStr.trim() !== '') {
@@ -56,13 +77,19 @@ export async function GET(req: Request) {
   if (sort) cursor = cursor.sort(sort);
   if (limit) cursor = cursor.limit(limit);
 
-  const docs = await cursor.toArray();
+  // withTotal=1이면 total까지 같이 내려주기 위해 countDocuments를 병렬로 수행
+  // - cursor에는 limit이 걸릴 수 있지만, total은 "필터 조건(q)" 기준 전체 개수여야 하므로 countDocuments(q)를 별도로 사용
+  const [docs, total] = await Promise.all([cursor.toArray(), withTotal ? col.countDocuments(q) : Promise.resolve(0)]);
 
-  const items = docs.map((r: any) => ({
-    ...r,
-    id: String(r._id),
-    _id: undefined, // 클라이언트에서 id만 쓰도록 정규화
-  }));
+  // _id는 제거하고 id만 내려주기(깔끔)
+  const items = docs.map((r: any) => {
+    const { _id, ...rest } = r;
+    return { ...rest, id: String(_id) };
+  });
 
-  return NextResponse.json(items);
+  // 기본(기존 호환): 배열 그대로 반환
+  if (!withTotal) return NextResponse.json(items);
+
+  // 확장 응답: total 포함
+  return NextResponse.json({ items, total });
 }
