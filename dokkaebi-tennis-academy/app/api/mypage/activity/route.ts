@@ -86,8 +86,17 @@ function summarizeRacketType(details: any): string {
     return details.racketType.trim();
   }
   const lines = Array.isArray(details?.racketLines) ? details.racketLines : [];
-  if (lines.length > 0) return `라켓 ${lines.length}대`;
+  if (lines.length > 0) return `라켓 ${lines.length}자루`;
   return '-';
+}
+
+// 신청서 배송정보
+function getTrackingNoFromShippingInfo(shippingInfo: any): string | null {
+  const v = shippingInfo?.selfShip?.trackingNo ?? shippingInfo?.invoice?.trackingNumber ?? shippingInfo?.trackingNumber ?? shippingInfo?.trackingNo ?? null;
+
+  if (v == null) return null;
+  const s = String(v).trim();
+  return s.length > 0 ? s : null;
 }
 
 /**
@@ -246,7 +255,7 @@ export async function GET(req: Request) {
   for (const doc of linkedApps as any[]) {
     const details = doc.stringDetails ?? {};
     const shipping = doc.shippingInfo ?? {};
-    const hasTracking = Boolean(shipping?.trackingNumber);
+    const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
 
     const rawCancelStatus = doc?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
