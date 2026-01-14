@@ -193,7 +193,10 @@ export default function MypageClient({ user }: Props) {
                 <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm mb-6 bp-sm:mb-8">
                   <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
                     <TabsList className="h-auto w-full p-1 bg-slate-100 dark:bg-slate-700 grid grid-cols-4 gap-1 bp-md:grid-cols-9">
-                      <TabsTrigger value="activity" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 rounded-lg data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0">
+                      <TabsTrigger
+                        value="activity"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                      >
                         <Layers className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">전체</span>
                       </TabsTrigger>

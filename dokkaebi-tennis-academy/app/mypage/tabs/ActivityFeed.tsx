@@ -536,15 +536,15 @@ export default function ActivityFeed() {
       {(actionTop.length > 0 || activeTop.length > 0) && (
         <div className="grid gap-4 bp-lg:grid-cols-2">
           {actionTop.length > 0 && (
-            <div className="rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-amber-950/20 p-5 bp-sm:p-6 border border-amber-200/50 dark:border-amber-800/30 slide-up">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
+            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-amber-950/20 p-5 bp-sm:p-6 border border-amber-200/50 dark:border-amber-800/30 slide-up">
+              <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg bg-amber-200 dark:bg-amber-800 p-2">
                     <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-300" />
                   </div>
-                  <div>
-                    <h3 className="text-base bp-sm:text-lg font-bold text-amber-900 dark:text-amber-100">해야 할 일</h3>
-                    <p className="text-xs text-amber-600 dark:text-amber-400">{actionTop.length}건의 액션 필요</p>
+                  <div className="min-w-0">
+                    <h3 className="text-base bp-sm:text-lg font-bold text-amber-900 dark:text-amber-100 truncate">해야 할 일</h3>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 truncate">{actionTop.length}건의 액션 필요</p>
                   </div>
                 </div>
                 <Button
@@ -554,7 +554,7 @@ export default function ActivityFeed() {
                     setFilter('all');
                     setActionOnly(true);
                   }}
-                  className="rounded-lg border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                  className="w-full bp-sm:w-auto rounded-lg border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
                 >
                   전체 보기
                 </Button>
@@ -613,15 +613,15 @@ export default function ActivityFeed() {
           )}
 
           {activeTop.length > 0 && (
-            <div className="rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-blue-950/20 p-5 bp-sm:p-6 border border-blue-200/50 dark:border-blue-800/30 slide-up">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
+            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-blue-950/20 p-5 bp-sm:p-6 border border-blue-200/50 dark:border-blue-800/30 slide-up">
+              <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg bg-blue-200 dark:bg-blue-800 p-2">
                     <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-300" />
                   </div>
-                  <div>
-                    <h3 className="text-base bp-sm:text-lg font-bold text-blue-900 dark:text-blue-100">진행중</h3>
-                    <p className="text-xs text-blue-600 dark:text-blue-400">{activeTop.length}건의 활동</p>
+                  <div className="min-w-0">
+                    <h3 className="text-base bp-sm:text-lg font-bold text-blue-900 dark:text-blue-100 truncate">진행중</h3>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 truncate">{activeTop.length}건의 활동</p>
                   </div>
                 </div>
                 <Button
@@ -631,7 +631,7 @@ export default function ActivityFeed() {
                     setFilter('active');
                     setActionOnly(false);
                   }}
-                  className="rounded-lg border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                  className="w-full bp-sm:w-auto rounded-lg border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                 >
                   전체 보기
                 </Button>
@@ -698,7 +698,7 @@ export default function ActivityFeed() {
 
               return (
                 <div key={dayKey} className="space-y-4 slide-up" style={{ animationDelay: `${dayIndex * 50}ms` }}>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
                     <div className="rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2 border border-slate-200 dark:border-slate-700">
                       <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formatDayHeader(dayKey)}</span>
