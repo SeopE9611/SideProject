@@ -19,7 +19,7 @@ import { useState, useEffect } from 'react';
 import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
 import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { User, Trophy, Target, MessageSquare, UserCheck, Ticket, Heart, MessageCircleQuestion, ClipboardList, CalendarCheck, ReceiptCent, Briefcase } from 'lucide-react';
+import { User, Trophy, Target, MessageSquare, UserCheck, Ticket, Heart, MessageCircleQuestion, ClipboardList, CalendarCheck, ReceiptCent, Briefcase, Layers } from 'lucide-react';
 import type { Order } from '@/lib/types/order';
 import PassList from '@/app/mypage/tabs/PassList';
 import PassListSkeleton from '@/app/mypage/tabs/PassListSkeleton';
@@ -29,6 +29,8 @@ import RentalsDetailClient from '@/app/mypage/rentals/_components/RentalsDetailC
 import MyPointsTab from '@/app/mypage/tabs/MyPointsTab';
 import { Badge } from '@/components/ui/badge';
 import SiteContainer from '@/components/layout/SiteContainer';
+import ActivityFeedSkeleton from '@/app/mypage/tabs/ActivityFeedSkeleton';
+import ActivityFeed from '@/app/mypage/tabs/ActivityFeed';
 
 type Props = {
   user: {
@@ -68,7 +70,7 @@ export default function MypageClient({ user }: Props) {
   if (loading) return null;
   if (!user) return null;
 
-  const currentTab = searchParams.get('tab') ?? 'orders';
+  const currentTab = searchParams.get('tab') ?? 'activity'; // 마이페이지 첫 진입 시 “전체”를 기본으로
 
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -190,7 +192,11 @@ export default function MypageClient({ user }: Props) {
               <Tabs value={currentTab} onValueChange={handleTabChange}>
                 <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm mb-6 bp-sm:mb-8">
                   <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-                    <TabsList className="h-auto w-full p-1 bg-slate-100 dark:bg-slate-700 grid grid-cols-4 gap-1 bp-md:grid-cols-8">
+                    <TabsList className="h-auto w-full p-1 bg-slate-100 dark:bg-slate-700 grid grid-cols-4 gap-1 bp-md:grid-cols-9">
+                      <TabsTrigger value="activity" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 rounded-lg data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0">
+                        <Layers className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
+                        <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">전체</span>
+                      </TabsTrigger>
                       <TabsTrigger
                         value="orders"
                         className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
@@ -254,6 +260,29 @@ export default function MypageClient({ user }: Props) {
                     </TabsList>
                   </CardContent>
                 </Card>
+
+                {/* 전체 활동 탭 */}
+                <TabsContent value="activity" className="mt-0">
+                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                    <CardHeader className="border-b p-4 bp-sm:p-6">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg bg-slate-100 dark:bg-slate-700">
+                          <Layers className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-lg bp-sm:text-xl">전체 활동</CardTitle>
+                          <CardDescription className="text-xs bp-sm:text-sm">주문·대여·교체 서비스 신청을 시간순으로 한 번에 확인합니다.</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="p-4 bp-sm:p-6">
+                      <Suspense fallback={<ActivityFeedSkeleton />}>
+                        <ActivityFeed />
+                      </Suspense>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
                 {/* 주문 내역 탭 */}
                 <TabsContent value="orders" className="mt-0">
