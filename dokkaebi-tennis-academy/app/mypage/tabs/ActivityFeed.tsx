@@ -2,6 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
+import { mutate as globalMutate } from 'swr';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import ActivityOrderReviewCTA from './_components/ActivityOrderReviewCTA';
+import OrderShippingInfoDialog from './_components/OrderShippingInfoDialog';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -303,13 +307,50 @@ export default function ActivityFeed() {
     return `/api/mypage/activity?page=${page}&pageSize=${LIMIT}`;
   };
 
-  const { data, size, setSize, isValidating, error } = useSWRInfinite<ActivityResponse>(getKey, fetcher, {
+  const {
+    data,
+    size,
+    setSize,
+    isValidating,
+    error,
+    mutate: mutateActivity,
+  } = useSWRInfinite<ActivityResponse>(getKey, fetcher, {
     revalidateFirstPage: true,
   });
 
   const flat = useMemo(() => (data ?? []).flatMap((d) => d.items ?? []), [data]);
   const total = data?.[0]?.total ?? 0;
   const hasMore = flat.length < total;
+
+  // 주문 단위 UX: 배송 정보 모달 / 구매확정 / 리뷰 CTA
+  const canShowOrderShippingInfo = (status?: string) => status === '배송중' || status === '배송완료' || status === '구매확정';
+  const canShowOrderReviewCta = (status?: string) => status === '배송완료' || status === '구매확정';
+
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+
+  const handleConfirmPurchase = async (orderId: string) => {
+    setConfirmingOrderId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/confirm`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      const json = await res.json().catch(() => null as any);
+      if (!res.ok) throw new Error(json?.message || '구매 확정에 실패했습니다.');
+
+      showSuccessToast('구매 확정이 완료되었습니다.');
+
+      // Activity 탭 갱신
+      await mutateActivity();
+      // 주문내역 탭 캐시도 갱신(같은 세션 UX 일관성)
+      globalMutate((key) => typeof key === 'string' && key.startsWith('/api/users/me/orders'));
+    } catch (e: any) {
+      showErrorToast(e?.message || '구매 확정 중 오류가 발생했습니다.');
+    } finally {
+      setConfirmingOrderId(null);
+    }
+  };
 
   // 상단 요약 (※ 현재 불러온 항목 기준)
   const counts = useMemo(() => {
@@ -669,12 +710,17 @@ export default function ActivityFeed() {
                         </div>
                       )}
 
-                      <Button asChild size="sm" variant="outline" className="rounded-lg w-full bg-transparent">
-                        <Link href={detailHref}>
-                          상세 보기
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
+                      <div className="flex flex-wrap gap-2">
+                        <Button asChild size="sm" variant="outline" className="rounded-lg flex-1 bg-transparent min-w-[160px]">
+                          <Link href={detailHref}>
+                            상세 보기
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+
+                        {/* 배송중/배송완료/구매확정 상태에서 배송 정보 모달 제공 */}
+                        {g.kind === 'order' && g.order && g.order.id && canShowOrderShippingInfo(g.order.status) ? <OrderShippingInfoDialog orderId={g.order.id} className="rounded-lg flex-1 min-w-[160px] bg-transparent" /> : null}
+                      </div>
                     </div>
                   );
                 })}
@@ -779,6 +825,18 @@ export default function ActivityFeed() {
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                   </Link>
                                 </Button>
+                                {/*배송 정보 모달: 배송중/배송완료/구매확정에서 노출 */}
+                                {g.kind === 'order' && g.order && g.order.id && canShowOrderShippingInfo(g.order.status) ? <OrderShippingInfoDialog orderId={g.order.id} className="rounded-lg bg-transparent" /> : null}
+
+                                {/* 리뷰 작성하기: 배송완료/구매확정에서 노출 */}
+                                {g.kind === 'order' && g.order && g.order.id && canShowOrderReviewCta(g.order.status) ? <ActivityOrderReviewCTA orderId={g.order.id} orderStatus={g.order.status} className="rounded-lg" /> : null}
+
+                                {/* 구매확정: 배송완료에서만 노출 */}
+                                {g.kind === 'order' && g.order && g.order.id && g.order.status === '배송완료' ? (
+                                  <Button size="sm" variant="outline" disabled={confirmingOrderId === g.order!.id} onClick={() => handleConfirmPurchase(g.order!.id)}>
+                                    {confirmingOrderId === g.order!.id ? '확정 중…' : '구매확정'}
+                                  </Button>
+                                ) : null}
                                 {g.application?.id && (
                                   <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
                                     <Link href={shippingHref}>{shippingLabel}</Link>
