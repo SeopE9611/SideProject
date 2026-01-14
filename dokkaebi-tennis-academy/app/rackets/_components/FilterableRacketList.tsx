@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Grid3X3, List } from 'lucide-react';
@@ -136,7 +137,43 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   if (selectedCondition) query.set('cond', selectedCondition);
   if (submittedQuery) query.set('q', submittedQuery);
   const key = `/api/rackets${query.toString() ? `?${query.toString()}` : ''}`;
-  const { data, isLoading, error, mutate } = useSWR<RacketItem[]>(key, fetcher);
+  const { data, isLoading, isValidating, error, mutate } = useSWR<RacketItem[]>(key, fetcher);
+
+  const [isUiTransitioning, setIsUiTransitioning] = useState(false);
+  const sawLoadingRef = useRef(false);
+
+  const filterKey = useMemo(() => {
+    return [selectedBrand ?? '', selectedCondition ?? '', priceMin ?? '', priceMax ?? '', submittedQuery ?? '', sortOption ?? ''].join('|');
+  }, [selectedBrand, selectedCondition, priceMin, priceMax, submittedQuery, sortOption]);
+
+  useLayoutEffect(() => {
+    if (isInitializingRef.current) return;
+    setIsUiTransitioning(true);
+    sawLoadingRef.current = false;
+  }, [filterKey]);
+
+  useEffect(() => {
+    if (!isUiTransitioning) return;
+
+    const loadingNow = isLoading || isValidating;
+
+    if (loadingNow) {
+      sawLoadingRef.current = true;
+      return;
+    }
+
+    if (sawLoadingRef.current && !loadingNow) {
+      setIsUiTransitioning(false);
+      sawLoadingRef.current = false;
+    }
+
+    if (error) {
+      setIsUiTransitioning(false);
+      sawLoadingRef.current = false;
+    }
+  }, [isUiTransitioning, isLoading, isValidating, error]);
+
+  const isInitialLikeLoading = isLoading || isValidating || isUiTransitioning;
 
   // 클라이언트 필터링 및 정렬
   const racketsList = useCallback(() => {
@@ -160,6 +197,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   // 검색 제출
   const handleSearchSubmit = useCallback(() => {
     setSubmittedQuery(searchQuery);
+    setIsUiTransitioning(true);
     mutate();
   }, [searchQuery, mutate]);
 
@@ -167,6 +205,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   const handleClearSearch = useCallback(() => {
     setSearchQuery('');
     setSubmittedQuery('');
+    setIsUiTransitioning(true);
     mutate();
   }, [mutate]);
 
@@ -181,6 +220,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     setViewMode('grid');
     setSearchQuery('');
     setSubmittedQuery('');
+    setIsUiTransitioning(true);
     mutate();
   }, [mutate]);
 
@@ -219,7 +259,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     // 검색어는 submittedQuery만 서버 요청에 반영되므로 적용 시점에 커밋
     setSearchQuery(draftSearchQuery);
     setSubmittedQuery(draftSearchQuery);
-
+    setIsUiTransitioning(true);
     setShowFilters(false);
     // key가 바뀌면 SWR이 자동으로 새로 fetch함 (mutate 강제 호출은 불필요)
   }, [draftBrand, draftCondition, draftPriceMin, draftPriceMax, draftSearchQuery]);
@@ -340,7 +380,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
 
   return (
     <>
-      <Sheet open={showFilters} onOpenChange={setShowFilters}>
+      <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
         <SheetContent side="right" className="w-full bp-sm:w-[420px] bp-md:w-[480px] max-w-none p-0 overflow-y-auto">
           <RacketFilterPanel {...mobileFilterPanelProps} />
         </SheetContent>
@@ -413,7 +453,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
           </div>
 
           {/* 콘텐츠 */}
-          {isLoading ? (
+          {isInitialLikeLoading ? (
             <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3' : 'grid-cols-1')}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonProductCard key={i} />
