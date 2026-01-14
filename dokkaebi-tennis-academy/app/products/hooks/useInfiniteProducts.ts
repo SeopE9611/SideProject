@@ -63,6 +63,7 @@ export function useInfiniteProducts(filters: Filters) {
   const [products, setProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [total, setTotal] = useState<number | null>(null); // 전체 매칭 개수(필터 기준)
   const [isLoadingInitial, setIsLoadingInitial] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +79,7 @@ export function useInfiniteProducts(filters: Filters) {
       setProducts([]);
       setPage(1);
       setHasMore(true);
+      setTotal(null); // 필터 변경 시 total도 초기화(이전 값 잠깐 보이는 현상 방지)
       setError(null);
       // initial load
       fetchPage(1, true);
@@ -104,6 +106,7 @@ export function useInfiniteProducts(filters: Filters) {
         setProducts((prev) => (targetPage === 1 || replace ? data.products : [...prev, ...data.products]));
         setHasMore(data.pagination.hasMore);
         setPage(data.pagination.page);
+        setTotal(data.pagination.total); // 서버 total 반영
       } catch (err: any) {
         console.error('상품 로드 실패', err);
         setError(err.message || '알 수 없는 오류');
@@ -123,6 +126,7 @@ export function useInfiniteProducts(filters: Filters) {
 
   return {
     products,
+    total,
     isLoadingInitial,
     isFetchingMore,
     error,
@@ -132,6 +136,7 @@ export function useInfiniteProducts(filters: Filters) {
       setProducts([]);
       setPage(1);
       setHasMore(true);
+      setTotal(null);
       setError(null);
       fetchPage(1, true);
     },
