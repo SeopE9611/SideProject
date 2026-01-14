@@ -137,14 +137,24 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   if (selectedCondition) query.set('cond', selectedCondition);
   if (submittedQuery) query.set('q', submittedQuery);
   const key = `/api/rackets${query.toString() ? `?${query.toString()}` : ''}`;
-  const { data, isLoading, isValidating, error, mutate } = useSWR<RacketItem[]>(key, fetcher);
+  const { data, isLoading, isValidating, error, mutate } = useSWR<RacketItem[]>(key, fetcher, {
+    revalidateOnFocus: false, // 탭/창 복귀 시 재요청 방지
+    revalidateOnReconnect: false, // (원하면 true 유지 가능)
+  });
 
   const [isUiTransitioning, setIsUiTransitioning] = useState(false);
   const sawLoadingRef = useRef(false);
 
+  /**
+   * ✅ 중요:
+   * filterKey에는 "네트워크 재요청(SWR key 변경)"을 유발하는 값만 넣는다.
+   * - 라켓 페이지는 brand/cond/q만 서버에 보내고,
+   * - priceMin/priceMax/sortOption은 클라이언트 필터/정렬이므로 제외해야
+   *   네트워크 없는 변경에서 스켈레톤이 불필요하게 켜지지 않는다.
+   */
   const filterKey = useMemo(() => {
-    return [selectedBrand ?? '', selectedCondition ?? '', priceMin ?? '', priceMax ?? '', submittedQuery ?? '', sortOption ?? ''].join('|');
-  }, [selectedBrand, selectedCondition, priceMin, priceMax, submittedQuery, sortOption]);
+    return [selectedBrand ?? '', selectedCondition ?? '', submittedQuery ?? ''].join('|');
+  }, [selectedBrand, selectedCondition, submittedQuery]);
 
   useLayoutEffect(() => {
     if (isInitializingRef.current) return;
@@ -155,7 +165,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   useEffect(() => {
     if (!isUiTransitioning) return;
 
-    const loadingNow = isLoading || isValidating;
+    const loadingNow = isLoading || isValidating; //  SWR 로딩/재검증을 함께
 
     if (loadingNow) {
       sawLoadingRef.current = true;
@@ -173,7 +183,9 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     }
   }, [isUiTransitioning, isLoading, isValidating, error]);
 
+  // 전환 중 + 실제 로딩을 초기 로딩처럼 취급 (0개 1프레임 노출 방지)
   const isInitialLikeLoading = isLoading || isValidating || isUiTransitioning;
+  const isBackgroundRefreshing = !!data && isValidating;
 
   // 클라이언트 필터링 및 정렬
   const racketsList = useCallback(() => {
@@ -399,7 +411,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
           <div className="mb-6 bp-md:mb-8 space-y-3 bp-sm:space-y-0 bp-sm:flex bp-sm:items-center bp-sm:justify-between">
             <div className="flex items-center justify-between gap-3 bp-sm:justify-start">
               <div className="text-base bp-sm:text-lg font-semibold dark:text-white">
-                총 <span className="text-blue-600 dark:text-blue-400 font-bold">{products.length}</span>개 라켓
+                총 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{products.length}</span>}개 라켓
               </div>
 
               <Button
