@@ -130,6 +130,7 @@ export default function ReviewWritePage() {
   const productIdParam = sp.get('productId');
   const orderIdParam = sp.get('orderId'); // URL에서 orderId 읽기
   const service = sp.get('service'); // 'stringing'
+  const applicationIdParam = sp.get('applicationId'); // Activity에서 넘어온 대상 신청서
 
   // 보정된 productId / orderId (URL이 비어있어도 서버 추천으로 채움)
   const [resolvedProductId, setResolvedProductId] = useState<string | null>(productIdParam);
@@ -291,7 +292,10 @@ export default function ReviewWritePage() {
 
       setApps(formatted);
 
-      // 기본 선택: suggested -> 최근 '교체완료' -> 첫 항목
+      // URL로 applicationId가 넘어오면 그걸 최우선으로 선택
+      const urlPreferred = applicationIdParam && formatted.some((x) => x._id === applicationIdParam) ? applicationIdParam : null;
+
+      // 기본 선택: urlPreferred -> suggested -> 최근 '교체완료' -> 첫 항목
       let nextId: string | null = null;
 
       try {
@@ -300,9 +304,9 @@ export default function ReviewWritePage() {
           cache: 'no-store',
         }).then((x) => x.json());
 
-        nextId = elig?.suggestedApplicationId ?? formatted.find((x) => x.status === '교체완료')?._id ?? formatted[0]?._id ?? null;
+        nextId = urlPreferred ?? elig?.suggestedApplicationId ?? formatted.find((x) => x.status === '교체완료')?._id ?? formatted[0]?._id ?? null;
       } catch {
-        nextId = formatted.find((x) => x.status === '교체완료')?._id ?? formatted[0]?._id ?? null;
+        nextId = urlPreferred ?? formatted.find((x) => x.status === '교체완료')?._id ?? formatted[0]?._id ?? null;
       }
 
       if (!aborted) setSelectedAppId(nextId);
@@ -311,7 +315,7 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [mode]);
+  }, [mode, applicationIdParam]);
 
   // 서비스 모드: 신청서 선택 시 그 대상으로 재검사
   useEffect(() => {

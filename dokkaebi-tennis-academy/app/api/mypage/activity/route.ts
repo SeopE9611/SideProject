@@ -358,7 +358,8 @@ export async function GET(req: Request) {
   for (const doc of standaloneApps as any[]) {
     const details = doc.stringDetails ?? {};
     const shipping = doc.shippingInfo ?? {};
-    const hasTracking = Boolean(shipping?.trackingNumber);
+    const trackingNo = String((shipping as any)?.trackingNo ?? shipping?.trackingNumber ?? '').trim();
+    const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
 
     const rawCancelStatus = doc?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;

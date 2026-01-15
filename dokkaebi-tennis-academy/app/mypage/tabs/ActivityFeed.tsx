@@ -326,7 +326,15 @@ export default function ActivityFeed() {
   const canShowOrderShippingInfo = (status?: string) => status === '배송중' || status === '배송완료' || status === '구매확정';
   const canShowOrderReviewCta = (status?: string) => status === '배송완료' || status === '구매확정';
 
+  // 교체 서비스(스트링 교체 신청서) CTA 조건
+  // - 교체확정: 교체완료 상태이고, 아직 사용자가 확정(userConfirmedAt)하지 않은 경우에만 노출
+  // - 리뷰작성: 교체완료 상태에서 노출 (작성 여부는 리뷰 작성 페이지에서 최종 검증)
+  const canShowStringingConfirmCta = (app?: ActivityApplicationSummary | null) => !!(app && app.status === '교체완료' && !app.userConfirmedAt);
+
+  const canShowStringingReviewCta = (app?: ActivityApplicationSummary | null) => !!(app && app.status === '교체완료');
+
   const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+  const [confirmingApplicationId, setConfirmingApplicationId] = useState<string | null>(null);
 
   const handleConfirmPurchase = async (orderId: string) => {
     setConfirmingOrderId(orderId);
@@ -349,6 +357,33 @@ export default function ActivityFeed() {
       showErrorToast(e?.message || '구매 확정 중 오류가 발생했습니다.');
     } finally {
       setConfirmingOrderId(null);
+    }
+  };
+
+  const handleConfirmStringing = async (applicationId: string) => {
+    if (!applicationId) return;
+
+    const ok = confirm('교체 확정 처리할까요?\n확정 시 포인트가 지급되며 되돌릴 수 없습니다.');
+    if (!ok) return;
+
+    setConfirmingApplicationId(applicationId);
+
+    try {
+      const res = await fetch(`/api/applications/stringing/${applicationId}/confirm`, { method: 'POST', credentials: 'include' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.message || '교체 확정에 실패했습니다.');
+      }
+      showSuccessToast('교체 확정이 완료되었습니다.');
+
+      // Activity(전체 내역) + 신청 내역 + 포인트 탭까지 함께 최신화
+      await mutateActivity();
+      await globalMutate((key) => typeof key === 'string' && key.startsWith('/api/applications/me'), undefined, { revalidate: true });
+      await globalMutate((key) => typeof key === 'string' && key.startsWith('/api/points/me'), undefined, { revalidate: true });
+    } catch (e: any) {
+      showErrorToast(e?.message || '교체 확정 중 오류가 발생했습니다.');
+    } finally {
+      setConfirmingApplicationId(null);
     }
   };
 
@@ -461,7 +496,9 @@ export default function ActivityFeed() {
     // 운송장 등록/수정은 “신청서 id”가 기준
     const appForShipping = g.kind === 'application' ? g.application : linkedApp;
 
-    const shippingHref = appForShipping ? `/services/applications/${appForShipping.id}/shipping` : '#';
+    // return 쿼리를 붙여야 저장 후 다시 Activity 탭으로 복귀할 수 있음
+    // ("/mypage?tab=activity" 안에 ?가 있어서 반드시 encodeURIComponent 필요)
+    const shippingHref = appForShipping ? `/services/applications/${appForShipping.id}/shipping?return=${encodeURIComponent('/mypage?tab=activity')}` : '#';
     const shippingLabel = appForShipping && appForShipping.hasTracking ? '운송장 수정' : '운송장 등록';
 
     const appDetailHref = linkedApp ? `/mypage?tab=applications&applicationId=${linkedApp.id}` : null;
@@ -603,6 +640,8 @@ export default function ActivityFeed() {
 
               <div className="space-y-3">
                 {actionTop.map((g) => {
+                  const app = g.application;
+                  const appId = app?.id;
                   const title = groupTitle(g);
                   const date = groupDate(g);
                   const meta = compactPills(metaPills(g), 3);
@@ -618,6 +657,11 @@ export default function ActivityFeed() {
                               <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
                                 {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                               </Badge>
+                              {g.kind !== 'application' && app && (
+                                <Badge variant="outline" className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                                  교체 {app.status}
+                                </Badge>
+                              )}
                               <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</span>
                             </div>
                             <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm bp-sm:text-base truncate">{title}</h4>
@@ -635,16 +679,33 @@ export default function ActivityFeed() {
                         </div>
                       )}
 
-                      <div className="flex gap-2">
-                        <Button asChild size="sm" className="rounded-lg flex-1">
+                      <div className="flex flex-wrap gap-2">
+                        {/* 1) 운송장 등록/수정 */}
+                        <Button asChild size="sm" className="rounded-lg flex-1 min-w-[160px]">
                           <Link href={shippingHref}>
                             {shippingLabel}
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Link>
                         </Button>
-                        <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
+
+                        {/* 2) 상세 */}
+                        <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent flex-1 min-w-[120px]">
                           <Link href={detailHref}>상세</Link>
                         </Button>
+
+                        {/* 3) 리뷰 작성: 교체완료일 때만 */}
+                        {appId && canShowStringingReviewCta(app) && (
+                          <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent flex-1 min-w-[120px]">
+                            <Link href={`/reviews/write?service=stringing&applicationId=${appId}`}>리뷰 작성</Link>
+                          </Button>
+                        )}
+
+                        {/* 4) 교체확정: 교체완료 + userConfirmedAt 없을 때만 */}
+                        {appId && canShowStringingConfirmCta(app) && (
+                          <Button size="sm" variant="outline" className="rounded-lg flex-1 min-w-[120px]" disabled={confirmingApplicationId === appId} onClick={() => handleConfirmStringing(appId)}>
+                            {confirmingApplicationId === appId ? '처리 중...' : '교체확정'}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   );
@@ -684,6 +745,7 @@ export default function ActivityFeed() {
                   const date = groupDate(g);
                   const meta = compactPills(metaPills(g), 3);
                   const { detailHref } = linksOf(g);
+                  const app = g.application;
 
                   return (
                     <div key={`active:${g.key}`} className="rounded-xl bg-white dark:bg-slate-800/50 p-4 border border-blue-200/50 dark:border-blue-800/30 activity-card-hover">
@@ -694,6 +756,11 @@ export default function ActivityFeed() {
                             <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
                               {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                             </Badge>
+                            {g.kind !== 'application' && app && (
+                              <Badge variant="outline" className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                                교체 {app.status}
+                              </Badge>
+                            )}
                             <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</span>
                           </div>
                           <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm bp-sm:text-base truncate">{title}</h4>
@@ -761,6 +828,9 @@ export default function ActivityFeed() {
                       const { detailHref, shippingHref, shippingLabel } = linksOf(g);
                       const hasAction = needsAction(g);
 
+                      const app = g.application;
+                      const appId = app?.id;
+
                       return (
                         <div
                           key={g.key}
@@ -768,15 +838,7 @@ export default function ActivityFeed() {
                           style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}
                         >
                           <div className="flex flex-col bp-sm:flex-row bp-sm:items-start gap-4">
-                            <div
-                              className={cn(
-                                'hidden bp-sm:flex', // ✅ 모바일 숨김, bp-sm 이상 표시
-                                'rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 p-3 bp-sm:p-4 shrink-0',
-                                'w-fit self-start'
-                              )}
-                            >
-                              {kindIcon(g.kind)}
-                            </div>
+                            <div className={cn('hidden bp-sm:flex', 'rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 p-3 bp-sm:p-4 shrink-0', 'w-fit self-start')}>{kindIcon(g.kind)}</div>
 
                             <div className="flex-1 min-w-0 space-y-3">
                               <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-2 bp-sm:gap-4">
@@ -787,6 +849,11 @@ export default function ActivityFeed() {
                                     <Badge variant="outline" className={cn('text-xs rounded-md font-medium', statusBadgeClass(g))}>
                                       {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                                     </Badge>
+                                    {g.kind !== 'application' && app && (
+                                      <Badge variant="outline" className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                                        교체 {app.status}
+                                      </Badge>
+                                    )}
 
                                     <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</span>
 
@@ -837,9 +904,22 @@ export default function ActivityFeed() {
                                     {confirmingOrderId === g.order!.id ? '확정 중…' : '구매확정'}
                                   </Button>
                                 ) : null}
-                                {g.application?.id && (
+
+                                {appId && (
                                   <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
                                     <Link href={shippingHref}>{shippingLabel}</Link>
+                                  </Button>
+                                )}
+
+                                {appId && canShowStringingReviewCta(app) && (
+                                  <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
+                                    <Link href={`/reviews/write?service=stringing&applicationId=${appId}`}>리뷰 작성</Link>
+                                  </Button>
+                                )}
+
+                                {appId && canShowStringingConfirmCta(app) && (
+                                  <Button size="sm" variant="outline" className="rounded-lg" disabled={confirmingApplicationId === appId} onClick={() => handleConfirmStringing(appId)}>
+                                    {confirmingApplicationId === appId ? '처리 중...' : '교체확정'}
                                   </Button>
                                 )}
                               </div>

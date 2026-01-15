@@ -228,6 +228,12 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
         await globalMutate((key: any) => typeof key === 'string' && key.startsWith('/api/applications/me'));
       } catch {}
 
+      // Activity 탭 캐시도 같이 갱신해야 "운송장 등록 → 수정" 라벨이 즉시 반영됨
+      // (ActivityFeed는 /api/mypage/activity?page=... 를 사용)
+      try {
+        await globalMutate((key) => typeof key === 'string' && key.startsWith('/api/mypage/activity'));
+      } catch {}
+
       // 2) 돌아갈 경로 우선 사용
       if (returnTo) {
         router.replace(returnTo);
