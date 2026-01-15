@@ -517,8 +517,8 @@ export default function FilterableProductList({ initialBrand = null, initialMate
           <div className="mb-6 bp-md:mb-8 space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-base bp-sm:text-lg font-semibold dark:text-white tabular-nums" aria-live="polite">
-                총 {isCountLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{total}</span>}개 ·{' '}
-                {isCountLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="text-slate-700 dark:text-slate-200 font-bold">{loadedCount}</span>}개 표시 중
+                총 {isCountLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{total}</span>}개
+                {isCountLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="ml-2 text-sm text-muted-foreground">(표시중 {loadedCount}개)</span>}
               </div>
               <Button
                 variant="outline"
