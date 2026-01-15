@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { RACKET_BRANDS } from '@/lib/constants';
+import { normalizeStringPattern, RACKET_BRANDS } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,11 +58,7 @@ export async function POST(req: Request) {
       lengthIn: body.spec?.lengthIn != null && body.spec?.lengthIn !== '' ? Number(body.spec.lengthIn) : null,
       swingWeight: body.spec?.swingWeight != null && body.spec?.swingWeight !== '' ? Number(body.spec.swingWeight) : null,
       stiffnessRa: body.spec?.stiffnessRa != null && body.spec?.stiffnessRa !== '' ? Number(body.spec.stiffnessRa) : null,
-      pattern: String(body.spec?.pattern ?? '')
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, '')
-        .replace(/[×]/g, 'x'),
+      pattern: normalizeStringPattern(body.spec?.pattern ?? ''),
       gripSize: String(body.spec?.gripSize ?? '').trim(),
     },
     condition: body.condition ?? 'B', // A/B/C

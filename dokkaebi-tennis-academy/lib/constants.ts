@@ -42,6 +42,9 @@ export const racketBrandLabel = (v?: string) => {
   const key = (v ?? '').toLowerCase();
   return RACKET_BRANDS.find((b) => b.value === key)?.label ?? v ?? '';
 };
+// 라켓 파인더(스펙 필터)용 스트링 패턴 목록
+// - 서버/DB에서는 `16x19` 같은 형태로 저장/조회(×, 공백 제거 후 x로 통일)하는 전제를 둔다.
+export const STRING_PATTERNS = ['16x19', '16x18', '18x20', '18x19', '16x20', '16x17', '18x16', '14x18', '14x16', '18x18', '14x21'] as const;
 // 스트링 브랜드
 export const STRING_BRANDS = [
   { value: 'luxilon', label: '럭실론' },
@@ -55,3 +58,12 @@ export const STRING_BRANDS = [
 ] as const;
 
 export const stringBrandLabel = (v?: string) => STRING_BRANDS.find((b) => b.value === (v ?? '').toLowerCase())?.label ?? v ?? '';
+
+// 정규화
+export function normalizeStringPattern(p: string) {
+  return String(p ?? '')
+    .trim()
+    .replace(/\s+/g, '')
+    .replace(/[×]/g, 'x')
+    .toLowerCase();
+}

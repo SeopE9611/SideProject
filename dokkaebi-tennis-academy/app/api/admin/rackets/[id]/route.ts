@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { RACKET_BRANDS } from '@/lib/constants';
+import { normalizeStringPattern, RACKET_BRANDS } from '@/lib/constants';
 
 async function requireAdmin() {
   // ex) const user = await getCurrentUser(); if (!user?.isAdmin) throw new Error('FORBIDDEN');
@@ -56,11 +56,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       swingWeight: numOrNull(body.spec?.swingWeight),
       stiffnessRa: numOrNull(body.spec?.stiffnessRa),
       // 패턴 표준화: 공백 제거 + 소문자 + × -> x
-      pattern: String(body.spec?.pattern ?? '')
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, '')
-        .replace(/[×]/g, 'x'),
+      pattern: normalizeStringPattern(body.spec?.pattern ?? ''),
       gripSize: String(body.spec?.gripSize ?? '').trim(),
     },
     condition: body.condition ?? 'B',
