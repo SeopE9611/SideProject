@@ -5,7 +5,7 @@ import HeroSlider from '@/components/HeroSlider';
 import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
 import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
-import { Package, BadgeCheck, Wrench, BookOpen, Tags, MessageSquareText } from 'lucide-react';
+import { Package, BadgeCheck, Wrench, BookOpen, Tags, MessageSquareText, Search } from 'lucide-react';
 import Link from 'next/link';
 import HomeMarketPreview from '@/components/HomeMarketPreview';
 import HomeNoticePreview from '@/components/HomeNoticePreview';
@@ -323,6 +323,53 @@ export default function Home() {
               </div>
             </Link>
           </div>
+        </SiteContainer>
+      </section>
+      {/* 라켓 파인더 바로가기 (Hero 아래 CTA 블록) */}
+      <section className="py-5 bp-sm:py-6">
+        <SiteContainer>
+          <Link href="/rackets/finder" className="group block">
+            <div
+              className="
+            rounded-2xl border border-slate-200 dark:border-slate-800
+            bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950
+            p-5 bp-sm:p-6
+            flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between
+            gap-4
+            transition-all hover:shadow-lg
+          "
+            >
+              <div className="flex items-start gap-4">
+                <div
+                  className="
+                flex h-12 w-12 items-center justify-center rounded-xl
+                bg-blue-100 text-blue-600
+                dark:bg-blue-950/40 dark:text-blue-300
+              "
+                >
+                  <Search className="h-6 w-6" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm bp-sm:text-base font-bold text-slate-900 dark:text-white">라켓 파인더</div>
+                  <p className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-400">헤드/무게/밸런스/RA/SW 범위로 중고 라켓을 빠르게 좁혀보세요.</p>
+                </div>
+              </div>
+
+              <div
+                className="
+              shrink-0 inline-flex items-center justify-center
+              rounded-lg px-4 py-2
+              text-xs bp-sm:text-sm font-semibold
+              bg-slate-900 text-white
+              dark:bg-white dark:text-slate-900
+              transition-colors
+              group-hover:bg-slate-800 dark:group-hover:bg-slate-100
+            "
+              >
+                바로가기
+              </div>
+            </div>
+          </Link>
         </SiteContainer>
       </section>
 

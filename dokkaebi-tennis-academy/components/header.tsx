@@ -218,6 +218,7 @@ const Header = () => {
 
     // 앞으로 커뮤니티(리뷰, 자유게시판 등) 허브가 될 /board
     { name: '게시판', href: '/board', hasMegaMenu: true, isBoardMenu: true },
+    { name: '라켓 파인더', href: '/rackets/finder', hasMegaMenu: false },
   ];
 
   return (
@@ -748,7 +749,8 @@ const Header = () => {
                 {menuItems.map((item) => {
                   // 서비스(부모) 항목은 자식 경로와 매칭시키지 않고 정확히 비교하여
                   // '/services/packages'에서 '/services'가 활성화되는 문제를 방지 (기억해놓자.)
-                  const active = item.isServiceMenu ? pathname === item.href : pathname?.startsWith(item.href);
+                  const p = pathname ?? '';
+                  const active = item.isServiceMenu ? p === item.href : item.isRacketMenu ? p === item.href || (p.startsWith('/rackets/') && !p.startsWith('/rackets/finder')) : p.startsWith(item.href);
                   return (
                     <Link
                       key={item.name}
