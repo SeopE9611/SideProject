@@ -10,11 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { RACKET_BRANDS, racketBrandLabel, STRING_PATTERNS } from '@/lib/constants';
 import RacketCard from '@/app/rackets/_components/RacketCard';
+import { Input } from '@/components/ui/input';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
 type Range = [number, number];
 type Filters = {
+  q: string; // 모델명/키워드 검색
   brand: string; // 단일 브랜드(초기 버전)
   condition: string; // '', 'A','B','C'
   price: Range; // won
@@ -30,6 +32,7 @@ type Filters = {
 };
 
 const DEFAULT: Filters = {
+  q: '',
   brand: '',
   condition: '',
   price: [0, 600000],
@@ -52,6 +55,7 @@ function buildQuery(f: Filters, page: number, pageSize: number) {
   sp.set('page', String(page));
   sp.set('pageSize', String(pageSize));
 
+  if (f.q?.trim()) sp.set('q', f.q.trim());
   if (f.brand) sp.set('brand', f.brand);
   if (f.condition) sp.set('condition', f.condition);
   if (f.strict) sp.set('strict', '1');
@@ -103,9 +107,12 @@ export default function RacketFinderClient() {
   const [applied, setApplied] = useState<Filters>(DEFAULT);
   const [page, setPage] = useState(1);
   const pageSize = 12;
+  const [hasSearched, setHasSearched] = useState(false);
   const ALL = '__all__';
-  const qs = useMemo(() => buildQuery(applied, page, pageSize), [applied, page]);
-  const { data, isLoading, error } = useSWR(`/api/rackets/finder?${qs}`, fetcher);
+
+  const qs = useMemo(() => buildQuery(applied, page, pageSize), [applied, page, pageSize]);
+  const swrKey = hasSearched ? `/api/rackets/finder?${qs}` : null;
+  const { data, error, isLoading } = useSWR(swrKey, fetcher);
 
   const items = (data?.items ?? []) as any[];
   const total = Number(data?.total ?? 0);
@@ -114,11 +121,13 @@ export default function RacketFinderClient() {
   const apply = () => {
     setApplied(draft);
     setPage(1);
+    setHasSearched(true);
   };
   const reset = () => {
     setDraft(DEFAULT);
     setApplied(DEFAULT);
     setPage(1);
+    setHasSearched(false);
   };
 
   return (
@@ -135,6 +144,12 @@ export default function RacketFinderClient() {
             <CardTitle className="text-base">필터</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* 텍스트 검색(q) */}
+            <div className="space-y-2">
+              <div className="text-sm font-medium">모델/키워드</div>
+              <Input value={draft.q} onChange={(e) => setDraft((p) => ({ ...p, q: e.target.value }))} placeholder="예) ezone, vcore, blade, 라켓모델1 ..." />
+              <div className="text-xs text-muted-foreground">모델명 또는 등록한 검색 키워드(searchKeywords)를 기준으로 찾습니다.</div>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
                 <div className="text-sm text-muted-foreground">브랜드</div>
@@ -201,10 +216,7 @@ export default function RacketFinderClient() {
             <div className="pt-2 border-t space-y-3">
               <div className="text-sm font-medium">상세 검색</div>
               <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={draft.strict}
-                  onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))}
-                />
+                <Checkbox checked={draft.strict} onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))} />
                 스펙 누락 상품 제외(정확도 모드)
               </label>
               <RangeField label="밸런스" value={draft.balance} min={280} max={380} step={1} suffix="mm" onChange={(v) => setDraft((p) => ({ ...p, balance: v }))} />
@@ -229,15 +241,21 @@ export default function RacketFinderClient() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">총 {total}개</Badge>
-              <span className="text-sm text-muted-foreground">
-                {page} / {totalPages} 페이지
-              </span>
+              {hasSearched ? (
+                <>
+                  <span className="font-medium text-foreground">총 {total.toLocaleString()}개</span> / {page} / {totalPages} 페이지
+                </>
+              ) : (
+                <span>
+                  필터를 선택한 뒤 <span className="font-medium text-foreground">검색</span>을 눌러 결과를 확인하세요.
+                </span>
+              )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+              <Button variant="outline" disabled={!hasSearched || page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                 이전
               </Button>
-              <Button variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+              <Button variant="outline" disabled={!hasSearched || page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
                 다음
               </Button>
             </div>
@@ -249,7 +267,21 @@ export default function RacketFinderClient() {
             </Card>
           )}
 
-          {isLoading ? (
+          {/* 검색 전 안내 */}
+          {!hasSearched ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>검색 전입니다</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-2">
+                <div>
+                  왼쪽에서 스펙 범위를 잡고 <span className="font-medium text-foreground">검색</span>을 눌러주세요.
+                </div>
+                <div>- “정확도 모드”를 켜면 스펙 누락 라켓이 제외됩니다.</div>
+                <div>- 데이터가 범위 밖이면(예: 무게 100g) 당연히 결과에서 제외됩니다.</div>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
             <div className="grid grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-4 gap-4">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="space-y-2">
@@ -259,6 +291,14 @@ export default function RacketFinderClient() {
                 </div>
               ))}
             </div>
+          ) : error ? (
+            <Card>
+              <CardContent className="p-4 text-sm text-destructive">데이터를 불러오지 못했습니다. 콘솔/네트워크 탭에서 응답을 확인해주세요.</CardContent>
+            </Card>
+          ) : items.length === 0 ? (
+            <Card>
+              <CardContent className="p-4 text-sm text-muted-foreground">조건에 맞는 라켓이 없습니다. 필터 범위를 완화하거나 “정확도 모드”를 끄고 다시 시도해보세요.</CardContent>
+            </Card>
           ) : (
             <div className="grid grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-4 gap-4">
               {items.map((r) => (
