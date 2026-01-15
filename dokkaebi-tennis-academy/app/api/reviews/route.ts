@@ -325,6 +325,7 @@ export async function GET(req: Request) {
   const cursorB64 = url.searchParams.get('cursor');
   const withHidden = url.searchParams.get('withHidden'); // 'mask' | 'all' | null
   const withDeleted = url.searchParams.get('withDeleted'); //  ('1' | 'true')
+  const needServiceJoin = type === 'all' || type === 'service';
 
   // match 조건 구성
   const match: any = {};
@@ -372,6 +373,8 @@ export async function GET(req: Request) {
     productImage: { $arrayElemAt: ['$product.images', 0] },
     service: 1,
     serviceApplicationId: 1,
+    serviceTitle: 1,
+    serviceTargetName: 1,
     rating: 1,
     helpfulCount: 1,
     createdAt: 1,
@@ -410,6 +413,120 @@ export async function GET(req: Request) {
       },
     },
     { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
+    ...(needServiceJoin
+      ? [
+          // ✅ 서비스(스트링 교체) 리뷰면 신청서에서 "교체한 스트링 상품명"을 가져와서 제목을 만들어줌
+          {
+            $lookup: {
+              from: 'stringing_applications',
+              localField: 'serviceApplicationId',
+              foreignField: '_id',
+              as: 'application',
+              pipeline: [
+                {
+                  $project: {
+                    // 스키마가 케이스별로 다를 수 있어서 후보를 넓게 잡음
+                    'stringDetails.stringItems.name': 1,
+                    'stringItems.name': 1,
+                    stringTypes: 1,
+                  },
+                },
+              ],
+            },
+          },
+          { $unwind: { path: '$application', preserveNullAndEmptyArrays: true } },
+
+          // 1) 신청서에서 스트링 이름 배열 뽑기
+          {
+            $addFields: {
+              __svcNames: {
+                $let: {
+                  vars: {
+                    fromItems: { $ifNull: ['$application.stringDetails.stringItems', []] },
+                    fromLines: { $ifNull: ['$application.stringDetails.racketLines', []] },
+                  },
+                  in: {
+                    $cond: [{ $gt: [{ $size: '$$fromItems' }, 0] }, { $map: { input: '$$fromItems', as: 'x', in: '$$x.name' } }, { $map: { input: '$$fromLines', as: 'x', in: '$$x.stringName' } }],
+                  },
+                },
+              },
+            },
+          },
+          // 2) 빈 값 제거
+          {
+            $addFields: {
+              __svcNames: {
+                $filter: {
+                  input: '$__svcNames',
+                  as: 'n',
+                  cond: { $and: [{ $ne: ['$$n', null] }, { $ne: ['$$n', ''] }] },
+                },
+              },
+            },
+          },
+          // 3) "앞 2개 + 외 N" 라벨 만들기
+          {
+            $addFields: {
+              serviceTargetName: {
+                $let: {
+                  vars: {
+                    names: '$__svcNames',
+                    head: { $slice: ['$__svcNames', 2] },
+                    more: { $max: [0, { $subtract: [{ $size: '$__svcNames' }, 2] }] },
+                  },
+                  in: {
+                    $cond: [
+                      { $gt: [{ $size: '$$names' }, 0] },
+                      {
+                        $cond: [
+                          { $gt: ['$$more', 0] },
+                          {
+                            $concat: [
+                              {
+                                $reduce: {
+                                  input: '$$head',
+                                  initialValue: '',
+                                  in: {
+                                    $concat: ['$$value', { $cond: [{ $eq: ['$$value', ''] }, '', ', '] }, '$$this'],
+                                  },
+                                },
+                              },
+                              ' 외 ',
+                              { $toString: '$$more' },
+                            ],
+                          },
+                          {
+                            $reduce: {
+                              input: '$$names',
+                              initialValue: '',
+                              in: { $concat: ['$$value', { $cond: [{ $eq: ['$$value', ''] }, '', ', '] }, '$$this'] },
+                            },
+                          },
+                        ],
+                      },
+                      null,
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          // 4) 최종 타이틀: "스트링 교체 서비스 - (상품명…)" 구성
+          {
+            $addFields: {
+              serviceTitle: {
+                $cond: [
+                  { $eq: ['$service', 'stringing'] },
+                  {
+                    $cond: [{ $and: [{ $ne: ['$serviceTargetName', null] }, { $ne: ['$serviceTargetName', ''] }] }, { $concat: ['스트링 교체 서비스 - ', '$serviceTargetName'] }, '스트링 교체 서비스'],
+                  },
+                  null,
+                ],
+              },
+            },
+          },
+        ]
+      : []),
     ...(currentUserId ? [{ $addFields: { isMine: { $eq: ['$userId', currentUserId] } } }] : [{ $addFields: { isMine: false } }]),
     { $addFields: { ownedByMe: '$isMine', adminView: isAdmin } },
     { $project: project },

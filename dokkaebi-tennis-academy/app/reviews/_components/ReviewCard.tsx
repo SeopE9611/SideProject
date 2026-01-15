@@ -84,7 +84,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
   // 카드 제목(상품/서비스 공용)
   // - 상품: productName
   // - 서비스: serviceTargetName/serviceTitle (없으면 fallback)
-  const headerTitle = item.type === 'product' ? item.productName : item.serviceTargetName || item.serviceTitle || (item.service === 'stringing' ? '스트링 교체 서비스' : '서비스');
+  const headerTitle = item.type === 'product' ? item.productName : item.serviceTitle || item.serviceTargetName || (item.service === 'stringing' ? '스트링 교체 서비스' : '서비스');
 
   // 연타/경합 제어용
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금
@@ -353,7 +353,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
             {pending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ThumbsUp className="h-4 w-4 mr-2" />}
             도움돼요 {count ? `(${count})` : ''}
           </Button>
-          
+
           {/* 날짜 */}
           <time className="ml-auto text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full whitespace-nowrap shrink-0 tabular-nums">{fmt(item.createdAt)}</time>
         </div>
