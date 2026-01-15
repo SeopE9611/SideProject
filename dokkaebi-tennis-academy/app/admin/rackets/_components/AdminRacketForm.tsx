@@ -23,7 +23,7 @@ export type RacketForm = {
   price: number;
   condition: 'A' | 'B' | 'C';
   status: 'available' | 'rented' | 'sold' | 'inactive';
-  spec: { weight: number | null; balance: number | null; headSize: number | null; pattern: string; gripSize: string };
+  spec: { weight: number | null; balance: number | null; headSize: number | null; lengthIn: number | null; swingWeight: number | null; stiffnessRa: number | null; pattern: string; gripSize: string };
   rental: {
     enabled: boolean;
     deposit: number;
@@ -48,13 +48,16 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
     model: initial?.model ?? '',
     year: initial?.year ?? null,
     price: initial?.price ?? 0,
-    quantity: 1,
+    quantity: initial?.quantity ?? 1,
     condition: (initial?.condition as any) ?? 'B',
     status: (initial?.status as any) ?? 'available',
     spec: {
       weight: initial?.spec?.weight ?? null,
       balance: initial?.spec?.balance ?? null,
       headSize: initial?.spec?.headSize ?? null,
+      lengthIn: (initial?.spec as any)?.lengthIn ?? null,
+      swingWeight: (initial?.spec as any)?.swingWeight ?? null,
+      stiffnessRa: (initial?.spec as any)?.stiffnessRa ?? null,
       pattern: initial?.spec?.pattern ?? '',
       gripSize: initial?.spec?.gripSize ?? '',
     },
@@ -107,14 +110,17 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
     setLoading(true);
     const normalized: RacketForm = {
       ...form,
-      year: form.year ? Number(form.year) : null,
+      year: form.year != null ? Number(form.year) : null,
       price: Number(form.price || 0),
       quantity: Math.max(1, Number(form.quantity || 1)),
       spec: {
-        weight: form.spec.weight ? Number(form.spec.weight) : null,
-        balance: form.spec.balance ? Number(form.spec.balance) : null,
-        headSize: form.spec.headSize ? Number(form.spec.headSize) : null,
-        pattern: form.spec.pattern,
+        weight: form.spec.weight != null ? Number(form.spec.weight) : null,
+        balance: form.spec.balance != null ? Number(form.spec.balance) : null,
+        headSize: form.spec.headSize != null ? Number(form.spec.headSize) : null,
+        lengthIn: form.spec.lengthIn != null ? Number(form.spec.lengthIn) : null,
+        swingWeight: form.spec.swingWeight != null ? Number(form.spec.swingWeight) : null,
+        stiffnessRa: form.spec.stiffnessRa != null ? Number(form.spec.stiffnessRa) : null,
+        pattern: (form.spec.pattern || '').trim().toLowerCase().replace(/\s+/g, '').replace(/[×]/g, 'x'),
         gripSize: form.spec.gripSize,
       },
       rental: {
@@ -302,6 +308,51 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                       setForm({
                         ...form,
                         spec: { ...form.spec, headSize: e.target.value ? Number(e.target.value) : null },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lengthIn">길이 (in)</Label>
+                  <Input
+                    id="lengthIn"
+                    type="number"
+                    placeholder="예: 27"
+                    value={form.spec.lengthIn ?? ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        spec: { ...form.spec, lengthIn: e.target.value ? Number(e.target.value) : null },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="swingWeight">스윙웨이트 (g)</Label>
+                  <Input
+                    id="swingWeight"
+                    type="number"
+                    placeholder="예: 320"
+                    value={form.spec.swingWeight ?? ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        spec: { ...form.spec, swingWeight: e.target.value ? Number(e.target.value) : null },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="stiffnessRa">강성 (RA)</Label>
+                  <Input
+                    id="stiffnessRa"
+                    type="number"
+                    placeholder="예: 65"
+                    value={form.spec.stiffnessRa ?? ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        spec: { ...form.spec, stiffnessRa: e.target.value ? Number(e.target.value) : null },
                       })
                     }
                   />

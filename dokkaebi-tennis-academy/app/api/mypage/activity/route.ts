@@ -11,6 +11,7 @@ type ActivityKind = 'order' | 'rental' | 'application';
 type ActivityOrderSummary = {
   id: string;
   createdAt: string;
+  updatedAt: string;
   status: string;
   paymentStatus: string;
   totalPrice: number;
@@ -25,6 +26,7 @@ type ActivityOrderSummary = {
 type ActivityRentalSummary = {
   id: string;
   createdAt: string;
+  updatedAt: string;
   status: string;
   brand?: string;
   model?: string;
@@ -40,6 +42,7 @@ type ActivityRentalSummary = {
 type ActivityApplicationSummary = {
   id: string;
   createdAt: string; // appliedAt/createdAt 기준
+  updatedAt: string;
   status: string;
   racketType: string;
   orderId: string | null;
@@ -64,6 +67,11 @@ function toISO(v: any): string {
   const d = v instanceof Date ? v : new Date(v);
   if (Number.isNaN(d.getTime())) return new Date(0).toISOString();
   return d.toISOString();
+}
+
+function isoMax(...values: Array<string | null | undefined>): string {
+  const base = new Date(0).toISOString();
+  return values.filter((v): v is string => Boolean(v)).reduce((acc, cur) => (cur > acc ? cur : acc), base);
 }
 
 function calcOrderTotal(o: any): number {
@@ -161,6 +169,7 @@ export async function GET(req: Request) {
           projection: {
             _id: 1,
             createdAt: 1,
+            updatedAt: 1,
             status: 1,
             paymentStatus: 1,
             totalPrice: 1,
@@ -171,7 +180,7 @@ export async function GET(req: Request) {
           },
         }
       )
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1, createdAt: -1 })
       .limit(take)
       .toArray(),
 
@@ -183,6 +192,7 @@ export async function GET(req: Request) {
           projection: {
             _id: 1,
             createdAt: 1,
+            updatedAt: 1,
             status: 1,
             brand: 1,
             model: 1,
@@ -194,7 +204,7 @@ export async function GET(req: Request) {
           },
         }
       )
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1, createdAt: -1 })
       .limit(take)
       .toArray(),
 
@@ -204,6 +214,7 @@ export async function GET(req: Request) {
         projection: {
           _id: 1,
           createdAt: 1,
+          updatedAt: 1,
           appliedAt: 1,
           status: 1,
           stringDetails: 1,
@@ -214,7 +225,7 @@ export async function GET(req: Request) {
           cancelRequest: 1,
         },
       })
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1, createdAt: -1 })
       .limit(take)
       .toArray(),
   ]);
@@ -235,6 +246,7 @@ export async function GET(req: Request) {
         projection: {
           _id: 1,
           createdAt: 1,
+          updatedAt: 1,
           appliedAt: 1,
           status: 1,
           stringDetails: 1,
@@ -264,9 +276,13 @@ export async function GET(req: Request) {
     if (reasonCode) cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : '');
     else if (reasonText) cancelReasonSummary = reasonText;
 
+    const createdAt = toISO(doc.appliedAt ?? doc.createdAt);
+    const updatedAt = toISO(doc.updatedAt ?? doc.appliedAt ?? doc.createdAt);
+
     const app: ActivityApplicationSummary = {
       id: String(doc._id),
-      createdAt: toISO(doc.appliedAt ?? doc.createdAt),
+      createdAt,
+      updatedAt,
       status: doc.status ?? '접수',
       racketType: summarizeRacketType(details),
       orderId: doc.orderId ? String(doc.orderId) : null,
@@ -300,7 +316,8 @@ export async function GET(req: Request) {
 
     const withStringService = Boolean(o?.shippingInfo?.withStringService);
     const createdAt = toISO(o.createdAt ?? new ObjectId(o._id).getTimestamp());
-    const sortAt = linked ? (new Date(linked.createdAt) > new Date(createdAt) ? linked.createdAt : createdAt) : createdAt;
+    const updatedAt = toISO(o.updatedAt ?? o.createdAt ?? new ObjectId(o._id).getTimestamp());
+    const sortAt = isoMax(updatedAt, createdAt, linked?.updatedAt, linked?.createdAt);
 
     groups.push({
       key: `order:${orderId}`,
@@ -309,6 +326,7 @@ export async function GET(req: Request) {
       order: {
         id: orderId,
         createdAt,
+        updatedAt,
         status: o.status ?? '',
         paymentStatus: o.paymentStatus ?? '',
         totalPrice: calcOrderTotal(o),
@@ -328,7 +346,8 @@ export async function GET(req: Request) {
     const linked = appByRentalId.get(rentalId);
 
     const createdAt = toISO(r.createdAt ?? new ObjectId(r._id).getTimestamp());
-    const sortAt = linked ? (new Date(linked.createdAt) > new Date(createdAt) ? linked.createdAt : createdAt) : createdAt;
+    const updatedAt = toISO(r.updatedAt ?? r.createdAt ?? new ObjectId(r._id).getTimestamp());
+    const sortAt = isoMax(updatedAt, createdAt, linked?.updatedAt, linked?.createdAt);
 
     const withStringService = Boolean(r?.stringing?.requested) || Boolean(r?.stringingApplicationId);
 
@@ -339,6 +358,7 @@ export async function GET(req: Request) {
       rental: {
         id: rentalId,
         createdAt,
+        updatedAt,
         status: r.status ?? '',
         brand: r.brand,
         model: r.model,
@@ -369,14 +389,16 @@ export async function GET(req: Request) {
     else if (reasonText) cancelReasonSummary = reasonText;
 
     const createdAt = toISO(doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp());
-
+    const updatedAt = toISO(doc.updatedAt ?? doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp());
+    const sortAt = isoMax(updatedAt, createdAt);
     groups.push({
       key: `application:${String(doc._id)}`,
       kind: 'application',
-      sortAt: createdAt,
+      sortAt,
       application: {
         id: String(doc._id),
         createdAt,
+        updatedAt,
         status: doc.status ?? '접수',
         racketType: summarizeRacketType(details),
         orderId: doc.orderId ? String(doc.orderId) : null,

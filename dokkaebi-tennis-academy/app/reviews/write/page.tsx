@@ -111,10 +111,25 @@ function formatKoDateTime(iso?: string | null) {
   }
 }
 
+// 서비스 신청서에서 "라켓" 표시용 문자열을 안전하게 뽑아오기
+// - 우선순위: stringDetails.racketType(단일) -> racketType(루트) -> stringDetails.racketLines[0].racketLabel/racketType
+function getRacketSummary(a: any) {
+  const direct = (a?.stringDetails?.racketType ?? a?.racketType ?? '').toString().trim();
+  if (direct) return direct;
+
+  const lines = Array.isArray(a?.stringDetails?.racketLines) ? a.stringDetails.racketLines : [];
+  if (!lines.length) return '';
+
+  const first = (lines[0]?.racketLabel ?? lines[0]?.racketType ?? '').toString().trim();
+  if (first) return lines.length > 1 ? `${first} 외 ${lines.length - 1}자루` : first;
+
+  return `라켓 ${lines.length}자루`;
+}
+
 function buildAppLabel(a: any) {
   const when = a?.stringDetails?.preferredDate ? `${formatYMD(a.stringDetails.preferredDate)} ${a.stringDetails.preferredTime ?? ''}`.trim() : a?.desiredDateTime ? formatKoDateTime(a.desiredDateTime) : '';
 
-  const racket = a?.stringDetails?.racketType || a?.racketType || '';
+  const racket = getRacketSummary(a);
 
   const names = (a?.stringDetails?.stringItems || a?.stringItems || []).map((s: any) => s?.name).filter(Boolean) as string[];
   const strings = names.length > 2 ? `${names.slice(0, 2).join(', ')} 외 ${names.length - 2}` : names.join(', ');
@@ -278,7 +293,7 @@ export default function ReviewWritePage() {
         _id: String(a._id),
         label: buildAppLabel(a),
         status: a.status,
-        racketType: a?.stringDetails?.racketType ?? null,
+        racketType: getRacketSummary(a) || null,
         stringItems: a?.stringDetails?.stringItems ?? [],
 
         preferredDate: a?.stringDetails?.preferredDate ?? null,

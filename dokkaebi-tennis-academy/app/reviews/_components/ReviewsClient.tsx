@@ -24,6 +24,8 @@ type Item = {
   productImage?: string;
   service?: string;
   serviceApplicationId?: string;
+  serviceTitle?: string;       
+  serviceTargetName?: string;  
   userName: string;
   rating: number;
   content: string;

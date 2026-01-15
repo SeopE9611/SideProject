@@ -11,9 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { orderStatusColors, paymentStatusColors, applicationStatusColors } from '@/lib/badge-style';
-import { ShoppingBag, Wrench, Briefcase, X, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, Package, TrendingUp, Activity } from 'lucide-react';
+import { ShoppingBag, Wrench, Briefcase, X, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, Package, TrendingUp, Activity, MoreVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useSearchParams } from 'next/navigation';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 type ActivityKind = 'order' | 'rental' | 'application';
 
@@ -335,6 +336,7 @@ export default function ActivityFeed() {
 
   const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
   const [confirmingApplicationId, setConfirmingApplicationId] = useState<string | null>(null);
+  const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
 
   const handleConfirmPurchase = async (orderId: string) => {
     setConfirmingOrderId(orderId);
@@ -642,6 +644,9 @@ export default function ActivityFeed() {
                 {actionTop.map((g) => {
                   const app = g.application;
                   const appId = app?.id;
+                  const menuKey = `top:${g.key}`;
+                  const showMore = Boolean(appId && (canShowStringingReviewCta(app) || canShowStringingConfirmCta(app)));
+
                   const title = groupTitle(g);
                   const date = groupDate(g);
                   const meta = compactPills(metaPills(g), 3);
@@ -693,18 +698,37 @@ export default function ActivityFeed() {
                           <Link href={detailHref}>상세</Link>
                         </Button>
 
-                        {/* 3) 리뷰 작성: 교체완료일 때만 */}
-                        {appId && canShowStringingReviewCta(app) && (
-                          <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent flex-1 min-w-[120px]">
-                            <Link href={`/reviews/write?service=stringing&applicationId=${appId}`}>리뷰 작성</Link>
-                          </Button>
-                        )}
+                        {/* 3) 더보기(리뷰/교체확정은 여기로 묶음) */}
+                        {showMore && (
+                          <DropdownMenu open={openMenuKey === menuKey} onOpenChange={(open) => setOpenMenuKey(open ? menuKey : null)}>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="sm" variant="outline" className="rounded-lg bg-transparent px-2">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                              <DropdownMenuLabel>더보기</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
 
-                        {/* 4) 교체확정: 교체완료 + userConfirmedAt 없을 때만 */}
-                        {appId && canShowStringingConfirmCta(app) && (
-                          <Button size="sm" variant="outline" className="rounded-lg flex-1 min-w-[120px]" disabled={confirmingApplicationId === appId} onClick={() => handleConfirmStringing(appId)}>
-                            {confirmingApplicationId === appId ? '처리 중...' : '교체확정'}
-                          </Button>
+                              {appId && canShowStringingReviewCta(app) && (
+                                <DropdownMenuItem asChild>
+                                  + <Link href={`/reviews/write?service=stringing&applicationId=${appId}`}>리뷰 작성</Link>
+                                </DropdownMenuItem>
+                              )}
+
+                              {appId && canShowStringingConfirmCta(app) && (
+                                <DropdownMenuItem
+                                  disabled={confirmingApplicationId === appId}
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                    handleConfirmStringing(appId);
+                                  }}
+                                >
+                                  {confirmingApplicationId === appId ? '처리 중...' : '교체확정'}
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                       </div>
                     </div>
@@ -825,11 +849,19 @@ export default function ActivityFeed() {
                       const title = groupTitle(g);
                       const date = groupDate(g);
                       const meta = compactPills(metaPills(g), 3);
-                      const { detailHref, shippingHref, shippingLabel } = linksOf(g);
+                      const { detailHref, appDetailHref, shippingHref, shippingLabel } = linksOf(g);
                       const hasAction = needsAction(g);
 
                       const app = g.application;
                       const appId = app?.id;
+                      const menuKey = `row:${g.key}`;
+                      const showMore = Boolean(
+                        (appId && !hasAction) || // 운송장 수정(이미 등록된 경우)은 보조로 내리기
+                          (appDetailHref && g.kind !== 'application') ||
+                          (g.kind === 'order' && g.order?.id && g.order.status === '배송완료') ||
+                          (appId && canShowStringingReviewCta(app)) ||
+                          (appId && canShowStringingConfirmCta(app))
+                      );
 
                       return (
                         <div
@@ -898,29 +930,73 @@ export default function ActivityFeed() {
                                 {/* 리뷰 작성하기: 배송완료/구매확정에서 노출 */}
                                 {g.kind === 'order' && g.order && g.order.id && canShowOrderReviewCta(g.order.status) ? <ActivityOrderReviewCTA orderId={g.order.id} orderStatus={g.order.status} className="rounded-lg" /> : null}
 
-                                {/* 구매확정: 배송완료에서만 노출 */}
-                                {g.kind === 'order' && g.order && g.order.id && g.order.status === '배송완료' ? (
-                                  <Button size="sm" variant="outline" disabled={confirmingOrderId === g.order!.id} onClick={() => handleConfirmPurchase(g.order!.id)}>
-                                    {confirmingOrderId === g.order!.id ? '확정 중…' : '구매확정'}
+                                {/* 운송장: 액션 필요(미등록)일 때만 ‘강조’(primary)로 노출 */}
+                                {appId && hasAction ? (
+                                  <Button asChild size="sm" className="rounded-lg">
+                                    <Link href={shippingHref}>{shippingLabel}</Link>
                                   </Button>
                                 ) : null}
 
-                                {appId && (
-                                  <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
-                                    <Link href={shippingHref}>{shippingLabel}</Link>
-                                  </Button>
-                                )}
+                                {/* 더보기: 운송장 수정(보조), 구매확정, 교체확정, 리뷰 작성, 신청서 보기 */}
+                                {showMore && (
+                                  <DropdownMenu open={openMenuKey === menuKey} onOpenChange={(open) => setOpenMenuKey(open ? menuKey : null)}>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button size="sm" variant="outline" className="rounded-lg bg-transparent px-2">
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56">
+                                      <DropdownMenuLabel>더보기</DropdownMenuLabel>
+                                      <DropdownMenuSeparator />
 
-                                {appId && canShowStringingReviewCta(app) && (
-                                  <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
-                                    <Link href={`/reviews/write?service=stringing&applicationId=${appId}`}>리뷰 작성</Link>
-                                  </Button>
-                                )}
+                                      {/* 운송장 수정: 이미 등록된 경우 보조 액션으로 내림 */}
+                                      {appId && !hasAction ? (
+                                        <DropdownMenuItem asChild>
+                                          <Link href={shippingHref}>{shippingLabel}</Link>
+                                        </DropdownMenuItem>
+                                      ) : null}
 
-                                {appId && canShowStringingConfirmCta(app) && (
-                                  <Button size="sm" variant="outline" className="rounded-lg" disabled={confirmingApplicationId === appId} onClick={() => handleConfirmStringing(appId)}>
-                                    {confirmingApplicationId === appId ? '처리 중...' : '교체확정'}
-                                  </Button>
+                                      {/* 주문/대여 카드에서 연결 신청서로 바로 이동 */}
+                                      {appDetailHref && g.kind !== 'application' ? (
+                                        <DropdownMenuItem asChild>
+                                          <Link href={appDetailHref}>교체 신청서 보기</Link>
+                                        </DropdownMenuItem>
+                                      ) : null}
+
+                                      {/* 구매확정: 배송완료에서만(보조 액션으로 내림) */}
+                                      {g.kind === 'order' && g.order?.id && g.order.status === '배송완료' ? (
+                                        <DropdownMenuItem
+                                          disabled={confirmingOrderId === g.order.id}
+                                          onSelect={(e) => {
+                                            e.preventDefault();
+                                            handleConfirmPurchase(g.order!.id);
+                                          }}
+                                        >
+                                          {confirmingOrderId === g.order.id ? '처리 중...' : '구매확정'}
+                                        </DropdownMenuItem>
+                                      ) : null}
+
+                                      {/* 교체 서비스 리뷰 */}
+                                      {appId && canShowStringingReviewCta(app) ? (
+                                        <DropdownMenuItem asChild>
+                                          <Link href={`/reviews/write?service=stringing&applicationId=${appId}`}>교체 리뷰 작성</Link>
+                                        </DropdownMenuItem>
+                                      ) : null}
+
+                                      {/* 교체확정 */}
+                                      {appId && canShowStringingConfirmCta(app) ? (
+                                        <DropdownMenuItem
+                                          disabled={confirmingApplicationId === appId}
+                                          onSelect={(e) => {
+                                            e.preventDefault();
+                                            handleConfirmStringing(appId);
+                                          }}
+                                        >
+                                          {confirmingApplicationId === appId ? '처리 중...' : '교체확정'}
+                                        </DropdownMenuItem>
+                                      ) : null}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 )}
                               </div>
                             </div>
