@@ -49,6 +49,89 @@ export async function GET(req: Request) {
       },
       { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
 
+      // 서비스(스트링) 메타: 신청서에서 교체한 스트링 상품명 가져오기
+      // - serviceApplicationId가 ObjectId/문자열 둘 다 올 수 있어 방어적으로 ObjectId로 정규화
+      {
+        $addFields: {
+          serviceAppIdObj: {
+            $cond: [
+              { $eq: [{ $type: '$serviceApplicationId' }, 'objectId'] },
+              '$serviceApplicationId',
+              {
+                $cond: [
+                  {
+                    $and: [{ $eq: [{ $type: '$serviceApplicationId' }, 'string'] }, { $regexMatch: { input: '$serviceApplicationId', regex: /^[0-9a-fA-F]{24}$/ } }],
+                  },
+                  { $toObjectId: '$serviceApplicationId' },
+                  null,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'stringing_applications',
+          localField: 'serviceAppIdObj',
+          foreignField: '_id',
+          as: 'application',
+          pipeline: [{ $project: { stringDetails: 1 } }],
+        },
+      },
+      { $unwind: { path: '$application', preserveNullAndEmptyArrays: true } },
+
+      // 서비스 제목 생성: "스트링 교체 서비스 - (스트링 상품명)"
+      // 서비스 대상 스트링 이름 추출
+      {
+        $addFields: {
+          // service 필드가 없던 과거 문서도 커버 (serviceApplicationId가 있으면 서비스 리뷰로 간주)
+          isStringingReview: {
+            $or: [{ $eq: ['$service', 'stringing'] }, { $ne: ['$serviceApplicationId', null] }],
+          },
+          serviceTargetName: {
+            $let: {
+              vars: {
+                fromItems: {
+                  $map: {
+                    input: { $ifNull: ['$application.stringDetails.stringItems', []] },
+                    as: 's',
+                    in: '$$s.name',
+                  },
+                },
+                fromLines: {
+                  $map: {
+                    input: { $ifNull: ['$application.stringDetails.racketLines', []] },
+                    as: 'r',
+                    in: '$$r.stringName',
+                  },
+                },
+              },
+              in: {
+                $let: {
+                  vars: { all: { $setUnion: ['$$fromItems', '$$fromLines'] } },
+                  in: { $arrayElemAt: ['$$all', 0] },
+                },
+              },
+            },
+          },
+        },
+      },
+      // 제목 문자열 생성: "스트링 교체 서비스 - (스트링 상품명)"
+      {
+        $addFields: {
+          serviceTitle: {
+            $cond: [
+              '$isStringingReview',
+              {
+                $cond: [{ $and: [{ $ne: ['$serviceTargetName', null] }, { $ne: ['$serviceTargetName', ''] }] }, { $concat: ['스트링 교체 서비스 - ', '$serviceTargetName'] }, '스트링 교체 서비스'],
+              },
+              null,
+            ],
+          },
+        },
+      },
+
       // 필요한 필드만 정리
       {
         $project: {
@@ -69,7 +152,7 @@ export async function GET(req: Request) {
           target: {
             type: { $cond: [{ $ifNull: ['$productId', false] }, 'product', 'service'] },
             name: {
-              $cond: [{ $ifNull: ['$productId', false] }, { $ifNull: ['$product.name', '$product.title'] }, '서비스 리뷰'],
+              $cond: [{ $ifNull: ['$productId', false] }, { $ifNull: ['$product.name', '$product.title'] }, { $ifNull: ['$serviceTitle', '서비스 리뷰'] }],
             },
             image: {
               $cond: [{ $ifNull: ['$productId', false] }, { $ifNull: ['$product.thumbnail', { $arrayElemAt: ['$product.images', 0] }] }, null],
