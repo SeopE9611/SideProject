@@ -1,5 +1,8 @@
 import FilterableRacketList from '@/app/rackets/_components/FilterableRacketList';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
+import Link from 'next/link';
 import { Suspense } from 'react';
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -39,6 +42,15 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
           <div className="text-center text-white">
             <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">중고 라켓</h1>
             <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스의 중고 라켓으로 합리적인 가격에 대여하세요.</p>
+            <div className="mt-2 flex items-center justify-center">
+              <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50">
+                <Link href="/rackets/finder" aria-label="라켓 파인더로 이동">
+                  <Search className="mr-2 h-5 w-5" />
+                  스펙으로 찾기 (라켓 파인더)
+                </Link>
+              </Button>
+            </div>
+            <p className="mt-2 text-sm text-blue-100/90">헤드·무게·밸런스·RA·SW 범위로 빠르게 좁혀보세요.</p>
           </div>
         </SiteContainer>
       </div>
