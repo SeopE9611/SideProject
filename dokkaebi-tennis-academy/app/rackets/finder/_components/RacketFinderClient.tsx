@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import FinderRacketCard, { FinderRacket } from '@/app/rackets/finder/_components/FinderRacketCard';
 import { X } from 'lucide-react';
+import RacketCompareTray from '@/app/rackets/finder/_components/RacketCompareTray';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -512,6 +513,7 @@ export default function RacketFinderClient() {
           )}
         </div>
       </div>
+      <RacketCompareTray />
     </div>
   );
 }

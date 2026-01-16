@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { racketBrandLabel } from '@/lib/constants';
 import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useRacketCompareStore, type CompareRacketItem } from '@/app/store/racketCompareStore';
+import { useMemo } from 'react';
 
 type RacketSpec = {
   headSize?: number | null;
@@ -72,6 +75,32 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
   const rentalEnabled = !!racket.rental?.enabled;
   const rentalDisabledReason = racket.rental?.disabledReason ?? null;
 
+  // 비교 담기(최대 4개)
+  const { items: compareItems, toggle } = useRacketCompareStore();
+  const selected = compareItems.some((x) => x.id === racket.id);
+
+  const compareItem: CompareRacketItem = useMemo(
+    () => ({
+      id: racket.id,
+      brand: racket.brand,
+      model: racket.model,
+      year: racket.year ?? null,
+      price: racket.price ?? null,
+      image: img ?? null,
+      condition: racket.condition ?? null,
+      spec: {
+        headSize: spec.headSize ?? null,
+        weight: spec.weight ?? null,
+        balance: spec.balance ?? null,
+        lengthIn: spec.lengthIn ?? null,
+        swingWeight: spec.swingWeight ?? null,
+        stiffnessRa: spec.stiffnessRa ?? null,
+        pattern: spec.pattern ?? null,
+      },
+    }),
+    [racket.id, racket.brand, racket.model, racket.year, racket.price, racket.condition, img, spec]
+  );
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-4">
@@ -118,6 +147,30 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
             <div className="mt-4 flex flex-wrap gap-2">
               <Button asChild variant="outline" size="sm">
                 <Link href={`/rackets/${racket.id}`}>상세 스펙</Link>
+              </Button>
+              {/* 비교 버튼(토글) */}
+              <Button
+                type="button"
+                size="sm"
+                variant={selected ? 'default' : 'secondary'}
+                className={cn(selected && 'bg-primary text-primary-foreground hover:bg-primary/90')}
+                onClick={() => {
+                  // 이미 선택된 건 해제 가능, 새로 담을 때만 4개 제한
+                  if (!selected && compareItems.length >= 4) {
+                    showErrorToast('라켓 비교는 최대 4개까지 담을 수 있습니다.');
+                    return;
+                  }
+                  const res = toggle(compareItem);
+                  if (!res.ok) {
+                    showErrorToast(res.message);
+                    return;
+                  }
+                  // 토스트는 원하면 제거해도 됨(UX 취향)
+                  if (res.action === 'added') showSuccessToast('비교 목록에 담았습니다.');
+                  if (res.action === 'removed') showSuccessToast('비교 목록에서 제거했습니다.');
+                }}
+              >
+                {selected ? '비교 선택됨' : '라켓 비교'}
               </Button>
               <Button asChild size="sm">
                 <Link href={`/rackets/${racket.id}/select-string`}>구매하기</Link>
