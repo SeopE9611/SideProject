@@ -13,6 +13,7 @@ import RacketCard from '@/app/rackets/_components/RacketCard';
 import { Input } from '@/components/ui/input';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import FinderRacketCard, { FinderRacket } from '@/app/rackets/finder/_components/FinderRacketCard';
+import { X } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -199,6 +200,56 @@ export default function RacketFinderClient() {
     router.replace(pathname, { scroll: false });
   };
 
+  const applyNow = (next: Filters) => {
+    // 상단 요약 칩(X) 제거는 "즉시 적용" UX로 동작하게 처리
+    // - applied/draft를 동시에 맞춤
+    // - 페이지를 1로 리셋
+    // - URL도 같은 조건으로 동기화.
+    setDraft(next);
+    setApplied(next);
+    setPage(1);
+    setHasSearched(true);
+    syncUrl(next, 1);
+  };
+
+  const chips = useMemo(() => {
+    if (!hasSearched) return [];
+
+    const rangeEq = (a: Range, b: Range) => a[0] === b[0] && a[1] === b[1];
+    const fmtNum = (n: number) => (Number.isInteger(n) ? String(n) : String(Number(n.toFixed(1))));
+    const fmtWon = (n: number) => `${n.toLocaleString()}원`;
+
+    const list: { id: string; text: string; onRemove: () => void }[] = [];
+    const add = (id: string, text: string, next: Filters) => {
+      list.push({ id, text, onRemove: () => applyNow(next) });
+    };
+
+    // 텍스트 검색(q)
+    if (applied.q.trim()) add('q', `키워드: ${applied.q.trim()}`, { ...applied, q: '' });
+    // 브랜드/컨디션
+    if (applied.brand) add('brand', `브랜드: ${racketBrandLabel(applied.brand)}`, { ...applied, brand: '' });
+    if (applied.condition) add('condition', `컨디션: ${applied.condition}`, { ...applied, condition: '' });
+    // 정확도 모드
+    if (applied.strict) add('strict', '정확도 모드: ON', { ...applied, strict: false });
+
+    // 범위형 필터(기본값과 다를 때만 표시)
+    if (!rangeEq(applied.price, DEFAULT.price)) add('price', `가격: ${fmtWon(applied.price[0])} ~ ${fmtWon(applied.price[1])}`, { ...applied, price: DEFAULT.price });
+    if (!rangeEq(applied.headSize, DEFAULT.headSize)) add('head', `헤드: ${applied.headSize[0]} ~ ${applied.headSize[1]} sq.in`, { ...applied, headSize: DEFAULT.headSize });
+    if (!rangeEq(applied.weight, DEFAULT.weight)) add('weight', `무게: ${applied.weight[0]} ~ ${applied.weight[1]} g`, { ...applied, weight: DEFAULT.weight });
+    if (!rangeEq(applied.balance, DEFAULT.balance)) add('balance', `밸런스: ${applied.balance[0]} ~ ${applied.balance[1]} mm`, { ...applied, balance: DEFAULT.balance });
+    if (!rangeEq(applied.lengthIn, DEFAULT.lengthIn)) add('length', `길이: ${fmtNum(applied.lengthIn[0])} ~ ${fmtNum(applied.lengthIn[1])} in`, { ...applied, lengthIn: DEFAULT.lengthIn });
+    if (!rangeEq(applied.stiffnessRa, DEFAULT.stiffnessRa)) add('ra', `강성(RA): ${applied.stiffnessRa[0]} ~ ${applied.stiffnessRa[1]}`, { ...applied, stiffnessRa: DEFAULT.stiffnessRa });
+    if (!rangeEq(applied.swingWeight, DEFAULT.swingWeight)) add('sw', `스윙웨이트(SW): ${applied.swingWeight[0]} ~ ${applied.swingWeight[1]}`, { ...applied, swingWeight: DEFAULT.swingWeight });
+
+    // 스트링 패턴은 개별 칩으로 노출(개별 제거)
+    for (const p of applied.patterns) {
+      const display = STRING_PATTERNS.find((x) => normalizePattern(x) === p) ?? p;
+      add(`pattern:${p}`, `패턴: ${display}`, { ...applied, patterns: applied.patterns.filter((x) => x !== p) });
+    }
+
+    return list;
+  }, [applied, hasSearched]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -307,6 +358,23 @@ export default function RacketFinderClient() {
 
         {/* Results */}
         <div className="space-y-4">
+                    {hasSearched && chips.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {chips.map((c) => (
+                <div key={c.id} className="inline-flex items-center rounded-full border border-transparent bg-secondary/80 px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+                  <span className="max-w-[240px] truncate">{c.text}</span>
+                  <button
+                    type="button"
+                    onClick={c.onRemove}
+                    className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10"
+                    aria-label={`${c.text} 제거`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">총 {total}개</Badge>
