@@ -18,10 +18,13 @@ import { X } from 'lucide-react';
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
 type Range = [number, number];
+type SortKey = 'createdAt_desc' | 'price_asc' | 'price_desc' | 'swingWeight_asc' | 'swingWeight_desc' | 'weight_asc' | 'weight_desc' | 'stiffnessRa_asc' | 'stiffnessRa_desc';
+
 type Filters = {
   q: string; // 모델명/키워드 검색
   brand: string; // 단일 브랜드(초기 버전)
   condition: string; // '', 'A','B','C'
+  sort: SortKey; // 정렬
   price: Range; // won
   headSize: Range; // sq.in
   weight: Range; // g
@@ -34,10 +37,23 @@ type Filters = {
   strict: boolean; // 스펙 누락 제외(정확도 모드)
 };
 
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: 'createdAt_desc', label: '최신순' },
+  { value: 'price_asc', label: '가격 낮은순' },
+  { value: 'price_desc', label: '가격 높은순' },
+  { value: 'swingWeight_desc', label: '스윙웨이트 높은순' },
+  { value: 'swingWeight_asc', label: '스윙웨이트 낮은순' },
+  { value: 'weight_desc', label: '무게 높은순' },
+  { value: 'weight_asc', label: '무게 낮은순' },
+  { value: 'stiffnessRa_desc', label: '강성(RA) 높은순' },
+  { value: 'stiffnessRa_asc', label: '강성(RA) 낮은순' },
+];
+
 const DEFAULT: Filters = {
   q: '',
   brand: '',
   condition: '',
+  sort: 'createdAt_desc',
   price: [0, 600000],
   headSize: [85, 115],
   weight: [240, 360],
@@ -62,6 +78,9 @@ function buildQuery(f: Filters, page: number, pageSize: number) {
   if (f.brand) sp.set('brand', f.brand);
   if (f.condition) sp.set('condition', f.condition);
   if (f.strict) sp.set('strict', '1');
+
+  // sort는 기본값(최신순)이면 굳이 URL에 넣지 않음(링크 깔끔 유지).
+  if (f.sort && f.sort !== DEFAULT.sort) sp.set('sort', f.sort);
 
   sp.set('minPrice', String(f.price[0]));
   sp.set('maxPrice', String(f.price[1]));
@@ -156,6 +175,12 @@ export default function RacketFinderClient() {
 
     const patterns = sp.getAll('pattern').map(normalizePattern).filter(Boolean);
     if (patterns.length) next.patterns = patterns;
+
+    const sort = sp.get('sort');
+    if (sort) {
+      const ok = SORT_OPTIONS.some((o) => o.value === (sort as SortKey));
+      if (ok) next.sort = sort as SortKey;
+    }
 
     const strict = sp.get('strict');
     if (strict === '1') next.strict = true;
@@ -358,17 +383,12 @@ export default function RacketFinderClient() {
 
         {/* Results */}
         <div className="space-y-4">
-                    {hasSearched && chips.length > 0 && (
+          {hasSearched && chips.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {chips.map((c) => (
                 <div key={c.id} className="inline-flex items-center rounded-full border border-transparent bg-secondary/80 px-2.5 py-1 text-xs font-medium text-secondary-foreground">
                   <span className="max-w-[240px] truncate">{c.text}</span>
-                  <button
-                    type="button"
-                    onClick={c.onRemove}
-                    className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10"
-                    aria-label={`${c.text} 제거`}
-                  >
+                  <button type="button" onClick={c.onRemove} className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-black/10 dark:hover:bg-white/10" aria-label={`${c.text} 제거`}>
                     <X className="h-3 w-3" />
                   </button>
                 </div>
@@ -388,7 +408,30 @@ export default function RacketFinderClient() {
                 </span>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              {/* 정렬 드롭다운: 검색 이후에만 노출(적용된 결과 기준 정렬) */}
+              {hasSearched && (
+                <Select
+                  value={applied.sort}
+                  onValueChange={(v) => {
+                    const ok = SORT_OPTIONS.some((o) => o.value === (v as SortKey));
+                    if (!ok) return;
+                    // 정렬 변경은 "즉시 적용" (페이지는 1로 리셋)
+                    applyNow({ ...applied, sort: v as SortKey });
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="정렬" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SORT_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               <Button
                 variant="outline"
                 disabled={!hasSearched || page <= 1}

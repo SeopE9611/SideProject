@@ -50,6 +50,41 @@ function maybeRangeWithNull(field: string, r: any, strict: boolean) {
   };
 }
 
+type SortResolved =
+  | {
+      key: string;
+      kind: 'find';
+      sort: Record<string, 1 | -1>;
+    }
+  | {
+      key: string;
+      kind: 'agg';
+      field: string;
+      dir: 1 | -1;
+    };
+
+function resolveSort(sortKey: string | null): SortResolved {
+  const key = (sortKey ?? 'createdAt_desc').trim();
+
+  // 기본: 최신순
+  if (key === 'createdAt_desc') return { key, kind: 'find', sort: { createdAt: -1 } };
+
+  // 가격 정렬(가격은 null 가능성이 거의 없으므로 find sort로 충분)
+  if (key === 'price_asc') return { key, kind: 'find', sort: { price: 1, createdAt: -1 } };
+  if (key === 'price_desc') return { key, kind: 'find', sort: { price: -1, createdAt: -1 } };
+
+  // 스펙 정렬(특정 스펙이 null/누락인 라켓이 있을 수 있으므로 "null은 항상 아래"로 보내기 위해 aggregation 사용)
+  if (key === 'swingWeight_asc') return { key, kind: 'agg', field: 'spec.swingWeight', dir: 1 as const };
+  if (key === 'swingWeight_desc') return { key, kind: 'agg', field: 'spec.swingWeight', dir: -1 as const };
+  if (key === 'weight_asc') return { key, kind: 'agg', field: 'spec.weight', dir: 1 as const };
+  if (key === 'weight_desc') return { key, kind: 'agg', field: 'spec.weight', dir: -1 as const };
+  if (key === 'stiffnessRa_asc') return { key, kind: 'agg', field: 'spec.stiffnessRa', dir: 1 as const };
+  if (key === 'stiffnessRa_desc') return { key, kind: 'agg', field: 'spec.stiffnessRa', dir: -1 as const };
+
+  // 알 수 없는 값이면 안전하게 기본값으로
+  return { key: 'createdAt_desc', kind: 'find', sort: { createdAt: -1 } };
+}
+
 export async function GET(req: Request) {
   const db = (await clientPromise).db();
   const sp = new URL(req.url).searchParams;
@@ -68,6 +103,9 @@ export async function GET(req: Request) {
 
   // strict toggle
   const strict = sp.get('strict') === '1';
+
+  // sort
+  const sortResolved = resolveSort(sp.get('sort'));
 
   // multi patterns (pattern=16x19&pattern=18x20 ...)
   const patternsRaw = sp
@@ -117,26 +155,48 @@ export async function GET(req: Request) {
   const col = db.collection('used_rackets');
   const total = await col.countDocuments(match);
 
-  const docs = await col
-    .find(match)
-    .project({
-      brand: 1,
-      model: 1,
-      year: 1,
-      condition: 1,
-      price: 1,
-      images: 1,
-      rental: 1,
-      quantity: 1,
-      status: 1,
-      spec: 1,
-      createdAt: 1,
-      updatedAt: 1,
-    })
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(pageSize)
-    .toArray();
+  const projection = {
+    brand: 1,
+    model: 1,
+    year: 1,
+    condition: 1,
+    price: 1,
+    images: 1,
+    rental: 1,
+    quantity: 1,
+    status: 1,
+    spec: 1,
+    createdAt: 1,
+    updatedAt: 1,
+  };
+
+  let docs: any[] = [];
+
+  if (sortResolved.kind === 'agg') {
+    // null/누락 스펙은 항상 하단으로 밀기
+    // __sortNull: 0(값 있음) / 1(null 또는 누락)
+    const fieldRef = '$' + sortResolved.field;
+    const sortStage: any = { __sortNull: 1 };
+    sortStage[sortResolved.field] = sortResolved.dir;
+    sortStage.createdAt = -1; // 타이브레이커(최신 우선)
+
+    docs = await col
+      .aggregate([
+        { $match: match },
+        {
+          $addFields: {
+            __sortNull: { $cond: [{ $ne: [fieldRef, null] }, 0, 1] },
+          },
+        },
+        { $sort: sortStage },
+        { $skip: skip },
+        { $limit: pageSize },
+        { $project: projection },
+      ])
+      .toArray();
+  } else {
+    docs = await col.find(match).project(projection).sort(sortResolved.sort).skip(skip).limit(pageSize).toArray();
+  }
 
   const items = docs.map((d: any) => ({
     ...d,
@@ -144,5 +204,5 @@ export async function GET(req: Request) {
     _id: undefined,
     rental: normalizeRental(d.rental),
   }));
-  return NextResponse.json({ items, total, page, pageSize, strict });
+  return NextResponse.json({ items, total, page, pageSize, strict, sort: sortResolved.key });
 }
