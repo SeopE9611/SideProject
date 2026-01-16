@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RACKET_BRANDS, racketBrandLabel, STRING_PATTERNS } from '@/lib/constants';
 import RacketCard from '@/app/rackets/_components/RacketCard';
 import { Input } from '@/components/ui/input';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import FinderRacketCard, { FinderRacket } from '@/app/rackets/finder/_components/FinderRacketCard';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -103,6 +105,10 @@ function RangeField({ label, value, min, max, step, suffix, onChange }: { label:
 }
 
 export default function RacketFinderClient() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const didInitFromQueryRef = useRef(false);
   const [draft, setDraft] = useState<Filters>(DEFAULT);
   const [applied, setApplied] = useState<Filters>(DEFAULT);
   const [page, setPage] = useState(1);
@@ -110,24 +116,87 @@ export default function RacketFinderClient() {
   const [hasSearched, setHasSearched] = useState(false);
   const ALL = '__all__';
 
+  const syncUrl = (f: Filters, nextPage: number) => {
+    const nextQs = buildQuery(f, nextPage, pageSize);
+    router.replace(`${pathname}?${nextQs}`, { scroll: false });
+  };
+
+  // /rackets → /rackets/finder 로 넘어올 때 쿼리(brand/condition/q/가격 등) 프리필 + 자동검색
+  useEffect(() => {
+    if (didInitFromQueryRef.current) return;
+    didInitFromQueryRef.current = true;
+
+    const sp = searchParams;
+    const hasAnyQuery = sp.toString().length > 0;
+    if (!hasAnyQuery) return;
+
+    const readNum = (k: string): number | null => {
+      const v = sp.get(k);
+      if (!v) return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const readRange = (minK: string, maxK: string, fallback: Range): Range => {
+      const min = readNum(minK);
+      const max = readNum(maxK);
+      return [min ?? fallback[0], max ?? fallback[1]];
+    };
+
+    const next: Filters = { ...DEFAULT };
+
+    const brand = sp.get('brand');
+    if (brand) next.brand = brand.toLowerCase();
+
+    const condition = sp.get('condition') ?? sp.get('cond');
+    if (condition) next.condition = condition.toUpperCase();
+    const q = sp.get('q');
+    if (q) next.q = q;
+
+    const patterns = sp.getAll('pattern').map(normalizePattern).filter(Boolean);
+    if (patterns.length) next.patterns = patterns;
+
+    const strict = sp.get('strict');
+    if (strict === '1') next.strict = true;
+    if (strict === '0') next.strict = false;
+
+    next.price = readRange('minPrice', 'maxPrice', next.price);
+    next.headSize = readRange('minHeadSize', 'maxHeadSize', next.headSize);
+    next.weight = readRange('minWeight', 'maxWeight', next.weight);
+    next.balance = readRange('minBalance', 'maxBalance', next.balance);
+    next.lengthIn = readRange('minLengthIn', 'maxLengthIn', next.lengthIn);
+    next.stiffnessRa = readRange('minStiffnessRa', 'maxStiffnessRa', next.stiffnessRa);
+    next.swingWeight = readRange('minSwingWeight', 'maxSwingWeight', next.swingWeight);
+
+    const p = readNum('page');
+    if (p && p > 0) setPage(Math.floor(p));
+
+    setDraft(next);
+    setApplied(next);
+    setHasSearched(true);
+  }, [searchParams]);
+
   const qs = useMemo(() => buildQuery(applied, page, pageSize), [applied, page, pageSize]);
   const swrKey = hasSearched ? `/api/rackets/finder?${qs}` : null;
   const { data, error, isLoading } = useSWR(swrKey, fetcher);
 
-  const items = (data?.items ?? []) as any[];
+  const items = (data?.items ?? []) as FinderRacket[];
   const total = Number(data?.total ?? 0);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const apply = () => {
-    setApplied(draft);
+    const next = draft;
+    setApplied(next);
     setPage(1);
     setHasSearched(true);
+    syncUrl(next, 1); // 검색 누르는 순간 URL에 저장
   };
   const reset = () => {
     setDraft(DEFAULT);
     setApplied(DEFAULT);
     setPage(1);
     setHasSearched(false);
+    router.replace(pathname, { scroll: false });
   };
 
   return (
@@ -174,7 +243,7 @@ export default function RacketFinderClient() {
                     <SelectValue placeholder="전체" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectValue placeholder="전체" />
+                    <SelectItem value={ALL}>전체</SelectItem>
                     <SelectItem value="A">A</SelectItem>
                     <SelectItem value="B">B</SelectItem>
                     <SelectItem value="C">C</SelectItem>
@@ -252,10 +321,26 @@ export default function RacketFinderClient() {
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" disabled={!hasSearched || page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+              <Button
+                variant="outline"
+                disabled={!hasSearched || page <= 1}
+                onClick={() => {
+                  const nextPage = Math.max(1, page - 1);
+                  setPage(nextPage);
+                  syncUrl(applied, nextPage);
+                }}
+              >
                 이전
               </Button>
-              <Button variant="outline" disabled={!hasSearched || page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+              <Button
+                variant="outline"
+                disabled={!hasSearched || page >= totalPages}
+                onClick={() => {
+                  const nextPage = Math.min(totalPages, page + 1);
+                  setPage(nextPage);
+                  syncUrl(applied, nextPage);
+                }}
+              >
                 다음
               </Button>
             </div>
@@ -282,13 +367,21 @@ export default function RacketFinderClient() {
               </CardContent>
             </Card>
           ) : isLoading ? (
-            <div className="grid grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-4 gap-4">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-40 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
+            <div className="space-y-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      <Skeleton className="h-28 w-28 rounded-lg" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-5 w-56" />
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-8 w-40" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           ) : error ? (
@@ -300,9 +393,9 @@ export default function RacketFinderClient() {
               <CardContent className="p-4 text-sm text-muted-foreground">조건에 맞는 라켓이 없습니다. 필터 범위를 완화하거나 “정확도 모드”를 끄고 다시 시도해보세요.</CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-4 gap-4">
+            <div className="space-y-4">
               {items.map((r) => (
-                <RacketCard key={r.id} racket={r} viewMode="grid" brandLabel={racketBrandLabel(r.brand)} />
+                <FinderRacketCard key={r.id} racket={r} />
               ))}
             </div>
           )}
