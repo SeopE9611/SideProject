@@ -2,11 +2,10 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { racketBrandLabel } from '@/lib/constants';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Scale, Trash2, ArrowRight } from 'lucide-react';
 import { showErrorToast } from '@/lib/toast';
 import { useRacketCompareStore } from '@/app/store/racketCompareStore';
 
@@ -17,10 +16,8 @@ export default function RacketCompareTray() {
   const remove = useRacketCompareStore((s) => s.remove);
   const clear = useRacketCompareStore((s) => s.clear);
 
-  // 아무것도 담기지 않았으면 트레이 자체를 렌더하지 않음
   if (!items.length) return null;
 
-  // ✅ 비교는 "최소 2개"부터 가능 (4개는 최대치일 뿐)
   const canCompare = items.length >= 2;
 
   const goCompare = () => {
@@ -28,42 +25,50 @@ export default function RacketCompareTray() {
       showErrorToast('라켓 비교는 최소 2개 이상 선택해야 합니다.');
       return;
     }
-    router.push('/rackets/compare'); // Step 3-2에서 페이지 만들 예정
+    router.push('/rackets/compare');
   };
 
   return (
     <>
-      {/* 고정 트레이가 화면을 덮지 않도록, 페이지 맨 아래에 여백을 추가 */}
-      <div className="h-28" />
+      <div className="h-32 bp-sm:h-36" />
 
       <div className="fixed inset-x-0 bottom-0 z-50">
         <div className="mx-auto w-full px-3 pb-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px]">
-          <Card className="border bg-background/95 shadow-lg backdrop-blur">
-            <CardContent className="p-3 bp-sm:p-4">
+          <div className="rounded-xl bg-background/95 shadow-xl backdrop-blur-md ring-1 ring-primary/10 dark:ring-white/10">
+            <div className="p-3 bp-sm:p-4">
               <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-semibold">
-                  라켓 비교 ({items.length}/4)
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">최소 2개부터 비교 가능</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+                    <Scale className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold">
+                      라켓 비교
+                      <span className="ml-1.5 text-primary">({items.length}/4)</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground hidden bp-sm:block">최소 2개부터 비교 가능</div>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={clear} className="h-8 px-2">
-                    모두 삭제
+                  <Button variant="ghost" size="sm" onClick={clear} className="h-8 px-2 text-muted-foreground hover:text-destructive">
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    <span className="hidden bp-sm:inline">모두 삭제</span>
                   </Button>
-                  <Button size="sm" onClick={goCompare} disabled={!canCompare} className="h-8">
+                  <Button size="sm" onClick={goCompare} disabled={!canCompare} className="h-8 gap-1.5 rounded-lg">
                     비교하기
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-4 gap-2">
+              <div className="mt-3 grid grid-cols-2 bp-sm:grid-cols-4 gap-2">
                 {Array.from({ length: 4 }).map((_, idx) => {
                   const it = items[idx];
 
-                  // 빈 슬롯(placeholder)
                   if (!it) {
                     return (
-                      <div key={idx} className="flex h-16 items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
+                      <div key={idx} className={cn('flex h-16 bp-sm:h-18 items-center justify-center rounded-lg', 'bg-muted/30 dark:bg-muted/20', 'ring-1 ring-dashed ring-muted-foreground/20', 'text-xs text-muted-foreground/60')}>
                         <Plus className="mr-1 h-3 w-3" />
                         비어 있음
                       </div>
@@ -74,9 +79,22 @@ export default function RacketCompareTray() {
                   const brandText = racketBrandLabel(it.brand);
 
                   return (
-                    <div key={it.id} className="group relative flex h-16 items-center gap-2 rounded-md border bg-card px-2">
-                      <div className="relative h-12 w-12 overflow-hidden rounded bg-muted">
-                        {it.image ? <Image src={it.image} alt={title} fill className="object-cover" unoptimized /> : <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">No Image</div>}
+                    <div
+                      key={it.id}
+                      className={cn(
+                        'group relative flex h-16 bp-sm:h-18 items-center gap-2 rounded-lg px-2',
+                        'bg-card dark:bg-card/80',
+                        'ring-1 ring-primary/20 dark:ring-primary/30',
+                        'transition-all duration-200',
+                        'hover:ring-primary/40 hover:shadow-sm'
+                      )}
+                    >
+                      <div className="relative h-11 w-11 bp-sm:h-12 bp-sm:w-12 shrink-0 overflow-hidden rounded-md bg-muted/50 dark:bg-muted/30 ring-1 ring-black/5 dark:ring-white/10">
+                        {it.image ? (
+                          <Image src={it.image || '/placeholder.svg'} alt={title} fill className="object-cover" unoptimized />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">No Image</div>
+                        )}
                       </div>
 
                       <div className="min-w-0 flex-1">
@@ -87,17 +105,23 @@ export default function RacketCompareTray() {
                       <button
                         type="button"
                         onClick={() => remove(it.id)}
-                        className={cn('absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full', 'bg-background/80 opacity-0 shadow-sm transition', 'group-hover:opacity-100 hover:bg-muted')}
+                        className={cn(
+                          'absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full',
+                          'bg-destructive/90 text-destructive-foreground',
+                          'shadow-sm transition-all duration-200',
+                          'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100',
+                          'hover:bg-destructive'
+                        )}
                         aria-label={`${title} 제거`}
                       >
-                        <X className="h-3.5 w-3.5" />
+                        <X className="h-3 w-3" />
                       </button>
                     </div>
                   );
                 })}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </>

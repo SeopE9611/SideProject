@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -11,6 +10,7 @@ import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useRacketCompareStore, type CompareRacketItem } from '@/app/store/racketCompareStore';
 import { useMemo } from 'react';
+import { Scale, ShoppingCart, Info } from 'lucide-react';
 
 type RacketSpec = {
   headSize?: number | null;
@@ -43,13 +43,27 @@ export type FinderRacket = {
 };
 
 function conditionLabel(condition?: string | null) {
-  // A(최상) / B(상) / C(보통)
   if (!condition) return null;
   const c = condition.toUpperCase();
-  if (c === 'A') return { label: '최상', className: 'bg-emerald-600 text-white' };
-  if (c === 'B') return { label: '상', className: 'bg-blue-600 text-white' };
-  if (c === 'C') return { label: '보통', className: 'bg-amber-600 text-white' };
-  return { label: c, className: 'bg-slate-600 text-white' };
+  if (c === 'A')
+    return {
+      label: 'A',
+      desc: '최상',
+      className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30',
+    };
+  if (c === 'B')
+    return {
+      label: 'B',
+      desc: '상',
+      className: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/30',
+    };
+  if (c === 'C')
+    return {
+      label: 'C',
+      desc: '보통',
+      className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/30',
+    };
+  return { label: c, desc: '', className: 'bg-muted text-muted-foreground ring-1 ring-muted' };
 }
 
 function fmt(n: number | null | undefined, suffix?: string) {
@@ -57,11 +71,11 @@ function fmt(n: number | null | undefined, suffix?: string) {
   return `${n}${suffix ?? ''}`;
 }
 
-function SpecRow({ label, value }: { label: string; value: string }) {
+function SpecItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-2 text-xs">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium text-foreground tabular-nums">{value}</span>
+    <div className="flex flex-col">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="text-sm font-semibold tabular-nums text-foreground">{value}</span>
     </div>
   );
 }
@@ -75,7 +89,6 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
   const rentalEnabled = !!racket.rental?.enabled;
   const rentalDisabledReason = racket.rental?.disabledReason ?? null;
 
-  // 비교 담기(최대 4개)
   const { items: compareItems, toggle } = useRacketCompareStore();
   const selected = compareItems.some((x) => x.id === racket.id);
 
@@ -102,60 +115,69 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
   );
 
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4">
-        <div className="flex gap-4">
-          <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg bg-muted">
-            {img ? <Image src={img} alt={`${brandText} ${racket.model}`} fill className="object-cover" unoptimized /> : <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">No Image</div>}
+    <article className="group relative overflow-hidden rounded-2xl bg-card ring-1 ring-muted/40 dark:ring-muted/20 transition-all duration-200 hover:ring-primary/30 hover:shadow-lg hover:shadow-primary/5">
+      <div className="p-4 bp-sm:p-5">
+        <div className="flex flex-col bp-sm:flex-row gap-4">
+          {/* 이미지 영역 */}
+          <div className="relative h-32 w-full bp-sm:h-36 bp-sm:w-36 shrink-0 overflow-hidden rounded-xl bg-muted/50 dark:bg-muted/30">
+            {img ? (
+              <Image src={img || '/placeholder.svg'} alt={`${brandText} ${racket.model}`} fill className="object-cover transition-transform duration-300 group-hover:scale-105" unoptimized />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">No Image</div>
+            )}
+            {/* 컨디션 뱃지 - 이미지 위에 표시 */}
+            {cond && <div className={cn('absolute top-2 left-2 rounded-lg px-2 py-1 text-xs font-bold', cond.className)}>{cond.label}</div>}
           </div>
 
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-3">
+          {/* 정보 영역 */}
+          <div className="min-w-0 flex-1 flex flex-col">
+            {/* 헤더: 브랜드, 모델명, 상태 뱃지 */}
+            <div className="flex items-start justify-between gap-3 mb-3">
               <div className="min-w-0">
-                <div className="text-xs text-muted-foreground whitespace-nowrap">{brandText}</div>
-                <div className="mt-0.5 truncate text-base font-semibold">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{brandText}</span>
+                <h3 className="mt-0.5 text-lg font-bold text-foreground leading-tight truncate">
                   {racket.model}
-                  {racket.year ? <span className="ml-1 text-sm font-normal text-muted-foreground">({racket.year})</span> : null}
-                </div>
+                  {racket.year && <span className="ml-1.5 text-sm font-normal text-muted-foreground">({racket.year})</span>}
+                </h3>
               </div>
-
               <div className="flex shrink-0 items-center gap-2">
-                {cond ? <Badge className={cn('h-6 px-2', cond.className)}>{cond.label}</Badge> : null}
                 {rentalEnabled ? (
-                  <Badge variant="secondary" className="h-6">
-                    대여 가능
-                  </Badge>
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30 hover:bg-emerald-500/20">대여 가능</Badge>
                 ) : (
-                  <Badge variant="outline" className="h-6">
+                  <Badge variant="secondary" className="bg-muted/80 text-muted-foreground">
                     대여 불가
                   </Badge>
                 )}
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1">
-              <SpecRow label="Head" value={fmt(spec.headSize, ' sq.in')} />
-              <SpecRow label="Weight" value={fmt(spec.weight, ' g')} />
-              <SpecRow label="Balance" value={fmt(spec.balance, ' mm')} />
-              <SpecRow label="Length" value={fmt(spec.lengthIn, ' in')} />
-              <SpecRow label="SwingWeight" value={fmt(spec.swingWeight, ' g')} />
-              <SpecRow label="Stiffness" value={fmt(spec.stiffnessRa, ' Ra')} />
-              <SpecRow label="Pattern" value={spec.pattern ? String(spec.pattern) : '-'} />
-              <SpecRow label="Price" value={racket.price ? `${racket.price.toLocaleString()}원` : '-'} />
+            {/* 스펙 그리드 */}
+            <div className="grid grid-cols-4 gap-3 py-3 px-3 rounded-xl bg-muted/30 dark:bg-muted/10 mb-4">
+              <SpecItem label="Head" value={fmt(spec.headSize, '')} />
+              <SpecItem label="Weight" value={fmt(spec.weight, 'g')} />
+              <SpecItem label="Balance" value={fmt(spec.balance, 'mm')} />
+              <SpecItem label="SW" value={fmt(spec.swingWeight, '')} />
+              <SpecItem label="Length" value={fmt(spec.lengthIn, 'in')} />
+              <SpecItem label="RA" value={fmt(spec.stiffnessRa, '')} />
+              <SpecItem label="Pattern" value={spec.pattern ? String(spec.pattern) : '-'} />
+              <SpecItem label="Price" value={racket.price ? `${(racket.price / 10000).toFixed(0)}만` : '-'} />
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/rackets/${racket.id}`}>상세 스펙</Link>
+            {/* 액션 버튼 */}
+            <div className="flex flex-wrap items-center gap-2 mt-auto">
+              <Button asChild variant="outline" size="sm" className="rounded-lg bg-transparent">
+                <Link href={`/rackets/${racket.id}`}>
+                  <Info className="mr-1.5 h-3.5 w-3.5" />
+                  상세 스펙
+                </Link>
               </Button>
-              {/* 비교 버튼(토글) */}
+
               <Button
                 type="button"
                 size="sm"
-                variant={selected ? 'default' : 'secondary'}
-                className={cn(selected && 'bg-primary text-primary-foreground hover:bg-primary/90')}
+                variant={selected ? 'default' : 'outline'}
+                className={cn('rounded-lg', selected && 'bg-primary text-primary-foreground')}
                 onClick={() => {
-                  // 이미 선택된 건 해제 가능, 새로 담을 때만 4개 제한
                   if (!selected && compareItems.length >= 4) {
                     showErrorToast('라켓 비교는 최대 4개까지 담을 수 있습니다.');
                     return;
@@ -165,30 +187,35 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                     showErrorToast(res.message);
                     return;
                   }
-                  // 토스트는 원하면 제거해도 됨(UX 취향)
                   if (res.action === 'added') showSuccessToast('비교 목록에 담았습니다.');
                   if (res.action === 'removed') showSuccessToast('비교 목록에서 제거했습니다.');
                 }}
               >
-                {selected ? '비교 선택됨' : '라켓 비교'}
+                <Scale className="mr-1.5 h-3.5 w-3.5" />
+                {selected ? '비교 선택됨' : '비교하기'}
               </Button>
-              <Button asChild size="sm">
-                <Link href={`/rackets/${racket.id}/select-string`}>구매하기</Link>
+
+              <Button asChild size="sm" className="rounded-lg">
+                <Link href={`/rackets/${racket.id}/select-string`}>
+                  <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
+                  구매하기
+                </Link>
               </Button>
+
               {rentalEnabled ? (
                 <RentDialog id={racket.id} rental={racket.rental} brand={racket.brand} model={racket.model} size="sm" preventCardNav={true} full={false} />
               ) : (
-                <Button size="sm" variant="secondary" disabled title={rentalDisabledReason ?? undefined}>
+                <Button size="sm" variant="secondary" disabled title={rentalDisabledReason ?? undefined} className="rounded-lg opacity-50">
                   대여 불가
                 </Button>
               )}
 
-              {rentalDisabledReason ? <span className="text-xs text-muted-foreground self-center">({rentalDisabledReason})</span> : null}
+              {rentalDisabledReason && <span className="text-[11px] text-muted-foreground">({rentalDisabledReason})</span>}
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   );
 }
 

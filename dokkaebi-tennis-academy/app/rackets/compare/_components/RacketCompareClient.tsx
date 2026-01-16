@@ -3,10 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { X, ArrowLeft, Trash2, Info } from 'lucide-react';
+import { X, ArrowLeft, Trash2, Info, Scale, AlertCircle, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { racketBrandLabel } from '@/lib/constants';
 import { useRacketCompareStore, type CompareRacketItem } from '@/app/store/racketCompareStore';
@@ -46,16 +45,14 @@ type Row =
       hint?: string;
       kind: 'num';
       unit?: string;
-      decimals?: number; // length 같이 소수 필요한 행
-      isPrice?: boolean; // 가격은 로케일 포맷
+      decimals?: number;
+      isPrice?: boolean;
       get: (r: CompareRacketItem) => number | null | undefined;
     };
 
 export default function RacketCompareClient() {
   const { items, remove, clear } = useRacketCompareStore();
 
-  // zustand persist(로컬스토리지) rehydrate 전에는 items가 비어 보일 수 있어
-  //  hydration 깜빡임 방지용으로 mounted gate
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -68,122 +65,185 @@ export default function RacketCompareClient() {
       { key: 'model', label: '모델', kind: 'text', get: (r) => r.model },
       { key: 'year', label: '연식', kind: 'text', get: (r) => (r.year ? String(r.year) : '-') },
       { key: 'condition', label: '컨디션', kind: 'text', get: (r) => (r.condition ? String(r.condition) : '-') },
-
-      { key: 'price', label: '가격', kind: 'num', isPrice: true, get: (r) => r.price, hint: '첫 번째(기준) 라켓 대비 ±차이/퍼센트도 함께 표시됩니다.' },
-
-      { key: 'head', label: 'Head', kind: 'num', unit: ' sq.in', decimals: 0, get: (r) => r.spec?.headSize, hint: '헤드가 클수록 관용성(스윗스팟)이 커지는 경향.' },
-      { key: 'weight', label: 'Weight', kind: 'num', unit: ' g', decimals: 0, get: (r) => r.spec?.weight, hint: '무거울수록 안정감/파워 경향, 가벼울수록 조작성 경향.' },
-      { key: 'balance', label: 'Balance', kind: 'num', unit: ' mm', decimals: 0, get: (r) => r.spec?.balance, hint: '수치↑=헤드헤비 경향, 수치↓=헤드라이트 경향.' },
-      { key: 'length', label: 'Length', kind: 'num', unit: ' in', decimals: 1, get: (r) => r.spec?.lengthIn, hint: '길수록 리치/서브 파워 경향(스윙이 무거워질 수 있음).' },
-      { key: 'sw', label: 'SwingWeight', kind: 'num', decimals: 0, get: (r) => r.spec?.swingWeight, hint: 'SW↑=임팩트 안정/플로스루, SW↓=빠른 스윙/조작성.' },
-      { key: 'ra', label: 'Stiffness(RA)', kind: 'num', decimals: 0, get: (r) => r.spec?.stiffnessRa, hint: 'RA↑=반발/파워 경향(충격↑ 가능), RA↓=타구감/컨트롤 경향.' },
-
-      { key: 'pattern', label: 'Pattern', kind: 'text', get: (r) => (r.spec?.pattern ? String(r.spec?.pattern) : '-'), hint: '오픈(16x19)=스핀 경향, 덴스(18x20)=컨트롤 경향.' },
+      {
+        key: 'price',
+        label: '가격',
+        kind: 'num',
+        isPrice: true,
+        get: (r) => r.price,
+        hint: '첫 번째(기준) 라켓 대비 ±차이/퍼센트도 함께 표시됩니다.',
+      },
+      {
+        key: 'head',
+        label: 'Head',
+        kind: 'num',
+        unit: ' sq.in',
+        decimals: 0,
+        get: (r) => r.spec?.headSize,
+        hint: '헤드가 클수록 관용성(스윗스팟)이 커지는 경향.',
+      },
+      {
+        key: 'weight',
+        label: 'Weight',
+        kind: 'num',
+        unit: ' g',
+        decimals: 0,
+        get: (r) => r.spec?.weight,
+        hint: '무거울수록 안정감/파워 경향, 가벼울수록 조작성 경향.',
+      },
+      {
+        key: 'balance',
+        label: 'Balance',
+        kind: 'num',
+        unit: ' mm',
+        decimals: 0,
+        get: (r) => r.spec?.balance,
+        hint: '수치↑=헤드헤비 경향, 수치↓=헤드라이트 경향.',
+      },
+      {
+        key: 'length',
+        label: 'Length',
+        kind: 'num',
+        unit: ' in',
+        decimals: 1,
+        get: (r) => r.spec?.lengthIn,
+        hint: '길수록 리치/서브 파워 경향(스윙이 무거워질 수 있음).',
+      },
+      {
+        key: 'sw',
+        label: 'SwingWeight',
+        kind: 'num',
+        decimals: 0,
+        get: (r) => r.spec?.swingWeight,
+        hint: 'SW↑=임팩트 안정/플로스루, SW↓=빠른 스윙/조작성.',
+      },
+      {
+        key: 'ra',
+        label: 'Stiffness(RA)',
+        kind: 'num',
+        decimals: 0,
+        get: (r) => r.spec?.stiffnessRa,
+        hint: 'RA↑=반발/파워 경향(충격↑ 가능), RA↓=타구감/컨트롤 경향.',
+      },
+      {
+        key: 'pattern',
+        label: 'Pattern',
+        kind: 'text',
+        get: (r) => (r.spec?.pattern ? String(r.spec?.pattern) : '-'),
+        hint: '오픈(16x19)=스핀 경향, 덴스(18x20)=컨트롤 경향.',
+      },
     ],
     []
   );
 
   return (
     <TooltipProvider delayDuration={150}>
-      <div className="space-y-4">
-        {/* 헤더 */}
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold">라켓 비교</h1>
-            <p className="text-sm text-muted-foreground mt-1">최소 2개 ~ 최대 4개까지 스펙을 표로 비교합니다.</p>
+      <div className="space-y-6">
+        <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20">
+              <Scale className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl bp-sm:text-2xl font-bold">라켓 비교</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">최소 2개 ~ 최대 4개까지 스펙을 표로 비교합니다.</p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="rounded-lg bg-transparent">
               <Link href="/rackets/finder" className="inline-flex items-center gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 파인더로
               </Link>
             </Button>
-            <Button variant="outline" onClick={() => clear()} disabled={list.length === 0} className="inline-flex items-center gap-2">
+            <Button variant="outline" onClick={() => clear()} disabled={list.length === 0} className="inline-flex items-center gap-2 rounded-lg text-muted-foreground hover:text-destructive hover:ring-destructive/30">
               <Trash2 className="h-4 w-4" />
               모두 삭제
             </Button>
           </div>
         </div>
 
-        {/* 안내(2개 미만) */}
+        {/* 로딩 상태 */}
         {!mounted ? (
-          <Card>
-            <CardContent className="p-4 text-sm text-muted-foreground">비교 목록을 불러오는 중...</CardContent>
-          </Card>
+          <div className="rounded-xl bg-muted/30 dark:bg-muted/20 ring-1 ring-black/5 dark:ring-white/10 p-6">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <span className="text-sm">비교 목록을 불러오는 중...</span>
+            </div>
+          </div>
         ) : !canCompare ? (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">비교할 라켓이 부족합니다</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <div>비교는 최소 2개부터 가능합니다. (현재 {list.length}개)</div>
+          /* 비교 불가 상태 개선 */
+          <div className="rounded-xl bg-card dark:bg-card/80 ring-1 ring-amber-500/20 dark:ring-amber-400/20 overflow-hidden">
+            <div className="bg-amber-500/5 dark:bg-amber-400/5 px-4 py-3 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <span className="text-sm font-medium text-amber-700 dark:text-amber-300">비교할 라켓이 부족합니다</span>
+            </div>
+            <div className="p-4 space-y-4">
+              <p className="text-sm text-muted-foreground">비교는 최소 2개부터 가능합니다. (현재 {list.length}개)</p>
 
               {list.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-medium text-foreground">현재 선택된 라켓</div>
+                <div className="space-y-3">
+                  <div className="text-sm font-medium">현재 선택된 라켓</div>
                   <div className="flex flex-wrap gap-2">
                     {list.map((r, idx) => (
-                      <th key={r.id} className="p-3 text-left align-top min-w-[240px]">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <Link href={`/rackets/${r.id}`} className="font-semibold hover:underline">
-                                {r.model}
-                              </Link>
-                              {idx === 0 && (
-                                <Badge variant="secondary" className="h-5 px-2 text-[10px]">
-                                  기준
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-xs text-muted-foreground">{racketBrandLabel(r.brand)}</div>
-                          </div>
-
-                          <Button variant="ghost" size="icon" onClick={() => remove(r.id)} aria-label="비교에서 제거">
-                            <X className="h-4 w-4" />
-                          </Button>
+                      <div key={r.id} className={cn('group flex items-center gap-3 rounded-lg p-2 pr-3', 'bg-muted/30 dark:bg-muted/20', 'ring-1 ring-black/5 dark:ring-white/10', 'transition-all duration-200', 'hover:ring-primary/30')}>
+                        <div className={cn('relative h-12 w-12 overflow-hidden rounded-md bg-muted/50', 'ring-1 ring-black/5 dark:ring-white/10')}>
+                          {r.image ? (
+                            <Image src={r.image || '/placeholder.svg'} alt={`${racketBrandLabel(r.brand)} ${r.model}`} fill className="object-cover" unoptimized />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">No Image</span>
+                          )}
                         </div>
-
-                        <div className="mt-2 flex items-center gap-3">
-                          <div className={cn('relative h-16 w-16 overflow-hidden rounded-md bg-muted', !r.image && 'flex items-center justify-center')}>
-                            {r.image ? <Image src={r.image} alt={`${racketBrandLabel(r.brand)} ${r.model}`} fill className="object-cover" unoptimized /> : <span className="text-[10px] text-muted-foreground">No Image</span>}
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <Link href={`/rackets/${r.id}`} className="text-sm font-medium hover:text-primary hover:underline">
+                              {r.model}
+                            </Link>
+                            {idx === 0 && (
+                              <Badge variant="secondary" className="h-4 px-1.5 text-[10px] bg-primary/10 text-primary">
+                                기준
+                              </Badge>
+                            )}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {r.year ? `${r.year}` : '-'} / {r.condition ? r.condition : '-'}
-                          </div>
+                          <div className="text-xs text-muted-foreground">{racketBrandLabel(r.brand)}</div>
                         </div>
-                      </th>
+                        <Button variant="ghost" size="icon" onClick={() => remove(r.id)} className="h-7 w-7 ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive" aria-label="비교에서 제거">
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <Button asChild>
-                <Link href="/rackets/finder">라켓 고르러 가기</Link>
+              <Button asChild className="rounded-lg gap-2">
+                <Link href="/rackets/finder">
+                  라켓 고르러 가기
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <>
-            {/* 상태 */}
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">선택 {list.length} / 4</Badge>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="bg-primary/10 text-primary dark:bg-primary/20 rounded-lg px-3 py-1">
+                선택 {list.length} / 4
+              </Badge>
               <span className="text-sm text-muted-foreground">각 열 상단의 X로 개별 제거 가능합니다.</span>
             </div>
 
-            {/* 비교 테이블 */}
-            <div className="overflow-x-auto rounded-lg border bg-background">
+            <div className="overflow-x-auto rounded-xl bg-card dark:bg-card/80 ring-1 ring-black/5 dark:ring-white/10 shadow-sm">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b">
-                    <th className="p-3 text-left text-muted-foreground w-[160px]">
+                  <tr className="bg-muted/30 dark:bg-muted/20">
+                    <th className="p-4 text-left text-muted-foreground w-[160px]">
                       <div className="flex items-center gap-2">
-                        <span>항목</span>
+                        <span className="font-medium">항목</span>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button type="button" className="text-muted-foreground/70 hover:text-muted-foreground" aria-label="표 해석 힌트">
+                            <button type="button" className="text-muted-foreground/50 hover:text-muted-foreground transition-colors" aria-label="표 해석 힌트">
                               <Info className="h-4 w-4" />
                             </button>
                           </TooltipTrigger>
@@ -191,26 +251,33 @@ export default function RacketCompareClient() {
                         </Tooltip>
                       </div>
                     </th>
-                    {list.map((r) => (
-                      <th key={r.id} className="p-3 text-left align-top min-w-[240px]">
+                    {list.map((r, idx) => (
+                      <th key={r.id} className="p-4 text-left align-top min-w-[220px]">
                         <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <Link href={`/rackets/${r.id}`} className="font-semibold hover:underline">
-                              {r.model}
-                            </Link>
-                            <div className="text-xs text-muted-foreground">{racketBrandLabel(r.brand)}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <Link href={`/rackets/${r.id}`} className="font-semibold hover:text-primary transition-colors">
+                                {r.model}
+                              </Link>
+                              {idx === 0 && (
+                                <Badge variant="secondary" className="h-5 px-2 text-[10px] bg-primary/10 text-primary dark:bg-primary/20">
+                                  기준
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground font-normal">{racketBrandLabel(r.brand)}</div>
                           </div>
-                          <Button variant="ghost" size="icon" onClick={() => remove(r.id)} aria-label="비교에서 제거">
+                          <Button variant="ghost" size="icon" onClick={() => remove(r.id)} className="h-7 w-7 -mr-1 text-muted-foreground hover:text-destructive" aria-label="비교에서 제거">
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
 
-                        <div className="mt-2 flex items-center gap-3">
-                          <div className={cn('relative h-16 w-16 overflow-hidden rounded-md bg-muted', !r.image && 'flex items-center justify-center')}>
-                            {r.image ? <Image src={r.image} alt={`${racketBrandLabel(r.brand)} ${r.model}`} fill className="object-cover" unoptimized /> : <span className="text-[10px] text-muted-foreground">No Image</span>}
+                        <div className="mt-3 flex items-center gap-3">
+                          <div className={cn('relative h-14 w-14 overflow-hidden rounded-lg bg-muted/50 dark:bg-muted/30', 'ring-1 ring-black/5 dark:ring-white/10', !r.image && 'flex items-center justify-center')}>
+                            {r.image ? <Image src={r.image || '/placeholder.svg'} alt={`${racketBrandLabel(r.brand)} ${r.model}`} fill className="object-cover" unoptimized /> : <span className="text-[10px] text-muted-foreground">No Image</span>}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {r.year ? `${r.year}` : '-'} / {r.condition ? r.condition : '-'}
+                          <div className="text-xs text-muted-foreground font-normal">
+                            {r.year ? `${r.year}년` : '-'} / {r.condition ? r.condition : '-'}
                           </div>
                         </div>
                       </th>
@@ -218,23 +285,22 @@ export default function RacketCompareClient() {
                   </tr>
                 </thead>
 
-                <tbody>
+                <tbody className="divide-y divide-muted/50 dark:divide-muted/30">
                   {rows.map((row) => {
                     const baseItem = list[0];
                     const baseNum = row.kind === 'num' ? toNum(row.get(baseItem)) : null;
-
                     const mm = row.kind === 'num' ? minMax(list.map((it) => toNum(row.get(it)))) : null;
 
                     return (
-                      <tr key={row.key} className="border-b last:border-b-0">
-                        <td className="p-3 font-medium text-muted-foreground">
+                      <tr key={row.key} className="hover:bg-muted/20 dark:hover:bg-muted/10 transition-colors">
+                        <td className="p-4 font-medium text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <span>{row.label}</span>
                             {row.hint ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <button type="button" className="text-muted-foreground/70 hover:text-muted-foreground" aria-label={`${row.label} 해석 힌트`}>
-                                    <Info className="h-4 w-4" />
+                                  <button type="button" className="text-muted-foreground/50 hover:text-muted-foreground transition-colors" aria-label={`${row.label} 해석 힌트`}>
+                                    <Info className="h-3.5 w-3.5" />
                                   </button>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-[260px] text-xs leading-relaxed">{row.hint}</TooltipContent>
@@ -244,22 +310,19 @@ export default function RacketCompareClient() {
                         </td>
 
                         {list.map((r, idx) => {
-                          // text row
                           if (row.kind === 'text') {
                             return (
-                              <td key={r.id + row.key} className="p-3">
+                              <td key={r.id + row.key} className="p-4 font-medium">
                                 {row.get(r)}
                               </td>
                             );
                           }
 
-                          // num row
                           const n = toNum(row.get(r));
                           const decimals = row.decimals ?? 0;
 
                           const valueText = n === null ? '-' : row.isPrice ? `${Math.round(n).toLocaleString()}원` : `${fmtFixed(n, decimals)}${row.unit ?? ''}`;
 
-                          // 기준 대비 계산
                           const delta = n !== null && baseNum !== null ? n - baseNum : null;
 
                           const deltaAbsText = delta === null ? null : row.isPrice ? `${Math.abs(Math.round(delta)).toLocaleString()}원` : `${fmtFixed(Math.abs(delta), decimals)}${row.unit ?? ''}`;
@@ -270,28 +333,22 @@ export default function RacketCompareClient() {
 
                           const pctText = pct === null ? null : `${pct > 0 ? '+' : pct < 0 ? '-' : ''}${Math.abs(pct).toFixed(1)}%`;
 
-                          // 배경 막대(행 내 min~max 기준)
                           const t = mm && n !== null ? ratio01(n, mm.min, mm.max) : null;
-
-                          // 기준 열(첫 번째)은 delta 숨김
                           const isBaseCol = idx === 0;
 
-                          // delta에 따라 색상(직관성)
                           const deltaClass = isBaseCol || delta === null ? 'text-muted-foreground' : delta > 0 ? 'text-emerald-600 dark:text-emerald-400' : delta < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground';
 
-                          const barClass = delta === null ? 'bg-primary/10' : delta > 0 ? 'bg-emerald-500/10' : delta < 0 ? 'bg-rose-500/10' : 'bg-muted/30';
+                          const barClass = delta === null ? 'bg-primary/10 dark:bg-primary/20' : delta > 0 ? 'bg-emerald-500/15 dark:bg-emerald-400/20' : delta < 0 ? 'bg-rose-500/15 dark:bg-rose-400/20' : 'bg-muted/30';
 
                           return (
-                            <td key={r.id + row.key} className="p-3 relative overflow-hidden">
-                              {/* 배경 막대 */}
-                              {t !== null && <div className={cn('absolute inset-y-0 left-0', barClass)} style={{ width: `${Math.round(t * 100)}%` }} />}
+                            <td key={r.id + row.key} className="p-4 relative overflow-hidden">
+                              {t !== null && <div className={cn('absolute inset-y-0 left-0 transition-all duration-300', barClass)} style={{ width: `${Math.round(t * 100)}%` }} />}
 
                               <div className="relative z-10 tabular-nums">
-                                <div className="font-medium">{valueText}</div>
+                                <div className="font-semibold">{valueText}</div>
 
-                                {/* 기준 대비 ±차이 + % */}
                                 {!isBaseCol && delta !== null && (
-                                  <div className={cn('mt-0.5 text-[11px]', deltaClass)}>
+                                  <div className={cn('mt-0.5 text-[11px] font-medium', deltaClass)}>
                                     {sign}
                                     {deltaAbsText}
                                     {pctText ? ` (${pctText})` : ''}
