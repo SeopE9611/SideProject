@@ -20,6 +20,23 @@ function normalizePattern(p: string) {
   return p.replace(/\s+/g, '').replace(/×/g, 'x').toLowerCase();
 }
 
+function normalizeRental(r: any) {
+  if (!r) return null;
+
+  const fee = r.fee;
+  const feeOk = fee && Number.isFinite(Number(fee.d7)) && Number.isFinite(Number(fee.d15)) && Number.isFinite(Number(fee.d30));
+
+  const enabled = !!r.enabled && feeOk;
+
+  return {
+    enabled,
+    deposit: Number.isFinite(Number(r.deposit)) ? Number(r.deposit) : 0,
+    fee: feeOk ? { d7: Number(fee.d7), d15: Number(fee.d15), d30: Number(fee.d30) } : undefined,
+    // enabled=true인데 fee가 없으면, UI가 "대여 불가"로 떨어지도록 사유를 세팅
+    disabledReason: enabled ? null : r.disabledReason ?? '대여 정보(요금)가 누락되었습니다.',
+  };
+}
+
 // strict=1: 스펙 누락 상품 제외(정확도 우선)
 // strict=0 (기본): 스펙 누락 상품도 포함(편의/결과량 우선)
 function maybeRangeWithNull(field: string, r: any, strict: boolean) {
@@ -121,6 +138,11 @@ export async function GET(req: Request) {
     .limit(pageSize)
     .toArray();
 
-  const items = docs.map((d: any) => ({ ...d, id: d._id.toString(), _id: undefined }));
+  const items = docs.map((d: any) => ({
+    ...d,
+    id: d._id.toString(),
+    _id: undefined,
+    rental: normalizeRental(d.rental),
+  }));
   return NextResponse.json({ items, total, page, pageSize, strict });
 }

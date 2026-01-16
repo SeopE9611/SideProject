@@ -57,7 +57,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
         onClick={() => setOpen(true)}
       >
         <Calendar className="mr-2 h-4 w-4" />
-        대여하기
+        대여 하기
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>

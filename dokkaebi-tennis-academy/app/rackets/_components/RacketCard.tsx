@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Eye } from 'lucide-react';
+import { Briefcase, Eye, ShoppingCart } from 'lucide-react';
 import useSWR from 'swr';
 import { racketBrandLabel } from '@/lib/constants';
 import StatusBadge from '@/components/badges/StatusBadge';
@@ -31,22 +31,25 @@ type Props = {
   brandLabel: string;
 };
 
-function RacketAvailBadge({ id }: { id: string }) {
+function useRacketAvailability(id: string) {
   const { data } = useSWR<{ ok: boolean; count: number; quantity: number; available: number }>(`/api/rentals/active-count/${id}`, fetcher, { dedupingInterval: 5000 });
-  // "잔여" → "가용" (판매/대여 공통으로 지금 가능한 수량)
-  // - qty: 보유 수량
-  // - count: 대여중 수량(paid/out)
-  // - avail: 현재 가용(보유 - 대여중)
+
+  // qty: 보유 수량, count: 대여중 수량, avail: 현재 가용(보유 - 대여중)
   const qty = Number(data?.quantity ?? 1);
   const count = Number(data?.count ?? 0);
 
   const availRaw = (data as any)?.available;
   const avail = Number.isFinite(availRaw) ? Math.max(0, Number(availRaw)) : Math.max(0, qty - count);
 
-  // 전량 대여중 vs 판매완료를 구분하기 위한 보조값
-  const rentedCount = Math.min(qty, Math.max(0, count)); // 혹시 count가 비정상적으로 커져도 UI는 클램프
-  const isSold = qty <= 0;
-  const isAllRented = !isSold && avail <= 0 && rentedCount > 0;
+  const rentedCount = Math.min(qty, Math.max(0, count));
+  const isSold = qty <= 0; // 판매 완료(보유 0)
+  const isAllRented = !isSold && avail <= 0 && rentedCount > 0; // 전량 대여중
+
+  return { qty, count, avail, rentedCount, isSold, isAllRented, ready: data !== undefined };
+}
+
+function RacketAvailBadge({ id }: { id: string }) {
+  const { qty, avail, rentedCount, isSold, isAllRented } = useRacketAvailability(id);
 
   if (isSold) {
     return <div className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap">판매 완료</div>;
@@ -73,7 +76,12 @@ function RacketAvailBadge({ id }: { id: string }) {
 
 const RacketCard = React.memo(
   function RacketCard({ racket, viewMode, brandLabel }: Props) {
-    const router = useRouter();
+    const { avail, isSold, isAllRented, ready } = useRacketAvailability(racket.id);
+    const canBuy = ready ? !isSold && avail > 0 : true; // 로딩 중엔 일단 true(서버에서 최종 검증)
+    const canRent = racket.rental?.enabled ? (ready ? !isSold && avail > 0 : true) : false;
+    const buyDisabledTitle = !canBuy ? (isSold ? '판매가 종료된 상품입니다.' : '현재 전량 대여중이라 구매가 불가합니다.') : undefined;
+    const rentDisabledTitle = !canRent ? (racket.rental?.enabled ? (isSold ? '판매가 종료된 상품입니다.' : '현재 전량 대여중이라 대여가 불가합니다.') : '대여 불가 상태입니다') : undefined;
+
     if (viewMode === 'list') {
       return (
         <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 relative">
@@ -108,26 +116,48 @@ const RacketCard = React.memo(
                 </div>
                 <div className="text-left bp-lg:text-right">
                   <div className="text-lg bp-sm:text-2xl bp-md:text-3xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+                  <div className="mt-3 flex flex-wrap gap-2 bp-lg:justify-end">
+                    {canBuy ? (
+                      <Button asChild size="sm" className="shadow-lg text-xs bp-sm:text-base" onClick={(e) => e.stopPropagation()}>
+                        <Link href={`/rackets/${racket.id}/select-string`} onClick={(e) => e.stopPropagation()}>
+                          <ShoppingCart className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
+                          구매하기
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button size="sm" className="shadow-lg text-xs bp-sm:text-base" disabled title={buyDisabledTitle}>
+                        <ShoppingCart className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
+                        품절(구매 불가)
+                      </Button>
+                    )}
+
+                    {racket.rental?.enabled ? (
+                      canRent ? (
+                        <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
+                      ) : (
+                        <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm bp-sm:text-base" disabled aria-disabled title={rentDisabledTitle}>
+                          <Briefcase className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
+                          품절(대여 불가)
+                        </Button>
+                      )
+                    ) : (
+                      <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm bp-sm:text-base" disabled aria-disabled title={rentDisabledTitle}>
+                        <Briefcase className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
+                        대여 불가
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="mt-2 flex bp-lg:justify-end">
+                    <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
+                      <Button size="sm" variant="outline" className="bg-white/80 dark:bg-slate-900/30 shadow text-xs bp-sm:text-base">
+                        <Eye className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
+                        <span className="bp-sm:hidden">상세</span>
+                        <span className="hidden bp-sm:inline">상세보기</span>
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-
-              <div className="mt-2 flex justify-end gap-2">
-                <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                  <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs bp-sm:text-base">
-                    <Eye className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
-                    <span className="bp-sm:hidden">상세</span>
-                    <span className="hidden bp-sm:inline">상세보기</span>
-                  </Button>
-                </Link>
-
-                {racket.rental?.enabled ? (
-                  <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
-                ) : (
-                  <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm bp-sm:text-base" disabled aria-disabled title="대여 불가 상태입니다">
-                    <Briefcase className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
-                    대여 불가
-                  </Button>
-                )}
               </div>
             </div>
           </div>
@@ -184,19 +214,44 @@ const RacketCard = React.memo(
           </div>
         </CardContent>
 
-        <CardFooter className="p-3 bp-sm:p-6 pt-0 flex justify-between items-center">
-          <div>
+        <CardFooter className="p-3 bp-sm:p-6 pt-0">
+          <div className="w-full">
             <div className="font-bold text-base bp-sm:text-xl bp-md:text-2xl text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
-          </div>
 
-          {racket.rental?.enabled ? (
-            <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
-          ) : (
-            <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm bp-sm:text-base" disabled aria-disabled>
-              <Briefcase className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
-              대여 불가
-            </Button>
-          )}
+            <div className="mt-3 flex gap-2">
+              {canBuy ? (
+                <Button asChild size="sm" className="flex-1 min-w-0 bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600" onClick={(e) => e.stopPropagation()}>
+                  <Link href={`/rackets/${racket.id}/select-string`} onClick={(e) => e.stopPropagation()} className="justify-center">
+                    <ShoppingCart className="w-4 h-4 mr-1.5" />
+                    구매하기
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="sm" className="flex-1 min-w-0" disabled title={buyDisabledTitle}>
+                  <ShoppingCart className="w-4 h-4 mr-1.5" />
+                  품절
+                </Button>
+              )}
+
+              {racket.rental?.enabled ? (
+                canRent ? (
+                  <div className="flex-1 min-w-0">
+                    <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
+                  </div>
+                ) : (
+                  <Button size="sm" className="flex-1 min-w-0 shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400" disabled aria-disabled title={rentDisabledTitle}>
+                    <Briefcase className="w-4 h-4 mr-1.5" />
+                    품절
+                  </Button>
+                )
+              ) : (
+                <Button size="sm" className="flex-1 min-w-0 shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400" disabled aria-disabled title={rentDisabledTitle}>
+                  <Briefcase className="w-4 h-4 mr-1.5" />
+                  대여 불가
+                </Button>
+              )}
+            </div>
+          </div>
         </CardFooter>
       </Card>
     );
