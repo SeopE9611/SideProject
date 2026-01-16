@@ -15,6 +15,21 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
 
   const initialBrand = pickFirst(sp.brand);
   const initialCondition = pickFirst(sp.cond);
+  const initialQ = pickFirst(sp.q);
+  const initialMinPrice = pickFirst(sp.minPrice);
+  const initialMaxPrice = pickFirst(sp.maxPrice);
+
+  // /rackets -> /rackets/finder 로 "현재 필터 상태"를 들고 가는 링크
+  const finderHref = (() => {
+    const p = new URLSearchParams();
+    if (initialBrand) p.set('brand', initialBrand);
+    if (initialCondition) p.set('condition', initialCondition);
+    if (initialQ) p.set('q', initialQ);
+    if (initialMinPrice) p.set('minPrice', initialMinPrice);
+    if (initialMaxPrice) p.set('maxPrice', initialMaxPrice);
+    const qs = p.toString();
+    return qs ? `/rackets/finder?${qs}` : '/rackets/finder';
+  })();
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
@@ -44,7 +59,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
             <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스의 중고 라켓으로 합리적인 가격에 대여하세요.</p>
             <div className="mt-2 flex items-center justify-center">
               <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50">
-                <Link href="/rackets/finder" aria-label="라켓 파인더로 이동">
+                <Link href={finderHref} aria-label="라켓 파인더로 이동">
                   <Search className="mr-2 h-5 w-5" />
                   스펙으로 찾기 (라켓 파인더)
                 </Link>
