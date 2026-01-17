@@ -29,10 +29,12 @@ const config: Config = {
        * 메인/헤더/푸터부터 bp-* 기준으로 점진적 이관한다.
        */
       screens: {
+        'bp-xxs': { max: '360px' },
         'bp-xs': { max: '575px' },
         'bp-sm': '576px',
         'bp-md': '768px',
         'bp-lg': '1200px',
+        'bp-xl': '1400px',
         'bp-sm-only': { min: '576px', max: '767px' },
         'bp-md-only': { min: '768px', max: '1199px' },
       },

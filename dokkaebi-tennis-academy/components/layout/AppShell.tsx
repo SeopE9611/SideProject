@@ -24,7 +24,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {showSideMenu && <SideMenu />}
 
       <main id="main" className="flex-1">
-        <div className={cn('w-full px-0 bp-lg:pr-4 bp-xl:pr-8', showSideMenu ? 'bp-lg:pl-60 bp-xl:pl-64' : 'bp-lg:pl-0 bp-xl:pl-0')}>{children}</div>
+        <div className={cn('w-full px-0 bp-lg:pr-4 2xl:pr-8', showSideMenu ? 'bp-lg:pl-60 2xl:pl-64' : 'bp-lg:pl-0 2xl:pl-0')}>{children}</div>
       </main>
     </>
   );

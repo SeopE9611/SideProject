@@ -65,7 +65,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <div className="flex min-h-screen flex-col">
             <Header />
 
-            {/* ✅ SideMenu + 좌측패딩은 AppShell이 경로별로 처리 */}
+            {/* SideMenu + 좌측패딩은 AppShell이 경로별로 처리 */}
             <AppShell>{children}</AppShell>
 
             <Footer />

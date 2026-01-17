@@ -270,7 +270,7 @@ const ProductCard = React.memo(
             </div>
           </CardContent>
 
-          <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2 max-[360px]:flex-col">
+          <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2  bp-xxs:flex-col">
             <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs bg-transparent" onClick={handleStringSingleBuy}>
               단품 구매
             </Button>
@@ -283,7 +283,7 @@ const ProductCard = React.memo(
       </Link>
     );
   },
-  (prev, next) => prev.product._id === next.product._id && prev.viewMode === next.viewMode && prev.brandLabel === next.brandLabel
+  (prev, next) => prev.product._id === next.product._id && prev.viewMode === next.viewMode && prev.brandLabel === next.brandLabel,
 );
 
 export default ProductCard;
