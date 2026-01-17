@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { racketBrandLabel } from '@/lib/constants';
 import { useRacketCompareStore, type CompareRacketItem } from '@/app/store/racketCompareStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import RacketSpecQuickViewDialog from '@/app/rackets/compare/_components/RacketSpecQuickViewDialog';
 
 function fmtNum(n?: number | null, suffix = '') {
   if (n === null || n === undefined || !Number.isFinite(n)) return '-';
@@ -256,9 +257,14 @@ export default function RacketCompareClient() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <Link href={`/rackets/${r.id}`} className="font-semibold hover:text-primary transition-colors">
-                                {r.model}
-                              </Link>
+                              <RacketSpecQuickViewDialog
+                                racket={r}
+                                trigger={
+                                  <button type="button" className="font-semibold hover:text-primary transition-colors text-left">
+                                    {r.model}
+                                  </button>
+                                }
+                              />
                               {idx === 0 && (
                                 <Badge variant="secondary" className="h-5 px-2 text-[10px] bg-primary/10 text-primary dark:bg-primary/20">
                                   기준
