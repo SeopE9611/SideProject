@@ -22,20 +22,20 @@ const TooltipContent = React.forwardRef<React.ElementRef<typeof TooltipPrimitive
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        // 강제 흰색 배경
-        'z-50 overflow-hidden rounded-md border !bg-white !bg-opacity-100 px-3 py-1.5 ' +
-          'text-sm text-black shadow-md animate-in fade-in-0 zoom-in-95 ' +
+        // 전역 Tooltip 스타일
+        // - 모달(Dialog) 오버레이(z-50)보다 위로 올려서 "툴팁이 반투명"처럼 보이는 현상 방지
+        // - 배경/텍스트는 디자인 토큰(popover)로 통일 (다크모드 포함)
+        'z-[60] overflow-hidden rounded-md border border-border bg-popover px-3 py-1.5 ' +
+          'text-sm text-popover-foreground shadow-md opacity-100 animate-in fade-in-0 zoom-in-95 ' +
           'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 ' +
-          'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 ' +
-          'data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-        className
+          className,
       )}
       {...props}
     >
       {/* Tooltip message content */}
       {props.children}
       {/* Arrow pointing to the trigger */}
-      <TooltipPrimitive.Arrow className="fill-popover-foreground" />
+      <TooltipPrimitive.Arrow className="fill-popover" />
     </TooltipPrimitive.Content>
   </TooltipPrimitive.Portal>
 ));
