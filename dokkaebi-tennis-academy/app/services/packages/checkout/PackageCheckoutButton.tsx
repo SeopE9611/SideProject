@@ -8,6 +8,18 @@ import { getMyInfo } from '@/lib/auth.client';
 import { showErrorToast } from '@/lib/toast';
 import { CreditCard, Loader2 } from 'lucide-react';
 
+// 제출 직전 최종 가드(우회 방지)용 유효성
+// - PackageCheckoutClient에서 disabled로 1차 차단을 하지만,
+//   devtools로 disabled를 무시하거나 handleSubmit을 직접 호출할 수 있으니
+//   버튼 컴포넌트에서도 최종 검증실시.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const POSTAL_RE = /^\d{5}$/;
+const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
+const isValidKoreanPhone = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length === 10 || d.length === 11;
+};
+
 interface PackageInfo {
   id: string;
   title: string;
@@ -66,21 +78,83 @@ export default function PackageCheckoutButton({
   }, []);
 
   const handleSubmit = async () => {
+    // 0) 중복 클릭 방지
     if (submittingRef.current || isSubmitting) return;
-    submittingRef.current = true;
-    if (isSubmitting) return;
 
+    // 1) 사용자 정보 확인 중에는 클릭 차단
+    //    (loading 중 클릭되면, 로그인 유저인데도 guestInfo로 처리될 수 있음)
+    if (loading) {
+      showErrorToast('사용자 정보를 확인 중입니다. 잠시만 기다려주세요.');
+      return;
+    }
+
+    // 2) disabled 우회 방지: devtools로 버튼 활성화/직접 호출해도 여기서 막힘
+    //    - disabled에는 약관 동의 + 필수값 검증(canSubmit)이 들어가 있음
+    if (disabled) {
+      showErrorToast('필수 입력값/약관 동의를 확인해주세요.');
+      return;
+    }
+
+    // 3) 제출 직전 최종 검증(클라)
+    //    - Client에서 이미 막고 있지만, 최종 안전장치
+    const nameTrim = name.trim();
+    if (!nameTrim || nameTrim.length < 2) {
+      showErrorToast('신청자 이름을 확인해주세요. (2자 이상)');
+      return;
+    }
+
+    const emailTrim = email.trim();
+    if (!emailTrim || !EMAIL_RE.test(emailTrim)) {
+      showErrorToast('이메일 형식을 확인해주세요.');
+      return;
+    }
+
+    const phoneDigits = onlyDigits(phone);
+    if (!phoneDigits || !isValidKoreanPhone(phoneDigits)) {
+      showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
+      return;
+    }
+
+    const depositorTrim = depositor.trim();
+    if (!depositorTrim || depositorTrim.length < 2) {
+      showErrorToast('입금자명을 확인해주세요. (2자 이상)');
+      return;
+    }
+
+    if (!selectedBank) {
+      showErrorToast('입금 은행을 선택해주세요.');
+      return;
+    }
+
+    if (serviceMethod === '출장서비스') {
+      const postalTrim = postalCode.trim();
+      if (!postalTrim || !POSTAL_RE.test(postalTrim)) {
+        showErrorToast('우편번호(5자리)를 확인해주세요.');
+        return;
+      }
+      if (!address.trim()) {
+        showErrorToast('기본 주소를 입력해주세요.');
+        return;
+      }
+      if (!addressDetail.trim()) {
+        showErrorToast('상세 주소를 입력해주세요.');
+        return;
+      }
+    }
+
+    // 검증 통과 후에만 제출 플래그 ON
+    submittingRef.current = true;
     setIsSubmitting(true);
 
     try {
       const serviceInfo = {
-        name,
-        phone,
-        email,
+        name: nameTrim,
+        phone: phoneDigits,
+        email: emailTrim,
         address: serviceMethod === '출장서비스' ? address : '',
         addressDetail: serviceMethod === '출장서비스' ? addressDetail : '',
         postalCode: serviceMethod === '출장서비스' ? postalCode : '',
-        depositor,
+        depositor: depositorTrim,
         serviceRequest,
         serviceMethod,
       };
@@ -109,27 +183,43 @@ export default function PackageCheckoutButton({
         headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
         body: JSON.stringify(packageOrderData),
         credentials: 'include',
-      });
+     });
 
-      // 회원이면 정보 저장
-      if (user && saveInfo) {
-        await fetch('/api/users/me', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            phone,
-            email,
-            address: serviceMethod === '출장서비스' ? address : undefined,
-            postalCode: serviceMethod === '출장서비스' ? postalCode : undefined,
-            addressDetail: serviceMethod === '출장서비스' ? addressDetail : undefined,
-          }),
-        });
+     // 응답 파싱 (서버 에러에서도 json이 올 수 있어 안전하게 처리)
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
       }
 
-      const data = await res.json();
+      // 서버가 실패를 반환했으면 즉시 종료
+      if (!res.ok) {
+        showErrorToast(data?.error ?? '패키지 주문 실패: 서버 오류');
+        return;
+      }
 
       if (data?.packageOrderId) {
+        // 주문 성공 후에만 (선택적으로) 회원 정보 저장
+        if (user && saveInfo) {
+          try {
+            await fetch('/api/users/me', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                name: nameTrim,
+                phone: phoneDigits,
+                email: emailTrim,
+                address: serviceMethod === '출장서비스' ? address : undefined,
+                postalCode: serviceMethod === '출장서비스' ? postalCode : undefined,
+                addressDetail: serviceMethod === '출장서비스' ? addressDetail : undefined,
+              }),
+            });
+          } catch {
+            // 저장 실패는 주문 성공을 막지 않음(UX 우선)
+          }
+        }
         router.push(`/services/packages/success?packageOrderId=${data.packageOrderId}`);
         router.refresh();
         return;

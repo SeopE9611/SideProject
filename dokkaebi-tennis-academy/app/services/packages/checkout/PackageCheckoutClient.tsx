@@ -18,6 +18,18 @@ import { getMyInfo } from '@/lib/auth.client';
 import { CreditCard, MapPin, Shield, CheckCircle, UserIcon, Mail, Phone, MessageSquare, Building2, Package, Star, Calendar, Gift, Target, Award } from 'lucide-react';
 import PackageCheckoutButton from './PackageCheckoutButton';
 
+// 클라이언트 유효성(UX용)
+type CheckoutField = 'name' | 'email' | 'phone' | 'depositor' | 'postalCode' | 'address' | 'addressDetail';
+type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const POSTAL_RE = /^\d{5}$/;
+const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
+const isValidKoreanPhone = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length === 10 || d.length === 11; // 01012345678 / 0212345678 등
+};
+
 type UserLite = { id: string; name?: string; email?: string };
 
 declare global {
@@ -150,6 +162,16 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   const [serviceRequest, setServiceRequest] = useState('');
   const [depositor, setDepositor] = useState('');
 
+  // 사용자가 "한 번이라도" 입력을 시작한 뒤부터 에러를 보여주기 위한 플래그
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const touch = () => setHasInteracted(true);
+
+  // 에러가 있는 필드는 테두리를 붉게 표시 (UI 피드백)
+  const inputClass = (base: string, field: CheckoutField, errs: CheckoutFieldErrors) => {
+    if (!hasInteracted) return base;
+    return errs[field] ? `${base} border-red-500 focus:border-red-500` : base;
+  };
+
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
@@ -246,7 +268,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
             description: config.description || base?.description || '',
             validityPeriod,
             // 특징 리스트는 설정에 있으면 그걸 쓰고, 없으면 템플릿 사용
-            features: Array.isArray(config.features) && config.features.length > 0 ? config.features : base?.features ?? [],
+            features: Array.isArray(config.features) && config.features.length > 0 ? config.features : (base?.features ?? []),
             // 혜택은 "회당 가격 / 할인율"을 앞에 붙이고, 템플릿에서 겹치지 않는 문구만 뒤에 추가
             benefits: (() => {
               const result: string[] = [];
@@ -319,6 +341,41 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
     fetchUserInfo();
   }, [user]);
+
+  // 필드별 에러 계산
+  const fieldErrors = useMemo<CheckoutFieldErrors>(() => {
+    const errs: CheckoutFieldErrors = {};
+
+    const nameTrim = name.trim();
+    if (!nameTrim) errs.name = '신청자 이름은 필수입니다.';
+    else if (nameTrim.length < 2) errs.name = '신청자 이름은 2자 이상 입력해주세요.';
+
+    const emailTrim = email.trim();
+    if (!emailTrim) errs.email = '이메일은 필수입니다.';
+    else if (!EMAIL_RE.test(emailTrim)) errs.email = '이메일 형식을 확인해주세요.';
+
+    const phoneDigits = onlyDigits(phone);
+    if (!phoneDigits) errs.phone = '연락처는 필수입니다.';
+    else if (!isValidKoreanPhone(phoneDigits)) errs.phone = '연락처는 숫자 10~11자리를 입력해주세요.';
+
+    const depositorTrim = depositor.trim();
+    if (!depositorTrim) errs.depositor = '입금자명은 필수입니다.';
+    else if (depositorTrim.length < 2) errs.depositor = '입금자명은 2자 이상 입력해주세요.';
+
+    // 현재는 출장서비스 비활성화지만, 향후 활성화될 때를 대비해 검증을 같이 둠
+    if (serviceMethod === '출장서비스') {
+      const postalTrim = postalCode.trim();
+      if (!postalTrim) errs.postalCode = '우편번호는 필수입니다.';
+      else if (!POSTAL_RE.test(postalTrim)) errs.postalCode = '우편번호(5자리)를 확인해주세요.';
+      if (!address.trim()) errs.address = '기본 주소는 필수입니다.';
+      if (!addressDetail.trim()) errs.addressDetail = '상세 주소는 필수입니다.';
+    }
+
+    return errs;
+  }, [name, email, phone, depositor, serviceMethod, postalCode, address, addressDetail]);
+
+  const isFormValid = Object.keys(fieldErrors).length === 0;
+  const canSubmit = agreeTerms && agreePrivacy && agreeRefund && isFormValid;
 
   if (loading || isPackageLoading) {
     return (
@@ -407,18 +464,18 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     selectedPackage.color === 'blue'
                       ? 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20'
                       : selectedPackage.color === 'indigo'
-                      ? 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20'
-                      : selectedPackage.color === 'purple'
-                      ? 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20'
-                      : 'from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20'
+                        ? 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20'
+                        : selectedPackage.color === 'purple'
+                          ? 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20'
+                          : 'from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20'
                   } rounded-xl border-2 ${
                     selectedPackage.color === 'blue'
                       ? 'border-blue-200 dark:border-blue-800'
                       : selectedPackage.color === 'indigo'
-                      ? 'border-indigo-200 dark:border-indigo-800'
-                      : selectedPackage.color === 'purple'
-                      ? 'border-purple-200 dark:border-purple-800'
-                      : 'border-emerald-200 dark:border-emerald-800'
+                        ? 'border-indigo-200 dark:border-indigo-800'
+                        : selectedPackage.color === 'purple'
+                          ? 'border-purple-200 dark:border-purple-800'
+                          : 'border-emerald-200 dark:border-emerald-800'
                   }`}
                 >
                   <div className="flex items-center gap-4 mb-4">
@@ -427,10 +484,10 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                         selectedPackage.color === 'blue'
                           ? 'from-blue-500 to-cyan-500'
                           : selectedPackage.color === 'indigo'
-                          ? 'from-indigo-500 to-purple-500'
-                          : selectedPackage.color === 'purple'
-                          ? 'from-purple-500 to-pink-500'
-                          : 'from-emerald-500 to-teal-500'
+                            ? 'from-indigo-500 to-purple-500'
+                            : selectedPackage.color === 'purple'
+                              ? 'from-purple-500 to-pink-500'
+                              : 'from-emerald-500 to-teal-500'
                       } flex items-center justify-center text-white shadow-lg`}
                     >
                       {selectedPackage.color === 'blue' ? (
@@ -481,10 +538,10 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                                 selectedPackage.color === 'blue'
                                   ? 'from-blue-500 to-cyan-500'
                                   : selectedPackage.color === 'indigo'
-                                  ? 'from-indigo-500 to-purple-500'
-                                  : selectedPackage.color === 'purple'
-                                  ? 'from-purple-500 to-pink-500'
-                                  : 'from-emerald-500 to-teal-500'
+                                    ? 'from-indigo-500 to-purple-500'
+                                    : selectedPackage.color === 'purple'
+                                      ? 'from-purple-500 to-pink-500'
+                                      : 'from-emerald-500 to-teal-500'
                               }`}
                             ></div>
                             <span>{feature}</span>
@@ -528,21 +585,52 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                         <UserIcon className="h-4 w-4 text-blue-600" />
                         신청자 이름
                       </Label>
-                      <Input id="applicant-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="신청자 이름을 입력하세요" className="border-2 focus:border-blue-500 transition-colors" />
+                      <Input
+                        id="applicant-name"
+                        value={name}
+                        onChange={(e) => {
+                          setName(e.target.value);
+                          touch();
+                        }}
+                        placeholder="신청자 이름을 입력하세요"
+                        className={inputClass('border-2 focus:border-blue-500 transition-colors', 'name', fieldErrors)}
+                      />
+                      {hasInteracted && fieldErrors.name && <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="applicant-email" className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-purple-600" />
                         이메일
                       </Label>
-                      <Input id="applicant-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@naver.com" className="border-2 focus:border-purple-500 transition-colors" />
+                      <Input
+                        id="applicant-email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          touch();
+                        }}
+                        placeholder="example@naver.com"
+                        className={inputClass('border-2 focus:border-purple-500 transition-colors', 'email', fieldErrors)}
+                      />
+                      {hasInteracted && fieldErrors.email && <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>}
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="applicant-phone" className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-teal-600" />
                         연락처
                       </Label>
-                      <Input id="applicant-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외)" className="border-2 focus:border-teal-500 transition-colors" />
+                      <Input
+                        id="applicant-phone"
+                        value={phone}
+                        onChange={(e) => {
+                          setPhone(e.target.value);
+                          touch();
+                        }}
+                        placeholder="연락처를 입력하세요 ('-' 제외)"
+                        className={inputClass('border-2 focus:border-teal-500 transition-colors', 'phone', fieldErrors)}
+                      />
+                      {hasInteracted && fieldErrors.phone && <p className="mt-1 text-xs text-red-600">{fieldErrors.phone}</p>}
                     </div>
                   </div>
 
@@ -574,6 +662,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                   onValueChange={(value) => {
                     if (value === '출장서비스') return; // 클릭 무시
                     setServiceMethod(value as '방문이용' | '출장서비스');
+                    touch();
                   }}
                 >
                   {/* 매장 방문 */}
@@ -667,7 +756,13 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
                   <div className="space-y-3">
                     <Label htmlFor="bank-account">입금 계좌 선택</Label>
-                    <Select value={selectedBank} onValueChange={setSelectedBank}>
+                    <Select
+                      value={selectedBank}
+                      onValueChange={(v) => {
+                        setSelectedBank(v);
+                        touch();
+                      }}
+                    >
                       <SelectTrigger className="border-2 focus:border-emerald-500">
                         <SelectValue placeholder="입금 계좌를 선택하세요" />
                       </SelectTrigger>
@@ -681,7 +776,17 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
                   <div className="space-y-2">
                     <Label htmlFor="depositor-name">입금자명</Label>
-                    <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className="border-2 focus:border-emerald-500 transition-colors" />
+                    <Input
+                      id="depositor-name"
+                      value={depositor}
+                      onChange={(e) => {
+                        setDepositor(e.target.value);
+                        touch();
+                      }}
+                      placeholder="입금자명을 입력하세요"
+                      className={inputClass('border-2 focus:border-emerald-500 transition-colors', 'depositor', fieldErrors)}
+                    />
+                    {hasInteracted && fieldErrors.depositor && <p className="mt-1 text-xs text-red-600">{fieldErrors.depositor}</p>}
                   </div>
 
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -847,8 +952,9 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                   </div>
                 </CardContent>
                 <div className="flex flex-col gap-4 p-6">
+                  {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && <p className="text-xs text-red-600">필수 입력칸을 확인해주세요. (이름/이메일/연락처/입금자명)</p>}
                   <PackageCheckoutButton
-                    disabled={!(agreeTerms && agreePrivacy && agreeRefund)}
+                    disabled={!canSubmit}
                     packageInfo={selectedPackage}
                     name={name}
                     phone={phone}
