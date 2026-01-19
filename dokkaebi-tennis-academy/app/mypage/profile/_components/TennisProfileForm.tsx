@@ -11,6 +11,22 @@ import { Button } from '@/components/ui/button';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { MdSportsTennis } from 'react-icons/md';
 
+// 제출 직전 최종 유효성 가드
+const ALLOWED_LEVEL = new Set(['beginner', 'intermediate', 'advanced', 'pro']);
+const ALLOWED_HAND = new Set(['right', 'left', 'both']);
+const ALLOWED_PLAY_STYLE = new Set(['baseline', 'all_court', 'serve_and_volley', 'counter_puncher', 'other']);
+
+const trim = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+const isTooLong = (s: string, max: number) => s.length > max;
+
+// "300", "300g" 같이 입력해도 숫자만 뽑아서 파싱 (비어있으면 null)
+const parseOptionalNumber = (raw: string) => {
+  const cleaned = raw.replace(/[^0-9.]/g, '');
+  if (!cleaned) return null;
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+};
+
 type TennisProfile = {
   level: string;
   hand: string;
@@ -142,6 +158,113 @@ export default function TennisProfileForm() {
 
   // 2) 저장 버튼 클릭 시
   const handleSave = async () => {
+    // 저장 전 최종 검증 + 정규화
+    const level = trim(profile.level);
+    const hand = trim(profile.hand);
+    const playStyle = trim(profile.playStyle);
+
+    // Select 값은 허용값만 저장 (조작 방지)
+    if (level && !ALLOWED_LEVEL.has(level)) {
+      showErrorToast('실력 레벨 값이 올바르지 않습니다. 다시 선택해주세요.');
+      return;
+    }
+    if (hand && !ALLOWED_HAND.has(hand)) {
+      showErrorToast('사용 손 값이 올바르지 않습니다. 다시 선택해주세요.');
+      return;
+    }
+    if (playStyle && !ALLOWED_PLAY_STYLE.has(playStyle)) {
+      showErrorToast('플레이 스타일 값이 올바르지 않습니다. 다시 선택해주세요.');
+      return;
+    }
+
+    // 문자열 길이 제한(데이터 품질 보호)
+    const racketBrand = trim(profile.mainRacket.brand);
+    const racketModel = trim(profile.mainRacket.model);
+    const racketBalance = trim(profile.mainRacket.balance);
+
+    const stringBrand = trim(profile.mainString.brand);
+    const stringModel = trim(profile.mainString.model);
+    const stringGauge = trim(profile.mainString.gauge);
+    const stringMaterial = trim(profile.mainString.material);
+
+    const note = trim(profile.note);
+
+    if (isTooLong(racketBrand, 40) || isTooLong(racketModel, 60) || isTooLong(racketBalance, 40)) {
+      showErrorToast('라켓 정보가 너무 깁니다. (브랜드 40자 / 모델 60자 / 밸런스 40자 이내)');
+      return;
+    }
+    if (isTooLong(stringBrand, 40) || isTooLong(stringModel, 60) || isTooLong(stringGauge, 20) || isTooLong(stringMaterial, 30)) {
+      showErrorToast('스트링 정보가 너무 깁니다. (브랜드 40자 / 모델 60자 / 게이지 20자 / 재질 30자 이내)');
+      return;
+    }
+    if (isTooLong(note, 200)) {
+      showErrorToast('소개 문구는 200자 이내로 입력해주세요.');
+      return;
+    }
+
+    // 숫자 필드(무게/텐션): 숫자인지 + 범위 체크 (비어있으면 통과)
+    const weightRaw = trim(profile.mainRacket.weight);
+    const tMainRaw = trim(profile.mainString.tensionMain);
+    const tCrossRaw = trim(profile.mainString.tensionCross);
+
+    const weight = weightRaw ? parseOptionalNumber(weightRaw) : null;
+    if (weightRaw && weight === null) {
+      showErrorToast('라켓 무게는 숫자로 입력해주세요. (예: 300)');
+      return;
+    }
+    if (weight !== null && (weight < 200 || weight > 450)) {
+      showErrorToast('라켓 무게 범위가 비정상적입니다. (200~450g 권장)');
+      return;
+    }
+
+    const tMain = tMainRaw ? parseOptionalNumber(tMainRaw) : null;
+    if (tMainRaw && tMain === null) {
+      showErrorToast('메인 텐션은 숫자로 입력해주세요. (예: 23)');
+      return;
+    }
+    if (tMain !== null && (tMain < 10 || tMain > 35)) {
+      showErrorToast('메인 텐션 범위가 비정상적입니다. (10~35kg 권장)');
+      return;
+    }
+
+    const tCross = tCrossRaw ? parseOptionalNumber(tCrossRaw) : null;
+    if (tCrossRaw && tCross === null) {
+      showErrorToast('크로스 텐션은 숫자로 입력해주세요. (예: 22)');
+      return;
+    }
+    if (tCross !== null && (tCross < 10 || tCross > 35)) {
+      showErrorToast('크로스 텐션 범위가 비정상적입니다. (10~35kg 권장)');
+      return;
+    }
+
+    // 검증 통과 후 서버로 보낼 payload를 "정규화"해서 구성
+    // - trim 적용
+    // - 숫자 필드는 숫자만 남긴 문자열로 저장 (예: "23", "300")
+    const payload: TennisProfile = {
+      ...profile,
+      level,
+      hand,
+      playStyle,
+      mainRacket: {
+        ...profile.mainRacket,
+        brand: racketBrand,
+        model: racketModel,
+        weight: weight === null ? '' : String(weight),
+        balance: racketBalance,
+      },
+      mainString: {
+        ...profile.mainString,
+        brand: stringBrand,
+        model: stringModel,
+        gauge: stringGauge,
+        material: stringMaterial,
+        tensionMain: tMain === null ? '' : String(tMain),
+        tensionCross: tCross === null ? '' : String(tCross),
+      },
+      note,
+      isPublic: Boolean(profile.isPublic),
+    };
+
     setIsSaving(true);
     try {
       const res = await fetch('/api/users/me/tennis-profile', {
@@ -150,7 +273,7 @@ export default function TennisProfileForm() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(profile),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
