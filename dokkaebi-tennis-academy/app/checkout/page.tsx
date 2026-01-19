@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CartItem, useCartStore } from '@/app/store/cartStore';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import CheckoutButton from '@/app/checkout/CheckoutButton';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
@@ -21,12 +21,25 @@ import { bankLabelMap } from '@/lib/constants';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
 import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { cn } from '@/lib/utils';
 
 declare global {
   interface Window {
     daum: any;
   }
 }
+
+type CheckoutField = 'name' | 'phone' | 'email' | 'postalCode' | 'address' | 'addressDetail' | 'depositor' | 'items';
+type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
+
+// 유효성(클라 UI용) - 서버는 별도로 강제
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const POSTAL_RE = /^\d{5}$/;
+const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
+const isValidKoreanPhone = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length === 10 || d.length === 11; // 01012345678 / 0212345678 등
+};
 
 export default function CheckoutPage() {
   const sp = useSearchParams();
@@ -87,7 +100,7 @@ export default function CheckoutPage() {
           } catch {
             return [id, 0] as const;
           }
-        })
+        }),
       );
 
       if (cancelled) return;
@@ -249,6 +262,46 @@ export default function CheckoutPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
+
+  const isLoggedIn = !!user;
+  const needsShippingAddress = deliveryMethod === '택배수령';
+
+  // UI용 유효성(버튼 활성/에러 메시지 노출)
+  // - 서버 검증은 별도로 반드시 필요(다음 단계에서 보강)
+  const fieldErrors = useMemo<CheckoutFieldErrors>(() => {
+    const errors: CheckoutFieldErrors = {};
+
+    if (!name.trim()) errors.name = '수령인 이름은 필수입니다.';
+    if (!phone.trim()) errors.phone = '연락처는 필수입니다.';
+    else if (!isValidKoreanPhone(phone)) errors.phone = '연락처 형식을 확인해주세요. (숫자만, 10~11자리)';
+
+    const emailTrim = email.trim();
+    // 게스트 주문은 이메일 필수, 로그인 주문은 선택(하지만 입력 시 형식 체크)
+    if (!emailTrim) {
+      if (!isLoggedIn) errors.email = '비회원 주문은 이메일이 필요합니다.';
+    } else if (!EMAIL_RE.test(emailTrim)) {
+      errors.email = '이메일 형식을 확인해주세요.';
+    }
+
+    // 택배수령일 때만 주소 필수
+    if (needsShippingAddress) {
+      if (!postalCode.trim()) errors.postalCode = '우편번호는 필수입니다.';
+      else if (!POSTAL_RE.test(postalCode.trim())) errors.postalCode = '우편번호 형식을 확인해주세요. (5자리)';
+
+      if (!address.trim()) errors.address = '기본 주소는 필수입니다.';
+      if (!addressDetail.trim()) errors.addressDetail = '상세 주소는 필수입니다.';
+    }
+
+    // 무통장(현 구조)에서는 입금자명 필수
+    if (!depositor.trim()) errors.depositor = '입금자명은 필수입니다.';
+
+    if (!orderItems || orderItems.length === 0) errors.items = '주문 상품이 비어있습니다.';
+
+    return errors;
+  }, [name, phone, email, postalCode, address, addressDetail, depositor, orderItems, isLoggedIn, needsShippingAddress]);
+
+  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
+  const canSubmit = agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors;
 
   // 비회원 체크아웃 허용: quiet 조회 사용 (401이어도 전역 만료 금지)
   useEffect(() => {
@@ -447,21 +500,43 @@ export default function CheckoutPage() {
                         <UserIcon className="h-4 w-4 text-blue-600" />
                         수령인 이름
                       </Label>
-                      <Input id="recipient-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="수령인 이름을 입력하세요" className="border-2 focus:border-blue-500 transition-colors" />
+                      <Input
+                        id="recipient-name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="수령인 이름을 입력하세요"
+                        className={cn('border-2 focus:border-blue-500 transition-colors', fieldErrors.name && 'border-rose-500 focus:border-rose-500')}
+                      />
+                      {fieldErrors.name && <p className="text-xs text-rose-600">{fieldErrors.name}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="recipient-email" className="flex items-center gap-2 text-sm">
                         <Mail className="h-4 w-4 text-purple-600" />
                         이메일
                       </Label>
-                      <Input id="recipient-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@naver.com" className="border-2 focus:border-purple-500 transition-colors" />
+                      <Input
+                        id="recipient-email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="example@naver.com"
+                        className={cn('border-2 focus:border-purple-500 transition-colors', fieldErrors.email && 'border-rose-500 focus:border-rose-500')}
+                      />
+                      {fieldErrors.email && <p className="text-xs text-rose-600">{fieldErrors.email}</p>}
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="recipient-phone" className="flex items-center gap-2 text-sm">
                         <Phone className="h-4 w-4 text-teal-600" />
                         연락처
                       </Label>
-                      <Input id="recipient-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외)" className="border-2 focus:border-teal-500 transition-colors" />
+                      <Input
+                        id="recipient-phone"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="연락처를 입력하세요 ('-' 제외)"
+                        className={cn('border-2 focus:border-teal-500 transition-colors', fieldErrors.phone && 'border-rose-500 focus:border-rose-500')}
+                      />
+                      {fieldErrors.phone && <p className="text-xs text-rose-600">{fieldErrors.phone}</p>}
                     </div>
                   </div>
 
@@ -475,7 +550,16 @@ export default function CheckoutPage() {
                         우편번호 찾기
                       </Button>
                     </div>
-                    <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className="bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2" />
+                     <Input
+                    id="address-postal"
+                    readOnly
+                    value={postalCode}
+                    placeholder="우편번호"
+                    className={cn(
+                      'bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2',
+                      fieldErrors.postalCode && 'border-rose-500'
+                    )}
+                  />
                   </div>
 
                   <div className="space-y-2">
