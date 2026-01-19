@@ -701,7 +701,7 @@ const Header = () => {
             </div>
           </div>
         </SheetContent>
-        <header ref={headerRef as any} className="sticky top-0 z-[50] w-full isolate h-[72px]" data-scrolled={isScrolled}>
+        <header ref={headerRef as any} data-scrolled={isScrolled} className={`sticky top-0 z-[50] w-full isolate transition-[height] duration-300 ${isScrolled ? 'h-[56px]' : 'h-[72px]'}`}>
           <div
             aria-hidden="true"
             className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300
@@ -712,8 +712,10 @@ const Header = () => {
           <SiteContainer
             className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
             style={{
-              transform: isScrolled ? 'translateY(-8px) scale(0.96)' : 'translateY(0) scale(1)',
-              transformOrigin: 'center',
+              // 높이는 header(h-56/h-72)가 책임지고, 내부는 "축소"만
+              transform: isScrolled ? 'scale(0.96)' : 'scale(1)',
+              // 축소 기준점을 위로 잡으면 "위로 떠오르는 느낌"이 줄어듭니다.
+              transformOrigin: 'top center',
               willChange: 'transform',
             }}
           >
