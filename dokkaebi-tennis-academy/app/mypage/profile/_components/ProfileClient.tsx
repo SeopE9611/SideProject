@@ -18,6 +18,17 @@ import { MdSportsTennis } from 'react-icons/md';
 import TennisProfileForm from '@/app/mypage/profile/_components/TennisProfileForm';
 import { Badge } from '@/components/ui/badge';
 
+// 제출 직전 최종 유효성 가드
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const POSTAL_RE = /^\d{5}$/;
+const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
+const isValidKoreanPhone = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length === 10 || d.length === 11; // 01012345678 / 0212345678 등
+};
+// "8자 이상 + 영문/숫자 조합" (특수문자는 허용)
+const PW_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
 type Props = {
   user: {
     id: string;
@@ -77,15 +88,16 @@ export default function ProfileClient({ user }: Props) {
 
         const { address, postalCode, addressDetail, ...rest } = user;
 
-        setProfileData({
-          ...profileData,
+        // 최신 state 기반으로 안전하게 병합(closure stale 방지)
+        setProfileData((prev) => ({
+          ...prev,
           ...rest,
           address: {
             address1: address ?? '',
             postalCode: postalCode ?? '',
             address2: addressDetail ?? '',
           },
-        });
+        }));
       } catch (err) {
         console.error(err);
         showErrorToast('회원 정보를 불러오는 중 오류가 발생했습니다.');
@@ -115,6 +127,37 @@ export default function ProfileClient({ user }: Props) {
   };
 
   const handleSave = async () => {
+    // 저장 전 최종 유효성 검사
+    const nameTrim = String(profileData.name ?? '').trim();
+    const emailTrim = String(profileData.email ?? '').trim();
+    const phoneDigits = onlyDigits(profileData.phone ?? '');
+
+    // 필수값(화면에도 *로 표시되어 있음)
+    if (!nameTrim || nameTrim.length < 2) {
+      showErrorToast('이름을 확인해주세요. (2자 이상)');
+      return;
+    }
+    if (!emailTrim || !EMAIL_RE.test(emailTrim)) {
+      showErrorToast('이메일 형식을 확인해주세요.');
+      return;
+    }
+
+    // 전화번호는 UI상 필수 표시는 아니지만, 입력했다면 형식은 맞아야 함
+    if (phoneDigits && !isValidKoreanPhone(phoneDigits)) {
+      showErrorToast('전화번호는 숫자 10~11자리로 입력해주세요.');
+      return;
+    }
+
+    // 주소를 저장하려는 경우(주소/우편번호 중 하나라도 있으면) 우편번호 5자리 검증
+    const basicAddress = String(profileData.address?.address1 ?? '').trim();
+    const detailedAddress = String(profileData.address?.address2 ?? '').trim();
+    const postalCode = String(profileData.address?.postalCode ?? '').trim();
+    const hasAnyAddress = Boolean(basicAddress || detailedAddress || postalCode);
+    if (hasAnyAddress && (!postalCode || !POSTAL_RE.test(postalCode))) {
+      showErrorToast('우편번호(5자리)를 확인해주세요.');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const basicAddress = profileData.address.address1.trim();
@@ -128,9 +171,9 @@ export default function ProfileClient({ user }: Props) {
         },
         credentials: 'include',
         body: JSON.stringify({
-          name: profileData.name,
-          email: profileData.email,
-          phone: profileData.phone,
+          name: nameTrim,
+          email: emailTrim,
+          phone: phoneDigits, // 서버에는 정규화된 전화번호(숫자만)를 저장
           postalCode,
           address: basicAddress,
           addressDetail: detailedAddress,
@@ -150,6 +193,23 @@ export default function ProfileClient({ user }: Props) {
   };
 
   const handlePasswordChange = async () => {
+    // 비밀번호 변경 유효성 검사
+    const cur = passwordData.currentPassword;
+    const next = passwordData.newPassword;
+    const confirm = passwordData.confirmPassword;
+
+    if (!cur) {
+      showErrorToast('현재 비밀번호를 입력해주세요.');
+      return;
+    }
+    if (!next) {
+      showErrorToast('새 비밀번호를 입력해주세요.');
+      return;
+    }
+    if (!PW_RE.test(next)) {
+      showErrorToast('새 비밀번호는 8자 이상이며 영문/숫자 조합이어야 합니다.');
+      return;
+    }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       showErrorToast('새 비밀번호가 일치하지 않습니다.');
       return;
@@ -292,9 +352,10 @@ export default function ProfileClient({ user }: Props) {
                       </Label>
                       <Input
                         id="name"
-                        value={profileData.name ?? '이름 없음'}
+                        value={profileData.name ?? ''}
                         onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                         className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+                        placeholder="이름을 입력해주세요"
                       />
                       {/* 소셜 가입/연동 제공자 표시 (표시용) */}
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
@@ -325,9 +386,10 @@ export default function ProfileClient({ user }: Props) {
                       <Input
                         id="email"
                         type="email"
-                        value={profileData.email ?? '이메일 없음'}
+                        value={profileData.email ?? ''}
                         onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                         className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+                        placeholder="example@naver.com"
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
@@ -337,7 +399,7 @@ export default function ProfileClient({ user }: Props) {
                       </Label>
                       <Input
                         id="phone"
-                        value={profileData.phone ?? '전화번호 없음'}
+                        value={profileData.phone ?? ''}
                         onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                         className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                         placeholder="01012345678"
