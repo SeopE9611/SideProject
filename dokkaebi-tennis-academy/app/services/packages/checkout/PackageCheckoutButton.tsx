@@ -173,7 +173,7 @@ export default function PackageCheckoutButton({
           bank: selectedBank,
         },
         totalPrice: packageInfo.price,
-        guestInfo: !user ? { name, phone, email } : undefined,
+        guestInfo: !user ? { name: nameTrim, phone: phoneDigits, email: emailTrim } : undefined,
       };
 
       const idemKey = crypto.randomUUID();
@@ -183,9 +183,9 @@ export default function PackageCheckoutButton({
         headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
         body: JSON.stringify(packageOrderData),
         credentials: 'include',
-     });
+      });
 
-     // 응답 파싱 (서버 에러에서도 json이 올 수 있어 안전하게 처리)
+      // 응답 파싱 (서버 에러에서도 json이 올 수 있어 안전하게 처리)
       let data: any = null;
       try {
         data = await res.json();
