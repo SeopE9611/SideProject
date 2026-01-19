@@ -2,9 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ExternalLink, Info } from 'lucide-react';
+import { ExternalLink, Info, Maximize2, Circle, Weight, Ruler, Activity, Grid3X3, Tag, Scale } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,20 +44,58 @@ const SPEC_HINTS: Record<string, string> = {
   price: '가격은 등록/업데이트 시점에 따라 변동될 수 있습니다.',
 };
 
+const SPEC_ICONS: Record<string, typeof Circle> = {
+  headSize: Maximize2,
+  weight: Weight,
+  balance: Scale,
+  lengthIn: Ruler,
+  swingWeight: Activity,
+  stiffnessRa: Activity,
+  pattern: Grid3X3,
+  price: Tag,
+};
+
 function HintIcon({ text }: { text: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+          className={cn(
+            'inline-flex h-5 w-5 items-center justify-center rounded-full',
+            'text-muted-foreground/70 transition-colors duration-200',
+            'hover:bg-primary/10 hover:text-primary',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+          )}
           aria-label="해석 힌트"
         >
           <Info className="h-3.5 w-3.5" />
         </button>
       </TooltipTrigger>
-      <TooltipContent className="max-w-[280px] text-xs leading-relaxed">{text}</TooltipContent>
+      <TooltipContent className={cn('max-w-[280px] text-xs leading-relaxed', 'bg-card text-card-foreground shadow-lg', 'rounded-lg px-3 py-2')}>{text}</TooltipContent>
     </Tooltip>
+  );
+}
+
+function SpecRow({ specKey, label, value, isLast }: { specKey: string; label: string; value: string; isLast: boolean }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const IconComponent = SPEC_ICONS[specKey] || Circle;
+
+  return (
+    <div
+      className={cn('group flex items-center justify-between gap-3 px-3 py-2.5 bp-sm:px-4 bp-sm:py-3', 'transition-colors duration-200', 'hover:bg-muted/50', !isLast && 'border-b border-muted/60')}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="flex items-center gap-2 bp-sm:gap-3">
+        <div className={cn('flex h-7 w-7 items-center justify-center rounded-md bp-sm:h-8 bp-sm:w-8', 'bg-muted/60 transition-all duration-200', 'group-hover:bg-primary/10', isHovered && 'scale-105')}>
+          <IconComponent className={cn('h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4', 'text-muted-foreground transition-colors duration-200', 'group-hover:text-primary')} />
+        </div>
+        <span className={cn('text-xs font-medium bp-sm:text-sm', 'text-muted-foreground transition-colors duration-200', 'group-hover:text-foreground')}>{label}</span>
+        {SPEC_HINTS[specKey] ? <HintIcon text={SPEC_HINTS[specKey]} /> : null}
+      </div>
+      <div className={cn('text-sm font-semibold tabular-nums bp-sm:text-base', 'text-foreground transition-colors duration-200', specKey === 'price' && value !== '-' && 'text-primary')}>{value}</div>
+    </div>
   );
 }
 
@@ -75,96 +113,105 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
       { key: 'pattern', label: 'Pattern', value: racket.spec?.pattern ? String(racket.spec.pattern) : '-' },
       { key: 'price', label: 'Price', value: racket.price ? `${Math.round(racket.price).toLocaleString()}원` : '-' },
     ],
-    [racket]
+    [racket],
   );
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         {trigger ?? (
-          <button type="button" className="text-left font-semibold hover:underline">
+          <button type="button" className={cn('text-left font-semibold transition-colors duration-200', 'text-foreground hover:text-primary', 'focus-visible:outline-none focus-visible:text-primary')}>
             {racket.model}
           </button>
         )}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[860px]">
-        <DialogHeader>
-          <DialogTitle className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold">{racket.model}</span>
-            <span className="text-sm text-muted-foreground">{brandText}</span>
-            {racket.year ? (
-              <Badge variant="secondary" className="h-5 px-2 text-[10px]">
-                {racket.year}
-              </Badge>
-            ) : null}
-            {racket.condition ? (
-              <Badge variant="outline" className="h-5 px-2 text-[10px]">
-                {racket.condition}
-              </Badge>
-            ) : null}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="grid gap-4 bp-md:grid-cols-[220px_1fr]">
-          {/* 이미지 */}
-          <div className="flex items-start gap-3">
-            <div
-              className={cn(
-                'relative h-[200px] w-[200px] overflow-hidden rounded-lg bg-muted',
-                !racket.image && 'flex items-center justify-center'
-              )}
-            >
-              {racket.image ? (
-                <Image
-                  src={racket.image}
-                  alt={`${brandText} ${racket.model}`}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-              ) : (
-                <span className="text-xs text-muted-foreground">No Image</span>
-              )}
-            </div>
-          </div>
-
-          {/* 스펙 */}
-          <TooltipProvider delayDuration={120}>
-            <div className="space-y-3">
-              <div className="text-sm text-muted-foreground">
-                스펙은 <span className="font-medium text-foreground">비교 목록에 담을 때의 스냅샷</span>입니다.
-                (최신 값은 상세 페이지에서 확인)
+      <DialogContent className={cn('w-[calc(100vw-24px)] max-w-[860px] p-0 overflow-hidden', 'bg-card shadow-2xl', 'bp-sm:w-[calc(100vw-48px)]')}>
+        {/* Header with gradient accent */}
+        <div className="relative">
+          <div className={cn('absolute inset-x-0 top-0 h-1', 'bg-gradient-to-r from-primary/80 via-primary to-primary/80')} />
+          <DialogHeader className="px-4 pt-5 pb-3 bp-sm:px-6 bp-sm:pt-6 bp-sm:pb-4">
+            <DialogTitle className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
+              <span className="text-base font-bold text-foreground bp-sm:text-lg">{racket.model}</span>
+              <span className="text-xs text-muted-foreground bp-sm:text-sm">{brandText}</span>
+              <div className="flex items-center gap-1.5">
+                {racket.year ? (
+                  <Badge variant="secondary" className={cn('h-5 px-2 text-[10px] font-medium', 'bg-secondary/80 text-secondary-foreground', 'transition-colors duration-200')}>
+                    {racket.year}
+                  </Badge>
+                ) : null}
+                {racket.condition ? (
+                  <Badge variant="outline" className={cn('h-5 px-2 text-[10px] font-medium', 'border-muted-foreground/30 text-muted-foreground', 'transition-colors duration-200')}>
+                    {racket.condition}
+                  </Badge>
+                ) : null}
               </div>
+            </DialogTitle>
+          </DialogHeader>
+        </div>
 
-              <div className="rounded-lg border bg-background">
-                <div className="grid grid-cols-1 divide-y">
-                  {specRows.map((row) => (
-                    <div key={row.key} className="flex items-center justify-between gap-3 px-4 py-3">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span className="min-w-[110px]">{row.label}</span>
-                        {SPEC_HINTS[row.key] ? <HintIcon text={SPEC_HINTS[row.key]} /> : null}
-                      </div>
-                      <div className="text-sm font-medium tabular-nums">{row.value}</div>
-                    </div>
+        <div className="px-4 pb-4 bp-sm:px-6 bp-sm:pb-6">
+          <div className="grid gap-4 bp-md:grid-cols-[200px_1fr] bp-md:gap-6">
+            {/* 이미지 */}
+            <div className="flex justify-center bp-md:justify-start">
+              <div
+                className={cn(
+                  'group relative h-[180px] w-[180px] overflow-hidden bp-sm:h-[200px] bp-sm:w-[200px]',
+                  'rounded-xl bg-gradient-to-br from-muted/50 to-muted',
+                  'ring-1 ring-muted-foreground/10',
+                  'transition-all duration-300',
+                  'hover:ring-primary/30 hover:shadow-lg',
+                  !racket.image && 'flex items-center justify-center',
+                )}
+              >
+                {racket.image ? (
+                  <>
+                    <Image src={racket.image || '/placeholder.svg'} alt={`${brandText} ${racket.model}`} fill className={cn('object-cover transition-transform duration-500', 'group-hover:scale-105')} unoptimized />
+                    <div className={cn('absolute inset-0 bg-gradient-to-t from-black/20 to-transparent', 'opacity-0 transition-opacity duration-300', 'group-hover:opacity-100')} />
+                  </>
+                ) : (
+                  <span className="text-xs text-muted-foreground">No Image</span>
+                )}
+              </div>
+            </div>
+
+            {/* 스펙 */}
+            <TooltipProvider delayDuration={120}>
+              <div className="space-y-3 bp-sm:space-y-4">
+                {/* Info notice */}
+                <div className={cn('flex items-start gap-2 rounded-lg px-3 py-2.5', 'bg-muted/40 text-xs leading-relaxed text-muted-foreground', 'bp-sm:text-sm')}>
+                  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+                  <span>
+                    스펙은 <span className="font-medium text-foreground">비교 목록에 담을 때의 스냅샷</span>입니다.
+                    <span className="hidden bp-sm:inline"> (최신 값은 상세 페이지에서 확인)</span>
+                  </span>
+                </div>
+
+                <div className={cn('overflow-hidden rounded-xl', 'bg-background ring-1 ring-muted-foreground/10', 'transition-shadow duration-300', 'hover:ring-muted-foreground/20 hover:shadow-sm')}>
+                  {specRows.map((row, index) => (
+                    <SpecRow key={row.key} specKey={row.key} label={row.label} value={row.value} isLast={index === specRows.length - 1} />
                   ))}
                 </div>
-              </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <Button asChild variant="outline" className="inline-flex items-center gap-2">
-                  <Link href={`/rackets/${racket.id}`}>
-                    상세 페이지 열기
-                    <ExternalLink className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <div className="flex flex-col gap-2 pt-1 bp-sm:flex-row bp-sm:items-center bp-sm:gap-3">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className={cn('inline-flex items-center justify-center gap-2', 'border-muted-foreground/20 bg-transparent', 'transition-all duration-200', 'hover:border-primary/50 hover:bg-primary/5 hover:text-primary', 'bp-sm:flex-1')}
+                  >
+                    <Link href={`/rackets/${racket.id}`}>
+                      상세 페이지 열기
+                      <ExternalLink className="h-4 w-4" />
+                    </Link>
+                  </Button>
 
-                <Button asChild className="inline-flex items-center gap-2">
-                  <Link href={`/rackets/${racket.id}/select-string`}>구매하기</Link>
-                </Button>
+                  <Button asChild className={cn('inline-flex items-center justify-center gap-2', 'bg-primary text-primary-foreground', 'shadow-sm transition-all duration-200', 'hover:bg-primary/90 hover:shadow-md', 'bp-sm:flex-1')}>
+                    <Link href={`/rackets/${racket.id}/select-string`}>구매하기</Link>
+                  </Button>
+                </div>
               </div>
-            </div>
-          </TooltipProvider>
+            </TooltipProvider>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

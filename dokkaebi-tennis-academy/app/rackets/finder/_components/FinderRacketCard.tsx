@@ -11,6 +11,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useRacketCompareStore, type CompareRacketItem } from '@/app/store/racketCompareStore';
 import { useMemo } from 'react';
 import { Scale, ShoppingCart, Info } from 'lucide-react';
+import RacketSpecQuickViewDialog from '@/app/rackets/compare/_components/RacketSpecQuickViewDialog';
 
 type RacketSpec = {
   headSize?: number | null;
@@ -165,12 +166,15 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
 
             {/* 액션 버튼 */}
             <div className="flex flex-wrap items-center gap-2 mt-auto">
-              <Button asChild variant="outline" size="sm" className="rounded-lg bg-transparent">
-                <Link href={`/rackets/${racket.id}`}>
-                  <Info className="mr-1.5 h-3.5 w-3.5" />
-                  상세 스펙
-                </Link>
-              </Button>
+               <RacketSpecQuickViewDialog
+                racket={compareItem}
+                trigger={
+                  <Button type="button" variant="outline" size="sm" className="rounded-lg bg-transparent">
+                    <Info className="mr-1.5 h-3.5 w-3.5" />
+                    상세 스펙
+                  </Button>
+                }
+              />
 
               <Button
                 type="button"
