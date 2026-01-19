@@ -37,7 +37,7 @@ export default function SideMenu() {
       'dark:hover:from-blue-950/30 dark:hover:to-emerald-950/30',
       'hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-300/80 dark:hover:ring-slate-700/60 hover:z-10 active:scale-[0.99]',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-      isActive ? 'bg-gradient-to-r from-blue-50 to-emerald-50 text-blue-700 dark:from-blue-950/50 dark:to-emerald-950/50 dark:text-blue-400 shadow-sm' : 'text-muted-foreground hover:text-foreground'
+      isActive ? 'bg-gradient-to-r from-blue-50 to-emerald-50 text-blue-700 dark:from-blue-950/50 dark:to-emerald-950/50 dark:text-blue-400 shadow-sm' : 'text-muted-foreground hover:text-foreground',
     );
   };
 
@@ -49,7 +49,7 @@ export default function SideMenu() {
       'dark:hover:from-slate-900/50 dark:hover:to-slate-800/50',
       'hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-300/70 dark:hover:ring-slate-700/60 hover:z-10 active:scale-[0.99]',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-      isActive ? 'bg-gradient-to-r from-slate-100 to-slate-50 text-foreground font-medium dark:from-slate-800/50 dark:to-slate-900/30 shadow-sm' : 'text-muted-foreground hover:text-foreground'
+      isActive ? 'bg-gradient-to-r from-slate-100 to-slate-50 text-foreground font-medium dark:from-slate-800/50 dark:to-slate-900/30 shadow-sm' : 'text-muted-foreground hover:text-foreground',
     );
   };
 
