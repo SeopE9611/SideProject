@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 /**
  * 라켓 비교(최대 4개) 전역 스토어
@@ -101,6 +101,8 @@ export const useRacketCompareStore = create<RacketCompareState>()(
     }),
     {
       name: 'racket-compare-storage', // localStorage key
+       // 비교 목록은 탭 세션 단위로 유지(탭/브라우저 닫으면 자동 초기화)
+      storage: createJSONStorage(() => sessionStorage),
     }
   )
 );

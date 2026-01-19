@@ -16,6 +16,7 @@ import FinderRacketCard, { type FinderRacket } from '@/app/rackets/finder/_compo
 import { X, Search, RotateCcw, SlidersHorizontal, ChevronLeft, ChevronRight, Filter, Sparkles } from 'lucide-react';
 import RacketCompareTray from '@/app/rackets/finder/_components/RacketCompareTray';
 import { cn } from '@/lib/utils';
+import { useRacketCompareStore } from '@/app/store/racketCompareStore';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -56,13 +57,13 @@ const DEFAULT: Filters = {
   condition: '',
   sort: 'createdAt_desc',
   price: [0, 600000],
-  headSize: [85, 115],
-  weight: [240, 360],
+  headSize: [80, 120],
+  weight: [200, 380],
   patterns: [],
-  balance: [300, 370],
+  balance: [280, 380],
   lengthIn: [25, 29],
-  stiffnessRa: [50, 80],
-  swingWeight: [250, 380],
+  stiffnessRa: [45, 80],
+  swingWeight: [250, 390],
   strict: false,
 };
 
@@ -184,6 +185,8 @@ export default function RacketFinderClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const clearCompare = useRacketCompareStore((s) => s.clear);
+
   const didInitFromQueryRef = useRef(false);
   const [draft, setDraft] = useState<Filters>(DEFAULT);
   const [applied, setApplied] = useState<Filters>(DEFAULT);
@@ -286,12 +289,6 @@ export default function RacketFinderClient() {
     writeFinderState({ draft, applied, page, hasSearched });
   }, [draft, applied, page, hasSearched]);
 
-  // URL이 비어도(= /rackets/finder) 이전 상태를 복구할 수 있도록 sessionStorage에 저장
-  useEffect(() => {
-    if (!didInitFromQueryRef.current) return;
-    writeFinderState({ draft, applied, page, hasSearched });
-  }, [draft, applied, page, hasSearched]);
-
   const qs = useMemo(() => buildQuery(applied, page, pageSize), [applied, page, pageSize]);
   const swrKey = hasSearched ? `/api/rackets/finder?${qs}` : null;
   const { data, error, isLoading } = useSWR(swrKey, fetcher);
@@ -313,6 +310,7 @@ export default function RacketFinderClient() {
     setPage(1);
     setHasSearched(false);
     clearFinderPersist();
+    clearCompare();
     router.replace(pathname, { scroll: false });
   };
 
