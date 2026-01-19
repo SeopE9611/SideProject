@@ -2,17 +2,19 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ChevronLeft, ChevronRight, Check, Truck, Shield, Calendar, ShoppingCart, FileText, Settings } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Check, Truck, Shield, Calendar, ShoppingCart, FileText, Settings, Scale } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
 import { racketBrandLabel } from '@/lib/constants';
 import StatusBadge from '@/components/badges/StatusBadge';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { CompareRacketItem, useRacketCompareStore } from '@/app/store/racketCompareStore';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 interface RacketDetailClientProps {
   racket: any;
@@ -49,6 +51,53 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
   const images = racket.images || [];
   const open = searchParams.get('open'); // 'rent' 면 자동 오픈
+
+  // 비교(Compare) 연동
+  const { items: compareItems, add: addToCompare, remove: removeFromCompare } = useRacketCompareStore();
+
+  const compareCount = useMemo(() => (compareItems || []).filter(Boolean).length, [compareItems]);
+  const isCompared = useMemo(() => (compareItems || []).some((x: any) => x?.id === racketId), [compareItems, racketId]);
+
+  const compareItem = useMemo<CompareRacketItem>(() => {
+    const toNum = (v: any) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : undefined;
+    };
+    return {
+      id: racketId,
+      brand: racket?.brand ?? '',
+      model: racket?.model ?? '',
+      year: toNum(racket?.year),
+      condition: racket?.condition,
+      image: images?.[0],
+      price: toNum(racket?.price),
+      spec: {
+        headSize: toNum(racket?.spec?.headSize),
+        weight: toNum(racket?.spec?.weight),
+        balance: toNum(racket?.spec?.balance),
+        lengthIn: toNum(racket?.spec?.lengthIn),
+        swingWeight: toNum(racket?.spec?.swingWeight),
+        stiffnessRa: toNum(racket?.spec?.stiffnessRa),
+        pattern: racket?.spec?.pattern,
+      },
+    };
+  }, [racketId, racket, images]);
+
+  const toggleCompare = () => {
+    if (!racketId) return;
+    if (isCompared) {
+      removeFromCompare(racketId);
+      showSuccessToast('비교 목록에서 제거했습니다.');
+      return;
+    }
+    // 최대 4개 제한 (스토어가 처리하더라도 UI에서 1차 방어)
+    if (compareCount >= 4) {
+      showErrorToast('비교는 최대 4개까지 가능합니다.');
+      return;
+    }
+    addToCompare(compareItem);
+    showSuccessToast('비교 목록에 담았습니다.');
+  };
 
   useEffect(() => {
     if (open === 'rent' && racket?.rental?.enabled) {
@@ -222,6 +271,24 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         </Button>
                       )}
                     </div>
+                    {/* 비교 버튼(상세에서도 비교 담기/이동 가능) */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className={`flex-1 h-12 ${isCompared ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100' : ''}`}
+                        onClick={toggleCompare}
+                        disabled={!racketId}
+                        title={!racketId ? '상품 ID가 없어 비교 목록에 담을 수 없습니다.' : !isCompared && compareCount >= 4 ? '비교는 최대 4개까지 가능합니다.' : undefined}
+                      >
+                        <Scale className="mr-2 h-4 w-4" />
+                        {isCompared ? `비교 선택됨 (${compareCount}/4)` : `다른 라켓과 비교 (${compareCount}/4)`}
+                      </Button>
+
+                      <Button variant="outline" className="flex-1 h-12" onClick={() => router.push('/rackets/compare')} disabled={compareCount < 2} title={compareCount < 2 ? '비교는 최소 2개부터 가능합니다.' : undefined}>
+                        비교하기{compareCount < 2 ? '(2개↑)' : ''}
+                      </Button>
+                    </div>
+
                     {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <div className="mt-3 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3">대여 불가 사유: {racket.rental.disabledReason}</div>}
                   </div>
 
@@ -411,6 +478,33 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {racket?.rental?.enabled === false ? '대여 불가' : soldOut ? '품절' : '대여 불가'}
                 </button>
               )}
+            </div>
+            {/* 모바일: 비교(토글/이동) */}
+            <div className="pt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={toggleCompare}
+                disabled={!racketId}
+                title={!racketId ? '상품 ID가 없어 비교 목록에 담을 수 없습니다.' : !isCompared && compareCount >= 4 ? '비교는 최대 4개까지 가능합니다.' : undefined}
+                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${
+                  isCompared ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100'
+                } ${!racketId || (!isCompared && compareCount >= 4) ? 'opacity-60 cursor-not-allowed' : ''}`}
+              >
+                <Scale className="h-4 w-4" />
+                {isCompared ? `비교 선택됨 (${compareCount}/4)` : `비교 담기 (${compareCount}/4)`}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.push('/rackets/compare')}
+                disabled={compareCount < 2}
+                title={compareCount < 2 ? '비교는 최소 2개부터 가능합니다.' : undefined}
+                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${
+                  compareCount < 2 ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100'
+                }`}
+              >
+                비교하기
+              </button>
             </div>
             {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <p className="mt-3 text-sm text-red-600 bg-red-50 rounded px-3 py-2">대여 불가 사유: {racket.rental.disabledReason}</p>}
           </div>
