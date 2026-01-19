@@ -25,6 +25,21 @@ declare global {
   }
 }
 
+// 제출 직전 최종 유효성 가드
+type Bank = 'shinhan' | 'kookmin' | 'woori';
+const ALLOWED_BANKS = new Set<Bank>(['shinhan', 'kookmin', 'woori']);
+const POSTAL_RE = /^\d{5}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
+const isValidKoreanPhone = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length === 10 || d.length === 11;
+};
+const isValidAccountDigits = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length >= 8 && d.length <= 20;
+};
+
 type Initial = {
   racketId: string;
   period: 7 | 15 | 30;
@@ -90,8 +105,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
    * - stringPrice: 선택한 스트링 상품 가격
    * - stringingFee: 선택한 스트링 상품의 mountingFee(장착비/교체비)
    */
-  const stringPrice = requestStringing ? selectedString?.price ?? 0 : 0;
-  const stringingFee = requestStringing ? selectedString?.mountingFee ?? 0 : 0;
+  const stringPrice = requestStringing ? (selectedString?.price ?? 0) : 0;
+  const stringingFee = requestStringing ? (selectedString?.mountingFee ?? 0) : 0;
 
   // 총 결제 금액 = 대여수수료 + 보증금 + 스트링 + 교체비
   const total = initial.fee + initial.deposit + stringPrice + stringingFee;
@@ -207,7 +222,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   // 우편번호 검색기
   const openPostcode = () => {
     if (!window?.daum?.Postcode) {
-      alert('주소 검색기를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      showErrorToast('주소 검색기를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       return;
     }
     new window.daum.Postcode({
@@ -221,33 +236,90 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   };
 
   const onPay = async () => {
+    // 중복 클릭/중복 요청 방지(버튼 disabled 우회 대비)
+    if (loading) return;
     if (requestStringing && !selectedString?.id) {
       showErrorToast('스트링 교체를 함께 진행하려면 먼저 스트링을 선택해주세요.');
       router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`);
       return;
     }
 
-    if (!name || !phone || !postalCode || !address) {
-      showErrorToast('필수 정보를 모두 입력해주세요.');
-      return;
-    }
-
-    if (!selectedBank || !depositor) {
-      showErrorToast('입금 은행과 입금자명을 입력해주세요.');
-      return;
-    }
-
-    if (!refundBank || !refundAccount || !refundHolder) {
-      showErrorToast('보증금 환급 계좌(은행/계좌번호/예금주)를 모두 입력해주세요.');
-      return;
-    }
-
-    if (!agreeTerms || !agreePrivacy || !agreeRefund) {
-      showErrorToast('필수 약관에 모두 동의해주세요.');
-      return;
-    }
-
     try {
+      // 제출 직전 최종 검증 + 정규화
+      const nameTrim = name.trim();
+      const emailTrim = email.trim().toLowerCase();
+      const phoneDigits = onlyDigits(phone);
+      const postalDigits = onlyDigits(postalCode).trim();
+      const addressTrim = address.trim();
+      const addressDetailTrim = addressDetail.trim();
+      const deliveryRequestTrim = deliveryRequest.trim();
+      const depositorTrim = depositor.trim();
+      const selectedBankValue = selectedBank as Bank | '';
+      const refundBankValue = refundBank as Bank | '';
+      const refundAccountDigits = onlyDigits(refundAccount);
+      const refundHolderTrim = refundHolder.trim();
+
+      // 필수 입력
+      if (!nameTrim || !phoneDigits || !postalDigits || !addressTrim) {
+        showErrorToast('필수 정보를 모두 입력해주세요.');
+        return;
+      }
+      if (nameTrim.length < 2) {
+        showErrorToast('수령인 이름은 2자 이상 입력해주세요.');
+        return;
+      }
+      if (!isValidKoreanPhone(phoneDigits)) {
+        showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
+        return;
+      }
+      if (!POSTAL_RE.test(postalDigits)) {
+        showErrorToast('우편번호(5자리)를 확인해주세요.');
+        return;
+      }
+      // 이메일은 선택값이지만, 입력했다면 형식은 보장
+      if (emailTrim && !EMAIL_RE.test(emailTrim)) {
+        showErrorToast('이메일 형식을 확인해주세요.');
+        return;
+      }
+
+      // 결제(무통장) 정보
+      if (!selectedBankValue || !depositorTrim) {
+        showErrorToast('입금 은행과 입금자명을 입력해주세요.');
+        return;
+      }
+      if (!ALLOWED_BANKS.has(selectedBankValue)) {
+        showErrorToast('입금 은행 값이 올바르지 않습니다. 다시 선택해주세요.');
+        return;
+      }
+      if (depositorTrim.length < 2) {
+        showErrorToast('입금자명은 2자 이상 입력해주세요.');
+        return;
+      }
+
+      // 환급 계좌(보증금) 정보
+      if (!refundBankValue || !refundAccountDigits || !refundHolderTrim) {
+        showErrorToast('보증금 환급 계좌(은행/계좌번호/예금주)를 모두 입력해주세요.');
+        return;
+      }
+      if (!ALLOWED_BANKS.has(refundBankValue)) {
+        showErrorToast('환급 은행 값이 올바르지 않습니다. 다시 선택해주세요.');
+        return;
+      }
+      if (!isValidAccountDigits(refundAccountDigits)) {
+        showErrorToast('환급 계좌번호는 숫자만 8~20자리로 입력해주세요.');
+        return;
+      }
+      if (refundHolderTrim.length < 2) {
+        showErrorToast('환급 예금주는 2자 이상 입력해주세요.');
+        return;
+      }
+
+      // 약관 동의
+      if (!agreeTerms || !agreePrivacy || !agreeRefund) {
+        showErrorToast('필수 약관에 모두 동의해주세요.');
+        return;
+      }
+
       setLoading(true);
 
       const res = await fetch('/api/rentals', {
@@ -263,22 +335,22 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
           payment: {
             method: 'bank_transfer',
-            bank: selectedBank,
-            depositor,
+            bank: selectedBankValue,
+            depositor: depositorTrim,
           },
           shipping: {
-            name,
-            phone,
-            postalCode,
-            address,
-            addressDetail,
-            deliveryRequest,
+            name: nameTrim,
+            phone: phoneDigits,
+            postalCode: postalDigits,
+            address: addressTrim,
+            addressDetail: addressDetailTrim,
+            deliveryRequest: deliveryRequestTrim,
             shippingMethod: deliveryMethod === '방문수령' ? 'pickup' : 'delivery',
           },
           refundAccount: {
-            bank: refundBank,
-            account: refundAccount,
-            holder: refundHolder,
+            bank: refundBankValue,
+            account: refundAccountDigits,
+            holder: refundHolderTrim,
           },
           // --- 스트링 교체 요청 ---
           // 결제금액(대여료/보증금)은 그대로 두고,
@@ -294,17 +366,17 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       const json: any = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        alert(json?.message ?? '결제 처리에 실패했습니다.');
+        showErrorToast(json?.message ?? '결제 처리에 실패했습니다.');
         return;
       }
 
       // 성공 페이지에서 안내를 위해(기존 로직 유지)
       try {
-        sessionStorage.setItem('rentals-last-bank', selectedBank);
-        sessionStorage.setItem('rentals-last-depositor', depositor);
-        sessionStorage.setItem('rentals-refund-bank', refundBank);
-        sessionStorage.setItem('rentals-refund-account', refundAccount);
-        sessionStorage.setItem('rentals-refund-holder', refundHolder);
+        sessionStorage.setItem('rentals-last-bank', String(selectedBankValue));
+        sessionStorage.setItem('rentals-last-depositor', depositorTrim);
+        sessionStorage.setItem('rentals-refund-bank', String(refundBankValue));
+        sessionStorage.setItem('rentals-refund-account', refundAccountDigits);
+        sessionStorage.setItem('rentals-refund-holder', refundHolderTrim);
         sessionStorage.setItem('rentals-success', '1'); // 뒤로가기 방지
       } catch {}
 
@@ -319,6 +391,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       qs.set('id', rentalId);
       if (requestStringing) qs.set('withService', '1');
       router.push(`/rentals/success?${qs.toString()}`);
+    } catch (e) {
+      showErrorToast('결제 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -823,7 +897,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     disabled={loading}
                     className={cn(
                       'w-full h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:from-blue-700 hover:via-purple-700 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300',
-                      loading && 'opacity-50 cursor-not-allowed'
+                      loading && 'opacity-50 cursor-not-allowed',
                     )}
                   >
                     {loading ? '처리 중...' : '결제하기'}
