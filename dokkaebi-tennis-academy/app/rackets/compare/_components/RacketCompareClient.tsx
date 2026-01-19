@@ -39,6 +39,17 @@ const ratio01 = (v: number, min: number, max: number) => {
 };
 const fmtFixed = (n: number, decimals = 0) => (decimals > 0 ? n.toFixed(decimals) : String(Math.round(n)));
 
+// finder에서 마지막으로 사용한 URL(쿼리 포함)을 저장해두었다가, 비교 페이지에서 돌아갈 때 복원합니다.
+const FINDER_LAST_URL_KEY = 'racketFinder.lastUrl.v1';
+const readFinderLastUrl = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.sessionStorage.getItem(FINDER_LAST_URL_KEY);
+  } catch {
+    return null;
+  }
+};
+
 type Row =
   | { key: string; label: string; hint?: string; kind: 'text'; get: (r: CompareRacketItem) => string }
   | {
@@ -57,15 +68,17 @@ export default function RacketCompareClient() {
 
   const router = useRouter();
 
-  // 파인더로 돌아갈 때: (1) 비교 목록 비우기 → 파인더에서 비교 버튼 비활성, (2) 가능하면 history back으로 필터/스크롤 복원
+  // 파인더로 돌아갈 때: (1) 비교 목록 비우기 → 파인더에서 비교 버튼 비활성, (2) 마지막 Finder URL(쿼리 포함)로 복원
   const goBackToFinder = () => {
-    clear();
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push('/rackets/finder');
-    }
+    // clear();
+    const last = readFinderLastUrl();
+    router.push(last || '/rackets/finder');
   };
+
+  // 비교 페이지를 떠날 때도 비교 목록을 비움(파인더의 비교 UI 상태가 남지 않도록)
+  // useEffect(() => {
+  //   return () => clear();
+  // }, [clear]);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -238,7 +251,7 @@ export default function RacketCompareClient() {
                 </div>
               )}
 
-             <Button onClick={goBackToFinder} className="rounded-lg gap-2">
+              <Button onClick={goBackToFinder} className="rounded-lg gap-2">
                 라켓 고르러 가기
                 <ChevronRight className="h-4 w-4" />
               </Button>

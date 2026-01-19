@@ -66,42 +66,53 @@ const DEFAULT: Filters = {
   strict: false,
 };
 
-const FINDER_STATE_KEY = 'racketFinderState:v1';
-type FinderPersistedState = {
+// --- Finder 상태 복원(세션 단위) ---
+const FINDER_STATE_KEY = 'racketFinder.state.v1';
+const FINDER_LAST_URL_KEY = 'racketFinder.lastUrl.v1';
+
+type PersistedFinderState = {
   draft: Filters;
   applied: Filters;
   page: number;
   hasSearched: boolean;
 };
 
-function readFinderState(): FinderPersistedState | null {
+const readFinderState = (): PersistedFinderState | null => {
+  if (typeof window === 'undefined') return null;
   try {
-    const raw = sessionStorage.getItem(FINDER_STATE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed?.draft || !parsed?.applied) return null;
-    return {
-      draft: parsed.draft,
-      applied: parsed.applied,
-      page: typeof parsed.page === 'number' ? parsed.page : 1,
-      hasSearched: !!parsed.hasSearched,
-    };
+    const raw = window.sessionStorage.getItem(FINDER_STATE_KEY);
+    return raw ? (JSON.parse(raw) as PersistedFinderState) : null;
   } catch {
     return null;
   }
-}
+};
 
-function writeFinderState(next: FinderPersistedState) {
+const writeFinderState = (state: PersistedFinderState) => {
+  if (typeof window === 'undefined') return;
   try {
-    sessionStorage.setItem(FINDER_STATE_KEY, JSON.stringify(next));
+    window.sessionStorage.setItem(FINDER_STATE_KEY, JSON.stringify(state));
   } catch {}
-}
+};
 
-function clearFinderState() {
+const writeFinderLastUrl = (url: string) => {
+  if (typeof window === 'undefined') return;
   try {
-    sessionStorage.removeItem(FINDER_STATE_KEY);
+    window.sessionStorage.setItem(FINDER_LAST_URL_KEY, url);
   } catch {}
-}
+};
+
+const readFinderLastUrl = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return window.sessionStorage.getItem(FINDER_LAST_URL_KEY);
+};
+
+const clearFinderPersist = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.removeItem(FINDER_STATE_KEY);
+    window.sessionStorage.removeItem(FINDER_LAST_URL_KEY);
+  } catch {}
+};
 
 function normalizePattern(p: string) {
   return p.replace(/\s+/g, '').replace(/×/g, 'x').toLowerCase();
@@ -183,7 +194,9 @@ export default function RacketFinderClient() {
 
   const syncUrl = (f: Filters, nextPage: number) => {
     const nextQs = buildQuery(f, nextPage, pageSize);
-    router.replace(`${pathname}?${nextQs}`, { scroll: false });
+    const nextUrl = `${pathname}?${nextQs}`;
+    writeFinderLastUrl(nextUrl);
+    router.replace(nextUrl, { scroll: false });
   };
 
   useEffect(() => {
@@ -192,13 +205,22 @@ export default function RacketFinderClient() {
 
     const sp = searchParams;
     const hasAnyQuery = sp.toString().length > 0;
+    // 1) URL 쿼리 없는 경우: 세션에 저장된 Finder 상태 복원
     if (!hasAnyQuery) {
       const persisted = readFinderState();
-      if (persisted) {
-        setDraft(persisted.draft);
-        setApplied(persisted.applied);
-        setPage(Math.max(1, persisted.page || 1));
-        setHasSearched(!!persisted.hasSearched);
+      if (!persisted) return;
+
+      setDraft(persisted.draft);
+      setApplied(persisted.applied);
+      const nextPage = Math.max(1, persisted.page || 1);
+      setPage(nextPage);
+      setHasSearched(!!persisted.hasSearched);
+
+      // 마지막 검색 결과가 있었던 경우엔 URL도 복원(공유 가능한 형태)
+      if (persisted.hasSearched) {
+        const nextUrl = `${pathname}?${buildQuery(persisted.applied, nextPage, pageSize)}`;
+        writeFinderLastUrl(nextUrl);
+        router.replace(nextUrl, { scroll: false });
       }
       return;
     }
@@ -248,12 +270,21 @@ export default function RacketFinderClient() {
     next.swingWeight = readRange('minSwingWeight', 'maxSwingWeight', next.swingWeight);
 
     const p = readNum('page');
-    if (p && p > 0) setPage(Math.floor(p));
+    const nextPage = p && p > 0 ? Math.floor(p) : 1;
+    setPage(nextPage);
 
     setDraft(next);
     setApplied(next);
     setHasSearched(true);
-  }, [searchParams]);
+    // compare 페이지에서 돌아올 때를 대비해, 마지막 Finder URL도 업데이트
+    writeFinderLastUrl(`${pathname}?${buildQuery(next, nextPage, pageSize)}`);
+  }, [searchParams, pathname, router]);
+
+  // URL이 비어도(= /rackets/finder) 이전 상태를 복구할 수 있도록 sessionStorage에 저장
+  useEffect(() => {
+    if (!didInitFromQueryRef.current) return;
+    writeFinderState({ draft, applied, page, hasSearched });
+  }, [draft, applied, page, hasSearched]);
 
   // URL이 비어도(= /rackets/finder) 이전 상태를 복구할 수 있도록 sessionStorage에 저장
   useEffect(() => {
@@ -281,7 +312,7 @@ export default function RacketFinderClient() {
     setApplied(DEFAULT);
     setPage(1);
     setHasSearched(false);
-    clearFinderState();
+    clearFinderPersist();
     router.replace(pathname, { scroll: false });
   };
 
