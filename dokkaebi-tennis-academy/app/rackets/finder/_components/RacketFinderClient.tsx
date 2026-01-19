@@ -66,6 +66,43 @@ const DEFAULT: Filters = {
   strict: false,
 };
 
+const FINDER_STATE_KEY = 'racketFinderState:v1';
+type FinderPersistedState = {
+  draft: Filters;
+  applied: Filters;
+  page: number;
+  hasSearched: boolean;
+};
+
+function readFinderState(): FinderPersistedState | null {
+  try {
+    const raw = sessionStorage.getItem(FINDER_STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.draft || !parsed?.applied) return null;
+    return {
+      draft: parsed.draft,
+      applied: parsed.applied,
+      page: typeof parsed.page === 'number' ? parsed.page : 1,
+      hasSearched: !!parsed.hasSearched,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeFinderState(next: FinderPersistedState) {
+  try {
+    sessionStorage.setItem(FINDER_STATE_KEY, JSON.stringify(next));
+  } catch {}
+}
+
+function clearFinderState() {
+  try {
+    sessionStorage.removeItem(FINDER_STATE_KEY);
+  } catch {}
+}
+
 function normalizePattern(p: string) {
   return p.replace(/\s+/g, '').replace(/×/g, 'x').toLowerCase();
 }
@@ -155,7 +192,16 @@ export default function RacketFinderClient() {
 
     const sp = searchParams;
     const hasAnyQuery = sp.toString().length > 0;
-    if (!hasAnyQuery) return;
+    if (!hasAnyQuery) {
+      const persisted = readFinderState();
+      if (persisted) {
+        setDraft(persisted.draft);
+        setApplied(persisted.applied);
+        setPage(Math.max(1, persisted.page || 1));
+        setHasSearched(!!persisted.hasSearched);
+      }
+      return;
+    }
 
     const readNum = (k: string): number | null => {
       const v = sp.get(k);
@@ -209,6 +255,12 @@ export default function RacketFinderClient() {
     setHasSearched(true);
   }, [searchParams]);
 
+  // URL이 비어도(= /rackets/finder) 이전 상태를 복구할 수 있도록 sessionStorage에 저장
+  useEffect(() => {
+    if (!didInitFromQueryRef.current) return;
+    writeFinderState({ draft, applied, page, hasSearched });
+  }, [draft, applied, page, hasSearched]);
+
   const qs = useMemo(() => buildQuery(applied, page, pageSize), [applied, page, pageSize]);
   const swrKey = hasSearched ? `/api/rackets/finder?${qs}` : null;
   const { data, error, isLoading } = useSWR(swrKey, fetcher);
@@ -229,6 +281,7 @@ export default function RacketFinderClient() {
     setApplied(DEFAULT);
     setPage(1);
     setHasSearched(false);
+    clearFinderState();
     router.replace(pathname, { scroll: false });
   };
 
@@ -386,7 +439,7 @@ export default function RacketFinderClient() {
                       className={cn(
                         'flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all',
                         'bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50',
-                        checked && 'bg-primary/10 dark:bg-primary/20 ring-1 ring-primary/30'
+                        checked && 'bg-primary/10 dark:bg-primary/20 ring-1 ring-primary/30',
                       )}
                     >
                       <Checkbox
@@ -418,7 +471,7 @@ export default function RacketFinderClient() {
                 className={cn(
                   'flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all',
                   'bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50',
-                  draft.strict && 'bg-amber-500/10 dark:bg-amber-500/20 ring-1 ring-amber-500/30'
+                  draft.strict && 'bg-amber-500/10 dark:bg-amber-500/20 ring-1 ring-amber-500/30',
                 )}
               >
                 <Checkbox checked={draft.strict} onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))} />

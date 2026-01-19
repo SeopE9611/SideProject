@@ -11,6 +11,7 @@ import { racketBrandLabel } from '@/lib/constants';
 import { useRacketCompareStore, type CompareRacketItem } from '@/app/store/racketCompareStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import RacketSpecQuickViewDialog from '@/app/rackets/compare/_components/RacketSpecQuickViewDialog';
+import { useRouter } from 'next/navigation';
 
 function fmtNum(n?: number | null, suffix = '') {
   if (n === null || n === undefined || !Number.isFinite(n)) return '-';
@@ -54,8 +55,27 @@ type Row =
 export default function RacketCompareClient() {
   const { items, remove, clear } = useRacketCompareStore();
 
+  const router = useRouter();
+
+  // 파인더로 돌아갈 때: (1) 비교 목록 비우기 → 파인더에서 비교 버튼 비활성, (2) 가능하면 history back으로 필터/스크롤 복원
+  const goBackToFinder = () => {
+    clear();
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/rackets/finder');
+    }
+  };
+
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // 브라우저 뒤로가기(popstate)로 빠져나갈 때도 비교 목록을 비움
+  useEffect(() => {
+    const onPop = () => clear();
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [clear]);
 
   const list = mounted ? items : [];
   const canCompare = list.length >= 2;
@@ -134,7 +154,7 @@ export default function RacketCompareClient() {
         hint: '오픈(16x19)=스핀 경향, 덴스(18x20)=컨트롤 경향.',
       },
     ],
-    []
+    [],
   );
 
   return (
@@ -152,11 +172,11 @@ export default function RacketCompareClient() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline" className="rounded-lg bg-transparent">
-              <Link href="/rackets/finder" className="inline-flex items-center gap-2">
+            <Button variant="outline" className="rounded-lg bg-transparent" onClick={goBackToFinder}>
+              <span className="inline-flex items-center gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 파인더로
-              </Link>
+              </span>
             </Button>
             <Button variant="outline" onClick={() => clear()} disabled={list.length === 0} className="inline-flex items-center gap-2 rounded-lg text-muted-foreground hover:text-destructive hover:ring-destructive/30">
               <Trash2 className="h-4 w-4" />
@@ -218,11 +238,9 @@ export default function RacketCompareClient() {
                 </div>
               )}
 
-              <Button asChild className="rounded-lg gap-2">
-                <Link href="/rackets/finder">
-                  라켓 고르러 가기
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
+             <Button onClick={goBackToFinder} className="rounded-lg gap-2">
+                라켓 고르러 가기
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
