@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { showErrorToast } from '@/lib/toast';
 
 type RacketView = {
   id: string;
@@ -14,6 +15,16 @@ type RacketView = {
 
 type PickupMethod = 'courier' | 'visit';
 type Bank = 'shinhan' | 'kookmin' | 'woori';
+
+// 제출 직전 최종 유효성 가드
+const POSTAL_RE = /^\d{5}$/;
+const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
+const isValidKoreanPhone = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length === 10 || d.length === 11;
+};
+const ALLOWED_BANKS = new Set<Bank>(['shinhan', 'kookmin', 'woori']);
+const ALLOWED_PICKUP = new Set<PickupMethod>(['courier', 'visit']);
 
 export default function RacketPurchaseCheckoutClient({ racket }: { racket: RacketView }) {
   const router = useRouter();
@@ -35,10 +46,63 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
   const shippingFee = useMemo(() => 0, []); // TODO:  프로젝트 배송비 정책 붙일 자리
   const totalPrice = useMemo(() => racket.price + shippingFee, [racket.price, shippingFee]);
 
-  const canSubmit = racket.status === 'available' && agree && !submitting && name.trim() && phone.trim() && address.trim() && postalCode.trim() && depositor.trim();
+  // const canSubmit = racket.status === 'available' && agree && !submitting && name.trim() && phone.trim() && address.trim() && postalCode.trim() && depositor.trim();
+  // canSubmit은 boolean으로 유지(기존은 && 체인 때문에 string이 될 수 있음)
+  const canSubmit = racket.status === 'available' && agree && !submitting && Boolean(name.trim() && phone.trim() && address.trim() && postalCode.trim() && depositor.trim());
 
   async function onSubmit() {
-    if (!canSubmit || submitting) return;
+    // 0) 중복 클릭 방지
+    if (submitting) return;
+
+    // 1) disabled 우회 방지: devtools로 버튼을 강제로 눌러도 여기서 차단
+    if (!canSubmit) {
+      showErrorToast('필수 입력값/동의 항목을 확인해주세요.');
+      return;
+    }
+
+    // 2) 제출 직전 최종 검증 + 정규화
+    const nameTrim = name.trim();
+    const phoneDigits = onlyDigits(phone);
+    const postalTrim = onlyDigits(postalCode).trim();
+    const addressTrim = address.trim();
+    const addressDetailTrim = addressDetail.trim();
+    const depositorTrim = depositor.trim();
+    const deliveryRequestTrim = deliveryRequest.trim();
+
+    // 재고/상태 가드(동시성)
+    if (racket.status !== 'available') {
+      showErrorToast('현재 판매 가능한 라켓이 아닙니다.');
+      return;
+    }
+
+    if (nameTrim.length < 2) {
+      showErrorToast('수령인 이름은 2자 이상 입력해주세요.');
+      return;
+    }
+    if (!isValidKoreanPhone(phoneDigits)) {
+      showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
+      return;
+    }
+    if (!POSTAL_RE.test(postalTrim)) {
+      showErrorToast('우편번호(5자리)를 확인해주세요.');
+      return;
+    }
+    if (!addressTrim) {
+      showErrorToast('주소를 입력해주세요.');
+      return;
+    }
+    if (depositorTrim.length < 2) {
+      showErrorToast('입금자명은 2자 이상 입력해주세요.');
+      return;
+    }
+    if (!ALLOWED_PICKUP.has(pickupMethod)) {
+      showErrorToast('접수 방식 값이 올바르지 않습니다. 다시 선택해주세요.');
+      return;
+    }
+    if (!ALLOWED_BANKS.has(bank)) {
+      showErrorToast('은행 선택 값이 올바르지 않습니다. 다시 선택해주세요.');
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -46,13 +110,13 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
       const payload = {
         items: [{ productId: racket.id, quantity: 1, kind: 'racket' as const }],
         shippingInfo: {
-          name,
-          phone,
-          address,
-          addressDetail,
-          postalCode,
-          depositor,
-          deliveryRequest,
+          name: nameTrim,
+          phone: phoneDigits,
+          address: addressTrim,
+          addressDetail: addressDetailTrim,
+          postalCode: postalTrim,
+          depositor: depositorTrim,
+          deliveryRequest: deliveryRequestTrim,
           shippingMethod: pickupMethod === 'visit' ? 'visit' : 'courier',
         },
         totalPrice,
@@ -75,11 +139,13 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.orderId) {
-        alert(json?.error ?? '주문 생성 실패');
+        showErrorToast(json?.error ?? '주문 생성 실패');
         return;
       }
 
       router.push(`/racket-orders/${json.orderId}/select-string`);
+    } catch (e) {
+      showErrorToast('주문 처리 중 오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
     }
