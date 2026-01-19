@@ -126,8 +126,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
         )}
       </DialogTrigger>
 
-      <DialogContent className={cn('w-[calc(100vw-24px)] max-w-[860px] p-0 overflow-hidden', 'bg-card shadow-2xl', 'bp-sm:w-[calc(100vw-48px)]')}>
-        {/* Header with gradient accent */}
+      <DialogContent className={cn('w-[calc(100vw-24px)] p-0 overflow-hidden bg-card shadow-2xl', 'max-w-[920px] bp-md:max-w-[1040px] bp-lg:max-w-[1120px]', 'bp-sm:w-[calc(100vw-48px)]')}>
         <div className="relative">
           <div className={cn('absolute inset-x-0 top-0 h-1', 'bg-gradient-to-r from-primary/80 via-primary to-primary/80')} />
           <DialogHeader className="px-4 pt-5 pb-3 bp-sm:px-6 bp-sm:pt-6 bp-sm:pb-4">
@@ -151,12 +150,12 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
         </div>
 
         <div className="px-4 pb-4 bp-sm:px-6 bp-sm:pb-6">
-          <div className="grid gap-4 bp-md:grid-cols-[200px_1fr] bp-md:gap-6">
+          <div className="grid gap-4 bp-md:grid-cols-[240px_1fr] bp-md:gap-8">
             {/* 이미지 */}
             <div className="flex justify-center bp-md:justify-start">
               <div
                 className={cn(
-                  'group relative h-[180px] w-[180px] overflow-hidden bp-sm:h-[200px] bp-sm:w-[200px]',
+                  'group relative h-[180px] w-[180px] overflow-hidden bp-sm:h-[200px] bp-sm:w-[200px] bp-md:h-[240px] bp-md:w-[240px]',
                   'rounded-xl bg-gradient-to-br from-muted/50 to-muted',
                   'ring-1 ring-muted-foreground/10',
                   'transition-all duration-300',
@@ -199,7 +198,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                     variant="outline"
                     className={cn('inline-flex items-center justify-center gap-2', 'border-muted-foreground/20 bg-transparent', 'transition-all duration-200', 'hover:border-primary/50 hover:bg-primary/5 hover:text-primary', 'bp-sm:flex-1')}
                   >
-                    <Link href={`/rackets/${racket.id}`}>
+                    <Link href={`/rackets/${racket.id}`} target="_blank" rel="noopener noreferrer">
                       상세 페이지 열기
                       <ExternalLink className="h-4 w-4" />
                     </Link>
