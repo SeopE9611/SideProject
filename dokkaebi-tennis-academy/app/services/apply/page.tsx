@@ -117,7 +117,7 @@ export default function StringServiceApplyPage() {
   const isRentalBased = Boolean(rentalId);
 
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
-  const pdpProductId = isOrderBased ? null : searchParams.get('productId') ?? searchParams.get('stringId');
+  const pdpProductId = isOrderBased ? null : (searchParams.get('productId') ?? searchParams.get('stringId'));
 
   /**
    * 옵션 A: 교체 서비스 신청은 "주문(orderId)" 기반으로만 진행합니다.
@@ -332,18 +332,18 @@ export default function StringServiceApplyPage() {
     };
 
     if (step === 1) {
-      if (!formData.name.trim()) return toast('신청인 이름을 입력해주세요.'), false;
-      if (!formData.email.trim()) return toast('이메일을 입력해주세요.'), false;
-      if (!formData.phone.trim()) return toast('연락처를 입력해주세요.'), false;
-      if (!isValidPhone(formData.phone)) return toast('연락처는 010으로 시작하는 11자리입니다.'), false;
+      if (!formData.name.trim()) return (toast('신청인 이름을 입력해주세요.'), false);
+      if (!formData.email.trim()) return (toast('이메일을 입력해주세요.'), false);
+      if (!formData.phone.trim()) return (toast('연락처를 입력해주세요.'), false);
+      if (!isValidPhone(formData.phone)) return (toast('연락처는 010으로 시작하는 11자리입니다.'), false);
 
-      if (!formData.shippingPostcode.trim()) return toast('우편번호를 입력해주세요.'), false;
-      if (!formData.shippingAddress.trim()) return toast('주소를 입력해주세요.'), false;
+      if (!formData.shippingPostcode.trim()) return (toast('우편번호를 입력해주세요.'), false);
+      if (!formData.shippingAddress.trim()) return (toast('주소를 입력해주세요.'), false);
 
-      if (!formData.collectionMethod) return toast('수거 방식을 선택해주세요.'), false;
+      if (!formData.collectionMethod) return (toast('수거 방식을 선택해주세요.'), false);
       if (formData.collectionMethod === 'courier_pickup') {
-        if (!formData.pickupDate) return toast('수거 희망일을 입력해주세요.'), false;
-        if (!formData.pickupTime) return toast('수거 시간대를 입력해주세요.'), false;
+        if (!formData.pickupDate) return (toast('수거 희망일을 입력해주세요.'), false);
+        if (!formData.pickupTime) return (toast('수거 시간대를 입력해주세요.'), false);
       }
       return true;
     }
@@ -351,19 +351,19 @@ export default function StringServiceApplyPage() {
     if (step === 2) {
       // if (!formData.racketType.trim()) return toast('라켓 종류를 입력해주세요.'), false;
       if (formData.stringTypes.length === 0) {
-        return toast('스트링 종류를 한 개 이상 선택해주세요.'), false;
+        return (toast('스트링 종류를 한 개 이상 선택해주세요.'), false);
       }
       if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) {
-        return toast('직접 입력한 스트링명을 적어주세요.'), false;
+        return (toast('직접 입력한 스트링명을 적어주세요.'), false);
       }
 
       const isVisit = normalizeCollection(formData.collectionMethod) === 'visit';
       if (isVisit) {
         if (!formData.preferredDate) {
-          return toast('장착 희망일을 선택해주세요.'), false;
+          return (toast('장착 희망일을 선택해주세요.'), false);
         }
         if (!formData.preferredTime) {
-          return toast('희망 시간대를 선택해주세요.'), false;
+          return (toast('희망 시간대를 선택해주세요.'), false);
         }
       }
 
@@ -371,7 +371,7 @@ export default function StringServiceApplyPage() {
       if (orderId && typeof orderRemainingSlots === 'number') {
         // requiredPassCount = 이번 신청에서 실제로 장착하려는 라켓 수
         if (requiredPassCount > orderRemainingSlots) {
-          return toast(`이 주문에서 남은 교체 가능 횟수는 ${orderRemainingSlots}회입니다. 장착할 라켓 수를 줄여주세요.`), false;
+          return (toast(`이 주문에서 남은 교체 가능 횟수는 ${orderRemainingSlots}회입니다. 장착할 라켓 수를 줄여주세요.`), false);
         }
       }
 
@@ -384,7 +384,7 @@ export default function StringServiceApplyPage() {
           const tensionCross = (line.tensionCross ?? '').trim();
 
           if (!racketName || !tensionMain || !tensionCross) {
-            return toast(`라켓 ${i + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.`), false;
+            return (toast(`라켓 ${i + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.`), false);
           }
         }
       }
@@ -397,8 +397,8 @@ export default function StringServiceApplyPage() {
       // → 구매 UX처럼 결제 스텝은 유지하되, 입력 검증은 생략
       if (isRentalBased) return true;
       if (!usingPackage) {
-        if (!formData.shippingBank) return toast('은행을 선택해주세요.'), false;
-        if (!formData.shippingDepositor.trim()) return toast('입금자명을 입력해주세요.'), false;
+        if (!formData.shippingBank) return (toast('은행을 선택해주세요.'), false);
+        if (!formData.shippingDepositor.trim()) return (toast('입금자명을 입력해주세요.'), false);
       }
       return true;
     }
@@ -904,8 +904,8 @@ export default function StringServiceApplyPage() {
   const checkoutTotal = isRentalBased
     ? rentalPaidTotal // 대여 기반은 “이미 결제된 합계”로 고정
     : isOrderBased || fromPDP
-    ? baseTotal + summaryRacketPrice + summaryStringPrice
-    : baseTotal;
+      ? baseTotal + summaryRacketPrice + summaryStringPrice
+      : baseTotal;
   // 스트링 포함 여부(라벨/설명용)
   const stringIncludedForCard = isOrderBased || isRentalBased;
   // 헤더 안내문(혼선 방지)
@@ -1057,7 +1057,7 @@ export default function StringServiceApplyPage() {
   // 라켓/라인 에디터: 라켓별 텐션/메모 등 변경 핸들러
   const handleLineFieldChange = <K extends keyof ApplicationLine>(index: number, field: K, value: ApplicationLine[K]) => {
     setFormData((prev) => {
-      const baseLines = Array.isArray(prev.lines) && prev.lines.length > 0 ? prev.lines : linesForSubmit ?? [];
+      const baseLines = Array.isArray(prev.lines) && prev.lines.length > 0 ? prev.lines : (linesForSubmit ?? []);
 
       const nextLines = baseLines.map((line, i) => (i === index ? { ...line, [field]: value } : line));
 
@@ -1284,7 +1284,7 @@ export default function StringServiceApplyPage() {
         });
         if (!res.ok) return;
 
-        const rental = await res.json().catch(() => ({} as any));
+        const rental = await res.json().catch(() => ({}) as any);
         setRentalAmount((rental as any)?.amount ?? null);
 
         // 대여 라켓/기간 정보는 '스트링 변경' CTA 링크에 사용
@@ -1363,7 +1363,7 @@ export default function StringServiceApplyPage() {
         setIsLoadingPdpProduct(true);
         try {
           const miniRes = await fetch(`/api/products/${encodeURIComponent(stringId)}/mini`, { cache: 'no-store' });
-          const mini = await miniRes.json().catch(() => ({} as any));
+          const mini = await miniRes.json().catch(() => ({}) as any);
           if (!cancelled && mini?.ok) {
             setPdpProduct({
               name: mini.name,
@@ -1393,10 +1393,24 @@ export default function StringServiceApplyPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    setFormData((prev) => {
+      /**
+       * 주의/의도:
+       * - 현재 Step1 UI는 신청자(name/email/phone)만 직접 입력받고,
+       *   제출 payload는 shippingInfo.name/phone/email을 별도로 사용.
+       * - 비회원/비주문 기반 진입에서는 shippingName/Phone/Email이 비어갈 수 있으므로,
+       *   신청자 입력값을 shippingInfo에도 동기화해서 데이터 정합성을 보장
+       * - 추후 shippingName/Phone/Email을 별도 입력 UI로 분리할 경우, 이 동기화 로직은 재검토가 필요
+       */
+      const next: any = { ...prev, [name]: value };
+
+      if (name === 'name') next.shippingName = value;
+      if (name === 'email') next.shippingEmail = value;
+      if (name === 'phone') next.shippingPhone = value;
+
+      return next;
+    });
   };
 
   const handleOpenPostcode = () => {
@@ -1438,7 +1452,12 @@ export default function StringServiceApplyPage() {
     }
 
     // 연락처 정제(전송용)
-    const cleaned = formData.phone.replace(/[^0-9]/g, '');
+    const cleanedApplicantPhone = normalizePhone(formData.phone);
+
+    // shippingInfo 정합성 보장: 비어 있으면 신청자 정보로 fallback
+    const shippingName = (formData.shippingName || formData.name || '').trim();
+    const shippingEmail = (formData.shippingEmail || formData.email || '').trim();
+    const shippingPhone = normalizePhone(formData.shippingPhone || formData.phone);
 
     setIsSubmitting(true);
     // 이하 payload 생성/POST 로직은 그대로 유지
@@ -1453,7 +1472,7 @@ export default function StringServiceApplyPage() {
       applicationId: applicationId ?? undefined,
       name: formData.name,
       email: formData.email,
-      phone: cleaned,
+      phone: cleanedApplicantPhone,
       racketType: formData.racketType,
       stringTypes: formData.stringTypes,
       customStringName: formData.stringTypes.includes('custom') ? formData.customStringType : null,
@@ -1465,9 +1484,9 @@ export default function StringServiceApplyPage() {
       orderId,
       rentalId,
       shippingInfo: {
-        name: formData.shippingName,
-        phone: formData.shippingPhone,
-        email: formData.shippingEmail,
+        name: shippingName,
+        phone: shippingPhone,
+        email: shippingEmail,
         address: formData.shippingAddress,
         addressDetail: formData.shippingAddressDetail,
         postalCode: formData.shippingPostcode,
@@ -1497,7 +1516,7 @@ export default function StringServiceApplyPage() {
 
       if (!res.ok) {
         if (res.status === 409) {
-          const data = await res.json().catch(() => ({} as any));
+          const data = await res.json().catch(() => ({}) as any);
 
           // 시간대 마감
           const message = data?.message ?? '해당 시간대가 마감되었습니다.';

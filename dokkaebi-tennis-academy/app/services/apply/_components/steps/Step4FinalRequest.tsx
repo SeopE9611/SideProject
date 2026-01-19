@@ -56,8 +56,8 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
               packageInsufficient
                 ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-100 border border-red-200/80'
                 : usingPackage
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100 border border-emerald-200/80'
-                : 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-100 border border-slate-200/80'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100 border border-emerald-200/80'
+                  : 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-100 border border-slate-200/80'
             }
           >
             {packageInsufficient ? '패키지 적용 불가' : usingPackage ? '패키지 적용' : '일반 결제'}
@@ -70,10 +70,10 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
 
       {/* 추가 요청사항 */}
       <div className="space-y-2">
-        <Label htmlFor="requestNote" className="text-sm font-medium">
+        <Label htmlFor="requirements" className="text-sm font-medium">
           추가 요청사항 (선택)
         </Label>
-        <Textarea id="requestNote" name="requestNote" value={formData.requestNote ?? ''} onChange={handleInputChange} placeholder="예) 특정 텐션 유지, 프레임 상태 체크 요청 등" className="min-h-[140px]" />
+        <Textarea id="requirements" name="requirements" value={formData.requirements ?? ''} onChange={handleInputChange} placeholder="예) 특정 텐션 유지, 프레임 상태 체크 요청 등" className="min-h-[140px]" />
         <p className="text-xs text-muted-foreground">요청사항이 많거나 중요한 정보(주소 변경, 연락처 변경 등)가 있다면 이곳에 남겨주세요.</p>
       </div>
     </div>
