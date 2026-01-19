@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, ArrowLeft, MessageSquare, Upload, X, Search } from 'lucide-react';
+import { showErrorToast } from '@/lib/toast';
 
 const CATEGORY_LABELS: Record<string, string> = {
   product: '상품문의',
@@ -27,8 +28,17 @@ const CATEGORY_LABELS: Record<string, string> = {
   member: '회원',
 };
 
+// 게시글 작성 제출 직전 최종 유효성 가드
+const TITLE_MIN = 4;
+const TITLE_MAX = 80;
+const CONTENT_MIN = 10;
+const CONTENT_MAX = 5000;
+const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+
 export default function QnaWritePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const submitRef = useRef(false); // setSubmitting 타이밍 레이스 대비(연타/더블클릭 방지)
   const router = useRouter();
   const sp = useSearchParams();
   const [product, setProduct] = useState<{ id: string; name: string; image?: string | null } | null>(null);
@@ -108,23 +118,23 @@ export default function QnaWritePage() {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + selectedFiles.length > 3) {
-      alert('최대 3개까지만 첨부할 수 있습니다.');
+      showErrorToast('최대 3개까지만 첨부할 수 있습니다.');
       return;
     }
     if (files.some((f) => f.size > 5 * 1024 * 1024)) {
-      alert('파일당 최대 5MB까지 업로드할 수 있어요.');
+      showErrorToast('파일당 최대 5MB까지 업로드할 수 있어요.');
       return;
     }
 
     // 타입 화이트리스트: 이미지만 허용
     if (files.some((f) => !f.type.startsWith('image/'))) {
-      alert('이미지 파일만 업로드할 수 있어요.');
+      showErrorToast('이미지 파일만 업로드할 수 있어요.');
       return;
     }
     // 개수 제한: 최대 3개
     const MAX = 3;
     if (selectedFiles.length + files.length > MAX) {
-      alert(`최대 ${MAX}개까지만 업로드할 수 있어요.`);
+      showErrorToast(`최대 ${MAX}개까지만 업로드할 수 있어요.`);
       return;
     }
 
@@ -137,21 +147,58 @@ export default function QnaWritePage() {
   };
 
   async function handleSubmit() {
+    // 중복 제출 방지
+    if (submitting || submitRef.current) return;
     try {
-      if (!title.trim() || !content.trim()) {
-        alert('제목과 내용을 입력해주세요.');
-        return;
-      }
-      if (category === 'product' && !preProductId && !product?.id) {
-        alert('상품을 선택해주세요.');
-        return;
-      }
-      setSubmitting(true);
+      // 제출 직전 최종 유효성 체크(우회 방지)
+      const t = title.trim();
+      const c = content.trim();
 
-      if (!category || !CATEGORY_LABELS[category]) {
-        alert('카테고리를 선택해주세요.');
+      if (!t || !c) {
+        showErrorToast('제목과 내용을 입력해주세요.');
         return;
       }
+
+      if (t.length < TITLE_MIN) {
+        showErrorToast(`제목은 ${TITLE_MIN}자 이상 입력해주세요.`);
+        return;
+      }
+      if (t.length > TITLE_MAX) {
+        showErrorToast(`제목은 ${TITLE_MAX}자 이내로 입력해주세요.`);
+        return;
+      }
+      if (c.length < CONTENT_MIN) {
+        showErrorToast(`내용은 ${CONTENT_MIN}자 이상 입력해주세요.`);
+        return;
+      }
+      if (c.length > CONTENT_MAX) {
+        showErrorToast(`내용은 ${CONTENT_MAX}자 이내로 입력해주세요.`);
+        return;
+      }
+      // 게시판 입력은 기본적으로 HTML/스크립트 입력을 허용하지 않는 편이 안전
+      if (hasScriptLike(t) || hasScriptLike(c)) {
+        showErrorToast('스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.');
+        return;
+      }
+      if (hasHtmlLike(t) || hasHtmlLike(c)) {
+        showErrorToast('HTML 태그는 사용할 수 없습니다.');
+        return;
+      }
+
+      // 카테고리 유효성(서버로 보내기 전에 고정)
+      if (!category || !CATEGORY_LABELS[category]) {
+        showErrorToast('카테고리를 선택해주세요.');
+        return;
+      }
+
+      if (category === 'product' && !preProductId && !product?.id) {
+        showErrorToast('상품을 선택해주세요.');
+        return;
+      }
+
+      // 여기까지 통과한 뒤에만 submitting ON (UI 잠금)
+      submitRef.current = true;
+      setSubmitting(true);
 
       // 카테고리 값을 라벨로 정규화
       const mappedCategory = CATEGORY_LABELS[category] ?? category;
@@ -179,8 +226,8 @@ export default function QnaWritePage() {
       //  조건부 스프레드로 '한 번에' payload 구성 + attachments 포함
       const payload = {
         type: 'qna',
-        title,
-        content,
+        title: t,
+        content: c,
         category: mappedCategory,
         isSecret: !!isPrivate,
         attachments,
@@ -199,9 +246,10 @@ export default function QnaWritePage() {
       }
       router.replace('/board/qna');
     } catch (e: any) {
-      alert(e?.message || '저장 중 오류가 발생했습니다.');
+      showErrorToast(e?.message || '저장 중 오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
+      submitRef.current = false;
     }
   }
 
@@ -340,14 +388,14 @@ export default function QnaWritePage() {
                 <Label htmlFor="title" className="text-base font-semibold">
                   제목 <span className="text-red-500">*</span>
                 </Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="문의 제목을 간단명료하게 작성해주세요" className="h-12 bg-white dark:bg-gray-700 text-base" />
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="문의 제목을 작성해주세요(4자이상)" className="h-12 bg-white dark:bg-gray-700 text-base" />
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="content" className="text-base font-semibold">
                   문의 내용 <span className="text-red-500">*</span>
                 </Label>
-                <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="문의하실 내용을 자세히 작성해주세요" className="min-h-[200px] bg-white dark:bg-gray-700 text-base resize-none" />
+                <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)" className="min-h-[200px] bg-white dark:bg-gray-700 text-base resize-none" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.</p>
               </div>
 

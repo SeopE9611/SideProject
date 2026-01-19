@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ChevronLeft, ChevronRight, ArrowLeft, Bell, Upload, X, Pin } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR, { mutate } from 'swr';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 const NOTICE_LABEL_BY_CODE: Record<string, string> = {
   general: '일반',
@@ -28,6 +29,14 @@ const NOTICE_LABEL_BY_CODE: Record<string, string> = {
 // 라벨 -> 코드 (상세에서 받아온 라벨을 셀렉트의 값(코드)로 되돌리기)
 const NOTICE_CODE_BY_LABEL: Record<string, string> = Object.fromEntries(Object.entries(NOTICE_LABEL_BY_CODE).map(([code, label]) => [label, code]));
 
+// 공지 작성/수정 제출 직전 최종 유효성 가드(우회 방지)
+const TITLE_MIN = 4;
+const TITLE_MAX = 80;
+const CONTENT_MIN = 10;
+const CONTENT_MAX = 8000;
+const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+
 export default function NoticeWritePage() {
   const sp = useSearchParams();
   const router = useRouter();
@@ -35,6 +44,8 @@ export default function NoticeWritePage() {
 
   // 프리필은 한번만 실행
   const prefilledRef = useRef(false);
+  // setSubmitting 타이밍 레이스 대비(연타/더블클릭 방지)
+  const submitRef = useRef(false);
 
   // 파일 상태
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -166,18 +177,20 @@ export default function NoticeWritePage() {
   function addFiles(files: File[]) {
     if (!files.length) return;
 
-    if (selectedFiles.length + files.length > MAX) {
-      alert(`최대 ${MAX}개까지만 업로드할 수 있어요.`);
+    // "기존 첨부 + 새 첨부" 합산 기준으로 MAX 강제 (수정 모드에서 초과 업로드 방지)
+    const totalNow = (existingAttachments?.length ?? 0) + selectedFiles.length;
+    if (totalNow + files.length > MAX) {
+      showErrorToast(`첨부는 최대 ${MAX}개까지만 업로드할 수 있어요. (현재 ${totalNow}개)`);
       return;
     }
     if (files.some((f) => f.size > MAX_MB * 1024 * 1024)) {
-      alert(`파일당 최대 ${MAX_MB}MB까지 업로드할 수 있어요.`);
+      showErrorToast(`파일당 최대 ${MAX_MB}MB까지 업로드할 수 있어요.`);
       return;
     }
     // 일부 브라우저에서 MIME이 비어있을 수 있어 확장자로 한 번 더 체크
     const extOk = (name: string) => /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt|jpe?g|png|gif|webp)$/i.test(name);
     if (files.some((f) => !(ALLOWED.has(f.type) || extOk(f.name)))) {
-      alert('이미지(JPG/PNG/GIF/WEBP) 또는 문서(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.');
+      showErrorToast('이미지(JPG/PNG/GIF/WEBP) 또는 문서(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.');
       return;
     }
 
@@ -197,10 +210,52 @@ export default function NoticeWritePage() {
 
   async function handleSubmit() {
     try {
-      if (!title.trim() || !content.trim()) {
-        alert('제목과 내용을 입력해주세요.');
+      // 중복 제출 방지(버튼 연타/렌더 지연에도 안전)
+      if (submitting || submitRef.current) return;
+
+      // 제출 직전 최종 유효성 체크(우회 방지)
+      const t = title.trim();
+      const c = content.trim();
+
+      // 카테고리 화이트리스트(코드값 기준)
+      if (!category || !NOTICE_LABEL_BY_CODE[category]) {
+        showErrorToast('카테고리를 선택해주세요.');
         return;
       }
+
+      if (!t || !c) {
+        showErrorToast('제목과 내용을 입력해주세요.');
+        return;
+      }
+      if (t.length < TITLE_MIN) {
+        showErrorToast(`제목은 ${TITLE_MIN}자 이상 입력해주세요.`);
+        return;
+      }
+      if (t.length > TITLE_MAX) {
+        showErrorToast(`제목은 ${TITLE_MAX}자 이내로 입력해주세요.`);
+        return;
+      }
+      if (c.length < CONTENT_MIN) {
+        showErrorToast(`내용은 ${CONTENT_MIN}자 이상 입력해주세요.`);
+        return;
+      }
+      if (c.length > CONTENT_MAX) {
+        showErrorToast(`내용은 ${CONTENT_MAX}자 이내로 입력해주세요.`);
+        return;
+      }
+      // 공지 입력은 기본적으로 HTML/스크립트 입력을 허용하지 않는 편이 안전
+      if (hasScriptLike(t) || hasScriptLike(c)) {
+        showErrorToast('스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.');
+        return;
+      }
+      if (hasHtmlLike(t) || hasHtmlLike(c)) {
+        showErrorToast('HTML 태그는 사용할 수 없습니다.');
+        return;
+      }
+      setSubmitting(true);
+
+      // 여기까지 통과한 뒤에만 submitting ON (UI 잠금)
+      submitRef.current = true;
       setSubmitting(true);
 
       // Supabase 업로드는 기존 코드 재사용
@@ -255,8 +310,8 @@ export default function NoticeWritePage() {
 
       const payload: any = {
         type: 'notice',
-        title,
-        content,
+        title: t,
+        content: c,
         isPinned,
         category: NOTICE_LABEL_BY_CODE[category] ?? '일반', // 코드 -> 라벨 변환
         attachments,
@@ -299,6 +354,8 @@ export default function NoticeWritePage() {
         } else {
           await mutate(`/api/boards/${goId}`);
         }
+        showSuccessToast(editId ? '공지사항이 수정되었습니다.' : '공지사항이 등록되었습니다.');
+
         router.replace(`/board/notice/${goId}`);
         router.refresh();
         return;
@@ -306,9 +363,10 @@ export default function NoticeWritePage() {
 
       window.location.href = '/board/notice';
     } catch (e: any) {
-      alert(e?.message || '저장 중 오류가 발생했습니다.');
+      showErrorToast(e?.message || '저장 중 오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
+      submitRef.current = false;
     }
   }
 

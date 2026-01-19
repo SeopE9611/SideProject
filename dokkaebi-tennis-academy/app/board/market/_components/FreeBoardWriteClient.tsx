@@ -15,6 +15,7 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { getMarketBrandOptions, isMarketBrandCategory, isValidMarketBrandForCategory } from '@/app/board/market/_components/market.constants';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 export const CATEGORY_OPTIONS = [
   { value: 'racket', label: '라켓' },
@@ -23,6 +24,14 @@ export const CATEGORY_OPTIONS = [
 ] as const;
 
 type CategoryValue = (typeof CATEGORY_OPTIONS)[number]['value'];
+
+// 게시글 작성 제출 직전 최종 유효성 가드(우회 방지)
+const TITLE_MIN = 4;
+const TITLE_MAX = 80;
+const CONTENT_MIN = 10;
+const CONTENT_MAX = 5000;
+const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
 export default function FreeBoardWriteClient() {
   const router = useRouter();
@@ -48,6 +57,15 @@ export default function FreeBoardWriteClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // 더블클릭/연타 레이스 방지(제출 시작~끝까지 1회만 허용)
+  const submitRef = useRef(false);
+
+  // 에러 표시는 "화면 박스 + 토스트"를 함께 사용(운영/UX 둘 다 챙김)
+  const emitError = (msg: string) => {
+    setErrorMsg(msg);
+    showErrorToast(msg);
+  };
+
   // 카테고리 변경 시 브랜드 자동 초기화
   useEffect(() => {
     if (!isMarketBrandCategory(category)) {
@@ -59,13 +77,29 @@ export default function FreeBoardWriteClient() {
 
   // 간단한 프론트 유효성 검증
   const validate = () => {
-    if (isMarketBrandCategory(category) && !brand) return '브랜드를 선택해 주세요.';
-    if (!title.trim()) {
-      return '제목을 입력해 주세요.';
+    const t = title.trim();
+    const c = content.trim();
+
+    // 브랜드가 필요한 카테고리(라켓/스트링)는 브랜드 선택이 필수 + 카테고리-브랜드 정합성까지 체크
+    if (isMarketBrandCategory(category)) {
+      if (!brand) return '브랜드를 선택해 주세요.';
+      if (!isValidMarketBrandForCategory(category, brand)) return '선택한 브랜드가 분류에 맞지 않습니다.';
     }
-    if (!content.trim()) {
-      return '내용을 입력해 주세요.';
-    }
+
+    // 제목/내용 기본 + min/max 길이
+    if (!t || !c) return '제목과 내용을 입력해 주세요.';
+    if (t.length < TITLE_MIN) return `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
+    if (t.length > TITLE_MAX) return `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
+    if (c.length < CONTENT_MIN) return `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
+    if (c.length > CONTENT_MAX) return `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
+
+    // 게시판 입력은 기본적으로 HTML/스크립트 입력을 차단하는 편이 안전
+    if (hasScriptLike(t) || hasScriptLike(c)) return '스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.';
+    if (hasHtmlLike(t) || hasHtmlLike(c)) return 'HTML 태그는 사용할 수 없습니다.';
+
+    // 업로드 제한은 UI에서 막아도 devtools/드롭으로 우회될 수 있어 제출 직전 1회 더 방어
+    if (images.length > 5) return '이미지는 최대 5장까지만 업로드할 수 있어요.';
+    if (selectedFiles.length > MAX_FILES) return `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
 
     return null;
   };
@@ -79,21 +113,41 @@ export default function FreeBoardWriteClient() {
 
     // 개수 제한
     if (selectedFiles.length + files.length > MAX_FILES) {
-      alert(`파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`);
+      emitError(`파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`);
       return;
     }
 
     // 용량 제한
     const tooLarge = files.find((f) => f.size > MAX_SIZE_MB * 1024 * 1024);
     if (tooLarge) {
-      alert(`파일당 ${MAX_SIZE_MB}MB를 초과할 수 없어요.`);
+      emitError(`파일당 ${MAX_SIZE_MB}MB를 초과할 수 없어요.`);
       return;
     }
 
     // 이미지 파일 방지 (이미지는 이미지 탭에서만)
-    const hasImage = files.some((f) => f.type?.startsWith('image/'));
+    const isImageExt = (name: string) => /\.(jpe?g|png|gif|webp)$/i.test(name);
+    const hasImage = files.some((f) => f.type?.startsWith('image/') || isImageExt(f.name));
     if (hasImage) {
-      alert('이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.');
+      emitError('이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.');
+      return;
+    }
+
+    // 드롭 업로드는 accept를 우회할 수 있으므로, 문서 allowlist를 추가로 방어
+    const extOk = (name: string) => /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt)$/i.test(name);
+    const ALLOWED_MIME = new Set<string>([
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain',
+      // HWP/HWPX는 브라우저/OS별로 mime이 비어있거나 제각각이라 확장자 기반을 주로 사용
+    ]);
+    const invalid = files.find((f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)));
+    if (invalid) {
+      emitError('문서 파일(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.');
       return;
     }
 
@@ -145,18 +199,22 @@ export default function FreeBoardWriteClient() {
     e.preventDefault();
     setErrorMsg(null);
 
+    // 중복 제출 방지(연타/더블클릭 레이스까지 방어)
+    if (isSubmitting || submitRef.current) return;
+
     const msg = validate();
     if (msg) {
-      setErrorMsg(msg);
+      emitError(msg);
       return;
     }
 
     if (isUploadingImages || isUploadingFiles) {
-      setErrorMsg('첨부 업로드가 끝날 때까지 잠시만 기다려 주세요.');
+      emitError('첨부 업로드가 끝날 때까지 잠시만 기다려 주세요.');
       return;
     }
 
     try {
+      submitRef.current = true;
       setIsSubmitting(true);
 
       let attachments: { name: string; url: string; size?: number }[] | undefined;
@@ -171,10 +229,13 @@ export default function FreeBoardWriteClient() {
         }
       }
 
+      const t = title.trim();
+      const c = content.trim();
+
       const payload: any = {
         type: 'market',
-        title: title.trim(),
-        content: content.trim(),
+        title: t,
+        content: c,
         images,
         category,
         brand: isMarketBrandCategory(category) ? brand : null,
@@ -193,18 +254,20 @@ export default function FreeBoardWriteClient() {
       const data = await res.json();
 
       if (!res.ok || !data?.ok) {
-        setErrorMsg(data?.details?.[0]?.message ?? data?.error ?? '글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        emitError(data?.details?.[0]?.message ?? data?.error ?? '글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
         return;
       }
 
       const goId = data.id ?? data.item?._id ?? data.item?.id;
+      showSuccessToast('게시글이 등록되었습니다.');
       router.push(goId ? `/board/market/${goId}` : '/board/market');
       router.refresh();
     } catch (err) {
       console.error(err);
-      setErrorMsg('글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      emitError('글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setIsSubmitting(false);
+      submitRef.current = false;
     }
   };
 
@@ -267,7 +330,7 @@ export default function FreeBoardWriteClient() {
                       onClick={() => setCategory(opt.value as CategoryValue)}
                       className={cn(
                         'rounded-full border px-3 py-1',
-                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300'
+                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300',
                       )}
                     >
                       {opt.label}
@@ -293,13 +356,19 @@ export default function FreeBoardWriteClient() {
               {/* 제목 입력 */}
               <div className="space-y-2">
                 <Label htmlFor="title">제목</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} />
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} maxLength={TITLE_MAX} />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {title.trim().length}/{TITLE_MAX}
+                </p>
               </div>
 
               {/* 내용 입력 */}
               <div className="space-y-2">
                 <Label htmlFor="content">내용</Label>
-                <Textarea id="content" className="min-h-[200px] resize-y" value={content} onChange={(e) => setContent(e.target.value)} disabled={isSubmitting} />
+                <Textarea id="content" className="min-h-[200px] resize-y" value={content} onChange={(e) => setContent(e.target.value)} disabled={isSubmitting} maxLength={CONTENT_MAX} />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {content.trim().length}/{CONTENT_MAX}
+                </p>
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
               </div>
 
@@ -398,7 +467,7 @@ export default function FreeBoardWriteClient() {
               </div>
 
               {/* 에러 메시지 */}
-              {errorMsg && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/60">{errorMsg}</div>}
+              {/* {errorMsg && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/60">{errorMsg}</div>} */}
 
               {/* 버튼 영역 */}
               <div className="flex items-center justify-end gap-2 pt-2">
