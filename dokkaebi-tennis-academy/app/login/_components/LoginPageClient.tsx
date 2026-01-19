@@ -15,6 +15,15 @@ import { useAuthStore } from '@/app/store/authStore';
 import { Mail, Lock, User, Phone, MapPin, Eye, EyeOff, CheckCircle, AlertCircle, Loader2, Shield } from 'lucide-react';
 import SocialAuthButtons from '@/app/login/_components/SocialAuthButtons';
 
+// 제출 직전 최종 유효성 가드
+const PASSWORD_POLICY_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/; // 8자 이상 + 영문/숫자 조합
+const POSTAL_RE = /^\d{5}$/;
+const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
+const isValidKoreanPhone = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length === 10 || d.length === 11;
+};
+
 export default function LoginPageClient() {
   const router = useRouter();
   const params = useSearchParams();
@@ -112,16 +121,36 @@ export default function LoginPageClient() {
   }, []);
 
   const handleLogin = async () => {
-    setLoginLoading(true);
-    const email = (document.getElementById('email') as HTMLInputElement)?.value;
-    const password = (document.getElementById('password') as HTMLInputElement)?.value;
+    // 중복 클릭 방지
+    if (loginLoading) return;
 
+    const emailRaw = (document.getElementById('email') as HTMLInputElement)?.value ?? '';
+    const passwordRaw = (document.getElementById('password') as HTMLInputElement)?.value ?? '';
+
+    const emailTrim = emailRaw.trim().toLowerCase();
+    const passwordTrim = passwordRaw;
+
+    // 로그인 제출 직전 최소 검증
+    if (!emailTrim) {
+      showErrorToast('이메일을 입력해주세요.');
+      return;
+    }
+    if (!emailRegex.test(emailTrim)) {
+      showErrorToast('이메일 형식을 확인해주세요.');
+      return;
+    }
+    if (!passwordTrim) {
+      showErrorToast('비밀번호를 입력해주세요.');
+      return;
+    }
+
+    setLoginLoading(true);
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: emailTrim, password: passwordTrim }),
       });
       const result = await res.json();
 
@@ -145,7 +174,7 @@ export default function LoginPageClient() {
       await new Promise((resolve) => setTimeout(resolve, 30));
 
       if (saveEmail) {
-        localStorage.setItem('saved-email', email);
+        localStorage.setItem('saved-email', emailTrim);
       } else {
         localStorage.removeItem('saved-email');
       }
@@ -193,14 +222,32 @@ export default function LoginPageClient() {
     e.preventDefault();
     if (submitting) return;
 
+    // 공통 정규화(제출 직전)
+    const nameTrim = name.trim();
+    const phoneDigits = onlyDigits(phone);
+    const emailTrim = email.trim().toLowerCase();
+    const postalTrim = postalCode.trim();
+    const addressTrim = address.trim();
+    const addressDetailTrim = addressDetail.trim();
+
     //  카카오 OAuth 회원가입이면: password/register API가 아니라 complete로 보냄
     if (isSocialOauthRegister) {
-      if (!name) {
+      // 소셜 회원가입 제출 직전 최소 검증
+      if (!nameTrim || nameTrim.length < 2) {
         showErrorToast('이름을 입력해주세요.');
         return;
       }
-      if (!phone) {
+      if (!phoneDigits) {
         showErrorToast('연락처를 입력해주세요.');
+        return;
+      }
+      if (!isValidKoreanPhone(phoneDigits)) {
+        showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
+        return;
+      }
+      // 우편번호가 들어온 경우(주소 프리필/직접 입력 등) 5자리 보장
+      if (postalTrim && !POSTAL_RE.test(postalTrim)) {
+        showErrorToast('우편번호(5자리)를 확인해주세요.');
         return;
       }
 
@@ -212,11 +259,11 @@ export default function LoginPageClient() {
           credentials: 'include',
           body: JSON.stringify({
             token: oauthToken,
-            name,
-            phone,
-            postalCode,
-            address,
-            addressDetail,
+            name: nameTrim,
+            phone: phoneDigits,
+            postalCode: postalTrim || null,
+            address: addressTrim || null,
+            addressDetail: addressDetailTrim || null,
           }),
         });
         const data = await res.json();
@@ -249,7 +296,32 @@ export default function LoginPageClient() {
       showErrorToast('아이디는 영문 소문자와 숫자 조합으로\n4자 이상 입력해주세요.');
       return;
     }
-    if (!email || !password || !confirmPassword || !name) {
+    // 일반 회원가입 제출 직전 최소 검증
+    if (!emailTrim || !emailRegex.test(emailTrim)) {
+      showErrorToast('유효한 이메일 형식이 아닙니다.');
+      return;
+    }
+    if (!password || !confirmPassword) {
+      showErrorToast('비밀번호를 입력해주세요.');
+      return;
+    }
+    if (!PASSWORD_POLICY_RE.test(password)) {
+      showErrorToast('비밀번호는 8자 이상이며 영문/숫자 조합이어야 합니다.');
+      return;
+    }
+    if (!nameTrim || nameTrim.length < 2) {
+      showErrorToast('이름을 확인해주세요. (2자 이상)');
+      return;
+    }
+    if (phoneDigits && !isValidKoreanPhone(phoneDigits)) {
+      showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
+      return;
+    }
+    if (postalTrim && !POSTAL_RE.test(postalTrim)) {
+      showErrorToast('우편번호(5자리)를 확인해주세요.');
+      return;
+    }
+    if (!emailTrim || !password || !confirmPassword || !nameTrim) {
       showErrorToast('모든 필드를 입력해주세요.');
       return;
     }
@@ -274,13 +346,13 @@ export default function LoginPageClient() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          email: emailTrim,
           password,
-          name,
-          phone,
-          postalCode,
-          address,
-          addressDetail,
+          name: nameTrim,
+          phone: phoneDigits || null,
+          postalCode: postalTrim || null,
+          address: addressTrim || null,
+          addressDetail: addressDetailTrim || null,
         }),
       });
 
