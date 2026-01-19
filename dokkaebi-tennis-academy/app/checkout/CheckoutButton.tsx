@@ -9,6 +9,19 @@ import { getMyInfo } from '@/lib/auth.client';
 import { showErrorToast } from '@/lib/toast';
 import { CreditCard, Loader2 } from 'lucide-react';
 
+// 제출 직전 최종 유효성 가드
+type Bank = 'shinhan' | 'kookmin' | 'woori';
+const ALLOWED_BANKS = new Set<Bank>(['shinhan', 'kookmin', 'woori']);
+const ALLOWED_DELIVERY = new Set(['택배수령', '방문수령'] as const);
+const ALLOWED_SERVICE_PICKUP = new Set(['SELF_SEND', 'COURIER_VISIT', 'SHOP_VISIT'] as const);
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const POSTAL_RE = /^\d{5}$/;
+const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
+const isValidKoreanPhone = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length === 10 || d.length === 11;
+};
+
 export default function CheckoutButton({
   disabled,
   name,
@@ -64,22 +77,127 @@ export default function CheckoutButton({
   }, []);
 
   const handleSubmit = async () => {
+    if (disabled) {
+      showErrorToast('필수 입력값/약관 동의 항목을 확인해주세요.');
+      return;
+    }
     // 동시 클릭 즉시 차단 (상태 업데이트 지연에도 안전)
     if (submittingRef.current) return;
-    submittingRef.current = true;
-    setIsSubmitting(true);
-
     let success = false;
 
     try {
+      // 제출 직전 최종 검증 + 정규화
+      const nameTrim = name.trim();
+      const phoneDigits = onlyDigits(phone);
+      const emailTrim = email.trim().toLowerCase();
+      const postalDigits = onlyDigits(postalCode).trim();
+      const addressTrim = address.trim();
+      const addressDetailTrim = addressDetail.trim();
+      const depositorTrim = depositor.trim();
+      const deliveryRequestTrim = deliveryRequest.trim();
+
+      const needsShippingAddress = deliveryMethod === '택배수령';
+
+      if (!ALLOWED_DELIVERY.has(deliveryMethod)) {
+        showErrorToast('수령 방법 값이 올바르지 않습니다. 다시 선택해주세요.');
+        return;
+      }
+
+      // 기본 필수
+      if (!nameTrim || !phoneDigits) {
+        showErrorToast('수령인 이름/연락처를 입력해주세요.');
+        return;
+      }
+      if (nameTrim.length < 2) {
+        showErrorToast('수령인 이름은 2자 이상 입력해주세요.');
+        return;
+      }
+      if (!isValidKoreanPhone(phoneDigits)) {
+        showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
+        return;
+      }
+
+      // 게스트 주문: 이메일 필수
+      // - 이 컴포넌트 내부 user 로딩이 아직 끝나지 않았을 수 있으니,
+      //   loading이 true면(미확정) "필수" 강제는 하지 않고, 입력 시 형식만 체크
+      if (!loading && !user) {
+        if (!emailTrim) {
+          showErrorToast('비회원 주문은 이메일이 필요합니다.');
+          return;
+        }
+        if (!EMAIL_RE.test(emailTrim)) {
+          showErrorToast('이메일 형식을 확인해주세요.');
+          return;
+        }
+      } else if (emailTrim && !EMAIL_RE.test(emailTrim)) {
+        showErrorToast('이메일 형식을 확인해주세요.');
+        return;
+      }
+
+      // 택배수령일 때만 주소 필수 + 형식
+      if (needsShippingAddress) {
+        if (!POSTAL_RE.test(postalDigits)) {
+          showErrorToast('우편번호(5자리)를 확인해주세요.');
+          return;
+        }
+        if (!addressTrim) {
+          +showErrorToast('기본 주소를 입력해주세요.');
+          return;
+        }
+        if (!addressDetailTrim) {
+          showErrorToast('상세 주소를 입력해주세요.');
+          return;
+        }
+      }
+
+      // 무통장 입금: 입금자명 필수
+      if (!depositorTrim) {
+        showErrorToast('입금자명을 입력해주세요.');
+        return;
+      }
+      if (depositorTrim.length < 2) {
+        showErrorToast('입금자명은 2자 이상 입력해주세요.');
+        return;
+      }
+
+      // 은행 값 화이트리스트
+      const bank = (selectedBank ?? '').trim() as Bank;
+      if (!ALLOWED_BANKS.has(bank)) {
+        showErrorToast('은행 선택 값이 올바르지 않습니다. 다시 선택해주세요.');
+        return;
+      }
+
+      // 서비스 픽업 방식 값 방어(서비스 ON일 때만)
+      if (withStringService && !ALLOWED_SERVICE_PICKUP.has(servicePickupMethod)) {
+        showErrorToast('교체 서비스 수거 방식 값이 올바르지 않습니다. 다시 선택해주세요.');
+        return;
+      }
+
+      // 아이템 최소 방어
+      if (!Array.isArray(items) || items.length === 0) {
+        showErrorToast('주문 상품이 비어있습니다.');
+        return;
+      }
+      for (const it of items) {
+        const q = Number(it?.quantity ?? 0);
+        if (!Number.isFinite(q) || q <= 0) {
+          showErrorToast('주문 수량이 올바르지 않습니다.');
+          return;
+        }
+      }
+
+      // 모든 검증 통과 후에만 lock + 로딩 ON
+      submittingRef.current = true;
+      setIsSubmitting(true);
+
       const shippingInfo = {
-        name,
-        phone,
-        address,
-        addressDetail,
-        postalCode,
-        depositor,
-        deliveryRequest,
+        name: nameTrim,
+        phone: phoneDigits,
+        address: needsShippingAddress ? addressTrim : '',
+        addressDetail: needsShippingAddress ? addressDetailTrim : '',
+        postalCode: needsShippingAddress ? postalDigits : '',
+        depositor: depositorTrim,
+        deliveryRequest: deliveryRequestTrim,
         deliveryMethod,
         withStringService,
       };
@@ -98,13 +216,13 @@ export default function CheckoutButton({
         shippingInfo,
         paymentInfo: {
           method: '무통장입금',
-          bank: selectedBank,
+          bank,
         },
         totalPrice, // (gross) 상품+배송+서비스 포함
         shippingFee,
         serviceFee,
         pointsToUse: safePointsToUse,
-        guestInfo: !user ? { name, phone, email } : undefined,
+        guestInfo: !user ? { name: nameTrim, phone: phoneDigits, email: emailTrim } : undefined,
         isStringServiceApplied: withStringService,
         servicePickupMethod,
       };
@@ -146,7 +264,7 @@ export default function CheckoutButton({
             </p>
             <p>{isRentalReserved ? '현재 대여중인 수량이 있어, 판매 가능한 재고가 없습니다.' : '수량을 다시 확인해주세요.'}</p>
             <p>현재 재고: {data.currentStock}개</p>
-          </div>
+          </div>,
         );
       } else {
         showErrorToast(data?.error ?? '주문 실패: 서버 오류');

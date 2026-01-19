@@ -278,7 +278,7 @@ export default function CheckoutPage() {
     const emailTrim = email.trim();
     // 게스트 주문은 이메일 필수, 로그인 주문은 선택(하지만 입력 시 형식 체크)
     if (!emailTrim) {
-      if (!isLoggedIn) errors.email = '비회원 주문은 이메일이 필요합니다.';
+      if (!loading && !isLoggedIn) errors.email = '비회원 주문은 이메일이 필요합니다.';
     } else if (!EMAIL_RE.test(emailTrim)) {
       errors.email = '이메일 형식을 확인해주세요.';
     }
@@ -298,10 +298,10 @@ export default function CheckoutPage() {
     if (!orderItems || orderItems.length === 0) errors.items = '주문 상품이 비어있습니다.';
 
     return errors;
-  }, [name, phone, email, postalCode, address, addressDetail, depositor, orderItems, isLoggedIn, needsShippingAddress]);
+  }, [name, phone, email, postalCode, address, addressDetail, depositor, orderItems, isLoggedIn, needsShippingAddress, loading]);
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
-  const canSubmit = agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors;
+  const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors;
 
   // 비회원 체크아웃 허용: quiet 조회 사용 (401이어도 전역 만료 금지)
   useEffect(() => {
@@ -550,16 +550,7 @@ export default function CheckoutPage() {
                         우편번호 찾기
                       </Button>
                     </div>
-                     <Input
-                    id="address-postal"
-                    readOnly
-                    value={postalCode}
-                    placeholder="우편번호"
-                    className={cn(
-                      'bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2',
-                      fieldErrors.postalCode && 'border-rose-500'
-                    )}
-                  />
+                    <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn('bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2', fieldErrors.postalCode && 'border-rose-500')} />
                   </div>
 
                   <div className="space-y-2">
@@ -934,7 +925,7 @@ export default function CheckoutPage() {
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
                   <CheckoutButton
-                    disabled={!(agreeTerms && agreePrivacy && agreeRefund)}
+                    disabled={!canSubmit}
                     name={name}
                     phone={phone}
                     email={email}
