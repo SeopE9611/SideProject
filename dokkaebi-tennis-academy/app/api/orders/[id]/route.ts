@@ -6,6 +6,43 @@ import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { issuePassesForPaidOrder } from '@/lib/passes.service';
 import jwt from 'jsonwebtoken';
 import { deductPoints, grantPoints } from '@/lib/points.service';
+import { z } from 'zod';
+
+// 고객정보 서버 검증(관리자 PATCH)
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const onlyDigits = (v: unknown) => String(v ?? '').replace(/\D/g, '');
+const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
+
+const customerSchema = z.object({
+  name: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length > 0, { message: '이름은 필수입니다.' })
+    .refine((s) => s.length <= 50, { message: '이름은 50자 이내로 입력해주세요.' }),
+  email: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length > 0, { message: '이메일은 필수입니다.' })
+    .refine((s) => EMAIL_RE.test(s), { message: '유효한 이메일 주소를 입력해주세요.' })
+    .refine((s) => s.length <= 254, { message: '이메일이 너무 깁니다.' }),
+  phone: z
+    .string()
+    .transform((v) => onlyDigits(v))
+    .refine((d) => isValidKoreanPhoneDigits(d), { message: '전화번호는 숫자 10~11자리만 입력해주세요.' }),
+  postalCode: z
+    .string()
+    .transform((v) => onlyDigits(v))
+    .refine((d) => d.length === 5, { message: '우편번호는 숫자 5자리만 입력해주세요.' }),
+  address: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length > 0, { message: '주소는 필수입니다.' })
+    .refine((s) => s.length <= 200, { message: '주소는 200자 이내로 입력해주세요.' }),
+  addressDetail: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length <= 100, { message: '상세주소는 100자 이내로 입력해주세요.' }),
+});
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -92,7 +129,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           quantity: item.quantity,
           kind: 'racket' as const,
         };
-      })
+      }),
     );
 
     //  customer 통합 처리 시작
@@ -141,7 +178,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         orderId: new ObjectId(order._id),
         status: { $nin: ['draft', '취소'] },
       },
-      { projection: { _id: 1 } }
+      { projection: { _id: 1 } },
     );
 
     const isStringServiceApplied = !!linkedApp;
@@ -278,14 +315,30 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // 고객정보 수정 분기
     // - 패스 발급은 여기서 하지 않도록 수정(아래 상태변경 분기로 이동)
     if (customer) {
+      const parsed = customerSchema.safeParse(customer);
+      if (!parsed.success) {
+        const flat = parsed.error.flatten();
+        return NextResponse.json(
+          {
+            ok: false,
+            message: 'INVALID_CUSTOMER',
+            error: flat.formErrors?.[0] ?? '고객 정보가 올바르지 않습니다.',
+            fieldErrors: flat.fieldErrors,
+          },
+          { status: 400 },
+        );
+      }
+
+      const c = parsed.data;
+
       const updateFields = {
         customer: {
-          name: customer.name,
-          email: customer.email,
-          phone: customer.phone,
-          address: customer.address,
-          addressDetail: customer.addressDetail,
-          postalCode: customer.postalCode,
+          name: c.name,
+          email: c.email,
+          phone: c.phone,
+          address: c.address,
+          addressDetail: c.addressDetail,
+          postalCode: c.postalCode,
         },
       };
 
@@ -307,12 +360,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
           $set: {
             customer: {
               ...(prevApp?.customer ?? {}),
-              name: customer.name,
-              email: customer.email,
-              phone: customer.phone,
-              address: customer.address,
-              addressDetail: customer.addressDetail || '',
-              postalCode: customer.postalCode,
+              name: c.name,
+              email: c.email,
+              phone: c.phone,
+              address: c.address,
+              addressDetail: c.addressDetail || '',
+              postalCode: c.postalCode,
             },
           },
           $push: {
@@ -405,8 +458,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       __nextStatus === '취소'
         ? `주문이 취소되었습니다. 사유: ${cancelReason}${cancelReason === '기타' && cancelReasonDetail ? ` (${cancelReasonDetail})` : ''}`
         : __isBackward
-        ? `주문 상태가 '${__prevStatus}' → '${__nextStatus}'(으)로 되돌려졌습니다.`
-        : `주문 상태가 '${__nextStatus}'(으)로 변경되었습니다.`;
+          ? `주문 상태가 '${__prevStatus}' → '${__nextStatus}'(으)로 되돌려졌습니다.`
+          : `주문 상태가 '${__nextStatus}'(으)로 변경되었습니다.`;
 
     const historyEntry = {
       status,
