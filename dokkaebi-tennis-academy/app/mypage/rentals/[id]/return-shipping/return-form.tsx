@@ -8,6 +8,19 @@ import { Loader2, Truck } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+// 서버 정규확 검증
+const onlyDigits = (v: string) => v.replace(/\D/g, '');
+const isValidTrackingDigits = (digits: string) => digits.length >= 9 && digits.length <= 20;
+
+function formatFieldErrors(fieldErrors?: Record<string, string[] | undefined> | null) {
+  if (!fieldErrors) return '';
+  const lines: string[] = [];
+  for (const [field, msgs] of Object.entries(fieldErrors)) {
+    for (const msg of msgs ?? []) lines.push(`- ${field}: ${msg}`);
+  }
+  return lines.join('\n');
+}
+
 export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
   const [courier, setCourier] = useState('');
   const [tracking, setTracking] = useState('');
@@ -34,7 +47,15 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
 
   const onSubmit = async () => {
     if (!courier) return showErrorToast('택배사를 입력하세요');
-    if (!tracking) return showErrorToast('운송장 번호를 입력하세요');
+    // 운송장: 숫자만 + 9~20자리
+    const trackingDigits = onlyDigits(tracking);
+    if (!trackingDigits) return showErrorToast('운송장 번호를 입력하세요');
+    if (!isValidTrackingDigits(trackingDigits)) return showErrorToast('운송장 번호는 숫자 9~20자리만 입력해주세요');
+
+    // 메모: 200자 제한
+    const noteTrimmed = note.trim();
+    if (noteTrimmed.length > 200) return showErrorToast('메모는 200자 이내로 입력해주세요');
+
     setBusy(true);
     const res = await fetch(`/api/rentals/${rentalId}/return-shipping`, {
       method: 'POST',
@@ -42,13 +63,19 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
       credentials: 'include',
       body: JSON.stringify({
         courier,
-        trackingNumber: tracking.replaceAll('-', '').replaceAll(' ', ''),
-        shippedAt: date,
-        note,
+        trackingNumber: trackingDigits,
+        shippedAt: date || undefined,
+        note: noteTrimmed || undefined,
       }),
     });
     setBusy(false);
-    if (!res.ok) return showErrorToast('등록 실패');
+    // 서버가 400에서 { error, fieldErrors }를 내려주면 그대로 노출
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = json?.error || json?.message || '등록 실패';
+      const details = formatFieldErrors(json?.fieldErrors);
+      return showErrorToast(details ? `${msg}\n${details}` : msg);
+    }
     showSuccessToast('반납 운송장을 저장했습니다');
     history.back();
   };
@@ -79,7 +106,16 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
 
           <div className="space-y-2">
             <Label>운송장 번호</Label>
-            <Input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="예: 1234-5678-..." />
+            <Input
+              value={tracking}
+              onChange={(e) => {
+                // 입력 중에도 숫자만 유지 + 최대 20자리 제한
+                const digits = onlyDigits(e.target.value).slice(0, 20);
+                setTracking(digits);
+              }}
+              inputMode="numeric"
+              placeholder="숫자만 입력 (9~20자리)"
+            />
           </div>
           <div className="space-y-2">
             <Label>발송일(선택)</Label>
