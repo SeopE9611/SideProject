@@ -12,6 +12,10 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { ArrowLeft, Search, Mail, User, Phone, Package, Shield, Clock } from 'lucide-react';
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const onlyDigits = (v: string) => v.replace(/\D/g, '');
+const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
+
 export default function OrderLookupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -22,12 +26,21 @@ export default function OrderLookupPage() {
   const [errors, setErrors] = useState({
     name: '',
     email: '',
+    phone: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // phone은 입력 중에도 숫자만 유지 (사용자가 '-' 넣어도 자동 제거)
+    // - 서버는 digits(10~11자리)만 허용
+    // - 클라에서도 동일하게 맞춰서 UX + 안정성 확보
+    if (name === 'phone') {
+      const digits = onlyDigits(value).slice(0, 11); // 너무 긴 입력 방지(최대 11자리)
+      setFormData((prev) => ({ ...prev, phone: digits }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
 
     // Clear error when user types
     if (errors[name as keyof typeof errors]) {
@@ -39,19 +52,36 @@ export default function OrderLookupPage() {
     const newErrors = {
       name: '',
       email: '',
+      phone: '',
     };
     let isValid = true;
 
-    if (!formData.name.trim()) {
+    const name = formData.name.trim();
+    const email = formData.email.trim();
+    const phoneDigits = formData.phone ? onlyDigits(formData.phone) : '';
+
+    if (!name) {
       newErrors.name = '이름을 입력해주세요';
+      isValid = false;
+    } else if (name.length > 50) {
+      newErrors.name = '이름은 50자 이내로 입력해주세요';
       isValid = false;
     }
 
     if (!formData.email.trim()) {
       newErrors.email = '이메일을 입력해주세요';
       isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!EMAIL_RE.test(email)) {
       newErrors.email = '유효한 이메일 주소를 입력해주세요';
+      isValid = false;
+    } else if (email.length > 254) {
+      newErrors.email = '이메일이 너무 깁니다';
+      isValid = false;
+    }
+
+    // phone은 선택이지만, 입력했으면 digits 10~11자리만 허용
+    if (phoneDigits && !isValidKoreanPhoneDigits(phoneDigits)) {
+      newErrors.phone = '전화번호는 숫자 10~11자리만 입력해주세요';
       isValid = false;
     }
 
@@ -67,7 +97,17 @@ export default function OrderLookupPage() {
     setIsSubmitting(true);
 
     try {
-      // console.log('주문 조회 요청:', formData);
+      // - name/email: trim
+      // - phone: digits만 (빈 값이면 아예 제외 가능)
+      const normalizedName = formData.name.trim();
+      const normalizedEmail = formData.email.trim();
+      const normalizedPhone = formData.phone ? onlyDigits(formData.phone) : '';
+
+      const payload: { name: string; email: string; phone?: string } = {
+        name: normalizedName,
+        email: normalizedEmail,
+      };
+      if (normalizedPhone) payload.phone = normalizedPhone;
 
       // 성공 시 주문 결과 페이지로 이동 (예시)
       // router.push(`/order-results?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}`)
@@ -78,15 +118,27 @@ export default function OrderLookupPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
         credentials: 'include',
       });
 
       const data = await res.json();
 
-      if (data.success && data.orders.length > 0) {
+      // 400(유효성 실패)도 여기로 들어오므로, success/ok 기준으로 분기
+      if (!res.ok || !data?.success) {
+        alert(data?.error ?? '요청 값이 올바르지 않습니다.');
+        return;
+      }
+
+      if (data.orders.length > 0) {
         alert(`총 ${data.orders.length}개의 주문을 찾았습니다.`);
-        router.push(`/order-lookup/results?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&phone=${encodeURIComponent(formData.phone)}`);
+        // results 페이지에도 "정규화된 값"을 넘김
+        const qs = new URLSearchParams();
+        qs.set('name', normalizedName);
+        qs.set('email', normalizedEmail);
+        if (normalizedPhone) qs.set('phone', normalizedPhone);
+
+        router.push(`/order-lookup/results?${qs.toString()}`);
       } else {
         alert('조회된 주문이 없습니다.');
       }
@@ -209,6 +261,12 @@ export default function OrderLookupPage() {
                     />
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   </div>
+                  {errors.phone && (
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                      {errors.phone}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <Shield className="w-3 h-3" />
                     주문 시 입력하신 전화번호를 입력해주세요.

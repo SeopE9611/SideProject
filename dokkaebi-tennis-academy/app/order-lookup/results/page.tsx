@@ -9,6 +9,10 @@ import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const onlyDigits = (v: string) => v.replace(/\D/g, '');
+const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
+
 // 주문 타입 정의
 interface Order {
   id: string;
@@ -59,31 +63,76 @@ export default function OrderLookupResultsPage() {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null);
 
   // 이름과 이메일 파라미터 가져오기
-  const name: string = searchParams.get('name') ?? '';
-  const email: string = searchParams.get('email') ?? '';
-  const phone: string = searchParams.get('phone') ?? '';
+  const rawName: string = searchParams.get('name') ?? '';
+  const rawEmail: string = searchParams.get('email') ?? '';
+  const rawPhone: string = searchParams.get('phone') ?? '';
+
+  // 화면 표시는 trim 된 값 기준 (공백만 들어오는 케이스 방지)
+  const displayName = rawName.trim();
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        if (!name || !email) {
-          setError('조회에 필요한 정보가 부족합니다. 다시 시도해주세요.');
+        setFieldErrors(null);
+
+        // 1) URL 파라미터 정규화
+        const name = rawName.trim();
+        const email = rawEmail.trim();
+        const phoneDigits = rawPhone ? onlyDigits(rawPhone) : '';
+
+        // 2) URL 파라미터 검증 (서버와 동일 기준)
+        if (!name) {
+          setError('이름이 비어있습니다. 주문 조회 페이지에서 다시 입력해주세요.');
           setLoading(false);
           return;
         }
 
+        if (name.length > 50) {
+          setError('이름은 50자 이내로 입력해주세요.');
+          setLoading(false);
+          return;
+        }
+        if (!email) {
+          setError('이메일이 비어있습니다. 주문 조회 페이지에서 다시 입력해주세요.');
+          setLoading(false);
+          return;
+        }
+        if (!EMAIL_RE.test(email) || email.length > 254) {
+          setError('유효한 이메일 주소를 입력해주세요.');
+          setLoading(false);
+          return;
+        }
+        if (phoneDigits && !isValidKoreanPhoneDigits(phoneDigits)) {
+          setError('전화번호는 숫자 10~11자리만 입력해주세요.');
+          setLoading(false);
+          return;
+        }
+
+        // 3) 서버로는 "정규화된 값"만 전송 (phone은 빈 값이면 제외)
+        const payload: { name: string; email: string; phone?: string } = { name, email };
+        if (phoneDigits) payload.phone = phoneDigits;
+
         const res = await fetch('/api/guest-orders/lookup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, phone }),
+          body: JSON.stringify(payload),
           credentials: 'include',
         });
 
         const data = await res.json();
 
-        if (data.success && data.orders.length > 0) {
+        // 400(유효성 실패)도 여기로 들어오므로 ok/success 기준으로 분기
+        if (!res.ok || !data?.success) {
+          setError(data?.error ?? '주문 조회 요청 값이 올바르지 않습니다.');
+          setFieldErrors(data?.fieldErrors ?? null);
+          setLoading(false);
+          return;
+        }
+
+        if (data.orders.length > 0) {
           setOrders(
             data.orders.map((o: any) => ({
               id: o._id, // key로 사용할 고유 ID
@@ -98,7 +147,7 @@ export default function OrderLookupResultsPage() {
                 withStringService: o.shippingInfo?.withStringService,
               },
               isStringServiceApplied: o.isStringServiceApplied,
-            }))
+            })),
           );
         } else {
           setOrders([]);
@@ -113,7 +162,7 @@ export default function OrderLookupResultsPage() {
     };
 
     fetchOrders();
-  }, [name, email, phone]);
+  }, [rawName, rawEmail, rawPhone]);
 
   // 상세 페이지로 이동
   const handleViewDetails = (orderId: string) => {
@@ -199,6 +248,22 @@ export default function OrderLookupResultsPage() {
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">오류가 발생했습니다</h3>
                   <p className="text-red-600 mb-8 max-w-md">{error}</p>
+                  {fieldErrors && (
+                    <div className="w-full max-w-md mb-8 text-left">
+                      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                        <p className="text-sm font-semibold text-red-800 mb-2">입력값 오류 상세</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {Object.entries(fieldErrors).map(([field, msgs]) =>
+                            (msgs ?? []).map((msg, i) => (
+                              <li key={`${field}-${i}`} className="text-sm text-red-700">
+                                <span className="font-medium">{field}:</span> {msg}
+                              </li>
+                            )),
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                   <Button onClick={handleGoBack} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     주문 조회 페이지로 돌아가기
@@ -224,7 +289,7 @@ export default function OrderLookupResultsPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 조회 결과</h1>
             <p className="text-xl text-emerald-100">
-              {name}님의 주문 내역 {orders?.length || 0}건
+              {displayName}님의 주문 내역 {orders?.length || 0}건
             </p>
           </div>
         </div>
@@ -246,7 +311,7 @@ export default function OrderLookupResultsPage() {
                 <ShoppingBag className="w-6 h-6 text-white" />
               </div>
               <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">주문 내역</CardTitle>
-              <CardDescription className="text-base">{name}님의 주문 내역입니다</CardDescription>
+              <CardDescription className="text-base">{displayName}님의 주문 내역입니다</CardDescription>
             </CardHeader>
 
             <Separator className="mx-6" />
