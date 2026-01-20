@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Save, ArrowLeft, Upload, Info, Package } from 'lucide-react';
@@ -133,6 +133,10 @@ export default function NewStringPage() {
   // 이미지 업로드 상태
   const [uploading, setUploading] = useState(false);
 
+  // 제출(저장) 상태: 더블클릭/연타 레이스 방지
+  const [submitting, setSubmitting] = useState(false);
+  const submitRef = useRef(false);
+
   // 이미지 추가 핸들러
   const sanitizeFileName = (file: File) => {
     const timestamp = Date.now();
@@ -157,7 +161,7 @@ export default function NewStringPage() {
 
     if (totalSelected > availableSlots) {
       e.target.value = '';
-      alert(`최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
+      showErrorToast(`최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
     }
 
     const filesToUpload = Array.from(files).slice(0, availableSlots);
@@ -166,6 +170,11 @@ export default function NewStringPage() {
     for (const file of filesToUpload) {
       const fileName = sanitizeFileName(file);
       const { error } = await supabase.storage.from('tennis-images').upload(fileName, file);
+      if (error) {
+        // 업로드 실패: 다음 파일은 계속 진행하되, 실패 사실은 알려줌
+        showErrorToast('이미지 업로드에 실패했습니다. 잠시 후 다시 시도하세요.');
+        continue;
+      }
       if (!error) {
         const { data: publicData } = supabase.storage.from('tennis-images').getPublicUrl(fileName);
         const imageUrl = publicData?.publicUrl;
@@ -232,7 +241,7 @@ export default function NewStringPage() {
   const handleGenerateKeywords = () => {
     const base = `${basicInfo.name ?? ''} ${basicInfo.brand ?? ''}`.trim();
     if (!base) {
-      alert('먼저 스트링명과 브랜드를 입력해 주세요.');
+      showErrorToast('먼저 스트링명과 브랜드를 입력해 주세요.');
       return;
     }
 
@@ -254,6 +263,13 @@ export default function NewStringPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 중복 제출/업로드 중 제출 방지
+    if (submitting || submitRef.current) return;
+    if (uploading) {
+      showErrorToast('이미지 업로드 중입니다. 업로드가 끝난 뒤 저장해 주세요.');
+      return;
+    }
+
     // 색션명 상수
     const SECTIONS = {
       BASIC: '기본정보',
@@ -269,7 +285,7 @@ export default function NewStringPage() {
           <strong>[{SECTIONS.BASIC} 미입력]</strong>
           <br />
           '상품명을 입력해주세요.'
-        </>
+        </>,
       );
       return;
     }
@@ -279,7 +295,7 @@ export default function NewStringPage() {
         <>
           <strong>[{SECTIONS.BASIC} 미입력]</strong>
           <br /> '금액을 입력해주세요.'
-        </>
+        </>,
       );
       return;
     }
@@ -289,7 +305,7 @@ export default function NewStringPage() {
         <>
           <strong>[{SECTIONS.BASIC} 미입력]</strong>
           <br /> '상세 설명을 입력해주세요.'
-        </>
+        </>,
       );
       return;
     }
@@ -301,7 +317,7 @@ export default function NewStringPage() {
         <>
           <strong>[{SECTIONS.PERFORMANCE}] 미입력</strong> <br />
           '모든 성능 항목은 1~5 사이 값으로 설정되어야 합니다.'
-        </>
+        </>,
       );
       return;
     }
@@ -311,7 +327,7 @@ export default function NewStringPage() {
         <>
           <strong>[{SECTIONS.IMAGE}] 미입력</strong> <br />
           '최소 1장의 이미지를 업로드해야 합니다.'
-        </>
+        </>,
       );
       return;
     }
@@ -321,7 +337,7 @@ export default function NewStringPage() {
         <>
           <strong>[{SECTIONS.INVENTORY}] 미입력</strong> <br />
           '할인가는 정가보다 낮아야 합니다.'
-        </>
+        </>,
       );
       return;
     }
@@ -331,7 +347,7 @@ export default function NewStringPage() {
         <>
           <strong>[{SECTIONS.INVENTORY}] 미입력</strong> <br />
           '재고 수량은 0 이상이어야 합니다.'
-        </>
+        </>,
       );
       return;
     }
@@ -341,7 +357,7 @@ export default function NewStringPage() {
         <>
           <strong>[재고관리 오류]</strong> <br />
           '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.'
-        </>
+        </>,
       );
       return;
     }
@@ -395,6 +411,8 @@ export default function NewStringPage() {
 
     // API 전송 로직 위치
 
+    setSubmitting(true);
+    submitRef.current = true;
     try {
       const res = await fetch('/api/products', {
         // API 겨로
@@ -424,6 +442,9 @@ export default function NewStringPage() {
       // 상품 등록 중 에러 발생시
       // console.log('상품 등록 에러', error);
       showErrorToast('서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.');
+    } finally {
+      setSubmitting(false);
+      submitRef.current = false;
     }
   };
 
@@ -450,7 +471,7 @@ export default function NewStringPage() {
                       취소
                     </Link>
                   </Button>
-                  <Button type="submit" className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white">
+                  <Button type="submit" disabled={submitting || uploading} className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white">
                     <Save className="mr-2 h-4 w-4" />
                     저장
                   </Button>

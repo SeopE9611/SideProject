@@ -1,6 +1,6 @@
 'use client';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,18 @@ import Link from 'next/link';
 import ImageUploader from '@/components/admin/ImageUploader';
 import { RACKET_BRANDS, racketBrandLabel, type RacketBrand } from '@/lib/constants';
 import { Textarea } from '@/components/ui/textarea';
-import { showErrorToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 type BrandState = RacketBrand | ''; // 폼 상태에서만 '' 허용
+
+// 관리자 폼 유효성(클라이언트) 보강
+const MODEL_MIN = 2;
+const MODEL_MAX = 80;
+const PRICE_MIN = 1; // "가격 필수" 라벨이므로 0원 저장은 기본적으로 막는 편이 안전
+const PATTERN_RE = /^\s*\d{1,2}\s*[xX×]\s*\d{1,2}\s*$/; // 예: 16x19, 18×20
+
+const isFiniteNumber = (v: any) => Number.isFinite(Number(v));
+const nonNegative = (v: any) => isFiniteNumber(v) && Number(v) >= 0;
+const positiveOrNull = (v: any) => (v == null || v === '' ? true : isFiniteNumber(v) && Number(v) >= 1);
 
 export type RacketForm = {
   brand: BrandState;
@@ -77,10 +87,13 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
   // 검색 키워드 입력 상태
   const [searchKeywordsText, setSearchKeywordsText] = useState(Array.isArray(initial?.searchKeywords) ? initial!.searchKeywords!.join(', ') : '');
 
+  // 더블클릭/연타 레이스 방지(제출 시작~끝까지 1회만 허용)
+  const submitRef = useRef(false);
+
   const handleGenerateKeywords = () => {
     const base = `${form.brand ?? ''} ${form.model ?? ''}`.trim();
     if (!base) {
-      alert('브랜드와 모델명을 먼저 입력해 주세요.');
+      showErrorToast('브랜드와 모델명을 먼저 입력해 주세요.');
       return;
     }
 
@@ -97,8 +110,62 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
   const [activeTab, setActiveTab] = useState('basic');
 
   const handleSubmit = async () => {
+    // 중복 제출 방지
+    if (loading || submitRef.current) return;
+
+    // 1) 제출 직전 최종 유효성 검사(관리자 입력 실수 방지)
+    const modelTrim = (form.model ?? '').trim();
+    const patternTrim = (form.spec?.pattern ?? '').trim();
+
     if (!form.brand) {
       showErrorToast('브랜드를 선택하세요.');
+      return;
+    }
+
+    if (!modelTrim) {
+      showErrorToast('모델명을 입력하세요.');
+      return;
+    }
+    if (modelTrim.length < MODEL_MIN) {
+      showErrorToast(`모델명은 ${MODEL_MIN}자 이상 입력하세요.`);
+      return;
+    }
+    if (modelTrim.length > MODEL_MAX) {
+      showErrorToast(`모델명은 ${MODEL_MAX}자 이내로 입력하세요.`);
+      return;
+    }
+
+    // 가격/수량: 음수 방지 + 가격은 최소 1원
+    if (!isFiniteNumber(form.price) || Number(form.price) < PRICE_MIN) {
+      showErrorToast(`가격은 ${PRICE_MIN}원 이상 입력하세요.`);
+      return;
+    }
+    if (!isFiniteNumber(form.quantity) || Number(form.quantity) < 1) {
+      showErrorToast('보유 수량은 1 이상이어야 합니다.');
+      return;
+    }
+
+    // 연식: 입력했으면 유효한 범위만 허용(너무 빡빡하게 잡지 않음)
+    if (form.year != null) {
+      const y = Number(form.year);
+      const now = new Date().getFullYear();
+      if (!Number.isFinite(y) || y < 1900 || y > now + 1) {
+        showErrorToast('연식(year)이 유효하지 않습니다.');
+        return;
+      }
+    }
+
+    // 스펙 숫자 필드: 입력했으면 최소 1 이상(빈값은 null로 허용)
+    if (!positiveOrNull(form.spec.weight)) return showErrorToast('무게(weight)는 1 이상 숫자만 입력하세요.');
+    if (!positiveOrNull(form.spec.balance)) return showErrorToast('밸런스(balance)는 1 이상 숫자만 입력하세요.');
+    if (!positiveOrNull(form.spec.headSize)) return showErrorToast('헤드사이즈(headSize)는 1 이상 숫자만 입력하세요.');
+    if (!positiveOrNull(form.spec.lengthIn)) return showErrorToast('길이(lengthIn)는 1 이상 숫자만 입력하세요.');
+    if (!positiveOrNull(form.spec.swingWeight)) return showErrorToast('스윙웨이트(swingWeight)는 1 이상 숫자만 입력하세요.');
+    if (!positiveOrNull(form.spec.stiffnessRa)) return showErrorToast('강성(stiffnessRa)은 1 이상 숫자만 입력하세요.');
+
+    // 패턴: 빈값은 허용, 입력했으면 16x19 형식만 허용
+    if (patternTrim && !PATTERN_RE.test(patternTrim)) {
+      showErrorToast('스트링 패턴은 16x19 형식으로 입력하세요.');
       return;
     }
 
@@ -107,42 +174,61 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
       return;
     }
 
-    setLoading(true);
-    const normalized: RacketForm = {
-      ...form,
-      year: form.year != null ? Number(form.year) : null,
-      price: Number(form.price || 0),
-      quantity: Math.max(1, Number(form.quantity || 1)),
-      spec: {
-        weight: form.spec.weight != null ? Number(form.spec.weight) : null,
-        balance: form.spec.balance != null ? Number(form.spec.balance) : null,
-        headSize: form.spec.headSize != null ? Number(form.spec.headSize) : null,
-        lengthIn: form.spec.lengthIn != null ? Number(form.spec.lengthIn) : null,
-        swingWeight: form.spec.swingWeight != null ? Number(form.spec.swingWeight) : null,
-        stiffnessRa: form.spec.stiffnessRa != null ? Number(form.spec.stiffnessRa) : null,
-        pattern: (form.spec.pattern || '').trim().toLowerCase().replace(/\s+/g, '').replace(/[×]/g, 'x'),
-        gripSize: form.spec.gripSize,
-      },
-      rental: {
-        enabled: !!form.rental.enabled,
-        deposit: Number(form.rental.deposit || 0),
-        fee: {
-          d7: Number(form.rental.fee.d7 || 0),
-          d15: Number(form.rental.fee.d15 || 0),
-          d30: Number(form.rental.fee.d30 || 0),
-        },
-        // ON이면 공백으로, OFF면 사용자가 입력한 사유 보냄
-        disabledReason: form.rental.enabled ? '' : form.rental.disabledReason?.trim() || '',
-      },
-      images: form.images || [],
+    // 대여 ON일 때 요금 음수 방지
+    if (form.rental.enabled) {
+      if (!nonNegative(form.rental.deposit)) return showErrorToast('보증금은 0 이상 숫자만 입력하세요.');
+      if (!nonNegative(form.rental.fee?.d7)) return showErrorToast('7일 대여료는 0 이상 숫자만 입력하세요.');
+      if (!nonNegative(form.rental.fee?.d15)) return showErrorToast('15일 대여료는 0 이상 숫자만 입력하세요.');
+      if (!nonNegative(form.rental.fee?.d30)) return showErrorToast('30일 대여료는 0 이상 숫자만 입력하세요.');
+    }
 
-      searchKeywords: searchKeywordsText
-        .split(',')
-        .map((k) => k.trim())
-        .filter((k) => k.length > 0),
-    };
-    await onSubmit(normalized);
-    setLoading(false);
+    setLoading(true);
+    submitRef.current = true;
+    try {
+      const normalized: RacketForm = {
+        ...form,
+        model: modelTrim,
+        year: form.year != null ? Number(form.year) : null,
+        price: Number(form.price || 0),
+        quantity: Math.max(1, Number(form.quantity || 1)),
+        spec: {
+          weight: form.spec.weight != null ? Number(form.spec.weight) : null,
+          balance: form.spec.balance != null ? Number(form.spec.balance) : null,
+          headSize: form.spec.headSize != null ? Number(form.spec.headSize) : null,
+          lengthIn: form.spec.lengthIn != null ? Number(form.spec.lengthIn) : null,
+          swingWeight: form.spec.swingWeight != null ? Number(form.spec.swingWeight) : null,
+          stiffnessRa: form.spec.stiffnessRa != null ? Number(form.spec.stiffnessRa) : null,
+          // 표준화: 공백 제거 + 소문자 + × -> x
+          pattern: (patternTrim || '').toLowerCase().replace(/\s+/g, '').replace(/[×]/g, 'x'),
+          gripSize: form.spec.gripSize,
+        },
+        rental: {
+          enabled: !!form.rental.enabled,
+          deposit: Number(form.rental.deposit || 0),
+          fee: {
+            d7: Number(form.rental.fee.d7 || 0),
+            d15: Number(form.rental.fee.d15 || 0),
+            d30: Number(form.rental.fee.d30 || 0),
+          },
+          // ON이면 공백으로, OFF면 사용자가 입력한 사유 보냄
+          disabledReason: form.rental.enabled ? '' : form.rental.disabledReason?.trim() || '',
+        },
+        images: form.images || [],
+        searchKeywords: searchKeywordsText
+          .split(',')
+          .map((k) => k.trim())
+          .filter((k) => k.length > 0),
+      };
+
+      await onSubmit(normalized);
+      showSuccessToast('저장되었습니다.');
+    } catch (e) {
+      console.error(e);
+      showErrorToast('저장 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+      submitRef.current = false;
+    }
   };
 
   return (
