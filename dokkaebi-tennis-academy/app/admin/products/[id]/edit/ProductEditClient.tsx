@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Save, ArrowLeft, Upload, Info, Delete, Package } from 'lucide-react';
@@ -154,6 +154,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   // 이미지 업로드 상태
   const [uploading, setUploading] = useState(false);
 
+  // 더블클릭/연타 레이스 방지 (submit/delete)
+  const [submitting, setSubmitting] = useState(false);
+  const submitRef = useRef(false);
+  const [deleting, setDeleting] = useState(false);
+  const deleteRef = useRef(false);
+
   useEffect(() => {
     if (!data?.product) return;
     const p = data.product;
@@ -234,7 +240,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
     if (totalSelected > availableSlots) {
       e.target.value = '';
-      alert(`최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
+      showErrorToast(`최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
     }
 
     const filesToUpload = Array.from(files).slice(0, availableSlots);
@@ -243,13 +249,14 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     for (const file of filesToUpload) {
       const fileName = sanitizeFileName(file);
       const { error } = await supabase.storage.from('tennis-images').upload(fileName, file);
-      if (!error) {
-        const { data: publicData } = supabase.storage.from('tennis-images').getPublicUrl(fileName);
-        const imageUrl = publicData?.publicUrl;
-        if (imageUrl) {
-          setImages((prev) => [...prev, imageUrl]);
-        }
+      if (error) {
+        // 업로드 실패 시에도 다음 파일은 계속 시도(일괄 업로드 UX)
+        showErrorToast('이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        continue;
       }
+      const { data: publicData } = supabase.storage.from('tennis-images').getPublicUrl(fileName);
+      const imageUrl = publicData?.publicUrl;
+      if (imageUrl) setImages((prev) => [...prev, imageUrl]);
     }
 
     setUploading(false);
@@ -310,188 +317,215 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 색션명 상수
-    const SECTIONS = {
-      BASIC: '기본정보',
-      PERFORMANCE: '성능 및 특성',
-      INVENTORY: '재고관리',
-      IMAGE: '이미지',
-    };
+    // 이미 제출/삭제가 진행 중이면 연타 방지
+    if (submitting || submitRef.current || deleting || deleteRef.current) return;
 
-    // 기본 유효성 검사
-    if (!basicInfo.name.trim()) {
-      showErrorToast(
-        <>
-          <strong>[{SECTIONS.BASIC} 미입력]</strong>
-          <br />
-          '상품명을 입력해주세요.'
-        </>
-      );
-      return;
-    }
+    // 제출 중에는 ref로 즉시 잠금(동기)
+    submitRef.current = true;
+    try {
+      // 이미지 업로드 중에는 제출 금지(업로드 끝나기 전에 저장하면 images 누락될 수 있음)
+      if (uploading) {
+        showErrorToast('이미지 업로드 중입니다. 업로드 완료 후 다시 시도해 주세요.');
+        return;
+      }
 
-    if (basicInfo.price <= 0) {
-      showErrorToast(
-        <>
-          <strong>[{SECTIONS.BASIC} 미입력]</strong>
-          <br /> '금액을 입력해주세요.'
-        </>
-      );
-      return;
-    }
+      // 색션명 상수
+      const SECTIONS = {
+        BASIC: '기본정보',
+        PERFORMANCE: '성능 및 특성',
+        INVENTORY: '재고관리',
+        IMAGE: '이미지',
+      };
 
-    if (!basicInfo.description.trim()) {
-      showErrorToast(
-        <>
-          <strong>[{SECTIONS.BASIC} 미입력]</strong>
-          <br /> '상세 설명을 입력해주세요.'
-        </>
-      );
-      return;
-    }
-
-    // 이미 기본값으로 3이 설정되어있어서 오류가 생기지는 않겠지만 예방차원에 로직 추가
-    const featureValues = Object.values(features);
-    if (featureValues.some((value) => value < 1 || value > 5)) {
-      showErrorToast(
-        <>
-          <strong>[{SECTIONS.PERFORMANCE}] 미입력</strong> <br />
-          '모든 성능 항목은 1~5 사이 값으로 설정되어야 합니다.'
-        </>
-      );
-      return;
-    }
-
-    if (images.length === 0) {
-      showErrorToast(
-        <>
-          <strong>[{SECTIONS.IMAGE}] 미입력</strong> <br />
-          '최소 1장의 이미지를 업로드해야 합니다.'
-        </>
-      );
-      return;
-    }
-
-    if (inventory.isSale && inventory.salePrice >= basicInfo.price) {
-      showErrorToast(
-        <>
-          <strong>[{SECTIONS.INVENTORY}] 미입력</strong> <br />
-          '할인가는 정가보다 낮아야 합니다.'
-        </>
-      );
-      return;
-    }
-
-    if (inventory.stock < 0) {
-      showErrorToast(
-        <>
-          <strong>[{SECTIONS.INVENTORY}] 미입력</strong> <br />
-          '재고 수량은 0 이상이어야 합니다.'
-        </>
-      );
-      return;
-    }
-
-    if (inventoryDirty) {
-      if (inventory.lowStock < 0 || inventory.lowStock > inventory.stock) {
+      // 기본 유효성 검사
+      if (!basicInfo.name.trim()) {
         showErrorToast(
           <>
-            <strong>[재고관리 오류]</strong> <br />
-            '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.'
-          </>
+            <strong>[{SECTIONS.BASIC} 미입력]</strong>
+            <br />
+            '상품명을 입력해주세요.'
+          </>,
         );
         return;
       }
-    }
-    // specifications 영문 키로 미리 구성
-    const specifications: any = {
-      material: basicInfo.material,
-      gauge: basicInfo.gauge,
-      color: basicInfo.color,
-      length: basicInfo.length,
-    };
 
-    // 하이브리드면 조합 병합
-    if (basicInfo.material === 'hybrid') {
-      const hasMain = hybridMain.brand || hybridMain.name || hybridMain.gauge || hybridMain.color;
-      const hasCross = hybridCross.brand || hybridCross.name || hybridCross.gauge || hybridCross.color;
-      if (hasMain || hasCross) {
-        specifications.hybrid = {
-          main: { ...hybridMain },
-          cross: { ...hybridCross },
-        };
-      }
-    }
-
-    const searchKeywords = searchKeywordsInput
-      .split(',')
-      .map((k) => k.trim())
-      .filter((k) => k.length > 0);
-
-    //  product 전체 구성
-    const product = {
-      ...basicInfo, // name, brand, price 등 기본 항목
-
-      searchKeywords,
-
-      features: {
-        ...features, // power, control, spin 등 성능 항목
-      },
-
-      tags: { ...tags }, // 추천 플레이어 & 스타일
-
-      specifications, // 영문 키로 통일된 사양 정보
-
-      additionalFeatures, // 추가 설명
-
-      images: [
-        // 이미지 배열
-        ...images.slice(mainImageIndex, mainImageIndex + 1), // 대표 이미지 먼저
-        ...images.filter((_, i) => i !== mainImageIndex), // 나머지
-      ],
-      inventory, // 재고 관리 정보
-    };
-
-    // console.log(' 등록된 상품 데이터:', product);
-
-    // API 전송 로직 위치
-
-    try {
-      const res = await fetch(`/api/products/${productId}`, {
-        // API 겨로
-        method: 'PUT', // POST 요청
-        headers: {
-          // 헤더 설정
-          'Content-Type': 'application/json', // JSON 형식
-        },
-        body: JSON.stringify(product), // JSON 문자열로 변환
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        // 에러 발생시
-        const errorData = await res.json(); // 에러 메시지
-
-        showErrorToast(errorData.message || '알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요');
+      if (basicInfo.price <= 0) {
+        showErrorToast(
+          <>
+            <strong>[{SECTIONS.BASIC} 미입력]</strong>
+            <br /> '금액을 입력해주세요.'
+          </>,
+        );
         return;
       }
 
-      const data = await res.json(); // 성공적으로 등록된 데이터
+      if (!basicInfo.description.trim()) {
+        showErrorToast(
+          <>
+            <strong>[{SECTIONS.BASIC} 미입력]</strong>
+            <br /> '상세 설명을 입력해주세요.'
+          </>,
+        );
+        return;
+      }
 
-      showSuccessToast('상품이 수정되었습니다.');
+      // 이미 기본값으로 3이 설정되어있어서 오류가 생기지는 않겠지만 예방차원에 로직 추가
+      const featureValues = Object.values(features);
+      if (featureValues.some((value) => value < 1 || value > 5)) {
+        showErrorToast(
+          <>
+            <strong>[{SECTIONS.PERFORMANCE}] 미입력</strong> <br />
+            '모든 성능 항목은 1~5 사이 값으로 설정되어야 합니다.'
+          </>,
+        );
+        return;
+      }
 
-      router.push('/admin/products'); // 등록된 상품 상세 페이지로 즉시 이동
-    } catch (error) {
-      // 상품 등록 중 에러 발생시
-      // console.log('상품 등록 에러', error);
+      if (images.length === 0) {
+        showErrorToast(
+          <>
+            <strong>[{SECTIONS.IMAGE}] 미입력</strong> <br />
+            '최소 1장의 이미지를 업로드해야 합니다.'
+          </>,
+        );
+        return;
+      }
 
-      showErrorToast('서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.');
+      if (inventory.isSale && inventory.salePrice >= basicInfo.price) {
+        showErrorToast(
+          <>
+            <strong>[{SECTIONS.INVENTORY}] 미입력</strong> <br />
+            '할인가는 정가보다 낮아야 합니다.'
+          </>,
+        );
+        return;
+      }
+
+      if (inventory.stock < 0) {
+        showErrorToast(
+          <>
+            <strong>[{SECTIONS.INVENTORY}] 미입력</strong> <br />
+            '재고 수량은 0 이상이어야 합니다.'
+          </>,
+        );
+        return;
+      }
+
+      if (inventoryDirty) {
+        if (inventory.lowStock < 0 || inventory.lowStock > inventory.stock) {
+          showErrorToast(
+            <>
+              <strong>[재고관리 오류]</strong> <br />
+              '재고 부족 기준은 0 이상이며 재고 수량보다 많을 수 없습니다.'
+            </>,
+          );
+          return;
+        }
+      }
+      // specifications 영문 키로 미리 구성
+      const specifications: any = {
+        material: basicInfo.material,
+        gauge: basicInfo.gauge,
+        color: basicInfo.color,
+        length: basicInfo.length,
+      };
+
+      // 하이브리드면 조합 병합
+      if (basicInfo.material === 'hybrid') {
+        const hasMain = hybridMain.brand || hybridMain.name || hybridMain.gauge || hybridMain.color;
+        const hasCross = hybridCross.brand || hybridCross.name || hybridCross.gauge || hybridCross.color;
+        if (hasMain || hasCross) {
+          specifications.hybrid = {
+            main: { ...hybridMain },
+            cross: { ...hybridCross },
+          };
+        }
+      }
+
+      const searchKeywords = searchKeywordsInput
+        .split(',')
+        .map((k) => k.trim())
+        .filter((k) => k.length > 0);
+
+      //  product 전체 구성
+      const product = {
+        ...basicInfo, // name, brand, price 등 기본 항목
+
+        searchKeywords,
+
+        features: {
+          ...features, // power, control, spin 등 성능 항목
+        },
+
+        tags: { ...tags }, // 추천 플레이어 & 스타일
+
+        specifications, // 영문 키로 통일된 사양 정보
+
+        additionalFeatures, // 추가 설명
+
+        images: [
+          // 이미지 배열
+          ...images.slice(mainImageIndex, mainImageIndex + 1), // 대표 이미지 먼저
+          ...images.filter((_, i) => i !== mainImageIndex), // 나머지
+        ],
+        inventory, // 재고 관리 정보
+      };
+
+      // console.log(' 등록된 상품 데이터:', product);
+
+      // API 전송 로직 위치
+
+      // API 전송
+      setSubmitting(true);
+
+      try {
+        const res = await fetch(`/api/products/${productId}`, {
+          // API 겨로
+          method: 'PUT', // POST 요청
+          headers: {
+            // 헤더 설정
+            'Content-Type': 'application/json', // JSON 형식
+          },
+          body: JSON.stringify(product), // JSON 문자열로 변환
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          // 에러 발생시
+          const errorData = await res.json(); // 에러 메시지
+
+          showErrorToast(errorData.message || '알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요');
+          return;
+        }
+
+        await res.json(); // 성공적으로 등록된 데이터
+
+        showSuccessToast('상품이 수정되었습니다.');
+
+        router.push('/admin/products'); // 등록된 상품 상세 페이지로 즉시 이동
+      } catch (error) {
+        // 상품 등록 중 에러 발생시
+        // console.log('상품 등록 에러', error);
+
+        showErrorToast('서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.');
+      } finally {
+        setSubmitting(false);
+      }
+    } finally {
+      // validations에서 return 되더라도 잠금은 반드시 풀려야 함
+      submitRef.current = false;
     }
   };
 
   // 삭제 핸들러
   const handleDelete = async () => {
+    // 제출/삭제/업로드 중이면 삭제 금지
+    if (uploading || submitting || submitRef.current || deleting || deleteRef.current) return;
+
     if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return;
+
+    deleteRef.current = true;
+    setDeleting(true);
     try {
       const res = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
@@ -506,6 +540,9 @@ export default function ProductEditClient({ productId }: { productId: string }) 
       router.push('/admin/products');
     } catch (e) {
       showErrorToast('서버 오류가 발생했습니다.');
+    } finally {
+      setDeleting(false);
+      deleteRef.current = false;
     }
   };
 
@@ -535,11 +572,11 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                       취소
                     </Link>
                   </Button>
-                  <Button type="button" variant="destructive" onClick={handleDelete}>
+                  <Button type="button" variant="destructive" onClick={handleDelete} disabled={uploading || submitting || deleting}>
                     <Delete className="mr-2 h-4 w-4" />
                     삭제
                   </Button>
-                  <Button type="submit" className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white">
+                  <Button type="submit" disabled={uploading || submitting || deleting} className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white">
                     <Save className="mr-2 h-4 w-4" />
                     수정완료
                   </Button>
@@ -1197,7 +1234,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                       <label className={`flex aspect-square h-full w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed ${isMaxReached ? 'pointer-events-none opacity-50' : ''}`}>
                         {uploading ? <Loader2 className="mb-2 h-6 w-6 animate-spin text-muted-foreground" /> : <Upload className="mb-2 h-6 w-6" />}
                         <span className="text-sm">이미지 추가</span>
-                        <input type="file" accept="image/*" multiple onChange={handleAddImage} className="hidden" disabled={isMaxReached} />
+                        <input type="file" accept="image/*" multiple onChange={handleAddImage} className="hidden" disabled={isMaxReached || uploading || submitting || deleting} />
                       </label>
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -1225,11 +1262,11 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                   취소
                 </Link>
               </Button>
-              <Button variant="destructive" onClick={handleDelete}>
+              <Button variant="destructive" onClick={handleDelete} disabled={uploading || submitting || deleting}>
                 <Delete className="mr-2 h-4 w-4" />
                 삭제
               </Button>
-              <Button type="submit" className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white">
+              <Button type="submit" disabled={uploading || submitting || deleting} className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white">
                 <Save className="mr-2 h-4 w-4" />
                 수정완료
               </Button>
