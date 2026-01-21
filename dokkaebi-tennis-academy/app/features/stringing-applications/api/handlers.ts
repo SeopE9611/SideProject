@@ -29,6 +29,23 @@ function mapCourierLabel(raw?: string | null): string {
 
   return raw;
 }
+type CancelStatus = 'none' | 'requested' | 'approved' | 'rejected';
+
+function normalizeCancelStatus(raw: any): CancelStatus {
+  const v = typeof raw === 'string' ? raw.trim() : '';
+  if (!v) return 'none';
+
+  // 한글/영문 혼재 대응
+  if (v === '요청') return 'requested';
+  if (v === '승인') return 'approved';
+  if (v === '거절') return 'rejected';
+
+  // 이미 표준값이면 그대로
+  if (v === 'requested' || v === 'approved' || v === 'rejected' || v === 'none') return v;
+
+  // 그 외 알 수 없는 값은 안전하게 none 처리
+  return 'none';
+}
 
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
@@ -68,7 +85,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
             id: prodId,
             name: prod?.name ?? '알 수 없는 상품',
           };
-        })
+        }),
       );
     }
 
@@ -90,7 +107,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
           price: prod?.mountingFee ?? getStringingServicePrice(item.id, false),
           quantity: 1,
         };
-      })
+      }),
     );
 
     // total 계산
@@ -107,7 +124,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
             status: 1,
             cancelRequest: 1,
           },
-        }
+        },
       );
     }
 
@@ -121,7 +138,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
           name: prod?.name ?? '알 수 없는 상품',
           mountingFee: prod?.mountingFee ?? 0,
         };
-      })
+      }),
     );
 
     // 체크박스 옵션으로 그대로 사용
@@ -201,7 +218,8 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       rentalId: (app as any).rentalId?.toString?.() || null,
       // 사용자 확정 시각 (없으면 null)
       userConfirmedAt: (app as any).userConfirmedAt instanceof Date ? (app as any).userConfirmedAt.toISOString() : typeof (app as any).userConfirmedAt === 'string' ? (app as any).userConfirmedAt : null,
-      orderCancelStatus: order?.cancelRequest?.status ?? 'none',
+      // 주문 cancelRequest도 한글/영문 혼재 가능 → 표준화해서 내려야 UI가 안 깨짐
+      orderCancelStatus: normalizeCancelStatus(order?.cancelRequest?.status) ?? 'none',
       customer: {
         name: app.customer?.name ?? app.userSnapshot?.name ?? app.guestName ?? '-',
         email: app.customer?.email ?? app.userSnapshot?.email ?? app.guestEmail ?? '-',
@@ -210,7 +228,8 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         addressDetail: app.customer?.addressDetail ?? app.shippingInfo?.addressDetail ?? '',
         postalCode: app.customer?.postalCode ?? app.shippingInfo?.postalCode ?? '',
       },
-      requestedAt: app.createdAt,
+      // Date/string 혼재 방어 (NextResponse.json에서 Date는 ISO로 직렬화되지만, 명시해두면 안전)
+      requestedAt: app.createdAt instanceof Date ? app.createdAt.toISOString() : (app.createdAt ?? null),
       desiredDateTime: app.desiredDateTime,
       status: app.status,
       paymentStatus: app.paymentStatus,
@@ -241,7 +260,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       // 신청 취소 요청 정보
       cancelRequest: app.cancelRequest
         ? {
-            status: app.cancelRequest.status ?? 'requested',
+            status: normalizeCancelStatus(app.cancelRequest.status),
             reasonCode: app.cancelRequest.reasonCode ?? undefined,
             reasonText: app.cancelRequest.reasonText ?? undefined,
             requestedAt: app.cancelRequest.requestedAt ?? null,
@@ -375,14 +394,24 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
             price: prod?.mountingFee ?? getStringingServicePrice(prodId, false),
             quantity: 1, //
           };
-        })
+        }),
       );
-      setFields['stringDetails.stringItems'] = newItems;
+      // stringDetails.stringItems는 "표시용" 형태({id,name})로 유지 (POST/GET과 shape 통일)
+      setFields['stringDetails.stringItems'] = newItems.map((it) => ({ id: it.id, name: it.name }));
+
+      //  GET의 1순위 표준 필드(app.stringItems)도 함께 갱신
+      // - POST(handleSubmitStringingApplication)에서 저장하는 구조와 동일하게 맞춤
+      setFields.stringItems = newItems.map((it) => ({
+        productId: it.id,
+        name: it.name,
+        quantity: typeof it.quantity === 'number' ? it.quantity : 1,
+        // mountingFee는 이 단계에서 굳이 강제하지 않음(필요하면 추후 보강)
+      }));
 
       // 스트링 요금(newItems) 합산하여 totalPrice 자동 설정
       // 유틸 기준으로 최종 금액 1회 확정
       if (hasTypesChange || hasCustomNameChange) {
-        const typesForTotal: string[] = Array.isArray(setFields['stringDetails.stringTypes']) ? setFields['stringDetails.stringTypes'] : appDoc.stringDetails?.stringTypes ?? [];
+        const typesForTotal: string[] = Array.isArray(setFields['stringDetails.stringTypes']) ? setFields['stringDetails.stringTypes'] : (appDoc.stringDetails?.stringTypes ?? []);
 
         const recalculated = await calcStringingTotal(db, typesForTotal);
         setFields.totalPrice = recalculated;
@@ -495,7 +524,8 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
         await onScheduleUpdated({ user: userCtx, application: appCtx }); //
       } else {
         // 이전 일정 존재 여부 판단을 위해 PATCH 전에 계산한 hadScheduleBefore를 사용
-        if (!hadScheduleBefore) await onScheduleConfirmed({ user: userCtx, application: appCtx }); //
+        if (!hadScheduleBefore)
+          await onScheduleConfirmed({ user: userCtx, application: appCtx }); //
         else await onScheduleUpdated({ user: userCtx, application: appCtx }); //
       }
     }
@@ -688,7 +718,7 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
     await col.updateOne({ _id: new ObjectId(id) }, {
       $set: {
         cancelRequest: {
-          status: '요청',
+          status: 'requested',
           reasonCode: reasonCode ?? 'OTHER',
           reasonText: reasonText ?? '',
           requestedAt: new Date(),
@@ -735,7 +765,8 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
     }
 
     // 취소 요청이 없는 경우 / 이미 처리된 경우 방어
-    if (!appDoc.cancelRequest || appDoc.cancelRequest.status !== '요청') {
+    const cur = normalizeCancelStatus(appDoc.cancelRequest?.status);
+    if (!appDoc.cancelRequest || cur !== 'requested') {
       return NextResponse.json({ error: '처리할 취소 요청이 없습니다.' }, { status: 400 });
     }
 
@@ -762,7 +793,7 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
     await col.updateOne({ _id }, {
       $set: {
         status: '취소',
-        'cancelRequest.status': '승인',
+        'cancelRequest.status': 'approved',
         'cancelRequest.approvedAt': now,
       },
       $push: { history: historyEntry as any },
@@ -804,7 +835,8 @@ export async function handleStringingCancelReject(req: Request, { params }: { pa
       return NextResponse.json({ error: '신청서를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    if (!appDoc.cancelRequest || appDoc.cancelRequest.status !== '요청') {
+    const cur = normalizeCancelStatus(appDoc.cancelRequest?.status);
+    if (!appDoc.cancelRequest || cur !== 'requested') {
       return NextResponse.json({ error: '처리할 취소 요청이 없습니다.' }, { status: 400 });
     }
 
@@ -824,7 +856,7 @@ export async function handleStringingCancelReject(req: Request, { params }: { pa
 
     await col.updateOne({ _id }, {
       $set: {
-        'cancelRequest.status': '거절',
+        'cancelRequest.status': 'rejected',
         'cancelRequest.rejectedAt': now,
         'cancelRequest.rejectReason': trimmed ?? '',
       },
@@ -1002,7 +1034,7 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
         { _id: new ObjectId((app as any).orderId) },
         {
           $set: { shippingInfo: mergedOrderShippingInfo },
-        }
+        },
       );
     }
 
@@ -1015,7 +1047,7 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
 
 // ========== 신청서의 history 필드 조회 (날짜 내림차순 + 페이지네이션) =========
 export async function handleGetApplicationHistory(req: NextRequest, context: { params: { id: string } }) {
-  const { id } = await context.params;
+  const { id } = context.params;
 
   const url = new URL(req.url);
   const page = parseInt(url.searchParams.get('page') || '1', 10);
@@ -1464,7 +1496,7 @@ export async function handleGetApplicationList() {
             }
             const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
             return (prod?.name as string) ?? '알 수 없는 스트링';
-          })
+          }),
         );
 
         const primaryName = names[0];
@@ -1479,7 +1511,7 @@ export async function handleGetApplicationList() {
           ...(doc as any),
           stringSummary,
         };
-      })
+      }),
     );
 
     // 신청서 목록을 JSON 응답으로 반환
@@ -1551,6 +1583,9 @@ export async function handleSubmitStringingApplication(req: Request) {
       packageOptOut,
       lines,
     } = await req.json();
+
+    // ✅ 수거 방식 먼저 표준화 (이후 검증/슬롯체크에 사용)
+    const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship');
 
     // 라인 사용 여부
     const usingLines = Array.isArray(lines) && lines.length > 0;
@@ -1648,13 +1683,20 @@ export async function handleSubmitStringingApplication(req: Request) {
       return clamped;
     })();
 
-    const concurrent = await db.collection('stringing_applications').countDocuments({
-      'stringDetails.preferredDate': preferredDate,
-      'stringDetails.preferredTime': preferredTime,
-      status: { $nin: EXCLUDED_STATUSES },
-    });
-    if (concurrent >= capacity) {
-      return NextResponse.json({ message: '선택하신 시간대는 방금 전 마감되었습니다. 다른 시간대를 선택해주세요.' }, { status: 409 });
+    if (cm === 'visit') {
+      if (!preferredDate || !preferredTime) {
+        return NextResponse.json({ message: '방문 수령은 예약 일시가 필수입니다.' }, { status: 400 });
+      }
+
+      const concurrent = await db.collection('stringing_applications').countDocuments({
+        'stringDetails.preferredDate': preferredDate,
+        'stringDetails.preferredTime': preferredTime,
+        status: { $nin: EXCLUDED_STATUSES },
+      });
+
+      if (concurrent >= capacity) {
+        return NextResponse.json({ message: '선택하신 시간대는 방금 전 마감되었습니다. 다른 시간대를 선택해주세요.' }, { status: 409 });
+      }
     }
 
     // === 3) 같은 주문의 신청 멱등성 (옵션 C 적용 이후 설명) ===
@@ -1720,7 +1762,7 @@ export async function handleSubmitStringingApplication(req: Request) {
             id: prodId,
             name: prod?.name ?? '알 수 없는 상품',
           };
-        })
+        }),
       );
     }
 
@@ -1741,8 +1783,8 @@ export async function handleSubmitStringingApplication(req: Request) {
             quantity: 1,
           }));
 
-    // === 5) collectionMethod 정규화 & 일관 저장 ===
-    const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
+    // // === 5) collectionMethod 정규화 & 일관 저장 ===
+    // const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship'); // 'self_ship' | 'courier_pickup' | 'visit'
 
     // orderId 기반 제출일 때, (주문에 serviceFee가 포함된 경우) 제출 금액 정합성 검증에 사용
     let expectedServiceFee: number | undefined = undefined;
@@ -1763,7 +1805,7 @@ export async function handleSubmitStringingApplication(req: Request) {
             serviceFee: 1,
             totalPrice: 1,
           },
-        }
+        },
       );
 
       if (!order) {
@@ -1791,7 +1833,7 @@ export async function handleSubmitStringingApplication(req: Request) {
             expected,
             actual: cm,
           },
-          { status: 422 }
+          { status: 422 },
         );
       }
 
@@ -2010,7 +2052,7 @@ export async function handleSubmitStringingApplication(req: Request) {
               'stringDetails.preferredTime': 1,
               visitSlotCount: 1,
             },
-          }
+          },
         )
         .toArray();
 
@@ -2062,7 +2104,7 @@ export async function handleSubmitStringingApplication(req: Request) {
           {
             message: '선택하신 시간대는 방금 전 다른 예약으로 마감되었습니다. 다른 시간대를 선택해주세요.',
           },
-          { status: 409 }
+          { status: 409 },
         );
       }
     }
@@ -2167,7 +2209,7 @@ export async function handleSubmitStringingApplication(req: Request) {
             guestPhone: baseDoc.guestPhone,
             userSnapshot: baseDoc.userSnapshot,
           },
-        }
+        },
       );
     } else {
       // 새 문서 삽입 (createdAt 추가)
@@ -2192,7 +2234,7 @@ export async function handleSubmitStringingApplication(req: Request) {
             stringingApplicationId: applicationId.toString(),
             updatedAt: new Date(),
           },
-        }
+        },
       );
     }
 
@@ -2364,7 +2406,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
               link,
               reused: true,
             }),
-            { status: 200 }
+            { status: 200 },
           );
         }
       }
