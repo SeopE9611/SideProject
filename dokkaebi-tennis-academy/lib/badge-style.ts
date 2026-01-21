@@ -1,5 +1,6 @@
 import { Order } from '@/lib/types/order';
 import type { QnaCategory } from '@/lib/types/board';
+import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 
 // 전역 배지 토큰 (크기/정렬/테두리 옵션)
 export const badgeSizeSm = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
@@ -58,11 +59,14 @@ export const shippingStatusColors: Record<string, string> = {
 };
 
 export function getShippingBadge(order: Order) {
-  const code = order.shippingInfo?.shippingMethod; // 'delivery' | 'quick' | 'visit'
+  // 표준: courier | quick | visit (레거시 delivery도 courier로 정규화)
+  // shippingMethod가 없고 deliveryMethod(택배수령/방문수령)만 있는 케이스도 흡수
+  const shippingRaw = (order.shippingInfo as any)?.shippingMethod ?? (order.shippingInfo as any)?.deliveryMethod;
+  const code = normalizeOrderShippingMethod(shippingRaw);
   const tn = order.shippingInfo?.invoice?.trackingNumber?.trim() ?? '';
 
   let label: keyof typeof shippingStatusColors = '미입력';
-  if (code === 'delivery') label = tn ? '등록됨' : '미등록';
+  if (code === 'courier') label = tn ? '등록됨' : '미등록';
   else if (code === 'quick') label = '퀵배송';
   else if (code === 'visit') label = '방문수령';
 

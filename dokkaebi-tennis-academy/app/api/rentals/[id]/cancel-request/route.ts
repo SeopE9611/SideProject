@@ -5,8 +5,37 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 import type { RentalCancelRequestStatus } from '@/lib/types/rental-order';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
+
+// 취소 요청 body 최종 유효성(서버 방어)
+const toOptionalTrimmedString = (v: unknown) => {
+  if (v === null || v === undefined) return undefined;
+  if (typeof v === 'string') {
+    const s = v.trim();
+    return s.length ? s : undefined; // 빈 문자열은 "없음"으로 취급
+  }
+  if (typeof v === 'number') {
+    const s = String(v).trim();
+    return s.length ? s : undefined;
+  }
+  return undefined;
+};
+
+const toTrimmedString = (v: unknown) => {
+  if (v === null || v === undefined) return undefined;
+  if (typeof v === 'string') return v.trim();
+  if (typeof v === 'number') return String(v).trim();
+  return undefined;
+};
+
+const CancelRequestBodySchema = z
+  .object({
+    reasonCode: z.preprocess(toOptionalTrimmedString, z.string().max(30)).optional(),
+    reasonText: z.preprocess(toTrimmedString, z.string().max(500)).optional(),
+  })
+  .passthrough();
 
 /**
  * 대여 취소 "요청" API
@@ -34,7 +63,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (rental.userId) {
       const jar = await cookies();
       const at = jar.get('accessToken')?.value;
-      const payload = at ? verifyAccessToken(at) : null;
+      // 토큰이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 "FORBIDDEN"으로 정리
+      let payload: any = null;
+      try {
+        payload = at ? verifyAccessToken(at) : null;
+      } catch {
+        payload = null;
+      }
       if (!payload || payload.sub !== String(rental.userId)) {
         return NextResponse.json({ ok: false, message: 'FORBIDDEN' }, { status: 403 });
       }
@@ -65,7 +100,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           message: 'INVALID_STATE',
           detail: '출고 운송장이 등록된 이후에는 취소 요청이 불가합니다.',
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -77,7 +112,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           message: 'INVALID_STATE',
           detail: '대여 취소 요청이 불가능한 상태입니다.',
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
     // 이미 취소 요청이 걸려있으면 중복 요청 차단
@@ -87,17 +122,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // 3) body 파싱 (취소 사유)
-    const body = await (async () => {
-      try {
-        return (await req.json()) as { reasonCode?: string; reasonText?: string };
-      } catch {
-        return {} as { reasonCode?: string; reasonText?: string };
-      }
-    })();
+    let rawBody: unknown = {};
+    try {
+      rawBody = await req.json();
+    } catch {
+      rawBody = {};
+    }
 
-    const reasonCode = body.reasonCode?.trim() || '기타';
-    const reasonText = body.reasonText?.trim() || '';
+    const parsedBody = CancelRequestBodySchema.safeParse(rawBody);
 
+    // 스키마 실패 시에도 기존처럼 기본값으로 처리(동작/UX 유지)
+    const reasonCode = parsedBody.success ? (parsedBody.data.reasonCode ?? '기타') : '기타';
+    const reasonText = parsedBody.success ? (parsedBody.data.reasonText ?? '') : '';
+    
     const now = new Date();
 
     // 4) cancelRequest 업데이트
@@ -115,7 +152,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           cancelRequest,
           updatedAt: now,
         },
-      }
+      },
     );
 
     // 5) 이력 기록 (status 자체는 아직 paid 유지)

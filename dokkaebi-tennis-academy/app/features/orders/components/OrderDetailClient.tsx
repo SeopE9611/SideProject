@@ -185,6 +185,17 @@ export default function OrderDetailClient({ orderId }: Props) {
   const isDelivered = localStatus === '배송완료';
   const isConfirmed = localStatus === '구매확정';
   const isCanceled = ['취소', '결제취소', '환불'].includes(localStatus);
+
+  //  연결된 교체서비스 신청서 ID(있다면 최신 1개를 우선 사용)
+  // - 주문 + 교체서비스가 묶인 케이스에서는 운송장/배송정보를 '신청서'에서 단일 관리하도록 통일.
+  const linkedStringingAppId = (() => {
+    const list = Array.isArray(orderDetail.stringingApplications) ? orderDetail.stringingApplications : [];
+    const latest = list.filter((a) => a?.id).sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0]?.id;
+
+    return latest ?? orderDetail.stringingApplicationId ?? null;
+  })();
+  const isShippingManagedByApplication = Boolean(linkedStringingAppId);
+
   /**
    *  구매확정(관리자 화면에서 처리 버튼)
    * - 서버(/api/orders/[id]/confirm)가 관리자 세션에서도 허용되어 있어야 정상 동작합니다.
@@ -347,8 +358,16 @@ export default function OrderDetailClient({ orderId }: Props) {
   };
 
   const handleShippingUpdate = () => {
-    if (['취소', '결제취소'].includes(orderDetail.status)) {
+    if (isCanceled) {
       showErrorToast('취소된 주문은 배송 정보를 수정할 수 없습니다.');
+      return;
+    }
+
+    // 연결 주문(주문 + 교체서비스 신청서)인 경우:
+    // 배송정보/운송장은 신청서에서 단일 관리 → 신청서 배송등록 페이지로 이동
+    if (isShippingManagedByApplication && linkedStringingAppId) {
+      showSuccessToast('이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.');
+      router.push(`/admin/applications/stringing/${linkedStringingAppId}/shipping-update`);
       return;
     }
 
@@ -403,7 +422,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </Button>
                 <Button onClick={handleShippingUpdate} className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
                   <Truck className="mr-2 h-4 w-4" />
-                  배송 정보 업데이트
+                  {isShippingManagedByApplication ? '신청서 배송 정보 관리' : '배송 정보 업데이트'}
                 </Button>
               </div>
             </div>
@@ -703,70 +722,98 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div
-                    className="flex items-center space-x-3 p-3
-                bg-gray-50 dark:bg-slate-800/70 rounded-lg
-                border border-gray-100 dark:border-slate-700/60"
-                  >
-                    <Truck className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">배송 방법</p>
-                      <p className="font-semibold text-gray-900 dark:text-gray-100">
-                        {{
-                          delivery: '택배 배송',
-                          quick: '퀵 배송 (당일)',
-                          visit: '방문 수령',
-                        }[orderDetail.shippingInfo.shippingMethod] || '정보 없음'}
-                      </p>
+                {isShippingManagedByApplication && linkedStringingAppId ? (
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 dark:border-blue-800/60 dark:bg-blue-950/30 dark:text-blue-100">
+                    <div className="flex items-start gap-2">
+                      <LinkIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                      <div className="space-y-2">
+                        <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.</p>
+
+                        <div className="flex flex-wrap gap-2">
+                          <Button size="sm" variant="outline" className="bg-transparent" asChild>
+                            <Link href={`/admin/applications/stringing/${linkedStringingAppId}`}>신청서 상세 보기</Link>
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+                            onClick={() => router.push(`/admin/applications/stringing/${linkedStringingAppId}/shipping-update`)}
+                          >
+                            <Truck className="mr-2 h-4 w-4" />
+                            배송 정보 등록/수정
+                          </Button>
+                        </div>
+
+                        <p className="text-xs text-blue-700 dark:text-blue-200/80">주문(상품) 쪽 운송장/배송정보는 혼선을 방지하기 위해 사용하지 않습니다.</p>
+                      </div>
                     </div>
                   </div>
-
-                  <div
-                    className="flex items-center space-x-3 p-3
-                bg-gray-50 dark:bg-slate-800/70 rounded-lg
-                border border-gray-100 dark:border-slate-700/60"
-                  >
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">예상 수령일</p>
-                      <p className="font-semibold text-gray-900 dark:text-gray-100">{formatDate(orderDetail.shippingInfo.estimatedDate)}</p>
+                ) : (
+                  <div className="space-y-4">
+                    <div
+                      className="flex items-center space-x-3 p-3
+                  bg-gray-50 dark:bg-slate-800/70 rounded-lg
+                  border border-gray-100 dark:border-slate-700/60"
+                    >
+                      <Truck className="h-4 w-4 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">배송 방법</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">
+                          {{
+                            delivery: '택배 배송',
+                            quick: '퀵 배송 (당일)',
+                            visit: '방문 수령',
+                          }[orderDetail.shippingInfo.shippingMethod] || '정보 없음'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  {orderDetail.shippingInfo.invoice?.trackingNumber && (
-                    <>
-                      <div
-                        className="flex items-center space-x-3 p-3
-                bg-gray-50 dark:bg-slate-800/70 rounded-lg
-                border border-gray-100 dark:border-slate-700/60"
-                      >
-                        <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">택배사</p>
-                          <p className="font-semibold text-gray-900 dark:text-gray-100">
-                            {{
-                              cj: 'CJ 대한통운',
-                              hanjin: '한진택배',
-                              logen: '로젠택배',
-                              post: '우체국택배',
-                              etc: '기타',
-                            }[orderDetail.shippingInfo.invoice.courier] || '미지정'}
-                          </p>
-                        </div>
+                    <div
+                      className="flex items-center space-x-3 p-3
+                  bg-gray-50 dark:bg-slate-800/70 rounded-lg
+                  border border-gray-100 dark:border-slate-700/60"
+                    >
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">예상 수령일</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{formatDate(orderDetail.shippingInfo.estimatedDate)}</p>
                       </div>
-                      <div
-                        className="flex items-center space-x-3 p-3
-                bg-gray-50 dark:bg-slate-800/70 rounded-lg
-                border border-gray-100 dark:border-slate-700/60"
-                      >
-                        <div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">운송장 번호</p>
-                          <p className="font-semibold text-gray-900 dark:text-gray-100">{orderDetail.shippingInfo.invoice.trackingNumber}</p>
+                    </div>
+
+                    {orderDetail.shippingInfo.invoice?.trackingNumber && (
+                      <>
+                        <div
+                          className="flex items-center space-x-3 p-3
+                  bg-gray-50 dark:bg-slate-800/70 rounded-lg
+                  border border-gray-100 dark:border-slate-700/60"
+                        >
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">택배사</p>
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">
+                              {{
+                                cj: 'CJ 대한통운',
+                                hanjin: '한진택배',
+                                logen: '로젠택배',
+                                post: '우체국택배',
+                                etc: '기타',
+                              }[orderDetail.shippingInfo.invoice.courier] || '미지정'}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )}
-                </div>
+                        <div
+                          className="flex items-center space-x-3 p-3
+                  bg-gray-50 dark:bg-slate-800/70 rounded-lg
+                  border border-gray-100 dark:border-slate-700/60"
+                        >
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">운송장 번호</p>
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">{orderDetail.shippingInfo.invoice.trackingNumber}</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 

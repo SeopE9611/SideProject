@@ -1,0 +1,132 @@
+# 관리자 운영 기준표 (Admin Ops Taxonomy)
+
+> 목적: 관리자 화면에서 “무엇이 주문/신청서/대여인지”, “어떤 것을 매출로 집계하는지”를
+> 코드보다 먼저 고정해 누락/오해/정산 오류를 막는다.
+
+---
+
+## 1) 관리자 화면에서 사용하는 3가지 축(반드시 고정)
+
+### A. 거래 종류(kind)
+
+- ORDER: 일반 주문(스트링/라켓/클래스/패키지 등)
+- STRINGING_APPLICATION: 교체 서비스 신청서(단독 신청 또는 주문/대여 연결)
+- RENTAL: 라켓 대여 주문
+
+### B. 카테고리(category)
+
+- 스트링
+- 라켓
+- 교체서비스
+- 패키지
+- 클래스
+
+### C. 연결 관계(link)
+
+- SINGLE: 단독(연결 없음)
+- LINKED_TO_ORDER: 주문에 연결됨 (stringing_application → orderId)
+- LINKED_TO_RENTAL: 대여에 연결됨 (rental → stringingApplicationId 등)
+
+---
+
+## 2) 현재 구현된 7개 플로우 → DB/연결키 매핑
+
+> “관리자 화면에서 한 줄(row)로 무엇을 보여줄지” 정의할 때 반드시 참고.
+
+### Flow 1) 스트링 단품 구매
+
+- 생성 문서: orders
+- 관리자 목록 노출: /admin/orders
+- 연결: 없음 (SINGLE)
+
+### Flow 2) 스트링 단품 구매 + 교체서비스 신청 (연결된 통합)
+
+- 생성 문서: orders + stringing_applications
+- 관리자 목록 노출: /admin/orders (통합 그룹으로 묶임)
+- 연결키:
+  - stringing_applications.orderId → orders.\_id
+
+### Flow 3) 교체서비스 단일 신청
+
+- 생성 문서: stringing_applications
+- 관리자 목록 노출: /admin/orders (서비스 타입으로 노출)
+- 연결: linkedOrderId = null (SINGLE)
+
+### Flow 4) 라켓 단품 구매
+
+- 생성 문서: orders
+- 관리자 목록 노출: /admin/orders
+- 연결: 없음 (SINGLE)
+
+### Flow 5) 라켓 구매 + 스트링 선택 + 교체서비스 신청 (연결된 통합)
+
+- 생성 문서: orders + stringing_applications
+- 관리자 목록 노출: /admin/orders (통합 그룹)
+- 연결키:
+  - stringing_applications.orderId → orders.\_id
+
+### Flow 6) 라켓 단품 대여
+
+- 생성 문서: rental_orders (또는 rentals 컬렉션)
+- 관리자 목록 노출: /admin/rentals
+- 연결: 없음 (SINGLE)
+
+### Flow 7) 라켓 단품 대여 + 스트링 선택 + 교체서비스 신청 (연결된 대여 통합)
+
+- 생성 문서: rental_orders + (대여 기반 stringing_application 연결 정보)
+- 관리자 목록 노출: /admin/rentals (대여 상세에서 신청서 CTA)
+- 연결키(현재 상세 API 기준):
+  - rental_orders.stringingApplicationId → stringing_applications.\_id
+
+---
+
+## 3) 정산(매출) 기준 — 반드시 문서로 먼저 고정(중요)
+
+> “보기에는 통합인데 실제 매출 집계가 빠지는 사고”를 막기 위한 핵심 섹션.
+> 아래 항목을 확정한 뒤에 통합 화면을 설계한다.
+
+### A. 주문(ORDER) 매출 인식
+
+- 매출 포함: 주문 totalPrice (또는 total)
+- 환불/취소: 어떤 상태에서 제외하는가?
+  - [ ] 취소요청(requested) 단계에서는 포함
+  - [ ] 취소승인(approved) 되면 제외
+  - [ ] 결제완료(confirmed/paid)만 포함
+
+### B. 교체서비스 신청(STRINGING_APPLICATION) 매출 인식
+
+- 매출 포함: 신청서 total (문서 저장값 우선)
+- 단독 신청도 매출로 본다: [ ] YES / [ ] NO
+- 환불/취소 기준: [ ] 주문과 동일 / [ ] 별도
+
+### C. 대여(RENTAL) 매출 인식 (여기서부터 사고가 많이 난다)
+
+- 대여료(fee)는 매출인가? [ ] YES / [ ] NO
+- 보증금(deposit)은 매출인가? [ ] YES / [ ] NO (일반적으로 예치금 성격)
+- 교체서비스 포함 대여의 매출은 어디로 넣는가?
+  - [ ] 대여 매출에 포함(대여 화면에서 관리)
+  - [ ] 신청서 매출로 분리(신청서/주문 쪽으로 이동)
+  - [ ] 이원화(대여료는 대여, 교체서비스는 신청서)
+
+---
+
+## 4) 관리자 리스트(한 줄)에서 반드시 보여야 하는 필드(권장)
+
+### 공통(필수)
+
+거래종류(kind) 뱃지 (ORDER / 신청서 / RENTAL)
+
+- 카테고리(category) 뱃지 (스트링/라켓/교체서비스/...)
+- 연결(link) 뱃지 (단독/주문연결/대여연결)
+- 고객(이름/이메일)
+- 금액(총액) + 결제상태
+- 현재 처리상태(주문상태)
+- 생성일(또는 결제일)
+- 다음 액션(상세로 이동, 배송 업데이트 등)
+
+---
+
+## 5) 변경 작업 원칙(안전장치)
+
+- 기준표(본 문서) 확정 → UI 표시(뱃지/라벨) → 데이터 응답(필드 추가) → 통합 운영함 순으로 진행한다.
+- 매출/정산 로직 변경은 “테스트 시나리오 체크리스트”와 함께 진행한다.

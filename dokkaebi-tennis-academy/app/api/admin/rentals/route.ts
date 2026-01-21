@@ -88,8 +88,8 @@ export async function GET(req: Request) {
   // 사용자 배치 조회
   const userIds = Array.from(
     new Set(
-      docs.map((d) => d.userId).filter(Boolean) // null/undefined 제거
-    )
+      docs.map((d) => d.userId).filter(Boolean), // null/undefined 제거
+    ),
   );
 
   let userMap = new Map<string, { name?: string; email?: string }>();
@@ -118,9 +118,19 @@ export async function GET(req: Request) {
     const fee = Number(r?.amount?.fee ?? r?.fee ?? 0);
     const deposit = Number(r?.amount?.deposit ?? r?.deposit ?? 0);
     const requested = !!r?.stringing?.requested;
-    const stringPrice = Number(r?.amount?.stringPrice ?? (requested ? r?.stringing?.price ?? 0 : 0));
-    const stringingFee = Number(r?.amount?.stringingFee ?? (requested ? r?.stringing?.mountingFee ?? 0 : 0));
+    const stringPrice = Number(r?.amount?.stringPrice ?? (requested ? (r?.stringing?.price ?? 0) : 0));
+    const stringingFee = Number(r?.amount?.stringingFee ?? (requested ? (r?.stringing?.mountingFee ?? 0) : 0));
     const total = Number(r?.amount?.total ?? fee + deposit + stringPrice + stringingFee);
+
+    /**
+     * 대여 기반 교체서비스 신청서 연결 정보
+     * - Flow 7(대여 + 스트링 선택 + 교체서비스 신청)에서 rental_orders에 stringingApplicationId가 저장됨
+     * - 목록에서 "교체서비스 포함 대여인지"를 즉시 구분하기 위해 내려준다.
+     * - 레거시/예외 케이스에서 requested=true인데 ID가 비어 있을 수 있어 withStringService도 함께 제공.
+     */
+    const rawAppId = (r as any)?.stringingApplicationId ?? null;
+    const stringingApplicationId = rawAppId ? (typeof rawAppId === 'string' ? rawAppId : (rawAppId?.toString?.() ?? String(rawAppId))) : null;
+    const withStringService = Boolean(r?.stringing?.requested) || Boolean((r as any)?.isStringServiceApplied) || Boolean(stringingApplicationId);
 
     return {
       id: r._id?.toString(),
@@ -135,6 +145,10 @@ export async function GET(req: Request) {
       dueAt: r.dueAt ?? null,
       returnedAt: r.returnedAt ?? null,
       depositRefundedAt: r.depositRefundedAt ?? null,
+
+      // 교체서비스 연결(목록용)
+      stringingApplicationId,
+      withStringService,
 
       shipping: {
         outbound: out
@@ -165,10 +179,10 @@ export async function GET(req: Request) {
               r.cancelRequest.status === '요청' || r.cancelRequest.status === 'requested'
                 ? 'requested'
                 : r.cancelRequest.status === '승인' || r.cancelRequest.status === 'approved'
-                ? 'approved'
-                : r.cancelRequest.status === '거절' || r.cancelRequest.status === 'rejected'
-                ? 'rejected'
-                : 'requested',
+                  ? 'approved'
+                  : r.cancelRequest.status === '거절' || r.cancelRequest.status === 'rejected'
+                    ? 'rejected'
+                    : 'requested',
           }
         : null,
 

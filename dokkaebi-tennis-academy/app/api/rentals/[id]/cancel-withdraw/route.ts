@@ -17,7 +17,12 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     } catch {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    /**
+     * sub(ObjectId 문자열) 최종 방어
+     * - sub가 ObjectId 형식이 아니면 new ObjectId(sub)에서 500이 발생할 수 있음
+     */
+    const sub = typeof payload?.sub === 'string' && ObjectId.isValid(payload.sub) ? payload.sub : null;
+    if (!sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
     // 2) 파라미터
     const { id } = await ctx.params;
@@ -25,7 +30,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       return NextResponse.json({ message: 'Bad Request' }, { status: 400 });
     }
 
-    const userId = new ObjectId(payload.sub);
+    const userId = new ObjectId(sub);
     const rentalId = new ObjectId(id);
 
     // 3) DB 연결
@@ -56,14 +61,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     //    : 취소 요청 자체를 없애버리고, 상태는 그대로 둠
     const now = new Date();
 
-    await rentals.updateOne(
-      { _id: rentalId },
-      {
-        $set: {
-          cancelRequest: null,
-        },
-      }
-    );
+    /**
+     * 경합 방어:
+     * - findOne 이후 관리자 승인/거절로 cancelRequest.status가 바뀌었을 수 있음
+     * - 따라서 "requested 상태일 때만" 철회되도록 조건부 update로 보강
+     */
+    const u = await rentals.updateOne({ _id: rentalId, userId, 'cancelRequest.status': 'requested' }, { $set: { cancelRequest: null, updatedAt: now } });
+    if (u.matchedCount === 0) {
+      return NextResponse.json({ message: '철회할 수 있는 취소 요청이 없습니다.', status: currentStatus }, { status: 400 });
+    }
 
     // 7) 히스토리 기록
     const prevStatus = String((doc as any).status ?? 'pending');
@@ -75,7 +81,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       actor: {
         // Actor 타입에 맞춰 객체로
         role: 'user',
-        id: payload.sub, // 토큰에서 꺼낸 userId
+        id: sub, // 토큰에서 꺼낸 userId(검증된 값)
       },
       snapshot: {
         status: prevStatus,

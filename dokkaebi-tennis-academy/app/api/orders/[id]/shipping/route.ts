@@ -3,10 +3,12 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 
 // 배송 방법 한글 매핑
 const shippingMethodMap: Record<string, string> = {
   courier: '택배 배송',
+  delivery: '택배 배송', // 레거시(호환)
   quick: '퀵 배송 (당일)',
   visit: '방문 수령',
 };
@@ -31,6 +33,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 
     // 요청 Body(JSON)를 파싱하여 가져오고 배송 방법과 예상 수령일, 운송장 정보를 Body에서 구조분해 할당
     const { shippingMethod, estimatedDate, courier, trackingNumber } = await req.json();
+    const normalizedMethod = normalizeOrderShippingMethod(shippingMethod);
 
     const order = await db.collection('orders').findOne({
       _id: new ObjectId(id),
@@ -39,7 +42,8 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       return NextResponse.json({ error: '주문을 찾을 수 없습니다.' }, { status: 404 });
     }
     const setOps: any = {
-      'shippingInfo.shippingMethod': shippingMethod,
+      // 표준값으로 저장 (courier | quick | visit)
+      'shippingInfo.shippingMethod': normalizedMethod ?? shippingMethod,
       'shippingInfo.estimatedDate': estimatedDate,
     };
 
@@ -48,20 +52,40 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     }
 
     // 필수 항목 누락 여부 확인 → 유효성 검사
-    if (!shippingMethod || !estimatedDate) {
+    if (!normalizedMethod || !estimatedDate) {
       return NextResponse.json({ success: false, message: '모든 필드를 입력해주세요.' }, { status: 400 });
     }
+
+    // 날짜 유효성(Invalid Date 방지)
+    const est = new Date(estimatedDate);
+    if (!Number.isFinite(est.getTime())) {
+      return NextResponse.json({ success: false, message: '예상 수령일 값이 올바르지 않습니다.' }, { status: 400 });
+    }
+    // 택배(courier)일 때만 운송장 필수
+    const isCourier = normalizedMethod === 'courier';
+    if (isCourier) {
+      if (!courier || !String(courier).trim()) {
+        return NextResponse.json({ success: false, message: '택배사를 선택해주세요.' }, { status: 400 });
+      }
+      if (!trackingNumber || !String(trackingNumber).trim()) {
+        return NextResponse.json({ success: false, message: '운송장 번호를 입력해주세요.' }, { status: 400 });
+      }
+    }
+
     // 날짜 포맷을 한글로 변환 (예: 2025년 6월 3일)
     const formattedDate = new Intl.DateTimeFormat('ko-KR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(new Date(estimatedDate));
+    }).format(est);
 
     let updateResult;
-    if (shippingMethod === 'delivery') {
-      // 택배배송일 때만 invoice 세팅
-      setOps['shippingInfo.invoice'] = { courier, trackingNumber };
+    if (isCourier) {
+      // 택배배송(courier)일 때만 invoice 세팅
+      setOps['shippingInfo.invoice'] = {
+        courier: String(courier).trim(),
+        trackingNumber: String(trackingNumber).trim(),
+      };
 
       updateResult = await db.collection('orders').updateOne({ _id: new ObjectId(id) }, { $set: setOps });
     } else {
@@ -71,7 +95,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
         {
           $set: setOps,
           $unset: { 'shippingInfo.invoice': '' },
-        }
+        },
       );
     }
 
@@ -81,7 +105,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
         history: {
           status: '배송정보변경',
           date: new Date().toISOString(),
-          description: `배송 방법을 "${shippingMethodMap[shippingMethod]}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 설정했습니다.`,
+          description: `배송 방법을 "${shippingMethodMap[normalizedMethod] ?? '정보 없음'}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 설정했습니다.`,
         },
       },
     } as any);

@@ -5,6 +5,7 @@ import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, REF
 import { getDb } from '@/lib/mongodb';
 import { autoLinkStringingByEmail } from '@/lib/claims';
 import { baseCookie } from '@/lib/cookieOptions';
+import { z } from 'zod';
 
 // // JWT 비밀 키 불러오기 (환경 변수에서 설정)
 // const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
@@ -14,14 +15,36 @@ import { baseCookie } from '@/lib/cookieOptions';
 // const ACCESS_TOKEN_EXPIRES_IN = 60 * 60; // AccessToken: 1시간 (3600초)
 // const REFRESH_TOKEN_EXPIRES_IN = 60 * 60 * 24 * 7; // RefreshToken: 7일
 
-export async function POST(req: Request) {
-  const body = await req.json();
-  const { email, password } = body;
+/**
+ * 서버(라우터) 최종 유효성 검사
+ * - 목적: (1) 잘못된 타입/값 요청을 400으로 명확히 차단, (2) 추후 필드 추가 시 기준점 제공
+ */
+const LoginBodySchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1)
+    .email()
+    // 로그인은 대소문자 무시 처리(기존 getUserByEmail과 동일한 기대)
+    .transform((v) => v.toLowerCase()),
+  // 최소한 "빈 문자열"은 차단. (길이 제한은 정책에 따라 추후 강화 가능)
+  password: z.string().min(1).max(200),
+});
 
-  // 필수 입력값 확인
-  if (!email || !password) {
-    return NextResponse.json({ error: '이메일과 비밀번호를 입력해주세요.' }, { status: 400 });
+export async function POST(req: Request) {
+  let rawBody: unknown;
+  try {
+    rawBody = await req.json();
+  } catch {
+    return NextResponse.json({ error: '요청 본문(JSON)이 올바르지 않습니다.' }, { status: 400 });
   }
+
+  const parsed = LoginBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: '이메일 또는 비밀번호 형식을 확인해주세요.' }, { status: 400 });
+  }
+
+  const { email, password } = parsed.data;
 
   // 사용자 조회 + 비밀번호 검증
   const user = await getUserByEmail(email);
@@ -44,7 +67,7 @@ export async function POST(req: Request) {
     ACCESS_TOKEN_SECRET, // 비밀 키
     {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN, // 만료 시간 (초 단위)
-    }
+    },
   );
 
   // RefreshToken 생성 (payload 최소화: user ID만 사용)
@@ -55,7 +78,7 @@ export async function POST(req: Request) {
     REFRESH_TOKEN_SECRET, // 별도 비밀 키
     {
       expiresIn: REFRESH_TOKEN_EXPIRES_IN, // 7일 유효
-    }
+    },
   );
 
   // JSON 응답: 토큰은 쿠키로만 전달하므로 success만 반환

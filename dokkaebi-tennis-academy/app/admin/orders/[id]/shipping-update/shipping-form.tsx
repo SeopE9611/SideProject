@@ -54,6 +54,10 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
 
   // console.log('initialShippingMethod:', initialShippingMethod);
 
+  // 기존 값이 하나라도 있으면 "수정", 아무것도 없으면 "등록"
+  const isRegistered = Boolean(String(initialShippingMethod ?? '').trim() || String(initialEstimatedDelivery ?? '').trim() || String(initialCourier ?? '').trim() || String(initialTrackingNumber ?? '').trim());
+  const formTitle = isRegistered ? '배송 정보 수정' : '배송 정보 등록';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -100,6 +104,12 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
 
       // console.log('배송 정보 업데이트 응답:', res);
 
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        showErrorToast(body?.message ?? '배송 정보 업데이트에 실패했습니다.');
+        return;
+      }
+
       showSuccessToast('배송 정보가 업데이트되었습니다');
 
       router.refresh();
@@ -119,7 +129,7 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>배송 정보 수정</CardTitle>
+        <CardTitle>{formTitle}</CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">

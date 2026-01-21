@@ -4,6 +4,7 @@ import { getDb } from '@/lib/mongodb'; // 단일 DB 유틸 사용
 import { hash } from 'bcryptjs';
 import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from '@/lib/points.policy';
 import { grantPoints } from '@/lib/points.service';
+import { z } from 'zod';
 
 /**
  * POST /api/register
@@ -12,24 +13,68 @@ import { grantPoints } from '@/lib/points.service';
  * - 중복 이메일 검사 (11000 duplicate key도 처리)
  * - 해시 후 사용자 생성
  */
+
+/**
+ * 서버(라우터) 최종 유효성 검사
+ * - 목적:
+ *   1) JSON 파싱 실패/타입 깨짐 요청을 400으로 정리
+ *   2) 선택 필드(phone/address/...)에 객체/배열 같은 값이 들어와 DB 오염되는 것 방지
+ */
+const OptionalStringNullable = z.preprocess((v) => {
+  // undefined/null은 null로 통일
+  if (v === undefined || v === null) return null;
+
+  // 문자열은 trim 후 빈 문자열이면 null 처리
+  if (typeof v === 'string') {
+    const s = v.trim();
+    return s.length === 0 ? null : s;
+  }
+
+  // 숫자는 문자열로 변환(예: 우편번호를 숫자로 보내는 케이스 방어)
+  if (typeof v === 'number') return String(v);
+
+  // 그 외(객체/배열 등)는 스키마에서 실패시키기 위해 그대로 반환
+  return v;
+}, z.string().nullable());
+
+const RegisterBodySchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1)
+    .email()
+    // 이메일은 대소문자 무시 처리(중복/로그인 일관성)
+    .transform((v) => v.toLowerCase()),
+  password: z.string().min(1).max(200),
+  name: z.string().trim().min(1).max(50),
+
+  // 선택 필드(빈 문자열 -> null)
+  phone: OptionalStringNullable.optional(),
+  address: OptionalStringNullable.optional(),
+  addressDetail: OptionalStringNullable.optional(),
+  postalCode: OptionalStringNullable.optional(),
+});
+
 export async function POST(req: Request) {
-  const raw = await req.json();
+  let rawBody: unknown;
+  try {
+    rawBody = await req.json();
+  } catch {
+    return NextResponse.json({ message: '요청 본문(JSON)이 올바르지 않습니다.' }, { status: 400 });
+  }
 
-  // 입력 정리(앞뒤 공백 제거 및 이메일 소문자 정규화)
-  const email = (raw?.email ?? '').toString().trim().toLowerCase();
-  const password = (raw?.password ?? '').toString();
-  const name = (raw?.name ?? '').toString().trim();
-
-  // 선택 필드
-  const phone = raw?.phone ?? null;
-  const address = raw?.address ?? null;
-  const addressDetail = raw?.addressDetail ?? null;
-  const postalCode = raw?.postalCode ?? null;
-
-  // 1) 필수값 검증
-  if (!email || !password || !name) {
+  const parsed = RegisterBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    // 기존 동작과 최대한 동일하게(400 + 같은 메시지) 유지
     return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
   }
+
+  // 입력 정리(이메일 소문자/trim, name trim, 선택필드 빈값->null)은 스키마에서 처리됨
+  const { email, password, name } = parsed.data;
+  const phone = parsed.data.phone ?? null;
+  const address = parsed.data.address ?? null;
+  const addressDetail = parsed.data.addressDetail ?? null;
+  const postalCode = parsed.data.postalCode ?? null;
 
   // 2) 비밀번호 정책
   const isPasswordValid = (pw: string) => {

@@ -48,6 +48,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
   if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
+  /**
+   * sub(ObjectId 문자열) 최종 방어
+   * - verifyAccessToken이 성공해도 sub 형식이 깨져 있으면 new ObjectId(sub)에서 500이 납니다.
+   * - 따라서 "문자열 + ObjectId 유효"인 경우에만 통과시킵니다.
+   */
+  const sub = typeof payload?.sub === 'string' && ObjectId.isValid(payload.sub) ? payload.sub : null;
+  if (!sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
   // 파라미터/바디 검증
   const { id } = params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
@@ -70,7 +78,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   // 소유자 검증
   const db = (await clientPromise).db();
   const _id = new ObjectId(id);
-  const ownerId = new ObjectId(payload.sub);
+  const ownerId = new ObjectId(sub);
   const mine = await db.collection('rental_orders').findOne({ _id, userId: ownerId });
   if (!mine) return NextResponse.json({ message: 'FORBIDDEN' }, { status: 403 });
 

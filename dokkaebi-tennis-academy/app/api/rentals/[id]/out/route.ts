@@ -12,7 +12,13 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   // 관리자만 허용
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
-  const payload = at ? verifyAccessToken(at) : null;
+  // 토큰이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 Unauthorized로 정리
+  let payload: any = null;
+  try {
+    payload = at ? verifyAccessToken(at) : null;
+  } catch {
+    payload = null;
+  }
   if (payload?.role !== 'admin') {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
@@ -41,7 +47,9 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
   // 출고 시각 & 예정일 계산
   const outAt = new Date().toISOString();
-  const days = (order as any).days ?? 7;
+  // days 유효성(레거시/오염 데이터 방어): 7/15/30만 허용, 아니면 7로 폴백
+  const rawDays = Number((order as any).days ?? 7);
+  const days = rawDays === 7 || rawDays === 15 || rawDays === 30 ? rawDays : 7;
   const due = new Date(outAt);
   due.setDate(due.getDate() + days);
   const dueAt = due.toISOString();
@@ -54,7 +62,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   // 원자적 전이: 현재 status가 'paid'인 경우에만 'out'
   const u = await db.collection('rental_orders').updateOne(
     { _id, status: 'paid' }, // 상태 조건 포함
-    { $set: { status: 'out', outAt, dueAt, updatedAt: new Date() } }
+    { $set: { status: 'out', outAt, dueAt, updatedAt: new Date() } },
   );
   if (u.matchedCount === 0) {
     return NextResponse.json({ ok: false, code: 'INVALID_STATE' }, { status: 409 });
@@ -68,11 +76,15 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   });
   // 라켓은 이미 paid에서 rented로 바뀌어 있음. 혹시 싱크 깨진 경우 보정
   if (order.racketId) {
-    const rid = new ObjectId(String(order.racketId));
-    const rack = await db.collection('used_rackets').findOne({ _id: rid }, { projection: { quantity: 1, status: 1 } });
-    const qty = Number(rack?.quantity ?? 1);
-    if (!Number.isFinite(qty) || qty <= 1) {
-      await db.collection('used_rackets').updateOne({ _id: rid, status: { $in: ['available', 'rented'] } }, { $set: { status: 'rented', updatedAt: new Date() } });
+    // racketId가 오염된 경우 new ObjectId에서 500이 나지 않도록 방어
+    const racketIdStr = String(order.racketId);
+    if (ObjectId.isValid(racketIdStr)) {
+      const rid = new ObjectId(racketIdStr);
+      const rack = await db.collection('used_rackets').findOne({ _id: rid }, { projection: { quantity: 1, status: 1 } });
+      const qty = Number(rack?.quantity ?? 1);
+      if (!Number.isFinite(qty) || qty <= 1) {
+        await db.collection('used_rackets').updateOne({ _id: rid, status: { $in: ['available', 'rented'] } }, { $set: { status: 'rented', updatedAt: new Date() } });
+      }
     }
   }
 

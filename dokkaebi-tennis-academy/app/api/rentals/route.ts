@@ -6,11 +6,79 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { deductPoints, getPointsSummary } from '@/lib/points.service';
 import { createStringingApplicationFromRental } from '@/app/features/stringing-applications/api/create-from-rental';
 import { ensureStringingTTLIndexes } from '@/app/features/stringing-applications/api/indexes';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
 // 주문 체크아웃과 동일한 포인트 사용 단위(=100P 단위)
 const POINT_UNIT = 100;
+
+const POSTAL_RE = /^\d{5}$/;
+const ALLOWED_BANKS = new Set(['shinhan', 'kookmin', 'woori'] as const);
+
+//  대여 기간 허용 값(서버 최종 방어 + TS 타입 확정)
+const AllowedDaysSchema = z.union([z.literal(7), z.literal(15), z.literal(30)]);
+
+// 문자열 정리/숫자만 추출(서버 방어)
+const toTrimmedString = (v: unknown) => (v === null || v === undefined ? '' : String(v).trim());
+const toDigits = (v: unknown) => toTrimmedString(v).replace(/\D/g, '');
+
+/**
+ * 대여 생성 요청 스키마(서버 최종 방어)
+ * - 목적: JSON 파싱 이후 "타입/형식/필수값"을 강제해 500을 400으로 정리
+ * - 주의: 기존 로직을 바꾸지 않기 위해, 필요한 필드만 강제하고 나머지는 passthrough로 허용
+ */
+const RentalsCreateBodySchema = z
+  .object({
+    racketId: z
+      .string()
+      .trim()
+      .min(1)
+      .refine((s) => ObjectId.isValid(s), { message: 'BAD_RACKET_ID' }),
+    days: z.coerce.number().pipe(AllowedDaysSchema),
+
+    pointsToUse: z.coerce.number().optional(),
+    servicePickupMethod: z.enum(['SELF_SEND', 'SHOP_VISIT', 'delivery', 'pickup']).optional(),
+
+    payment: z
+      .object({
+        method: z.literal('bank_transfer'),
+        bank: z.string().trim().min(1),
+        depositor: z.string().trim().min(2),
+      })
+      .passthrough(),
+
+    shipping: z
+      .object({
+        name: z.string().trim().min(2),
+        phone: z.preprocess(toDigits, z.string().min(10).max(11)),
+        postalCode: z.preprocess(toDigits, z.string().regex(POSTAL_RE)),
+        address: z.string().trim().min(1),
+        addressDetail: z.string().trim().optional(),
+        deliveryRequest: z.string().trim().optional(),
+        // 레거시/하위호환
+        shippingMethod: z.enum(['pickup', 'delivery']).optional(),
+      })
+      .passthrough(),
+
+    refundAccount: z
+      .object({
+        bank: z.enum(['shinhan', 'kookmin', 'woori']),
+        account: z.preprocess(toDigits, z.string().min(8).max(20)),
+        holder: z.string().trim().min(2),
+      })
+      .passthrough(),
+
+    // 스트링 교체 요청(선택)
+    stringing: z
+      .object({
+        requested: z.coerce.boolean().optional(),
+        stringId: z.string().trim().optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
 
 export async function POST(req: Request) {
   const raw = await req.text();
@@ -22,41 +90,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: 'INVALID_JSON' }, { status: 400 });
   }
 
-  const { racketId, days, payment, shipping, refundAccount, stringing, pointsToUse, servicePickupMethod } = body as {
-    racketId: string;
-    days: 7 | 15 | 30;
-    payment?: { method: 'bank_transfer'; bank?: string; depositor?: string };
-    shipping?: {
-      name?: string;
-      phone?: string;
-      postalCode?: string;
-      address?: string;
-      addressDetail?: string;
-      deliveryRequest?: string;
+  // 서버 최종 스키마 검증(여기서 500을 400으로 정리)
+  const parsed = RentalsCreateBodySchema.safeParse(body);
+  if (!parsed.success) {
+    const issues = parsed.error.issues ?? [];
 
-      /**
-       * (레거시/하위호환) 예전 대여 플로우에서 쓰던 값
-       * - pickup: 매장 방문
-       * - delivery: 택배 발송
-       * 현재는 servicePickupMethod(SELF_SEND/SHOP_VISIT)를 우선 사용하지만,
-       * 값이 없을 때 기본값 추정용으로만 사용한다.
-       */
+    // racketId 불량 → 400 (ObjectId 생성 전에 차단)
+    if (issues.some((i) => i.message === 'BAD_RACKET_ID')) {
+      return NextResponse.json({ ok: false, message: 'BAD_RACKET_ID' }, { status: 400 });
+    }
 
-      shippingMethod?: 'pickup' | 'delivery';
-    };
-    refundAccount?: { bank: 'shinhan' | 'kookmin' | 'woori'; account: string; holder: string };
-    // 스트링 교체 요청(선택)
-    stringing?: { requested?: boolean; stringId?: string };
+    // days는 기존 메시지를 유지(아래에서 동일 체크)
+    if (issues.some((i) => i.path?.[0] === 'days')) {
+      return NextResponse.json({ message: '허용되지 않는 대여 기간' }, { status: 400 });
+    }
 
-    // 포인트 사용 (주문 체크아웃과 동일: 100P 단위)
-    pointsToUse?: number;
+    // 나머지 필수/형식 오류
+    return NextResponse.json({ ok: false, message: '요청 값이 올바르지 않습니다.' }, { status: 400 });
+  }
 
-    // 교체 신청서(/services/apply)에서 기본 수거/방문 방식을 결정하는 값
-    // - SELF_SEND: 택배로 보내기(자가 발송)
-    // - SHOP_VISIT: 매장 방문(방문 시간 선택 UI가 열리는 쪽)
-    // (하위 호환) delivery/pickup 값도 허용
-    servicePickupMethod?: 'SELF_SEND' | 'SHOP_VISIT' | 'delivery' | 'pickup';
-  };
+  body = parsed.data;
+
+  const { racketId, days, payment, shipping, refundAccount, stringing, pointsToUse, servicePickupMethod } = body as z.infer<typeof RentalsCreateBodySchema>;
 
   const client = await clientPromise;
   const db = client.db();
@@ -66,9 +121,20 @@ export async function POST(req: Request) {
   await ensureStringingTTLIndexes(db);
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
-  const payload = at ? verifyAccessToken(at) : null;
-  const userObjectId = payload?.sub ? new ObjectId(payload.sub) : null;
+  // 토큰이 깨져 있어도 500이 아니라 “비로그인 처리”로 내려가도록 방어
+  let payload: any = null;
+  try {
+    payload = at ? verifyAccessToken(at) : null;
+  } catch {
+    payload = null;
+  }
+  const sub = typeof payload?.sub === 'string' && ObjectId.isValid(payload.sub) ? payload.sub : null;
+  const userObjectId = sub ? new ObjectId(sub) : null;
 
+  // 은행 값 최종 방어(입금/환급)
+  if (payment?.bank && !ALLOWED_BANKS.has(payment.bank as any)) {
+    return NextResponse.json({ ok: false, message: 'INVALID_BANK' }, { status: 400 });
+  }
   // --- 공통 입력 정리 ---
   // (1) 수령 방식: RentalsCheckoutClient에서 보내는 값(SELF_SEND/SHOP_VISIT)을 기준으로 저장
   // - SELF_SEND: 택배로 보내기(자가 발송)
@@ -101,7 +167,7 @@ export async function POST(req: Request) {
   }
 
   // 입력 검증: 허용 기간만 통과
-  if (![7, 15, 30].includes(days as any)) {
+  if (![7, 15, 30].includes(days)) {
     return NextResponse.json({ message: '허용되지 않는 대여 기간' }, { status: 400 });
   }
 
@@ -270,7 +336,7 @@ export async function POST(req: Request) {
               stringing: stringingSnap ?? undefined,
               serviceFeeHint: (doc as any)?.amount?.stringingFee ?? 0,
             },
-            { db, session }
+            { db, session },
           );
           stringingApplicationId = String(app._id);
           if (stringingApplicationId) {
@@ -288,7 +354,7 @@ export async function POST(req: Request) {
               refKey: `rental:${rentalIdStr}:spend`,
               reason: `라켓 대여 결제 포인트 사용 (대여ID: ${rentalIdStr})`,
             },
-            { session }
+            { session },
           );
         }
 

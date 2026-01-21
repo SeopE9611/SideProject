@@ -8,6 +8,131 @@ import clientPromise from '@/lib/mongodb';
 import { createStringingApplicationFromOrder } from '@/app/features/stringing-applications/api/create-from-order';
 import { deductPoints } from '@/lib/points.service';
 import { getShippingBadge } from '@/lib/badge-style';
+import { z } from 'zod';
+
+/**
+ * 서버 최종 유효성 검사 스키마(주문 생성)
+ * - 목적:
+ *   1) req.json() 파싱 실패/타입 깨짐 요청을 400으로 정리
+ *   2) ObjectId 변환(new ObjectId) 이전에 유효성 검사로 500 방지
+ *   3) shippingInfo의 최소 규칙(배송 주소 조건부 필수 등) 강제
+ *
+ * 주의:
+ * - 기존 로직을 바꾸지 않기 위해, 필요한 최소 필드만 강제하고 나머지는 passthrough로 허용.
+ * - (일반 체크아웃) shippingInfo.deliveryMethod 사용
+ * - (라켓 구매 체크아웃) shippingInfo.shippingMethod 사용
+ */
+
+// 숫자/문자 혼용으로 들어오는 입력을 안전하게 문자열로 정규화
+const toTrimmedString = (v: unknown) => {
+  if (v === null || v === undefined) return '';
+  return String(v).trim();
+};
+
+// 연락처: 숫자만 남기기 (클라에서는 이미 digits지만, 서버에서도 방어)
+const toPhoneDigits = (v: unknown) => toTrimmedString(v).replace(/\D/g, '');
+
+const OrderItemSchema = z.object({
+  // createOrder 내부에서 new ObjectId(item.productId)를 호출하므로, 여기서 먼저 검증해 500을 방지합니다.
+  productId: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((s) => ObjectId.isValid(s), { message: 'INVALID_PRODUCT_ID' }),
+  quantity: z.coerce.number().int().positive(),
+  kind: z.enum(['product', 'racket']).optional(),
+});
+
+const GuestInfoSchema = z
+  .object({
+    name: z.string().trim().min(1).max(50),
+    phone: z
+      .preprocess(toPhoneDigits, z.string().min(8).max(13))
+      // 너무 강하게 막으면 운영 중 예외 케이스가 생길 수 있어, 길이만 최소 방어합니다.
+      .optional(),
+    email: z
+      .string()
+      .trim()
+      .email()
+      .transform((v) => v.toLowerCase()),
+  })
+  .passthrough();
+
+const ShippingInfoSchema = z
+  .object({
+    name: z.string().trim().min(1).max(50),
+    phone: z.preprocess(toPhoneDigits, z.string().min(8).max(13)),
+
+    // 주소 계열은 "택배/발송"일 때만 필수(조건부). 방문이면 빈 문자열도 허용됩니다.
+    address: z.preprocess(toTrimmedString, z.string()).optional(),
+    addressDetail: z.preprocess(toTrimmedString, z.string()).optional(),
+    postalCode: z.preprocess(toTrimmedString, z.string()).optional(),
+
+    depositor: z.string().trim().min(2).max(50),
+    deliveryRequest: z.preprocess(toTrimmedString, z.string()).optional(),
+
+    // 일반 체크아웃: deliveryMethod 사용 (택배수령/방문수령)
+    deliveryMethod: z.enum(['택배수령', '방문수령']).optional(),
+
+    // 라켓 구매 체크아웃: shippingMethod 사용 (courier/visit)
+    shippingMethod: z.enum(['courier', 'visit']).optional(),
+
+    // 교체 서비스 여부(일반 체크아웃에서만 내려옴). 없으면 false 취급.
+    withStringService: z.coerce.boolean().optional(),
+  })
+  .passthrough()
+  .superRefine((v, ctx) => {
+    // 둘 중 하나는 반드시 존재(현재 프로젝트의 두 checkout 흐름 모두 해당)
+    if (!v.deliveryMethod && !v.shippingMethod) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['deliveryMethod'], message: 'DELIVERY_METHOD_REQUIRED' });
+    }
+
+    // 택배/발송이면 주소/우편번호 최소 방어
+    const needsAddress = v.deliveryMethod === '택배수령' || v.shippingMethod === 'courier';
+    if (needsAddress) {
+      const postal = (v.postalCode ?? '').trim();
+      const addr = (v.address ?? '').trim();
+
+      // 우편번호 5자리 (CheckoutButton과 동일 기준)
+      if (!/^\d{5}$/.test(postal)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['postalCode'], message: 'INVALID_POSTAL_CODE' });
+      }
+      if (!addr) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['address'], message: 'ADDRESS_REQUIRED' });
+      }
+      // addressDetail은 라켓 구매 체크아웃에서 선택값이므로 서버에서 강제하지 않습니다.
+    }
+  });
+
+const CreateOrderBodySchema = z
+  .object({
+    items: z.array(OrderItemSchema).min(1),
+    shippingInfo: ShippingInfoSchema,
+
+    // 비회원 주문인 경우에만 createOrder에서 추가로 필수 체크합니다(기존 로직 유지)
+    guestInfo: GuestInfoSchema.optional(),
+
+    // 참고/로그용 필드들(서버는 신뢰하지 않고 재계산)
+    totalPrice: z.any().optional(),
+    shippingFee: z.any().optional(),
+    serviceFee: z.any().optional(),
+
+    // 포인트 사용(서버에서 100단위 보정/클램프는 기존 로직 그대로 사용)
+    pointsToUse: z.coerce.number().optional(),
+
+    paymentInfo: z
+      .object({
+        bank: z.preprocess(toTrimmedString, z.string()).optional(),
+      })
+      .passthrough()
+      .optional(),
+
+    // 기타(추가 필드들은 유지하되, 스키마가 걸러내지 않도록 passthrough)
+    servicePickupMethod: z.any().optional(),
+    isStringServiceApplied: z.any().optional(),
+  })
+  .passthrough();
+
 // 주문 생성 핸들러
 export async function createOrder(req: Request): Promise<Response> {
   try {
@@ -30,13 +155,39 @@ export async function createOrder(req: Request): Promise<Response> {
     const payload = token ? verifyAccessToken(token) : null;
     const userId = payload?.sub ?? null;
 
-    // 요청 바디 파싱
-    const body = await req.json();
-    type RawOrderItem = {
-      productId: string;
-      quantity: number;
-      kind?: 'product' | 'racket';
-    };
+    // 요청 바디 파싱(JSON 깨짐 방어)
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return NextResponse.json({ error: '요청 본문(JSON)이 올바르지 않습니다.' }, { status: 400 });
+    }
+
+    // 서버 최종 스키마 검증
+    const parsed = CreateOrderBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      // 기존 UX에 맞춰 "무엇이 문제인지"를 가능한 범위에서 분기해줍니다.
+      const issues = parsed.error.issues ?? [];
+
+      // 아이템 관련 (빈 배열/형식/ID 등)
+      if (issues.some((i) => i.path?.[0] === 'items' && i.message === 'INVALID_PRODUCT_ID')) {
+        return NextResponse.json({ error: '잘못된 상품 ID 입니다.' }, { status: 400 });
+      }
+      if (issues.some((i) => i.path?.[0] === 'items')) {
+        return NextResponse.json({ error: '주문 상품이 비어있습니다.' }, { status: 400 });
+      }
+
+      // 배송 정보 관련
+      if (issues.some((i) => i.path?.[0] === 'shippingInfo')) {
+        return NextResponse.json({ error: '배송 정보가 누락되었거나 올바르지 않습니다.' }, { status: 400 });
+      }
+
+      // 나머지(포인트/게스트 정보 등) - 기본 메시지
+      return NextResponse.json({ error: '요청 값이 올바르지 않습니다.' }, { status: 400 });
+    }
+
+    const body = parsed.data;
+    type RawOrderItem = z.infer<typeof OrderItemSchema>;
 
     // - 서버가 최종 규칙을 강제(클라 입력은 참고용)
     // - 정책: 100P 단위로만 사용 가능 (UI와 동일)
@@ -59,6 +210,24 @@ export async function createOrder(req: Request): Promise<Response> {
     }
     if (!userId && !guestInfo) {
       return NextResponse.json({ error: '게스트 주문 정보 누락' }, { status: 400 });
+    }
+
+    /**
+     * 배송 방식 정규화(중요)
+     * - 일반 체크아웃: shippingInfo.deliveryMethod = '택배수령' | '방문수령'
+     * - 라켓 구매 체크아웃: shippingInfo.shippingMethod = 'courier' | 'visit'
+     *
+     * 현재 서버 내부 로직(배송비 계산, getShippingBadge 등)은 deliveryMethod를 기준으로 동작하는 구간이 있으므로,
+     * 라켓 구매 흐름도 deliveryMethod로 매핑해 “서버 내부 기준”을 하나로 통일.
+     *
+     * 효과:
+     * - 라켓 구매 + visit 인데 배송비가 0원이 아니게 계산되는 케이스 방지
+     * - 주문 목록/상세에서 배송 라벨(뱃지/필터)이 일관되게 표시될 확률 증가
+     */
+    if (shippingInfo && !(shippingInfo as any).deliveryMethod && (shippingInfo as any).shippingMethod) {
+      const sm = (shippingInfo as any).shippingMethod;
+      if (sm === 'visit') (shippingInfo as any).deliveryMethod = '방문수령';
+      else if (sm === 'courier') (shippingInfo as any).deliveryMethod = '택배수령';
     }
 
     // DB
@@ -174,7 +343,7 @@ export async function createOrder(req: Request): Promise<Response> {
             const updated = await rackCol.findOneAndUpdate(
               { _id: racketId, quantity: { $gte: activeRentalCount + 1 }, status: { $nin: ['inactive', '비노출'] } },
               [{ $set: { quantity: { $subtract: ['$quantity', 1] }, updatedAt: nowIso } }, { $set: { status: { $cond: [{ $lte: ['$quantity', 0] }, 'sold', 'available'] } } }] as any,
-              { returnDocument: 'after', session } as any
+              { returnDocument: 'after', session } as any,
             );
 
             const updatedDoc = updated && typeof updated === 'object' && 'value' in (updated as any) ? (updated as any).value : updated;
@@ -233,7 +402,7 @@ export async function createOrder(req: Request): Promise<Response> {
               quantity,
               kind: 'racket' as const,
             };
-          })
+          }),
         );
 
         // 서버에서 금액 재계산(조작 무력화)
@@ -349,7 +518,7 @@ export async function createOrder(req: Request): Promise<Response> {
                 ref: { orderId: createdOrderId },
                 reason: '주문 포인트 사용',
               },
-              { session }
+              { session },
             );
           } catch (e: any) {
             // (1) 중복 차감 시도(재시도/중복 호출)면 이미 반영된 것으로 보고 통과
@@ -372,7 +541,7 @@ export async function createOrder(req: Request): Promise<Response> {
               createdAt: order.createdAt,
               servicePickupMethod: order.servicePickupMethod,
             } as any,
-            { db, session }
+            { db, session },
           );
 
           const createdAppId = app?._id ?? null;
@@ -418,6 +587,11 @@ export async function getOrders(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // 토큰이 비정상/오염된 경우 new ObjectId(sub)에서 500이 나지 않도록 방어
+  if (!ObjectId.isValid(sub)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   // 사용자 role 확인 (admin 여부 판단)
   const client = await clientPromise;
   const db = client.db();
@@ -433,7 +607,12 @@ export async function getOrders(req: NextRequest): Promise<Response> {
   const pageRaw = parseInt(sp.get('page') || '1', 10);
   const limitRaw = parseInt(sp.get('limit') || '10', 10);
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
-  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 10;
+  /**
+   * limit 클램프(상한)
+   * - fetchCombinedOrders가 전체를 메모리로 들고 와서 필터/슬라이스 하는 구조라
+   *   과도한 limit 요청은 응답/메모리 부담이 됩니다. (서버 안정성 목적)
+   */
+  const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(50, limitRaw)) : 10;
   const skip = (page - 1) * limit;
 
   // 클라이언트가 보내는 검색/필터 파라미터들
@@ -476,10 +655,7 @@ export async function getOrders(req: NextRequest): Promise<Response> {
     const paymentMatch = payment === 'all' || order?.paymentStatus === payment;
 
     // --- 고객유형(member/guest) ---
-    const customerTypeMatch =
-      customerType === 'all' ||
-      (customerType === 'member' && !!order?.userId) ||
-      (customerType === 'guest' && !order?.userId);
+    const customerTypeMatch = customerType === 'all' || (customerType === 'member' && !!order?.userId) || (customerType === 'guest' && !order?.userId);
 
     // --- 운송장(shipping): OrdersClient의 기준(getShippingBadge.label)과 동일하게 ---
     const shippingLabel = getShippingBadge(order).label;
@@ -496,6 +672,6 @@ export async function getOrders(req: NextRequest): Promise<Response> {
   const paged = filtered.slice(skip, skip + limit);
   const total = filtered.length;
   // 응답 반환
-  
+
   return NextResponse.json({ items: paged, total });
 }

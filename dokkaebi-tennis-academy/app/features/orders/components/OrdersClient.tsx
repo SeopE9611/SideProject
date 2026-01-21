@@ -179,6 +179,50 @@ export default function OrdersClient() {
     return '';
   }
 
+  /**
+   * 관리자 UX용 “거래종류(kind)” 라벨
+   * - 개발자/DB 타입(__type)은 운영자에게 그대로 노출하면 헷갈리기 쉽다.
+   * - 따라서 화면에서는 “주문 / 신청서”처럼 운영자 언어로 통일해서 보여준다.
+   */
+  function getKindBadge(order: OrderWithType) {
+    if (order.__type === 'stringing_application') {
+      return { label: '신청서', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200' };
+    }
+    // 현재 /admin/orders 목록은 기본적으로 order + 신청서 통합이지만,
+    // 타입 확장 대비로 rental_order 케이스도 안전하게 처리해둔다.
+    if (order.__type === 'rental_order') {
+      return { label: '대여', className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200' };
+    }
+    return { label: '주문', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200' };
+  }
+
+  /**
+   * 관리자 UX용 “연결(link)” 라벨
+   * - 통합/연결이 있는 경우 운영자가 즉시 인지할 수 있어야 “누락 처리”를 줄일 수 있다.
+   *
+   * 규칙(현재 코드 구조 기준):
+   * - 신청서(__type=stringing_application) + linkedOrderId 있음 → "주문연결"
+   * - 신청서 단독 → "단독"
+   * - 주문(__type=order) 이면서 같은 그룹에 신청서가 존재 → "통합(주문+신청)"
+   * - 그 외 → "단독"
+   */
+  function getLinkBadge(order: OrderWithType, isLinkedProductOrder: boolean) {
+    if (order.__type === 'stringing_application') {
+      if (order.linkedOrderId) {
+        return { label: '주문연결', className: 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-100' };
+      }
+      return { label: '단독', className: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' };
+    }
+    if (order.__type === 'rental_order') {
+      // /admin/orders에는 현재 대여가 나오지 않지만, 타입 확장 대비로 처리
+      return { label: '대여', className: 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-100' };
+    }
+    if (isLinkedProductOrder) {
+      return { label: '통합(주문+신청)', className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200' };
+    }
+    return { label: '단독', className: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' };
+  }
+
   // 날짜 포맷터
   const formatDate = (dateString: string) =>
     new Intl.DateTimeFormat('ko-KR', {
@@ -234,6 +278,22 @@ export default function OrdersClient() {
         showErrorToast('취소된 주문은 배송 정보를 등록할 수 없습니다.');
         return;
       }
+
+      // "상품 주문 + 교체서비스 신청서"가 연결된 케이스면
+      // 운송장/배송정보는 "신청서"에서만 관리하도록 강제한다.
+      // - 따라서 신청서 배송등록 페이지로 자동 이동
+      const appIdFromList =
+        Array.isArray(order.stringingApplications) && order.stringingApplications.length > 0
+          ? order.stringingApplications.filter((a: any) => a?.id).sort((a: any, b: any) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0]?.id
+          : null;
+      const appId = appIdFromList ?? order.stringingApplicationId ?? null;
+
+      if (order.isStringServiceApplied && appId) {
+        showSuccessToast('이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.');
+        router.push(`/admin/applications/stringing/${appId}/shipping-update`);
+        return;
+      }
+
       router.push(`/admin/orders/${orderId}/shipping-update`);
     } catch {
       showErrorToast('오류가 발생했습니다. 다시 시도해주세요.');
@@ -289,8 +349,8 @@ export default function OrdersClient() {
       <div className="container py-6">
         {/* 제목 및 설명 */}
         <div className="mx-auto max-w-7xl mb-5">
-          <h1 className="text-4xl font-semibold tracking-tight">주문 관리</h1>
-          <p className="mt-1 text-xs text-muted-foreground">도깨비 테니스 아카데미의 모든 주문을 관리하고 처리하세요.</p>
+          <h1 className="text-4xl font-semibold tracking-tight">주문·신청 관리</h1>
+          <p className="mt-1 text-xs text-muted-foreground">상품/클래스 주문과 교체서비스 신청서를 함께 관리합니다. (통합건은 같은 색 테두리로 묶여 표시됩니다)</p>
         </div>
 
         {/* 필터 및 검색 카드 */}
@@ -305,7 +365,7 @@ export default function OrdersClient() {
               <div className="w-full max-w-md">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input type="search" placeholder="주문 ID, 고객명, 이메일 검색..." className="pl-8 text-xs h-9 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                  <Input type="search" placeholder="주문/신청 ID, 고객명, 이메일 검색..." className="pl-8 text-xs h-9 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                   {searchTerm && (
                     <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => setSearchTerm('')}>
                       <X className="h-4 w-4" />
@@ -344,6 +404,15 @@ export default function OrdersClient() {
                   <Skeleton className="h-4 w-36 rounded bg-gray-100 dark:bg-gray-600" />
                 </>
               )}
+            </div>
+            {/* 운영자용: “이 화면에서 뭘 보고 처리해야 하는지”를 한 번에 이해시키는 장치 */}
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200')}>주문</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200')}>신청서</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200')}>통합(주문+신청)</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200')}>단독</Badge>
+              <span className="ml-1">• 같은 색 테두리 = 같은 통합건</span>
+              <span className="ml-1">• “신청서에서 관리” = 운송장/배송정보는 신청서에서만 등록</span>
             </div>
           </CardHeader>
           <CardContent className="overflow-x-auto md:overflow-x-visible scrollbar-hidden relative pr-2 md:pr-0">
@@ -406,6 +475,9 @@ export default function OrdersClient() {
                   </TableRow>
                 ) : (
                   groupLinkedOrders(sortedOrders).map((group, groupIdx) => {
+                    // 이 그룹이 "상품 주문 + 교체서비스 신청서" 묶음인지 체크
+                    const hasStringingAppInGroup = group.some((o) => o.__type === 'stringing_application');
+
                     const borderColors = [
                       'border-blue-300 dark:border-blue-600',
                       'border-green-300 dark:border-green-600',
@@ -416,137 +488,164 @@ export default function OrdersClient() {
                     const borderColor = borderColors[groupIdx % borderColors.length];
                     const isGrouped = group.length > 1;
 
-                    return group.map((order) => (
-                      <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
-                        <TableCell className={cn(tdClasses, 'pl-6 border-l-4', isGrouped ? borderColor : 'border-transparent')}>
-                          <TooltipProvider delayDuration={10}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center gap-1 max-w-[140px] truncate cursor-pointer w-full h-full justify-start">
-                                  {/* 취소요청 상태일 때만 아이콘 노출 */}
-                                  {order.cancelStatus === 'requested' && <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" aria-hidden="true" />}
-                                  {/* 실제 표시되는 주문 ID (짧게) */}
-                                  <span className="truncate">{shortenId(order.id)}</span>
-                                </div>
-                              </TooltipTrigger>
+                    return group.map((order) => {
+                      const isLinkedProductOrder = order.__type === 'order' && hasStringingAppInGroup;
 
-                              <TooltipContent
-                                side="top"
-                                align="center"
-                                sideOffset={6}
-                                style={{
-                                  backgroundColor: 'rgb(var(--popover))',
-                                  color: 'rgb(var(--popover-foreground))',
-                                }}
-                                className="px-5 py-2.5 rounded-lg shadow-lg border text-base min-w-[240px]"
-                              >
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono">{order.id}</span>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-6 w-6"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(order.id);
-                                        showSuccessToast('주문 ID가 클립보드에 복사되었습니다.');
-                                      }}
-                                    >
-                                      <Copy className="w-4 h-4" />
-                                      <span className="sr-only">복사</span>
-                                    </Button>
+                      return (
+                        <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell className={cn(tdClasses, 'pl-6 border-l-4', isGrouped ? borderColor : 'border-transparent')}>
+                            <TooltipProvider delayDuration={10}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex flex-col items-start gap-1 max-w-[140px] cursor-pointer w-full">
+                                    <div className="flex items-center gap-1 truncate w-full justify-start">
+                                      {/* 취소요청 상태일 때만 아이콘 노출 */}
+                                      {order.cancelStatus === 'requested' && <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" aria-hidden="true" />}
+                                      {/* 실제 표시되는 주문 ID (짧게) */}
+                                      <span className="truncate">{shortenId(order.id)}</span>
+                                    </div>
+
+                                    {/* 운영자에게 가장 중요한 정보: “이게 주문인지/신청서인지 + 통합/단독인지” */}
+                                    {(() => {
+                                      const kind = getKindBadge(order);
+                                      const link = getLinkBadge(order, isLinkedProductOrder);
+                                      return (
+                                        <div className="flex flex-wrap gap-1">
+                                          <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kind.className)}>{kind.label}</Badge>
+                                          <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', link.className)}>{link.label}</Badge>
+                                        </div>
+                                      );
+                                    })()}
                                   </div>
+                                </TooltipTrigger>
 
-                                  {order.cancelStatus === 'requested' && <p className="mt-2 text-sm text-amber-500">취소 요청이 접수된 주문입니다.</p>}
-                                  {order.__type === 'stringing_application' && order.stringSummary && <p className="mt-1 text-[11px] text-muted-foreground">장착 상품: {order.stringSummary}</p>}
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableCell>
+                                <TooltipContent
+                                  side="top"
+                                  align="center"
+                                  sideOffset={6}
+                                  style={{
+                                    backgroundColor: 'rgb(var(--popover))',
+                                    color: 'rgb(var(--popover-foreground))',
+                                  }}
+                                  className="px-5 py-2.5 rounded-lg shadow-lg border text-base min-w-[240px]"
+                                >
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-mono">{order.id}</span>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-6 w-6"
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(order.id);
+                                          showSuccessToast('주문 ID가 클립보드에 복사되었습니다.');
+                                        }}
+                                      >
+                                        <Copy className="w-4 h-4" />
+                                        <span className="sr-only">복사</span>
+                                      </Button>
+                                    </div>
 
-                        {/* 고객 정보 셀 */}
-                        <TableCell className={tdClasses}>
-                          <div className="flex flex-col items-center">
-                            <span className="flex items-center">
-                              {/* "이름"만 남기기 */}
-                              {order.customer.name.replace(/\s*\(비회원\)\s*$/, '').replace(/\s*\(탈퇴한 회원\)\s*$/, '')}
-                              {/*  탈퇴한 회원 레이블 (기존 getDisplayUserType) */}
-                              {getDisplayUserType(order) && <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">{getDisplayUserType(order)}</span>}
-                              {/*  비회원 레이블 */}
-                              {order.customer.name.endsWith('(비회원)') && <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">(비회원)</span>}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground">{order.customer.email}</span>
-                          </div>
-                        </TableCell>
+                                    {order.cancelStatus === 'requested' && <p className="mt-2 text-sm text-amber-500">취소 요청이 접수된 주문입니다.</p>}
+                                    {order.__type === 'stringing_application' && order.stringSummary && <p className="mt-1 text-[11px] text-muted-foreground">장착 상품: {order.stringSummary}</p>}
 
-                        {/* 날짜 셀 */}
-                        <TableCell className="w-36 truncate whitespace-nowrap">{formatDate(order.date)}</TableCell>
+                                    {isLinkedProductOrder && <p className="mt-2 text-[11px] text-muted-foreground">연결: 교체서비스 신청서와 통합 처리(같은 테두리 색)</p>}
+                                    {order.__type === 'stringing_application' && order.linkedOrderId && (
+                                      <p className="mt-1 text-[11px] text-muted-foreground">
+                                        연결 주문: <span className="font-mono">{shortenId(order.linkedOrderId)}</span>
+                                      </p>
+                                    )}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </TableCell>
+                          {/* 고객 정보 셀 */}
+                          <TableCell className={tdClasses}>
+                            <div className="flex flex-col items-center">
+                              <span className="flex items-center">
+                                {/* "이름"만 남기기 */}
+                                {order.customer.name.replace(/\s*\(비회원\)\s*$/, '').replace(/\s*\(탈퇴한 회원\)\s*$/, '')}
+                                {/*  탈퇴한 회원 레이블 (기존 getDisplayUserType) */}
+                                {getDisplayUserType(order) && <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">{getDisplayUserType(order)}</span>}
+                                {/*  비회원 레이블 */}
+                                {order.customer.name.endsWith('(비회원)') && <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">(비회원)</span>}
+                              </span>
+                              <span className="text-[11px] text-muted-foreground">{order.customer.email}</span>
+                            </div>
+                          </TableCell>
+                          {/* 날짜 셀 */}
+                          <TableCell className="w-36 truncate whitespace-nowrap">{formatDate(order.date)}</TableCell>
+                          {/* 상태 셀 */}
+                          <TableCell className={tdClasses}>
+                            {order.__type === 'stringing_application' ? <ApplicationStatusBadge status={order.status} /> : <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', orderStatusColors[order.status])}>{order.status}</Badge>}
+                          </TableCell>
+                          {/* 결제 상태 셀 */}
+                          <TableCell className={tdClasses}>
+                            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', paymentStatusColors[order.paymentStatus])}>{order.paymentStatus}</Badge>
+                          </TableCell>
+                          {/* 운송장 셀 */}
+                          <TableCell className={tdClasses}>
+                            {(() => {
+                              //  묶음의 "상품 주문"은 운송장을 직접 관리하지 않음
+                              if (isLinkedProductOrder) {
+                                return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200')}>신청서에서 관리</Badge>;
+                              }
+                              const { label, color } = getShippingBadge(order);
+                              return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', color)}>{label}</Badge>;
+                            })()}
+                          </TableCell>
+                          {/* 유형 셀 */}
+                          <TableCell className={tdClasses}>
+                            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', order.__type === 'stringing_application' ? orderTypeColors['서비스'] : orderTypeColors['상품'])}>{order.type}</Badge>
+                          </TableCell>
+                          {/* 금액 셀 */}
+                          <TableCell className={tdClasses}>{formatCurrency(order.total)}</TableCell>
+                          {/* 작업 메뉴 셀 */}
+                          <TableCell className={tdClasses}>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-6 w-6">
+                                  <MoreHorizontal className="h-3.5 w-3.5" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>작업</DropdownMenuLabel>
+                                <DropdownMenuItem asChild>
+                                  <Link
+                                    href={order.__type === 'stringing_application' ? `/admin/applications/stringing/${order.id}` : `/admin/orders/${order.id}`}
+                                    onClick={() => {
+                                      if (order.__type === 'stringing_application') {
+                                        useStringingStore.getState().setSelectedApplicationId(order.id);
+                                      } else {
+                                        useOrderStore.getState().setSelectedOrderId(order.id);
+                                      }
+                                    }}
+                                  >
+                                    <Eye className="mr-2 h-4 w-4" /> 상세 보기
+                                  </Link>
+                                </DropdownMenuItem>
 
-                        {/* 상태 셀 */}
-                        <TableCell className={tdClasses}>
-                          {order.__type === 'stringing_application' ? <ApplicationStatusBadge status={order.status} /> : <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', orderStatusColors[order.status])}>{order.status}</Badge>}
-                        </TableCell>
-
-                        {/* 결제 상태 셀 */}
-                        <TableCell className={tdClasses}>
-                          <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', paymentStatusColors[order.paymentStatus])}>{order.paymentStatus}</Badge>
-                        </TableCell>
-
-                        {/* 운송장 셀 */}
-                        <TableCell className={tdClasses}>
-                          {(() => {
-                            const { label, color } = getShippingBadge(order);
-                            return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', color)}>{label}</Badge>;
-                          })()}
-                        </TableCell>
-
-                        {/* 유형 셀 */}
-                        <TableCell className={tdClasses}>
-                          <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', order.__type === 'stringing_application' ? orderTypeColors['서비스'] : orderTypeColors['상품'])}>{order.type}</Badge>
-                        </TableCell>
-
-                        {/* 금액 셀 */}
-                        <TableCell className={tdClasses}>{formatCurrency(order.total)}</TableCell>
-
-                        {/* 작업 메뉴 셀 */}
-                        <TableCell className={tdClasses}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-6 w-6">
-                                <MoreHorizontal className="h-3.5 w-3.5" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>작업</DropdownMenuLabel>
-                              <DropdownMenuItem asChild>
-                                <Link
-                                  href={order.__type === 'stringing_application' ? `/admin/applications/stringing/${order.id}` : `/admin/orders/${order.id}`}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
                                   onClick={() => {
+                                    // 신청서 행이면 신청서 배송등록으로 바로 이동
                                     if (order.__type === 'stringing_application') {
-                                      useStringingStore.getState().setSelectedApplicationId(order.id);
-                                    } else {
-                                      useOrderStore.getState().setSelectedOrderId(order.id);
+                                      router.push(`/admin/applications/stringing/${order.id}/shipping-update`);
+                                      return;
                                     }
+                                    // 주문 행이면: 연결된 신청서가 있으면 신청서로 리다이렉트(위 handleShippingUpdate 로직)
+                                    handleShippingUpdate(order.id);
                                   }}
                                 >
-                                  <Eye className="mr-2 h-4 w-4" /> 상세 보기
-                                </Link>
-                              </DropdownMenuItem>
-
-                              {order.__type !== 'stringing_application' && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => handleShippingUpdate(order.id)}>
-                                    <Truck className="mr-2 h-4 w-4" /> 배송 정보 등록
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ));
+                                  <Truck className="mr-2 h-4 w-4" /> 배송 정보 등록
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    });
                   })
                 )}
               </TableBody>
@@ -568,7 +667,7 @@ export default function OrdersClient() {
                     <span key={`dots-${idx}`} className="px-2 text-muted-foreground">
                       …
                     </span>
-                  )
+                  ),
                 )}
 
                 <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>

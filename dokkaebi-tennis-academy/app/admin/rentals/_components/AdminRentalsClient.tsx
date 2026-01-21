@@ -45,6 +45,10 @@ type RentalRow = {
   cancelRequest?: {
     status?: 'requested' | 'approved' | 'rejected';
   } | null;
+
+  // 대여 기반 교체서비스 연결(목록용)
+  stringingApplicationId?: string | null;
+  withStringService?: boolean;
 };
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
@@ -66,6 +70,26 @@ const rentalStatusLabels: Record<string, string> = {
 };
 
 export default function AdminRentalsClient() {
+  /**
+   *  관리자 UX용 뱃지(대여 페이지)
+   * - 운영자가 “이 대여가 단독인지 / 교체서비스 포함인지 / 신청서 연결인지”를 한눈에 확인.
+   */
+  function getKindBadge() {
+    return { label: '대여', className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200' };
+  }
+  function getServiceBadge(r: RentalRow) {
+    if (r.withStringService) {
+      return { label: '교체서비스 포함', className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200' };
+    }
+    return { label: '단독', className: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' };
+  }
+  function getLinkBadge(r: RentalRow) {
+    if (r.stringingApplicationId) {
+      return { label: '신청서 연결', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200' };
+    }
+    return null;
+  }
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -218,7 +242,13 @@ export default function AdminRentalsClient() {
     // 기존 검색어 필터와 결합
     const q = searchTerm.toLowerCase();
     const searchMatch =
-      (r.id || '').toLowerCase().includes(q) || (r.brand || '').toLowerCase().includes(q) || (r.model || '').toLowerCase().includes(q) || (r.customer?.name || '').toLowerCase().includes(q) || (r.customer?.email || '').toLowerCase().includes(q);
+      (r.id || '').toLowerCase().includes(q) ||
+      (r.stringingApplicationId || '').toLowerCase().includes(q) ||
+      (r.brand || '').toLowerCase().includes(q) ||
+      (r.model || '').toLowerCase().includes(q) ||
+      (r.customer?.name || '').toLowerCase().includes(q) ||
+      (r.customer?.email || '').toLowerCase().includes(q);
+
     return okPay && okShip && searchMatch;
   });
 
@@ -367,8 +397,8 @@ export default function AdminRentalsClient() {
       <div className="mx-auto max-w-7xl mb-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-semibold tracking-tight">대여 관리</h1>
-            <p className="mt-1 text-xs text-muted-foreground">도깨비 테니스 아카데미의 모든 라켓 대여를 관리하고 처리하세요.</p>
+            <h1 className="text-4xl font-semibold tracking-tight">대여(라켓) 관리</h1>
+            <p className="mt-1 text-xs text-muted-foreground">라켓 대여를 관리합니다. 교체서비스 포함 대여는 “신청서 연결”로 표시됩니다.</p>
           </div>
           {/* 유지보수: created 청소 버튼 */}
           {/* <CleanupCreatedButton hours={2} /> */}
@@ -529,6 +559,14 @@ export default function AdminRentalsClient() {
               </>
             )}
           </div>
+          {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
+          <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getKindBadge().className)}>{getKindBadge().label}</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200')}>단독</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200')}>교체서비스 포함</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200')}>신청서 연결</Badge>
+            <span className="ml-1">• 신청서 연결이 있으면 신청서 상세로 바로 이동할 수 있습니다</span>
+          </div>
         </CardHeader>
         <CardContent className="overflow-x-auto md:overflow-x-visible scrollbar-hidden relative pr-2 md:pr-0">
           <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
@@ -588,16 +626,31 @@ export default function AdminRentalsClient() {
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                className="inline-flex items-center gap-1 max-w-[140px] truncate cursor-pointer"
+                                className="inline-flex flex-col items-start gap-1 max-w-[140px] cursor-pointer"
                                 onClick={() => {
                                   navigator.clipboard.writeText(rid);
                                   showSuccessToast('대여 ID가 클립보드에 복사되었습니다.');
                                 }}
                               >
-                                {/* 취소요청 들어온 대여만 경고 아이콘 표시 */}
-                                {r.cancelRequest?.status === 'requested' && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" aria-label="취소 요청된 대여" />}
+                                <div className="inline-flex items-center gap-1 w-full truncate">
+                                  {/* 취소요청 들어온 대여만 경고 아이콘 표시 */}
+                                  {r.cancelRequest?.status === 'requested' && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" aria-label="취소 요청된 대여" />}
+                                  <span className="inline-block truncate">{shortenId(rid)}</span>
+                                </div>
 
-                                <span className="inline-block truncate">{shortenId(rid)}</span>
+                                {/* 단독/교체서비스 포함/신청서 연결 여부 */}
+                                {(() => {
+                                  const kind = getKindBadge();
+                                  const svc = getServiceBadge(r);
+                                  const link = getLinkBadge(r);
+                                  return (
+                                    <div className="flex flex-wrap gap-1">
+                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kind.className)}>{kind.label}</Badge>
+                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', svc.className)}>{svc.label}</Badge>
+                                      {link && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', link.className)}>{link.label}</Badge>}
+                                    </div>
+                                  );
+                                })()}
                               </button>
                             </TooltipTrigger>
 
@@ -629,6 +682,19 @@ export default function AdminRentalsClient() {
                                 </div>
 
                                 {r.cancelRequest?.status === 'requested' && <p className="mt-2 text-sm text-amber-500">취소 요청이 접수된 대여입니다.</p>}
+
+                                {/* 교체서비스 포함 안내 */}
+                                {r.withStringService && <p className="mt-2 text-[11px] text-muted-foreground">교체서비스 포함 대여입니다. (신청서 연결 시 신청서에서 상태/배송을 관리합니다)</p>}
+
+                                {/* 신청서 연결이 있으면 툴팁에서 바로 이동 링크 제공 */}
+                                {r.stringingApplicationId && (
+                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                    연결 신청서: <span className="font-mono">{shortenId(String(r.stringingApplicationId))}</span>{' '}
+                                    <Link href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`} className="ml-1 underline underline-offset-2 text-primary">
+                                      신청서 보기
+                                    </Link>
+                                  </p>
+                                )}
                               </div>
                             </TooltipContent>
                           </Tooltip>
@@ -693,6 +759,13 @@ export default function AdminRentalsClient() {
                                 <Eye className="mr-2 h-4 w-4" /> 상세 보기
                               </Link>
                             </DropdownMenuItem>
+                            {r.stringingApplicationId && (
+                              <DropdownMenuItem asChild>
+                                <Link href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}>
+                                  <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
+                                </Link>
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator />
                             {(r.status === 'paid' || r.status === 'out') && (
                               <DropdownMenuItem onClick={() => onReturn(rid)} disabled={busyId === rid}>
@@ -736,7 +809,7 @@ export default function AdminRentalsClient() {
                   <span key={`dots-${idx}`} className="px-2 text-muted-foreground">
                     …
                   </span>
-                )
+                ),
               )}
               <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
                 다음

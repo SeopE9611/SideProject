@@ -30,7 +30,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const at = jar.get('accessToken')?.value;
     const rt = jar.get('refreshToken')?.value;
 
-    let user: any = at ? verifyAccessToken(at) : null;
+    // accessToken이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 인증 실패로 정리
+    let user: any = null;
+    try {
+      user = at ? verifyAccessToken(at) : null;
+    } catch {
+      user = null;
+    }
 
     if (!user && rt) {
       try {
@@ -66,13 +72,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const now = new Date();
 
     // 1) rental_orders 상태 업데이트 (대여 status는 유지)
-    await rentals.updateOne({ _id }, {
+    // 경합 방어: requested 상태일 때만 rejected로 변경
+    const u = await rentals.updateOne({ _id, 'cancelRequest.status': 'requested' }, {
       $set: {
         'cancelRequest.status': 'rejected',
         'cancelRequest.processedAt': now,
         updatedAt: now,
       },
     } as any);
+    if (u.matchedCount === 0) {
+      return NextResponse.json({ ok: false, message: 'INVALID_STATE', detail: '거절 가능한 상태가 아닙니다.' }, { status: 409 });
+    }
 
     // 2) 히스토리 기록
     await writeRentalHistory(db, _id, {
