@@ -6,13 +6,21 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  const orderId = id; // 가독성을 위해 별칭 사용
+  const orderId = id; 
 
   // 인증
   const token = (await cookies()).get('accessToken')?.value;
   if (!token) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  const payload = verifyAccessToken(token);
-  if (!payload) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+
+  // accessToken이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 401로 정리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  const userIdStr = typeof payload?.sub === 'string' ? payload.sub : '';
+  if (!userIdStr || !ObjectId.isValid(userIdStr)) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
 
   // 파라미터 검증
   if (!ObjectId.isValid(orderId)) {
@@ -20,7 +28,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   const db = await getDb();
-  const userId = new ObjectId(payload.sub);
+  const userId = new ObjectId(userIdStr);
   const orderIdObj = new ObjectId(orderId);
 
   // 내 주문인지 확인 + 주문 항목 확보
@@ -30,19 +38,24 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   const items: any[] = Array.isArray(order.items) ? order.items : [];
-  const productIds = items.map((it) => (it?.productId ? String(it.productId) : null)).filter((v): v is string => !!v);
+
+  // 주문 스냅샷에 레거시 productId(비 ObjectId) 값이 섞여 있을 수 있으므로 ObjectId 유효성으로 1차 필터
+  // - 유효하지 않은 productId가 있더라도 이 API가 500으로 터지면 안 됨
+  const productIds = Array.from(new Set(items.map((it) => (it?.productId ? String(it.productId) : null)).filter((v): v is string => !!v && ObjectId.isValid(v))));
 
   // 이미 작성된 상품 조회
-  const reviewed = await db
-    .collection('reviews')
-    .find({
-      userId,
-      orderId: orderIdObj,
-      productId: { $in: productIds.map((pid) => new ObjectId(pid)) },
-      isDeleted: { $ne: true },
-    })
-    .project({ productId: 1 })
-    .toArray();
+  const reviewed = productIds.length
+    ? await db
+        .collection('reviews')
+        .find({
+          userId,
+          orderId: orderIdObj,
+          productId: { $in: productIds.map((pid) => new ObjectId(pid)) },
+          isDeleted: { $ne: true },
+        })
+        .project({ productId: 1 })
+        .toArray()
+    : [];
 
   const reviewedSet = new Set(reviewed.map((r) => String(r.productId)));
 
@@ -52,7 +65,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
   for (const it of items) {
     const pid = it?.productId ? String(it.productId) : null;
-    if (!pid) continue;
+     if (!pid || !ObjectId.isValid(pid)) continue;
 
     const name = it.name || it.productName || it.title; // 주문 스냅샷 이름
     const image = it.image || it.thumbnail || it.thumbnailUrl || (Array.isArray(it.images) && it.images.length ? it.images[0] : undefined); // 주문 스냅샷 이미지

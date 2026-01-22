@@ -75,7 +75,13 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     const jar = await cookies();
     const token = jar.get('accessToken')?.value;
 
-    const payload = token ? verifyAccessToken(token) : null;
+    // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 취급
+    let payload: any = null;
+    try {
+      payload = token ? verifyAccessToken(token) : null;
+    } catch {
+      payload = null;
+    }
 
     const isAdmin = payload?.role === 'admin';
     const isOwner = payload?.sub && doc.userId && String(payload.sub) === String(doc.userId);
@@ -149,10 +155,18 @@ async function getAuthUserId() {
 
   if (!token) return null;
 
-  const payload = verifyAccessToken(token);
-  if (!payload || !payload.sub) return null;
+  // verifyAccessToken throw 방어 + sub(ObjectId) 유효성 보장
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
 
-  return String(payload.sub);
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return null;
+
+  return subStr;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,7 +189,7 @@ const patchBodySchema = z
           name: z.string(),
           url: z.string().url(),
           size: z.number().optional(),
-        })
+        }),
       )
       .optional(),
   })
@@ -225,7 +239,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
         error: 'validation_error',
         details: parsed.error.issues,
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -233,8 +247,8 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   // market 게시판: 라켓/스트링은 brand 필수, 일반장비는 brand 제거(null)
   if (doc.type === 'market') {
-    const nextCategory = body.category !== undefined ? (body.category as any) : doc.category ?? null;
-    const nextBrand = body.brand !== undefined ? body.brand : doc.brand ?? null;
+    const nextCategory = body.category !== undefined ? (body.category as any) : (doc.category ?? null);
+    const nextBrand = body.brand !== undefined ? body.brand : (doc.brand ?? null);
 
     const needBrand = nextCategory === 'racket' || nextCategory === 'string';
     const b = typeof nextBrand === 'string' ? nextBrand.trim() : '';
@@ -246,7 +260,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
           error: 'validation_error',
           details: [{ path: ['brand'], message: '라켓/스트링 글은 브랜드를 필수로 선택해 주세요.' }],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
   }
@@ -258,8 +272,8 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   // brand 업데이트(중고거래 게시판만)
   if (doc.type === 'market') {
-    const nextCategory = body.category !== undefined ? (body.category as any) : doc.category ?? null;
-    const nextBrand = body.brand !== undefined ? body.brand : doc.brand ?? null;
+    const nextCategory = body.category !== undefined ? (body.category as any) : (doc.category ?? null);
+    const nextBrand = body.brand !== undefined ? body.brand : (doc.brand ?? null);
 
     const needBrand = nextCategory === 'racket' || nextCategory === 'string';
 

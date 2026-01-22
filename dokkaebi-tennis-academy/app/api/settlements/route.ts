@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
   // 정산 데이터는 민감 정보이므로 관리자만 조회 가능해야 함
-  const g = await requireAdmin(new Request('http://local/'));
+  const g = await requireAdmin(req);
   if (!g.ok) return g.res;
-  
-  const db = await getDb();
+
+  const db = g.db;
   const rows = await db
     .collection('settlements')
     .find({}, { projection: { _id: 0 } })

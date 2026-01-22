@@ -282,10 +282,21 @@ export default function SettlementsClient() {
       setDeleting(true);
       const res = await fetch('/api/settlements/bulk-delete', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ yyyymms: Array.from(selectedSnapshots) }),
       });
-      const json = await res.json();
+      const json = await res.json().catch(() => ({}) as any);
+
+      if (res.status === 401) {
+        showErrorToast('로그인이 필요합니다. 관리자 계정으로 다시 로그인해 주세요.');
+        return;
+      }
+      if (res.status === 403) {
+        showErrorToast('권한이 없습니다. 관리자 계정인지 확인해 주세요.');
+        return;
+      }
+
       if (json.success) {
         showSuccessToast(json.message);
         setSelectedSnapshots(new Set());
@@ -309,8 +320,17 @@ export default function SettlementsClient() {
 
     try {
       setDeleting(true);
-      const res = await fetch(`/api/settlements/${yyyymm}`, { method: 'DELETE' });
-      const json = await res.json();
+      const res = await fetch(`/api/settlements/${yyyymm}`, { method: 'DELETE', credentials: 'include' });
+      const json = await res.json().catch(() => ({}) as any);
+
+      if (res.status === 401) {
+        showErrorToast('로그인이 필요합니다. 관리자 계정으로 다시 로그인해 주세요.');
+        return;
+      }
+      if (res.status === 403) {
+        showErrorToast('권한이 없습니다. 관리자 계정인지 확인해 주세요.');
+        return;
+      }
       if (json.success) {
         showSuccessToast(json.message);
         await mutate();

@@ -8,7 +8,9 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const productId = url.searchParams.get('productId');
-    const limit = Math.max(1, Math.min(100, Number(url.searchParams.get('limit') || 50)));
+    // limit 파싱: NaN이면 Mongo limit 단계에서 터질 수 있으므로 정수/클램프 처리
+    const limitRaw = parseInt(url.searchParams.get('limit') || '50', 10);
+    const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(100, limitRaw)) : 50;
 
     if (!productId) {
       return NextResponse.json({ error: 'productId required' }, { status: 400 });
@@ -16,9 +18,15 @@ export async function GET(req: Request) {
 
     // 인증 + 관리자 권한 확인
     const token = (await cookies()).get('accessToken')?.value;
-    const payload = token ? verifyAccessToken(token) : null;
+    // verifyAccessToken이 만료/파손 토큰에서 throw 되어도 500이 아니라 "관리자 아님" 처리
+    let payload: any = null;
+    try {
+      payload = token ? verifyAccessToken(token) : null;
+    } catch {
+      payload = null;
+    }
 
-    const isAdmin = !!payload && ((payload as any).role === 'admin' || (payload as any).role === 'ADMIN' || (payload as any).isAdmin === true || (Array.isArray((payload as any).roles) && (payload as any).roles.includes('admin')));
+    const isAdmin = !!payload && ((payload as any)?.role === 'admin' || (payload as any)?.role === 'ADMIN' || (payload as any)?.isAdmin === true || (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes('admin')));
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'forbidden' }, { status: 403 });
@@ -50,7 +58,7 @@ export async function GET(req: Request) {
           },
           sort: { createdAt: -1 },
           limit,
-        }
+        },
       )
       .toArray();
 

@@ -28,10 +28,18 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   // 쿠키에서 액세스 토큰 꺼내 인증
   const token = (await cookies()).get('accessToken')?.value;
   if (!token) return NextResponse.json({ ok: false, reason: 'unauthorized' }, { status: 401 });
-  const payload = verifyAccessToken(token);
-  if (!payload) return NextResponse.json({ ok: false, reason: 'unauthorized' }, { status: 401 });
 
-  //  파라미터 검증
+  // verifyAccessToken이 만료/깨진 토큰에서 throw 되어도 500으로 터지지 않게 방어
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  // sub는 ObjectId 문자열이어야 함 (new ObjectId에서 500 방지)
+  if (!subStr || !ObjectId.isValid(subStr)) return NextResponse.json({ ok: false, reason: 'unauthorized' }, { status: 401 });
+
   const { id } = params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, reason: 'badRequest' }, { status: 400 });
 
@@ -39,18 +47,33 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   const desiredParam = url.searchParams.get('desired'); // 'on' | 'off' | null
 
   const reviewId = new ObjectId(id);
-  const userId = new ObjectId(String(payload.sub)); // 기존 작성 API와 동일 규칙
+  const userId = new ObjectId(subStr); // ObjectId 유효성 보장된 값만 사용
 
   const votes = db.collection('review_votes');
   const reviews = db.collection('reviews');
 
+  // 리뷰 존재 검증(삭제/미존재 리뷰에 투표 로그가 남는 데이터 오염 방지)
+  const exists = await reviews.findOne({ _id: reviewId, isDeleted: { $ne: true } }, { projection: { _id: 1 } });
+  if (!exists) return NextResponse.json({ ok: false, reason: 'notFound' }, { status: 404 });
+
   // 토글 로직: 있으면 삭제, 없으면 생성
   const existing = await votes.findOne({ reviewId, userId });
+
+  // insertOne이 동시 요청에서 중복키(11000)로 터질 수 있어 멱등 처리 필요
+  const safeInsertVote = async () => {
+    try {
+      await votes.insertOne({ reviewId, userId, createdAt: new Date() });
+    } catch (e: any) {
+      // 유니크 인덱스에 의해 "이미 투표됨"이면 정상 케이스로 간주(500 방지)
+      if (e?.code === 11000) return;
+      throw e;
+    }
+  };
 
   // 멱등 동작: desired=on|off면 그 상태를 "보장"
   if (desiredParam === 'on') {
     if (!existing) {
-      await votes.insertOne({ reviewId, userId, createdAt: new Date() });
+      await safeInsertVote();
     }
   } else if (desiredParam === 'off') {
     if (existing) {
@@ -61,7 +84,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     if (existing) {
       await votes.deleteOne({ reviewId, userId });
     } else {
-      await votes.insertOne({ reviewId, userId, createdAt: new Date() });
+      await safeInsertVote();
     }
   }
 

@@ -13,7 +13,18 @@ async function getAuthPayload() {
   const token = jar.get('accessToken')?.value;
   if (!token) return null;
 
-  const payload = verifyAccessToken(token);
+  // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 처리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+
+  // sub는 ObjectId 문자열이어야 함 (신고자 식별/자기글 신고 차단/중복 신고 방지 로직 안정화)
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return null;
+
   return payload ?? null;
 }
 
@@ -55,7 +66,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         error: 'validation_failed',
         details: parsed.error.flatten(),
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 

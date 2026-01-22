@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { PAID_STATUS_VALUES, orderPaidAmount, applicationPaidAmount, refundsAmount, isStandaloneStringingApplication } from '@/app/api/settlements/_lib/settlementPolicy';
+import { requireAdmin } from '@/lib/admin.guard';
 // 월 시작/끝(KST) → UTC 경계로 변환
 function kstMonthRangeToUtc(yyyymm: string) {
   const y = Number(yyyymm.slice(0, 4));
@@ -21,25 +23,20 @@ function nowYyyymmKST() {
 
 export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: string }> }) {
   const origin = _req.headers.get('origin') || '';
-  const allow = process.env.NEXT_PUBLIC_SITE_URL || ''; // 일단 https://dokkaebi.tennis
-  if (origin && !origin.startsWith(allow)) {
+  const allow = process.env.NEXT_PUBLIC_SITE_URL;
+  if (allow && origin && !origin.startsWith(allow)) {
     return NextResponse.json({ message: 'forbidden' }, { status: 403 });
   }
 
   try {
-    const db = await getDb();
+    // 관리자 인증 + DB 획득(정산 스냅샷 생성은 민감 작업)
+    const g = await requireAdmin(_req);
+    if (!g.ok) return g.res;
+    const db = g.db;
 
     const { yyyymm } = await ctx.params;
 
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
-
-    const payload = token ? verifyAccessToken(token) : null;
-    const createdBy = payload?.email ?? payload?.sub ?? 'system';
-
-    if (!payload?.sub || payload.role !== 'admin') {
-      return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-    }
+    const createdBy = g.admin.email ?? String(g.admin._id);
     if (!/^\d{6}$/.test(yyyymm)) {
       return NextResponse.json({ message: 'YYYYMM 형식이 아닙니다.' }, { status: 400 });
     }
@@ -62,13 +59,13 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
     // 1) 저장값 우선 필드 투영 (orders)
     const orders = await db
       .collection('orders')
-      .find({ createdAt: { $gte: start, $lt: end } }, { projection: { paymentStatus: 1, paidAmount: 1, refunds: 1 } })
+      .find({ createdAt: { $gte: start, $lt: end }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { paymentStatus: 1, paidAmount: 1, totalPrice: 1, refunds: 1 } })
       .toArray();
 
     // 2) 저장값 우선 필드 투영 (stringing_applications)
     const apps = await db
       .collection('stringing_applications')
-      .find({ createdAt: { $gte: start, $lt: end } }, { projection: { paymentStatus: 1, totalPrice: 1, refunds: 1 } })
+      .find({ createdAt: { $gte: start, $lt: end }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { paymentStatus: 1, totalPrice: 1, serviceAmount: 1, orderId: 1, rentalId: 1, refunds: 1 } })
       .toArray();
 
     // 3) 패키지 주문 조회 (결제완료만, createdAt 기준)
@@ -77,23 +74,31 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
       .find(
         {
           createdAt: { $gte: start, $lt: end },
-          paymentStatus: '결제완료',
+          paymentStatus: { $in: PAID_STATUS_VALUES },
         },
-        { projection: { totalPrice: 1 } }
+        { projection: { paymentStatus: 1, paidAmount: 1, totalPrice: 1, refunds: 1 } },
       )
       .toArray();
 
-    // 패키지 수금 합계
-    const pkgPaid = packages.reduce((s: number, p: any) => s + (p.totalPrice || 0), 0);
+    // 연결된 신청서는 중복 정산 방지(주문/대여 쪽이 결제 앵커)
+    const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
 
-    const paid = orders.reduce((s: number, o: any) => s + (o.paidAmount || 0), 0) + apps.reduce((s: number, a: any) => s + (a.totalPrice || 0), 0) + pkgPaid;
-    const refund = orders.reduce((s: number, o: any) => s + (o.refunds || 0), 0) + apps.reduce((s: number, a: any) => s + (a.refunds || 0), 0);
+    const paidOrders = orders.reduce((s: number, o: any) => s + orderPaidAmount(o), 0);
+    const paidApps = standaloneApps.reduce((s: number, a: any) => s + applicationPaidAmount(a), 0);
+    const paidPackages = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
+    const paid = paidOrders + paidApps + paidPackages;
+
+    const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
+    const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
+    const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
+    const refund = refundOrders + refundApps + refundPackages;
     const net = paid - refund;
 
     const snapshot = {
       yyyymm,
       totals: { paid, refund, net },
-      breakdown: { orders: orders.length, applications: apps.length, packages: packages.length },
+      breakdown: { orders: orders.length, applications: standaloneApps.length, packages: packages.length },
+
       // 아래 두 필드는 최초 1회만 기록
       createdAt: new Date(),
       createdBy,
@@ -114,7 +119,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
           lastGeneratedBy: snapshot.lastGeneratedBy,
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
     return NextResponse.json({ success: true, snapshot });
   } catch (e) {
@@ -126,22 +131,17 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
 // 스냅샷 삭제 API
 export async function DELETE(_req: Request, ctx: { params: Promise<{ yyyymm: string }> }) {
   const origin = _req.headers.get('origin') || '';
-  const allow = process.env.NEXT_PUBLIC_SITE_URL || '';
-  if (origin && !origin.startsWith(allow)) {
+  const allow = process.env.NEXT_PUBLIC_SITE_URL;
+  if (allow && origin && !origin.startsWith(allow)) {
     return NextResponse.json({ message: 'forbidden' }, { status: 403 });
   }
 
   try {
-    const db = await getDb();
+    // 관리자 인증
+    const g = await requireAdmin(_req);
+    if (!g.ok) return g.res;
+    const db = g.db;
     const { yyyymm } = await ctx.params;
-
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
-    const payload = token ? verifyAccessToken(token) : null;
-
-    if (!payload?.sub || payload.role !== 'admin') {
-      return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-    }
 
     if (!/^\d{6}$/.test(yyyymm)) {
       return NextResponse.json({ success: false, message: 'yyyymm 형식 필요(예: 202510)' }, { status: 400 });

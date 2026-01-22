@@ -20,13 +20,26 @@ function mapTx(d: any): PointTransactionListItem {
 
 // 마이페이지에서 "현재 보유 포인트" 및 "최근 적립/사용 내역"을 빠르게 표시하기 위한 엔드포인트
 export async function GET() {
-  const me = await getCurrentUser();
+  // getCurrentUser 내부에서 토큰 검증(verifyAccessToken 등)이 throw 되어도
+  // 라우터가 500으로 터지지 않도록 방어(= 401로 정리)
+  let me: any = null;
+  try {
+    me = await getCurrentUser();
+  } catch {
+    me = null;
+  }
   if (!me) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
+  // 토큰 payload가 오염되어 id가 ObjectId가 아니면 new ObjectId에서 500이 나므로 사전 차단
+  const uidStr = String(me?.id ?? '');
+  if (!uidStr || !ObjectId.isValid(uidStr)) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  const userId = new ObjectId(uidStr);
   const db = await getDb();
 
   // 1) 현재 잔액(캐시)
-  const user = await db.collection('users').findOne({ _id: new ObjectId(me.id) }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
+  const user = await db.collection('users').findOne({ _id: userId }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
   const balanceRaw = typeof user?.pointsBalance === 'number' && Number.isFinite(user.pointsBalance) ? user.pointsBalance : 0;
   const debtRaw = typeof (user as any)?.pointsDebt === 'number' && Number.isFinite((user as any).pointsDebt) ? (user as any).pointsDebt : 0;
 
@@ -37,7 +50,7 @@ export async function GET() {
   // 2) 최근 10개 내역(원장)
   const recentDocs = await db
     .collection('points_transactions')
-    .find({ userId: new ObjectId(me.id) }, { projection: { userId: 0 } as any })
+    .find({ userId }, { projection: { userId: 0 } as any })
     .sort({ createdAt: -1 })
     .limit(10)
     .toArray();

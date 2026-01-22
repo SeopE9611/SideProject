@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
+import { PAID_STATUS_VALUES, orderPaidAmount, applicationPaidAmount, refundsAmount, isStandaloneStringingApplication } from '@/app/api/settlements/_lib/settlementPolicy';
 
 // KST 00:00을 UTC로 보정해 월 경계 계산 (DST 없음 가정: KST=UTC+9)
 function kstMonthRangeToUtc(yyyymm: string) {
@@ -49,12 +50,12 @@ export async function POST() {
 
     const orders = await db
       .collection('orders')
-      .find({ createdAt: { $gte: start, $lt: end } }, { projection: { paidAmount: 1, refunds: 1 } })
+      .find({ createdAt: { $gte: start, $lt: end }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { paidAmount: 1, totalPrice: 1, refunds: 1, paymentStatus: 1 } })
       .toArray();
 
     const apps = await db
       .collection('stringing_applications')
-      .find({ createdAt: { $gte: start, $lt: end } }, { projection: { totalPrice: 1, refunds: 1 } })
+      .find({ createdAt: { $gte: start, $lt: end }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { totalPrice: 1, serviceAmount: 1, orderId: 1, rentalId: 1, refunds: 1, paymentStatus: 1 } })
       .toArray();
 
     // 패키지 주문: 결제완료만 월 범위로 수금 합산
@@ -63,19 +64,25 @@ export async function POST() {
       .find(
         {
           createdAt: { $gte: start, $lt: end },
-          paymentStatus: '결제완료',
+          paymentStatus: { $in: PAID_STATUS_VALUES },
         },
-        { projection: { totalPrice: 1 } }
+        { projection: { totalPrice: 1, paidAmount: 1, refunds: 1, paymentStatus: 1 } },
       )
       .toArray();
 
-    // 패키지 수금 합계
-    const pkgPaid = packages.reduce((s: number, p: any) => s + (p.totalPrice || 0), 0);
+    // 연결된 신청서는 중복 정산 방지(주문/대여 결제 앵커에 포함되므로 신청서는 제외)
+    const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
 
-    // paid/net 계산
-    const paid = orders.reduce((s: any, o: any) => s + (o.paidAmount || 0), 0) + apps.reduce((s: any, a: any) => s + (a.totalPrice || 0), 0) + pkgPaid;
-    const refund = orders.reduce((s: any, o: any) => s + (o.refunds || 0), 0) + apps.reduce((s: any, a: any) => s + (a.refunds || 0), 0);
+    // paid/net 계산 (정책 함수 사용)
+    const paidOrders = orders.reduce((s: number, o: any) => s + orderPaidAmount(o), 0);
+    const paidApps = standaloneApps.reduce((s: number, a: any) => s + applicationPaidAmount(a), 0);
+    const paidPackages = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
+    const paid = paidOrders + paidApps + paidPackages;
 
+    const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
+    const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
+    const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
+    const refund = refundOrders + refundApps + refundPackages;
     const net = paid - refund;
 
     await db.collection('settlements').updateOne(
@@ -86,14 +93,14 @@ export async function POST() {
           totals: { paid, refund, net },
           breakdown: {
             orders: orders.length,
-            applications: apps.length,
+            applications: standaloneApps.length,
             packages: packages.length,
           },
           lastGeneratedAt: new Date(),
           lastGeneratedBy: 'cron',
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
 
     console.log('[cron-monthly]', {
@@ -101,7 +108,7 @@ export async function POST() {
       totals: { paid, refund, net },
       counts: {
         orders: orders.length,
-        apps: apps.length,
+        apps: standaloneApps.length,
         packages: packages.length,
       },
       at: new Date().toISOString(),

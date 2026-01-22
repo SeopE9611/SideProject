@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
-
+import { toISO, normalizeOrderStatus, normalizePaymentStatus, normalizeRentalStatus, summarizeOrderItems, pickCustomerFromDoc, normalizeRentalAmountTotal } from '@/lib/admin-ops-normalize';
 export const dynamic = 'force-dynamic';
 
 type Kind = 'order' | 'stringing_application' | 'rental';
@@ -24,107 +24,6 @@ type OpItem = {
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
 const MAX_FETCH_EACH = 300; // 각 컬렉션에서 상위 N개만 가져온 뒤 merge/sort
-
-function toISO(v: any): string | null {
-  if (!v) return null;
-  const d = v instanceof Date ? v : new Date(v);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
-
-function normalizeOrderStatus(status?: string | null) {
-  switch (status) {
-    case 'pending':
-      return '대기중';
-    case 'processing':
-      return '처리중';
-    case 'shipped':
-      return '배송중';
-    case 'delivered':
-      return '배송완료';
-    case 'confirmed':
-      return '구매확정';
-    case 'cancelled':
-      return '취소';
-    case 'refunded':
-      return '환불';
-    default:
-      return status || '대기중';
-  }
-}
-
-function normalizePaymentStatus(status?: string | null) {
-  switch (status) {
-    case 'paid':
-      return '결제완료';
-    case 'pending':
-      return '결제대기';
-    case 'failed':
-      return '결제실패';
-    case 'cancelled':
-      return '결제취소';
-    case 'refunded':
-      return '환불';
-    default:
-      return status || '결제대기';
-  }
-}
-
-function summarizeOrderItems(items: any[] | undefined) {
-  const names = (items ?? []).map((it) => String(it?.name ?? '').trim()).filter(Boolean);
-  if (names.length === 0) return '주문';
-  if (names.length === 1) return names[0]!;
-  return `${names[0]} 외 ${names.length - 1}개`;
-}
-
-function pickCustomerFromDoc(doc: any): { name: string; email: string } {
-  // 주문/신청서에 공통으로 있을 수 있는 후보들을 “안전하게” 흡수
-  const c = doc?.customer;
-  if (c?.name || c?.email) return { name: String(c?.name ?? ''), email: String(c?.email ?? '') };
-
-  const us = doc?.userSnapshot;
-  if (us?.name || us?.email) return { name: String(us?.name ?? ''), email: String(us?.email ?? '') };
-
-  const guestInfo = doc?.guestInfo;
-  if (guestInfo?.name || guestInfo?.email) return { name: String(guestInfo?.name ?? ''), email: String(guestInfo?.email ?? '') };
-
-  // stringing_application에 있을 수 있는 guestName/guestEmail
-  if (doc?.guestName || doc?.guestEmail) return { name: String(doc?.guestName ?? ''), email: String(doc?.guestEmail ?? '') };
-
-  // rental_orders에 있을 수 있는 guest
-  const g = doc?.guest;
-  if (g?.name || g?.email) return { name: String(g?.name ?? ''), email: String(g?.email ?? '') };
-
-  return { name: '', email: '' };
-}
-
-function normalizeRentalStatus(status?: string | null) {
-  switch (status) {
-    case 'pending':
-      return '대기중';
-    case 'paid':
-      return '결제완료';
-    case 'out':
-      return '대여중';
-    case 'returned':
-      return '반납완료';
-    case 'canceled':
-      return '취소됨';
-    default:
-      return status || '대기중';
-  }
-}
-
-function normalizeRentalAmount(r: any) {
-  // admin/rentals route.ts와 “같은 계산 규칙”을 사용(금액 누락/불일치 방지)
-  const fee = Number(r?.amount?.fee ?? r?.fee ?? 0);
-  const deposit = Number(r?.amount?.deposit ?? r?.deposit ?? 0);
-  const requested = !!r?.stringing?.requested;
-  const stringPrice = Number(r?.amount?.stringPrice ?? (requested ? (r?.stringing?.price ?? 0) : 0));
-  const stringingFee = Number(r?.amount?.stringingFee ?? (requested ? (r?.stringing?.mountingFee ?? 0) : 0));
-  const total = Number(r?.amount?.total ?? fee + deposit + stringPrice + stringingFee);
-  return { total };
-}
 
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
@@ -278,7 +177,7 @@ export async function GET(req: Request) {
     const appId = rentalToApp.get(id) ?? null;
     const isIntegrated = !!appId;
     const days = Number(r?.days ?? r?.period ?? 0);
-    const amount = normalizeRentalAmount(r).total;
+    const amount = normalizeRentalAmountTotal(r);
 
     return {
       id,

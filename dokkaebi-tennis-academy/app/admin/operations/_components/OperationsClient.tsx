@@ -16,9 +16,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { cn } from '@/lib/utils';
 import { shortenId } from '@/lib/shorten';
 import { showSuccessToast } from '@/lib/toast';
-import { badgeBase, badgeSizeSm, orderStatusColors, paymentStatusColors, applicationStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
+import { opsKindBadgeClass, opsKindLabel, opsStatusBadgeClass, type OpsKind } from '@/lib/admin-ops-taxonomy';
 
-type Kind = 'order' | 'stringing_application' | 'rental';
+type Kind = OpsKind;
 
 type OpItem = {
   id: string;
@@ -37,26 +38,6 @@ type OpItem = {
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
-const rentalStatusColors: Record<string, string> = {
-  대기중: 'bg-gray-500/10 text-gray-600 dark:bg-gray-500/20',
-  결제완료: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20',
-  대여중: 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20',
-  반납완료: 'bg-green-500/10 text-green-600 dark:bg-green-500/20',
-  취소됨: 'bg-red-500/10 text-red-600 dark:bg-red-500/20',
-};
-
-function kindLabel(kind: Kind) {
-  if (kind === 'order') return '주문';
-  if (kind === 'stringing_application') return '신청서';
-  return '대여';
-}
-
-function kindColor(kind: Kind) {
-  if (kind === 'order') return 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20';
-  if (kind === 'stringing_application') return 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20';
-  return 'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20';
-}
-
 function formatKST(iso?: string | null) {
   if (!iso) return '-';
   const d = new Date(iso);
@@ -68,12 +49,6 @@ function formatKST(iso?: string | null) {
   const hh = String(d.getHours()).padStart(2, '0');
   const mi = String(d.getMinutes()).padStart(2, '0');
   return `${yy}. ${mm}. ${dd}. ${hh}:${mi}`;
-}
-
-function statusColor(kind: Kind, label: string) {
-  if (kind === 'order') return orderStatusColors[label] ?? 'bg-gray-500/10 text-gray-600';
-  if (kind === 'stringing_application') return (applicationStatusColors as any)[label] ?? applicationStatusColors.default;
-  return rentalStatusColors[label] ?? 'bg-gray-500/10 text-gray-600';
 }
 
 // 그룹(묶음) 만들기 유틸
@@ -295,9 +270,9 @@ export default function OperationsClient() {
           {/* 범례(운영자 인지 부하 감소) */}
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span className="font-medium text-foreground">범례</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, kindColor('order'))}>주문</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, kindColor('stringing_application'))}>신청서</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, kindColor('rental'))}>대여</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass('order'))}>주문</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass('stringing_application'))}>신청서</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass('rental'))}>대여</Badge>
             <span className="mx-1">·</span>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-emerald-500/10 text-emerald-600')}>통합(연결됨)</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-600')}>단독</Badge>
@@ -355,8 +330,8 @@ export default function OperationsClient() {
                             {/* 그룹에 포함된 종류들(주문/신청서/대여) */}
                             <div className="flex flex-wrap gap-1">
                               {g.kinds.map((k) => (
-                                <Badge key={k} className={cn(badgeBase, badgeSizeSm, kindColor(k))}>
-                                  {kindLabel(k)}
+                                <Badge key={k} className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(k))}>
+                                  {opsKindLabel(k)}
                                 </Badge>
                               ))}
                             </div>
@@ -401,7 +376,7 @@ export default function OperationsClient() {
                         <TableCell className={td}>{formatKST(g.createdAt)}</TableCell>
 
                         <TableCell className={td}>
-                          <Badge className={cn(badgeBase, badgeSizeSm, statusColor(g.anchor.kind, g.anchor.statusLabel))}>{g.anchor.statusLabel}</Badge>
+                          <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(g.anchor.kind, g.anchor.statusLabel))}>{g.anchor.statusLabel}</Badge>
                         </TableCell>
 
                         <TableCell className={td}>
@@ -417,7 +392,7 @@ export default function OperationsClient() {
                             <div className="space-y-1">
                               {pickOnePerKind(g.items).map((it) => (
                                 <div key={`${it.kind}:${it.id}`} className="flex items-center justify-between gap-3">
-                                  <span className="text-xs text-muted-foreground">{kindLabel(it.kind)}</span>
+                                  <span className="text-xs text-muted-foreground">{opsKindLabel(it.kind)}</span>
                                   <span>{won(it.amount)}</span>
                                 </div>
                               ))}
@@ -458,7 +433,7 @@ export default function OperationsClient() {
                         children.map((it) => (
                           <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-muted/10">
                             <TableCell className={td}>
-                              <Badge className={cn(badgeBase, badgeSizeSm, kindColor(it.kind))}>{kindLabel(it.kind)}</Badge>
+                              <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(it.kind))}>{opsKindLabel(it.kind)}</Badge>
                             </TableCell>
 
                             <TableCell className={td}>
@@ -478,7 +453,7 @@ export default function OperationsClient() {
                             <TableCell className={td}>{formatKST(it.createdAt)}</TableCell>
 
                             <TableCell className={td}>
-                              <Badge className={cn(badgeBase, badgeSizeSm, statusColor(it.kind, it.statusLabel))}>{it.statusLabel}</Badge>
+                              <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(it.kind, it.statusLabel))}>{it.statusLabel}</Badge>
                             </TableCell>
 
                             <TableCell className={td}>

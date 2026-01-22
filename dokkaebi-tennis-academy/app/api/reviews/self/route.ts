@@ -14,7 +14,13 @@ export async function GET(req: Request) {
     }
 
     const token = (await cookies()).get('accessToken')?.value;
-    const payload = token ? verifyAccessToken(token) : null;
+    // 만료/파손 토큰에서 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인"처럼 처리
+    let payload: any = null;
+    try {
+      payload = token ? verifyAccessToken(token) : null;
+    } catch {
+      payload = null;
+    }
     const uid = payload?.id ?? payload?.sub ?? payload?._id ?? payload?.userId;
     if (!uid) {
       return NextResponse.json(null, { status: 200, headers: { 'Cache-Control': 'no-store', Vary: 'Cookie' } });

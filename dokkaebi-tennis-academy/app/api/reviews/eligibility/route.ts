@@ -14,11 +14,20 @@ export async function GET(req: Request) {
   // 인증
   const token = (await cookies()).get('accessToken')?.value;
   if (!token) return NextResponse.json({ eligible: false, reason: 'unauthorized' }, { status: 401 });
-  const payload = verifyAccessToken(token);
-  if (!payload) return NextResponse.json({ eligible: false, reason: 'unauthorized' }, { status: 401 });
-
+  // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 401로 정리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  // sub는 ObjectId 문자열이어야 함 (new ObjectId에서 500 방지)
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) {
+    return NextResponse.json({ eligible: false, reason: 'unauthorized' }, { status: 401 });
+  }
   const db = await getDb();
-  const userId = new ObjectId(payload.sub);
+  const userId = new ObjectId(subStr);
 
   // 상품 모드: productId (+ 선택적으로 orderId) 가 있을 때
   if (productId) {

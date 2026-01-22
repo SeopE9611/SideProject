@@ -41,12 +41,25 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
 
   const jar = await cookies();
   const token = jar.get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload?.sub) {
+  if (!token) {
     return NextResponse.json({ ok: false, error: '로그인이 필요합니다.' }, { status: 401 });
   }
 
-  const userId = new ObjectId(String(payload.sub));
+  // verifyAccessToken이 throw되어 500으로 터지는 케이스 방지
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+
+  // payload.sub는 ObjectId 문자열이어야 함
+  const userIdStr = typeof payload?.sub === 'string' ? payload.sub : null;
+  if (!userIdStr || !ObjectId.isValid(userIdStr)) {
+    return NextResponse.json({ ok: false, error: '로그인이 필요합니다.' }, { status: 401 });
+  }
+
+  const userId = new ObjectId(userIdStr);
   const orderObjectId = new ObjectId(id);
 
   const client = await clientPromise;
@@ -62,14 +75,17 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
     return NextResponse.json({ ok: false, error: '권한이 없습니다.' }, { status: 403 });
   }
 
-  // 이미 확정된 경우(프론트에서 alreadyConfirmed로 처리)
-  if ((order as any).userConfirmedAt || (order as any).status === '구매확정') {
-    return NextResponse.json({ ok: true, already: true, alreadyConfirmed: true, earnedPoints: 0 });
-  }
+  /**
+   * 이미 확정된 주문이라도:
+   * - 첫 확정 시 포인트 적립이 실패했을 수 있음(네트워크/DB 일시 오류 등)
+   * - 기존 구현은 여기서 바로 return되어 "재시도로 복구 불가" 문제가 생길 수 있음
+   * → 이미 확정이어도 grantPoints(refKey)를 멱등으로 재시도 가능하게 처리
+   */
+  const alreadyConfirmed = Boolean((order as any).userConfirmedAt || (order as any).status === '구매확정');
 
   const prevStatus = String((order as any).status ?? '');
   const allowedPrev = prevStatus === '배송완료' || prevStatus === 'delivered';
-  if (!allowedPrev) {
+  if (!alreadyConfirmed && !allowedPrev) {
     return NextResponse.json({ ok: false, error: '배송완료 상태에서만 구매 확정이 가능합니다.' }, { status: 400 });
   }
 
@@ -78,9 +94,12 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   //  - "교체완료" 또는 "취소"(종결) 상태가 아니고, userConfirmedAt도 없는 신청이 하나라도 있으면
   //    주문 구매확정을 막아 포인트가 조기 적립되는 것을 방지합니다.
   const appsCol = db.collection('stringing_applications');
-  const linkedApps = await appsCol.find({ orderId: orderObjectId }, { projection: { _id: 1, status: 1, userConfirmedAt: 1 } }).toArray();
 
-  if (linkedApps.length) {
+  // draft는 사용자 플로우 상 임시 상태일 수 있어 구매확정을 막지 않도록 제외(다른 confirm 라우트와 일관성 유지)
+  const linkedApps = await appsCol.find({ orderId: orderObjectId, status: { $nin: ['draft'] } }, { projection: { _id: 1, status: 1, userConfirmedAt: 1 } }).toArray();
+
+  // 이미 주문이 확정된 상태라면, 여기서 "미완료 서비스"로 다시 막지는 않음(이미 확정된 상태 유지)
+  if (!alreadyConfirmed && linkedApps.length) {
     const blocking = linkedApps.filter((a: any) => {
       const st = String(a?.status ?? '');
       const confirmed = Boolean(a?.userConfirmedAt);
@@ -94,32 +113,41 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
           ok: false,
           error: `교체 서비스가 아직 완료되지 않았습니다. (미완료 ${blocking.length}건) 서비스 완료 후 구매확정이 가능합니다.`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
   }
 
+  // "이번 요청에서 사용할 확정 시각"
+  // - 이미 확정된 주문이라면 userConfirmedAt을 우선 사용(없으면 now)
   const now = new Date();
-  const historyEntry = {
-    status: '구매확정',
-    date: now.toISOString(),
-    description: '사용자 구매 확정',
-  };
+  const confirmedAt = (order as any).userConfirmedAt ? new Date((order as any).userConfirmedAt) : now;
 
-  const upd = await orders.updateOne({ _id: orderObjectId, userId, status: { $in: ['배송완료', 'delivered'] }, $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }] }, {
-    $set: { status: '구매확정', userConfirmedAt: now, updatedAt: now },
-    $push: { history: historyEntry },
-  } as any);
+  // 아직 확정되지 않은 주문만 실제로 주문 문서를 업데이트
+  if (!alreadyConfirmed) {
+    const historyEntry = {
+      status: '구매확정',
+      date: confirmedAt.toISOString(),
+      description: '사용자 구매 확정',
+    };
 
-  // 동시 클릭/중복 요청 등으로 이미 처리된 케이스
-  if (upd.matchedCount === 0) {
-    return NextResponse.json({ ok: true, already: true, alreadyConfirmed: true, earnedPoints: 0 });
+    const upd = await orders.updateOne({ _id: orderObjectId, userId, status: { $in: ['배송완료', 'delivered'] }, $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }] }, {
+      $set: { status: '구매확정', userConfirmedAt: confirmedAt, updatedAt: confirmedAt },
+      $push: { history: historyEntry },
+    } as any);
+
+    // 동시 클릭/중복 요청 등으로 이미 처리된 케이스
+    // - 여기서도 "포인트/서비스 확정"은 아래에서 멱등 재시도 가능해야 하므로, return하지 않고 계속 진행
+    if (upd.matchedCount === 0) {
+      // 이미 확정된 상태로 간주하고 아래 멱등 처리로 이어감
+    }
   }
 
   const totalPrice = Number((order as any).totalPrice ?? 0);
   const earnedPoints = calcOrderEarnPoints(totalPrice);
 
   // 0원이면 지급 자체 생략
+  let pointsGranted = earnedPoints <= 0;
   if (earnedPoints > 0) {
     const methodLabel = paymentMethodLabel((order as any).paymentInfo);
     const refKey = `order_reward:${String(orderObjectId)}`;
@@ -133,8 +161,11 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
         refKey,
         reason: `구매 확정 적립 (${methodLabel})`,
       });
+      pointsGranted = true;
     } catch {
-      // refKey 유니크로 중복 적립은 방지됨. 여기서는 주문 확정 자체를 실패시키지 않음.
+      // refKey 유니크로 중복 적립은 방지됨.
+      // 다만 일시 오류로 적립이 실패했을 수도 있으므로, 이 API를 재호출하면 여기서 다시 시도(멱등) 가능.
+      pointsGranted = false;
     }
   }
 
@@ -146,8 +177,15 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
       status: '교체완료',
       $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
     },
-    { $set: { userConfirmedAt: now } }
+    { $set: { userConfirmedAt: confirmedAt } },
   );
 
-  return NextResponse.json({ ok: true, earnedPoints, alsoConfirmedServices: (svcRes as any).modifiedCount ?? 0 });
+  return NextResponse.json({
+    ok: true,
+    earnedPoints,
+    already: alreadyConfirmed,
+    alreadyConfirmed,
+    pointsGranted,
+    alsoConfirmedServices: (svcRes as any).modifiedCount ?? 0,
+  });
 }

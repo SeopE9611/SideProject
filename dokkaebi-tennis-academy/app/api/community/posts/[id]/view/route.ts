@@ -12,10 +12,19 @@ async function getAuthUserId() {
   const token = jar.get('accessToken')?.value;
   if (!token) return null;
 
-  const payload = verifyAccessToken(token);
-  if (!payload || !payload.sub) return null;
+  // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 처리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
 
-  return String(payload.sub);
+  // sub는 ObjectId 문자열이어야 함 (다른 라우터들과 동일한 기준으로 정리)
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return null;
+
+  return subStr;
 }
 
 // 조회수 +1 전용 API
@@ -80,6 +89,9 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   // 2) 로그인 사용자: userId 기준으로 중복 방지
   const viewsCol = db.collection('community_view_logs');
 
+  // (postId, userId) 중복 기록 방지 인덱스(없으면 생성). like 라우트와 동일 패턴
+  viewsCol.createIndex({ postId: 1, userId: 1 }, { unique: true }).catch(() => {});
+
   // userId는 문자열로 저장 (우리 users 컬렉션 id 타입과 맞추기)
   const viewUserId = String(userId);
 
@@ -105,12 +117,31 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   }
 
   // 아직 한 번도 조회 안한 유저 → 로그 기록 후 views +1
-  await viewsCol.insertOne({
-    postId: _id,
-    userId: viewUserId,
-    createdAt: new Date(),
-  });
+  try {
+    await viewsCol.insertOne({
+      postId: _id,
+      userId: viewUserId,
+      createdAt: new Date(),
+    });
+  } catch (e: any) {
+    // 동시 요청 레이스로 인해 "이미 누가 먼저 insert" 한 경우(중복키)
+    // → 조회수는 증가시키지 않고, 현재 값만 반환(duplicate branch와 동일 처리)
+    if (e?.code === 11000) {
+      const latest = await col.findOne({ _id });
+      const views = (latest as any)?.views ?? (post as any)?.views ?? 0;
 
+      logInfo({
+        msg: 'community:view:member:duplicate_race',
+        status: 200,
+        durationMs: stop(),
+        extra: { id, userId: viewUserId, views },
+        ...meta,
+      });
+
+      return NextResponse.json({ ok: true, views, firstView: false }, { status: 200 });
+    }
+    throw e;
+  }
   // 조회수 실제 증가
   const updated = await col.findOneAndUpdate(
     { _id },
@@ -118,7 +149,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       $inc: { views: 1 },
       $set: { updatedAt: new Date() },
     },
-    { returnDocument: 'after' }
+    { returnDocument: 'after' },
   );
 
   if (!updated || !updated.value) {

@@ -15,7 +15,15 @@ async function getAuthPayload() {
   const jar = await cookies();
   const token = jar.get('accessToken')?.value;
   if (!token) return null;
-  const payload = verifyAccessToken(token);
+  // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 처리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return null;
   return payload ?? null;
 }
 
@@ -79,7 +87,7 @@ const createSchema = z.object({
         name: z.string(),
         url: z.string().url(),
         size: z.number().optional(),
-      })
+      }),
     )
     .optional(),
 });
@@ -105,11 +113,15 @@ function parseListQuery(req: NextRequest): {
   const brand = url.searchParams.get('brand'); // string | null
 
   // 정렬: 최신 / 조회수 / 추천순 / hot
-  const sortParam = (url.searchParams.get('sort') as 'latest' | 'views' | 'likes' | 'hot') ?? 'latest';
+  const rawSort = url.searchParams.get('sort');
+  const sortParam: 'latest' | 'views' | 'likes' | 'hot' = rawSort === 'latest' || rawSort === 'views' || rawSort === 'likes' || rawSort === 'hot' ? rawSort : 'latest';
 
   // 페이지 / 페이지당 개수
-  const page = Math.max(1, Number(url.searchParams.get('page') || 1));
-  const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
+  // Number(...)는 NaN일 때 Math.max가 NaN을 반환할 수 있어 방어 필요
+  const pageRaw = parseInt(url.searchParams.get('page') || '1', 10);
+  const limitRaw = parseInt(url.searchParams.get('limit') || '10', 10);
+  const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
+  const limit = Number.isFinite(limitRaw) ? Math.min(50, Math.max(1, limitRaw)) : 10;
 
   // 검색어 (기존 q 그대로 사용)
   const q = (url.searchParams.get('q') || '').toString().trim();
@@ -250,7 +262,7 @@ export async function GET(req: NextRequest) {
         'CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
         'Vercel-CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
       },
-    }
+    },
   );
 }
 
@@ -276,7 +288,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
-  const bodyRaw = await req.json();
+  // 깨진 JSON이면 throw → 500 방지
+  let bodyRaw: unknown;
+  try {
+    bodyRaw = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+  }
+
   const parsed = createSchema.safeParse(bodyRaw);
   if (!parsed.success) {
     logInfo({
@@ -304,21 +323,10 @@ export async function POST(req: NextRequest) {
   // - gear  : community_gear
   let postNo: number | undefined = undefined;
 
-  const counterId =
-    body.type === 'free'
-      ? 'community_free'
-      : body.type === 'market'
-        ? 'community_market'
-        : body.type === 'gear'
-          ? 'community_gear'
-          : null;
+  const counterId = body.type === 'free' ? 'community_free' : body.type === 'market' ? 'community_market' : body.type === 'gear' ? 'community_gear' : null;
 
   if (counterId) {
-    const counterDoc = await countersCol.findOneAndUpdate(
-      { _id: counterId },
-      { $inc: { seq: 1 } },
-      { upsert: true, returnDocument: 'after' }
-    );
+    const counterDoc = await countersCol.findOneAndUpdate({ _id: counterId }, { $inc: { seq: 1 } }, { upsert: true, returnDocument: 'after' });
 
     const seq = counterDoc?.seq;
     postNo = typeof seq === 'number' ? seq : 1;
@@ -337,7 +345,7 @@ export async function POST(req: NextRequest) {
           error: 'validation_error',
           details: [{ path: ['brand'], message: '라켓/스트링 글은 브랜드를 필수로 선택해 주세요.' }],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -358,7 +366,7 @@ export async function POST(req: NextRequest) {
     content: body.content,
 
     // 브랜드 게시판/중고거래 게시판이 아닐 때는 항상 null
-    brand: body.type === 'brand' || body.type === 'market' ? body.brand ?? null : null,
+    brand: body.type === 'brand' || body.type === 'market' ? (body.brand ?? null) : null,
 
     // 자유 게시판 카테고리 (제목 머릿말)
     category: body.category ?? 'general',
@@ -372,6 +380,7 @@ export async function POST(req: NextRequest) {
     // 게시판 내 노출용 번호 (자유 게시판만 사용)
     postNo,
 
+    // getAuthPayload에서 sub ObjectId 유효성 보장(여기서 new ObjectId throw 방지)
     userId: new ObjectId(String(payload.sub)),
     nickname: displayName,
 

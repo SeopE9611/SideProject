@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 import { deductPoints, getPointsBalance, grantPoints } from '@/lib/points.service';
@@ -14,8 +14,9 @@ export async function POST(req: Request) {
   if (!guard.ok) return guard.res;
   const { db } = guard;
 
-  const body = await req.json().catch(() => ({} as any));
-  const userId = String(body?.userId ?? '');
+  const body = await req.json().catch(() => ({}) as any);
+  // ObjectId 입력에 공백이 섞이면 isValid가 실패할 수 있어 trim으로 정규화
+  const userId = String(body?.userId ?? '').trim();
   const amountRaw = Number(body?.amount);
   const reason = typeof body?.reason === 'string' ? body.reason.trim() : '';
   const refKey = typeof body?.refKey === 'string' ? body.refKey.trim() : '';
@@ -24,11 +25,13 @@ export async function POST(req: Request) {
   if (!ObjectId.isValid(userId)) {
     return NextResponse.json({ ok: false, error: 'INVALID_USER_ID' }, { status: 400 });
   }
-  if (!Number.isFinite(amountRaw) || amountRaw === 0) {
+  // 포인트는 정수 단위만 허용(소수/NaN 방지)
+  if (!Number.isFinite(amountRaw) || amountRaw === 0 || !Number.isInteger(amountRaw)) {
     return NextResponse.json({ ok: false, error: 'INVALID_AMOUNT' }, { status: 400 });
   }
 
   const targetUserId = new ObjectId(userId);
+  const amount = Math.trunc(amountRaw);
 
   // 관리자 id를 ref에 남기고 싶으면 guard.user가 있는 경우만 사용
   const adminIdStr = (guard as any)?.user?.id;
@@ -36,10 +39,10 @@ export async function POST(req: Request) {
 
   try {
     // 2) 지급/차감 분기 (원장 + users.pointsBalance 캐시 동시 갱신)
-    if (amountRaw > 0) {
+    if (amount > 0) {
       await grantPoints(db, {
         userId: targetUserId,
-        amount: amountRaw,
+        amount,
         type: 'admin_adjust',
         ...(refKey ? { refKey } : {}),
         ...(reason ? { reason } : {}),
@@ -48,7 +51,7 @@ export async function POST(req: Request) {
     } else {
       await deductPoints(db, {
         userId: targetUserId,
-        amount: Math.abs(amountRaw),
+        amount: Math.abs(amount),
         type: 'admin_adjust',
         ...(refKey ? { refKey } : {}),
         ...(reason ? { reason } : {}),
@@ -61,7 +64,7 @@ export async function POST(req: Request) {
     // 3) 조정 후 잔액 반환
     const balance = await getPointsBalance(db, targetUserId);
 
-    return NextResponse.json({ ok: true, userId, delta: amountRaw, balance }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
+    return NextResponse.json({ ok: true, userId, delta: amount, balance }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
   } catch (err: any) {
     // points.service.ts에서 던지는 코드 기반으로 분기
     const code = err?.code || err?.message;

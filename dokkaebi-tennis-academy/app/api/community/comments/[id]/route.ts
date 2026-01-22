@@ -12,13 +12,25 @@ async function getAuthPayload() {
   const jar = await cookies();
   const token = jar.get('accessToken')?.value;
   if (!token) return null;
-  const payload = verifyAccessToken(token);
+  // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 처리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+
+  // sub는 ObjectId 문자열이어야 함 (권한 비교/추후 ObjectId 사용 시 500 방지)
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return null;
+
   return payload ?? null;
 }
 
 // PATCH 바디 스키마
 const updateCommentSchema = z.object({
-  content: z.string().min(1, '댓글 내용을 입력해 주세요.').max(1000, '댓글은 1000자 이내로 입력해 주세요.'),
+  // 공백만 입력되는 케이스 방지
+  content: z.string().trim().min(1, '댓글 내용을 입력해 주세요.').max(1000, '댓글은 1000자 이내로 입력해 주세요.'),
 });
 
 // --------------------------- PATCH: 댓글 수정 ---------------------------
@@ -52,7 +64,13 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
   }
 
-  const raw = await req.json();
+  // 깨진 JSON이면 throw → 500 방지 (400으로 정리)
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+  }
   const parsed = updateCommentSchema.safeParse(raw);
 
   if (!parsed.success) {
@@ -68,7 +86,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
         content,
         updatedAt: new Date(),
       },
-    }
+    },
   );
 
   return NextResponse.json({ ok: true }, { status: 200 });
@@ -113,7 +131,7 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
         status: 'deleted' as const,
         updatedAt: new Date(),
       },
-    }
+    },
   );
 
   if (existing.postId) {
@@ -122,7 +140,7 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
       {
         $inc: { commentsCount: -1 },
         $set: { updatedAt: new Date() },
-      }
+      },
     );
   }
 

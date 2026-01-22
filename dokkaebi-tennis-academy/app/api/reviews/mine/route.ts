@@ -5,15 +5,29 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
 export async function GET(req: Request) {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload?.sub) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+  const jar = await cookies();
+  const token = jar.get('accessToken')?.value;
+  if (!token) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+
+  // verifyAccessToken이 만료/깨진 토큰에서 throw 되어도 500이 아니라 401로 정리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+
+  // sub는 ObjectId 문자열이어야 함 (new ObjectId에서 500 방지)
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
 
   const db = await getDb();
-  const userId = new ObjectId(String(payload.sub));
+  const userId = new ObjectId(subStr);
 
   const url = new URL(req.url);
-  const limit = Math.max(1, Math.min(50, Number(url.searchParams.get('limit') || 10)));
+  // limit 파싱: NaN이면 Mongo $limit에서 터질 수 있으므로 정수/클램프 처리
+  const limitRaw = parseInt(url.searchParams.get('limit') || '10', 10);
+  const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(50, limitRaw)) : 10;
   const cursorB64 = url.searchParams.get('cursor');
 
   // 커서: createdAt desc, _id desc
@@ -21,9 +35,14 @@ export async function GET(req: Request) {
   if (cursorB64) {
     try {
       const c = JSON.parse(Buffer.from(cursorB64, 'base64').toString('utf-8'));
-      cursorMatch = {
-        $or: [{ createdAt: { $lt: new Date(c.createdAt) } }, { createdAt: new Date(c.createdAt), _id: { $lt: new ObjectId(c.id) } }],
-      };
+      const createdAt = new Date(String(c?.createdAt ?? ''));
+      const idStr = String(c?.id ?? '');
+      // 커서 값이 깨졌을 때(Invalid Date / 잘못된 id)는 무시하고 첫 페이지로 처리
+      if (Number.isFinite(createdAt.getTime()) && ObjectId.isValid(idStr)) {
+        cursorMatch = {
+          $or: [{ createdAt: { $lt: createdAt } }, { createdAt, _id: { $lt: new ObjectId(idStr) } }],
+        };
+      }
     } catch {
       /* ignore */
     }

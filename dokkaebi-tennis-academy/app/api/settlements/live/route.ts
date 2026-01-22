@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
-// 쿼리: /api/settlements/live?from=2025-10-01&to=0000-00-00
+import { requireAdmin } from '@/lib/admin.guard';
+import { PAID_STATUS_VALUES, orderPaidAmount, applicationPaidAmount, refundsAmount, isStandaloneStringingApplication } from '@/app/api/settlements/_lib/settlementPolicy';
+
+// 쿼리: /api/settlements/live?from=YYYY-MM-DD&to=YYYY-MM-DD (KST 기준)
 export async function GET(req: Request) {
   try {
+    // 1) 관리자 인증 (정산 데이터는 매출/운영 정보이므로 반드시 관리자만 조회)
+    const g = await requireAdmin(req);
+    if (!g.ok) return g.res;
+    const db = g.db;
+
     const url = new URL(req.url);
     const from = url.searchParams.get('from'); // yyyy-mm-dd
     const to = url.searchParams.get('to'); // yyyy-mm-dd
@@ -27,41 +34,42 @@ export async function GET(req: Request) {
 
     const start = kstDayStartUtc(from);
     const endExclusive = kstDayEndExclusiveUtc(to);
-    const db = await getDb();
 
     // 저장값 우선 원칙으로 투영 (주문)
+    // - paymentStatus는 '유료(수금 완료)'만 정산에 포함
     const orders = await db
       .collection('orders')
-      .find({ createdAt: { $gte: start, $lt: endExclusive } }, { projection: { paidAmount: 1, refunds: 1 } })
+      .find({ createdAt: { $gte: start, $lt: endExclusive }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { paidAmount: 1, totalPrice: 1, refunds: 1, paymentStatus: 1 } })
       .toArray();
 
     // 저장값 우선 원칙으로 투영 (신청)
+    // - orderId/rentalId가 있으면 '연결된 통합건'이므로 정산에서 제외(중복 방지)
     const apps = await db
       .collection('stringing_applications')
-      .find({ createdAt: { $gte: start, $lt: endExclusive } }, { projection: { totalPrice: 1, refunds: 1 } })
+      .find({ createdAt: { $gte: start, $lt: endExclusive }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { totalPrice: 1, serviceAmount: 1, orderId: 1, rentalId: 1, refunds: 1, paymentStatus: 1 } })
       .toArray();
 
     // 패키지 주문 집계용 조회
     const packages = await db
       .collection('packageOrders')
-      .find(
-        {
-          // 기간 필터: 현재 구조상 결제완료 시각을 별도로 저장 안 하므로 createdAt 기준 사용
-          createdAt: { $gte: start, $lt: endExclusive },
-          paymentStatus: '결제완료', // 현금 유입 기준
-        },
-        { projection: { totalPrice: 1 } }
-      )
+      .find({ createdAt: { $gte: start, $lt: endExclusive }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { totalPrice: 1, paidAmount: 1, refunds: 1, paymentStatus: 1 } })
       .toArray();
 
-    // 패키지 결제합 (수금 기준)
-    const pkgPaid = packages.reduce((s: number, p: any) => s + (p.totalPrice || 0), 0);
+    const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
 
     // paid/net 계산
-    const paid = orders.reduce((s, o: any) => s + (o.paidAmount || 0), 0) + apps.reduce((s, a: any) => s + (a.totalPrice || 0), 0) + pkgPaid;
+    const paidOrders = orders.reduce((s, o: any) => s + orderPaidAmount(o), 0);
+    const paidApps = standaloneApps.reduce((s, a: any) => s + applicationPaidAmount(a), 0);
+    const pkgPaid = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
 
-    const refund = orders.reduce((s, o: any) => s + (o.refunds || 0), 0) + apps.reduce((s, a: any) => s + (a.refunds || 0), 0);
-    // 패키지 환불은 현재 스키마 미도입 → 0 (향후 추가 시 여기에 반영)
+    const paid = paidOrders + paidApps + pkgPaid;
+
+    // refund 계산
+    // - paid에서 제외된 '연결된 신청서'는 refund에서도 제외(같은 이유로 중복 방지)
+    const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
+    const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
+    const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
+    const refund = refundOrders + refundApps + refundPackages;
     const net = paid - refund;
 
     return NextResponse.json({
@@ -69,7 +77,7 @@ export async function GET(req: Request) {
       totals: { paid, refund, net },
       breakdown: {
         orders: orders.length,
-        applications: apps.length,
+        applications: standaloneApps.length,
         packages: packages.length,
       },
     });

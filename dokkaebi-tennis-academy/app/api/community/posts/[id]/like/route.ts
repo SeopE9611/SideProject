@@ -13,10 +13,19 @@ async function getAuthUserId() {
   const token = jar.get('accessToken')?.value;
   if (!token) return null;
 
-  const payload = verifyAccessToken(token);
-  if (!payload || !payload.sub) return null;
+  // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 처리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
 
-  return String(payload.sub);
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  // sub는 ObjectId 문자열이어야 함 (new ObjectId(userId)에서 500 방지)
+  if (!subStr || !ObjectId.isValid(subStr)) return null;
+
+  return subStr;
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
@@ -45,7 +54,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const _postId = new ObjectId(id);
   const _userId = new ObjectId(userId);
 
-  // 2) 먼저 좋아요 존재 여부 확인
+  // 2) 게시글 존재 검증 (없으면 좋아요 문서/카운트가 오염되면 안 됨)
+  const exists = await postsCol.findOne({ _id: _postId }, { projection: { _id: 1 } });
+  if (!exists) {
+    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
+
+  // 3) 먼저 좋아요 존재 여부 확인
   const existed = await likesCol.findOne({ postId: _postId, userId: _userId });
 
   let liked: boolean;
@@ -66,7 +81,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     liked = true;
   }
 
-  // 3) 최종 likes 값을 다시 읽어와서 응답
+  // 4) 최종 likes 값을 다시 읽어와서 응답
   const post = (await postsCol.findOne({ _id: _postId })) as any | null;
   if (!post) {
     // 정말 글이 없을 때만 not_found

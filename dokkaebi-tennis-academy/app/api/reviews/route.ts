@@ -72,7 +72,7 @@ async function ensureReviewIndexes(db: DbAny) {
         unique: true,
         // 과거 문서(orderId 없음)는 인덱싱에서 제외 → 새 정책과 충돌 안 함
         partialFilterExpression: { productId: { $exists: true }, orderId: { $exists: true }, isDeleted: { $ne: true } },
-      }
+      },
     );
   }
 
@@ -123,20 +123,35 @@ async function updateProductRatingSummary(db: DbAny, productIdObj: ObjectId, pro
 export async function POST(req: Request) {
   const token = (await cookies()).get('accessToken')?.value;
   if (!token) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
-  const payload = verifyAccessToken(token);
-  if (!payload) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
 
+  // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 401 처리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) {
+    return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+  }
   const db = await getDb();
   await ensureReviewIndexes(db);
 
-  const body = await req.json();
+  // 깨진 JSON이면 throw → 500 방지
+  let body: any;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ message: 'invalid_json' }, { status: 400 });
+  }
   // orderId는 쿼리나 바디 어느 쪽으로 와도 받게 처리
   const url = new URL(req.url);
   const queryOrderId = url.searchParams.get('orderId');
   const orderIdRaw = body.orderId ?? queryOrderId ?? null;
   const orderIdObj = orderIdRaw && ObjectId.isValid(orderIdRaw) ? new ObjectId(orderIdRaw) : null;
 
-  const userId = new ObjectId(payload.sub);
+  const userId = new ObjectId(subStr);
 
   // 유저 이름 스냅샷
   let userName: string | null = null;
@@ -311,8 +326,17 @@ export async function GET(req: Request) {
   let currentUserId: ObjectId | null = null;
   let isAdmin = false;
   if (token) {
-    const payload = verifyAccessToken(token);
-    if (payload?.sub) currentUserId = new ObjectId(String(payload.sub));
+    // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500 방지 (비로그인 취급)
+    let payload: any = null;
+    try {
+      payload = verifyAccessToken(token);
+    } catch {
+      payload = null;
+    }
+    const subStr = payload?.sub ? String(payload.sub) : '';
+    if (subStr && ObjectId.isValid(subStr)) {
+      currentUserId = new ObjectId(subStr);
+    }
     isAdmin = (payload as any)?.role === 'admin' || (payload as any)?.role === 'ADMIN' || (payload as any)?.isAdmin === true || (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes('admin'));
   }
 
@@ -543,7 +567,7 @@ export async function GET(req: Request) {
         },
       },
       { $addFields: { votedByMe: { $gt: [{ $size: '$myVote' }, 0] } } },
-      { $project: { myVote: 0 } }
+      { $project: { myVote: 0 } },
     );
   } else {
     pipeline.push({ $addFields: { votedByMe: false } });

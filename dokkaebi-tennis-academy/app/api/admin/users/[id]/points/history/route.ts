@@ -6,8 +6,9 @@ import type { PointTransactionListItem } from '@/lib/types/points';
 function parseListQuery(req: Request) {
   const { searchParams } = new URL(req.url);
 
-  const pageRaw = Number(searchParams.get('page') ?? '1');
-  const limitRaw = Number(searchParams.get('limit') ?? '20');
+  // 정수 파싱 + 범위 클램프 (NaN/소수로 skip/limit 깨지는 것 방지)
+  const pageRaw = parseInt(searchParams.get('page') ?? '1', 10);
+  const limitRaw = parseInt(searchParams.get('limit') ?? '20', 10);
 
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const limit = Number.isFinite(limitRaw) && limitRaw > 0 && limitRaw <= 50 ? limitRaw : 20;

@@ -2,6 +2,7 @@
 import clientPromise from '@/lib/mongodb';
 import { DBOrder } from '@/lib/types/order-db';
 import { ObjectId } from 'mongodb';
+import { normalizeOrderStatus, normalizePaymentStatus } from '@/lib/admin-ops-normalize';
 
 // 주문을 DB에 삽입하는 함수
 export async function insertOrder(order: DBOrder) {
@@ -61,25 +62,6 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
     .sort({ createdAt: -1 })
     .toArray();
 
-  // 표시용 정규화 유틸 (UI에 영문 상태가 그대로 노출되는 것 방지)
-  const normalizeOrderStatus = (v: any) => {
-    const s = typeof v === 'string' ? v.trim() : '';
-    if (!s) return '대기중';
-    // 영문/코드값 → 한글로 통일(표시용)
-    if (s === 'pending') return '대기중';
-    if (s === 'paid') return '결제완료';
-    if (s === 'cancelled' || s === 'canceled') return '취소';
-    return s; // 이미 한글이면 그대로
-  };
-  const normalizePaymentStatus = (v: any) => {
-    const s = typeof v === 'string' ? v.trim() : '';
-    if (!s) return '결제대기';
-    if (s === 'pending') return '결제대기';
-    if (s === 'paid' || s === 'confirmed') return '결제완료';
-    if (s === 'cancelled' || s === 'canceled') return '결제취소';
-    return s;
-  };
-
   // 날짜 정렬/표시 안전화: Invalid Date → 0 처리
   const safeToTime = (d: any) => {
     const t = new Date(d as any).getTime();
@@ -91,10 +73,10 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
       const customer: { name: string; email: string; phone: string } = order.customer
         ? { name: order.customer.name, email: order.customer.email ?? '-', phone: order.customer.phone ?? '-' }
         : order.userSnapshot
-        ? { name: order.userSnapshot.name, email: order.userSnapshot.email ?? '-', phone: '-' }
-        : order.guestInfo
-        ? { name: `${order.guestInfo.name} (비회원)`, email: order.guestInfo.email ?? '-', phone: order.guestInfo.phone ?? '-' }
-        : { name: '(고객 정보 없음)', email: '-', phone: '-' };
+          ? { name: order.userSnapshot.name, email: order.userSnapshot.email ?? '-', phone: '-' }
+          : order.guestInfo
+            ? { name: `${order.guestInfo.name} (비회원)`, email: order.guestInfo.email ?? '-', phone: order.guestInfo.phone ?? '-' }
+            : { name: '(고객 정보 없음)', email: '-', phone: '-' };
 
       // 원본 상태 문자열 (한글/영문 섞여 있을 수 있음)
       const rawCancelStatus = order.cancelRequest?.status as string | undefined;
@@ -148,7 +130,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
         },
         cancelStatus,
       };
-    })
+    }),
   );
 
   // 스트링 교체 서비스 신청서 불러오기
@@ -178,7 +160,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
           shippingInfo: 1,
           cancelRequest: 1,
         },
-      }
+      },
     )
     .sort({ createdAt: -1 })
     .toArray();
@@ -192,8 +174,8 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
         const customer = app.customer
           ? { name: app.customer.name, email: app.customer.email ?? '-', phone: app.customer.phone ?? '-' }
           : app.userSnapshot?.name
-          ? { name: app.userSnapshot.name, email: app.userSnapshot.email ?? '-', phone: '-' }
-          : { name: `${app.guestName ?? '비회원'} (비회원)`, email: app.guestEmail || '-', phone: app.guestPhone || '-' };
+            ? { name: app.userSnapshot.name, email: app.userSnapshot.email ?? '-', phone: '-' }
+            : { name: `${app.guestName ?? '비회원'} (비회원)`, email: app.guestEmail || '-', phone: app.guestPhone || '-' };
 
         // 상품 아이템
         const items = await Promise.all(
@@ -203,7 +185,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
             }
             const prod = await db.collection('products').findOne({ _id: new ObjectId(typeId) }, { projection: { name: 1, mountingFee: 1 } });
             return { id: typeId, name: prod?.name ?? '알 수 없는 상품', price: prod?.mountingFee ?? 0, quantity: 1 };
-          })
+          }),
         );
         // 총액(문서 저장값 우선, 없으면 계산값)
         const totalFromDoc = typeof (app as any).totalPrice === 'number' ? (app as any).totalPrice : null;
@@ -270,7 +252,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
           },
           cancelStatus,
         };
-      })
+      }),
     )
   ).filter(Boolean); // ← null 제거
 

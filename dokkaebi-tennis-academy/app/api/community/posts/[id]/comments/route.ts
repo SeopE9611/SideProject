@@ -10,12 +10,20 @@ import type { CommunityComment } from '@/lib/types/community';
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
-// posts/route.ts 에서 사용하던 것과 동일한 로직 복사
 async function getAuthPayload() {
   const jar = await cookies();
   const token = jar.get('accessToken')?.value;
   if (!token) return null;
-  const payload = verifyAccessToken(token);
+  // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 처리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  // sub는 ObjectId 문자열이어야 함 (new ObjectId(payload.sub) 500 방지)
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return null;
   return payload ?? null;
 }
 
@@ -28,7 +36,8 @@ async function resolveDisplayName(payload: any | null): Promise<string> {
   let displayName: string | null = null;
 
   try {
-    if (payload?.sub) {
+    // getAuthPayload에서 sub(ObjectId) 유효성은 보장되지만, 방어적으로 한 번 더 체크
+    if (payload?.sub && ObjectId.isValid(String(payload.sub))) {
       const u = await db.collection('users').findOne({
         _id: new ObjectId(String(payload.sub)),
       });
@@ -163,7 +172,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',
       },
-    }
+    },
   );
 }
 
@@ -189,7 +198,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
-  const bodyRaw = await req.json();
+  // 깨진 JSON이면 throw → 500 방지 (400으로 정리)
+  let bodyRaw: unknown;
+  try {
+    bodyRaw = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+  }
   const parsed = createCommentSchema.safeParse(bodyRaw);
   if (!parsed.success) {
     // logInfo({
@@ -257,7 +272,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     {
       $inc: { commentsCount: 1 },
       $set: { updatedAt: new Date() },
-    }
+    },
   );
 
   // logInfo({
@@ -275,6 +290,6 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',
       },
-    }
+    },
   );
 }

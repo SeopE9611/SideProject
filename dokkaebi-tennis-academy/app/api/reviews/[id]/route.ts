@@ -44,13 +44,21 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload?.sub) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+  if (!token) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+  // 토큰 파손/만료 throw 방어
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
 
   const db = await getDb();
   const _id = new ObjectId(id);
 
-  const me = new ObjectId(String(payload.sub));
+  const me = new ObjectId(subStr);
   const role = payload?.role;
 
   const doc = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, status: 1 } });
@@ -69,8 +77,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     photos: z.array(z.string()).max(5).optional(),
   });
 
-  const body = PatchSchema.parse(await req.json());
-  if (!('content' in body) && !('rating' in body) && !('status' in body) && !('photos' in body)) {
+  // 깨진 JSON이면 throw → 500 방지
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    return NextResponse.json({ message: 'invalid_json' }, { status: 400 });
+  }
+
+  // zod parse(throw) 대신 safeParse로 400 응답 정리
+  const parsed = PatchSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ message: 'validation_error', details: parsed.error.issues }, { status: 400 });
+  }
+  const body = parsed.data;
+
+  // visibility만 보낸 케이스도 변경으로 인정해야 함(기존: no changes로 막힐 수 있음)
+  if (!('content' in body) && !('rating' in body) && !('status' in body) && !('visibility' in body) && !('photos' in body)) {
     return NextResponse.json({ message: 'no changes' }, { status: 400 });
   }
 
@@ -92,7 +115,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   await db.collection('reviews').updateOne({ _id }, { $set });
 
   // 상품 집계 갱신
-  if (doc.productId && (body.rating !== undefined || body.status)) {
+  // visibility로 status가 바뀐 경우도 집계에 영향(visible만 집계)
+  if (doc.productId && (body.rating !== undefined || body.status || body.visibility)) {
     await updateProductRatingSummary(db, doc.productId);
   }
 
@@ -105,8 +129,17 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload?.sub) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+  if (!token) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+  // 토큰 파손/만료로 verifyAccessToken이 throw되어도 500이 아니라 401로 정리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  // sub(ObjectId) 유효성 보장 (new ObjectId에서 500 방지)
+  if (!subStr || !ObjectId.isValid(subStr)) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
 
   const db = await getDb();
   const _id = new ObjectId(id);
@@ -135,7 +168,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
         type: { $in: ['review_reward_product', 'review_reward_service'] },
         $or: [{ refKey: earnRefKey }, { 'ref.reviewId': _id }],
       },
-      { projection: { amount: 1, type: 1, refKey: 1 } }
+      { projection: { amount: 1, type: 1, refKey: 1 } },
     );
 
     if (earned && typeof (earned as any).amount === 'number' && (earned as any).amount > 0) {
@@ -165,8 +198,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload?.sub) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+  if (!token) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+  // 토큰 파손/만료 throw 방어
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
 
   const db = await getDb();
   const _id = new ObjectId(id);
@@ -174,7 +215,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const review = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1, rating: 1, status: 1, content: 1, createdAt: 1, helpfulCount: 1, photos: 1 } });
   if (!review) return NextResponse.json({ message: 'not found' }, { status: 404 });
 
-  const me = String(payload.sub);
+  const me = subStr;
   const isOwner = String(review.userId) === me;
   const isAdmin = payload?.role === 'admin' || payload?.role === 'ADMIN' || (payload as any)?.isAdmin === true || (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes('admin'));
   if (!isOwner && !isAdmin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });

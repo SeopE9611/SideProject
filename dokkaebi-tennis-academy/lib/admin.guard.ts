@@ -12,11 +12,21 @@ export async function requireAdmin(req: Request): Promise<GuardOk | GuardFail> {
   const at = jar.get('accessToken')?.value;
   if (!at) return { ok: false, res: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }) };
 
-  const payload = verifyAccessToken(at);
-  if (!payload?.sub) return { ok: false, res: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }) };
+  // 만료/파손 토큰에서 verifyAccessToken이 throw 되어도 500이 아니라 401로 정리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(at);
+  } catch {
+    payload = null;
+  }
 
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  // sub는 ObjectId 문자열이어야 함 (new ObjectId에서 500 방지)
+  if (!subStr || !ObjectId.isValid(subStr)) {
+    return { ok: false, res: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }) };
+  }
   const db = await getDb();
-  const admin = await db.collection('users').findOne({ _id: new ObjectId(payload.sub) }, { projection: { _id: 1, email: 1, name: 1, role: 1 } });
+  const admin = await db.collection('users').findOne({ _id: new ObjectId(subStr) }, { projection: { _id: 1, email: 1, name: 1, role: 1 } });
   if (!admin || admin.role !== 'admin') {
     return { ok: false, res: NextResponse.json({ message: 'Forbidden' }, { status: 403 }) };
   }
