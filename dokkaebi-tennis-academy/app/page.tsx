@@ -291,67 +291,71 @@ export default function Home() {
           router.push('/login?tab=register');
         }}
       />
-      {/* 상단 배너 */}
-      <HeroSlider slides={SLIDES} />
-      {/* 히어로 하단: 문의/광고 배너 4개 */}
-      <section className="mt-3 bp-sm:mt-4 bp-md:mt-5">
-        {/* HeroSlider와 동일한 좌우 여백 규칙을 맞춤 (mx-3/bp-sm/bp-md, bp-lg에서는 꽉 차게) */}
-        <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
-          <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
-            {PROMO_BANNERS.map((b) => {
-              const baseClass =
-                'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';
+      {/* 상단 배너 + 히어로 하단 배너: 동일한 센터링 기준(SiteContainer)으로 묶기 */}
+      <SiteContainer variant="wide" className="px-0">
+        {/* HeroSlider는 내부에서 mx-3/bp-sm:mx-4/bp-md:mx-6/bp-lg:mx-0 를 이미 쓰고 있으므로
+            부모 컨테이너는 px-0로 “이중 패딩”을 제거 */}
+        <HeroSlider slides={SLIDES} />
+        {/* 히어로 하단: 문의/광고 배너 4개 */}
+        <section className="mt-3 bp-sm:mt-4 bp-md:mt-5">
+          {/* HeroSlider와 동일한 좌우 기준선을 유지하려고 같은 mx 규칙을 그대로 적용 */}
+          <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
+            <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
+              {PROMO_BANNERS.map((b) => {
+                const baseClass =
+                  'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';
 
-              const inner = (
-                <>
-                  {b.img ? (
-                    <>
-                      <img src={b.img} alt={b.alt ?? b.label.replace(/\n/g, ' ')} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/0" />
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950" />
-                  )}
+                const inner = (
+                  <>
+                    {b.img ? (
+                      <>
+                        <img src={b.img} alt={b.alt ?? b.label.replace(/\n/g, ' ')} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/0" />
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950" />
+                    )}
 
-                  {/* Hover 시 살짝 어둡게 */}
-                  <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
+                    {/* Hover 시 살짝 어둡게 */}
+                    <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
 
-                  <div className="relative z-10 flex h-full items-center p-4">
-                    <div className={b.img ? 'text-white' : 'text-slate-900 dark:text-white'}>
-                      <div className="text-sm bp-sm:text-base font-bold leading-tight whitespace-pre-line">{b.label}</div>
-                      {/* 이미지가 없는 경우: "텍스트 배너"임을 구분할 수 있게 보조문구를 노출 */}
-                      {!b.img && <div className="mt-1 text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">클릭 시 바로 연결됩니다</div>}
+                    <div className="relative z-10 flex h-full items-center p-4">
+                      <div className={b.img ? 'text-white' : 'text-slate-900 dark:text-white'}>
+                        <div className="text-sm bp-sm:text-base font-bold leading-tight whitespace-pre-line">{b.label}</div>
+                        {/* 이미지가 없는 경우: "텍스트 배너"임을 구분할 수 있게 보조문구를 노출 */}
+                        {!b.img && <div className="mt-1 text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">클릭 시 바로 연결됩니다</div>}
+                      </div>
                     </div>
+                  </>
+                );
+
+                // 내부 이동은 Link, 그 외(tel/http)는 a 태그 사용
+                if (b.href?.startsWith('/')) {
+                  return (
+                    <Link key={b.key} href={b.href} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
+                      {inner}
+                    </Link>
+                  );
+                }
+
+                if (b.href) {
+                  return (
+                    <a key={b.key} href={b.href} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
+                      {inner}
+                    </a>
+                  );
+                }
+
+                return (
+                  <div key={b.key} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
+                    {inner}
                   </div>
-                </>
-              );
-
-              // 내부 이동은 Link, 그 외(tel/http)는 a 태그 사용
-              if (b.href?.startsWith('/')) {
-                return (
-                  <Link key={b.key} href={b.href} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
-                    {inner}
-                  </Link>
                 );
-              }
-
-              if (b.href) {
-                return (
-                  <a key={b.key} href={b.href} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
-                    {inner}
-                  </a>
-                );
-              }
-
-              return (
-                <div key={b.key} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
-                  {inner}
-                </div>
-              );
-            })}
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </SiteContainer>
 
       {/* 빠른 메뉴 */}
       <section className="py-8 bp-sm:py-10 bp-md:py-12">
