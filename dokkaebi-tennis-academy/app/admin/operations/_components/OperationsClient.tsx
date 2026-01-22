@@ -2,9 +2,9 @@
 
 import useSWR from 'swr';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Copy, Eye, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Copy, Eye, Search } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -76,6 +76,96 @@ function statusColor(kind: Kind, label: string) {
   return rentalStatusColors[label] ?? 'bg-gray-500/10 text-gray-600';
 }
 
+// 그룹(묶음) 만들기 유틸
+// - 연결된 건을 "한 묶음"으로 묶어서 운영자가 한눈에 인지하게 하는 목적
+// - 그룹 키는 "앵커(주문/대여)" 기준으로 통일
+// =========================
+type OpGroup = {
+  key: string;
+  anchor: OpItem; // 대표(앵커) row: order > rental > application 우선
+  createdAt: string | null; // 그룹 최신 시간(정렬/표시용)
+  items: OpItem[]; // anchor 포함
+  kinds: Kind[]; // 그룹에 포함된 종류(주문/신청서/대여)
+};
+
+const KIND_PRIORITY: Record<Kind, number> = {
+  order: 0,
+  rental: 1,
+  stringing_application: 2,
+};
+
+function groupKeyOf(it: OpItem): string {
+  // 주문/대여는 자기 자신이 앵커
+  if (it.kind === 'order') return `order:${it.id}`;
+  if (it.kind === 'rental') return `rental:${it.id}`;
+
+  // 신청서는 연결된 "주문/대여"를 앵커로
+  const rel = it.related;
+  if (rel?.kind === 'order') return `order:${rel.id}`;
+  if (rel?.kind === 'rental') return `rental:${rel.id}`;
+  // 단독 신청서
+  return `app:${it.id}`;
+}
+
+function pickAnchor(groupItems: OpItem[]): OpItem {
+  // 대표(앵커)는 운영자가 "정산/관리 기준"으로 가장 자연스럽게 보는 문서 우선
+  // - 주문이 있으면 주문
+  // - 없으면 대여
+  // - 그래도 없으면 신청서(단독 신청)
+  return groupItems.find((x) => x.kind === 'order') ?? groupItems.find((x) => x.kind === 'rental') ?? groupItems[0]!;
+}
+
+function buildGroups(list: OpItem[]): OpGroup[] {
+  // list는 API에서 최신순으로 내려오는 전제.
+  // → "처음 등장한 그룹" 순서를 유지하면 그룹 정렬이 자연스럽게 최신순이 됨.
+  const map = new Map<string, OpItem[]>();
+  const orderKeys: string[] = [];
+
+  for (const it of list) {
+    const key = groupKeyOf(it);
+    if (!map.has(key)) {
+      map.set(key, []);
+      orderKeys.push(key);
+    }
+    map.get(key)!.push(it);
+  }
+
+  return orderKeys.map((key) => {
+    const items = map.get(key)!;
+    items.sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
+
+    const anchor = pickAnchor(items);
+    const ts = Math.max(...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)));
+    const createdAt = ts ? new Date(ts).toISOString() : null;
+
+    const kinds = Array.from(new Set(items.map((x) => x.kind))).sort((a, b) => KIND_PRIORITY[a] - KIND_PRIORITY[b]);
+
+    return { key, anchor, createdAt, items, kinds };
+  });
+}
+
+/**
+ * 그룹 금액 표시 원칙(매출/정산 사고 방지)
+ * - 그룹(연결됨)에서는 "대표 1개 금액"만 보여주면 누락/중복 해석 위험이 큼
+ * - 그래서 그룹 row에서 "종류별 금액을 각각 1번만" 노출한다.
+ * - 합계(주문+신청서…)는 시스템 정책이 확정되기 전까지 계산/표시하지 않는다.
+ */
+function pickOnePerKind(items: OpItem[]) {
+  const byKind = new Map<Kind, OpItem>();
+  for (const it of items) {
+    const cur = byKind.get(it.kind);
+    if (!cur) {
+      byKind.set(it.kind, it);
+      continue;
+    }
+    // 같은 kind가 여러 개면, createdAt 최신 것을 대표로(안전한 기본값)
+    const t1 = cur.createdAt ? new Date(cur.createdAt).getTime() : 0;
+    const t2 = it.createdAt ? new Date(it.createdAt).getTime() : 0;
+    if (t2 >= t1) byKind.set(it.kind, it);
+  }
+  return (['order', 'rental', 'stringing_application'] as Kind[]).map((k) => byKind.get(k)).filter(Boolean) as OpItem[];
+}
+
 export default function OperationsClient() {
   const router = useRouter();
   const pathname = usePathname();
@@ -84,6 +174,7 @@ export default function OperationsClient() {
   const [q, setQ] = useState('');
   const [kind, setKind] = useState<'all' | Kind>('all');
   const [page, setPage] = useState(1);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const pageSize = 50;
 
   // 1) 최초 1회: URL → 상태 주입(새로고침 대응)
@@ -96,6 +187,11 @@ export default function OperationsClient() {
     if (!Number.isNaN(p) && p > 0) setPage(p);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
+  useEffect(() => {
+    setOpenGroups({});
+  }, [q, kind, page]);
 
   // 2) 상태 → URL 동기화(디바운스)
   useEffect(() => {
@@ -126,11 +222,21 @@ export default function OperationsClient() {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
+  // 리스트를 "그룹(묶음)" 단위로 변환
+  const groups = useMemo(() => buildGroups(items), [items]);
+
   function reset() {
     setQ('');
     setKind('all');
     setPage(1);
     router.replace(pathname);
+  }
+
+  function toggleGroup(key: string) {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   }
 
   async function copy(text: string) {
@@ -232,65 +338,190 @@ export default function OperationsClient() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((it) => (
-                  <TableRow key={`${it.kind}-${it.id}`}>
-                    <TableCell className={td}>
-                      <div className="flex flex-col gap-1">
-                        <Badge className={cn(badgeBase, badgeSizeSm, kindColor(it.kind))}>{kindLabel(it.kind)}</Badge>
-                        <Badge className={cn(badgeBase, badgeSizeSm, it.isIntegrated ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-500/10 text-slate-600')}>{it.isIntegrated ? '통합' : '단독'}</Badge>
-                      </div>
-                    </TableCell>
+                {groups.map((g) => {
+                  const isGroup = g.items.length > 1;
+                  const isOpen = !!openGroups[g.key];
 
-                    <TableCell className={td}>
-                      <div className="space-y-1">
-                        <div className="font-medium">{shortenId(it.id)}</div>
-                        <div className="text-xs text-muted-foreground line-clamp-1">{it.title}</div>
-                      </div>
-                    </TableCell>
+                  // anchor 제외한 하위 아이템들(펼쳤을 때 표시)
+                  const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
+                  const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
 
-                    <TableCell className={td}>
-                      <div className="space-y-1">
-                        <div className="font-medium">{it.customer?.name || '-'}</div>
-                        <div className="text-xs text-muted-foreground">{it.customer?.email || '-'}</div>
-                      </div>
-                    </TableCell>
+                  return (
+                    <Fragment key={g.key}>
+                      {/* 그룹 대표(앵커) Row */}
+                      <TableRow className={cn(isGroup && 'bg-muted/30')}>
+                        <TableCell className={td}>
+                          <div className="flex flex-col gap-1">
+                            {/* 그룹에 포함된 종류들(주문/신청서/대여) */}
+                            <div className="flex flex-wrap gap-1">
+                              {g.kinds.map((k) => (
+                                <Badge key={k} className={cn(badgeBase, badgeSizeSm, kindColor(k))}>
+                                  {kindLabel(k)}
+                                </Badge>
+                              ))}
+                            </div>
 
-                    <TableCell className={td}>{formatKST(it.createdAt)}</TableCell>
+                            {/* 통합/단독 + (그룹 건수) */}
+                            <div className="flex flex-wrap gap-1">
+                              <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-emerald-500/10 text-emerald-600' : g.anchor.isIntegrated ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-500/10 text-slate-600')}>
+                                {isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독'}
+                              </Badge>
+                              {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>{g.items.length}건</Badge>}
+                            </div>
+                          </div>
+                        </TableCell>
 
-                    <TableCell className={td}>
-                      <Badge className={cn(badgeBase, badgeSizeSm, statusColor(it.kind, it.statusLabel))}>{it.statusLabel}</Badge>
-                    </TableCell>
+                        <TableCell className={td}>
+                          <div className="flex items-start gap-2">
+                            {/* 펼치기 토글: 그룹일 때만 */}
+                            {isGroup ? (
+                              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleGroup(g.key)} aria-label={isOpen ? '그룹 접기' : '그룹 펼치기'}>
+                                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                              </Button>
+                            ) : (
+                              <div className="h-8 w-8" />
+                            )}
+                            <div className="space-y-1 min-w-0">
+                              <div className="font-medium">{shortenId(g.anchor.id)}</div>
+                              <div className="text-xs text-muted-foreground line-clamp-1">
+                                {g.anchor.title}
+                                {isGroup ? ` 외 ${g.items.length - 1}건` : ''}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
 
-                    <TableCell className={td}>
-                      {it.paymentLabel ? <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[it.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{it.paymentLabel}</Badge> : <span className="text-xs text-muted-foreground">-</span>}
-                    </TableCell>
+                        <TableCell className={td}>
+                          <div className="space-y-1">
+                            <div className="font-medium">{g.anchor.customer?.name || '-'}</div>
+                            <div className="text-xs text-muted-foreground">{g.anchor.customer?.email || '-'}</div>
+                          </div>
+                        </TableCell>
 
-                    <TableCell className={cn(td, 'font-semibold')}>{won(it.amount)}</TableCell>
+                        <TableCell className={td}>{formatKST(g.createdAt)}</TableCell>
 
-                    <TableCell className={td}>
-                      {it.related ? (
-                        <Link href={it.related.href} className="text-xs text-blue-600 hover:underline">
-                          연결 이동
-                        </Link>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
+                        <TableCell className={td}>
+                          <Badge className={cn(badgeBase, badgeSizeSm, statusColor(g.anchor.kind, g.anchor.statusLabel))}>{g.anchor.statusLabel}</Badge>
+                        </TableCell>
 
-                    <TableCell className={cn(td, 'text-right')}>
-                      <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => copy(it.id)}>
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button asChild size="sm" variant="outline">
-                          <Link href={it.href}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        <TableCell className={td}>
+                          {g.anchor.paymentLabel ? (
+                            <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{g.anchor.paymentLabel}</Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+
+                        <TableCell className={cn(td, 'font-semibold')}>
+                          {isGroup ? (
+                            <div className="space-y-1">
+                              {pickOnePerKind(g.items).map((it) => (
+                                <div key={`${it.kind}:${it.id}`} className="flex items-center justify-between gap-3">
+                                  <span className="text-xs text-muted-foreground">{kindLabel(it.kind)}</span>
+                                  <span>{won(it.amount)}</span>
+                                </div>
+                              ))}
+                              <div className="text-[11px] text-muted-foreground">* 연결된 건은 합산하지 않고 종류별로 1회만 표시합니다.</div>
+                            </div>
+                          ) : (
+                            <div>{won(g.anchor.amount)}</div>
+                          )}
+                        </TableCell>
+
+                        <TableCell className={td}>
+                          {g.anchor.related ? (
+                            <Link href={g.anchor.related.href} className="text-xs text-blue-600 hover:underline">
+                              연결 이동
+                            </Link>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+
+                        <TableCell className={cn(td, 'text-right')}>
+                          <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="outline" onClick={() => copy(g.anchor.id)}>
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button asChild size="sm" variant="outline">
+                              <Link href={g.anchor.href}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+
+                      {/* 그룹 하위 Row(펼쳤을 때) */}
+                      {isGroup &&
+                        isOpen &&
+                        children.map((it) => (
+                          <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-muted/10">
+                            <TableCell className={td}>
+                              <Badge className={cn(badgeBase, badgeSizeSm, kindColor(it.kind))}>{kindLabel(it.kind)}</Badge>
+                            </TableCell>
+
+                            <TableCell className={td}>
+                              <div className="space-y-1 pl-10">
+                                <div className="font-medium">{shortenId(it.id)}</div>
+                                <div className="text-xs text-muted-foreground line-clamp-1">{it.title}</div>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className={td}>
+                              <div className="space-y-1">
+                                <div className="font-medium">{it.customer?.name || '-'}</div>
+                                <div className="text-xs text-muted-foreground">{it.customer?.email || '-'}</div>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className={td}>{formatKST(it.createdAt)}</TableCell>
+
+                            <TableCell className={td}>
+                              <Badge className={cn(badgeBase, badgeSizeSm, statusColor(it.kind, it.statusLabel))}>{it.statusLabel}</Badge>
+                            </TableCell>
+
+                            <TableCell className={td}>
+                              {it.paymentLabel ? (
+                                <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[it.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{it.paymentLabel}</Badge>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+
+                            <TableCell className={cn(td, 'font-semibold')}>
+                              {/* 그룹에서는 상단(대표 row)에서 종류별 금액을 1회만 보여주므로
+                                  하위 row에서는 금액을 반복 노출하지 않습니다(중복 해석 방지). */}
+                              <span className="text-xs text-muted-foreground">그룹 상단에 표시</span>
+                            </TableCell>
+
+                            <TableCell className={td}>
+                              {it.related ? (
+                                <Link href={it.related.href} className="text-xs text-blue-600 hover:underline">
+                                  연결 이동
+                                </Link>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+
+                            <TableCell className={cn(td, 'text-right')}>
+                              <div className="flex justify-end gap-2">
+                                <Button size="sm" variant="outline" onClick={() => copy(it.id)}>
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                                <Button asChild size="sm" variant="outline">
+                                  <Link href={it.href}>
+                                    <Eye className="h-4 w-4" />
+                                  </Link>
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </Fragment>
+                  );
+                })}
 
                 {items.length === 0 && (
                   <TableRow>

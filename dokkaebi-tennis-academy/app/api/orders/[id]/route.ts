@@ -62,13 +62,25 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
-    const payload = token ? verifyAccessToken(token) : null;
+    // accessToken이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 취급
+    let payload: any = null;
+    try {
+      payload = token ? verifyAccessToken(token) : null;
+    } catch {
+      payload = null;
+    }
 
     const isOwner = payload?.sub === order.userId?.toString();
     const isAdmin = payload?.role === 'admin';
     // console.log('raw cookie header:', _req.headers.get('cookie'));
     const oax = cookieStore.get('orderAccessToken')?.value ?? null;
-    const guestClaims = oax ? verifyOrderAccessToken(oax) : null;
+    // orderAccessToken도 깨졌을 수 있으므로 throw 방어
+    let guestClaims: any = null;
+    try {
+      guestClaims = oax ? verifyOrderAccessToken(oax) : null;
+    } catch {
+      guestClaims = null;
+    }
     const isGuestOrder = !order.userId || (order as any).guest === true;
     const guestOwnsOrder = !!(isGuestOrder && guestClaims && guestClaims.orderId === String(order._id));
 
@@ -77,17 +89,31 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     }
     const enrichedItems = await Promise.all(
       (order.items as { productId: any; quantity: number; kind?: 'product' | 'racket' }[]).map(async (item) => {
-        const id = item.productId instanceof ObjectId ? item.productId : new ObjectId(item.productId);
         const kind = item.kind ?? 'product';
+
+        // productId가 오염/레거시 데이터일 때 new ObjectId에서 500이 나지 않도록 방어
+        const raw = item.productId;
+        const idStr = raw instanceof ObjectId ? raw.toString() : String(raw ?? '');
+        const oid = raw instanceof ObjectId ? raw : ObjectId.isValid(idStr) ? new ObjectId(idStr) : null;
+        if (!oid) {
+          return {
+            id: idStr,
+            name: kind === 'racket' ? '알 수 없는 라켓' : '알 수 없는 상품',
+            price: 0,
+            mountingFee: 0,
+            quantity: item.quantity,
+            kind,
+          };
+        }
 
         // product
         if (kind === 'product') {
-          const prod = await db.collection('products').findOne({ _id: id });
+          const prod = await db.collection('products').findOne({ _id: oid });
 
           if (!prod) {
-            console.warn(`Product not found:`, id);
+            console.warn(`상품을 찾을 수 없음:`, oid);
             return {
-              id: id.toString(),
+              id: oid.toString(),
               name: '알 수 없는 상품',
               price: 0,
               mountingFee: 0,
@@ -107,12 +133,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         }
 
         // racket
-        const racket = await db.collection('used_rackets').findOne({ _id: id });
+        const racket = await db.collection('used_rackets').findOne({ _id: oid });
 
         if (!racket) {
-          console.warn(`Racket not found:`, id);
+          console.warn(`라켓으 찾을 수 없음:`, oid);
           return {
-            id: id.toString(),
+            id: oid.toString(),
             name: '알 수 없는 라켓',
             price: 0,
             mountingFee: 0, // 라켓 자체는 장착비 없음
@@ -122,7 +148,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         }
 
         return {
-          id: id.toString(),
+          id: oid.toString(),
           name: `${racket.brand} ${racket.model}`.trim(),
           price: racket.price ?? 0,
           mountingFee: 0,
@@ -253,7 +279,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   try {
     // 파라미터/바디 파싱
     const { id } = params; // 동적 세그먼트
-    const body = await request.json(); // 요청 바디
+    // 깨진 JSON이면 throw → 500 방지 (400으로 정리)
+    let body: any = null;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ ok: false, message: 'INVALID_JSON' }, { status: 400 });
+    }
     const { status, cancelReason, cancelReasonDetail, payment, deliveryRequest, customer } = body;
 
     if (!ObjectId.isValid(id)) {
@@ -278,7 +310,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const rt = jar.get('refreshToken')?.value;
 
     // access 우선
-    let user: any = at ? verifyAccessToken(at) : null;
+    // accessToken이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 인증 실패로 정리
+    let user: any = null;
+    try {
+      user = at ? verifyAccessToken(at) : null;
+    } catch {
+      user = null;
+    }
 
     // access 만료 시 refresh 보조 (쿠키 기반 JWT)
     if (!user && rt) {
@@ -384,13 +422,17 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // 결제 금액 수정
     if (payment) {
       const { total } = payment;
+      const totalNum = Number(total);
+      if (!Number.isFinite(totalNum) || totalNum < 0) {
+        return NextResponse.json({ ok: false, message: 'INVALID_PAYMENT_TOTAL' }, { status: 400 });
+      }
       const historyEntry = {
         status: '결제금액수정',
         date: new Date(),
-        description: `결제 금액이 ${Number(total).toLocaleString()}원(으)로 수정되었습니다.`,
+        description: `결제 금액이 ${totalNum.toLocaleString()}원(으)로 수정되었습니다.`,
       };
 
-      await orders.updateOne({ _id }, { $set: { totalPrice: total }, $push: { history: historyEntry } } as any);
+      await orders.updateOne({ _id }, { $set: { totalPrice: totalNum }, $push: { history: historyEntry } } as any);
 
       return NextResponse.json({ ok: true });
     }
@@ -418,35 +460,48 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     };
 
     const __prevStatus = String(existing.status); // 기존 문서의 상태
-    const __nextStatus = String(status); // 이번에 바꾸려는 상태
+    // status 유효성(현재 프로젝트에서 사용하는 상태만 허용)
+    if (typeof status !== 'string' || status.trim().length === 0) {
+      return new NextResponse('상태 값이 필요합니다.', { status: 400 });
+    }
+    const nextStatus = status.trim();
+    const ALLOWED_STATUS = new Set(['대기중', '결제완료', '배송중', '배송완료', '취소', '환불']);
+    if (!ALLOWED_STATUS.has(nextStatus)) {
+      return new NextResponse('허용되지 않은 상태 값입니다.', { status: 400 });
+    }
+
+    const __nextStatus = nextStatus; // 이번에 바꾸려는 상태
     const __isBackward = (__phaseIndex[__nextStatus] ?? 0) < (__phaseIndex[__prevStatus] ?? 0);
 
     // 상태 변경 분기
     // - paymentStatus 계산/정규화를 한 곳에서 수행
     // - 이 시점에서만 패스 발급 멱등 트리거
-    if (!status) {
-      return new NextResponse('상태 값이 필요합니다.', { status: 400 });
-    }
-
-    const updateFields: Record<string, any> = { status };
+    const updateFields: Record<string, any> = { status: nextStatus };
 
     // 취소면 사유/상세 저장
-    if (status === '취소') {
-      updateFields.cancelReason = cancelReason;
-      if (cancelReason === '기타') {
-        updateFields.cancelReasonDetail = cancelReasonDetail || '';
+    if (nextStatus === '취소') {
+      const reason = typeof cancelReason === 'string' ? cancelReason.trim() : '';
+      if (!reason) {
+        return new NextResponse('취소 사유가 필요합니다.', { status: 400 });
+      }
+      updateFields.cancelReason = reason;
+      if (reason === '기타') {
+        const detail = typeof cancelReasonDetail === 'string' ? cancelReasonDetail.trim() : '';
+        if (!detail) return new NextResponse('기타 사유 상세가 필요합니다.', { status: 400 });
+        if (detail.length > 200) return new NextResponse('기타 사유 상세는 200자 이내로 입력해주세요.', { status: 400 });
+        updateFields.cancelReasonDetail = detail;
       }
     }
 
     // 결제상태 정규화
     let newPaymentStatus: string | undefined = undefined;
-    if (['결제완료', '배송중', '배송완료'].includes(status)) {
+    if (['결제완료', '배송중', '배송완료'].includes(nextStatus)) {
       newPaymentStatus = '결제완료';
-    } else if (status === '대기중') {
+    } else if (nextStatus === '대기중') {
       newPaymentStatus = '결제대기';
-    } else if (status === '취소') {
+    } else if (nextStatus === '취소') {
       newPaymentStatus = '결제취소';
-    } else if (status === '환불') {
+    } else if (nextStatus === '환불') {
       newPaymentStatus = '환불';
     }
     if (newPaymentStatus) {
@@ -462,7 +517,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
           : `주문 상태가 '${__nextStatus}'(으)로 변경되었습니다.`;
 
     const historyEntry = {
-      status,
+      status: nextStatus,
       date: new Date(),
       description,
     };

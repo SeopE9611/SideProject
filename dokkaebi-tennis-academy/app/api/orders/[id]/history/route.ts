@@ -14,10 +14,20 @@ interface HistoryEvent {
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
 
+  // id 유효성: new ObjectId(id)에서 throw로 500 나는 것 방지
+  if (!ObjectId.isValid(id)) {
+    return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
+  }
+  const orderId = new ObjectId(id);
+
   // 쿼리 파라미터 추출 (NextRequest의 req.url 사용)
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const limit = parseInt(searchParams.get('limit') || '5', 10);
+
+  // NaN 방어 + 범위 클램프(기존 기본값 유지: page=1, limit=5)
+  const pageRaw = parseInt(searchParams.get('page') || '1', 10);
+  const limitRaw = parseInt(searchParams.get('limit') || '5', 10);
+  const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
+  const limit = Number.isFinite(limitRaw) ? Math.min(50, Math.max(1, limitRaw)) : 5;
   const skip = (page - 1) * limit;
 
   // MongoDB 연결
@@ -25,11 +35,17 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   const db = client.db();
 
   // 주문 전체 정보 조회
-  const fullOrder = await db.collection('orders').findOne({ _id: new ObjectId(id) });
+  const fullOrder = await db.collection('orders').findOne({ _id: orderId });
 
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
+  // 토큰이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 "인증 없음"으로 처리
+  let payload: any = null;
+  try {
+    payload = token ? verifyAccessToken(token) : null;
+  } catch {
+    payload = null;
+  }
 
   if (!fullOrder) {
     return new NextResponse('주문을 찾을 수 없습니다.', { status: 404 });

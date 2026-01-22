@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { verifyAccessToken } from '@/lib/auth.utils';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -10,6 +14,24 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   }
   const doc = await db.collection('rental_orders').findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+
+  /**
+   * 권한 가드(회원 대여건만)
+   * - rental.userId가 있는 문서: 소유자/관리자만 조회 가능
+   * - rental.userId가 없는 문서(비회원): 기존 흐름 유지(조회 허용)
+   */
+  if (doc.userId) {
+    const jar = await cookies();
+    const at = jar.get('accessToken')?.value;
+    const payload = at ? verifyAccessToken(at) : null;
+    const ownerId = String(doc.userId);
+    const isOwner = String(payload?.sub ?? '') === ownerId;
+    const isAdmin = payload?.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return NextResponse.json({ message: 'FORBIDDEN' }, { status: 403 });
+    }
+  }
 
   // 고객 정보
   let user: { name?: string; email?: string; phone?: string } | null = null;

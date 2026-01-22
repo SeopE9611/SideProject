@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
+import { z } from 'zod';
 
 // 배송 방법 한글 매핑
 const shippingMethodMap: Record<string, string> = {
@@ -13,18 +14,45 @@ const shippingMethodMap: Record<string, string> = {
   visit: '방문 수령',
 };
 
+/**
+ * PATCH body 최소 스키마
+ * - 기존 로직(추가 검증/정규화)은 그대로 두고,
+ *   "깨진 JSON / 필드 누락"만 조기에 400으로 정리하기 위한 최소 가드.
+ */
+const BodySchema = z
+  .object({
+    shippingMethod: z.string().min(1),
+    estimatedDate: z.string().min(1),
+    courier: z.any().optional(),
+    trackingNumber: z.any().optional(),
+  })
+  .passthrough();
+
 // PATCH 메서드 정의
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   //  인증 처리
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
-  if (!token) return new NextResponse('Unauthorized', { status: 401 });
+  if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  // 토큰이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 401로 정리
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    payload = null;
+  }
+  if (!payload) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  // 관리자 전용 가드 (이 API는 admin 배송정보 업데이트 화면에서 호출됨)
+  if (payload?.role !== 'admin') return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
 
-  const payload = verifyAccessToken(token);
-  if (!payload) return new NextResponse('Unauthorized', { status: 401 });
   try {
     // URL 파라미터에서 주문 ID 추출
     const { id } = await context.params;
+    // ObjectId 유효성(잘못된 id → 500 방지)
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
+    }
+    const orderId = new ObjectId(id);
 
     // MongoDB 클라이언트 연결 (clientPromise는 연결 재사용 지원)
     // const client = await clientPromise;
@@ -32,11 +60,22 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     const db = (await clientPromise).db();
 
     // 요청 Body(JSON)를 파싱하여 가져오고 배송 방법과 예상 수령일, 운송장 정보를 Body에서 구조분해 할당
-    const { shippingMethod, estimatedDate, courier, trackingNumber } = await req.json();
+    let body: any = null;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ message: 'INVALID_JSON' }, { status: 400 });
+    }
+    const parsed = BodySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ message: 'INVALID_BODY' }, { status: 400 });
+    }
+
+    const { shippingMethod, estimatedDate, courier, trackingNumber } = parsed.data;
     const normalizedMethod = normalizeOrderShippingMethod(shippingMethod);
 
     const order = await db.collection('orders').findOne({
-      _id: new ObjectId(id),
+      _id: orderId,
     });
     if (!order) {
       return NextResponse.json({ error: '주문을 찾을 수 없습니다.' }, { status: 404 });
@@ -87,11 +126,11 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
         trackingNumber: String(trackingNumber).trim(),
       };
 
-      updateResult = await db.collection('orders').updateOne({ _id: new ObjectId(id) }, { $set: setOps });
+      updateResult = await db.collection('orders').updateOne({ _id: orderId }, { $set: setOps });
     } else {
       // 택배배송이 아니면 invoice 전체 필드 제거
       updateResult = await db.collection('orders').updateOne(
-        { _id: new ObjectId(id) },
+        { _id: orderId },
         {
           $set: setOps,
           $unset: { 'shippingInfo.invoice': '' },
@@ -100,7 +139,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     }
 
     // 처리 이력
-    await db.collection('orders').updateOne({ _id: new ObjectId(id) }, {
+    await db.collection('orders').updateOne({ _id: orderId }, {
       $push: {
         history: {
           status: '배송정보변경',
