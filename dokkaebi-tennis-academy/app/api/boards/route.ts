@@ -9,12 +9,29 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { getBoardList } from '@/lib/boards.queries';
 
+/**
+ * 숫자 쿼리 파라미터 파싱(Phase 0 - 500 방지)
+ * - NaN이면 defaultValue 적용
+ * - min/max 범위로 clamp
+ */
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
+
 // 관리자 확인 헬퍼
 async function mustAdmin() {
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
-  const payload = at ? verifyAccessToken(at) : null;
-  return payload && payload.role === 'admin' ? payload : null;
+  // verifyAccessToken은 throw 가능 → 500 방지를 위해 try/catch로 401 흐름 유지
+  if (!at) return null;
+  try {
+    const payload = verifyAccessToken(at);
+    return payload && payload.role === 'admin' ? payload : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -134,7 +151,7 @@ const createSchema = z.object({
         mime: z.string().optional(),
         width: z.number().optional(),
         height: z.number().optional(),
-      })
+      }),
     )
     .optional(),
 });
@@ -164,8 +181,10 @@ export async function GET(req: NextRequest) {
   const typeParam = url.searchParams.get('type');
   const rawCategory = url.searchParams.get('category'); // string | null
   const productId = url.searchParams.get('productId');
-  const page = Math.max(1, Number(url.searchParams.get('page') || 1));
-  const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
+
+  // NaN 방지: page/limit가 비정상 값이면 기본값으로 안전하게 보정
+  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
+  const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 50 });
 
   // 키워드 검색 파라미터
   const q = url.searchParams.get('q') || url.searchParams.get('keyword') || url.searchParams.get('query') || '';
@@ -225,7 +244,7 @@ export async function GET(req: NextRequest) {
         'CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
         'Vercel-CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
       },
-    }
+    },
   );
 }
 
@@ -236,13 +255,27 @@ export async function POST(req: NextRequest) {
   // 인증
   const token = (await cookies()).get('accessToken')?.value;
 
-  const payload = token ? verifyAccessToken(token) : null;
-  if (!payload) {
+  // verifyAccessToken은 throw 가능 → 500 방지를 위해 try/catch로 401 처리
+  let payload: any = null;
+  if (token) {
+    try {
+      payload = verifyAccessToken(token);
+    } catch {
+      payload = null;
+    }
+  }
+  if (!payload || !payload?.sub) {
     logInfo({ msg: 'boards:post:unauthorized', status: 401, durationMs: stop(), ...meta });
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
   // 입력 검증
-  const bodyRaw = await req.json();
+  let bodyRaw: unknown;
+  try {
+    bodyRaw = await req.json();
+  } catch {
+    // 잘못된 JSON/빈 body 등에서 req.json()이 throw → 400으로 정리
+    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+  }
   const parsed = createSchema.safeParse(bodyRaw);
   if (!parsed.success) {
     logInfo({ msg: 'boards:post:validation_failed', status: 400, durationMs: stop(), extra: { issues: parsed.error.issues }, ...meta });
@@ -259,9 +292,10 @@ export async function POST(req: NextRequest) {
   const db = await getDb();
   let displayName: string | undefined = undefined;
   try {
-    if (payload?.sub) {
-      const u = await db.collection('users').findOne({ _id: new ObjectId(String(payload.sub)) });
-      // @ts-ignore - 런타임 안전
+    // payload.sub → ObjectId 변환 전 선검증(Phase 0 - 500 방지)
+    const subStr = String(payload.sub);
+    if (ObjectId.isValid(subStr)) {
+      const u = await db.collection('users').findOne({ _id: new ObjectId(subStr) });
       displayName = u?.name ?? u?.nickname ?? undefined;
     }
   } catch (_) {}

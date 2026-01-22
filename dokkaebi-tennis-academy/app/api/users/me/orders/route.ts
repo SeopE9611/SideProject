@@ -4,6 +4,17 @@ import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+/**
+ * 숫자 쿼리 파라미터 안전 파싱 (NaN/Infinity 방지)
+ * - 비정상 값이면 defaultValue 적용
+ * - min/max 범위로 clamp
+ */
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
+
 type OrderDoc = {
   _id: ObjectId;
   userId: ObjectId;
@@ -81,19 +92,31 @@ export async function GET(req: NextRequest) {
     if (!token) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
     }
-    const payload = verifyAccessToken(token);
-    if (!payload) {
+    // verifyAccessToken은 throw 가능 → Phase 0: 500 방지(401로 정리)
+    let payload: any = null;
+    try {
+      payload = verifyAccessToken(token);
+    } catch {
+      return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+    }
+    if (!payload?.sub) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
     }
 
     const url = new URL(req.url);
-    const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
-    const limit = Math.min(20, Math.max(1, Number(url.searchParams.get('limit') || '10')));
+    // Query NaN 방지
+    const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
+    const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 20 });
     const skip = (page - 1) * limit;
 
     const client = await clientPromise;
     const db = client.db();
-    const userId = new ObjectId(payload.sub);
+    // payload.sub → ObjectId 변환 전 선검증 (throw → 500 방지)
+    const subStr = String(payload.sub);
+    if (!ObjectId.isValid(subStr)) {
+      return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+    }
+    const userId = new ObjectId(subStr);
 
     // 내 주문 조회 (최신순)
     const [orders, total] = await Promise.all([db.collection<OrderDoc>('orders').find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(), db.collection('orders').countDocuments({ userId })]);
@@ -114,16 +137,18 @@ export async function GET(req: NextRequest) {
 
       // 이 주문에서 리뷰 대상이 될 상품 ID 목록 (문자열로 정규화)
       const productIds = items.map((it) => (it?.productId ? String(it.productId) : null)).filter((v): v is string => !!v);
+      // ObjectId 변환 throw 방지 (비정상 productId는 리뷰 대상에서 제외)
+      const validProductIds = productIds.filter((pid) => ObjectId.isValid(pid));
 
       // 이미 작성한 리뷰 (user+order + 해당 productIds)
       let reviewedSet = new Set<string>();
-      if (productIds.length) {
+      if (validProductIds.length) {
         const reviewed = await db
           .collection('reviews')
           .find({
             userId,
             orderId: order._id,
-            productId: { $in: productIds.map((s) => new ObjectId(s)) },
+            productId: { $in: validProductIds.map((s) => new ObjectId(s)) },
             isDeleted: { $ne: true },
           })
           .project({ productId: 1 })
@@ -131,10 +156,10 @@ export async function GET(req: NextRequest) {
         reviewedSet = new Set(reviewed.map((r: any) => String(r.productId)));
       }
 
-      const unreviewedIds = productIds.filter((pid) => !reviewedSet.has(pid));
+      const unreviewedIds = validProductIds.filter((pid) => !reviewedSet.has(pid));
       const unreviewedCount = unreviewedIds.length;
       const reviewNextTargetProductId = unreviewedIds.length ? unreviewedIds[0] : null;
-      const reviewAllDone = productIds.length > 0 && unreviewedCount === 0;
+      const reviewAllDone = validProductIds.length > 0 && unreviewedCount === 0;
 
       // 총액 계산
       const totalPrice = calcOrderTotal(order);
@@ -189,7 +214,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { items: list, total } satisfies OrderResponse,
-      { headers: { 'Cache-Control': 'no-store' } } // 캐시 금지 (바로 갱신 반영)
+      { headers: { 'Cache-Control': 'no-store' } }, // 캐시 금지 (바로 갱신 반영)
     );
   } catch (err) {
     console.error('ORDER_LIST_ERR', err);
