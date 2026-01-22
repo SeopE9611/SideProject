@@ -37,7 +37,12 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
   bp-lg:h-[520px]        /* ≥1200 */
   w-full flex-[0_0_100%] select-none"
               >
-                <img src={s.img} alt={s.alt ?? `slide-${i + 1}`} className="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="async" />
+                {/* ✅ 원본 비율 유지 + 잘림 방지(cover → contain)
+                    - grid place-items-center: 중앙 정렬
+                    - max-w/max-h: 작은 이미지를 억지로 확대하지 않음(원본 크기 느낌 유지) */}
+                <div className="absolute inset-0 grid place-items-center bg-slate-50 dark:bg-slate-900">
+                  <img src={s.img} alt={s.alt ?? `slide-${i + 1}`} className="max-w-full max-h-full object-contain" loading="eager" decoding="async" />
+                </div>
                 {/* 상단 그라데이션/얇은 라인으로 품질감 */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-black/5 to-transparent" />
                 {s.caption && (
