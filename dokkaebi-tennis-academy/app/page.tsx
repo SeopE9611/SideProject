@@ -35,29 +35,60 @@ type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
 // 상단 배너 슬라이드 데이터
 const SLIDES = [
   {
-    img: 'https://www.nexentire.com/webzine/201803/kr/assets/images/contents/009_01.png',
+    img: 'dokkaebi(1).jpg',
     alt: '이벤트',
     href: '/board/notice',
     caption: '신규 입고 & 이벤트',
   },
   {
-    img: 'https://media.istockphoto.com/id/610007642/photo/detail-of-tennis-racket-in-the-stringing-machine.jpg?s=612x612&w=0&k=20&c=AFlkWluNV3MciJWcOrFwQABV6xLGXSAbFic5hZ6ixdM=',
+    img: 'dokkaebi(1).jpg',
     alt: '서비스',
     href: '/services',
     caption: '장착 서비스 예약',
   },
   {
-    img: 'https://media.babolat.com/image/upload/f_auto,q_auto,c_scale,w_692,h_364/v1738055514/Web_content/Tennis/Secondary/2025/Pure-Drive/bags_692x364.png',
+    img: 'dokkaebi(1).jpg',
     alt: '패키지',
     href: '/services/packages',
     caption: '스트링 패키지',
   },
   {
-    img: 'https://nickrivettsport.co.uk/cdn/shop/products/image_fe9519a6-64c4-4fe8-8bfb-e99e9a5f8e60.jpg?v=1633608123&width=1445',
+    img: 'dokkaebi(1).jpg',
     alt: '라켓과 스트링 디테일',
     href: '/products',
     caption: '추천 스트링',
   },
+];
+
+type PromoBanner = {
+  key: string;
+  /**
+   * 줄바꿈(\n) 포함 가능
+   * 예) "광고 문의\n010-1234-5678"
+   */
+  label: string;
+  /**
+   * 배너 이미지(없으면 텍스트 배너로 렌더)
+   * - 내부 파일이면 /public 경로를 사용하세요. 예) "/banners/ad-1.jpg"
+   * - 외부 URL도 가능 (현재 HeroSlider가 <img>를 사용 중)
+   */
+  img?: string;
+  alt?: string;
+  /**
+   * 클릭 동작
+   * - 내부 이동: "/services" 같은 path
+   * - 전화 연결: "tel:01012345678"
+   */
+  href?: string;
+};
+
+// 히어로 하단 문의/광고 배너(4개 고정)
+// TODO: 실제 운영 값으로 교체하세요 (전화번호/이미지/링크)
+const PROMO_BANNERS: PromoBanner[] = [
+  { key: 'teacher', label: '광고 문의\n010-0000-0000', href: 'tel:01000000000' },
+  { key: 'stringing', label: '광고 문의\n010-0000-0000', href: 'tel:01000000000' },
+  { key: 'used', label: '광고 문의\n010-0000-0000', href: 'tel:01000000000' },
+  { key: 'ads', label: '광고 문의\n010-0000-0000', href: 'tel:01000000000' },
 ];
 
 export default function Home() {
@@ -74,7 +105,7 @@ export default function Home() {
       startDate: SIGNUP_BONUS_START_DATE || null,
       endDate: SIGNUP_BONUS_END_DATE || null,
     }),
-    []
+    [],
   );
 
   // 마운트 후 URL에서 초깃값 한 번만 읽기
@@ -186,7 +217,7 @@ export default function Home() {
         brand: stringBrandLabel(p.brand),
         href: `/products/${p._id}`,
       })),
-    [premiumItemsSource]
+    [premiumItemsSource],
   );
 
   const [usedRackets, setUsedRackets] = useState<{ id: string; brand: string; model: string; price: number; images?: string[] }[]>([]);
@@ -262,6 +293,65 @@ export default function Home() {
       />
       {/* 상단 배너 */}
       <HeroSlider slides={SLIDES} />
+      {/* 히어로 하단: 문의/광고 배너 4개 */}
+      <section className="mt-3 bp-sm:mt-4 bp-md:mt-5">
+        {/* HeroSlider와 동일한 좌우 여백 규칙을 맞춤 (mx-3/bp-sm/bp-md, bp-lg에서는 꽉 차게) */}
+        <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
+          <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
+            {PROMO_BANNERS.map((b) => {
+              const baseClass =
+                'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';
+
+              const inner = (
+                <>
+                  {b.img ? (
+                    <>
+                      <img src={b.img} alt={b.alt ?? b.label.replace(/\n/g, ' ')} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/0" />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950" />
+                  )}
+
+                  {/* Hover 시 살짝 어둡게 */}
+                  <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
+
+                  <div className="relative z-10 flex h-full items-center p-4">
+                    <div className={b.img ? 'text-white' : 'text-slate-900 dark:text-white'}>
+                      <div className="text-sm bp-sm:text-base font-bold leading-tight whitespace-pre-line">{b.label}</div>
+                      {/* 이미지가 없는 경우: "텍스트 배너"임을 구분할 수 있게 보조문구를 노출 */}
+                      {!b.img && <div className="mt-1 text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">클릭 시 바로 연결됩니다</div>}
+                    </div>
+                  </div>
+                </>
+              );
+
+              // 내부 이동은 Link, 그 외(tel/http)는 a 태그 사용
+              if (b.href?.startsWith('/')) {
+                return (
+                  <Link key={b.key} href={b.href} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
+                    {inner}
+                  </Link>
+                );
+              }
+
+              if (b.href) {
+                return (
+                  <a key={b.key} href={b.href} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
+                    {inner}
+                  </a>
+                );
+              }
+
+              return (
+                <div key={b.key} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
+                  {inner}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* 빠른 메뉴 */}
       <section className="py-8 bp-sm:py-10 bp-md:py-12">
