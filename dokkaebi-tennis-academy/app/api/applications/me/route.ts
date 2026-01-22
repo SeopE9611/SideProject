@@ -4,19 +4,39 @@ import { getTokenFromHeader, verifyAccessToken } from '@/lib/auth.utils';
 import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+/**
+ * Query 숫자 파라미터 안전 파싱 (NaN/Infinity/음수 방지)
+ * - 비정상 값이면 defaultValue 적용
+ * - min/max 범위로 clamp
+ */
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
 
 export async function GET(req: Request) {
   // 인증
   const token = (await cookies()).get('accessToken')?.value;
   if (!token) return new NextResponse('Unauthorized', { status: 401 });
-  const payload = verifyAccessToken(token);
+  // verifyAccessToken은 throw 가능 → 500 방지(401로 정리)
+  let payload: any = null;
+  try {
+    payload = verifyAccessToken(token);
+  } catch {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
   if (!payload?.sub) return new NextResponse('Unauthorized', { status: 401 });
-  const userId = new ObjectId(payload.sub);
+  // payload.sub → ObjectId 변환은 throw 가능 → 선검증
+  const subStr = String(payload.sub);
+  if (!ObjectId.isValid(subStr)) return new NextResponse('Unauthorized', { status: 401 });
+  const userId = new ObjectId(subStr);
 
   // 페이지 파라미터
   const url = new URL(req.url);
-  const page = parseInt(url.searchParams.get('page') || '1', 10);
-  const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+  // Query NaN/범위 방지
+  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
+  const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 50 });
   const skip = (page - 1) * limit;
 
   // DB 조회: count + paged
@@ -47,7 +67,7 @@ export async function GET(req: Request) {
           }
           const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
           return prod?.name || '알 수 없는 상품';
-        })
+        }),
       );
       // createdAt 안전 보정
       const appliedAtISO = doc.createdAt instanceof Date ? doc.createdAt.toISOString() : new Date(doc.createdAt).toISOString();
@@ -107,12 +127,12 @@ export async function GET(req: Request) {
 
         stringType: names.join(', ') || '-',
         // 방문만 예약 표시, 그 외는 null로 정리
-        preferredDate: cm === 'visit' ? details.preferredDate ?? null : null,
-        preferredTime: cm === 'visit' ? details.preferredTime ?? null : null,
+        preferredDate: cm === 'visit' ? (details.preferredDate ?? null) : null,
+        preferredTime: cm === 'visit' ? (details.preferredTime ?? null) : null,
 
         // 방문 예약 슬롯 정보 (없으면 null)
-        visitSlotCount: cm === 'visit' ? (doc as any).visitSlotCount ?? null : null,
-        visitDurationMinutes: cm === 'visit' ? (doc as any).visitDurationMinutes ?? null : null,
+        visitSlotCount: cm === 'visit' ? ((doc as any).visitSlotCount ?? null) : null,
+        visitDurationMinutes: cm === 'visit' ? ((doc as any).visitDurationMinutes ?? null) : null,
 
         requests: details.requirements ?? null,
         shippingInfo: {
@@ -129,7 +149,7 @@ export async function GET(req: Request) {
         cancelStatus: rawCancelStatus, //'요청' | '승인' | '거절' | 'none'
         cancelReasonSummary, // 한 줄 요약
       };
-    })
+    }),
   );
 
   return NextResponse.json({ items, total });
