@@ -85,10 +85,10 @@ type PromoBanner = {
 // 히어로 하단 문의/광고 배너(4개 고정)
 // TODO: 실제 운영 값으로 교체하세요 (전화번호/이미지/링크)
 const PROMO_BANNERS: PromoBanner[] = [
-  { key: 'teacher', label: '광고 문의\n010-0000-0000', href: 'tel:01000000000' },
-  { key: 'stringing', label: '광고 문의\n010-0000-0000', href: 'tel:01000000000' },
-  { key: 'used', label: '광고 문의\n010-0000-0000', href: 'tel:01000000000' },
-  { key: 'ads', label: '광고 문의\n010-0000-0000', href: 'tel:01000000000' },
+  { key: 'teacher', label: '광고 문의\n010-0000-0000', href: '/support' },
+  { key: 'stringing', label: '광고 문의\n010-0000-0000', href: '/support' },
+  { key: 'used', label: '광고 문의\n010-0000-0000', href: '/support' },
+  { key: 'ads', label: '광고 문의\n010-0000-0000', href: '/support' },
 ];
 
 export default function Home() {
@@ -299,6 +299,10 @@ export default function Home() {
           <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
             <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
               {PROMO_BANNERS.map((b) => {
+                // 현재는 전화번호를 노출하지 않기 위해 "첫 줄"만 렌더링
+                // label 예: "광고 문의\n010-0000-0000" → title: "광고 문의"
+                const title = (b.label ?? '').split('\n')[0] || '광고 문의';
+
                 const baseClass =
                   'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';
 
@@ -306,7 +310,7 @@ export default function Home() {
                   <>
                     {b.img ? (
                       <>
-                        <img src={b.img} alt={b.alt ?? b.label.replace(/\n/g, ' ')} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
+                        <img src={b.img} alt={b.alt ?? title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/0" />
                       </>
                     ) : (
@@ -316,11 +320,10 @@ export default function Home() {
                     {/* Hover 시 살짝 어둡게 */}
                     <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
 
-                    <div className="relative z-10 flex h-full items-center p-4">
+                    {/* 텍스트를 완전 중앙 정렬(가로/세로) + 전화번호는 미노출(title만) */}
+                    <div className="relative z-10 flex h-full items-center justify-center p-4 text-center">
                       <div className={b.img ? 'text-white' : 'text-slate-900 dark:text-white'}>
-                        <div className="text-sm bp-sm:text-base font-bold leading-tight whitespace-pre-line">{b.label}</div>
-                        {/* 이미지가 없는 경우: "텍스트 배너"임을 구분할 수 있게 보조문구를 노출 */}
-                        {!b.img && <div className="mt-1 text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">클릭 시 바로 연결됩니다</div>}
+                        <div className="text-2xl bp-sm:text-2xl font-bold leading-tight">{title}</div>
                       </div>
                     </div>
                   </>
@@ -329,7 +332,7 @@ export default function Home() {
                 // 내부 이동은 Link, 그 외(tel/http)는 a 태그 사용
                 if (b.href?.startsWith('/')) {
                   return (
-                    <Link key={b.key} href={b.href} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
+                    <Link key={b.key} href={b.href} className={baseClass} aria-label={title}>
                       {inner}
                     </Link>
                   );
@@ -337,14 +340,14 @@ export default function Home() {
 
                 if (b.href) {
                   return (
-                    <a key={b.key} href={b.href} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
+                    <a key={b.key} href={b.href} className={baseClass} aria-label={title}>
                       {inner}
                     </a>
                   );
                 }
 
                 return (
-                  <div key={b.key} className={baseClass} aria-label={b.label.replace(/\n/g, ' ')}>
+                  <div key={b.key} className={baseClass} aria-label={title}>
                     {inner}
                   </div>
                 );
