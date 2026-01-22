@@ -291,14 +291,11 @@ export default function Home() {
           router.push('/login?tab=register');
         }}
       />
-      {/* 상단 배너 + 히어로 하단 배너: 동일한 센터링 기준(SiteContainer)으로 묶기 */}
+      {/* 상단 배너 + 히어로 하단 배너 */}
       <SiteContainer variant="wide" className="px-0">
-        {/* HeroSlider는 내부에서 mx-3/bp-sm:mx-4/bp-md:mx-6/bp-lg:mx-0 를 이미 쓰고 있으므로
-            부모 컨테이너는 px-0로 “이중 패딩”을 제거 */}
         <HeroSlider slides={SLIDES} />
         {/* 히어로 하단: 문의/광고 배너 4개 */}
         <section className="mt-3 bp-sm:mt-4 bp-md:mt-5">
-          {/* HeroSlider와 동일한 좌우 기준선을 유지하려고 같은 mx 규칙을 그대로 적용 */}
           <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
             <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
               {PROMO_BANNERS.map((b) => {
