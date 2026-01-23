@@ -4,10 +4,20 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 async function requireAdmin() {
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
-  const payload = at ? verifyAccessToken(at) : null;
+  const payload = safeVerifyAccessToken(at);
   if (!payload || payload.role !== 'admin') return null;
   return payload;
 }

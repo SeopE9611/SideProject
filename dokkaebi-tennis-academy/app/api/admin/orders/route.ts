@@ -3,6 +3,16 @@ import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 // GET 메서드 -> 관리자 주문 목록 조회 API
 export async function GET() {
   const cookieStore = await cookies();
@@ -11,7 +21,7 @@ export async function GET() {
   if (!token) {
     return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
-  const payload = verifyAccessToken(token);
+  const payload = safeVerifyAccessToken(token);
   if (!payload || payload.role !== 'admin') {
     return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }

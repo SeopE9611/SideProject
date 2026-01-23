@@ -248,7 +248,7 @@ export default function OperationsClient() {
       setParam('q', q);
       setParam('kind', kind);
       setParam('page', page === 1 ? undefined : page);
-      setParam('warn', onlyWarn ? 1 : undefined);
+      setParam('warn', onlyWarn ? '1' : undefined);
       router.replace(pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''));
     }, 200);
     return () => clearTimeout(t);
@@ -273,6 +273,19 @@ export default function OperationsClient() {
   // warn=1 필터는 서버(/api/admin/operations)에서 처리한다.
   // 클라이언트에서 표본 기반으로 다시 필터링하면 경고 누락/오판 가능성이 있어 제거.
   const groupsToRender = groups;
+
+  // 펼칠 수 있는 그룹(통합 묶음)만 추림
+  const expandableGroupKeys = useMemo(() => groupsToRender.filter((g) => g.items.length > 1).map((g) => g.key), [groupsToRender]);
+  const hasExpandableGroups = expandableGroupKeys.length > 0;
+  const isAllExpanded = hasExpandableGroups && expandableGroupKeys.every((k) => !!openGroups[k]);
+
+  function toggleAllGroups() {
+    if (!hasExpandableGroups) return;
+    const nextOpen = !isAllExpanded;
+    const next: Record<string, boolean> = {};
+    for (const k of expandableGroupKeys) next[k] = nextOpen;
+    setOpenGroups(next);
+  }
 
   function reset() {
     setQ('');
@@ -367,7 +380,7 @@ export default function OperationsClient() {
 
             <Button
               variant="outline"
-              title={onlyWarn ? `경고만 보기: 최근 ${effectivePageSize}건 범위에서만 필터링합니다.` : '경고(혼재/결제불일치) 그룹만 모아봅니다.'}
+              title={onlyWarn ? '경고(혼재/결제불일치) 그룹만 조회 중입니다.' : '경고(혼재/결제불일치) 그룹만 모아봅니다.'}
               className={cn(onlyWarn && 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-50')}
               onClick={() => {
                 setOnlyWarn((v) => !v);
@@ -401,8 +414,13 @@ export default function OperationsClient() {
             <CardTitle>업무 목록</CardTitle>
             <CardDescription>총 {total.toLocaleString('ko-KR')}건</CardDescription>
           </div>
-          <div className="text-sm text-muted-foreground">
-            {page} / {totalPages}
+          <div className="flex items-center gap-2">
+            <div className="text-sm text-muted-foreground">
+              {page} / {totalPages}
+            </div>
+            <Button type="button" size="sm" variant="outline" disabled={!hasExpandableGroups} title={!hasExpandableGroups ? '펼칠 통합 묶음이 없습니다.' : '통합 묶음(연결된 문서)을 한 번에 펼치거나 접습니다.'} onClick={toggleAllGroups}>
+              {isAllExpanded ? '전체 접기' : '전체 펼치기'}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -451,9 +469,45 @@ export default function OperationsClient() {
                   const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
                   const payMismatch = isGroup && anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
 
-                  const warnLabel = payMismatch ? '결제불일치' : hasMixed ? '혼재' : null;
-                  const warnTitle = payMismatch ? `기준 결제: ${anchorPay} / 연결 결제: ${Array.from(new Set(childPays)).join(', ')}` : hasMixed ? '연결 문서 내 상태/결제가 여러 값으로 섞여 있습니다.' : '';
+                  // 경고 "근거"를 한 줄로 바로 보이게(운영자 인지부하 감소)
+                  // - 테이블 폭을 망치지 않도록 데스크톱에서만 노출(xl 이상)
+                  const uniq = (arr: (string | null | undefined)[]) => Array.from(new Set(arr.filter(Boolean).map(String)));
 
+                  const childPayUniq = uniq(childPays).filter((p) => p !== '-');
+                  const childStatusUniq = uniq(children.map((x) => x.statusLabel));
+
+                  const payHint = (() => {
+                    if (!payMismatch) return null;
+                    if (childPayUniq.length === 0) return `결제: ${anchorPay} ≠ (연결 없음)`;
+                    const head = childPayUniq.slice(0, 2).join(', ');
+                    const tail = childPayUniq.length > 2 ? ` 외 ${childPayUniq.length - 2}` : '';
+                    return `결제: ${anchorPay} ≠ ${head}${tail}`;
+                  })();
+
+                  const mixedHint = (() => {
+                    if (!hasMixed) return null;
+                    if (childStatusUniq.length === 0) return `상태: 혼재`;
+                    const head = childStatusUniq[0];
+                    const tail = childStatusUniq.length > 1 ? ` 외 ${childStatusUniq.length - 1}` : '';
+                    return `상태: ${head}${tail}`;
+                  })();
+
+                  // 표시 우선순위: 결제불일치 > 혼재
+                  const warnInline = payHint ?? mixedHint;
+
+                  const warnBadges: Array<{ label: '결제불일치' | '혼재'; title: string }> = [];
+                  if (payMismatch) {
+                    warnBadges.push({
+                      label: '결제불일치',
+                      title: `기준 결제: ${anchorPay} / 연결 결제: ${childPays.filter((p) => p && p !== '-').join(', ')}`,
+                    });
+                  }
+                  if (hasMixed) {
+                    warnBadges.push({
+                      label: '혼재',
+                      title: '연결 문서 내 상태/결제가 여러 값으로 섞여 있습니다.',
+                    });
+                  }
                   // 그룹(통합)인 경우, 앵커를 제외한 “연결 문서” 요약(포함: 신청서 2건 · 대여 1건 …)
                   const childKindCounts = isGroup
                     ? children.reduce(
@@ -524,10 +578,15 @@ export default function OperationsClient() {
                                   <>
                                     <Badge className={cn(badgeBase, badgeSizeSm, 'bg-indigo-500/10 text-indigo-700')}>기준</Badge>
                                     <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(g.anchor.kind))}>{opsKindLabel(g.anchor.kind)}</Badge>
-                                    {warnLabel && (
-                                      <Badge title={warnTitle} className={cn(badgeBase, badgeSizeSm, 'bg-amber-500/10 text-amber-700')}>
-                                        {warnLabel}
+                                    {warnBadges.map((b) => (
+                                      <Badge key={b.label} title={b.title} className={cn(badgeBase, badgeSizeSm, 'bg-amber-500/10 text-amber-700')}>
+                                        {b.label}
                                       </Badge>
+                                    ))}
+                                    {warnInline && (
+                                      <span className="ml-2 hidden xl:inline text-xs text-muted-foreground" title={warnInline}>
+                                        {warnInline}
+                                      </span>
                                     )}
                                   </>
                                 )}
@@ -640,7 +699,9 @@ export default function OperationsClient() {
                                   <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>연결</Badge>
                                   <div className="font-medium">{shortenId(it.id)}</div>
                                 </div>
-                                <div className="text-xs text-muted-foreground line-clamp-1">{it.title}</div>
+                                    <div className="text-[11px] text-muted-foreground">
+                                  연결됨: {opsKindLabel(g.anchor.kind)}(#{shortenId(g.anchor.id)})
+                                </div>
                               </div>
                             </TableCell>
 

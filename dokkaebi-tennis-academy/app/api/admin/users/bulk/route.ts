@@ -6,10 +6,20 @@ import { ObjectId } from 'mongodb';
 
 type Op = 'suspend' | 'unsuspend' | 'softDelete' | 'restore';
 
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   // 1) 관리자 인증
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
+  const payload = safeVerifyAccessToken(token);
   if (!payload?.sub || payload.role !== 'admin') {
     return NextResponse.json({ message: 'forbidden' }, { status: 403 });
   }

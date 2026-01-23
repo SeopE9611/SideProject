@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import type { Filter, SortDirection } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 
+// 숫자 쿼리 파싱 NaN 방지 + 범위 보정 (skip/limit 런타임 에러 예방)
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
+
 export async function GET(req: Request) {
   // --- 관리자 인증 (공용 가드) ---
   const guard = await requireAdmin(req);
@@ -10,8 +17,8 @@ export async function GET(req: Request) {
 
   // --- 쿼리 ---
   const url = new URL(req.url);
-  const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
-  const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || '10')));
+  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
+  const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 50 });
   const q = (url.searchParams.get('q') || '').trim();
   const role = url.searchParams.get('role'); // 'user' | 'admin'
   const status = url.searchParams.get('status') || 'all'; // 'all' | 'active' | 'deleted' | 'suspended'

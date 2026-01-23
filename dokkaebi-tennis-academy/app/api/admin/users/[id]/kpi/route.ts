@@ -4,9 +4,19 @@ import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+// 토큰 검증은 throw 가능 → 안전하게 null 처리 (500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 async function requireAdmin() {
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
+  const payload = safeVerifyAccessToken(token);
   return payload?.role === 'admin' ? payload : null;
 }
 
