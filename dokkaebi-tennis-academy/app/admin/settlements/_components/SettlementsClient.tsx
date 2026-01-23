@@ -1,9 +1,9 @@
 'use client';
 
 import useSWR from 'swr';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { showErrorToast, showSuccessToast, showInfoToast } from '@/lib/toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FileDown, RefreshCw, CheckCircle2, AlertTriangle, Loader2, Calendar, TrendingUp, Package, DollarSign, TrendingDown, Activity, Trash2, ArrowUpDown, ArrowUp, ArrowDown, BarChartBig as ChartBar, MoreHorizontal } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -96,6 +96,8 @@ type SortDirection = 'asc' | 'desc' | null;
 
 export default function SettlementsClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const didInitFromQuery = useRef(false);
 
   // ──────────────────────────────────────────────────────────
   // 상태
@@ -103,6 +105,17 @@ export default function SettlementsClient() {
   const [yyyymm, setYyyymm] = useState<string>(() => fmtYMD_KST().slice(0, 7).replace('-', '')); // KST 기준 초기 yyyymm
   const { data, mutate, isLoading } = useSWR('/api/settlements', fetcher);
 
+  // URL 쿼리로 월을 지정하면(예: /admin/settlements?yyyymm=202601) 초기 선택 월을 그 값으로 맞춘다.
+  // - 운영함 → 정산 "바로가기"에서 추천 월을 함께 전달할 때 월 착오를 줄이기 위함
+  useEffect(() => {
+    if (didInitFromQuery.current) return;
+    didInitFromQuery.current = true;
+
+    const q = searchParams.get('yyyymm');
+    if (q && /^\d{6}$/.test(q)) {
+      setYyyymm(q);
+    }
+  }, [searchParams]);
   const [tab, setTab] = useState<'snapshot' | 'live'>('snapshot');
 
   // 실시간 탭의 조회 기간 (KST)

@@ -4,7 +4,7 @@ import useSWR from 'swr';
 import Link from 'next/link';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ChevronDown, ChevronRight, Copy, Eye, Search } from 'lucide-react';
+import { BarChartBig, ChevronDown, ChevronRight, Copy, Eye, Search } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +49,27 @@ function formatKST(iso?: string | null) {
   const hh = String(d.getHours()).padStart(2, '0');
   const mi = String(d.getMinutes()).padStart(2, '0');
   return `${yy}. ${mm}. ${dd}. ${hh}:${mi}`;
+}
+
+// 그룹 createdAt(ISO) → KST 기준 yyyymm(예: 202601)
+function yyyymmKST(iso?: string | null) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+  }).formatToParts(d);
+
+  const map = parts.reduce<Record<string, string>>((acc, p) => {
+    if (p.type !== 'literal') acc[p.type] = p.value;
+    return acc;
+  }, {});
+
+  if (!map.year || !map.month) return null;
+  return `${map.year}${map.month}`;
 }
 
 // 그룹(묶음) 만들기 유틸
@@ -141,6 +162,48 @@ function pickOnePerKind(items: OpItem[]) {
   return (['order', 'rental', 'stringing_application'] as Kind[]).map((k) => byKind.get(k)).filter(Boolean) as OpItem[];
 }
 
+// 그룹(통합) 대표 행에서 "연결 문서 상태/결제"를 펼치지 않고도 보이게 하기 위한 요약 유틸
+function summarizeByKind(items: OpItem[], getLabel: (it: OpItem) => string | undefined | null) {
+  const map = new Map<Kind, Set<string>>();
+  for (const it of items) {
+    const v = getLabel(it);
+    if (!v) continue;
+    if (!map.has(it.kind)) map.set(it.kind, new Set());
+    map.get(it.kind)!.add(String(v));
+  }
+
+  return (['order', 'rental', 'stringing_application'] as Kind[])
+    .map((k) => {
+      const labels = Array.from(map.get(k) ?? []);
+      if (labels.length === 0) return null;
+      // 여러 값이 섞이면 "A 외 n" 형태로 축약해서 과도한 줄바꿈 방지
+      return {
+        kind: k,
+        mixed: labels.length > 1,
+        text: labels.length === 1 ? labels[0] : `${labels[0]} 외 ${labels.length - 1}`,
+      };
+    })
+    .filter(Boolean) as Array<{ kind: Kind; mixed: boolean; text: string }>;
+}
+
+// 경고(혼재/결제불일치) 그룹 여부 판단: 표시 전용(운영자 필터 토글용)
+function isWarnGroup(g: { anchor: OpItem; items: OpItem[] }) {
+  if (!g.items || g.items.length <= 1) return false;
+  const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
+  const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
+  if (children.length === 0) return false;
+
+  const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
+  const childPaymentSummary = summarizeByKind(children, (it) => it.paymentLabel);
+  const hasMixed = childStatusSummary.some((s) => s.mixed) || childPaymentSummary.some((p) => p.mixed);
+
+  const anchorPay = g.anchor.paymentLabel ?? '-';
+  const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
+  const payMismatch = anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
+
+  return payMismatch || hasMixed;
+}
+
 export default function OperationsClient() {
   const router = useRouter();
   const pathname = usePathname();
@@ -148,17 +211,23 @@ export default function OperationsClient() {
 
   const [q, setQ] = useState('');
   const [kind, setKind] = useState<'all' | Kind>('all');
+  const [onlyWarn, setOnlyWarn] = useState(false);
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-  const pageSize = 50;
+  const defaultPageSize = 50;
+  // 경고만 보기에서는 "놓침"을 줄이기 위해 조회 범위를 넓힘(표시/운영 안전 목적)
+  // - API/스키마 변경 없음 (그냥 pageSize 파라미터만 키움)
+  const effectivePageSize = onlyWarn ? 200 : defaultPageSize;
 
   // 1) 최초 1회: URL → 상태 주입(새로고침 대응)
   useEffect(() => {
     const k = (sp.get('kind') as any) ?? 'all';
     const query = sp.get('q') ?? '';
+    const warn = sp.get('warn');
     const p = Number(sp.get('page') ?? 1);
     if (k === 'all' || k === 'order' || k === 'stringing_application' || k === 'rental') setKind(k);
     if (query) setQ(query);
+    if (warn === '1') setOnlyWarn(true);
     if (!Number.isNaN(p) && p > 0) setPage(p);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -166,7 +235,7 @@ export default function OperationsClient() {
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
   useEffect(() => {
     setOpenGroups({});
-  }, [q, kind, page]);
+  }, [q, kind, page, onlyWarn]);
 
   // 2) 상태 → URL 동기화(디바운스)
   useEffect(() => {
@@ -179,30 +248,36 @@ export default function OperationsClient() {
       setParam('q', q);
       setParam('kind', kind);
       setParam('page', page === 1 ? undefined : page);
+      setParam('warn', onlyWarn ? 1 : undefined);
       router.replace(pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''));
     }, 200);
     return () => clearTimeout(t);
-  }, [q, kind, page, pathname, router]);
+  }, [q, kind, page, onlyWarn, pathname, router]);
 
   // 3) API 키 구성
   const qs = new URLSearchParams();
   if (q.trim()) qs.set('q', q.trim());
   if (kind !== 'all') qs.set('kind', kind);
   qs.set('page', String(page));
-  qs.set('pageSize', String(pageSize));
+  qs.set('pageSize', String(effectivePageSize));
+  if (onlyWarn) qs.set('warn', '1');
   const key = `/api/admin/operations?${qs.toString()}`;
 
   const { data, isLoading } = useSWR<{ items: OpItem[]; total: number }>(key, fetcher);
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const totalPages = Math.max(1, Math.ceil(total / effectivePageSize));
 
   // 리스트를 "그룹(묶음)" 단위로 변환
   const groups = useMemo(() => buildGroups(items), [items]);
+  // warn=1 필터는 서버(/api/admin/operations)에서 처리한다.
+  // 클라이언트에서 표본 기반으로 다시 필터링하면 경고 누락/오판 가능성이 있어 제거.
+  const groupsToRender = groups;
 
   function reset() {
     setQ('');
     setKind('all');
+    setOnlyWarn(false);
     setPage(1);
     router.replace(pathname);
   }
@@ -217,6 +292,34 @@ export default function OperationsClient() {
   async function copy(text: string) {
     await navigator.clipboard.writeText(text);
     showSuccessToast('복사 완료');
+  }
+
+  function renderLinkedDocs(docs: Array<{ kind: Kind; id: string; href: string }>) {
+    if (!docs || docs.length === 0) {
+      return <span className="text-xs text-muted-foreground">-</span>;
+    }
+
+    const shown = docs.slice(0, 2);
+    const rest = docs.length - shown.length;
+
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {shown.map((d) => (
+          <div key={`${d.kind}:${d.id}`} className="flex items-center gap-1">
+            <Link href={d.href} className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-muted/60" aria-label="연결 문서로 이동">
+              <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(d.kind))}>{opsKindLabel(d.kind)}</Badge>
+              <span className="font-mono">{shortenId(d.id)}</span>
+            </Link>
+
+            <Button type="button" size="sm" variant="outline" className="h-7 w-7 p-0" onClick={() => copy(d.id)} aria-label="연결 문서 ID 복사">
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+
+        {rest > 0 && <span className="text-xs text-muted-foreground">외 {rest}건</span>}
+      </div>
+    );
   }
 
   const th = 'text-xs text-muted-foreground';
@@ -261,6 +364,18 @@ export default function OperationsClient() {
                 <SelectItem value="rental">대여</SelectItem>
               </SelectContent>
             </Select>
+
+            <Button
+              variant="outline"
+              title={onlyWarn ? `경고만 보기: 최근 ${effectivePageSize}건 범위에서만 필터링합니다.` : '경고(혼재/결제불일치) 그룹만 모아봅니다.'}
+              className={cn(onlyWarn && 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-50')}
+              onClick={() => {
+                setOnlyWarn((v) => !v);
+                setPage(1);
+              }}
+            >
+              경고만 보기
+            </Button>
 
             <Button variant="outline" onClick={reset} className="md:w-auto">
               필터 초기화
@@ -313,13 +428,59 @@ export default function OperationsClient() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {groups.map((g) => {
+                {groupsToRender.map((g) => {
                   const isGroup = g.items.length > 1;
                   const isOpen = !!openGroups[g.key];
 
                   // anchor 제외한 하위 아이템들(펼쳤을 때 표시)
                   const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
                   const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
+
+                  // 그룹(통합) 대표 행에 노출할 "연결 문서 상태/결제 요약"
+                  const childStatusSummary = isGroup ? summarizeByKind(children, (it) => it.statusLabel) : [];
+                  const childPaymentSummary = isGroup ? summarizeByKind(children, (it) => it.paymentLabel) : [];
+
+                  // ===== 경고 배지(1개) 판단 =====
+                  // 1) 같은 kind 안에서 상태/결제 라벨이 여러 개 섞여 있으면(혼재)
+                  const hasMixed = childStatusSummary.some((s) => s.mixed) || childPaymentSummary.some((p) => p.mixed);
+
+                  // 2) 기준(앵커) 결제 라벨과 연결 문서 결제 라벨이 다르면(결제불일치)
+                  // - 앵커 결제가 "결제완료" 같은 확정 상태인데 연결이 "결제대기"면 운영 리스크가 큼
+                  // - 앵커가 '-'(없음)인 경우는 비교 기준이 없으므로 불일치로 보지 않음
+                  const anchorPay = g.anchor.paymentLabel ?? '-';
+                  const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
+                  const payMismatch = isGroup && anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
+
+                  const warnLabel = payMismatch ? '결제불일치' : hasMixed ? '혼재' : null;
+                  const warnTitle = payMismatch ? `기준 결제: ${anchorPay} / 연결 결제: ${Array.from(new Set(childPays)).join(', ')}` : hasMixed ? '연결 문서 내 상태/결제가 여러 값으로 섞여 있습니다.' : '';
+
+                  // 그룹(통합)인 경우, 앵커를 제외한 “연결 문서” 요약(포함: 신청서 2건 · 대여 1건 …)
+                  const childKindCounts = isGroup
+                    ? children.reduce(
+                        (acc, x) => {
+                          acc[x.kind] = (acc[x.kind] ?? 0) + 1;
+                          return acc;
+                        },
+                        {} as Record<Kind, number>,
+                      )
+                    : null;
+
+                  const includesSummary = isGroup
+                    ? (['order', 'rental', 'stringing_application'] as Kind[])
+                        .filter((k) => (childKindCounts?.[k] ?? 0) > 0)
+                        .map((k) => `${opsKindLabel(k)} ${childKindCounts![k]}건`)
+                        .join(' · ')
+                    : '';
+
+                  // 연결 컬럼에 보여줄 문서들
+                  // - 그룹(통합)인 경우: 앵커 외 나머지 문서(신청서/대여 등)를 “바로” 노출
+                  // - 단독인 경우: API에서 내려준 related(있으면 1개)만 노출
+                  const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
+
+                  // 정산 화면 이동(운영 편의): 추천 yyyymm만 title로 안내 (정산 화면 쿼리 미지원이어도 즉시 유용)
+                  const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
+                  const settleTitle = settleYyyymm ? `정산 페이지로 이동 (추천 월: ${settleYyyymm})` : '정산 페이지로 이동';
+                  const settleHref = settleYyyymm ? `/admin/settlements?yyyymm=${settleYyyymm}` : '/admin/settlements';
 
                   return (
                     <Fragment key={g.key}>
@@ -357,11 +518,24 @@ export default function OperationsClient() {
                               <div className="h-8 w-8" />
                             )}
                             <div className="space-y-1 min-w-0">
-                              <div className="font-medium">{shortenId(g.anchor.id)}</div>
-                              <div className="text-xs text-muted-foreground line-clamp-1">
-                                {g.anchor.title}
-                                {isGroup ? ` 외 ${g.items.length - 1}건` : ''}
+                              <div className="flex flex-wrap items-center gap-2">
+                                <div className="font-medium">{shortenId(g.anchor.id)}</div>
+                                {isGroup && (
+                                  <>
+                                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-indigo-500/10 text-indigo-700')}>기준</Badge>
+                                    <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(g.anchor.kind))}>{opsKindLabel(g.anchor.kind)}</Badge>
+                                    {warnLabel && (
+                                      <Badge title={warnTitle} className={cn(badgeBase, badgeSizeSm, 'bg-amber-500/10 text-amber-700')}>
+                                        {warnLabel}
+                                      </Badge>
+                                    )}
+                                  </>
+                                )}
                               </div>
+
+                              <div className="text-xs text-muted-foreground line-clamp-1">{isGroup ? `기준: ${g.anchor.title}` : g.anchor.title}</div>
+
+                              {isGroup && <div className="text-[11px] text-muted-foreground line-clamp-1">포함: {includesSummary || '-'}</div>}
                             </div>
                           </div>
                         </TableCell>
@@ -376,15 +550,41 @@ export default function OperationsClient() {
                         <TableCell className={td}>{formatKST(g.createdAt)}</TableCell>
 
                         <TableCell className={td}>
-                          <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(g.anchor.kind, g.anchor.statusLabel))}>{g.anchor.statusLabel}</Badge>
+                          <div className="space-y-1">
+                            <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(g.anchor.kind, g.anchor.statusLabel))}>{g.anchor.statusLabel}</Badge>
+
+                            {isGroup && childStatusSummary.length > 0 && (
+                              <div className="space-y-1">
+                                {childStatusSummary.map((s) => (
+                                  <div key={`st:${s.kind}`} className="text-[11px] text-muted-foreground">
+                                    {opsKindLabel(s.kind)}: {s.text}
+                                    {s.mixed ? ' (혼재)' : ''}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
 
                         <TableCell className={td}>
-                          {g.anchor.paymentLabel ? (
-                            <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{g.anchor.paymentLabel}</Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">-</span>
-                          )}
+                          <div className="space-y-1">
+                            {g.anchor.paymentLabel ? (
+                              <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{g.anchor.paymentLabel}</Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                            )}
+
+                            {isGroup && childPaymentSummary.length > 0 && (
+                              <div className="space-y-1">
+                                {childPaymentSummary.map((p) => (
+                                  <div key={`pay:${p.kind}`} className="text-[11px] text-muted-foreground">
+                                    {opsKindLabel(p.kind)}: {p.text}
+                                    {p.mixed ? ' (혼재)' : ''}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
 
                         <TableCell className={cn(td, 'font-semibold')}>
@@ -403,15 +603,7 @@ export default function OperationsClient() {
                           )}
                         </TableCell>
 
-                        <TableCell className={td}>
-                          {g.anchor.related ? (
-                            <Link href={g.anchor.related.href} className="text-xs text-blue-600 hover:underline">
-                              연결 이동
-                            </Link>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
+                        <TableCell className={td}>{renderLinkedDocs(linkedDocsForAnchor)}</TableCell>
 
                         <TableCell className={cn(td, 'text-right')}>
                           <div className="flex justify-end gap-2">
@@ -421,6 +613,12 @@ export default function OperationsClient() {
                             <Button asChild size="sm" variant="outline">
                               <Link href={g.anchor.href}>
                                 <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                            <Button asChild size="sm" variant="outline" title={settleTitle}>
+                              <Link href={settleHref} className="flex items-center gap-1">
+                                <BarChartBig className="h-4 w-4" />
+                                <span className="hidden md:inline">정산</span>
                               </Link>
                             </Button>
                           </div>
@@ -438,7 +636,10 @@ export default function OperationsClient() {
 
                             <TableCell className={td}>
                               <div className="space-y-1 pl-10">
-                                <div className="font-medium">{shortenId(it.id)}</div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>연결</Badge>
+                                  <div className="font-medium">{shortenId(it.id)}</div>
+                                </div>
                                 <div className="text-xs text-muted-foreground line-clamp-1">{it.title}</div>
                               </div>
                             </TableCell>
@@ -467,18 +668,12 @@ export default function OperationsClient() {
                             <TableCell className={cn(td, 'font-semibold')}>
                               {/* 그룹에서는 상단(대표 row)에서 종류별 금액을 1회만 보여주므로
                                   하위 row에서는 금액을 반복 노출하지 않습니다(중복 해석 방지). */}
-                              <span className="text-xs text-muted-foreground">그룹 상단에 표시</span>
+                              <span className="text-xs text-muted-foreground" title="금액은 그룹(기준) 행에서 종류별로 1회만 표시합니다.">
+                                -
+                              </span>
                             </TableCell>
 
-                            <TableCell className={td}>
-                              {it.related ? (
-                                <Link href={it.related.href} className="text-xs text-blue-600 hover:underline">
-                                  연결 이동
-                                </Link>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">-</span>
-                              )}
-                            </TableCell>
+                            <TableCell className={td}>{renderLinkedDocs(it.related ? [it.related] : [])}</TableCell>
 
                             <TableCell className={cn(td, 'text-right')}>
                               <div className="flex justify-end gap-2">
@@ -498,10 +693,10 @@ export default function OperationsClient() {
                   );
                 })}
 
-                {items.length === 0 && (
+                {groupsToRender.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
-                      결과가 없습니다.
+                      {onlyWarn ? '경고(혼재/결제불일치) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}
                     </TableCell>
                   </TableRow>
                 )}

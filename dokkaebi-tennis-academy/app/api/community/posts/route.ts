@@ -36,9 +36,10 @@ async function resolveDisplayName(payload: any | null): Promise<string> {
   let displayName: string | null = null;
 
   try {
-    if (payload?.sub) {
+    const subStr = payload?.sub ? String(payload.sub) : '';
+    if (subStr && ObjectId.isValid(subStr)) {
       const u = await db.collection('users').findOne({
-        _id: new ObjectId(String(payload.sub)),
+        _id: new ObjectId(subStr),
       });
 
       // 현재 users 스키마 기준:
@@ -288,6 +289,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
+  // 작성자 ID (추후 getAuthPayload 로직이 바뀌더라도 500으로 터지지 않도록 한 번 더 방어)
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) {
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+  const userId = new ObjectId(subStr);
+
   // 깨진 JSON이면 throw → 500 방지
   let bodyRaw: unknown;
   try {
@@ -380,8 +388,7 @@ export async function POST(req: NextRequest) {
     // 게시판 내 노출용 번호 (자유 게시판만 사용)
     postNo,
 
-    // getAuthPayload에서 sub ObjectId 유효성 보장(여기서 new ObjectId throw 방지)
-    userId: new ObjectId(String(payload.sub)),
+    userId,
     nickname: displayName,
 
     status: 'public' as const,

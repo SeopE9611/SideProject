@@ -14,6 +14,7 @@ import Link from 'next/link';
 import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
 import { racketBrandLabel } from '@/lib/constants';
+import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
@@ -231,6 +232,18 @@ export default function AdminRentalDetailClient() {
   // 취소 요청 상태 정보
   const cancelInfo = getAdminRentalCancelInfo(data);
 
+ // 연결 문서(표시 전용)
+  const linkedDocs: LinkedDocItem[] = data?.stringingApplicationId
+   ? [
+        {
+          kind: 'stringing_application',
+          id: String(data.stringingApplicationId),
+         href: `/admin/applications/stringing/${encodeURIComponent(String(data.stringingApplicationId))}`,
+          subtitle: '대여 기반 교체서비스 신청서',
+        },
+      ]
+    : [];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-black">
       <div className="container py-10">
@@ -253,16 +266,6 @@ export default function AdminRentalDetailClient() {
                     목록으로 돌아가기
                   </Link>
                 </Button>
-
-                {/* 교체 서비스 신청서 보기 (대여 기반 신청서가 연결된 경우에만 노출) */}
-                {!!data?.stringingApplicationId && (
-                  <Button asChild variant="outline" size="sm" className="whitespace-nowrap">
-                    <Link href={`/admin/applications/stringing/${encodeURIComponent(data.stringingApplicationId)}`}>
-                      <Wrench className="h-4 w-4 mr-2" />
-                      교체 서비스 신청서 보기
-                    </Link>
-                  </Button>
-                )}
 
                 {data?.status !== 'canceled' && (
                   <Button asChild variant="outline" size="sm" className="h-8 border-slate-300 text-slate-900 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-50 dark:hover:bg-slate-700/60 whitespace-nowrap">
@@ -361,6 +364,15 @@ export default function AdminRentalDetailClient() {
               </div>
             )}
           </div>
+
+            {/* 연결 문서(공용 카드) */}
+          {linkedDocs.length > 0 && (
+            <LinkedDocsCard
+              docs={linkedDocs}
+              description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요."
+              className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60"
+            />
+          )}
 
           <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden mb-8">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">

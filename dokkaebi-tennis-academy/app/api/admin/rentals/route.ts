@@ -4,6 +4,13 @@ import { requireAdmin } from '@/lib/admin.guard';
 
 export const dynamic = 'force-dynamic';
 
+// 숫자 쿼리 파라미터 안전 파싱 (NaN/Infinity/소수/음수 방지 + 범위 보정)
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
+
 export async function GET(req: Request) {
   // 관리자 권한
   const guard = await requireAdmin(req);
@@ -37,8 +44,8 @@ export async function GET(req: Request) {
     ]);
   }
 
-  const page = Math.max(1, Number(searchParams.get('page') ?? 1));
-  const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)));
+  const page = parseIntParam(searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
+  const pageSize = parseIntParam(searchParams.get('pageSize'), { defaultValue: 20, min: 1, max: 100 });
   const status = searchParams.get('status') || ''; // '', created, paid, out, returned, canceled
   const brand = searchParams.get('brand') || '';
   const from = searchParams.get('from') || ''; // 'YYYY-MM-DD'

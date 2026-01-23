@@ -17,10 +17,19 @@ function toStoragePathFromPublicUrl(url: string) {
   return m ? m[1] : '';
 }
 // 관리자 확인 헬퍼
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 async function mustAdmin() {
-  const at = (await cookies()).get('accessToken')?.value;
-  const payload = at ? verifyAccessToken(at) : null;
-  return payload && payload.role === 'admin' ? payload : null;
+  const token = (await cookies()).get('accessToken')?.value;
+  const payload = safeVerifyAccessToken(token);
+  return payload?.role === 'admin' ? payload : null;
 }
 
 // QnA 카테고리 라벨/코드
@@ -63,7 +72,7 @@ const updateSchema = z.object({
         mime: z.string().optional(),
         size: z.number().optional(),
         storagePath: z.string().optional(), // 서버에서 실제 삭제에 사용
-      })
+      }),
     )
     .optional(),
 });
@@ -136,7 +145,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
   // 권한 확인
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
+  const payload = safeVerifyAccessToken(token);
   const isAdmin = payload?.role === 'admin';
   const isOwner = payload?.sub && String(payload.sub) === String(post.authorId);
 
@@ -164,7 +173,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const db = await getDb();
   const { id } = await params;
 
-  const payload = token ? verifyAccessToken(token) : null;
+  const payload = safeVerifyAccessToken(token);
   if (!payload) {
     logInfo({ msg: 'boards:patch:unauthorized', status: 401, docId: id, durationMs: stop(), ...meta });
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
@@ -180,7 +189,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
   }
 
-  const bodyRaw = await req.json();
+  let bodyRaw: unknown;
+  try {
+    bodyRaw = await req.json();
+  } catch {
+    logInfo({ msg: 'boards:patch:invalid_json', status: 400, docId: id, durationMs: stop(), ...meta });
+    return NextResponse.json({ ok: false, message: 'Invalid JSON body' }, { status: 400 });
+  }
 
   const parsed = updateSchema.safeParse(bodyRaw);
   if (!parsed.success) {
@@ -331,7 +346,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const db = await getDb();
   const { id } = await params;
 
-  const payload = token ? verifyAccessToken(token) : null;
+  const payload = safeVerifyAccessToken(token);
   if (!payload) {
     logInfo({ msg: 'boards:delete:unauthorized', status: 401, docId: id, durationMs: stop(), ...meta });
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });

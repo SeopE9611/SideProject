@@ -4,9 +4,24 @@ import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
+
 async function requireAdmin() {
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
+  const payload = safeVerifyAccessToken(token);
   return payload?.role === 'admin' ? payload : null;
 }
 
@@ -16,7 +31,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     if (!payload) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
 
     const url = new URL(req.url);
-    const limit = Math.max(1, Math.min(50, Number(url.searchParams.get('limit') || 5)));
+    const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 5, min: 1, max: 50 });
     const { id } = await ctx.params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 

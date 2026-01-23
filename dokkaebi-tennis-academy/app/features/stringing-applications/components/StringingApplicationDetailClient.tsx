@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import PaymentMethodDetail from '@/app/features/stringing-applications/components/PaymentMethodDetail';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import CancelStringingDialog from '@/app/mypage/applications/_components/CancelStringingDialog';
+import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 
 interface Props {
   id: string;
@@ -550,11 +551,40 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     data.stringDetails?.racketType && data.stringDetails.racketType.trim().length > 0
       ? data.stringDetails.racketType.trim()
       : Array.isArray(data.lines) && data.lines.length > 0
-      ? data.lines.map((line, index) => line.racketType || line.racketLabel || `라켓 ${index + 1}`).join(', ')
-      : '입력된 라켓 정보 없음';
+        ? data.lines.map((line, index) => line.racketType || line.racketLabel || `라켓 ${index + 1}`).join(', ')
+        : '입력된 라켓 정보 없음';
 
   // 주문 취소 요청 여부
   const hasOrderCancelRequested = data.orderCancelStatus === 'requested' || data.orderCancelStatus === '요청';
+
+  // 연결 문서(표시 전용)
+  const linkedDocs: LinkedDocItem[] = [];
+  if (data.orderId) {
+    linkedDocs.push({
+      kind: 'order',
+      id: String(data.orderId),
+      href: isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&orderId=${data.orderId}`,
+      subtitle: '연결된 주문',
+    });
+  }
+  if (data.rentalId) {
+    const rid = String(data.rentalId);
+    linkedDocs.push({
+      kind: 'rental',
+      id: rid,
+      href: isAdmin ? `/admin/rentals/${encodeURIComponent(rid)}` : `/mypage/rentals/${encodeURIComponent(rid)}`,
+      subtitle: '연결된 대여',
+    });
+  }
+
+  const linkedDocsDescription =
+    linkedDocs.length === 0
+      ? undefined
+      : linkedDocs.length === 2
+        ? '이 신청은 주문 및 대여와 연결되어 있습니다. 연결 문서에서 상태/취소/운영 흐름을 함께 확인하세요.'
+        : data.orderId
+          ? '이 신청은 주문에서 생성된 신청입니다. 최종 취소/운영 처리는 주문 상세와 함께 확인하세요.'
+          : '이 신청은 대여에서 생성된 신청입니다. 대여 상세와 함께 전체 흐름을 확인하세요.';
 
   const paymentMethodLabel = data.packageInfo?.applied ? '무통장입금(패키지 사용)' : '무통장입금';
 
@@ -657,8 +687,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                           !isEditableAllowed
                             ? 'opacity-50 cursor-not-allowed'
                             : isEditMode
-                            ? ''
-                            : 'bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50 \
+                              ? ''
+                              : 'bg-white/60 backdrop-blur-sm border-green-200 hover:bg-green-50 \
          dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60'
                         }
                         onClick={() => {
@@ -740,65 +770,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           )}
         </div>
 
-        {/* 연결된 주문 정보 (주문에서 생성된 신청인 경우만 표시) */}
-        {data.orderId && (
-          <Card className="mb-8 border border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                연결된 주문
-                <Badge variant="outline" className="text-[11px]">
-                  주문 기반 신청
-                </Badge>
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500 dark:text-slate-400">이 신청은 아래 주문으로부터 생성된 신청입니다.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-sm">
-              <div className="space-y-1">
-                <p className="text-xs text-slate-600 dark:text-slate-300">
-                  주문 ID 끝자리 <span className="font-mono font-semibold">{String(data.orderId).slice(-6)}</span>
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Link href={isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&orderId=${data.orderId}`}>
-                  <Button variant="outline" size="sm">
-                    주문 상세 보기
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-            {/* 연결된 대여 정보 (대여에서 생성된 신청인 경우만 표시) */}
-        {data.rentalId && (
-          <Card className="mb-8 border border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                연결된 대여
-                <Badge variant="outline" className="text-[11px]">
-                  대여 기반 신청
-                </Badge>
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
-                이 신청은 아래 라켓 대여 주문으로부터 생성된 신청입니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-sm">
-              <div className="space-y-1">
-                <p className="text-xs text-slate-600 dark:text-slate-300">
-                  대여 ID 끝자리 <span className="font-mono font-semibold">{String(data.rentalId).slice(-6)}</span>
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Link href={isAdmin ? `/admin/rentals/${encodeURIComponent(String(data.rentalId))}` : `/mypage/rentals/${encodeURIComponent(String(data.rentalId))}`}>
-                  <Button variant="outline" size="sm">
-                    대여 상세 보기
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* 연결 문서(공용 카드) */}
+        {linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-8" />}
 
         {/* 상태 카드 */}
         <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden mb-8">

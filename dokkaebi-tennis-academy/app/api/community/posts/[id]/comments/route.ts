@@ -74,12 +74,15 @@ const createCommentSchema = z.object({
 function parseListQuery(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
-  const page = Number(searchParams.get('page') ?? '1');
-  const limit = Number(searchParams.get('limit') ?? '20');
+  const pageRaw = Number(searchParams.get('page') ?? '1');
+  const limitRaw = Number(searchParams.get('limit') ?? '20');
+  // Mongo skip/limit는 정수여야 안전. (소수/NaN 방지)
+  const pageInt = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.trunc(pageRaw) : 1;
+  const limitInt = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.trunc(limitRaw) : 20;
 
   return {
-    page: Number.isFinite(page) && page > 0 ? page : 1,
-    limit: Number.isFinite(limit) && limit > 0 && limit <= 100 ? limit : 20,
+    page: Math.min(10_000, Math.max(1, pageInt)),
+    limit: Math.min(100, Math.max(1, limitInt)),
   };
 }
 
@@ -198,6 +201,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
+  // 작성자 ObjectId 변환은 throw 가능하므로, 방어적으로 한 번 더 체크 후 재사용
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) {
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+  const userId = new ObjectId(subStr);
+
   // 깨진 JSON이면 throw → 500 방지 (400으로 정리)
   let bodyRaw: unknown;
   try {
@@ -256,7 +266,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const doc = {
     postId: postObjectId,
     parentId: parentObjectId, // 루트 댓글이면 null, 대댓글이면 부모 댓글 ObjectId
-    userId: new ObjectId(String(payload.sub)),
+    userId,
     nickname: displayName,
     content: body.content,
     status: 'public' as const,

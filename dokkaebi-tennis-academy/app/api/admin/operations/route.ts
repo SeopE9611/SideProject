@@ -25,18 +25,120 @@ const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
 const MAX_FETCH_EACH = 300; // 각 컬렉션에서 상위 N개만 가져온 뒤 merge/sort
 
+// warn=1 (경고만 보기) 서버 필터
+type OpGroup = {
+  key: string;
+  anchor: OpItem;
+  createdAt: string | null;
+  items: OpItem[]; // anchor 포함
+};
+
+const KIND_PRIORITY: Record<Kind, number> = {
+  order: 0,
+  rental: 1,
+  stringing_application: 2,
+};
+
+function groupKeyOf(it: OpItem): string {
+  // 주문/대여는 자기 자신이 앵커
+  if (it.kind === 'order') return `order:${it.id}`;
+  if (it.kind === 'rental') return `rental:${it.id}`;
+
+  // 신청서는 연결된 "주문/대여"를 앵커로
+  const rel = it.related;
+  if (rel?.kind === 'order') return `order:${rel.id}`;
+  if (rel?.kind === 'rental') return `rental:${rel.id}`;
+  // 단독 신청서
+  return `app:${it.id}`;
+}
+
+function pickAnchor(groupItems: OpItem[]): OpItem {
+  return groupItems.find((x) => x.kind === 'order') ?? groupItems.find((x) => x.kind === 'rental') ?? groupItems[0]!;
+}
+
+function summarizeByKind(items: OpItem[], getLabel: (it: OpItem) => string | undefined | null) {
+  const map = new Map<Kind, Set<string>>();
+  for (const it of items) {
+    const v = getLabel(it);
+    if (!v) continue;
+    if (!map.has(it.kind)) map.set(it.kind, new Set());
+    map.get(it.kind)!.add(String(v));
+  }
+
+  return (['order', 'rental', 'stringing_application'] as Kind[])
+    .map((k) => {
+      const labels = Array.from(map.get(k) ?? []);
+      if (labels.length === 0) return null;
+      return { kind: k, mixed: labels.length > 1, text: labels.length === 1 ? labels[0] : `${labels[0]} 외 ${labels.length - 1}` };
+    })
+    .filter(Boolean) as Array<{ kind: Kind; mixed: boolean; text: string }>;
+}
+
+function isWarnGroup(g: OpGroup) {
+  if (!g.items || g.items.length <= 1) return false;
+  const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
+  const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
+  if (children.length === 0) return false;
+
+  const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
+  const childPaymentSummary = summarizeByKind(children, (it) => it.paymentLabel);
+  const hasMixed = childStatusSummary.some((s) => s.mixed) || childPaymentSummary.some((p) => p.mixed);
+
+  const anchorPay = g.anchor.paymentLabel ?? '-';
+  const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
+  const payMismatch = anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
+
+  return payMismatch || hasMixed;
+}
+
+function filterWarnGroups(list: OpItem[]): OpItem[] {
+  const map = new Map<string, OpItem[]>();
+  for (const it of list) {
+    const key = groupKeyOf(it);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(it);
+  }
+
+  const groups: OpGroup[] = Array.from(map.entries()).map(([key, items]) => {
+    items.sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
+    const anchor = pickAnchor(items);
+    const ts = Math.max(...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)));
+    const createdAt = ts ? new Date(ts).toISOString() : null;
+    return { key, anchor, createdAt, items };
+  });
+
+  const warnGroups = groups.filter((g) => isWarnGroup(g));
+
+  // 그룹 최신순(운영자가 "최근 경고"부터 본다)
+  warnGroups.sort((a, b) => {
+    const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return tb - ta;
+  });
+
+  // 그룹 내부는 kind 우선순위(주문 → 대여 → 신청서)
+  return warnGroups.flatMap((g) => g.items);
+}
+
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
+
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const { db } = guard;
 
   const url = new URL(req.url);
-  const page = Math.max(1, Number(url.searchParams.get('page') ?? 1));
-  const pageSize = Math.max(1, Math.min(MAX_PAGE_SIZE, Number(url.searchParams.get('pageSize') ?? DEFAULT_PAGE_SIZE)));
+  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
+  const pageSize = parseIntParam(url.searchParams.get('pageSize'), { defaultValue: DEFAULT_PAGE_SIZE, min: 1, max: MAX_PAGE_SIZE });
   const kind = (url.searchParams.get('kind') as Kind | 'all' | null) ?? 'all';
   const q = String(url.searchParams.get('q') ?? '')
     .trim()
     .toLowerCase();
+  const warn = url.searchParams.get('warn') === '1';
 
   // 1) 신청서 먼저 조회해서 “연결 매핑(orderId/rentalId)”을 만든다.
   const rawApps = await db
@@ -211,6 +313,9 @@ export async function GET(req: Request) {
       return idMatch || nameMatch || emailMatch || titleMatch;
     });
   }
+
+  // warn=1이면 서버에서 "경고 그룹"만 남긴 뒤 페이지네이션
+  if (warn) merged = filterWarnGroups(merged);
 
   const total = merged.length;
   const start = (page - 1) * pageSize;

@@ -6,6 +6,13 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 
 export const dynamic = 'force-dynamic';
 
+// 숫자 쿼리 파라미터 안전 파싱 (NaN/Infinity/음수 방지 + 범위 보정)
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
+
 type ActivityKind = 'order' | 'rental' | 'application';
 
 type ActivityOrderSummary = {
@@ -127,12 +134,16 @@ export async function GET(req: Request) {
   }
   if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const userId = new ObjectId(payload.sub);
+  const subStr = String(payload.sub);
+  if (!ObjectId.isValid(subStr)) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+  const userId = new ObjectId(subStr);
 
   // 2) 페이지네이션 파라미터
   const url = new URL(req.url);
-  const page = Math.max(parseInt(url.searchParams.get('page') || '1', 10), 1);
-  const pageSize = Math.min(Math.max(parseInt(url.searchParams.get('pageSize') || '10', 10), 1), 50);
+  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
+  const pageSize = parseIntParam(url.searchParams.get('pageSize'), { defaultValue: 10, min: 1, max: 50 });
   const skip = (page - 1) * pageSize;
 
   // 병합형 페이지네이션의 현실적인 구현:
@@ -178,7 +189,7 @@ export async function GET(req: Request) {
             shippingInfo: 1,
             cancelRequest: 1,
           },
-        }
+        },
       )
       .sort({ updatedAt: -1, createdAt: -1 })
       .limit(take)
@@ -202,7 +213,7 @@ export async function GET(req: Request) {
             stringing: 1,
             cancelRequest: 1,
           },
-        }
+        },
       )
       .sort({ updatedAt: -1, createdAt: -1 })
       .limit(take)
@@ -256,7 +267,7 @@ export async function GET(req: Request) {
           userConfirmedAt: 1,
           cancelRequest: 1,
         },
-      }
+      },
     )
     .toArray();
 
@@ -367,7 +378,7 @@ export async function GET(req: Request) {
         deposit: r?.amount?.deposit,
         fee: r?.amount?.fee,
         withStringService,
-        stringingApplicationId: r.stringingApplicationId ? String(r.stringingApplicationId) : linked?.id ?? null,
+        stringingApplicationId: r.stringingApplicationId ? String(r.stringingApplicationId) : (linked?.id ?? null),
         cancelStatus: r?.cancelRequest?.status ?? null,
       },
       application: linked,

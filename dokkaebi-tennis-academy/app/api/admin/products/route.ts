@@ -3,12 +3,21 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { getDb } from '@/lib/mongodb';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(req: Request) {
   try {
     // 인증
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = safeVerifyAccessToken(token);
     if (!user || user.role !== 'admin') {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }

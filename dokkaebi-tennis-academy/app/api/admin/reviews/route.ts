@@ -3,16 +3,31 @@ import { cookies } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
+
 export async function GET(req: Request) {
   const token = (await cookies()).get('accessToken')?.value;
-  const payload = token ? verifyAccessToken(token) : null;
+  const payload = safeVerifyAccessToken(token);
   if (!payload?.sub || payload.role !== 'admin') {
     return NextResponse.json({ message: 'forbidden' }, { status: 403 });
   }
 
   const url = new URL(req.url);
-  const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
-  const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || '10')));
+  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
+  const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 50 });
   const status = url.searchParams.get('status'); // visible|hidden
   const type = url.searchParams.get('type'); // product|service
   const q = (url.searchParams.get('q') || '').trim();

@@ -21,6 +21,7 @@ import PaymentMethodDetail from '@/app/features/orders/components/PaymentMethodD
 import OrderStatusSelect from '@/app/features/orders/components/OrderStatusSelect';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -196,6 +197,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   })();
   const isShippingManagedByApplication = Boolean(linkedStringingAppId);
 
+
   /**
    *  구매확정(관리자 화면에서 처리 버튼)
    * - 서버(/api/orders/[id]/confirm)가 관리자 세션에서도 허용되어 있어야 정상 동작합니다.
@@ -260,6 +262,40 @@ export default function OrderDetailClient({ orderId }: Props) {
       currency: 'KRW',
     }).format(amount);
   };
+
+  // 연결 문서(표시용) 구성: 신청서(복수) 우선, 없으면 레거시 단일 필드 사용
+  // - 핵심: “연결/통합”을 운영자가 한눈에 파악하도록, 상세 화면에서도 공용 카드로 통일
+  const linkedDocs: LinkedDocItem[] = (() => {
+    const docs: LinkedDocItem[] = [];
+    const apps = Array.isArray(orderDetail.stringingApplications) ? orderDetail.stringingApplications : [];
+
+    if (apps.length > 0) {
+      for (const app of apps) {
+        if (!app?.id) continue;
+        const parts: string[] = [];
+        if (app.status) parts.push(`상태: ${app.status}`);
+        if (app.createdAt) parts.push(formatDate(app.createdAt));
+        parts.push(`라켓 ${app.racketCount ?? 0}개`);
+        docs.push({
+          kind: 'stringing_application',
+          id: app.id,
+          href: `/admin/applications/stringing/${app.id}`,
+          subtitle: parts.filter(Boolean).join(' · ') || undefined,
+        });
+      }
+      return docs;
+    }
+
+    if (orderDetail.stringingApplicationId) {
+      docs.push({
+        kind: 'stringing_application',
+        id: orderDetail.stringingApplicationId,
+        href: `/admin/applications/stringing/${orderDetail.stringingApplicationId}`,
+      });
+    }
+
+    return docs;
+  })();
 
   //  취소 성공 시 호출되는 콜백
   const handleCancelSuccess = async (reason: string, detail?: string) => {
@@ -545,67 +581,18 @@ export default function OrderDetailClient({ orderId }: Props) {
               </div>
             </CardFooter>
 
-            {/*주문 1건에 여러 신청이 있을 수 있으므로, 요약 리스트 표시 */}
-            {orderDetail?.stringingApplications && orderDetail.stringingApplications.length > 0 && (
-              <Card className="border border-muted text-sm text-muted-foreground m-4">
-                <CardContent className="py-3">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <LinkIcon className="w-4 h-4" />
-                      <span>이 주문은 스트링 장착 서비스 신청서와 연결되어 있습니다.</span>
-                    </div>
-
-                    {totalSlots > 0 && (
-                      <div className="ml-6 text-xs text-gray-600 dark:text-gray-300">
-                        총 {totalSlots}회 중 <strong>{usedSlots}회 사용</strong>, 남은 <strong>{remainingSlots}회</strong>
-                      </div>
-                    )}
-
-                    <div className="mt-2 ml-6 flex flex-col gap-1 text-xs text-muted-foreground">
-                      {orderDetail.stringingApplications.map((app) => (
-                        <div key={app.id} className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-medium">[{app.status}]</span>
-                            {app.createdAt && <span>{formatDate(app.createdAt)}</span>}
-                            <span className="text-[11px] text-muted-foreground">라켓 {app.racketCount ?? 0}개</span>
-                          </div>
-                          <Link href={`/admin/applications/stringing/${app.id}`}>
-                            <Button variant="ghost" size="sm">
-                              보기
-                            </Button>
-                          </Link>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/*예전 필드(stringingApplicationId)만 있는 경우 단일 버튼 유지 */}
-            {!orderDetail?.stringingApplications?.length && orderDetail?.stringingApplicationId && (
-              <Card className="border border-muted text-sm text-muted-foreground m-4">
-                <CardContent className="flex justify-between items-center py-3">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <LinkIcon className="w-4 h-4" />
-                      <span>이 주문은 스트링 장착 서비스 신청서와 연결되어 있습니다.</span>
-                    </div>
-
-                    {totalSlots > 0 && (
-                      <div className="ml-6 text-xs text-gray-600 dark:text-gray-300">
-                        총 {totalSlots}회 중 <strong>{usedSlots}회 사용</strong>, 남은 <strong>{remainingSlots}회</strong>
-                      </div>
-                    )}
-                  </div>
-
-                  <Link href={`/admin/applications/stringing/${orderDetail.stringingApplicationId}`}>
-                    <Button variant="ghost" size="sm">
-                      신청서 보기
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+            {/* 연결 문서(공용 카드) */}
+            {linkedDocs.length > 0 && (
+              <div className="m-4">
+                <LinkedDocsCard
+                  docs={linkedDocs}
+                  description={
+                    totalSlots > 0
+                      ? `이 주문은 교체서비스 신청서와 연결되어 있습니다. · 총 ${totalSlots}회 중 ${usedSlots}회 사용 · 남은 ${remainingSlots}회`
+                      : '이 주문은 교체서비스 신청서와 연결되어 있습니다. 배송/운송장 정보는 신청서에서 단일 관리합니다.'
+                  }
+                />
+              </div>
             )}
           </Card>
 
