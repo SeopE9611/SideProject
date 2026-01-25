@@ -176,6 +176,14 @@ function filterWarnGroups(list: OpItem[]): OpItem[] {
   return warnGroups.flatMap((g) => g.items);
 }
 
+function parseFlow(v: string | null): Flow | null {
+  if (!v) return null;
+  const n = Number(v);
+  if (!Number.isInteger(n)) return null;
+  if (n < 1 || n > 7) return null;
+  return n as Flow;
+}
+
 function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
@@ -195,6 +203,7 @@ export async function GET(req: Request) {
     .trim()
     .toLowerCase();
   const warn = url.searchParams.get('warn') === '1';
+  const flow = parseFlow(url.searchParams.get('flow'));
 
   // 1) 신청서 먼저 조회해서 “연결 매핑(orderId/rentalId)”을 만든다.
   const rawApps = await db
@@ -419,6 +428,17 @@ export async function GET(req: Request) {
       const titleMatch = (x.title ?? '').toLowerCase().includes(q);
       return idMatch || nameMatch || emailMatch || titleMatch;
     });
+  }
+
+  // flow=1..7 (시나리오) 필터
+  // - "그룹(통합)"의 구성(앵커/하위)을 깨지 않기 위해, '그룹 키' 기준으로 통째로 남긴다.
+  // - 즉, 해당 그룹의 어떤 문서든 flow가 매칭되면 같은 그룹 키의 문서를 같이 남긴다.
+  if (flow) {
+    const allowedKeys = new Set<string>();
+    for (const it of merged) {
+      if (it.flow === flow) allowedKeys.add(groupKeyOf(it));
+    }
+    merged = merged.filter((it) => allowedKeys.has(groupKeyOf(it)));
   }
 
   // warn=1이면 서버에서 "경고 그룹"만 남긴 뒤 페이지네이션

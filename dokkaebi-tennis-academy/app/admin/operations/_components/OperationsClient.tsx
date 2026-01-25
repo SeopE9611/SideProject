@@ -233,6 +233,7 @@ export default function OperationsClient() {
 
   const [q, setQ] = useState('');
   const [kind, setKind] = useState<'all' | Kind>('all');
+  const [flow, setFlow] = useState<'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'>('all');
   const [onlyWarn, setOnlyWarn] = useState(false);
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
@@ -244,10 +245,12 @@ export default function OperationsClient() {
   // 1) 최초 1회: URL → 상태 주입(새로고침 대응)
   useEffect(() => {
     const k = (sp.get('kind') as any) ?? 'all';
+    const f = (sp.get('flow') as any) ?? 'all';
     const query = sp.get('q') ?? '';
     const warn = sp.get('warn');
     const p = Number(sp.get('page') ?? 1);
     if (k === 'all' || k === 'order' || k === 'stringing_application' || k === 'rental') setKind(k);
+    if (f === 'all' || f === '1' || f === '2' || f === '3' || f === '4' || f === '5' || f === '6' || f === '7') setFlow(f);
     if (query) setQ(query);
     if (warn === '1') setOnlyWarn(true);
     if (!Number.isNaN(p) && p > 0) setPage(p);
@@ -257,7 +260,7 @@ export default function OperationsClient() {
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
   useEffect(() => {
     setOpenGroups({});
-  }, [q, kind, page, onlyWarn]);
+  }, [q, kind, flow, page, onlyWarn]);
 
   // 2) 상태 → URL 동기화(디바운스)
   useEffect(() => {
@@ -269,17 +272,19 @@ export default function OperationsClient() {
       };
       setParam('q', q);
       setParam('kind', kind);
+      setParam('flow', flow);
       setParam('page', page === 1 ? undefined : page);
       setParam('warn', onlyWarn ? '1' : undefined);
       router.replace(pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''));
     }, 200);
     return () => clearTimeout(t);
-  }, [q, kind, page, onlyWarn, pathname, router]);
+  }, [q, kind, flow, page, onlyWarn, pathname, router]);
 
   // 3) API 키 구성
   const qs = new URLSearchParams();
   if (q.trim()) qs.set('q', q.trim());
   if (kind !== 'all') qs.set('kind', kind);
+  if (flow !== 'all') qs.set('flow', flow);
   qs.set('page', String(page));
   qs.set('pageSize', String(effectivePageSize));
   if (onlyWarn) qs.set('warn', '1');
@@ -312,6 +317,7 @@ export default function OperationsClient() {
   function reset() {
     setQ('');
     setKind('all');
+    setFlow('all');
     setOnlyWarn(false);
     setPage(1);
     router.replace(pathname);
@@ -397,6 +403,28 @@ export default function OperationsClient() {
                 <SelectItem value="order">주문</SelectItem>
                 <SelectItem value="stringing_application">신청서</SelectItem>
                 <SelectItem value="rental">대여</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={flow}
+              onValueChange={(v: any) => {
+                setFlow(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full md:w-[240px]">
+                <SelectValue placeholder="시나리오(전체)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">시나리오(전체)</SelectItem>
+                <SelectItem value="1">스트링 구매(단독)</SelectItem>
+                <SelectItem value="2">스트링 구매+교체(통합)</SelectItem>
+                <SelectItem value="3">교체 신청(단독)</SelectItem>
+                <SelectItem value="4">라켓 구매(단독)</SelectItem>
+                <SelectItem value="5">라켓 구매+교체(통합)</SelectItem>
+                <SelectItem value="6">라켓 대여(단독)</SelectItem>
+                <SelectItem value="7">대여+교체(통합)</SelectItem>
               </SelectContent>
             </Select>
 
