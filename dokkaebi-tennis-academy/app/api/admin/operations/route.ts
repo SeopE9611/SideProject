@@ -176,6 +176,13 @@ function filterWarnGroups(list: OpItem[]): OpItem[] {
   return warnGroups.flatMap((g) => g.items);
 }
 
+function parseIntegrated(v: string | null): boolean | null {
+  // integrated=1 (통합만) / integrated=0 (단독만)
+  if (v === '1') return true;
+  if (v === '0') return false;
+  return null;
+}
+
 function parseFlow(v: string | null): Flow | null {
   if (!v) return null;
   const n = Number(v);
@@ -204,6 +211,7 @@ export async function GET(req: Request) {
     .toLowerCase();
   const warn = url.searchParams.get('warn') === '1';
   const flow = parseFlow(url.searchParams.get('flow'));
+  const integrated = parseIntegrated(url.searchParams.get('integrated'));
 
   // 1) 신청서 먼저 조회해서 “연결 매핑(orderId/rentalId)”을 만든다.
   const rawApps = await db
@@ -437,6 +445,25 @@ export async function GET(req: Request) {
     const allowedKeys = new Set<string>();
     for (const it of merged) {
       if (it.flow === flow) allowedKeys.add(groupKeyOf(it));
+    }
+    merged = merged.filter((it) => allowedKeys.has(groupKeyOf(it)));
+  }
+
+  // integrated=1/0 (통합/단독) 필터
+  // - 그룹 키 기준으로 통째로 남김(앵커/하위 깨짐 방지)
+  if (integrated !== null) {
+    const groupIntegrated = new Map<string, boolean>();
+    // 기본값 false로 두고, 그룹 내에 isIntegrated=true가 하나라도 있으면 true
+    for (const it of merged) {
+      const key = groupKeyOf(it);
+      const prev = groupIntegrated.get(key) ?? false;
+      if (prev) continue;
+      if (it.isIntegrated) groupIntegrated.set(key, true);
+      else groupIntegrated.set(key, prev);
+    }
+    const allowedKeys = new Set<string>();
+    for (const [key, isInt] of groupIntegrated.entries()) {
+      if (isInt === integrated) allowedKeys.add(key);
     }
     merged = merged.filter((it) => allowedKeys.has(groupKeyOf(it)));
   }
