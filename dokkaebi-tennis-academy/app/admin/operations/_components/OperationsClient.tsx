@@ -319,6 +319,15 @@ export default function OperationsClient() {
     setOpenGroups(next);
   }
 
+  function applyPreset(next: Partial<{ q: string; kind: typeof kind; flow: typeof flow; integrated: typeof integrated; warn: boolean }>) {
+    if (next.q !== undefined) setQ(next.q);
+    if (next.kind !== undefined) setKind(next.kind);
+    if (next.flow !== undefined) setFlow(next.flow);
+    if (next.integrated !== undefined) setIntegrated(next.integrated);
+    if (next.warn !== undefined) setOnlyWarn(next.warn);
+    setPage(1);
+  }
+
   function reset() {
     setQ('');
     setKind('all');
@@ -328,6 +337,16 @@ export default function OperationsClient() {
     setPage(1);
     router.replace(pathname);
   }
+
+  // 프리셋 버튼 "활성" 판정(현재 필터 상태가 프리셋과 일치하는지)
+  const presetActive = {
+    integratedOnly: integrated === '1' && flow === 'all',
+    singleOnly: integrated === '0' && flow === 'all',
+    rentalBundle: integrated === '1' && flow === '7',
+    stringBundle: integrated === '1' && flow === '2',
+    appSingle: integrated === '0' && flow === '3' && kind === 'stringing_application',
+    racketBundle: integrated === '1' && flow === '5',
+  };
 
   function toggleGroup(key: string) {
     setOpenGroups((prev) => ({
@@ -465,6 +484,33 @@ export default function OperationsClient() {
 
             <Button variant="outline" onClick={reset} className="md:w-auto">
               필터 초기화
+            </Button>
+          </div>
+
+          {/* 프리셋 버튼(원클릭) - 필터 1줄과 분리해서 Input 폭이 안 찌그러지게 */}
+          <div className="flex flex-wrap gap-2">
+            <Button variant={presetActive.integratedOnly ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.integratedOnly} onClick={() => applyPreset({ integrated: '1', flow: 'all', kind: 'all', warn: false })}>
+              통합만
+            </Button>
+
+            <Button variant={presetActive.singleOnly ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.singleOnly} onClick={() => applyPreset({ integrated: '0', flow: 'all', kind: 'all', warn: false })}>
+              단독만
+            </Button>
+
+            <Button variant={presetActive.rentalBundle ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.rentalBundle} onClick={() => applyPreset({ integrated: '1', flow: '7', kind: 'all', warn: false })}>
+              대여+교체(통합)
+            </Button>
+
+            <Button variant={presetActive.stringBundle ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.stringBundle} onClick={() => applyPreset({ integrated: '1', flow: '2', kind: 'all', warn: false })}>
+              스트링+교체(통합)
+            </Button>
+
+            <Button variant={presetActive.appSingle ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.appSingle} onClick={() => applyPreset({ integrated: '0', flow: '3', kind: 'stringing_application', warn: false })}>
+              교체신청(단독)
+            </Button>
+
+            <Button variant={presetActive.racketBundle ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.racketBundle} onClick={() => applyPreset({ integrated: '1', flow: '5', kind: 'all', warn: false })}>
+              라켓+교체(통합)
             </Button>
           </div>
 
