@@ -6,6 +6,8 @@ export const dynamic = 'force-dynamic';
 
 type Kind = 'order' | 'stringing_application' | 'rental';
 
+type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
 type OpItem = {
   id: string;
   kind: Kind;
@@ -15,6 +17,8 @@ type OpItem = {
   statusLabel: string; // 화면 표시용(한글)
   paymentLabel?: string; // 주문/신청서에서만 사용
   amount: number; // 화면 표시용 “총액”
+  flow: Flow; // 7개 시나리오(운영자 언어) 판정 결과
+  flowLabel: string; // 화면 표시용(한글)
   href: string; // 상세 이동
   // 연결(통합) 판정용
   related?: { kind: Kind; id: string; href: string } | null;
@@ -38,6 +42,40 @@ const KIND_PRIORITY: Record<Kind, number> = {
   rental: 1,
   stringing_application: 2,
 };
+
+function hasRacketItems(items: any[] | undefined) {
+  return Array.isArray(items) && items.some((it) => it?.kind === 'racket' || it?.kind === 'used_racket');
+}
+
+function flowLabelOf(flow: Flow) {
+  switch (flow) {
+    case 1:
+      return '스트링 구매(단독)';
+    case 2:
+      return '스트링 구매+교체(통합)';
+    case 3:
+      return '교체 신청(단독)';
+    case 4:
+      return '라켓 구매(단독)';
+    case 5:
+      return '라켓 구매+교체(통합)';
+    case 6:
+      return '라켓 대여(단독)';
+    case 7:
+      return '대여+교체(통합)';
+    default:
+      return '미분류';
+  }
+}
+
+function orderFlowByHasRacket(hasRacket: boolean, integrated: boolean): Flow {
+  if (integrated) return (hasRacket ? 5 : 2) as Flow;
+  return (hasRacket ? 4 : 1) as Flow;
+}
+
+function rentalFlowByWithService(withService: boolean): Flow {
+  return (withService ? 7 : 6) as Flow;
+}
 
 function groupKeyOf(it: OpItem): string {
   // 주문/대여는 자기 자신이 앵커
@@ -206,6 +244,8 @@ export async function GET(req: Request) {
       fee: 1,
       deposit: 1,
       stringing: 1,
+      stringingApplicationId: 1,
+      isStringServiceApplied: 1,
     })
     .sort({ createdAt: -1 })
     .limit(MAX_FETCH_EACH)
@@ -220,6 +260,13 @@ export async function GET(req: Request) {
       .project({ name: 1, email: 1 })
       .toArray();
     users.forEach((u: any) => userMap.set(String(u._id), { name: u.name, email: u.email }));
+  }
+
+  // 주문 아이템에서 '라켓 포함 여부'를 미리 계산해두면,
+  // 신청서가 주문에 연결된 경우에도(Flow 2 vs 5) 정확히 판정가능
+  const orderHasRacket = new Map<string, boolean>();
+  for (const o of rawOrders as any[]) {
+    orderHasRacket.set(String(o?._id), hasRacketItems(o?.items));
   }
 
   // 4) 공통 포맷으로 매핑
@@ -237,6 +284,8 @@ export async function GET(req: Request) {
       statusLabel: normalizeOrderStatus(o.status),
       paymentLabel: normalizePaymentStatus(o.paymentStatus),
       amount: Number(o.totalPrice ?? 0),
+      flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
+      flowLabel: flowLabelOf(orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated)),
       href: `/admin/orders/${id}`,
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,
@@ -266,6 +315,21 @@ export async function GET(req: Request) {
       statusLabel: String(a?.status ?? '접수완료'),
       paymentLabel: normalizePaymentStatus(a?.paymentStatus),
       amount,
+      flow: (() => {
+        if (!isIntegrated) return 3 as Flow;
+        if (related?.kind === 'order') return orderFlowByHasRacket(orderHasRacket.get(String(related.id)) ?? false, true);
+        if (related?.kind === 'rental') return 7 as Flow;
+        return 3 as Flow;
+      })(),
+      flowLabel: (() => {
+        const f = (() => {
+          if (!isIntegrated) return 3 as Flow;
+          if (related?.kind === 'order') return orderFlowByHasRacket(orderHasRacket.get(String(related.id)) ?? false, true);
+          if (related?.kind === 'rental') return 7 as Flow;
+          return 3 as Flow;
+        })();
+        return flowLabelOf(f);
+      })(),
       href: `/admin/applications/stringing/${id}`,
       related,
       isIntegrated,
@@ -276,8 +340,11 @@ export async function GET(req: Request) {
     const id = String(r._id);
     const u = r?.userId ? userMap.get(String(r.userId)) : null;
     const cust = u?.name || u?.email ? { name: String(u?.name ?? ''), email: String(u?.email ?? '') } : pickCustomerFromDoc(r);
-    const appId = rentalToApp.get(id) ?? null;
-    const isIntegrated = !!appId;
+    const rawAppId = (r as any)?.stringingApplicationId ?? null;
+    const stringingApplicationId = rawAppId ? (typeof rawAppId === 'string' ? rawAppId : (rawAppId?.toString?.() ?? String(rawAppId))) : null;
+    const appId = stringingApplicationId || (rentalToApp.get(id) ?? null);
+    const withStringService = Boolean(r?.stringing?.requested) || Boolean((r as any)?.isStringServiceApplied) || Boolean(appId);
+    const isIntegrated = Boolean(appId);
     const days = Number(r?.days ?? r?.period ?? 0);
     const amount = normalizeRentalAmountTotal(r);
 
@@ -289,6 +356,8 @@ export async function GET(req: Request) {
       title: `${String(r?.brand ?? '')} ${String(r?.model ?? '')}`.trim() + (days ? ` (${days}일)` : ''),
       statusLabel: normalizeRentalStatus(r?.status),
       amount,
+      flow: rentalFlowByWithService(withStringService),
+      flowLabel: flowLabelOf(rentalFlowByWithService(withStringService)),
       href: `/admin/rentals/${id}`,
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,

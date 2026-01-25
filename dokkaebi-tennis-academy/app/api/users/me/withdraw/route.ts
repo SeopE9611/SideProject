@@ -7,10 +7,28 @@ import { auth } from '@/lib/auth';
 
 export async function PATCH(req: NextRequest) {
   // 요청 본문에서 탈퇴 사유(reason)와 세부 사유(detail)를 추출
-  const { reason, detail } = await req.json();
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch (e) {
+    console.error('[users/me/withdraw] invalid json', e);
+    return NextResponse.json({ error: 'INVALID_JSON' }, { status: 400 });
+  }
+
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json({ error: 'INVALID_BODY' }, { status: 400 });
+  }
+
+  const { reason, detail } = body;
+  if (typeof reason !== 'string' || (detail != null && typeof detail !== 'string')) {
+    return NextResponse.json({ error: 'INVALID_INPUT' }, { status: 400 });
+  }
 
   const session = await auth();
   const userId = session?.user?.id;
+  if (!userId || !ObjectId.isValid(userId)) {
+    return NextResponse.json({ error: 'invalid user id' }, { status: 401 });
+  }
 
   if (!userId) {
     return NextResponse.json({ message: 'Invalid token payload' }, { status: 400 });

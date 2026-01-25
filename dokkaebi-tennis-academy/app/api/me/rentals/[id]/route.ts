@@ -18,7 +18,10 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
   } catch {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-  if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const sub = String(payload?.sub ?? '');
+  if (!sub || !ObjectId.isValid(sub)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+  const userId = new ObjectId(sub);
 
   // 파라미터
   const { id } = await ctx.params;
@@ -27,7 +30,7 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
   const db = (await clientPromise).db();
   const doc = await db.collection('rental_orders').findOne({
     _id: new ObjectId(id),
-    userId: new ObjectId(payload.sub), // 소유자 검증(중요)
+    userId: userId, // 소유자 검증(중요)
   });
   if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
 
@@ -77,7 +80,10 @@ export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> 
   } catch {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-  if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const sub = String(payload?.sub ?? '');
+  if (!sub || !ObjectId.isValid(sub)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+  const userId = new ObjectId(sub);
 
   // 파라미터
   const { id } = await ctx.params;
@@ -88,7 +94,7 @@ export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> 
   const rentals = db.collection('rental_orders');
   const doc = await rentals.findOne({
     _id: new ObjectId(id),
-    userId: new ObjectId(payload.sub), // 소유자 검증(중요)
+    userId: userId, // 소유자 검증(중요)
   });
   if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
 

@@ -19,14 +19,21 @@ function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function toInt(v: string | null, fallback: number, min: number, max: number) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  const i = Math.trunc(n);
+  return Math.min(max, Math.max(min, i));
+}
+
 export async function GET(req: NextRequest) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const { db } = guard;
 
   const { searchParams } = new URL(req.url);
-  const page = Math.max(1, Number(searchParams.get('page') ?? 1) || 1);
-  const limit = Math.min(50, Math.max(1, Number(searchParams.get('limit') ?? 20) || 20));
+  const page = toInt(searchParams.get('page'), 1, 1, 100000);
+  const limit = toInt(searchParams.get('limit'), 20, 1, 50);
   const skip = (page - 1) * limit;
 
   const status = (searchParams.get('status') ?? 'all').trim(); // all|pending|resolved|rejected

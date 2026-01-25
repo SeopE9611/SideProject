@@ -7,7 +7,18 @@ const RECOVERY_TOKEN_SECRET = process.env.RECOVERY_TOKEN_SECRET!;
 
 export async function POST(req: Request) {
   // body에서 token 꺼내기
-  const { token } = await req.json();
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch (e) {
+    console.error('[users/me/restore] invalid json', e);
+    return NextResponse.json({ ok: false, message: 'INVALID_JSON' }, { status: 400 });
+  }
+
+  const token = body?.token;
+  if (typeof token !== 'string' || !token) {
+    return NextResponse.json({ ok: false, message: 'INVALID_TOKEN' }, { status: 400 });
+  }
   if (!token) {
     return NextResponse.json({ error: '토큰이 필요합니다.' }, { status: 400 });
   }
@@ -21,8 +32,8 @@ export async function POST(req: Request) {
   }
 
   // sub 클레임(사용자 ID) 확인
-  const userId = payload.sub;
-  if (!userId) {
+  const userId = String(payload.sub ?? '');
+  if (!userId || !ObjectId.isValid(userId)) {
     return NextResponse.json({ error: '잘못된 토큰입니다.' }, { status: 400 });
   }
 

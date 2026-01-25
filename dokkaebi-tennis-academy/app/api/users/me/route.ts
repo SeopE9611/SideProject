@@ -127,7 +127,26 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid token (no sub)' }, { status: 401 });
   }
 
-  const { name, phone, postalCode, address, addressDetail /*, marketing*/ } = await req.json();
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch (e) {
+    console.error('[users/me] invalid json', e);
+    return NextResponse.json({ error: 'INVALID_JSON' }, { status: 400 });
+  }
+
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json({ error: 'INVALID_BODY' }, { status: 400 });
+  }
+
+  const { name, phone, postalCode, address, addressDetail /*, marketing*/ } = body;
+
+  // 선택 필드는 값이 들어왔을 때만 타입을 확인합니다.
+  if (name != null && typeof name !== 'string') return NextResponse.json({ error: 'INVALID_NAME' }, { status: 400 });
+  if (phone != null && typeof phone !== 'string') return NextResponse.json({ error: 'INVALID_PHONE' }, { status: 400 });
+  if (postalCode != null && typeof postalCode !== 'string') return NextResponse.json({ error: 'INVALID_POSTAL_CODE' }, { status: 400 });
+  if (address != null && typeof address !== 'string') return NextResponse.json({ error: 'INVALID_ADDRESS' }, { status: 400 });
+  if (addressDetail != null && typeof addressDetail !== 'string') return NextResponse.json({ error: 'INVALID_ADDRESS_DETAIL' }, { status: 400 });
 
   try {
     const db = await getDb();

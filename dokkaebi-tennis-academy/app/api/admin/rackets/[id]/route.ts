@@ -25,7 +25,17 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const db = (await clientPromise).db();
-  const body = await req.json();
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch (e) {
+    console.error('[admin/rackets] invalid json', e);
+    return NextResponse.json({ message: 'INVALID_JSON' }, { status: 400 });
+  }
+
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json({ message: 'INVALID_BODY' }, { status: 400 });
+  }
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {
     return NextResponse.json({ message: 'Bad Request' }, { status: 400 });

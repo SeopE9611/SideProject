@@ -20,7 +20,22 @@ export async function PATCH(req: Request) {
   }
 
   // 클라이언트에서 보낸 현재 비밀번호와 새 비밀번호 추출
-  const { currentPassword, newPassword } = await req.json();
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch (e) {
+    console.error('[users/me/password] invalid json', e);
+    return Response.json({ message: 'INVALID_JSON' }, { status: 400 });
+  }
+
+  if (!body || typeof body !== 'object') {
+    return Response.json({ message: 'INVALID_BODY' }, { status: 400 });
+  }
+
+  const { currentPassword, newPassword } = body;
+  if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
+    return Response.json({ message: 'INVALID_INPUT' }, { status: 400 });
+  }
 
   // 서버 측에서도 유효성 검사 진행
   if (!isPasswordValid(newPassword)) {

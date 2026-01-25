@@ -19,9 +19,10 @@ export async function GET(req: Request) {
   } catch {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-  if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const sub = String(payload?.sub ?? '');
+  if (!sub || !ObjectId.isValid(sub)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const userId = new ObjectId(payload.sub);
+  const userId = new ObjectId(sub);
 
   // 2) 페이지네이션 파라미터
   const url = new URL(req.url);

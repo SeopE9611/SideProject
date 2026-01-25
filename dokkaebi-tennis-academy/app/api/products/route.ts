@@ -17,7 +17,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
+    let body: any = null;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error('[products] invalid json', e);
+      return NextResponse.json({ error: 'INVALID_JSON' }, { status: 400 });
+    }
 
     // 유효성 검사 (기초)
     if (!body.name || !body.price) {

@@ -143,7 +143,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
 
   const db = await getDb();
   const _id = new ObjectId(id);
-  const me = new ObjectId(String(payload.sub));
+  const me = new ObjectId(subStr);
 
   const doc = await db.collection('reviews').findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
   if (!doc) return NextResponse.json({ message: 'not found' }, { status: 404 });

@@ -69,7 +69,18 @@ export async function POST(req: Request) {
     const user = token ? verifyAccessToken(token) : null;
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-    const { productId } = await req.json();
+    let body: any = null;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error('[wishlist] invalid json', e);
+      return NextResponse.json({ message: 'INVALID_JSON' }, { status: 400 });
+    }
+
+    const productId = body?.productId;
+    if (typeof productId !== 'string' || !productId) {
+      return NextResponse.json({ message: 'INVALID_PRODUCT_ID' }, { status: 400 });
+    }
     if (!productId) return NextResponse.json({ message: 'productId required' }, { status: 400 });
 
     const db = await getDb();

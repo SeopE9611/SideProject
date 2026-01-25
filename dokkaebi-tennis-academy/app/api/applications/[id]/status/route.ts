@@ -23,7 +23,18 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   // 요청 본문에서 상태값 추출
-  const { status } = await req.json();
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch (e) {
+    console.error('[applications/status] invalid json', e);
+    return NextResponse.json({ message: 'INVALID_JSON' }, { status: 400 });
+  }
+
+  const status = body?.status;
+  if (typeof status !== 'string') {
+    return NextResponse.json({ message: 'INVALID_STATUS' }, { status: 400 });
+  }
 
   // 허용되지 않은 상태값이면 에러 처리
   if (!APPLICATION_STATUSES.includes(status)) {

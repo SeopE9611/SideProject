@@ -469,6 +469,9 @@ export default function OperationsClient() {
                   const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
                   const payMismatch = isGroup && anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
 
+                  // 경고 그룹(혼재/결제불일치)에서만 자식 행에 "왜 연결인지" 라벨 노출
+                  const showLinkReason = onlyWarn || payMismatch || hasMixed;
+
                   // 경고 "근거"를 한 줄로 바로 보이게(운영자 인지부하 감소)
                   // - 테이블 폭을 망치지 않도록 데스크톱에서만 노출(xl 이상)
                   const uniq = (arr: (string | null | undefined)[]) => Array.from(new Set(arr.filter(Boolean).map(String)));
@@ -699,9 +702,11 @@ export default function OperationsClient() {
                                   <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>연결</Badge>
                                   <div className="font-medium">{shortenId(it.id)}</div>
                                 </div>
-                                    <div className="text-[11px] text-muted-foreground">
-                                  연결됨: {opsKindLabel(g.anchor.kind)}(#{shortenId(g.anchor.id)})
-                                </div>
+                                {showLinkReason && (
+                                  <div className="text-[11px] text-muted-foreground">
+                                    연결됨: {opsKindLabel(g.anchor.kind)}(#{shortenId(g.anchor.id)})
+                                  </div>
+                                )}
                               </div>
                             </TableCell>
 

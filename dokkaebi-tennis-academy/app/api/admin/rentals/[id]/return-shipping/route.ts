@@ -52,6 +52,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     payload = null;
   }
   if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const subStr = String(payload.sub);
+  if (!ObjectId.isValid(subStr)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   // 파라미터/바디 검증
   const { id } = params;
@@ -96,7 +98,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   // 소유자 검증
   const db = (await clientPromise).db();
   const _id = new ObjectId(id);
-  const ownerId = new ObjectId(payload.sub);
+  const ownerId = new ObjectId(subStr);
   const mine = await db.collection('rental_orders').findOne({ _id, userId: ownerId });
   if (!mine) return NextResponse.json({ message: 'FORBIDDEN' }, { status: 403 });
 

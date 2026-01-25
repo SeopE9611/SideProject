@@ -4,6 +4,11 @@ import { loadPackageSettings, savePackageSettings } from '@/app/features/package
 
 export const dynamic = 'force-dynamic';
 
+function toNumberSafe(v: unknown, fallback: number) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 async function requireAdmin() {
   // 현재 다른 admin 라우터와 동일하게 일단 통과만 시킴
   return true;
@@ -24,8 +29,19 @@ export async function GET() {
 export async function PUT(req: Request) {
   await requireAdmin();
 
+  // 잘못된 JSON은 500이 아니라 400으로 정리
+  let body: any;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch (e) {
+    console.error('[PUT /api/admin/packages/settings] invalid json', e);
+    return NextResponse.json({ error: 'INVALID_JSON' }, { status: 400 });
+  }
+
+  try {
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'INVALID_BODY' }, { status: 400 });
+    }
 
     const rawPackages: PackageConfig[] = Array.isArray(body.packageConfigs) ? body.packageConfigs : [];
 
@@ -36,14 +52,14 @@ export async function PUT(req: Request) {
       .map((pkg, index) => ({
         id: String(pkg.id || `package-${pkg.sessions || index + 1}`),
         name: String(pkg.name || `${pkg.sessions}회권`),
-        sessions: Number(pkg.sessions || 0),
-        price: Number(pkg.price || 0),
-        originalPrice: pkg.originalPrice != null ? Number(pkg.originalPrice) : undefined,
+        sessions: toNumberSafe(pkg.sessions, 0),
+        price: toNumberSafe(pkg.price, 0),
+        originalPrice: pkg.originalPrice != null && Number.isFinite(Number(pkg.originalPrice)) ? Number(pkg.originalPrice) : undefined,
         description: String(pkg.description ?? ''),
         features: Array.isArray(pkg.features) ? pkg.features.map((f) => String(f)) : [],
         isActive: !!pkg.isActive,
         isPopular: !!pkg.isPopular,
-        validityDays: Number(pkg.validityDays || 0),
+        validityDays: toNumberSafe(pkg.validityDays, 0),
         sortOrder: typeof pkg.sortOrder === 'number' ? pkg.sortOrder : index + 1,
       }))
       // 회수/가격이 0인 이상한 항목은 버림
@@ -53,13 +69,13 @@ export async function PUT(req: Request) {
     const generalSettings: GeneralSettings = {
       ...DEFAULT_GENERAL_SETTINGS,
       enablePackages: !!rawGeneral.enablePackages,
-      maxValidityDays: Number(rawGeneral.maxValidityDays ?? DEFAULT_GENERAL_SETTINGS.maxValidityDays),
-      minSessions: Number(rawGeneral.minSessions ?? DEFAULT_GENERAL_SETTINGS.minSessions),
-      maxSessions: Number(rawGeneral.maxSessions ?? DEFAULT_GENERAL_SETTINGS.maxSessions),
+      maxValidityDays: toNumberSafe(rawGeneral.maxValidityDays, DEFAULT_GENERAL_SETTINGS.maxValidityDays),
+      minSessions: toNumberSafe(rawGeneral.minSessions, DEFAULT_GENERAL_SETTINGS.minSessions),
+      maxSessions: toNumberSafe(rawGeneral.maxSessions, DEFAULT_GENERAL_SETTINGS.maxSessions),
       defaultServiceType: rawGeneral.defaultServiceType === '출장' ? '출장' : '방문',
-      autoExpireNotificationDays: Number(rawGeneral.autoExpireNotificationDays ?? DEFAULT_GENERAL_SETTINGS.autoExpireNotificationDays),
+      autoExpireNotificationDays: toNumberSafe(rawGeneral.autoExpireNotificationDays, DEFAULT_GENERAL_SETTINGS.autoExpireNotificationDays),
       allowExtension: !!rawGeneral.allowExtension,
-      extensionFeePercentage: Number(rawGeneral.extensionFeePercentage ?? DEFAULT_GENERAL_SETTINGS.extensionFeePercentage),
+      extensionFeePercentage: toNumberSafe(rawGeneral.extensionFeePercentage, DEFAULT_GENERAL_SETTINGS.extensionFeePercentage),
     };
 
     await savePackageSettings({ packageConfigs, generalSettings });

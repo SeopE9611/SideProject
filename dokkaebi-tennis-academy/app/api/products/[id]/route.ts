@@ -40,7 +40,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   // 본문 파싱 및 업데이트
   try {
-    const body = await req.json();
+    let body: any = null;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error('[products/[id]] invalid json', e);
+      return NextResponse.json({ error: 'INVALID_JSON' }, { status: 400 });
+    }
     const client = await clientPromise;
     const db = client.db();
 

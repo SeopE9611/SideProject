@@ -2,11 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 
+function toInt(v: string | null, fallback: number, min: number, max: number) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  const i = Math.trunc(n);
+  return Math.min(max, Math.max(min, i));
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const db = await getDb();
   const url = new URL(req.url);
-  const page = Math.max(1, Number(url.searchParams.get('page') || 1));
-  const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
+  const page = toInt(url.searchParams.get('page'), 1, 1, 100000);
+  const limit = toInt(url.searchParams.get('limit'), 10, 1, 50);
 
   const { id } = await params;
 

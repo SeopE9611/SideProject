@@ -317,6 +317,13 @@ export async function POST(req: Request) {
 }
 
 // 리뷰 리스트(상품/서비스) + 필터 + 커서 페이지네이션
+function toInt(v: string | null, fallback: number, min: number, max: number) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  const i = Math.trunc(n);
+  return Math.min(max, Math.max(min, i));
+}
+
 export async function GET(req: Request) {
   const db = await getDb();
   await ensureReviewIndexes(db);
@@ -345,7 +352,7 @@ export async function GET(req: Request) {
   const rating = url.searchParams.get('rating');
   const hasPhoto = url.searchParams.get('hasPhoto') === '1';
   const sort = (url.searchParams.get('sort') || 'latest') as 'latest' | 'helpful' | 'rating';
-  const limit = Math.max(1, Math.min(50, Number(url.searchParams.get('limit') || 10)));
+  const limit = toInt(url.searchParams.get('limit'), 10, 1, 50);
   const cursorB64 = url.searchParams.get('cursor');
   const withHidden = url.searchParams.get('withHidden'); // 'mask' | 'all' | null
   const withDeleted = url.searchParams.get('withDeleted'); //  ('1' | 'true')

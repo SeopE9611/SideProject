@@ -4,6 +4,13 @@ import { normalizeStringPattern, RACKET_BRANDS } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
+// 숫자 쿼리 파싱 NaN 방지 + 범위 보정(skip/limit 런타임 에러 예방)
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+  const n = Number(v);
+  const base = Number.isFinite(n) ? n : opts.defaultValue;
+  return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
+}
+
 async function requireAdmin() {
   // const user = await getCurrentUser(); if (!user?.isAdmin) throw new Error('FORBIDDEN');
   return true;
@@ -16,8 +23,8 @@ export async function GET(req: Request) {
   const brand = searchParams.get('brand')?.trim();
   const qtext = searchParams.get('q')?.trim();
   const status = searchParams.get('status')?.trim();
-  const page = Math.max(1, Number(searchParams.get('page') ?? '1'));
-  const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? '20')));
+  const page = parseIntParam(searchParams.get('page'), { defaultValue: 1, min: 1, max: 100000 });
+  const pageSize = parseIntParam(searchParams.get('pageSize'), { defaultValue: 20, min: 1, max: 100 });
 
   const q: any = {};
   if (brand) q.brand = { $regex: new RegExp(`^${brand}$`, 'i') };
@@ -40,7 +47,16 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   await requireAdmin();
   const db = (await clientPromise).db();
-  const body = await req.json();
+  let body: any;
+  try {
+   body = await req.json();
+  } catch (e) {
+    console.error('[POST /api/admin/rackets] invalid json', e);
+    return NextResponse.json({ message: 'INVALID_JSON' }, { status: 400 });
+  }
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json({ message: 'INVALID_BODY' }, { status: 400 });
+  }
 
   // 검증
   const doc = {
