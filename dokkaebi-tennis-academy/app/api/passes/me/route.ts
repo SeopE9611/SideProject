@@ -4,6 +4,16 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -12,13 +22,17 @@ export async function GET() {
     const user = verifyAccessToken(token);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const userId = String((user as any).sub ?? '');
+  if (!ObjectId.isValid(userId)) return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
+
+
     const client = await clientPromise;
     const db = client.db();
     const now = new Date();
 
     const passes = await db
       .collection('service_passes')
-      .find({ userId: new ObjectId(user.sub) })
+      .find({ userId: new ObjectId(userId) })
       .sort({ expiresAt: 1 })
       .limit(100)
       .toArray();

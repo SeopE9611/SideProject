@@ -6,6 +6,16 @@ import { getHangulInitials } from '@/lib/hangul-utils';
 import { ObjectId } from 'mongodb';
 
 // 단일 상품 조회
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const client = await clientPromise;

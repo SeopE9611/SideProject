@@ -5,6 +5,16 @@ import { ObjectId } from 'mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import jwt from 'jsonwebtoken';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * body 예시:
  * {
@@ -26,7 +36,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const at = jar.get('accessToken')?.value || null;
     const rt = jar.get('refreshToken')?.value || null;
 
-    let user: any = at ? verifyAccessToken(at) : null;
+    let user: any = safeVerifyAccessToken(at);
     if (!user && rt) {
       try {
         user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);

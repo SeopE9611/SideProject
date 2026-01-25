@@ -5,6 +5,16 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { getHangulInitials } from '@/lib/hangul-utils';
 import { ObjectId } from 'mongodb';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   //  인증 처리
   const cookieStore = await cookies();

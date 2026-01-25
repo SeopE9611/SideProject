@@ -5,6 +5,16 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 type SortKey = 'customer' | 'purchaseDate' | 'expiryDate' | 'remainingSessions' | 'usedSessions' | 'totalSessions' | 'progress' | 'status' | 'payment' | 'price' | 'service' | 'package';
 
 export async function GET(req: Request) {
@@ -14,7 +24,7 @@ export async function GET(req: Request) {
     const at = jar.get('accessToken')?.value || null;
     const rt = jar.get('refreshToken')?.value || null;
 
-    let user: any = at ? verifyAccessToken(at) : null;
+    let user: any = safeVerifyAccessToken(at);
     if (!user && rt) {
       try {
         user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);

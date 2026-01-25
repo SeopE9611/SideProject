@@ -7,6 +7,16 @@ import jwt from 'jsonwebtoken';
 import { revertConsumption } from '@/lib/passes.service';
 import { deductPoints, grantPoints } from '@/lib/points.service';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -31,7 +41,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const at = jar.get('accessToken')?.value;
     const rt = jar.get('refreshToken')?.value;
 
-    let user: any = at ? verifyAccessToken(at) : null;
+    let user: any = safeVerifyAccessToken(at);
 
     // access 만료 시 refresh 토큰으로 한 번 더 시도
     if (!user && rt) {

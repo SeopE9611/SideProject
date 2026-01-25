@@ -5,6 +5,16 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { getPackagePricingInfo } from '@/app/features/packages/api/db';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 function s(v: unknown) {
   return typeof v === 'string' ? v : v == null ? '' : String(v);
 }
@@ -26,7 +36,7 @@ export async function POST(req: Request) {
   try {
     // 인증
     const at = (await cookies()).get('accessToken')?.value || null;
-    const user = at ? verifyAccessToken(at) : null;
+    const user = safeVerifyAccessToken(at);
     if (!user?.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     // 입력 파싱

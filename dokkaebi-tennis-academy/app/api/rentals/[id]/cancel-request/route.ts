@@ -7,6 +7,16 @@ import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 import type { RentalCancelRequestStatus } from '@/lib/types/rental-order';
 import { z } from 'zod';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export const dynamic = 'force-dynamic';
 
 // 취소 요청 body 최종 유효성(서버 방어)

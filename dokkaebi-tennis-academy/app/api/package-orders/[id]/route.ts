@@ -22,16 +22,27 @@ import { ServicePass } from '@/lib/types/pass';
 // );
 
 // PATCH: 상태 변경 (결제완료 -> 패스 멱등 발급 포함)
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
+    if (!ObjectId.isValid(String(id))) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
 
     // 토큰 읽기 (access 우선, refresh 보조)
     const jar = await cookies();
     const at = jar.get('accessToken')?.value;
     const rt = jar.get('refreshToken')?.value;
 
-    let user: any = at ? verifyAccessToken(at) : null;
+    let user: any = safeVerifyAccessToken(at);
     if (!user && rt) {
       try {
         user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);
@@ -149,7 +160,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     const at = jar.get('accessToken')?.value || null;
     const rt = jar.get('refreshToken')?.value || null;
 
-    let user: any = at ? verifyAccessToken(at) : null;
+    let user: any = safeVerifyAccessToken(at);
     if (!user && rt) {
       try {
         user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);

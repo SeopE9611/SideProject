@@ -9,6 +9,16 @@ import type { UpdateFilter } from 'mongodb';
 import type { ServicePass } from '@/lib/types/pass';
 import { ObjectId as OID } from 'mongodb';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 type PassHistoryItem = {
   _id: OID;
   type: 'extend_expiry' | 'adjust_sessions';
@@ -41,7 +51,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const jar = await cookies();
     const at = jar.get('accessToken')?.value || null;
     const rt = jar.get('refreshToken')?.value || null;
-    let user: any = at ? verifyAccessToken(at) : null;
+    let user: any = safeVerifyAccessToken(at);
     if (!user && rt) {
       try {
         user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);

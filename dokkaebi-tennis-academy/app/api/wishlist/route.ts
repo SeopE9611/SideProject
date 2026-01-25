@@ -5,12 +5,26 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { getDb } from '@/lib/mongodb';
 
 // 내 위시리스트 목록 + 상품 요약
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = safeVerifyAccessToken(token);
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+    const userId = String((user as any).sub ?? '');
+    if (!ObjectId.isValid(userId)) return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
+
 
     const db = await getDb();
     const wishlists = db.collection('wishlists');
@@ -21,7 +35,7 @@ export async function GET() {
 
     const rows = await wishlists
       .aggregate([
-        { $match: { userId: new ObjectId(user.sub) } },
+        { $match: { userId: new ObjectId(userId) } },
         { $sort: { createdAt: -1, _id: -1 } },
         {
           $lookup: {
@@ -66,7 +80,7 @@ export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = safeVerifyAccessToken(token);
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
     let body: any = null;
@@ -82,6 +96,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'INVALID_PRODUCT_ID' }, { status: 400 });
     }
     if (!productId) return NextResponse.json({ message: 'productId required' }, { status: 400 });
+    if (!ObjectId.isValid(String(productId))) return NextResponse.json({ error: 'Invalid productId' }, { status: 400 });
 
     const db = await getDb();
     const wishlists = db.collection('wishlists');
@@ -93,7 +108,7 @@ export async function POST(req: Request) {
     await wishlists.createIndex({ userId: 1, productId: 1 }, { unique: true });
 
     await wishlists.insertOne({
-      userId: new ObjectId(user.sub),
+      userId: new ObjectId(userId),
       productId: new ObjectId(productId),
       createdAt: new Date(),
     });
@@ -113,11 +128,11 @@ export async function DELETE() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
-    const user = token ? verifyAccessToken(token) : null;
+    const user = safeVerifyAccessToken(token);
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
     const db = await getDb();
-    await db.collection('wishlists').deleteMany({ userId: new ObjectId(user.sub) });
+    await db.collection('wishlists').deleteMany({ userId: new ObjectId(userId) });
 
     return NextResponse.json({ success: true });
   } catch (e) {

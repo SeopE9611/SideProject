@@ -5,6 +5,16 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import jwt from 'jsonwebtoken';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * 주문 취소 "요청 철회" API
  * - 이미 넣어둔 취소 요청(cancelRequest.status === 'requested')을 취소한다.
@@ -36,7 +46,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const at = jar.get('accessToken')?.value;
     const rt = jar.get('refreshToken')?.value;
 
-    let user: any = at ? verifyAccessToken(at) : null;
+    let user: any = safeVerifyAccessToken(at);
 
     if (!user && rt) {
       try {

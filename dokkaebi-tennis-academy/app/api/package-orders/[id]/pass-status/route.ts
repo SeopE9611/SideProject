@@ -7,6 +7,16 @@ import jwt from 'jsonwebtoken';
 import type { PackageOrder } from '@/lib/types/package-order';
 import type { ServicePass } from '@/lib/types/pass';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 type PassHistoryItem = {
   _id: OID;
   type: 'status_change';
@@ -30,7 +40,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const at = jar.get('accessToken')?.value || null;
     const rt = jar.get('refreshToken')?.value || null;
 
-    let user: any = at ? verifyAccessToken(at) : null;
+    let user: any = safeVerifyAccessToken(at);
     if (!user && rt) {
       try {
         user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);

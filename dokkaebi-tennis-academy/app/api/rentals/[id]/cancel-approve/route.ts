@@ -7,6 +7,16 @@ import jwt from 'jsonwebtoken';
 import { writeRentalHistory } from '@/app/features/rentals/utils/history';
 import { grantPoints } from '@/lib/points.service';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;

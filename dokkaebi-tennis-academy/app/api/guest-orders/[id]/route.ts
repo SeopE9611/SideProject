@@ -5,6 +5,16 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
 // 단일 비회원 주문 상세 조회
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
   try {
     const client = await clientPromise;
@@ -19,7 +29,7 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
 
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
-    const payload = token ? verifyAccessToken(token) : null;
+    const payload = safeVerifyAccessToken(token);
 
     // 보호 로직: 회원 주문일 경우, 로그인된 사용자만 접근 가능
     if (order.userId) {

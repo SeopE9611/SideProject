@@ -5,6 +5,16 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+
+function safeVerifyAccessToken(token?: string | null) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
 export async function DELETE(req: NextRequest) {
@@ -26,8 +36,11 @@ export async function DELETE(req: NextRequest) {
 
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const payload = verifyAccessToken(token);
+    const payload = safeVerifyAccessToken(token);
+
+    if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const userId = payload?.sub;
+    if (!ObjectId.isValid(String(userId))) return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
     if (!userId) return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
 
     // MongoDB 연결
