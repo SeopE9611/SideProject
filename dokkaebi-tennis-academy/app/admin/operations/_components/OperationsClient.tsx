@@ -21,6 +21,10 @@ import { opsKindBadgeClass, opsKindLabel, opsStatusBadgeClass, type OpsKind } fr
 
 type Kind = OpsKind;
 
+type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+type SettlementAnchor = 'order' | 'rental' | 'application';
+
 type OpItem = {
   id: string;
   kind: Kind;
@@ -30,6 +34,10 @@ type OpItem = {
   statusLabel: string;
   paymentLabel?: string;
   amount: number;
+  flow: Flow;
+  flowLabel: string;
+  settlementAnchor: SettlementAnchor;
+  settlementLabel: string;
   href: string;
   related?: { kind: Kind; id: string; href: string } | null;
   isIntegrated: boolean;
@@ -37,6 +45,20 @@ type OpItem = {
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
+
+function flowBadgeClass(flow?: Flow) {
+  // 운영자 인지 부하를 줄이기 위해 "카테고리" 단위로만 색상을 분리
+  // (세부 Flow별 색상은 추후 원하면 확장)
+  if (!flow) return 'bg-slate-500/10 text-slate-700';
+  if (flow === 3) return 'bg-slate-500/10 text-slate-700'; // 교체 신청(단독)
+  if (flow === 6 || flow === 7) return 'bg-violet-500/10 text-violet-700'; // 대여 계열
+  if (flow === 4 || flow === 5) return 'bg-orange-500/10 text-orange-700'; // 라켓 구매 계열
+  return 'bg-sky-500/10 text-sky-700'; // 1/2: 스트링 구매 계열
+}
+
+function settlementBadgeClass() {
+  return 'bg-slate-500/10 text-slate-600';
+}
 
 function formatKST(iso?: string | null) {
   if (!iso) return '-';
@@ -404,6 +426,12 @@ export default function OperationsClient() {
             <span className="mx-1">·</span>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-emerald-500/10 text-emerald-600')}>통합(연결됨)</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-600')}>단독</Badge>
+            <span className="mx-1">·</span>
+            <span className="font-medium text-foreground">시나리오</span>
+            <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}>대여</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}>교체 신청(단독)</Badge>
           </div>
         </CardContent>
       </Card>
@@ -561,6 +589,17 @@ export default function OperationsClient() {
                               </Badge>
                               {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>{g.items.length}건</Badge>}
                             </div>
+                            {/* 7개 시나리오(Flow) */}
+                            <div className="flex flex-wrap gap-1">
+                              <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(g.anchor.flow))} title={`Flow ${g.anchor.flow}`}>
+                                {g.anchor.flowLabel}
+                              </Badge>
+                            </div>
+
+                            {/* 정산 기준(앵커) 라벨: 금액 해석 혼동 방지 */}
+                            <div className="flex flex-wrap gap-1">
+                              <Badge className={cn(badgeBase, badgeSizeSm, settlementBadgeClass())}>{g.anchor.settlementLabel}</Badge>
+                            </div>
                           </div>
                         </TableCell>
 
@@ -693,7 +732,13 @@ export default function OperationsClient() {
                         children.map((it) => (
                           <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-muted/10">
                             <TableCell className={td}>
-                              <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(it.kind))}>{opsKindLabel(it.kind)}</Badge>
+                              <div className="flex flex-col gap-1">
+                                <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(it.kind))}>{opsKindLabel(it.kind)}</Badge>
+                                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(it.flow))} title={`Flow ${it.flow}`}>
+                                  {it.flowLabel}
+                                </Badge>
+                              </div>
+                              <Badge className={cn(badgeBase, badgeSizeSm, settlementBadgeClass())}>{it.settlementLabel}</Badge>
                             </TableCell>
 
                             <TableCell className={td}>

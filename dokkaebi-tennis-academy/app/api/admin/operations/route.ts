@@ -8,6 +8,8 @@ type Kind = 'order' | 'stringing_application' | 'rental';
 
 type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
+type SettlementAnchor = 'order' | 'rental' | 'application';
+
 type OpItem = {
   id: string;
   kind: Kind;
@@ -19,6 +21,8 @@ type OpItem = {
   amount: number; // 화면 표시용 “총액”
   flow: Flow; // 7개 시나리오(운영자 언어) 판정 결과
   flowLabel: string; // 화면 표시용(한글)
+  settlementAnchor: SettlementAnchor; // 정산 기준(앵커)
+  settlementLabel: string; // 화면 표시용(짧은 라벨)
   href: string; // 상세 이동
   // 연결(통합) 판정용
   related?: { kind: Kind; id: string; href: string } | null;
@@ -65,6 +69,20 @@ function flowLabelOf(flow: Flow) {
       return '대여+교체(통합)';
     default:
       return '미분류';
+  }
+}
+
+function settlementLabelOf(anchor: SettlementAnchor) {
+  // 화면에서 “금액=정산금액?” 혼동을 막기 위한 최소 라벨
+  switch (anchor) {
+    case 'order':
+      return '정산: 주문';
+    case 'rental':
+      return '정산: 대여';
+    case 'application':
+      return '정산: 신청(단독)';
+    default:
+      return '정산: -';
   }
 }
 
@@ -286,6 +304,8 @@ export async function GET(req: Request) {
       amount: Number(o.totalPrice ?? 0),
       flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
       flowLabel: flowLabelOf(orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated)),
+      settlementAnchor: 'order',
+      settlementLabel: settlementLabelOf('order'),
       href: `/admin/orders/${id}`,
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,
@@ -330,6 +350,22 @@ export async function GET(req: Request) {
         })();
         return flowLabelOf(f);
       })(),
+      settlementAnchor: (() => {
+        // 통합 신청서는 정산이 “앵커(주문/대여)”로 잡히는 것이 원칙
+        if (!isIntegrated) return 'application' as SettlementAnchor;
+        if (related?.kind === 'order') return 'order' as SettlementAnchor;
+        if (related?.kind === 'rental') return 'rental' as SettlementAnchor;
+        return 'application' as SettlementAnchor;
+      })(),
+      settlementLabel: (() => {
+        const anchor = (() => {
+          if (!isIntegrated) return 'application' as SettlementAnchor;
+          if (related?.kind === 'order') return 'order' as SettlementAnchor;
+          if (related?.kind === 'rental') return 'rental' as SettlementAnchor;
+          return 'application' as SettlementAnchor;
+        })();
+        return settlementLabelOf(anchor);
+      })(),
       href: `/admin/applications/stringing/${id}`,
       related,
       isIntegrated,
@@ -358,6 +394,8 @@ export async function GET(req: Request) {
       amount,
       flow: rentalFlowByWithService(withStringService),
       flowLabel: flowLabelOf(rentalFlowByWithService(withStringService)),
+      settlementAnchor: 'rental',
+      settlementLabel: settlementLabelOf('rental'),
       href: `/admin/rentals/${id}`,
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,
