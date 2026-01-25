@@ -6,6 +6,16 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { calcOrderEarnPoints } from '@/lib/points.policy';
 import { grantPoints } from '@/lib/points.service';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+
 // 사용자: 교체 서비스 확정(교체완료 상태에서만 가능)
 // - orderId가 있는 신청(= 주문 기반 신청)은 "주문 구매확정"과 동일한 규칙으로 처리한다.
 //   (주문을 구매확정으로 변경 + 포인트 1회 적립 + 연결된 신청도 함께 확정 → 중복 지급 방지)
@@ -17,7 +27,7 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
   const accessToken = jar.get('accessToken')?.value;
   if (!accessToken) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
 
-  const payload = verifyAccessToken(accessToken);
+  const payload = safeVerifyAccessToken(accessToken);
   const userId = typeof payload?.sub === 'string' ? payload.sub : null;
   if (!userId || !ObjectId.isValid(userId)) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
 

@@ -6,6 +6,16 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { calcOrderEarnPoints } from '@/lib/points.policy';
 import { grantPoints } from '@/lib/points.service';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+
 function paymentMethodLabel(method?: string) {
   switch (method) {
     case 'bank_transfer':
@@ -30,7 +40,7 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
   const accessToken = jar.get('accessToken')?.value;
   if (!accessToken) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
 
-  const payload = verifyAccessToken(accessToken);
+  const payload = safeVerifyAccessToken(accessToken);
   const userId = typeof payload?.sub === 'string' ? payload.sub : null;
   if (!userId || !ObjectId.isValid(userId)) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
 

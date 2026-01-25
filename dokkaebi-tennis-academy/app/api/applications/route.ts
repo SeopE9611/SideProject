@@ -3,6 +3,16 @@ import clientPromise, { getDb } from '@/lib/mongodb'; // MongoDB 연결을 위�
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+
 // 신청서 목록을 가져오는 GET API
 export async function GET() {
   //  인증 처리
@@ -10,7 +20,7 @@ export async function GET() {
   const token = cookieStore.get('accessToken')?.value;
   if (!token) return new NextResponse('Unauthorized', { status: 401 });
 
-  const payload = verifyAccessToken(token);
+  const payload = safeVerifyAccessToken(token);
   if (!payload) return new NextResponse('Unauthorized', { status: 401 });
   try {
     // MongoDB 클라이언트 연결

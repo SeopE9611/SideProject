@@ -4,6 +4,16 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+
 // GET 메서드 정의
 export async function GET(req: Request, context: { params: { id: string } }) {
   // 인증 처리
@@ -11,7 +21,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
   const token = cookieStore.get('accessToken')?.value;
   if (!token) return new NextResponse('Unauthorized', { status: 401 });
 
-  const payload = verifyAccessToken(token);
+  const payload = safeVerifyAccessToken(token);
   if (!payload) return new NextResponse('Unauthorized', { status: 401 });
 
   try {

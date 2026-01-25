@@ -4,13 +4,23 @@ import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   //  인증 처리
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
   if (!token) return new NextResponse('Unauthorized', { status: 401 });
 
-  const payload = verifyAccessToken(token);
+  const payload = safeVerifyAccessToken(token);
   if (!payload) return new NextResponse('Unauthorized', { status: 401 });
 
   const { id } = await context.params;

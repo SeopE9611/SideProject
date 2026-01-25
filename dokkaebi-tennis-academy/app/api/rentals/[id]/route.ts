@@ -4,6 +4,16 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -23,7 +33,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   if (doc.userId) {
     const jar = await cookies();
     const at = jar.get('accessToken')?.value;
-    const payload = at ? verifyAccessToken(at) : null;
+    const payload = safeVerifyAccessToken(at);
     const ownerId = String(doc.userId);
     const isOwner = String(payload?.sub ?? '') === ownerId;
     const isAdmin = payload?.role === 'admin';

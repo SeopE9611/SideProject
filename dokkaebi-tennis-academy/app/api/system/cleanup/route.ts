@@ -3,6 +3,16 @@ import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+
 export async function DELETE(req: NextRequest) {
   // 쿠키에서 accessToken 추출
   const cookieStore = await cookies();
@@ -12,7 +22,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const payload = verifyAccessToken(token);
+  const payload = safeVerifyAccessToken(token);
 
   // 관리자 전용
   if (payload?.role !== 'admin') {
