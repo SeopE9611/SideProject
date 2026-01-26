@@ -92,6 +92,11 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
   // (원본 코드에 lockVisit 변수가 JSX에서 사용되고 있어, 여기서 안전하게 정의해 둡니다.)
   const lockVisit = lockCollection || isVisitDelivery;
 
+  // 정상 프리필되면 잠그고 비어있는경우 풀림
+  const isPrefillLocked = !!(orderId || isMember);
+  const hasPrefilledAddress = Boolean(formData.shippingPostcode?.trim() && formData.shippingAddress?.trim());
+  const lockAddressFields = isPrefillLocked && hasPrefilledAddress;
+
   return (
     <div className="relative space-y-6">
       <div className="text-center mb-8">
@@ -168,7 +173,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             value={formData.shippingPostcode}
             onChange={handleInputChange}
             onBlur={() => markTouched('shippingPostcode')}
-            readOnly={!!(orderId || isMember)}
+            readOnly={lockAddressFields}
             className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
             placeholder="우편번호"
           />

@@ -239,9 +239,9 @@ export default function CheckoutButton({
       const shippingInfo = {
         name: nameTrim,
         phone: phoneDigits,
-        address: needsShippingAddress ? addressTrim : '',
-        addressDetail: needsShippingAddress ? addressDetailTrim : '',
-        postalCode: needsShippingAddress ? postalDigits : '',
+       address: addressTrim,
+        addressDetail: addressDetailTrim,
+        postalCode: postalDigits,
         depositor: depositorTrim,
         deliveryRequest: deliveryRequestTrim,
         deliveryMethod,
