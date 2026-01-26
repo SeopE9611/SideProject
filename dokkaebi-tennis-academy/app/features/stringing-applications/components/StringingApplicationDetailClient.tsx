@@ -12,7 +12,7 @@ import ApplicationStatusBadge from '@/app/features/stringing-applications/compon
 import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import StringingApplicationHistory from '@/app/features/stringing-applications/components/StringingApplicationHistory';
-import { paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, getShippingMethodBadge, paymentStatusColors } from '@/lib/badge-style';
 import { useStringingStore } from '@/app/store/stringingStore';
 import CustomerEditForm from '@/app/features/stringing-applications/components/CustomerEditForm';
 import PaymentEditForm from '@/app/features/stringing-applications/components/PaymentEditForm';
@@ -600,6 +600,16 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   // "매장→고객" 배송은 shippingMethod로 별도 유지
   const shippingMethod = data.shippingInfo?.shippingMethod;
+
+  // 관리자 상세에서 “수령/배송(매장 → 고객 반환)”을 한눈에 보기 위한 배지
+  const shippingMethodBadge = getShippingMethodBadge(data as any);
+
+  // 연결 주문에서 선택된 “수령방식(방문/택배/퀵)” 배지
+  // - handleGetStringingApplication에서 linkedOrderPickupMethod를 내려주므로,
+  //   신청서 상세에서도 같은 수령방식을 표시할 수 있다.
+  const linkedOrderPickupMethod = (data as any)?.linkedOrderPickupMethod as 'visit' | 'delivery' | 'quick' | null | undefined;
+  const linkedOrderPickupBadge = linkedOrderPickupMethod ? getShippingMethodBadge({ shippingInfo: { shippingMethod: linkedOrderPickupMethod } } as any) : null;
+
   // 방문 예약인 경우에만 의미 있는 희망 일시 라벨
   const visitTimeLabel = isVisit ? formatVisitTimeRange(data.stringDetails.preferredDate, data.stringDetails.preferredTime, data.visitDurationMinutes ?? null, data.visitSlotCount ?? null) : '예약 불필요';
 
@@ -755,6 +765,20 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </div>
               <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{visitTimeLabel}</p>
             </div>
+          </div>
+          {data.orderId && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <Truck className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">수령/배송(주문)</span>
+              <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? 'bg-red-100 text-red-700'}`}>{linkedOrderPickupBadge?.label ?? '선택 없음'}</Badge>
+            </div>
+          )}
+
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <Truck className="h-4 w-4 text-gray-500" />
+            <span className="font-medium">수령/배송(반환)</span>
+            <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}>{shippingMethodBadge.label}</Badge>
+            {shippingMethodBadge.label === '선택 없음' && <span className="text-xs text-muted-foreground">반환 방식이 아직 선택되지 않았습니다.</span>}
           </div>
           {/* 취소 요청 상태 안내 (관리자용) */}
           {isAdmin && cancelInfo && (
@@ -1300,7 +1324,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         </>
                       ) : (
                         <>
-                          <p>배송 방식: {shippingMethod === 'quick' ? '퀵배송' : shippingMethod === 'visit' ? '매장 방문 수령' : '기타'}</p>
+                          <p>배송 방식: {shippingMethod === 'quick' ? '퀵배송' : shippingMethod === 'visit' ? '매장 방문 수령' : shippingMethod === 'delivery' ? '택배' : '미입력'}</p>
                           <p>예정일: {data.shippingInfo?.estimatedDate ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString('ko-KR') : '-'}</p>
                           <p className="text-xs text-slate-500">운송장 번호는 발급되지 않는 배송 방식입니다.</p>
                         </>

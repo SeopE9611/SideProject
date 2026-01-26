@@ -13,6 +13,7 @@ import { calcStringingTotal } from '@/lib/pricing';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { ServicePassConsumption } from '@/lib/types/pass';
 import { buildSlotSummaryForDate, loadStringingSettings, validateBookingWindow } from '@/app/features/stringing-applications/lib/slotEngine';
+import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 
 export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
 function mapCourierLabel(raw?: string | null): string {
@@ -123,6 +124,8 @@ export async function handleGetStringingApplication(req: Request, id: string) {
             items: 1,
             status: 1,
             cancelRequest: 1,
+            shippingInfo: 1,
+            servicePickupMethod: 1,
           },
         },
       );
@@ -140,6 +143,17 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         };
       }),
     );
+
+    const linkedOrderPickupMethod = (() => {
+      if (!order) return null;
+      const pickup = (order as any).servicePickupMethod as 'SHOP_VISIT' | 'COURIER_VISIT' | 'SELF_SEND' | undefined;
+      const codeFromPickup = pickup === 'SHOP_VISIT' ? 'visit' : pickup === 'COURIER_VISIT' || pickup === 'SELF_SEND' ? 'courier' : undefined;
+
+      const shippingRaw = (order as any).shippingInfo?.shippingMethod ?? (order as any).shippingInfo?.deliveryMethod ?? null;
+      const code = normalizeOrderShippingMethod(shippingRaw) ?? codeFromPickup;
+      if (!code) return null;
+      return code === 'courier' ? 'delivery' : code;
+    })();
 
     // 체크박스 옵션으로 그대로 사용
     const purchasedStrings = orderStrings;
@@ -216,6 +230,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       id: app._id.toString(),
       orderId: app.orderId?.toString() || null,
       rentalId: (app as any).rentalId?.toString?.() || null,
+      linkedOrderPickupMethod,
       // 사용자 확정 시각 (없으면 null)
       userConfirmedAt: (app as any).userConfirmedAt instanceof Date ? (app as any).userConfirmedAt.toISOString() : typeof (app as any).userConfirmedAt === 'string' ? (app as any).userConfirmedAt : null,
       // 주문 cancelRequest도 한글/영문 혼재 가능 → 표준화해서 내려야 UI가 안 깨짐
@@ -1584,7 +1599,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       lines,
     } = await req.json();
 
-    // ✅ 수거 방식 먼저 표준화 (이후 검증/슬롯체크에 사용)
+    // 수거 방식 먼저 표준화 (이후 검증/슬롯체크에 사용)
     const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship');
 
     // 라인 사용 여부

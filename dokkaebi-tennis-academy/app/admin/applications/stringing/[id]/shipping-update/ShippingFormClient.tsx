@@ -34,7 +34,7 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
   const shippingInfo = data?.shippingInfo ?? {};
   const invoice = shippingInfo.invoice ?? {};
 
-  // ✅ 기존 배송정보가 하나라도 있으면 "수정", 아무것도 없으면 "등록"
+  // 기존 배송정보가 하나라도 있으면 "수정", 아무것도 없으면 "등록"
   const method = String(shippingInfo.shippingMethod ?? '').trim();
   const date = String(shippingInfo.estimatedDate ?? '').trim();
   const courier = String(invoice.courier ?? '').trim();

@@ -9,7 +9,7 @@ import { ArrowLeft, Calendar, CreditCard, LinkIcon, Mail, MapPin, Package, Penci
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { badgeBase, badgeSizeSm, orderStatusColors, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, getShippingMethodBadge, orderStatusColors, paymentStatusColors } from '@/lib/badge-style';
 import AdminCancelOrderDialog from '@/app/features/orders/components/AdminCancelOrderDialog';
 import OrderHistory from '@/app/features/orders/components/OrderHistory';
 import Loading from '@/app/admin/orders/[id]/loading';
@@ -196,6 +196,12 @@ export default function OrderDetailClient({ orderId }: Props) {
     return latest ?? orderDetail.stringingApplicationId ?? null;
   })();
   const isShippingManagedByApplication = Boolean(linkedStringingAppId);
+
+  // 관리자 상세에서 “수령/배송(사용자가 체크아웃에서 선택한 값)”을 한눈에 보기 위한 배지
+  // - 목록(/admin/orders)에서 쓰는 규칙과 동일한 기준으로 표시한다.
+  // - 통합건(주문+신청)이라도, 실제 운송장/배송 등록은 신청서에서 하더라도
+  //   “사용자가 무엇을 선택했는지”는 운영자가 즉시 확인할 수 있어야 한다.
+  const shippingMethodBadge = getShippingMethodBadge(orderDetail as any);
 
   /**
    *  구매확정(관리자 화면에서 처리 버튼)
@@ -463,7 +469,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             </div>
 
             {/* 주문 요약 정보 */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
@@ -494,6 +500,14 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">결제 상태</span>
                 </div>
                 <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
+              </div>
+              <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Truck className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">수령/배송</span>
+                </div>
+                <Badge className={cn(badgeBase, badgeSizeSm, shippingMethodBadge.color)}>{shippingMethodBadge.label}</Badge>
+                {isShippingManagedByApplication && <p className="mt-1 text-[11px] text-muted-foreground">운송장/배송 등록은 신청서에서 관리</p>}
               </div>
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
@@ -713,7 +727,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <div className="flex items-start gap-2">
                       <LinkIcon className="mt-0.5 h-4 w-4 shrink-0" />
                       <div className="space-y-2">
-                        <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.</p> 
+                        <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.</p>
                         <div className="flex items-center space-x-3 p-3 bg-white/60 dark:bg-slate-900/30 rounded-lg border border-blue-200/60 dark:border-blue-800/40">
                           <Truck className="h-4 w-4 text-blue-600" />
                           <div>
@@ -857,6 +871,14 @@ export default function OrderDetailClient({ orderId }: Props) {
                           <p className="text-sm text-gray-600 dark:text-gray-400">결제 상태</p>
                           <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
                         </div>
+                        {/* <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 backdrop-blur-sm">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Truck className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">수령/배송</span>
+                          </div>
+                          <Badge className={cn(badgeBase, badgeSizeSm, shippingMethodBadge.color)}>{shippingMethodBadge.label}</Badge>
+                          {isShippingManagedByApplication && <p className="mt-1 text-[11px] text-muted-foreground">운송장/배송 등록은 신청서에서 관리</p>}
+                        </div> */}
                       </div>
 
                       <div

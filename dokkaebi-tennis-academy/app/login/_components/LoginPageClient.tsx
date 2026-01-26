@@ -673,7 +673,7 @@ export default function LoginPageClient() {
 
                 <SocialAuthButtons onKakaoClick={handleKakaoOAuth} onNaverClick={handleNaverOAuth} />
 
-                <div className="text-center">
+                {/* <div className="text-center">
                   <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-4 mb-4 border border-emerald-200/50 dark:border-emerald-800/50">
                     <div className="flex items-center justify-center gap-2 mb-3">
                       <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -687,7 +687,7 @@ export default function LoginPageClient() {
                       비회원 주문 조회하기
                     </Button>
                   </div>
-                </div>
+                </div> */}
               </div>
             </TabsContent>
 

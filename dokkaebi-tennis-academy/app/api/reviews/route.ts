@@ -446,7 +446,7 @@ export async function GET(req: Request) {
     { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
     ...(needServiceJoin
       ? [
-          // ✅ 서비스(스트링 교체) 리뷰면 신청서에서 "교체한 스트링 상품명"을 가져와서 제목을 만들어줌
+          // 서비스(스트링 교체) 리뷰면 신청서에서 "교체한 스트링 상품명"을 가져와서 제목을 만들어줌
           {
             $lookup: {
               from: 'stringing_applications',

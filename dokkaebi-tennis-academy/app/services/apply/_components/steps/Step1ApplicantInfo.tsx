@@ -89,26 +89,36 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
   }, [fieldErrors, touched]);
 
   // 방문 수령(주문 기반)일 땐 방문 접수 외 선택을 막는 용도
-  // (원본 코드에 lockVisit 변수가 JSX에서 사용되고 있어, 여기서 안전하게 정의해 둡니다.)
   const lockVisit = lockCollection || isVisitDelivery;
+  const courierPickupDisabled = true; // false로 변경하면 기사방문 선택가능
 
   // 정상 프리필되면 잠그고 비어있는경우 풀림
   const isPrefillLocked = !!(orderId || isMember);
   const hasPrefilledAddress = Boolean(formData.shippingPostcode?.trim() && formData.shippingAddress?.trim());
   const lockAddressFields = isPrefillLocked && hasPrefilledAddress;
 
+  // 우편번호/주소는 "검색으로 자동입력"되는 영역이므로 항상 직접 입력을 막는다.
+  // - 값 세팅은 handleOpenPostcode 내부에서 setFormData로만 들어오게 유지
+  const lockAutoAddressInputs = true;
+  const postcodeAddressReadOnly = lockAutoAddressInputs || lockAddressFields;
+
+  // 에러 텍스트는 "있을 때만" 렌더 (불필요한 상시 여백 제거)
+  const errorText = (key: string) => (touched[key] && fieldErrors[key] ? fieldErrors[key] : '');
+  const errCls = 'mt-1 px-3 text-[11px] leading-tight text-rose-600';
+
   return (
-    <div className="relative space-y-6">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-4">
+    <div className="relative space-y-5">
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-4">
           <User className="h-8 w-8 text-white" />
         </div>
         <h2 className="text-2xl font-bold mb-2">신청자 정보</h2>
         <p className="text-muted-foreground">정확한 정보를 입력해주세요</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
+      {/* 기본 정보: 2열 */}
+      <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
+        <div className="space-y-1">
           <Label htmlFor="name" className="text-sm font-medium">
             신청인 이름 <span className="text-red-500">*</span>
           </Label>
@@ -122,10 +132,10 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
             placeholder="이름을 입력해주세요"
           />
-          <p className="min-h-[16px] text-xs text-rose-600">{touched.name && fieldErrors.name ? fieldErrors.name : ''}</p>
+          {errorText('name') ? <p className={errCls}>{errorText('name')}</p> : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="email" className="text-sm font-medium">
             이메일 <span className="text-red-500">*</span>
           </Label>
@@ -140,10 +150,10 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
             placeholder="이메일을 입력해주세요"
           />
-          <p className="min-h-[16px] text-xs text-rose-600">{touched.email && fieldErrors.email ? fieldErrors.email : ''}</p>
+          {errorText('email') ? <p className={errCls}>{errorText('email')}</p> : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="md:col-span-2 space-y-1">
           <Label htmlFor="phone" className="text-sm font-medium">
             연락처 <span className="text-red-500">*</span>
           </Label>
@@ -158,55 +168,54 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             onBlur={() => markTouched('phone')}
             readOnly={!!(orderId || isMember)}
             className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
-            placeholder="010 0000 0000"
+            placeholder="01012345678"
           />
-          <p className="min-h-[16px] text-xs text-rose-600">{touched.phone && fieldErrors.phone ? fieldErrors.phone : ''}</p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="shippingPostcode" className="text-sm font-medium">
-            우편번호 <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="shippingPostcode"
-            name="shippingPostcode"
-            value={formData.shippingPostcode}
-            onChange={handleInputChange}
-            onBlur={() => markTouched('shippingPostcode')}
-            readOnly={lockAddressFields}
-            className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
-            placeholder="우편번호"
-          />
-          <p className="min-h-[16px] text-xs text-rose-600">{touched.shippingPostcode && fieldErrors.shippingPostcode ? fieldErrors.shippingPostcode : ''}</p>
+          {errorText('phone') ? <p className={errCls}>{errorText('phone')}</p> : null}
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="shippingAddress" className="text-sm font-medium">
-            주소 <span className="text-red-500">*</span>
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <Label htmlFor="shippingPostcode" className="text-sm font-medium">
+            우편번호 <span className="text-red-500">*</span>
           </Label>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center">
             <Input
-              id="shippingAddress"
-              name="shippingAddress"
-              value={formData.shippingAddress}
-              onChange={handleInputChange}
-              onBlur={() => markTouched('shippingAddress')}
-              readOnly={!!(orderId || isMember)}
-              className={`flex-1 transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
-              placeholder="주소를 입력해주세요"
+              id="shippingPostcode"
+              name="shippingPostcode"
+              value={formData.shippingPostcode}
+              onBlur={() => markTouched('shippingPostcode')}
+              readOnly={postcodeAddressReadOnly}
+              className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+              placeholder=""
             />
             {!orderId && !isMember && (
-              <Button type="button" variant="outline" onClick={handleOpenPostcode} className="whitespace-nowrap hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 bg-transparent">
+              <Button type="button" variant="outline" onClick={handleOpenPostcode} className="h-10 whitespace-nowrap hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 bg-transparent">
                 <MapPin className="h-4 w-4 mr-2" />
-                주소 검색
+                우편번호 검색
               </Button>
             )}
           </div>
+          {errorText('shippingPostcode') ? <p className={errCls}>{errorText('shippingPostcode')}</p> : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
+          <Label htmlFor="shippingAddress" className="text-sm font-medium">
+            주소 <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="shippingAddress"
+            name="shippingAddress"
+            value={formData.shippingAddress}
+            onBlur={() => markTouched('shippingAddress')}
+            readOnly={postcodeAddressReadOnly}
+            className={`transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+            placeholder=""
+          />
+          {errorText('shippingAddress') ? <p className={errCls}>{errorText('shippingAddress')}</p> : null}
+        </div>
+
+        <div className="space-y-1">
           <Label htmlFor="shippingAddressDetail" className="text-sm font-medium">
             상세 주소
           </Label>
@@ -215,22 +224,22 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             name="shippingAddressDetail"
             value={formData.shippingAddressDetail}
             onChange={handleInputChange}
-            onBlur={() => markTouched('shippingAddress')}
-            readOnly={!!(orderId || isMember)}
-            className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+            readOnly={lockAddressFields}
+            className={`transition-all duration-200 ${lockAddressFields ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
             placeholder="상세 주소를 입력해주세요"
           />
-          <p className="min-h-[16px] text-xs text-rose-600">{touched.shippingAddress && fieldErrors.shippingAddress ? fieldErrors.shippingAddress : ''}</p>
         </div>
-        {/* === 수거 방식 선택 (카드 버튼형) === */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">
-            수거 방식 <span className="text-red-500">*</span>
-          </Label>
+      </div>
 
-          {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
-            <div
-              className="
+      {/* ✅ 수거 방식: 2열 grid 밖으로 빼서 풀폭 + 카드 배치 안정화 */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">
+          수거 방식 <span className="text-red-500">*</span>
+        </Label>
+
+        {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
+          <div
+            className="
                 block cursor-pointer rounded-xl
                 border border-slate-200/80 dark:border-slate-700/60
                 bg-white/90 dark:bg-slate-800/80
@@ -239,125 +248,132 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
                 transition text-sm
                 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
               "
-            >
-              <div className="font-semibold mb-1 text-slate-900 dark:text-slate-100">자가 발송 안내</div>
-              <p className="mb-3 text-slate-700 dark:text-slate-300">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    // 초안의 수거방식을 자가발송으로 저장
-                    await fetch(`/api/applications/stringing/${applicationId}/shipping`, {
-                      method: 'PATCH',
-                      credentials: 'include',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        shippingInfo: { collectionMethod: 'self_ship' },
-                      }),
-                    });
-                  } catch {}
-                  // 그리고 안내 페이지로 이동
-                  router.push(`/services/applications/${applicationId}/shipping`);
-                }}
-                className="inline-flex items-center rounded-md bg-amber-500 px-3 py-2 text-white hover:bg-amber-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 dark:focus:ring-amber-600"
-              >
-                운송장/자가발송 안내 보기
-              </button>
-            </div>
-          )}
-          <RadioGroup
-            value={formData.collectionMethod}
-            onValueChange={(v) =>
-              setFormData((prev: any) => {
-                // 주문 연동 모드에서는 수거 방식 변경 자체를 막는다.
-                if (lockCollection) return prev;
-                const next = { ...prev, collectionMethod: v as CollectionMethod };
-                // 방문 접수 시, 날짜/시간 필드는 초기화 (기존에 선택된게 있다면)
-                if (normalizeCollection(v) === 'visit') {
-                  (next as any).preferredDate = '';
-                  (next as any).preferredTime = '';
-                }
-                return next;
-              })
-            }
-            className="grid gap-3 md:grid-cols-3"
           >
-            {/* 자가 발송 */}
-            <div>
-              <RadioGroupItem id="cm-self" value="self_ship" disabled={lockCollection || isVisitDelivery} className="peer sr-only" />
-              <Label
-                htmlFor="cm-self"
-                className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
-             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800"
-              >
-                <div className="flex items-center gap-2">
-                  <Box className="h-4 w-4" />
-                  <span className="font-medium">자가 발송</span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">편의점/우체국 등</p>
-              </Label>
-            </div>
-
-            {/* 기사 방문 수거 비노출 
-            <div>
-              <RadioGroupItem id="cm-pickup" value="courier_pickup" disabled={lockVisit} className="peer sr-only" />
-              <Label
-                htmlFor="cm-pickup"
-                className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
-             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800"
-              >
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4" />
-                  <span className="font-medium">택배 기사 방문 수거</span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">선택 시 +3,000원 (후정산)</p>
-              </Label>
-            </div> */}
-
-            {/* 매장 방문 접수 */}
-            <div>
-              <RadioGroupItem id="cm-visit" value="visit" disabled={lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */} className="peer sr-only" />
-              <Label
-                htmlFor="cm-visit"
-                className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
-             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800"
-              >
-                <div className="flex items-center gap-2">
-                  <Store className="h-4 w-4" />
-                  <span className="font-medium">매장 방문 접수</span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">방문 가능 시간대만 선택</p>
-              </Label>
-            </div>
-          </RadioGroup>
-          {lockCollection && <p className="mt-2 text-xs text-slate-500">라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.</p>}
-
-          {/* 기사 방문 수거 선택 시 추가 입력 */}
-          {normalizeCollection(formData.collectionMethod) === 'courier_pickup' && (
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="space-y-1">
-                <Label htmlFor="pickupDate" className="text-sm font-medium">
-                  수거 희망일
-                </Label>
-                <Input id="pickupDate" name="pickupDate" type="date" value={formData.pickupDate} onChange={handleInputChange} />
+            <div className="font-semibold mb-1 text-slate-900 dark:text-slate-100">자가 발송 안내</div>
+            <p className="mb-3 text-slate-700 dark:text-slate-300">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  // 초안의 수거방식을 자가발송으로 저장
+                  await fetch(`/api/applications/stringing/${applicationId}/shipping`, {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      shippingInfo: { collectionMethod: 'self_ship' },
+                    }),
+                  });
+                } catch {}
+                // 그리고 안내 페이지로 이동
+                router.push(`/services/applications/${applicationId}/shipping`);
+              }}
+              className="inline-flex items-center rounded-md bg-amber-500 px-3 py-2 text-white hover:bg-amber-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 dark:focus:ring-amber-600"
+            >
+              운송장/자가발송 안내 보기
+            </button>
+          </div>
+        )}
+        <RadioGroup
+          value={formData.collectionMethod}
+          onValueChange={(v) =>
+            setFormData((prev: any) => {
+              // 주문 연동 모드에서는 수거 방식 변경 자체를 막는다.
+              if (lockCollection) return prev;
+              //  비활성화된 옵션은 선택 자체를 막는다(혹시 UI에서 클릭 이벤트가 들어와도 방어)
+              if (v === 'courier_pickup' && courierPickupDisabled) return prev;
+              const next = { ...prev, collectionMethod: v as CollectionMethod };
+              // 방문 접수 시, 날짜/시간 필드는 초기화 (기존에 선택된게 있다면)
+              if (normalizeCollection(v) === 'visit') {
+                (next as any).preferredDate = '';
+                (next as any).preferredTime = '';
+              }
+              return next;
+            })
+          }
+          className="grid gap-3 md:grid-cols-3"
+        >
+          {/* 자가 발송 */}
+          <div>
+            <RadioGroupItem id="cm-self" value="self_ship" disabled={lockCollection || isVisitDelivery} className="peer sr-only" />
+            <Label
+              htmlFor="cm-self"
+              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
+            >
+              <div className="flex items-center gap-2">
+                <Box className="h-4 w-4" />
+                <span className="font-medium">자가 발송</span>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="pickupTime" className="text-sm font-medium">
-                  수거 시간대
-                </Label>
-                <Input id="pickupTime" name="pickupTime" placeholder="예: 10:00~13:00" value={formData.pickupTime} onChange={handleInputChange} />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="pickupNote" className="text-sm font-medium">
-                  기사 메모(선택)
-                </Label>
-                <Input id="pickupNote" name="pickupNote" placeholder="공동현관 비번/경비실 맡김 등" value={formData.pickupNote} onChange={handleInputChange} />
-              </div>
-            </div>
-          )}
+              <p className="mt-1 text-xs text-muted-foreground">편의점/우체국 등</p>
+            </Label>
+          </div>
 
-          {normalizeCollection(formData.collectionMethod) === 'courier_pickup' && <p className="text-xs text-muted-foreground">※ 기사 방문 수거 선택 시 수거비 +3,000원이 발생합니다(후정산 / 결제 합산은 관리자 확정 시 반영).</p>}
-        </div>
+          {/* 매장 방문 접수 */}
+          <div>
+            <RadioGroupItem id="cm-visit" value="visit" disabled={lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */} className="peer sr-only" />
+            <Label
+              htmlFor="cm-visit"
+              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
+            >
+              <div className="flex items-center gap-2">
+                <Store className="h-4 w-4" />
+                <span className="font-medium">매장 방문 접수</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">방문 가능 시간대만 선택</p>
+            </Label>
+          </div>
+
+          {/* 기사 방문 수거  */}
+          <div>
+            <RadioGroupItem id="cm-pickup" value="courier_pickup" disabled={courierPickupDisabled || lockVisit} className="peer sr-only" />
+
+            <Label
+              htmlFor="cm-pickup"
+              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-white dark:peer-disabled:hover:bg-slate-800"
+            >
+              <div className="flex items-center gap-2">
+                <Truck className="h-4 w-4" />
+                <span className="font-medium">택배 기사 방문 수거</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">선택 시 +3,000원 (후정산)</p>
+            </Label>
+          </div>
+        </RadioGroup>
+        {lockCollection && <p className="mt-2 text-xs text-slate-500">라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.</p>}
+
+        {/* 기사 방문 수거 선택 시 추가 입력 */}
+        {normalizeCollection(formData.collectionMethod) === 'courier_pickup' && !courierPickupDisabled && (
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="space-y-1">
+              <Label htmlFor="pickupDate" className="text-sm font-medium">
+                수거 희망일
+              </Label>
+              <Input id="pickupDate" name="pickupDate" type="date" value={formData.pickupDate} onChange={handleInputChange} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="pickupTime" className="text-sm font-medium">
+                수거 시간대
+              </Label>
+              <Input id="pickupTime" name="pickupTime" placeholder="예: 10:00~13:00" value={formData.pickupTime} onChange={handleInputChange} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="pickupNote" className="text-sm font-medium">
+                기사 메모(선택)
+              </Label>
+              <Input id="pickupNote" name="pickupNote" placeholder="공동현관 비번/경비실 맡김 등" value={formData.pickupNote} onChange={handleInputChange} />
+            </div>
+          </div>
+        )}
+
+        {normalizeCollection(formData.collectionMethod) === 'courier_pickup' && !courierPickupDisabled && (
+          <p className="text-xs text-muted-foreground">※ 기사 방문 수거 선택 시 수거비 +3,000원이 발생합니다(후정산 / 결제 합산은 관리자 확정 시 반영).</p>
+        )}
       </div>
       {/* 로딩 오버레이 */}
       {isUserLoading && (

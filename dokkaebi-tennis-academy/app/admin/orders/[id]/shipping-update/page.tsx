@@ -35,7 +35,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
       redirect(`/admin/applications/stringing/${id}/shipping-update`);
     }
 
-    // ✅ (UX) throw로 터뜨리지 말고, 페이지 내에서 오류를 안내합니다.
+    // (UX) throw로 터뜨리지 말고, 페이지 내에서 오류를 안내합니다.
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20 py-8 px-4">
         <div className="container mx-auto max-w-2xl">

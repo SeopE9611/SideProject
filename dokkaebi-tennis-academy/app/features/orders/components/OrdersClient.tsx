@@ -691,10 +691,11 @@ export default function OrdersClient() {
                           </TableCell>
                           {/* 수령방식 셀 */}
                           <TableCell className={tdClasses}>
-                          {(() => {
+                            {(() => {
                               // 수령방식은 “사용자가 뭘 선택했는지”가 핵심이므로
                               // 통합 주문(isLinkedProductOrder)이어도 그대로 표시해준다.
-                              const m = getShippingMethodBadge(order);
+                              const methodSource = order.__type === 'stringing_application' && anchorOrder && (order as any).linkedOrderId ? (anchorOrder as any) : (order as any);
+                              const m = getShippingMethodBadge(methodSource);
                               return (
                                 <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', m.color)} title={`수령방식 코드: ${String(m.code ?? 'null')}`}>
                                   {m.label}

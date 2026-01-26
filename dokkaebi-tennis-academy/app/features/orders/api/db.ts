@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { DBOrder } from '@/lib/types/order-db';
 import { ObjectId } from 'mongodb';
 import { normalizeOrderStatus, normalizePaymentStatus } from '@/lib/admin-ops-normalize';
+import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 
 // 주문을 DB에 삽입하는 함수
 export async function insertOrder(order: DBOrder) {
@@ -97,6 +98,26 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
       const si: any = (order as any)?.shippingInfo ?? {};
       const invoice: any = si?.invoice ?? {};
 
+      const normalizedFromDelivery = (() => {
+        // deliveryMethod(방문수령/택배수령 등)를 courier/visit/quick으로 정규화
+        const code = normalizeOrderShippingMethod(si?.deliveryMethod);
+        // courier는 기존 시스템에서 delivery로 저장하므로 delivery로 매핑
+        if (code === 'courier') return 'delivery';
+        // quick은 quick 그대로
+        if (code === 'quick') return 'quick';
+        // visit은 visit 그대로
+        if (code === 'visit') return 'visit';
+        // 알 수 없으면 undefined → 선택 없음 처리로 내려감
+        return undefined;
+      })();
+
+      const normalizedFromPickup = (() => {
+        const pickup = (order as any)?.servicePickupMethod as string | undefined;
+        if (pickup === 'SHOP_VISIT') return 'visit';
+        if (pickup === 'COURIER_VISIT' || pickup === 'SELF_SEND') return 'delivery';
+        return undefined;
+      })();
+
       // 결제상태는 order.paymentStatus가 없을 수도 있어서 paymentInfo.status도 fallback(표시용)
       const paymentStatusRaw = (order as any)?.paymentStatus ?? (order as any)?.paymentInfo?.status;
 
@@ -120,7 +141,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
           postalCode: si?.postalCode ?? '-',
           depositor: si?.depositor ?? '-',
           deliveryRequest: si?.deliveryRequest,
-          shippingMethod: si?.shippingMethod,
+          shippingMethod: si?.shippingMethod ?? normalizedFromDelivery ?? normalizedFromPickup,
           estimatedDate: si?.estimatedDate,
           withStringService: si?.withStringService ?? false,
           invoice: {

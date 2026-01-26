@@ -103,12 +103,17 @@ export function getShippingBadge(order: Order) {
  * - null    => 선택 없음
  */
 export function getShippingMethodBadge(order: Order) {
-  const shippingRaw = (order.shippingInfo as any)?.shippingMethod ?? (order.shippingInfo as any)?.deliveryMethod;
-  const code = normalizeOrderShippingMethod(shippingRaw);
+  const servicePickupMethod = (order as any)?.servicePickupMethod as 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null | undefined;
 
-  // 컬럼에는 짧고 직관적인 라벨이 더 좋음
+  const codeFromPickup = servicePickupMethod === 'SHOP_VISIT' ? 'visit' : servicePickupMethod === 'SELF_SEND' || servicePickupMethod === 'COURIER_VISIT' ? 'courier' : undefined;
+
+  const shippingRaw = (order.shippingInfo as any)?.shippingMethod ?? (order.shippingInfo as any)?.deliveryMethod;
+  const code = normalizeOrderShippingMethod(shippingRaw) ?? codeFromPickup;
+
   const label = code === 'courier' ? '택배' : code === 'visit' ? '방문' : code === 'quick' ? '퀵' : '선택 없음';
-  return { code, label, color: shippingMethodColors[label]! };
+  const displayLabel = label;
+
+  return { code, label, displayLabel, color: shippingMethodColors[label]! };
 }
 
 /**
