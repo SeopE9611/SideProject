@@ -97,7 +97,7 @@
  * - 프로젝트 전반에서 섞여 들어올 수 있는 값을 안전하게 포함
  * - DB는 $in 매칭이 대소문자/문자열 일치 기준이므로, 가능한 값을 넓게.
  */
-export const PAID_STATUS_VALUES = ['결제완료', 'paid', 'PAID', 'confirmed', 'CONFIRMED', 'Confirmed'] as const;
+export const PAID_STATUS_VALUES = ['결제완료', '결제 완료', 'paid', 'PAID', 'confirmed', 'CONFIRMED', 'Confirmed'] as const;
 
 export function toNumber(v: unknown): number {
   const n = Number(v);
@@ -105,8 +105,9 @@ export function toNumber(v: unknown): number {
 }
 
 export function isPaidPaymentStatus(status: unknown): boolean {
-  const s = String(status ?? '').trim();
-  return (PAID_STATUS_VALUES as readonly string[]).includes(s);
+  const raw = String(status ?? '').trim();
+  const key = raw.replace(/\s+/g, '').toLowerCase();
+  return key === '결제완료' || key === 'paid' || key === 'confirmed';
 }
 
 /**
@@ -145,4 +146,44 @@ export function refundsAmount(doc: any): number {
  */
 export function isStandaloneStringingApplication(app: any): boolean {
   return !app?.orderId && !app?.rentalId;
+}
+
+/**
+ * 정산 누락 방지용 "유료(수금 완료)" 매칭 쿼리
+ * - 결제상태가 paymentStatus / paymentInfo.status 등으로 혼재될 수 있어 OR로 커버
+ * - '결제 완료'(공백) / paid / confirmed 대소문자 흔들림은 regex로 보강
+ */
+export function buildPaidMatch(fields: string[] = ['paymentStatus', 'paymentInfo.status']) {
+  const ors: any[] = [];
+  for (const f of fields) {
+    ors.push({ [f]: { $in: PAID_STATUS_VALUES } });
+    ors.push({ [f]: { $regex: /^결제\s*완료$/ } });
+    ors.push({ [f]: { $regex: /^paid$/i } });
+    ors.push({ [f]: { $regex: /^confirmed$/i } });
+  }
+  return { $or: ors };
+}
+
+/**
+ * rental_orders(라켓 대여 결제) 정산 정책
+ * - 매출: amount.fee (대여료 + 옵션 + 대여 플로우에서 발생한 교체비/픽업비 등)
+ * - 보증금(amount.deposit): 추후 반환 예정 금액 → 기본 매출/순익에서 제외 (별도 합산만 제공)
+ */
+export const RENTAL_PAID_STATUS_VALUES = ['paid', 'out', 'returned'] as const;
+
+export function buildRentalPaidMatch() {
+  return {
+    $or: [{ status: { $in: RENTAL_PAID_STATUS_VALUES as any } }, { paidAt: { $type: 'date' } }, { 'payment.paidAt': { $type: 'date' } }],
+  };
+}
+
+export function rentalPaidAmount(rental: any) {
+  // 정책: 보증금 제외, fee만 매출로 취급
+  const fee = rental?.amount?.fee ?? rental?.fee ?? rental?.rentalFee ?? 0;
+  return toNumber(fee);
+}
+
+export function rentalDepositAmount(rental: any) {
+  const deposit = rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount ?? 0;
+  return toNumber(deposit);
 }

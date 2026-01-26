@@ -72,6 +72,8 @@ const rentalStatusLabels: Record<string, string> = {
 export default function AdminRentalsClient() {
   /**
    *  관리자 UX용 뱃지(대여 페이지)
+   *  - Orders 페이지와 동일하게 “시나리오(F#)” + “정산 앵커”를 표준화해
+   *    운영자가 페이지를 옮겨 다녀도 같은 언어로 인지할 수 있게 만든다.
    * - 운영자가 “이 대여가 단독인지 / 교체서비스 포함인지 / 신청서 연결인지”를 한눈에 확인.
    */
   function getKindBadge() {
@@ -88,6 +90,32 @@ export default function AdminRentalsClient() {
       return { label: '신청서 연결', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200' };
     }
     return null;
+  }
+
+  type Flow = 6 | 7;
+  const FLOW_LABEL: Record<Flow, string> = {
+    6: '라켓 단품 대여',
+    7: '라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)',
+  };
+  const FLOW_SHORT: Record<Flow, string> = {
+    6: 'F6 대여',
+    7: 'F7 대여+신청',
+  };
+  const FLOW_BADGE_CLASS: Record<Flow, string> = {
+    6: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-200',
+    7: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-200',
+  };
+
+  function getFlowBadge(r: RentalRow) {
+    // 대여 페이지에서는 “신청서 연결(또는 교체서비스 포함)”이면 통합(F7), 아니면 단독 대여(F6)로 취급
+    const isIntegrated = !!r.stringingApplicationId || !!r.withStringService;
+    const flow: Flow = isIntegrated ? 7 : 6;
+    return { flow, shortLabel: FLOW_SHORT[flow], label: FLOW_LABEL[flow], className: FLOW_BADGE_CLASS[flow] };
+  }
+
+  function getSettlementBadge() {
+    // 대여 화면의 정산 앵커는 항상 “대여”
+    return { label: '정산: 대여', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200' };
   }
 
   const router = useRouter();
@@ -565,6 +593,9 @@ export default function AdminRentalsClient() {
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200')}>단독</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200')}>교체서비스 포함</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200')}>신청서 연결</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[6])}>{FLOW_SHORT[6]}</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[7])}>{FLOW_SHORT[7]}</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getSettlementBadge().className)}>{getSettlementBadge().label}</Badge>
             <span className="ml-1">• 신청서 연결이 있으면 신청서 상세로 바로 이동할 수 있습니다</span>
           </div>
         </CardHeader>
@@ -618,6 +649,12 @@ export default function AdminRentalsClient() {
               ) : (
                 sortedRentals.map((r, idx) => {
                   const rid = r.id ?? (r as any)._id ?? '';
+                  const kind = getKindBadge();
+                  const svc = getServiceBadge(r);
+                  const link = getLinkBadge(r);
+                  const flow = getFlowBadge(r);
+                  const settlement = getSettlementBadge();
+                  const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
                   return (
                     <TableRow key={rid || `row-${idx}`} className="hover:bg-muted/50 transition-colors">
                       <TableCell className={cn(tdClasses, 'pl-6')}>
@@ -639,18 +676,13 @@ export default function AdminRentalsClient() {
                                 </div>
 
                                 {/* 단독/교체서비스 포함/신청서 연결 여부 */}
-                                {(() => {
-                                  const kind = getKindBadge();
-                                  const svc = getServiceBadge(r);
-                                  const link = getLinkBadge(r);
-                                  return (
-                                    <div className="flex flex-wrap gap-1">
-                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kind.className)}>{kind.label}</Badge>
-                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', svc.className)}>{svc.label}</Badge>
-                                      {link && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', link.className)}>{link.label}</Badge>}
-                                    </div>
-                                  );
-                                })()}
+                                <div className="flex flex-wrap gap-1">
+                                  <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kind.className)}>{kind.label}</Badge>
+                                  <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', svc.className)}>{svc.label}</Badge>
+                                  {link && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', link.className)}>{link.label}</Badge>}
+                                  <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', flow.className)}>{flow.shortLabel}</Badge>
+                                  <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', settlement.className)}>{settlement.label}</Badge>
+                                </div>
                               </button>
                             </TooltipTrigger>
 
@@ -685,6 +717,11 @@ export default function AdminRentalsClient() {
 
                                 {/* 교체서비스 포함 안내 */}
                                 {r.withStringService && <p className="mt-2 text-[11px] text-muted-foreground">교체서비스 포함 대여입니다. (신청서 연결 시 신청서에서 상태/배송을 관리합니다)</p>}
+                                <p className="mt-2 text-[11px] text-muted-foreground">
+                                  시나리오: <span className="font-medium text-foreground">{flow.label}</span>
+                                </p>
+                                <p className="mt-1 text-[11px] text-muted-foreground">{settlement.label}</p>
+                                {warnMissingApp && <p className="mt-2 text-[11px] text-amber-500">주의: 교체서비스 포함인데 신청서 연결이 없습니다.</p>}
 
                                 {/* 신청서 연결이 있으면 툴팁에서 바로 이동 링크 제공 */}
                                 {r.stringingApplicationId && (

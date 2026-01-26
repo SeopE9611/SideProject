@@ -142,7 +142,21 @@ export default function StringServiceApplyPage() {
   // ===== 유틸 =====
   const normalizePhone = (s: string) => (s || '').replace(/[^0-9]/g, '');
   const isValidPhone = (s: string) => /^010\d{8}$/.test(normalizePhone(s));
+
+  /**
+   * UI 표시용 연락처 포맷터
+   * - 내부 검증/전송은 normalizePhone(숫자만)로 처리
+   */
+  const formatPhoneForDisplay = (raw: string) => {
+    const digits = normalizePhone(raw).slice(0, 11); // 010 + 8자리
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 7) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+    return `${digits.slice(0, 3)} ${digits.slice(3, 7)} ${digits.slice(7)}`;
+  };
+
   const stepsRef = useRef<HTMLDivElement | null>(null);
+  // 검증 실패 시 "해당 스텝으로 이동 → 첫 오류 필드 focus"를 위해 pending 상태를 보관
+  const pendingFocusStepIdRef = useRef<number | null>(null);
   const [stickyTop, setStickyTop] = useState<number>(24);
 
   useEffect(() => {
@@ -335,10 +349,10 @@ export default function StringServiceApplyPage() {
       if (!formData.name.trim()) return (toast('신청인 이름을 입력해주세요.'), false);
       if (!formData.email.trim()) return (toast('이메일을 입력해주세요.'), false);
       if (!formData.phone.trim()) return (toast('연락처를 입력해주세요.'), false);
-      if (!isValidPhone(formData.phone)) return (toast('연락처는 010으로 시작하는 11자리입니다.'), false);
+      if (!isValidPhone(formData.phone)) return (toast('올바른 연락처 형식(01012345678)으로 입력해주세요.'), false);
 
-      if (!formData.shippingPostcode.trim()) return (toast('우편번호를 입력해주세요.'), false);
-      if (!formData.shippingAddress.trim()) return (toast('주소를 입력해주세요.'), false);
+      if (!formData.shippingPostcode.trim()) return (toast('우편번호 찾기를 통해 주소를 등록해주세요.'), false);
+      if (!formData.shippingAddress.trim()) return (toast('우편번호 찾기를 통해 주소를 등록해주세요.'), false);
 
       if (!formData.collectionMethod) return (toast('수거 방식을 선택해주세요.'), false);
       if (formData.collectionMethod === 'courier_pickup') {
@@ -405,6 +419,119 @@ export default function StringServiceApplyPage() {
 
     // step 4는 자유 입력
     return true;
+  };
+  // ===== UX 보강: 첫 오류 필드로 focus 이동 =====
+  const focusFirstInvalidField = (stepId: number) => {
+    if (typeof document === 'undefined') return;
+
+    const focusEl = (el: HTMLElement) => {
+      try {
+        // 일부 컴포넌트는 focusable 요소가 내부에 있을 수 있어, 일단 시도
+        (el as any).focus?.();
+      } catch {
+        // ignore
+      }
+      try {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch {
+        // ignore
+      }
+    };
+
+    const focusById = (id: string) => {
+      const el = document.getElementById(id) as HTMLElement | null;
+      if (!el) return false;
+      // 숨김/비활성 요소는 스킵
+      const rects = (el as any).getClientRects?.() as DOMRectList | undefined;
+      const isHidden = (el as any).offsetParent === null && (!rects || rects.length === 0);
+      if (isHidden) return false;
+      focusEl(el);
+      return true;
+    };
+
+    const focusBySelector = (selector: string) => {
+      const el = document.querySelector(selector) as HTMLElement | null;
+      if (!el) return false;
+      focusEl(el);
+      return true;
+    };
+
+    // 스텝별 "첫 오류" 위치를 validateStep과 동일한 우선순위로 판정
+    const getTarget = (): { id?: string; selector?: string } | null => {
+      if (stepId === 1) {
+        if (!formData.name.trim()) return { id: 'name' };
+        if (!formData.email.trim()) return { id: 'email' };
+        if (!formData.phone.trim()) return { id: 'phone' };
+        if (!isValidPhone(formData.phone)) return { id: 'phone' };
+
+        if (!formData.shippingPostcode.trim()) return { id: 'shippingPostcode' };
+        if (!formData.shippingAddress.trim()) return { id: 'shippingPostcode' };
+
+        if (!formData.collectionMethod) return { selector: 'input[name="collectionMethod"]' };
+
+        if (formData.collectionMethod === 'courier_pickup') {
+          if (!formData.pickupDate) return { id: 'pickupDate' };
+          if (!formData.pickupTime) return { id: 'pickupTime' };
+        }
+        return null;
+      }
+
+      if (stepId === 2) {
+        if (formData.stringTypes.length === 0) {
+          return { selector: 'input[type="checkbox"]' };
+        }
+        if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) {
+          return { selector: 'input[placeholder="직접 입력한 스트링 이름"]' };
+        }
+
+        const isVisit = normalizeCollection(formData.collectionMethod) === 'visit';
+        if (isVisit) {
+          if (!formData.preferredDate) return { id: 'preferredDate' };
+          if (!formData.preferredTime) {
+            // TimeSlotSelector는 input이 아닌 버튼 리스트이므로, 첫 유효 버튼으로 focus
+            return { selector: 'button[aria-pressed]:not([disabled])' };
+          }
+        }
+
+        if (orderId && typeof orderRemainingSlots === 'number') {
+          if (requiredPassCount > orderRemainingSlots) {
+            // 수량 조절 입력(숫자)로 유도
+            return { selector: 'input[type="number"]' };
+          }
+        }
+
+        if (linesForSubmit.length > 0) {
+          for (let i = 0; i < linesForSubmit.length; i++) {
+            const line = linesForSubmit[i];
+            const racketName = (line.racketType ?? '').trim();
+            const tensionMain = (line.tensionMain ?? '').trim();
+            const tensionCross = (line.tensionCross ?? '').trim();
+
+            if (!racketName || !tensionMain || !tensionCross) {
+              return { selector: 'input[placeholder="예: 라켓1"]' };
+            }
+          }
+        }
+        return null;
+      }
+
+      if (stepId === 3) {
+        if (isRentalBased) return null;
+        if (!usingPackage) {
+          if (!formData.shippingBank) return { id: 'shippingBank' };
+          if (!formData.shippingDepositor.trim()) return { id: 'shippingDepositor' };
+        }
+        return null;
+      }
+
+      return null;
+    };
+
+    const target = getTarget();
+    if (!target) return;
+
+    if (target.id && focusById(target.id)) return;
+    if (target.selector) focusBySelector(target.selector);
   };
 
   // “다음” 버튼 disabled 계산용
@@ -1392,7 +1519,11 @@ export default function StringServiceApplyPage() {
   }, [rentalId, orderId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    const rawValue = e.target.value;
+
+    // 연락처는 입력 UX를 위해 자동 포맷(010 0000 0000) 적용
+    const value = name === 'phone' || name === 'shippingPhone' ? formatPhoneForDisplay(rawValue) : rawValue;
 
     setFormData((prev) => {
       /**
@@ -1438,6 +1569,19 @@ export default function StringServiceApplyPage() {
   const totalSteps = steps.length;
   const currentStepId = steps[currentStep - 1]?.id ?? steps[0]?.id ?? 1;
 
+  // 스텝 이동(재검증 실패) 이후 렌더 반영이 끝나면 첫 오류 필드에 focus
+  useEffect(() => {
+    const pending = pendingFocusStepIdRef.current;
+    if (!pending) return;
+    if (pending !== currentStepId) return;
+
+    pendingFocusStepIdRef.current = null;
+
+    window.setTimeout(() => {
+      focusFirstInvalidField(pending);
+    }, 30);
+  }, [currentStepId]);
+
   const doSubmit = async () => {
     // 마지막 단계(4단계)가 아니면 제출하지 않음
     if (currentStep !== steps.length) return;
@@ -1446,6 +1590,7 @@ export default function StringServiceApplyPage() {
     for (let idx = 1; idx <= totalSteps - 1; idx++) {
       const stepId = steps[idx - 1]?.id ?? idx;
       if (!validateStep(stepId, false)) {
+        pendingFocusStepIdRef.current = stepId;
         setCurrentStep(idx);
         return;
       }
@@ -1547,7 +1692,11 @@ export default function StringServiceApplyPage() {
   };
 
   const handleNext = () => {
-    if (!validateStep(currentStepId, false)) return; // 대여 모드에서도 올바른 stepId 검증
+    // 대여 모드에서도 올바른 stepId 검증
+    if (!validateStep(currentStepId, false)) {
+      focusFirstInvalidField(currentStepId);
+      return;
+    }
     setCurrentStep((s) => Math.min(totalSteps, s + 1));
   };
 

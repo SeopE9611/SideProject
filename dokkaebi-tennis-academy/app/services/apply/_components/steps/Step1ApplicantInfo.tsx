@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { useMemo, useState } from 'react';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -30,8 +31,62 @@ type Props = {
   isUserLoading: boolean;
 };
 
+// 입력 검증 보조 (Step1 자체에서 인라인 에러를 표시하기 위함)
+const onlyDigits = (v: string) => v.replace(/\D/g, '');
+
+// 010 0000 0000 형태로 점진 포맷 (공백 포함). 서버 전송은 normalizePhone에서 숫자만 쓰므로 안전.
+const format010Phone = (v: string) => {
+  const d = onlyDigits(v).slice(0, 11);
+  if (!d) return '';
+  if (d.length <= 3) return d;
+  if (d.length <= 7) return `${d.slice(0, 3)} ${d.slice(3)}`;
+  return `${d.slice(0, 3)} ${d.slice(3, 7)} ${d.slice(7, 11)}`;
+};
+
+const isValid010Phone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
+
 export default function Step1ApplicantInfo({ formData, setFormData, handleInputChange, handleOpenPostcode, orderId, isMember, isVisitDelivery, lockCollection, applicationId, isUserLoading }: Props) {
   const router = useRouter();
+
+  // Step1에서 제출 전 기본 검증 + 인라인 에러를 제공하기 위한 상태
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const markTouched = (key: string) => setTouched((prev) => ({ ...prev, [key]: true }));
+
+  const fieldErrors = useMemo(() => {
+    const next: Record<string, string> = {};
+
+    const nameTrim = String(formData?.name || '').trim();
+    const emailTrim = String(formData?.email || '').trim();
+    const phoneVal = String(formData?.phone || '');
+    const postcodeTrim = String(formData?.shippingPostcode || '').trim();
+    const addrTrim = String(formData?.shippingAddress || '').trim();
+    const method = formData?.collectionMethod as CollectionMethod | undefined;
+
+    if (!nameTrim) next.name = '이름을 입력해주세요.';
+    if (!emailTrim) next.email = '이메일을 입력해주세요.';
+    if (!phoneVal.trim()) next.phone = '연락처를 입력해주세요.';
+    else if (!isValid010Phone(phoneVal)) next.phone = '올바른 연락처 형식으로 입력해주세요. (01012345678)';
+
+    // 주소는 우편번호 찾기(주소 검색)로 등록되는 UX를 전제로 안내
+    if (!postcodeTrim) next.shippingPostcode = '우편번호 찾기를 통해 주소를 등록해주세요.';
+    if (!addrTrim) next.shippingAddress = '우편번호 찾기를 통해 주소를 등록해주세요.';
+
+    if (!method) next.collectionMethod = '수거 방식을 선택해주세요.';
+    if (method === 'courier_pickup') {
+      if (!formData?.pickupDate) next.pickupDate = '수거 희망일을 입력해주세요.';
+      if (!formData?.pickupTime) next.pickupTime = '수거 시간대를 입력해주세요.';
+    }
+
+    return next;
+  }, [formData]);
+
+  const firstErrorMessage = useMemo(() => {
+    const keys = Object.keys(fieldErrors);
+    for (const k of keys) {
+      if (touched[k]) return fieldErrors[k];
+    }
+    return '';
+  }, [fieldErrors, touched]);
 
   // 방문 수령(주문 기반)일 땐 방문 접수 외 선택을 막는 용도
   // (원본 코드에 lockVisit 변수가 JSX에서 사용되고 있어, 여기서 안전하게 정의해 둡니다.)
@@ -57,10 +112,12 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             name="name"
             value={formData.name}
             onChange={handleInputChange}
+            onBlur={() => markTouched('name')}
             readOnly={!!(orderId || isMember)}
             className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
             placeholder="이름을 입력해주세요"
           />
+          <p className="min-h-[16px] text-xs text-rose-600">{touched.name && fieldErrors.name ? fieldErrors.name : ''}</p>
         </div>
 
         <div className="space-y-2">
@@ -73,10 +130,12 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             type="email"
             value={formData.email}
             onChange={handleInputChange}
+            onBlur={() => markTouched('email')}
             readOnly={!!(orderId || isMember)}
             className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
             placeholder="이메일을 입력해주세요"
           />
+          <p className="min-h-[16px] text-xs text-rose-600">{touched.email && fieldErrors.email ? fieldErrors.email : ''}</p>
         </div>
 
         <div className="space-y-2">
@@ -87,11 +146,16 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             id="phone"
             name="phone"
             value={formData.phone}
-            onChange={handleInputChange}
+            onChange={(e) => {
+              const v = format010Phone(e.target.value);
+              setFormData((prev: any) => ({ ...prev, phone: v, shippingPhone: v }));
+            }}
+            onBlur={() => markTouched('phone')}
             readOnly={!!(orderId || isMember)}
             className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
-            placeholder="01012345678"
+            placeholder="010 0000 0000"
           />
+          <p className="min-h-[16px] text-xs text-rose-600">{touched.phone && fieldErrors.phone ? fieldErrors.phone : ''}</p>
         </div>
 
         <div className="space-y-2">
@@ -103,10 +167,12 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             name="shippingPostcode"
             value={formData.shippingPostcode}
             onChange={handleInputChange}
+            onBlur={() => markTouched('shippingPostcode')}
             readOnly={!!(orderId || isMember)}
             className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
             placeholder="우편번호"
           />
+          <p className="min-h-[16px] text-xs text-rose-600">{touched.shippingPostcode && fieldErrors.shippingPostcode ? fieldErrors.shippingPostcode : ''}</p>
         </div>
       </div>
 
@@ -121,6 +187,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
               name="shippingAddress"
               value={formData.shippingAddress}
               onChange={handleInputChange}
+              onBlur={() => markTouched('shippingAddress')}
               readOnly={!!(orderId || isMember)}
               className={`flex-1 transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
               placeholder="주소를 입력해주세요"
@@ -143,10 +210,12 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             name="shippingAddressDetail"
             value={formData.shippingAddressDetail}
             onChange={handleInputChange}
+            onBlur={() => markTouched('shippingAddress')}
             readOnly={!!(orderId || isMember)}
             className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
             placeholder="상세 주소를 입력해주세요"
           />
+          <p className="min-h-[16px] text-xs text-rose-600">{touched.shippingAddress && fieldErrors.shippingAddress ? fieldErrors.shippingAddress : ''}</p>
         </div>
         {/* === 수거 방식 선택 (카드 버튼형) === */}
         <div className="space-y-3">

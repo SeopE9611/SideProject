@@ -170,6 +170,17 @@ type DashboardMetrics = {
       error: string | null;
     }>;
   };
+  settlements: {
+    currentYyyymm: string;
+    prevYyyymm: string;
+    hasCurrentSnapshot: boolean;
+    hasPrevSnapshot: boolean;
+    latest: null | {
+      yyyymm: string;
+      lastGeneratedAt: string | null;
+      lastGeneratedBy: string | null;
+    };
+  };
 };
 
 // ----------------------------- 유틸 -----------------------------
@@ -262,11 +273,11 @@ function SparkLine({ data, height = 56 }: { data: Array<{ date: string; value: n
     data.length >= 2
       ? data
       : data.length === 1
-      ? [data[0], data[0]]
-      : [
-          { date: '', value: 0 },
-          { date: '', value: 0 },
-        ];
+        ? [data[0], data[0]]
+        : [
+            { date: '', value: 0 },
+            { date: '', value: 0 },
+          ];
 
   const values = safeData.map((d) => d.value);
   const max = Math.max(1, ...values);
@@ -545,6 +556,10 @@ export default function AdminDashboardClient() {
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">교체 3일+</span>
                 <Badge variant={data.kpi.queue.stringingAging3d > 0 ? 'destructive' : 'secondary'}>{formatNumber(data.kpi.queue.stringingAging3d)}</Badge>
+              </div>
+              <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
+                <span className="text-sm">지난달 정산 스냅샷</span>
+                <Badge variant={!data.settlements.hasPrevSnapshot ? 'destructive' : 'secondary'}>{!data.settlements.hasPrevSnapshot ? '미생성' : 'OK'}</Badge>
               </div>
             </CardContent>
           </Card>

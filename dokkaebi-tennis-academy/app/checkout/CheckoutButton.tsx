@@ -22,6 +22,40 @@ const isValidKoreanPhone = (v: string) => {
   return d.length === 10 || d.length === 11;
 };
 
+// checkout/page.tsx 의 input id를 활용해 첫 오류 필드로 포커스 이동
+const focusFirst = (ids: string[]) => {
+  if (typeof document === 'undefined') return;
+  for (const id of ids) {
+    const el = document.getElementById(id) as HTMLElement | null;
+    if (!el) continue;
+    // 일부 컴포넌트(예: Radix)에서는 focus가 가능한 요소가 내부에 있을 수 있어,
+    // 우선 자기 자신에 focus 시도 후 실패하면 input/textarea를 찾아봅니다.
+    (el as any).focus?.();
+    const active = document.activeElement;
+    if (active === el) {
+      el.scrollIntoView?.({ block: 'center' });
+      return;
+    }
+    const inner = el.querySelector?.('input,textarea,select,button') as HTMLElement | null;
+    if (inner) {
+      (inner as any).focus?.();
+      inner.scrollIntoView?.({ block: 'center' });
+      return;
+    }
+  }
+};
+
+// res.json() 파싱 실패(빈 응답/HTML 응답 등)에도 죽지 않도록 방어
+const readJsonSafe = async (res: Response) => {
+  try {
+    const text = await res.text();
+    if (!text) return null;
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
 export default function CheckoutButton({
   disabled,
   name,
@@ -78,6 +112,7 @@ export default function CheckoutButton({
 
   const handleSubmit = async () => {
     if (disabled) {
+      focusFirst(['agree-all', 'recipient-name']);
       showErrorToast('필수 입력값/약관 동의 항목을 확인해주세요.');
       return;
     }
@@ -105,14 +140,17 @@ export default function CheckoutButton({
 
       // 기본 필수
       if (!nameTrim || !phoneDigits) {
+        focusFirst(!nameTrim ? ['recipient-name'] : ['recipient-phone']);
         showErrorToast('수령인 이름/연락처를 입력해주세요.');
         return;
       }
       if (nameTrim.length < 2) {
+        focusFirst(['recipient-name']);
         showErrorToast('수령인 이름은 2자 이상 입력해주세요.');
         return;
       }
       if (!isValidKoreanPhone(phoneDigits)) {
+        focusFirst(['recipient-phone']);
         showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
         return;
       }
@@ -122,10 +160,12 @@ export default function CheckoutButton({
       //   loading이 true면(미확정) "필수" 강제는 하지 않고, 입력 시 형식만 체크
       if (!loading && !user) {
         if (!emailTrim) {
+          focusFirst(['recipient-email']);
           showErrorToast('비회원 주문은 이메일이 필요합니다.');
           return;
         }
         if (!EMAIL_RE.test(emailTrim)) {
+          focusFirst(['recipient-email']);
           showErrorToast('이메일 형식을 확인해주세요.');
           return;
         }
@@ -137,14 +177,17 @@ export default function CheckoutButton({
       // 택배수령일 때만 주소 필수 + 형식
       if (needsShippingAddress) {
         if (!POSTAL_RE.test(postalDigits)) {
+          focusFirst(['address-postal']);
           showErrorToast('우편번호(5자리)를 확인해주세요.');
           return;
         }
         if (!addressTrim) {
+          focusFirst(['address-postal']);
           showErrorToast('기본 주소를 입력해주세요.');
           return;
         }
         if (!addressDetailTrim) {
+          focusFirst(['address-detail']);
           showErrorToast('상세 주소를 입력해주세요.');
           return;
         }
@@ -152,10 +195,12 @@ export default function CheckoutButton({
 
       // 무통장 입금: 입금자명 필수
       if (!depositorTrim) {
+        focusFirst(['depositor-name']);
         showErrorToast('입금자명을 입력해주세요.');
         return;
       }
       if (depositorTrim.length < 2) {
+        focusFirst(['depositor-name']);
         showErrorToast('입금자명은 2자 이상 입력해주세요.');
         return;
       }
@@ -163,6 +208,7 @@ export default function CheckoutButton({
       // 은행 값 화이트리스트
       const bank = (selectedBank ?? '').trim() as Bank;
       if (!ALLOWED_BANKS.has(bank)) {
+        focusFirst(['bank-transfer']);
         showErrorToast('은행 선택 값이 올바르지 않습니다. 다시 선택해주세요.');
         return;
       }
@@ -236,7 +282,12 @@ export default function CheckoutButton({
         credentials: 'include',
       });
 
-      const data = await res.json();
+      const data = await readJsonSafe(res);
+
+      if (!data) {
+        showErrorToast(res.ok ? '주문 응답을 처리할 수 없습니다. 다시 시도해주세요.' : '주문 실패: 서버 응답을 처리할 수 없습니다.');
+        return;
+      }
 
       if (data?.orderId) {
         // 주문 성공한 경우에만 배송지 저장

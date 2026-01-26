@@ -223,6 +223,91 @@ export default function OrdersClient() {
     return { label: '단독', className: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' };
   }
 
+  /**
+   * 관리자 UX: “시나리오(Flow)” + “정산 앵커” 라벨
+   * - 운영자가 봤을 때 이 행이 어떤 케이스(1~7)인지 즉시 구분되게 한다.
+   * - 금액/정산 사고 방지: 신청서가 통합인지(주문 앵커) 단독인지(신청서 앵커)도 같이 표기한다.
+   *
+   * 참고: /admin/orders는 현재 주문(order) + 신청서(stringing_application)만 통합 노출.
+   *       Flow 6/7(대여 계열)은 타입 확장 대비용 fallback.
+   */
+  type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+  const FLOW_LABEL: Record<Flow, string> = {
+    1: '스트링 단품 구매',
+    2: '스트링 구매 + 교체서비스 신청(통합)',
+    3: '교체서비스 단일 신청',
+    4: '라켓 단품 구매',
+    5: '라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)',
+    6: '라켓 단품 대여',
+    7: '라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)',
+  };
+
+  const FLOW_SHORT: Record<Flow, string> = {
+    1: 'F1 스트링 단품',
+    2: 'F2 스트링+신청',
+    3: 'F3 신청 단독',
+    4: 'F4 라켓 단품',
+    5: 'F5 라켓+신청',
+    6: 'F6 대여',
+    7: 'F7 대여+신청',
+  };
+
+  // 운영자 인지 부하를 줄이기 위해 “계열” 단위로 색상만 구분(운영함과 동일 컨셉)
+  const FLOW_BADGE_CLASS: Record<Flow, string> = {
+    1: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-200',
+    2: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-200',
+    3: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200',
+    4: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200',
+    5: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200',
+    6: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-200',
+    7: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-200',
+  };
+
+  function hasRacketItems(items: any[] | undefined) {
+    // order.ts의 OrderItem 타입에는 kind가 없어서(응답 스냅샷에는 존재),
+    // 런타임 데이터 기준으로 안전하게 any로 검사한다.
+    return Array.isArray(items) && items.some((it) => (it as any)?.kind === 'racket' || (it as any)?.kind === 'used_racket');
+  }
+
+  function orderFlowByHasRacket(hasRacket: boolean, integrated: boolean): Flow {
+    // 주문(앵커) 기준:
+    // - 통합이면 (스트링+신청=2) 또는 (라켓+신청=5)
+    // - 단독이면 (스트링 단품=1) 또는 (라켓 단품=4)
+    if (integrated) return (hasRacket ? 5 : 2) as Flow;
+    return (hasRacket ? 4 : 1) as Flow;
+  }
+
+  function getFlowBadge(order: OrderWithType, ctx: { isLinkedProductOrder: boolean; anchorHasRacket: boolean; isIntegratedApp: boolean }) {
+    const { isLinkedProductOrder, anchorHasRacket, isIntegratedApp } = ctx;
+
+    let flow: Flow = 1;
+    if (order.__type === 'stringing_application') {
+      flow = isIntegratedApp ? orderFlowByHasRacket(anchorHasRacket, true) : 3;
+    } else if (order.__type === 'rental_order') {
+      flow = 6;
+    } else {
+      flow = orderFlowByHasRacket(hasRacketItems((order as any)?.items), isLinkedProductOrder);
+    }
+
+    return { flow, shortLabel: FLOW_SHORT[flow], label: FLOW_LABEL[flow], className: FLOW_BADGE_CLASS[flow] };
+  }
+
+  function getSettlementBadge(order: OrderWithType, ctx: { isIntegratedApp: boolean }) {
+    // /admin/orders 화면 기준 정산 앵커:
+    // - 주문 행: 항상 주문 앵커
+    // - 신청서 행: 통합이면 주문 앵커 / 단독이면 신청서 앵커
+    if (order.__type === 'stringing_application') {
+      return ctx.isIntegratedApp
+        ? { label: '정산: 주문', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200' }
+        : { label: '정산: 신청(단독)', className: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' };
+    }
+    if (order.__type === 'rental_order') {
+      return { label: '정산: 대여', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200' };
+    }
+    return { label: '정산: 주문', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200' };
+  }
+
   // 날짜 포맷터
   const formatDate = (dateString: string) =>
     new Intl.DateTimeFormat('ko-KR', {
@@ -488,8 +573,17 @@ export default function OrdersClient() {
                     const borderColor = borderColors[groupIdx % borderColors.length];
                     const isGrouped = group.length > 1;
 
+                    const anchorOrder = group.find((o) => o.__type === 'order') ?? null;
+                    const anchorHasRacket = hasRacketItems((anchorOrder as any)?.items);
+
                     return group.map((order) => {
                       const isLinkedProductOrder = order.__type === 'order' && hasStringingAppInGroup;
+                      const isIntegratedApp = order.__type === 'stringing_application' && !!order.linkedOrderId && !!anchorOrder;
+
+                      const kind = getKindBadge(order);
+                      const link = getLinkBadge(order, isLinkedProductOrder);
+                      const flow = getFlowBadge(order, { isLinkedProductOrder, anchorHasRacket, isIntegratedApp });
+                      const settlement = getSettlementBadge(order, { isIntegratedApp });
 
                       return (
                         <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
@@ -506,16 +600,12 @@ export default function OrdersClient() {
                                     </div>
 
                                     {/* 운영자에게 가장 중요한 정보: “이게 주문인지/신청서인지 + 통합/단독인지” */}
-                                    {(() => {
-                                      const kind = getKindBadge(order);
-                                      const link = getLinkBadge(order, isLinkedProductOrder);
-                                      return (
-                                        <div className="flex flex-wrap gap-1">
-                                          <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kind.className)}>{kind.label}</Badge>
-                                          <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', link.className)}>{link.label}</Badge>
-                                        </div>
-                                      );
-                                    })()}
+                                    <div className="flex flex-wrap gap-1">
+                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kind.className)}>{kind.label}</Badge>
+                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', link.className)}>{link.label}</Badge>
+                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', flow.className)}>{flow.shortLabel}</Badge>
+                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', settlement.className)}>{settlement.label}</Badge>
+                                    </div>
                                   </div>
                                 </TooltipTrigger>
 
@@ -548,6 +638,11 @@ export default function OrdersClient() {
 
                                     {order.cancelStatus === 'requested' && <p className="mt-2 text-sm text-amber-500">취소 요청이 접수된 주문입니다.</p>}
                                     {order.__type === 'stringing_application' && order.stringSummary && <p className="mt-1 text-[11px] text-muted-foreground">장착 상품: {order.stringSummary}</p>}
+
+                                    <p className="mt-2 text-[11px] text-muted-foreground">
+                                      시나리오: <span className="font-medium text-foreground">{flow.label}</span>
+                                    </p>
+                                    <p className="mt-1 text-[11px] text-muted-foreground">{settlement.label}</p>
 
                                     {isLinkedProductOrder && <p className="mt-2 text-[11px] text-muted-foreground">연결: 교체서비스 신청서와 통합 처리(같은 테두리 색)</p>}
                                     {order.__type === 'stringing_application' && order.linkedOrderId && (

@@ -32,6 +32,22 @@ function toYmd({ y, m, d }: { y: number; m: number; d: number }) {
   return `${y}-${mm}-${dd}`;
 }
 
+// KST 기준 YYYYMM (예: 202510)
+function fmtYyyymmKst(dateUtc: Date) {
+  const { y, m } = getKstParts(dateUtc);
+  return `${y}${String(m).padStart(2, '0')}`;
+}
+
+// YYYYMM을 월 단위로 이동 (deltaMonths: -1 = 이전달, +1 = 다음달)
+function shiftYyyymm(yyyymm: string, deltaMonths: number) {
+  const y = Number(yyyymm.slice(0, 4));
+  const m = Number(yyyymm.slice(4, 6)); // 1~12
+  const dt = new Date(Date.UTC(y, m - 1 + deltaMonths, 1, 0, 0, 0));
+  const ny = dt.getUTCFullYear();
+  const nm = dt.getUTCMonth() + 1;
+  return `${ny}${String(nm).padStart(2, '0')}`;
+}
+
 // KST 자정(00:00)을 UTC Date로 변환
 function kstDayStartUtc(y: number, m: number, d: number) {
   // KST 00:00 = UTC 전날 15:00
@@ -246,6 +262,17 @@ type DashboardMetrics = {
     applications: Array<{ id: string; createdAt: string; name: string; totalPrice: number; status: string; paymentStatus: string }>;
     rentals: Array<{ id: string; createdAt: string; name: string; total: number; status: string }>;
     reports: Array<{ id: string; createdAt: string; kind: 'post' | 'comment'; reason: string }>;
+  };
+  settlements: {
+    currentYyyymm: string;
+    prevYyyymm: string;
+    hasCurrentSnapshot: boolean;
+    hasPrevSnapshot: boolean;
+    latest: null | {
+      yyyymm: string;
+      lastGeneratedAt: string | null;
+      lastGeneratedBy: string | null;
+    };
   };
 };
 
@@ -475,7 +502,7 @@ export async function GET(req: Request) {
         sort: { createdAt: 1 },
         limit: 10,
         projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -508,7 +535,7 @@ export async function GET(req: Request) {
           paymentStatus: 1,
           shippingInfo: 1,
         },
-      }
+      },
     )
     .toArray();
 
@@ -519,7 +546,7 @@ export async function GET(req: Request) {
         sort: { createdAt: 1 },
         limit: 10,
         projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1, cancelRequest: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -532,7 +559,7 @@ export async function GET(req: Request) {
         sort: { createdAt: -1 },
         limit: 5,
         projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -613,7 +640,7 @@ export async function GET(req: Request) {
           paymentStatus: 1,
           shippingInfo: 1,
         },
-      }
+      },
     )
     .toArray();
 
@@ -632,7 +659,7 @@ export async function GET(req: Request) {
         sort: { createdAt: 1 },
         limit: 10,
         projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -643,7 +670,7 @@ export async function GET(req: Request) {
         sort: { createdAt: 1 },
         limit: 10,
         projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1, cancelRequest: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -657,7 +684,7 @@ export async function GET(req: Request) {
         sort: { createdAt: 1 },
         limit: 10,
         projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -674,7 +701,7 @@ export async function GET(req: Request) {
         sort: { createdAt: -1 },
         limit: 5,
         projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -685,9 +712,34 @@ export async function GET(req: Request) {
   const totalRentalsP = rentalsCol.countDocuments({});
   const newRentals7dP = rentalsCol.countDocuments({ createdAt: { $gte: since7d } });
 
+  // rental_orders.amount.total에는 '보증금(deposit)'이 포함,
+  // 매출(정산) 관점에서는 보증금을 제외하고,
+  // 실질 매출 구성(대여료 + 스트링 + 장착/교체 공임)만 집계.
+
   const paidRentals7dP = rentalsCol.countDocuments({ status: { $in: ['paid', 'out', 'returned'] }, createdAt: { $gte: since7d } });
   const revenueRentals7dP = rentalsCol
-    .aggregate<{ _id: null; v: number }>([{ $match: { status: { $in: ['paid', 'out', 'returned'] }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$amount.total', 0] } } } }])
+    .aggregate<{ _id: null; v: number }>([
+      {
+        $match: {
+          status: { $in: ['paid', 'out', 'returned'] },
+          createdAt: { $gte: since7d },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          v: {
+            $sum: {
+              $add: [
+                { $convert: { input: '$amount.fee', to: 'double', onError: 0, onNull: 0 } },
+                { $convert: { input: '$amount.stringPrice', to: 'double', onError: 0, onNull: 0 } },
+                { $convert: { input: '$amount.stringingFee', to: 'double', onError: 0, onNull: 0 } },
+              ],
+            },
+          },
+        },
+      },
+    ])
     .toArray();
 
   const rentalCancelRequestsP = rentalsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
@@ -699,7 +751,7 @@ export async function GET(req: Request) {
         sort: { createdAt: 1 },
         limit: 10,
         projection: { _id: 1, createdAt: 1, status: 1, amount: 1, fee: 1, deposit: 1, guest: 1, cancelRequest: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -723,7 +775,7 @@ export async function GET(req: Request) {
         sort: { dueAt: 1 },
         limit: 10,
         projection: { _id: 1, dueAt: 1, amount: 1, fee: 1, deposit: 1, brand: 1, model: 1, guest: 1, userEmail: 1, userId: 1, shipping: 1, status: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -764,7 +816,7 @@ export async function GET(req: Request) {
           model: 1,
           shipping: 1,
         },
-      }
+      },
     )
     .toArray();
 
@@ -780,7 +832,7 @@ export async function GET(req: Request) {
         limit: 10,
         // 기존 연체 리스트와 동일한 투영 필드를 유지
         projection: { _id: 1, dueAt: 1, amount: 1, fee: 1, deposit: 1, brand: 1, model: 1, guest: 1, userEmail: 1, userId: 1, shipping: 1, status: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -834,7 +886,7 @@ export async function GET(req: Request) {
           paymentStatus: 1,
           userSnapshot: 1, // 이름 표시 안정화
         },
-      }
+      },
     )
     .toArray();
 
@@ -966,7 +1018,7 @@ export async function GET(req: Request) {
         'inventory.lowStock': { $ne: null },
         $expr: { $lte: ['$inventory.stock', '$inventory.lowStock'] },
       },
-      { projection: { _id: 1, name: 1, brand: 1, inventory: 1, updatedAt: 1, createdAt: 1 } }
+      { projection: { _id: 1, name: 1, brand: 1, inventory: 1, updatedAt: 1, createdAt: 1 } },
     )
     .sort({ 'inventory.stock': 1, updatedAt: -1, createdAt: -1, _id: -1 })
     .limit(8)
@@ -993,7 +1045,7 @@ export async function GET(req: Request) {
         sort: { createdAt: 1 },
         limit: 10,
         projection: { _id: 1, createdAt: 1, status: 1, eventType: 1, retries: 1, error: 1, rendered: 1 },
-      }
+      },
     )
     .toArray();
 
@@ -1245,7 +1297,7 @@ export async function GET(req: Request) {
         doc?.shipping?.name || //  대여 문서에 있는 수령인/신청자 이름
         doc?.userEmail || // 저장돼 있으면 이메일
         (doc?.userId ? `회원#${String(doc.userId).slice(-6)}` : '') ||
-        '고객'
+        '고객',
     );
     return racket ? `${racket} · ${who}` : who;
   };
@@ -1463,6 +1515,18 @@ export async function GET(req: Request) {
 
   const orderPaymentStatusDist = mergeDistByLabel(orderPayStatusDistRows as any[], normalizePaymentStatusLabel);
 
+  // 정산 스냅샷 누락 방지:
+  // - 운영자가 월말/월초에 정산 페이지를 놓치면 "스냅샷이 없는 달"이 생기기 쉬움
+  // - 대시보드에서 이번달/지난달 스냅샷 생성 여부를 바로 보여주기 위해 함께 내려줍니다.
+  const currentYyyymm = fmtYyyymmKst(now);
+  const prevYyyymm = shiftYyyymm(currentYyyymm, -1);
+
+  const [currSnap, prevSnap, latestSnap] = await Promise.all([
+    db.collection('settlements').findOne({ yyyymm: currentYyyymm }, { projection: { _id: 1 } }),
+    db.collection('settlements').findOne({ yyyymm: prevYyyymm }, { projection: { _id: 1 } }),
+    db.collection('settlements').findOne({}, { sort: { yyyymm: -1 }, projection: { yyyymm: 1, lastGeneratedAt: 1, lastGeneratedBy: 1 } }),
+  ]);
+
   const resp: DashboardMetrics = {
     generatedAt: now.toISOString(),
 
@@ -1613,6 +1677,20 @@ export async function GET(req: Request) {
         error: d?.error ? String(d.error) : d?.lastError ? String(d.lastError) : null,
       })),
       paymentPending24h: paymentPending24hList,
+    },
+
+    settlements: {
+      currentYyyymm,
+      prevYyyymm,
+      hasCurrentSnapshot: Boolean(currSnap),
+      hasPrevSnapshot: Boolean(prevSnap),
+      latest: latestSnap
+        ? {
+            yyyymm: String(latestSnap.yyyymm),
+            lastGeneratedAt: latestSnap.lastGeneratedAt ? new Date(latestSnap.lastGeneratedAt).toISOString() : null,
+            lastGeneratedBy: latestSnap.lastGeneratedBy ? String(latestSnap.lastGeneratedBy) : null,
+          }
+        : null,
     },
 
     recent: {

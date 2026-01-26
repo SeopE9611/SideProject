@@ -46,6 +46,20 @@ type OpItem = {
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
+// 운영함 상단에서 "정산 관리"로 바로 이동할 때 사용할 기본 YYYYMM(지난달, KST 기준)
+function prevMonthYyyymmKST() {
+  // KST 기준 현재 연/월 파츠 추출
+  const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit' });
+  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
+  const y = Number(parts.year);
+  const m = Number(parts.month); // 1~12
+
+  // 지난달 계산
+  const py = m === 1 ? y - 1 : y;
+  const pm = m === 1 ? 12 : m - 1;
+  return `${py}${String(pm).padStart(2, '0')}`;
+}
+
 function flowBadgeClass(flow?: Flow) {
   // 운영자 인지 부하를 줄이기 위해 "카테고리" 단위로만 색상을 분리
   // (세부 Flow별 색상은 추후 원하면 확장)
@@ -242,6 +256,10 @@ export default function OperationsClient() {
   // 경고만 보기에서는 "놓침"을 줄이기 위해 조회 범위를 넓힘(표시/운영 안전 목적)
   // - API/스키마 변경 없음 (그냥 pageSize 파라미터만 키움)
   const effectivePageSize = onlyWarn ? 200 : defaultPageSize;
+
+  // 상단 CTA: 정산 관리로 빠르게 이동할 수 있도록 지난달(YYYYMM)을 기본 세팅
+  const settlementYyyymm = useMemo(() => prevMonthYyyymmKST(), []);
+  const settlementsHref = useMemo(() => `/admin/settlements?yyyymm=${settlementYyyymm}`, [settlementYyyymm]);
 
   // 1) 최초 1회: URL → 상태 주입(새로고침 대응)
   useEffect(() => {
@@ -443,13 +461,13 @@ export default function OperationsClient() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">시나리오(전체)</SelectItem>
-                <SelectItem value="1">스트링 구매(단독)</SelectItem>
-                <SelectItem value="2">스트링 구매+교체(통합)</SelectItem>
-                <SelectItem value="3">교체 신청(단독)</SelectItem>
-                <SelectItem value="4">라켓 구매(단독)</SelectItem>
-                <SelectItem value="5">라켓 구매+교체(통합)</SelectItem>
-                <SelectItem value="6">라켓 대여(단독)</SelectItem>
-                <SelectItem value="7">대여+교체(통합)</SelectItem>
+                <SelectItem value="1">스트링 단품 구매</SelectItem>
+                <SelectItem value="2">스트링 구매 + 교체서비스 신청(통합)</SelectItem>
+                <SelectItem value="3">교체서비스 단일 신청</SelectItem>
+                <SelectItem value="4">라켓 단품 구매</SelectItem>
+                <SelectItem value="5">라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
+                <SelectItem value="6">라켓 단품 대여</SelectItem>
+                <SelectItem value="7">라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
               </SelectContent>
             </Select>
 
@@ -469,6 +487,13 @@ export default function OperationsClient() {
                 <SelectItem value="0">단독</SelectItem>
               </SelectContent>
             </Select>
+
+            <Button asChild variant="outline" className="gap-2 md:w-auto">
+              <Link href={settlementsHref}>
+                <BarChartBig className="h-4 w-4" />
+                정산 관리
+              </Link>
+            </Button>
 
             <Button
               variant="outline"

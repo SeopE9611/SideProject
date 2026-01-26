@@ -19,10 +19,50 @@ import SocialAuthButtons from '@/app/login/_components/SocialAuthButtons';
 const PASSWORD_POLICY_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/; // 8자 이상 + 영문/숫자 조합
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
-const isValidKoreanPhone = (v: string) => {
-  const d = onlyDigits(v);
-  return d.length === 10 || d.length === 11;
+
+// 연락처 입력 UX: "010 0000 0000" 형태로 자동 포맷팅(표시용) + 제출/검증은 숫자만 기준
+const formatKoreanPhone = (v: string) => {
+  const d = onlyDigits(v).slice(0, 11);
+  if (!d) return '';
+  if (d.length <= 3) return d;
+  if (d.length <= 7) return `${d.slice(0, 3)} ${d.slice(3)}`;
+  return `${d.slice(0, 3)} ${d.slice(3, 7)} ${d.slice(7)}`;
 };
+
+// 연락처 정책: 010으로 시작 + 뒤 8자리(총 11자리)만 허용
+const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
+
+type LoginField = 'email' | 'password';
+type RegisterField = 'emailId' | 'emailDomain' | 'password' | 'confirmPassword' | 'name' | 'phone' | 'postalCode' | 'address' | 'addressDetail';
+
+// fetch 응답이 JSON이 아닐 때(res.json() 파싱 실패 등)도  화면/UX가 깨지지 않도록 안전 파싱
+async function readJsonSafe(res: Response): Promise<any | null> {
+  try {
+    const text = await res.text().catch(() => '');
+    if (!text) return null;
+    try {
+      return JSON.parse(text);
+    } catch {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+}
+
+//  첫 오류 필드로 포커스를 이동. (id가 없으면 이동 불가하므로, 필요한 입력에는 id를 최소로 부여)
+
+function focusFirst(ids: string[]) {
+  for (const id of ids) {
+    const el = document.getElementById(id) as HTMLElement | null;
+    if (!el) continue;
+    // HTMLElement#focus 존재 여부를 런타임에서 확인
+    if (typeof (el as any).focus === 'function') {
+      (el as any).focus();
+      break;
+    }
+  }
+}
 
 export default function LoginPageClient() {
   const router = useRouter();
@@ -40,6 +80,10 @@ export default function LoginPageClient() {
   // 로그인 상태
   const [showPassword, setShowPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
+
+  // 로그인: 필드별/공통 에러 UX
+  const [loginFieldErrors, setLoginFieldErrors] = useState<Partial<Record<LoginField, string>>>({});
+  const [loginFormError, setLoginFormError] = useState<string>('');
 
   // 회원가입 상태
   const [emailId, setEmailId] = useState('');
@@ -59,17 +103,54 @@ export default function LoginPageClient() {
   const [address, setAddress] = useState('');
   const [addressDetail, setAddressDetail] = useState('');
 
+  // 회원가입: 필드별/공통 에러 UX
+  const [registerFieldErrors, setRegisterFieldErrors] = useState<Partial<Record<RegisterField, string>>>({});
+  const [registerFormError, setRegisterFormError] = useState<string>('');
+
   const email = `${emailId}@${emailDomain}`;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const emailIdRegex = /^[a-z0-9]{4,30}$/;
+
+  const resetRegisterForm = () => {
+    setEmailId('');
+    setEmailDomain('gmail.com');
+    setIsCustomDomain(false);
+    setIsEmailAvailable(null);
+    setCheckingEmail(false);
+    setPassword('');
+    setConfirmPassword('');
+    setShowRegisterPassword(false);
+    setShowConfirmPassword(false);
+    setName('');
+    setPhone('');
+    setPostalCode('');
+    setAddress('');
+    setAddressDetail('');
+    setRegisterFieldErrors({});
+    setRegisterFormError('');
+  };
 
   // URL 파라미터에 따라 탭 전환
   useEffect(() => {
     const tabParam = params.get('tab');
     if (tabParam === 'login' || tabParam === 'register') {
       setActiveTab(tabParam);
+
+      // 회원가입 성공 후 /login?tab=login 으로 이동한 경우,
+      // 다시 '회원가입' 탭을 눌렀을 때 이전 입력값이 남지 않도록 폼을 리셋합니다.
+      if (tabParam === 'login') {
+        resetRegisterForm();
+      }
     }
   }, [params]);
+
+  // 탭 전환 시 이전 탭의 에러 메시지가 남아 혼동되지 않도록 초기화
+  useEffect(() => {
+    setLoginFieldErrors({});
+    setLoginFormError('');
+    setRegisterFieldErrors({});
+    setRegisterFormError('');
+  }, [activeTab]);
 
   // 소셜 회원가입: pending 조회 → 이메일/이름 자동 입력(프리필)
   useEffect(() => {
@@ -82,7 +163,7 @@ export default function LoginPageClient() {
           credentials: 'include',
           cache: 'no-store',
         });
-        const data = await res.json().catch(() => null);
+        const data = await readJsonSafe(res);
 
         if (!res.ok || !data?.email) {
           showErrorToast('소셜 회원가입 정보가 만료되었어요. 다시 시도해주세요.');
@@ -121,98 +202,151 @@ export default function LoginPageClient() {
   }, []);
 
   const handleLogin = async () => {
-    // 중복 클릭 방지
     if (loginLoading) return;
 
-    const emailRaw = (document.getElementById('email') as HTMLInputElement)?.value ?? '';
-    const passwordRaw = (document.getElementById('password') as HTMLInputElement)?.value ?? '';
+    setLoginFormError('');
+    setLoginFieldErrors({});
 
-    const emailTrim = emailRaw.trim().toLowerCase();
-    const passwordTrim = passwordRaw;
+    // 로그인 폼은 기존 UI를 유지하기 위해 uncontrolled input(id 기반) 접근을 사용합니다.
+    const emailInput = document.getElementById('email') as HTMLInputElement | null;
+    const pwInput = document.getElementById('password') as HTMLInputElement | null;
 
-    // 로그인 제출 직전 최소 검증
-    if (!emailTrim) {
-      showErrorToast('이메일을 입력해주세요.');
+    const emailVal = (emailInput?.value ?? '').trim();
+    const pwVal = pwInput?.value ?? '';
+
+    const nextErrors: Partial<Record<LoginField, string>> = {};
+    if (!emailVal) nextErrors.email = '이메일을 입력해주세요.';
+    else if (!emailRegex.test(emailVal)) nextErrors.email = '유효한 이메일 형식이 아닙니다.';
+    if (!pwVal) nextErrors.password = '비밀번호를 입력해주세요.';
+
+    if (Object.keys(nextErrors).length > 0) {
+      const firstMsg = nextErrors.email || nextErrors.password || '입력값을 확인해주세요.';
+      setLoginFieldErrors(nextErrors);
+      setLoginFormError(firstMsg);
+      focusFirst([nextErrors.email ? 'email' : '', nextErrors.password ? 'password' : ''].filter(Boolean));
       return;
     }
-    if (!emailRegex.test(emailTrim)) {
-      showErrorToast('이메일 형식을 확인해주세요.');
-      return;
-    }
-    if (!passwordTrim) {
-      showErrorToast('비밀번호를 입력해주세요.');
-      return;
-    }
 
-    setLoginLoading(true);
     try {
-      const res = await fetch('/api/login', {
+      setLoginLoading(true);
+
+      // 이메일 저장(기존 UX 유지)
+      if (saveEmail) localStorage.setItem('saved-email', emailVal);
+      else localStorage.removeItem('saved-email');
+
+      const response = await fetch('/api/login', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailTrim, password: passwordTrim }),
+        body: JSON.stringify({ email: emailVal, password: pwVal }),
       });
-      const result = await res.json();
 
-      if (!res.ok) {
-        showErrorToast(result.error || '로그인에 실패했습니다.');
+      const data = await readJsonSafe(response);
+
+      if (!response.ok) {
+        // 서버는 { error } 형태로 리턴합니다. (파싱 실패 대비)
+        const msg = data?.error || data?.message || '로그인에 실패했습니다.';
+        setLoginFormError(msg);
+        showErrorToast(msg);
         return;
       }
 
-      const meRes = await fetch('/api/users/me', {
-        credentials: 'include',
-        cache: 'no-store',
-      });
+      // 세션 확인(기존 흐름 유지)
+      const meRes = await fetch('/api/users/me', { credentials: 'include' });
+      const meData = await readJsonSafe(meRes);
 
-      if (!meRes.ok) {
-        showErrorToast('유저 정보를 불러오지 못했습니다.');
+      const meUser = (meData as any)?.user ?? meData;
+
+      if (!meRes.ok || !meUser?.id) {
+        const msg = (meData as any)?.error || (meData as any)?.message || '로그인에 실패했습니다.';
+        setLoginFormError(msg);
+        showErrorToast(msg);
         return;
       }
-      const user = await meRes.json();
-      setUser(user);
+      // 전역 로그인 상태(zustand)를 즉시 갱신해 헤더 등이 새로고침 없이 반영되게 함
+      setUser(meUser);
+      showSuccessToast('로그인되었습니다.');
 
-      await new Promise((resolve) => setTimeout(resolve, 30));
-
-      if (saveEmail) {
-        localStorage.setItem('saved-email', emailTrim);
-      } else {
-        localStorage.removeItem('saved-email');
-      }
-
-      localStorage.removeItem('cart-storage');
-      const from = new URLSearchParams(window.location.search).get('from');
-      router.push(from === 'cart' ? '/cart' : '/');
+      const redirectTo = params.get('redirectTo') || '/';
+      // 로그인 페이지로 "뒤로가기" 했을 때 다시 로그인 폼이 보이지 않도록 replace가 더 안전
+      router.replace(redirectTo);
       router.refresh();
-    } catch (error) {
-      showErrorToast('로그인 중 오류가 발생했습니다.');
+    } catch (err) {
+      setLoginFormError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      showErrorToast('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+
+      return;
     } finally {
       setLoginLoading(false);
     }
   };
 
   const checkEmailAvailability = async () => {
-    const fullEmail = `${emailId}@${emailDomain}`;
+    if (checkingEmail || isSocialOauthRegister) return;
 
-    if (!emailIdRegex.test(emailId)) {
-      showErrorToast('아이디는 영문 소문자 또는 숫자 조합으로\n4자 이상 입력해주세요.');
+    setRegisterFormError('');
+    setRegisterFieldErrors((prev) => ({ ...prev, emailId: undefined, emailDomain: undefined }));
+    setIsEmailAvailable(null);
+
+    const idTrim = emailId.trim();
+    const domainTrim = emailDomain.trim();
+    const emailVal = `${idTrim}@${domainTrim}`;
+
+    if (!idTrim || !domainTrim) {
+      const msg = '이메일을 입력해주세요.';
+      setRegisterFormError(msg);
+      setRegisterFieldErrors((prev) => ({
+        ...prev,
+        emailId: !idTrim ? '이메일 아이디를 입력해주세요.' : undefined,
+        emailDomain: !domainTrim ? '이메일 도메인을 선택/입력해주세요.' : undefined,
+      }));
+      focusFirst([!idTrim ? 'register-email-id' : '', !domainTrim ? 'register-email-domain' : ''].filter(Boolean));
       return;
     }
 
-    if (!emailRegex.test(fullEmail)) {
-      showErrorToast('유효한 이메일 형식이 아닙니다.');
+    if (!emailIdRegex.test(idTrim)) {
+      const msg = '아이디는 영문 소문자와 숫자 조합으로 4자 이상 입력해주세요.';
+      setRegisterFormError(msg);
+      setRegisterFieldErrors((prev) => ({ ...prev, emailId: msg }));
+      focusFirst(['register-email-id']);
+      return;
+    }
+
+    if (!emailRegex.test(emailVal)) {
+      const msg = '유효한 이메일 형식이 아닙니다.';
+      setRegisterFormError(msg);
+      setRegisterFieldErrors((prev) => ({ ...prev, emailDomain: msg }));
+      focusFirst(['register-email-domain']);
       return;
     }
 
     try {
       setCheckingEmail(true);
-      setIsEmailAvailable(null);
 
-      const res = await fetch(`/api/check-email?email=${encodeURIComponent(fullEmail)}`);
-      const data = await res.json();
+      // 서버 라우터: /api/check-email -> { isAvailable: boolean }
+      const res = await fetch(`/api/check-email?email=${encodeURIComponent(emailVal)}`, { credentials: 'include' });
+      const data = await readJsonSafe(res);
 
-      setIsEmailAvailable(data.isAvailable);
-    } catch (error) {
-      showErrorToast('이메일 확인 중 오류가 발생했습니다.');
+      if (!res.ok) {
+        const msg = data?.error || data?.message || '중복 확인에 실패했습니다.';
+        setRegisterFormError(msg);
+        return;
+      }
+
+      const available = !!data?.isAvailable;
+      setIsEmailAvailable(available);
+
+      // if (!available) {
+      //   const msg = '이미 사용 중인 이메일입니다.';
+      //   setRegisterFormError(msg);
+      //   setRegisterFieldErrors((prev) => ({ ...prev, emailId: msg }));
+      //   focusFirst(['register-email-id']);
+      //   return;
+      // }
+
+      // available === true 인 경우: 하단의 "사용 가능" 인라인 표시로 충분(중복 toast/경고 박스는 생략)
+    } catch (err) {
+      setRegisterFormError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      return;
     } finally {
       setCheckingEmail(false);
     }
@@ -222,152 +356,143 @@ export default function LoginPageClient() {
     e.preventDefault();
     if (submitting) return;
 
-    // 공통 정규화(제출 직전)
+    setRegisterFormError('');
+    setRegisterFieldErrors({});
+
     const nameTrim = name.trim();
     const phoneDigits = onlyDigits(phone);
-    const emailTrim = email.trim().toLowerCase();
     const postalTrim = postalCode.trim();
     const addressTrim = address.trim();
-    const addressDetailTrim = addressDetail.trim();
 
-    //  카카오 OAuth 회원가입이면: password/register API가 아니라 complete로 보냄
+    // 공통: 이름/연락처/주소는 반드시 입력
+    const nextCommonErrors: Partial<Record<RegisterField, string>> = {};
+    if (!nameTrim || nameTrim.length < 2) nextCommonErrors.name = '이름을 입력해주세요. (2자 이상)';
+    if (!phoneDigits) nextCommonErrors.phone = '연락처를 입력해주세요. (예: 01012345678)';
+    else if (!isValidKoreanPhone(phoneDigits)) nextCommonErrors.phone = '올바른 연락처 형식으로 입력해주세요. (010 0000 0000)';
+    if (!postalTrim || !addressTrim) nextCommonErrors.postalCode = '우편번호 찾기를 통해 주소를 등록해주세요.';
+    else if (!POSTAL_RE.test(postalTrim)) nextCommonErrors.postalCode = '우편번호 형식이 올바르지 않습니다.';
+    if (!addressTrim) nextCommonErrors.address = '우편번호 찾기를 통해 주소를 등록해주세요.';
+
+    // 소셜 회원가입(추가정보 입력) 경로: 이메일/비밀번호는 이미 처리됨(서버에서)
     if (isSocialOauthRegister) {
-      // 소셜 회원가입 제출 직전 최소 검증
-      if (!nameTrim || nameTrim.length < 2) {
-        showErrorToast('이름을 입력해주세요.');
-        return;
-      }
-      if (!phoneDigits) {
-        showErrorToast('연락처를 입력해주세요.');
-        return;
-      }
-      if (!isValidKoreanPhone(phoneDigits)) {
-        showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
-        return;
-      }
-      // 우편번호가 들어온 경우(주소 프리필/직접 입력 등) 5자리 보장
-      if (postalTrim && !POSTAL_RE.test(postalTrim)) {
-        showErrorToast('우편번호(5자리)를 확인해주세요.');
+      if (Object.keys(nextCommonErrors).length > 0) {
+        const firstMsg = nextCommonErrors.name || nextCommonErrors.phone || nextCommonErrors.postalCode || nextCommonErrors.address || '입력값을 확인해주세요.';
+        setRegisterFieldErrors(nextCommonErrors);
+        setRegisterFormError(firstMsg);
+        focusFirst([nextCommonErrors.name ? 'register-name' : '', nextCommonErrors.phone ? 'register-phone' : '', nextCommonErrors.postalCode || nextCommonErrors.address ? 'register-find-postcode' : ''].filter(Boolean));
         return;
       }
 
-      setSubmitting(true);
       try {
+        setSubmitting(true);
         const res = await fetch('/api/oauth/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
             token: oauthToken,
-            name: nameTrim,
             phone: phoneDigits,
-            postalCode: postalTrim || null,
-            address: addressTrim || null,
-            addressDetail: addressDetailTrim || null,
+            postalCode: postalTrim,
+            address: addressTrim,
+            addressDetail,
           }),
         });
-        const data = await res.json();
+
+        const data = await readJsonSafe(res);
 
         if (!res.ok) {
-          showErrorToast(data?.error || 'SNS 회원가입 완료 처리에 실패했습니다.');
+          const msg = data?.error || data?.message || '회원가입에 실패했습니다.';
+          setRegisterFormError(msg);
           return;
         }
 
-        // 쿠키 발급된 상태이므로 me 갱신
-        const meRes = await fetch('/api/users/me', { credentials: 'include', cache: 'no-store' });
-        if (meRes.ok) {
-          const me = await meRes.json();
-          setUser(me);
-        }
-
-        showSuccessToast('SNS 회원가입이 완료되었습니다.');
-        router.push(data.redirectTo || '/');
+        showSuccessToast('회원가입이 완료되었습니다. 로그인되었습니다.');
+        resetRegisterForm();
+        router.push(data?.redirectTo || '/');
         router.refresh();
-        return;
       } catch (err) {
-        showErrorToast('SNS 회원가입 처리 중 오류가 발생했습니다.');
+        setRegisterFormError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
         return;
       } finally {
         setSubmitting(false);
       }
-    }
-
-    if (!emailIdRegex.test(emailId)) {
-      showErrorToast('아이디는 영문 소문자와 숫자 조합으로\n4자 이상 입력해주세요.');
-      return;
-    }
-    // 일반 회원가입 제출 직전 최소 검증
-    if (!emailTrim || !emailRegex.test(emailTrim)) {
-      showErrorToast('유효한 이메일 형식이 아닙니다.');
-      return;
-    }
-    if (!password || !confirmPassword) {
-      showErrorToast('비밀번호를 입력해주세요.');
-      return;
-    }
-    if (!PASSWORD_POLICY_RE.test(password)) {
-      showErrorToast('비밀번호는 8자 이상이며 영문/숫자 조합이어야 합니다.');
-      return;
-    }
-    if (!nameTrim || nameTrim.length < 2) {
-      showErrorToast('이름을 확인해주세요. (2자 이상)');
-      return;
-    }
-    if (phoneDigits && !isValidKoreanPhone(phoneDigits)) {
-      showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
-      return;
-    }
-    if (postalTrim && !POSTAL_RE.test(postalTrim)) {
-      showErrorToast('우편번호(5자리)를 확인해주세요.');
-      return;
-    }
-    if (!emailTrim || !password || !confirmPassword || !nameTrim) {
-      showErrorToast('모든 필드를 입력해주세요.');
-      return;
-    }
-    if (isEmailAvailable === null) {
-      showErrorToast('이메일 중복 확인을 해주세요.');
-      return;
-    }
-    if (!isEmailAvailable) {
-      showErrorToast('이미 사용 중인 이메일입니다.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      showErrorToast('비밀번호가 일치하지 않습니다.');
       return;
     }
 
-    setSubmitting(true);
+    // 일반 회원가입 경로: 이메일/비밀번호 검증 포함
+    const nextErrors: Partial<Record<RegisterField, string>> = { ...nextCommonErrors };
+
+    const idTrim = emailId.trim();
+    const domainTrim = emailDomain.trim();
+    const emailVal = `${idTrim}@${domainTrim}`;
+
+    if (!idTrim || !domainTrim) nextErrors.emailId = '이메일을 입력해주세요.';
+    else if (!emailIdRegex.test(idTrim)) nextErrors.emailId = '아이디는 영문 소문자와 숫자 조합으로 4자 이상 입력해주세요.';
+    else if (!emailRegex.test(emailVal)) nextErrors.emailId = '유효한 이메일 형식이 아닙니다.';
+    else if (isEmailAvailable !== true) nextErrors.emailId = '이메일 중복 확인을 진행해주세요.';
+
+    if (!password) nextErrors.password = '비밀번호를 입력해주세요.';
+    else if (password.length < 8) nextErrors.password = '비밀번호는 8자 이상이어야 합니다.';
+    else if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) nextErrors.password = '비밀번호는 영문/숫자를 포함해야 합니다.';
+
+    if (!confirmPassword) nextErrors.confirmPassword = '비밀번호 확인을 입력해주세요.';
+    else if (password !== confirmPassword) nextErrors.confirmPassword = '비밀번호가 일치하지 않습니다.';
+
+    if (Object.keys(nextErrors).length > 0) {
+      const firstMsg = nextErrors.emailId || nextErrors.password || nextErrors.confirmPassword || nextErrors.name || nextErrors.phone || nextErrors.postalCode || nextErrors.address || '입력값을 확인해주세요.';
+      setRegisterFieldErrors(nextErrors);
+      setRegisterFormError(firstMsg);
+
+      focusFirst(
+        [
+          nextErrors.emailId ? 'register-email-id' : '',
+          nextErrors.emailDomain ? 'register-email-domain' : '',
+          nextErrors.password ? 'register-password' : '',
+          nextErrors.confirmPassword ? 'register-confirm-password' : '',
+          nextErrors.name ? 'register-name' : '',
+          nextErrors.phone ? 'register-phone' : '',
+          nextErrors.postalCode || nextErrors.address ? 'register-find-postcode' : '',
+        ].filter(Boolean),
+      );
+      return;
+    }
+
     try {
-      const res = await fetch('/api/register', {
+      setSubmitting(true);
+      const response = await fetch('/api/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: emailTrim,
+          email: emailVal,
           password,
           name: nameTrim,
-          phone: phoneDigits || null,
-          postalCode: postalTrim || null,
-          address: addressTrim || null,
-          addressDetail: addressDetailTrim || null,
+          phone: phoneDigits,
+          postalCode: postalTrim,
+          address: addressTrim,
+          addressDetail,
         }),
       });
 
-      const data = await res.json();
-      const from = params.get('from');
+      const data = await readJsonSafe(response);
 
-      if (res.ok) {
-        showSuccessToast('회원가입이 완료되었습니다.');
-        router.push(`/login?tab=login${from === 'cart' ? '&from=cart' : ''}`);
-      } else {
-        showErrorToast(data.message || '회원가입 중 오류가 발생했습니다.');
+      if (!response.ok) {
+        const msg = data?.error || data?.message || '회원가입에 실패했습니다.';
+        setRegisterFormError(msg);
+
+        // 서버가 이메일 중복을 리턴하는 경우: 중복확인 상태도 함께 무효화
+        if (typeof msg === 'string' && msg.includes('이미')) {
+          setIsEmailAvailable(false);
+        }
+        return;
       }
+
+      showSuccessToast('회원가입이 완료되었습니다. 로그인 탭으로 이동합니다.');
+      resetRegisterForm();
+      router.push('/login?tab=login');
+      router.refresh();
     } catch (err) {
-      console.error(err);
-      showErrorToast('서버 통신 중 오류가 발생했습니다.');
+      setRegisterFormError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      return;
     } finally {
       setSubmitting(false);
     }
@@ -399,6 +524,8 @@ export default function LoginPageClient() {
         const zonecode = data.zonecode;
         setPostalCode(zonecode);
         setAddress(fullAddress);
+        setRegisterFieldErrors((prev) => ({ ...prev, postalCode: undefined, address: undefined }));
+        setRegisterFormError('');
       },
     }).open();
   };
@@ -413,9 +540,9 @@ export default function LoginPageClient() {
           <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 p-6 text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg"></div>
+              {/* <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg"></div> */}
               <h1 className="text-2xl bp-sm:text-3xl font-black">도깨비 테니스</h1>
-              <p className="text-emerald-100 mt-2 font-medium">프리미엄 테니스 스트링 전문점</p>
+              <p className="text-emerald-100 mt-2 font-medium">Dokkaebi Tennis Shop</p>
             </div>
           </div>
 
@@ -444,14 +571,35 @@ export default function LoginPageClient() {
                   }}
                   className="space-y-4"
                 >
+                  {/* {loginFormError && (
+                    <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <div className="whitespace-pre-line">{loginFormError}</div>
+                    </div>
+                  )} */}
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">
                       이메일
                     </Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                      <Input id="email" type="email" placeholder="이메일 주소를 입력하세요" className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="이메일 주소를 입력하세요"
+                        onChange={() => {
+                          setLoginFieldErrors((prev) => ({ ...prev, email: undefined }));
+                          setLoginFormError('');
+                        }}
+                        className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400"
+                      />
                     </div>
+                    {loginFieldErrors.email && (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                        <AlertCircle className="h-4 w-4" />
+                        <span className="whitespace-pre-line">{loginFieldErrors.email}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -464,6 +612,10 @@ export default function LoginPageClient() {
                         id="password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="비밀번호를 입력하세요"
+                        onChange={() => {
+                          setLoginFieldErrors((prev) => ({ ...prev, password: undefined }));
+                          setLoginFormError('');
+                        }}
                         className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400"
                       />
                       <Button
@@ -476,6 +628,12 @@ export default function LoginPageClient() {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
+                    {loginFieldErrors.password && (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                        <AlertCircle className="h-4 w-4" />
+                        <span className="whitespace-pre-line">{loginFieldErrors.password}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -542,113 +700,148 @@ export default function LoginPageClient() {
                 </div>
 
                 <form onSubmit={handleRegister} className="space-y-6">
+                  {/* {registerFormError && (
+                    <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <div className="whitespace-pre-line">{registerFormError}</div>
+                    </div>
+                  )} */}
                   <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-6">
                     {/* 이메일 */}
                     <div className="bp-lg:col-span-2 space-y-2">
-                      <Label className="text-slate-700 dark:text-slate-300 font-medium">이메일 주소</Label>
-                      <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start">
-                        <div className="flex w-full items-center gap-2 min-w-0">
-                          <div className="relative flex-1 min-w-0">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                            <Input
-                              placeholder="아이디 입력"
-                              value={emailId}
-                              disabled={isSocialOauthRegister}
-                              onChange={(e) => {
-                                if (isSocialOauthRegister) return;
-                                setEmailId(e.target.value);
-                                setIsEmailAvailable(null);
-                              }}
-                              className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
-                            />
+                      <Label htmlFor="register-email-id" className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <Mail className="h-4 w-4 text-green-600" />
+                        이메일 주소
+                      </Label>
+
+                      <div className="space-y-2">
+                        <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start">
+                          <div className="flex w-full items-center gap-2 min-w-0">
+                            <div className="relative flex-1 min-w-0">
+                              <Input
+                                id="register-email-id"
+                                value={emailId}
+                                onChange={(e) => {
+                                  setEmailId(e.target.value);
+                                  setIsEmailAvailable(null);
+                                  setRegisterFieldErrors((prev) => ({ ...prev, emailId: undefined }));
+                                }}
+                                placeholder="아이디 입력"
+                                className={`h-12 pl-10 pr-4 ${registerFieldErrors.emailId ? 'border-red-500 focus:border-red-500' : ''}`}
+                                autoComplete="email"
+                                disabled={isSocialOauthRegister}
+                              />
+                              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            </div>
+
+                            <span className="text-gray-500">@</span>
+
+                            {isCustomDomain ? (
+                              <div className="flex flex-1 items-center gap-2 min-w-0">
+                                <Input
+                                  id="register-email-domain"
+                                  value={emailDomain}
+                                  onChange={(e) => {
+                                    setEmailDomain(e.target.value);
+                                    setIsEmailAvailable(null);
+                                    setRegisterFieldErrors((prev) => ({ ...prev, emailDomain: undefined }));
+                                  }}
+                                  placeholder="도메인 직접 입력"
+                                  className={`h-12 ${registerFieldErrors.emailDomain ? 'border-red-500 focus:border-red-500' : ''}`}
+                                  disabled={isSocialOauthRegister}
+                                />
+                                {!isSocialOauthRegister && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-12 shrink-0"
+                                    onClick={() => {
+                                      setIsCustomDomain(false);
+                                      setEmailDomain('gmail.com');
+                                      setIsEmailAvailable(null);
+                                    }}
+                                  >
+                                    선택
+                                  </Button>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex flex-1 min-w-0">
+                                <Select
+                                  value={emailDomain}
+                                  onValueChange={(v) => {
+                                    setEmailDomain(v);
+                                    setIsEmailAvailable(null);
+                                    setRegisterFieldErrors((prev) => ({ ...prev, emailDomain: undefined }));
+                                    if (v === 'custom') {
+                                      setIsCustomDomain(true);
+                                      setEmailDomain('');
+                                    } else {
+                                      setIsCustomDomain(false);
+                                    }
+                                  }}
+                                  disabled={isSocialOauthRegister}
+                                >
+                                  <SelectTrigger id="register-email-domain" className={`h-12 ${registerFieldErrors.emailDomain ? 'border-red-500 focus:border-red-500' : ''}`}>
+                                    <SelectValue placeholder="도메인 선택" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="gmail.com">gmail.com</SelectItem>
+                                    <SelectItem value="naver.com">naver.com</SelectItem>
+                                    <SelectItem value="daum.net">daum.net</SelectItem>
+                                    <SelectItem value="kakao.com">kakao.com</SelectItem>
+                                    <SelectItem value="custom">직접 입력</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
                           </div>
 
-                          <span className="shrink-0 text-slate-500 dark:text-slate-400 font-medium">@</span>
-
-                          {isCustomDomain ? (
-                            <div className="flex flex-1 items-center gap-2 min-w-0">
-                              <Input
-                                placeholder="직접 입력"
-                                value={emailDomain}
-                                disabled={isSocialOauthRegister}
-                                onChange={(e) => {
-                                  if (isSocialOauthRegister) return;
-                                  setEmailDomain(e.target.value);
-                                  setIsEmailAvailable(null);
-                                }}
-                                className="flex-1 min-w-0 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400 sm:flex-none sm:w-40"
-                              />
-
-                              {!isSocialOauthRegister && (
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  className="h-12 px-3 border-slate-200 dark:border-slate-600 bg-transparent shrink-0"
-                                  onClick={() => {
-                                    setIsCustomDomain(false);
-                                    setEmailDomain('gmail.com');
-                                    setIsEmailAvailable(null);
-                                  }}
-                                >
-                                  선택
-                                </Button>
+                          {!isSocialOauthRegister && (
+                            <Button type="button" variant="outline" className="h-12 px-4 shrink-0" onClick={checkEmailAvailability} disabled={!emailRegex.test(`${emailId.trim()}@${emailDomain.trim()}`) || checkingEmail}>
+                              {checkingEmail ? (
+                                <span className="flex items-center gap-2">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  확인 중
+                                </span>
+                              ) : (
+                                '중복 확인'
                               )}
-                            </div>
-                          ) : (
-                            <Select
-                              value={emailDomain}
-                              onValueChange={(value: string) => {
-                                if (value === 'custom') {
-                                  setIsCustomDomain(true);
-                                  setEmailDomain('');
-                                } else {
-                                  setEmailDomain(value);
-                                  setIsCustomDomain(false);
-                                }
-                                setIsEmailAvailable(null);
-                              }}
-                            >
-                              <SelectTrigger className="flex-1 min-w-0 h-12 border-slate-200 dark:border-slate-600 sm:flex-none sm:w-40">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="gmail.com">gmail.com</SelectItem>
-                                <SelectItem value="naver.com">naver.com</SelectItem>
-                                <SelectItem value="daum.net">daum.net</SelectItem>
-                                <SelectItem value="custom">직접 입력</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            </Button>
                           )}
                         </div>
 
-                        {!isSocialOauthRegister && (
-                          <Button type="button" variant="outline" className="h-12 w-full sm:w-auto sm:shrink-0" onClick={checkEmailAvailability} disabled={!emailRegex.test(`${emailId}@${emailDomain}`) || checkingEmail}>
-                            {checkingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : '중복 확인'}
-                          </Button>
+                        {(registerFieldErrors.emailId || registerFieldErrors.emailDomain) && (
+                          <div className="space-y-1">
+                            {registerFieldErrors.emailId && (
+                              <p className="flex items-center gap-1 text-sm text-red-600">
+                                <AlertCircle className="h-4 w-4" />
+                                {registerFieldErrors.emailId}
+                              </p>
+                            )}
+                            {registerFieldErrors.emailDomain && (
+                              <p className="flex items-center gap-1 text-sm text-red-600">
+                                <AlertCircle className="h-4 w-4" />
+                                {registerFieldErrors.emailDomain}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {isSocialOauthRegister && (
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            <CheckCircle className="h-4 w-4" />
+                            소셜 로그인 이메일이 자동으로 입력되었습니다.
+                          </div>
+                        )}
+
+                        {!isSocialOauthRegister && isEmailAvailable !== null && (
+                          <div className={`flex items-center gap-2 text-sm ${isEmailAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                            {isEmailAvailable ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                            {isEmailAvailable ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.'}
+                          </div>
                         )}
                       </div>
-
-                      {isSocialOauthRegister && (
-                        <div className="mt-2 flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
-                          <CheckCircle className="h-4 w-4" />
-                          {socialProviderLabel}로 인증된 이메일입니다.
-                        </div>
-                      )}
-                      {!isSocialOauthRegister && isEmailAvailable !== null && (
-                        <div className={`flex items-center gap-2 text-sm mt-2 ${isEmailAvailable ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                          {isEmailAvailable ? (
-                            <>
-                              <CheckCircle className="h-4 w-4" />
-                              사용 가능한 이메일입니다.
-                            </>
-                          ) : (
-                            <>
-                              <AlertCircle className="h-4 w-4" />
-                              이미 사용 중인 이메일입니다.
-                            </>
-                          )}
-                        </div>
-                      )}
                     </div>
                     {!isSocialOauthRegister && (
                       <>
@@ -658,9 +851,14 @@ export default function LoginPageClient() {
                           <div className="relative">
                             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                             <Input
+                              id="register-password"
                               type={showRegisterPassword ? 'text' : 'password'}
                               value={password}
-                              onChange={(e) => setPassword(e.target.value)}
+                              onChange={(e) => {
+                                setPassword(e.target.value);
+                                setRegisterFieldErrors((prev) => ({ ...prev, password: undefined }));
+                                setRegisterFormError('');
+                              }}
                               placeholder="비밀번호를 입력하세요"
                               className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
                             />
@@ -668,6 +866,12 @@ export default function LoginPageClient() {
                               {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                           </div>
+                          {registerFieldErrors.password && (
+                            <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                              <AlertCircle className="h-4 w-4" />
+                              <span className="whitespace-pre-line">{registerFieldErrors.password}</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* 비밀번호 확인 */}
@@ -676,9 +880,14 @@ export default function LoginPageClient() {
                           <div className="relative">
                             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                             <Input
+                              id="register-confirm-password"
                               type={showConfirmPassword ? 'text' : 'password'}
                               value={confirmPassword}
-                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              onChange={(e) => {
+                                setConfirmPassword(e.target.value);
+                                setRegisterFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                                setRegisterFormError('');
+                              }}
                               placeholder="비밀번호를 다시 입력하세요"
                               className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
                             />
@@ -695,14 +904,29 @@ export default function LoginPageClient() {
                         </div>
                       </>
                     )}
-
                     {/* 이름 */}
                     <div className="space-y-2">
                       <Label className="text-slate-700 dark:text-slate-300 font-medium">이름</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름을 입력하세요" className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400" />
+                        <Input
+                          id="register-name"
+                          value={name}
+                          onChange={(e) => {
+                            setName(e.target.value);
+                            setRegisterFieldErrors((prev) => ({ ...prev, name: undefined }));
+                            setRegisterFormError('');
+                          }}
+                          placeholder="이름을 입력하세요"
+                          className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+                        />
                       </div>
+                      {registerFieldErrors.name && (
+                        <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                          <AlertCircle className="h-4 w-4" />
+                          <span className="whitespace-pre-line">{registerFieldErrors.name}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* 연락처 */}
@@ -711,12 +935,25 @@ export default function LoginPageClient() {
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                         <Input
+                          id="register-phone"
                           value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
+                          onChange={(e) => {
+                            setPhone(formatKoreanPhone(e.target.value));
+                            setRegisterFieldErrors((prev) => ({ ...prev, phone: undefined }));
+                            setRegisterFormError('');
+                          }}
                           placeholder="연락처를 입력하세요 ('-' 제외)"
+                          inputMode="numeric"
+                          maxLength={13}
                           className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
                         />
                       </div>
+                      {registerFieldErrors.phone && (
+                        <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                          <AlertCircle className="h-4 w-4" />
+                          <span className="whitespace-pre-line">{registerFieldErrors.phone}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* 우편번호 */}
@@ -724,6 +961,7 @@ export default function LoginPageClient() {
                       <div className="flex items-center justify-between">
                         <Label className="text-slate-700 dark:text-slate-300 font-medium">우편번호</Label>
                         <Button
+                          id="register-find-postcode"
                           type="button"
                           variant="outline"
                           size="sm"
@@ -734,32 +972,49 @@ export default function LoginPageClient() {
                           우편번호 찾기
                         </Button>
                       </div>
-                      <Input
-                        value={postalCode}
-                        onChange={(e) => setPostalCode(e.target.value)}
-                        placeholder="우편번호를 입력하세요"
-                        readOnly
-                        className="bg-slate-50 dark:bg-slate-700 cursor-not-allowed max-w-xs h-12 border-slate-200 dark:border-slate-600"
-                      />
+                      <Input id="register-postal-code" value={postalCode} placeholder="우편번호를 입력하세요" readOnly className="bg-slate-50 dark:bg-slate-700 cursor-not-allowed max-w-xs h-12 border-slate-200 dark:border-slate-600" />
+                      {registerFieldErrors.postalCode && (
+                        <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                          <AlertCircle className="h-4 w-4" />
+                          <span className="whitespace-pre-line">{registerFieldErrors.postalCode}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* 기본 주소 */}
                     <div className="bp-lg:col-span-2 space-y-2">
                       <Label className="text-slate-700 dark:text-slate-300 font-medium">기본 배송지 주소</Label>
-                      <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="기본 주소를 입력하세요" readOnly className="bg-slate-50 dark:bg-slate-700 cursor-not-allowed h-12 border-slate-200 dark:border-slate-600" />
+                      <Input id="register-address" value={address} placeholder="기본 주소를 입력하세요" readOnly className="bg-slate-50 dark:bg-slate-700 cursor-not-allowed h-12 border-slate-200 dark:border-slate-600" />
+                      {registerFieldErrors.address && (
+                        <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                          <AlertCircle className="h-4 w-4" />
+                          <span className="whitespace-pre-line">{registerFieldErrors.address}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* 상세 주소 */}
                     <div className="bp-lg:col-span-2 space-y-2">
                       <Label className="text-slate-700 dark:text-slate-300 font-medium">상세 주소</Label>
                       <Input
+                        id="register-address-detail"
                         value={addressDetail}
-                        onChange={(e) => setAddressDetail(e.target.value)}
+                        onChange={(e) => {
+                          setAddressDetail(e.target.value);
+                          setRegisterFieldErrors((prev) => ({ ...prev, addressDetail: undefined }));
+                          setRegisterFormError('');
+                        }}
                         placeholder="상세 주소를 입력하세요"
                         className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
                       />
                     </div>
                   </div>
+                  {registerFieldErrors.addressDetail && (
+                    <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                      <AlertCircle className="h-4 w-4" />
+                      <span className="whitespace-pre-line">{registerFieldErrors.addressDetail}</span>
+                    </div>
+                  )}
 
                   <Button
                     type="submit"

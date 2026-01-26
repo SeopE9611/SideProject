@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { PAID_STATUS_VALUES, orderPaidAmount, applicationPaidAmount, refundsAmount, isStandaloneStringingApplication } from '@/app/api/settlements/_lib/settlementPolicy';
+import { orderPaidAmount, applicationPaidAmount, refundsAmount, isStandaloneStringingApplication, buildPaidMatch, buildRentalPaidMatch, rentalPaidAmount, rentalDepositAmount } from '@/app/api/settlements/_lib/settlementPolicy';
 import { requireAdmin } from '@/lib/admin.guard';
 // 월 시작/끝(KST) → UTC 경계로 변환
 function kstMonthRangeToUtc(yyyymm: string) {
@@ -55,17 +52,18 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
     }
 
     const { start, end } = kstMonthRangeToUtc(yyyymm);
+    const paidMatch = buildPaidMatch(['paymentStatus', 'paymentInfo.status']);
 
     // 1) 저장값 우선 필드 투영 (orders)
     const orders = await db
       .collection('orders')
-      .find({ createdAt: { $gte: start, $lt: end }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { paymentStatus: 1, paidAmount: 1, totalPrice: 1, refunds: 1 } })
+      .find({ $and: [{ createdAt: { $gte: start, $lt: end } }, paidMatch] }, { projection: { paymentStatus: 1, paymentInfo: 1, paidAmount: 1, totalPrice: 1, refunds: 1 } })
       .toArray();
 
     // 2) 저장값 우선 필드 투영 (stringing_applications)
     const apps = await db
       .collection('stringing_applications')
-      .find({ createdAt: { $gte: start, $lt: end }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { paymentStatus: 1, totalPrice: 1, serviceAmount: 1, orderId: 1, rentalId: 1, refunds: 1 } })
+      .find({ $and: [{ createdAt: { $gte: start, $lt: end } }, paidMatch] }, { projection: { paymentStatus: 1, paymentInfo: 1, totalPrice: 1, serviceAmount: 1, orderId: 1, rentalId: 1, refunds: 1 } })
       .toArray();
 
     // 3) 패키지 주문 조회 (결제완료만, createdAt 기준)
@@ -73,10 +71,20 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
       .collection('packageOrders')
       .find(
         {
-          createdAt: { $gte: start, $lt: end },
-          paymentStatus: { $in: PAID_STATUS_VALUES },
+          $and: [{ createdAt: { $gte: start, $lt: end } }, paidMatch],
         },
-        { projection: { paymentStatus: 1, paidAmount: 1, totalPrice: 1, refunds: 1 } },
+        { projection: { paymentStatus: 1, paymentInfo: 1, paidAmount: 1, totalPrice: 1, refunds: 1 } },
+      )
+      .toArray();
+
+    // 대여 조회
+    const rentals = await db
+      .collection('rental_orders')
+      .find(
+        {
+          $and: [{ createdAt: { $gte: start, $lt: end } }, buildRentalPaidMatch()],
+        },
+        { projection: { status: 1, paidAt: 1, payment: 1, amount: 1, createdAt: 1 } },
       )
       .toArray();
 
@@ -86,7 +94,10 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
     const paidOrders = orders.reduce((s: number, o: any) => s + orderPaidAmount(o), 0);
     const paidApps = standaloneApps.reduce((s: number, a: any) => s + applicationPaidAmount(a), 0);
     const paidPackages = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
-    const paid = paidOrders + paidApps + paidPackages;
+    const paidRentals = rentals.reduce((s: number, r: any) => s + rentalPaidAmount(r), 0);
+    const rentalDeposit = rentals.reduce((s: number, r: any) => s + rentalDepositAmount(r), 0);
+
+    const paid = paidOrders + paidApps + paidPackages + paidRentals;
 
     const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
     const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
@@ -96,8 +107,8 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
 
     const snapshot = {
       yyyymm,
-      totals: { paid, refund, net },
-      breakdown: { orders: orders.length, applications: standaloneApps.length, packages: packages.length },
+      totals: { paid, refund, net, rentalDeposit },
+      breakdown: { orders: orders.length, applications: standaloneApps.length, packages: packages.length, rentals: rentals.length },
 
       // 아래 두 필드는 최초 1회만 기록
       createdAt: new Date(),
