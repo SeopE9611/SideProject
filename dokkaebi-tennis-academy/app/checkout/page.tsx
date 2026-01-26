@@ -36,10 +36,14 @@ type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
-const isValidKoreanPhone = (v: string) => {
-  const d = onlyDigits(v);
-  return d.length === 10 || d.length === 11; // 01012345678 / 0212345678 등
+// 연락처는 010으로 시작하는 휴대폰 번호만 허용 (010 0000 0000)
+const formatKoreanPhone010 = (v: string) => {
+  const d = onlyDigits(v).slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 7) return `${d.slice(0, 3)} ${d.slice(3)}`;
+  return `${d.slice(0, 3)} ${d.slice(3, 7)} ${d.slice(7)}`;
 };
+const isValidKoreanPhone010 = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 
 export default function CheckoutPage() {
   const sp = useSearchParams();
@@ -273,7 +277,7 @@ export default function CheckoutPage() {
 
     if (!name.trim()) errors.name = '수령인 이름은 필수입니다.';
     if (!phone.trim()) errors.phone = '연락처는 필수입니다.';
-    else if (!isValidKoreanPhone(phone)) errors.phone = '연락처 형식을 확인해주세요. (숫자만, 10~11자리)';
+    else if (!isValidKoreanPhone010(phone)) errors.phone = '올바른 연락처 형식(01012345678)으로 입력해주세요.';
 
     const emailTrim = email.trim();
     // 게스트 주문은 이메일 필수, 로그인 주문은 선택(하지만 입력 시 형식 체크)
@@ -285,10 +289,9 @@ export default function CheckoutPage() {
 
     // 택배수령일 때만 주소 필수
     if (needsShippingAddress) {
-      if (!postalCode.trim()) errors.postalCode = '우편번호는 필수입니다.';
+      if (!postalCode.trim() || !address.trim()) errors.postalCode = '우편번호 찾기를 통해 주소를 등록해주세요.';
       else if (!POSTAL_RE.test(postalCode.trim())) errors.postalCode = '우편번호 형식을 확인해주세요. (5자리)';
 
-      if (!address.trim()) errors.address = '기본 주소는 필수입니다.';
       if (!addressDetail.trim()) errors.addressDetail = '상세 주소는 필수입니다.';
     }
 
@@ -330,7 +333,7 @@ export default function CheckoutPage() {
       const data = await res.json();
 
       setName(data.name || '');
-      setPhone(data.phone || '');
+      setPhone(formatKoreanPhone010(data.phone || ''));
       setEmail(data.email || '');
       setPostalCode(data.postalCode || '');
       setAddress(data.address || '');
@@ -532,8 +535,9 @@ export default function CheckoutPage() {
                       <Input
                         id="recipient-phone"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => setPhone(formatKoreanPhone010(e.target.value))}
                         placeholder="연락처를 입력하세요 ('-' 제외)"
+                        inputMode="numeric"
                         className={cn('border-2 focus:border-teal-500 transition-colors', fieldErrors.phone && 'border-rose-500 focus:border-rose-500')}
                       />
                       {fieldErrors.phone && <p className="text-xs text-rose-600">{fieldErrors.phone}</p>}
@@ -551,16 +555,20 @@ export default function CheckoutPage() {
                       </Button>
                     </div>
                     <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn('bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2', fieldErrors.postalCode && 'border-rose-500')} />
+                    <div className="min-h-[16px]">
+                      {fieldErrors.postalCode && <p className="text-xs text-rose-600">{fieldErrors.postalCode}</p>}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="address-main">기본 주소</Label>
-                    <Input id="address-main" readOnly value={address} placeholder="기본 주소" className="bg-slate-100 dark:bg-slate-700 cursor-not-allowed border-2" />
+                    <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn('bg-slate-100 dark:bg-slate-700 cursor-not-allowed border-2', fieldErrors.postalCode && 'border-rose-500')} />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="address-detail">상세 주소</Label>
-                    <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" className="border-2 focus:border-blue-500 transition-colors" />
+                    <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" className={cn('border-2 focus:border-blue-500 transition-colors', fieldErrors.addressDetail && 'border-rose-500 focus:border-rose-500')} />
+                    <div className="min-h-[16px]">{fieldErrors.addressDetail && <p className="text-xs text-rose-600">{fieldErrors.addressDetail}</p>}</div>
                   </div>
 
                   <div className="space-y-2">
@@ -692,7 +700,8 @@ export default function CheckoutPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="depositor-name">입금자명</Label>
-                    <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className="border-2 focus:border-emerald-500 transition-colors" />
+                    <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className={cn('border-2 focus:border-emerald-500 transition-colors', fieldErrors.depositor && 'border-rose-500 focus:border-rose-500')} />
+                    <div className="min-h-[16px]">{fieldErrors.depositor && <p className="text-xs text-rose-600">{fieldErrors.depositor}</p>}</div>
                   </div>
 
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
