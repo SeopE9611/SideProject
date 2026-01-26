@@ -35,15 +35,26 @@ const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s);
 const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
+type FieldKey = 'category' | 'title' | 'content' | 'attachments';
+type FieldErrors = Partial<Record<FieldKey, string>>;
+const scrollIntoViewOpts: ScrollIntoViewOptions = { behavior: 'smooth', block: 'center' };
+
 export default function FreeBoardWriteClient() {
   const router = useRouter();
 
   // 폼 상태
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   // 카테고리 상태 (기본 'general')
   const [category, setCategory] = useState<CategoryValue>('general');
+
+  // 포커스/스크롤 대상 refs (첫 오류로 이동)
+  const categoryRef = useRef<HTMLDivElement | null>(null);
+  const titleRef = useRef<HTMLInputElement | null>(null);
+  const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const attachmentsRef = useRef<HTMLDivElement | null>(null);
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -61,35 +72,73 @@ export default function FreeBoardWriteClient() {
   // 더블클릭/연타 레이스 방지(제출 시작~끝까지 1회만 허용)
   const submitRef = useRef(false);
 
-  const emitError = (msg: string) => {
+  const focusField = (key: FieldKey) => {
+    if (key === 'category') {
+      categoryRef.current?.scrollIntoView(scrollIntoViewOpts);
+      return;
+    }
+    if (key === 'title') {
+      titleRef.current?.scrollIntoView(scrollIntoViewOpts);
+      titleRef.current?.focus();
+      return;
+    }
+    if (key === 'content') {
+      contentRef.current?.scrollIntoView(scrollIntoViewOpts);
+      contentRef.current?.focus();
+      return;
+    }
+    if (key === 'attachments') {
+      attachmentsRef.current?.scrollIntoView(scrollIntoViewOpts);
+      return;
+    }
+  };
+
+  const setInlineError = (key: FieldKey, msg: string, formMsg = '입력값을 확인해 주세요.') => {
+    setFieldErrors((prev) => ({ ...prev, [key]: msg }));
+    setErrorMsg(formMsg);
+    requestAnimationFrame(() => focusField(key));
+  };
+
+  const emitServerError = (msg: string) => {
     setErrorMsg(msg);
     showErrorToast(msg);
   };
 
   // 제출 직전 최종 유효성 검증(우회 방지)
-  const validateBeforeSubmit = () => {
+  const validateBeforeSubmit = (): FieldErrors => {
+    const errs: FieldErrors = {};
     const t = title.trim();
     const c = content.trim();
 
     // 카테고리 화이트리스트(타입이 있어도 devtools로 깨질 수 있어 방어)
     if (!CATEGORY_OPTIONS.some((o) => o.value === category)) {
-      return '분류를 선택해 주세요.';
+      errs.category = '분류를 선택해 주세요.';
+      return errs;
     }
 
-    if (!t || !c) return '제목과 내용을 입력해 주세요.';
-    if (t.length < TITLE_MIN) return `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
-    if (t.length > TITLE_MAX) return `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
-    if (c.length < CONTENT_MIN) return `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
-    if (c.length > CONTENT_MAX) return `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
+    if (!t) errs.title = '제목을 입력해 주세요.';
+    if (!c) errs.content = '내용을 입력해 주세요.';
 
-    if (hasScriptLike(t) || hasScriptLike(c)) return '스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.';
-    if (hasHtmlLike(t) || hasHtmlLike(c)) return 'HTML 태그는 사용할 수 없습니다.';
+    if (!errs.title) {
+      if (t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
+      else if (t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
+    }
+    if (!errs.content) {
+      if (c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
+      else if (c.length > CONTENT_MAX) errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
+    }
+
+    // 스크립트/HTML 유사 입력 방어: 해당 필드에 귀속
+    if (!errs.title && hasScriptLike(t)) errs.title = '스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.';
+    if (!errs.content && hasScriptLike(c)) errs.content = '스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.';
+    if (!errs.title && hasHtmlLike(t)) errs.title = 'HTML 태그는 사용할 수 없습니다.';
+    if (!errs.content && hasHtmlLike(c)) errs.content = 'HTML 태그는 사용할 수 없습니다.';
 
     // 이미지 업로더 max=5이지만, 제출 직전 한 번 더 방어
-    if (images.length > 5) return '이미지는 최대 5장까지만 업로드할 수 있어요.';
-    if (selectedFiles.length > MAX_FILES) return `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
+    if (images.length > 5) errs.attachments = '이미지는 최대 5장까지만 업로드할 수 있어요.';
+    if (selectedFiles.length > MAX_FILES) errs.attachments = `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
 
-    return null;
+    return errs;
   };
 
   const MAX_FILES = 5;
@@ -101,21 +150,21 @@ export default function FreeBoardWriteClient() {
 
     // 개수 제한
     if (selectedFiles.length + files.length > MAX_FILES) {
-      emitError(`파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`);
+      setInlineError('attachments', `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`, '첨부 파일을 확인해 주세요.');
       return;
     }
 
     // 용량 제한
     const tooLarge = files.find((f) => f.size > MAX_SIZE_MB * 1024 * 1024);
     if (tooLarge) {
-      emitError(`파일당 ${MAX_SIZE_MB}MB를 초과할 수 없어요.`);
+      setInlineError('attachments', `파일당 ${MAX_SIZE_MB}MB를 초과할 수 없어요.`, '첨부 파일을 확인해 주세요.');
       return;
     }
 
     // 이미지 파일 방지 (이미지는 이미지 탭에서만)
     const hasImage = files.some((f) => f.type?.startsWith('image/'));
     if (hasImage) {
-      emitError('이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.');
+      setInlineError('attachments', '이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.', '첨부 파일을 확인해 주세요.');
       return;
     }
 
@@ -134,10 +183,13 @@ export default function FreeBoardWriteClient() {
     ]);
     const invalid = files.find((f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)));
     if (invalid) {
-      emitError('문서 파일(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.');
+      setInlineError('attachments', '문서 파일(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.', '첨부 파일을 확인해 주세요.');
       return;
     }
 
+    // 성공 케이스: 첨부 관련 에러/폼 에러는 해제
+    setFieldErrors((prev) => ({ ...prev, attachments: undefined }));
+    setErrorMsg(null);
     setSelectedFiles((prev) => [...prev, ...files]);
   };
 
@@ -185,19 +237,26 @@ export default function FreeBoardWriteClient() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setFieldErrors({});
 
     // 중복 제출 방지(연타/더블클릭 레이스까지 방어)
     if (isSubmitting || submitRef.current) return;
 
     // 제출 직전 최종 검증(우회 방지)
-    const err = validateBeforeSubmit();
-    if (err) {
-      emitError(err);
+    const errs = validateBeforeSubmit();
+    if (Object.keys(errs).some((k) => Boolean((errs as any)[k]))) {
+      setFieldErrors(errs);
+      setErrorMsg('입력값을 확인해 주세요.');
+
+      const order: FieldKey[] = ['category', 'title', 'content', 'attachments'];
+      const first = order.find((k) => Boolean(errs[k]));
+      if (first) requestAnimationFrame(() => focusField(first));
       return;
     }
 
     if (isUploadingImages || isUploadingFiles) {
-      emitError('첨부 업로드가 끝날 때까지 잠시만 기다려 주세요.');
+      setErrorMsg('첨부 업로드가 끝날 때까지 잠시만 기다려 주세요.');
+      requestAnimationFrame(() => focusField('attachments'));
       return;
     }
 
@@ -235,10 +294,18 @@ export default function FreeBoardWriteClient() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
 
       if (!res.ok || !data?.ok) {
-        setErrorMsg(data?.error ?? '글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        const msg = data?.error ?? '글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+        setErrorMsg(msg);
+        // 서버/네트워크류는 토스트 유지(UX 일관성)
+        showErrorToast(msg);
         return;
       }
 
@@ -303,15 +370,23 @@ export default function FreeBoardWriteClient() {
 
           <CardContent className="p-6">
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* 폼 상단 공통 에러(레이아웃 깨짐 방지: 고정 높이) */}
+              <div aria-live="polite" className="min-h-[20px]">
+                {errorMsg ? <p className="text-sm text-red-600 dark:text-red-400">{errorMsg}</p> : null}
+              </div>
+
               {/* 분류 선택 */}
-              <div className="space-y-2">
+              <div className="space-y-2" ref={categoryRef}>
                 <Label>분류</Label>
                 <div className="flex flex-wrap gap-2 text-sm">
                   {CATEGORY_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
                       type="button"
-                      onClick={() => setCategory(opt.value as CategoryValue)}
+                      onClick={() => {
+                        setCategory(opt.value as CategoryValue);
+                        if (fieldErrors.category) setFieldErrors((prev) => ({ ...prev, category: undefined }));
+                      }}
                       className={cn(
                         'rounded-full border px-3 py-1',
                         category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300',
@@ -321,11 +396,23 @@ export default function FreeBoardWriteClient() {
                     </button>
                   ))}
                 </div>
+                {fieldErrors.category ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.category}</p> : null}
               </div>
               {/* 제목 입력 */}
               <div className="space-y-2">
                 <Label htmlFor="title">제목</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} maxLength={TITLE_MAX} />
+                <Input
+                  id="title"
+                  ref={titleRef}
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    if (fieldErrors.title) setFieldErrors((prev) => ({ ...prev, title: undefined }));
+                  }}
+                  disabled={isSubmitting}
+                  maxLength={TITLE_MAX}
+                />
+                {fieldErrors.title ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.title}</p> : null}
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {title.trim().length}/{TITLE_MAX}
                 </p>
@@ -334,7 +421,19 @@ export default function FreeBoardWriteClient() {
               {/* 내용 입력 */}
               <div className="space-y-2">
                 <Label htmlFor="content">내용</Label>
-                <Textarea id="content" className="min-h-[200px] resize-y" value={content} onChange={(e) => setContent(e.target.value)} disabled={isSubmitting} maxLength={CONTENT_MAX} />
+                <Textarea
+                  id="content"
+                  ref={contentRef}
+                  className="min-h-[200px] resize-y"
+                  value={content}
+                  onChange={(e) => {
+                    setContent(e.target.value);
+                    if (fieldErrors.content) setFieldErrors((prev) => ({ ...prev, content: undefined }));
+                  }}
+                  disabled={isSubmitting}
+                  maxLength={CONTENT_MAX}
+                />
+                {fieldErrors.content ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.content}</p> : null}
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
@@ -343,9 +442,9 @@ export default function FreeBoardWriteClient() {
               </div>
 
               {/* 첨부 영역: 이미지 / 파일 탭 */}
-              <div className="space-y-3">
+              <div className="space-y-3" ref={attachmentsRef}>
                 <Label>첨부 (선택)</Label>
-
+                {fieldErrors.attachments ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.attachments}</p> : null}
                 <Tabs defaultValue="image" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="image">이미지 업로드</TabsTrigger>
@@ -435,9 +534,6 @@ export default function FreeBoardWriteClient() {
                   </TabsContent>
                 </Tabs>
               </div>
-
-              {/* 에러 메시지 */}
-              {/* {errorMsg && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/60">{errorMsg}</div>} */}
 
               {/* 버튼 영역 */}
               <div className="flex items-center justify-end gap-2 pt-2">

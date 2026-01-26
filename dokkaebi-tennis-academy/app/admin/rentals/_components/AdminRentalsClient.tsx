@@ -21,6 +21,7 @@ import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rental
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { racketBrandLabel } from '@/lib/constants';
+import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
 
 type RentalRow = {
   id: string;
@@ -676,13 +677,17 @@ export default function AdminRentalsClient() {
                                 </div>
 
                                 {/* 단독/교체서비스 포함/신청서 연결 여부 */}
-                                <div className="flex flex-wrap gap-1">
-                                  <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kind.className)}>{kind.label}</Badge>
-                                  <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', svc.className)}>{svc.label}</Badge>
-                                  {link && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', link.className)}>{link.label}</Badge>}
-                                  <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', flow.className)}>{flow.shortLabel}</Badge>
-                                  <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', settlement.className)}>{settlement.label}</Badge>
-                                </div>
+                     {(() => {
+                                  // 테이블 난잡도 개선: badge 목록을 구성하고 AdminBadgeRow로 “접기” 처리
+                                  const items: BadgeItem[] = [
+                                    { label: kind.label, className: kind.className, title: '문서 종류' },
+                                    { label: svc.label, className: svc.className, title: '교체서비스 포함 여부' },
+                                    ...(link ? [{ label: link.label, className: link.className, title: '신청서 연결 여부' }] : []),
+                                    { label: flow.shortLabel, className: flow.className, title: `시나리오: ${flow.label}` },
+                                    { label: settlement.label, className: settlement.className, title: '정산 앵커' },
+                                  ];
+                                  return <AdminBadgeRow maxVisible={3} items={items} />;
+                                })()}
                               </button>
                             </TooltipTrigger>
 

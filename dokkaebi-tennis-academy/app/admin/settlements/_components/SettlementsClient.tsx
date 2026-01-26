@@ -496,6 +496,7 @@ export default function SettlementsClient() {
   const totalRevenue = (data ?? []).reduce((sum: number, row: any) => sum + (row.totals?.paid || 0), 0);
   const totalRefunds = (data ?? []).reduce((sum: number, row: any) => sum + (row.totals?.refund || 0), 0);
   const totalNet = (data ?? []).reduce((sum: number, row: any) => sum + (row.totals?.net || 0), 0);
+  const totalRentalDeposit = (data ?? []).reduce((sum: number, row: any) => sum + (row.totals?.rentalDeposit || 0), 0);
   const totalSettlements = (data ?? []).length;
 
   // ──────────────────────────────────────────────────────────

@@ -58,6 +58,22 @@ export const shippingStatusColors: Record<string, string> = {
   미입력: 'bg-red-500/10 text-red-500',
 };
 
+//"수령방식" 전용 색상(테이블 분리용)
+// - 방문/퀵은 기존 shippingStatusColors 톤을 재사용
+// - 택배는 중립 색(슬레이트)로 분리
+export const shippingMethodColors: Record<string, string> = {
+  택배: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
+  방문: shippingStatusColors['방문수령'],
+  퀵: shippingStatusColors['퀵배송'],
+  '선택 없음': shippingStatusColors['미입력'],
+};
+// "운송장" 전용 색상(테이블 분리용)
+export const trackingStatusColors: Record<string, string> = {
+  등록됨: shippingStatusColors['등록됨'],
+  미등록: shippingStatusColors['미등록'],
+  해당없음: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
+};
+
 export function getShippingBadge(order: Order) {
   // 표준: courier | quick | visit (레거시 delivery도 courier로 정규화)
   // shippingMethod가 없고 deliveryMethod(택배수령/방문수령)만 있는 케이스도 흡수
@@ -70,8 +86,48 @@ export function getShippingBadge(order: Order) {
   else if (code === 'quick') label = '퀵배송';
   else if (code === 'visit') label = '방문수령';
 
-  return { label, color: shippingStatusColors[label]! };
+  // UI 표시용 라벨(테이블에 노출될 텍스트)
+  // - label은 "필터/정의 기준"이라 그대로 유지
+  // - courier(택배)일 때는 관리자 가독성 위해 '택배 ·' 접두어를 붙여준다
+  // - 미입력은 사용자 선택 자체가 없다는 의미이므로 화면 표시만 '선택 없음'으로 바꾼다
+  const displayLabel = label === '미입력' ? '선택 없음' : code === 'courier' && (label === '등록됨' || label === '미등록') ? `택배 · ${label}` : label;
+
+  return { label, displayLabel, color: shippingStatusColors[label]! };
 }
+
+/**
+ * 수령방식 컬럼 전용 배지
+ * - courier => 택배
+ * - visit   => 방문
+ * - quick   => 퀵
+ * - null    => 선택 없음
+ */
+export function getShippingMethodBadge(order: Order) {
+  const shippingRaw = (order.shippingInfo as any)?.shippingMethod ?? (order.shippingInfo as any)?.deliveryMethod;
+  const code = normalizeOrderShippingMethod(shippingRaw);
+
+  // 컬럼에는 짧고 직관적인 라벨이 더 좋음
+  const label = code === 'courier' ? '택배' : code === 'visit' ? '방문' : code === 'quick' ? '퀵' : '선택 없음';
+  return { code, label, color: shippingMethodColors[label]! };
+}
+
+/**
+ * 운송장 컬럼 전용 배지
+ * - courier(택배)만 등록됨/미등록 의미가 있음
+ * - 방문/퀵/선택없음은 운송장 "해당없음"으로 통일
+ */
+export function getTrackingBadge(order: Order) {
+  const shippingRaw = (order.shippingInfo as any)?.shippingMethod ?? (order.shippingInfo as any)?.deliveryMethod;
+  const code = normalizeOrderShippingMethod(shippingRaw);
+  if (code !== 'courier') {
+    return { label: '해당없음' as const, color: trackingStatusColors['해당없음'] };
+  }
+
+  const tn = order.shippingInfo?.invoice?.trackingNumber?.trim() ?? '';
+  const label: '등록됨' | '미등록' = tn ? '등록됨' : '미등록';
+  return { label, color: trackingStatusColors[label] };
+}
+
 export const applicationStatusColors = {
   접수완료: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200',
   '검토 중': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',

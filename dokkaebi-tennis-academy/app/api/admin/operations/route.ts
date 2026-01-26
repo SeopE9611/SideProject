@@ -27,6 +27,7 @@ type OpItem = {
   // 연결(통합) 판정용
   related?: { kind: Kind; id: string; href: string } | null;
   isIntegrated: boolean; // 통합(연결) 여부
+  warnReasons?: string[]; // 서버가 판정한 “연결 무결성” 경고 사유(필요한 경우만 채움)
 };
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -131,6 +132,8 @@ function summarizeByKind(items: OpItem[], getLabel: (it: OpItem) => string | und
 }
 
 function isWarnGroup(g: OpGroup) {
+  const hasLinkWarn = (g.items ?? []).some((it) => (it.warnReasons?.length ?? 0) > 0);
+  if (hasLinkWarn) return true;
   if (!g.items || g.items.length <= 1) return false;
   const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
   const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
@@ -222,6 +225,7 @@ export async function GET(req: Request) {
       createdAt: 1,
       status: 1,
       paymentStatus: 1,
+      stringingApplicationId: 1,
       totalPrice: 1,
       serviceAmount: 1,
       orderId: 1,
@@ -240,6 +244,24 @@ export async function GET(req: Request) {
   for (const a of rawApps) {
     if (a?.orderId) orderToApp.set(String(a.orderId), String(a._id));
     if (a?.rentalId) rentalToApp.set(String(a.rentalId), String(a._id));
+  }
+
+  // 경고용: orderId/rentalId 기준으로 신청서가 “여러 개” 붙는 경우까지 집계(기존 orderToApp/rentalToApp은 1개만 매핑)
+  const orderToAppIds = new Map<string, string[]>();
+  const rentalToAppIds = new Map<string, string[]>();
+  for (const a of rawApps as any[]) {
+    if (a?.orderId) {
+      const key = String(a.orderId);
+      const arr = orderToAppIds.get(key) ?? [];
+      arr.push(String(a._id));
+      orderToAppIds.set(key, arr);
+    }
+    if (a?.rentalId) {
+      const key = String(a.rentalId);
+      const arr = rentalToAppIds.get(key) ?? [];
+      arr.push(String(a._id));
+      rentalToAppIds.set(key, arr);
+    }
   }
 
   // 2) 주문 조회
@@ -304,6 +326,111 @@ export async function GET(req: Request) {
     orderHasRacket.set(String(o?._id), hasRacketItems(o?.items));
   }
 
+  // 3) 연결 무결성(양방향 링크) 경고 사유 계산
+  const appById = new Map<string, any>((rawApps as any[]).map((a) => [String(a._id), a]));
+  const warnByKey = new Map<string, string[]>();
+  const pushWarn = (kind: Kind, id: string, reason: string) => {
+    const key = `${kind}:${id}`;
+    const arr = warnByKey.get(key) ?? [];
+    if (!arr.includes(reason)) arr.push(reason);
+    warnByKey.set(key, arr);
+  };
+
+  // 주문 ↔ 신청서(교체서비스) 양방향 체크
+  for (const o of rawOrders as any[]) {
+    const oid = String(o._id);
+    const appIdsFromApps = orderToAppIds.get(oid) ?? [];
+    const appIdInOrder = o?.stringingApplicationId ? String(o.stringingApplicationId) : null;
+
+    if (appIdsFromApps.length > 1) {
+      pushWarn('order', oid, `주문에 연결된 신청서가 ${appIdsFromApps.length}개입니다(중복/분기 오류 가능).`);
+    }
+    if (appIdsFromApps.length > 0 && !appIdInOrder) {
+      pushWarn('order', oid, '신청서→주문 연결은 존재하지만 주문.stringingApplicationId가 비어있습니다(역방향 링크 누락).');
+    }
+
+    if (appIdInOrder) {
+      const a = appById.get(appIdInOrder);
+      if (!a) {
+        pushWarn('order', oid, '주문.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+      } else {
+        const aOrderId = a?.orderId ? String(a.orderId) : '';
+        if (aOrderId && aOrderId !== oid) {
+          pushWarn('order', oid, '주문↔신청서 연결이 불일치합니다(신청서.orderId가 이 주문을 가리키지 않음).');
+          pushWarn('stringing_application', String(a._id), '신청서.orderId가 주문과 불일치합니다(주문.stringingApplicationId와 양방향 아님).');
+        }
+      }
+      if (appIdsFromApps.length > 0 && !appIdsFromApps.includes(appIdInOrder)) {
+        pushWarn('order', oid, '주문.stringingApplicationId와 신청서.orderId 매핑이 일치하지 않습니다.');
+      }
+    }
+  }
+
+  // 대여 ↔ 신청서(교체서비스) 양방향 체크
+  for (const r of rawRentals as any[]) {
+    const rid = String(r._id);
+    const appIdsFromApps = rentalToAppIds.get(rid) ?? [];
+    const appIdInRental = r?.stringingApplicationId ? String(r.stringingApplicationId) : null;
+
+    if (appIdsFromApps.length > 1) {
+      pushWarn('rental', rid, `대여에 연결된 신청서가 ${appIdsFromApps.length}개입니다(중복/분기 오류 가능).`);
+    }
+    if (appIdsFromApps.length > 0 && !appIdInRental) {
+      pushWarn('rental', rid, '신청서→대여 연결은 존재하지만 대여.stringingApplicationId가 비어있습니다(역방향 링크 누락).');
+    }
+
+    if (appIdInRental) {
+      const a = appById.get(appIdInRental);
+      if (!a) {
+        pushWarn('rental', rid, '대여.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+      } else {
+        const aRentalId = a?.rentalId ? String(a.rentalId) : '';
+        if (aRentalId && aRentalId !== rid) {
+          pushWarn('rental', rid, '대여↔신청서 연결이 불일치합니다(신청서.rentalId가 이 대여를 가리키지 않음).');
+          pushWarn('stringing_application', String(a._id), '신청서.rentalId가 대여와 불일치합니다(대여.stringingApplicationId와 양방향 아님).');
+        }
+      }
+      if (appIdsFromApps.length > 0 && !appIdsFromApps.includes(appIdInRental)) {
+        pushWarn('rental', rid, '대여.stringingApplicationId와 신청서.rentalId 매핑이 일치하지 않습니다.');
+      }
+    }
+  }
+
+  // 신청서 기준: 존재성 + 역방향 링크
+  for (const a of rawApps as any[]) {
+    const aid = String(a._id);
+
+    const oid = a?.orderId ? String(a.orderId) : null;
+    if (oid) {
+      const o = (rawOrders as any[]).find((x) => String(x._id) === oid);
+      if (!o) {
+        pushWarn('stringing_application', aid, '신청서.orderId가 가리키는 주문이 DB에 없습니다.');
+      } else {
+        const back = o?.stringingApplicationId ? String(o.stringingApplicationId) : null;
+        if (!back) {
+          pushWarn('stringing_application', aid, '신청서→주문은 연결되어 있으나 주문.stringingApplicationId가 비어있습니다(역방향 링크 누락).');
+        } else if (back !== aid) {
+          pushWarn('stringing_application', aid, '주문.stringingApplicationId가 다른 신청서를 가리킵니다(양방향 링크 불일치).');
+        }
+      }
+    }
+
+    const rid = a?.rentalId ? String(a.rentalId) : null;
+    if (rid) {
+      const r = (rawRentals as any[]).find((x) => String(x._id) === rid);
+      if (!r) {
+        pushWarn('stringing_application', aid, '신청서.rentalId가 가리키는 대여가 DB에 없습니다.');
+      } else {
+        const back = r?.stringingApplicationId ? String(r.stringingApplicationId) : null;
+        if (!back) {
+          pushWarn('stringing_application', aid, '신청서→대여는 연결되어 있으나 대여.stringingApplicationId가 비어있습니다(역방향 링크 누락).');
+        } else if (back !== aid) {
+          pushWarn('stringing_application', aid, '대여.stringingApplicationId가 다른 신청서를 가리킵니다(양방향 링크 불일치).');
+        }
+      }
+    }
+  }
+
   // 4) 공통 포맷으로 매핑
   const orderItems: OpItem[] = rawOrders.map((o: any) => {
     const id = String(o._id);
@@ -326,6 +453,7 @@ export async function GET(req: Request) {
       href: `/admin/orders/${id}`,
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,
+      warnReasons: warnByKey.get(`order:${id}`) ?? [],
     };
   });
 
@@ -386,6 +514,7 @@ export async function GET(req: Request) {
       href: `/admin/applications/stringing/${id}`,
       related,
       isIntegrated,
+      warnReasons: warnByKey.get(`stringing_application:${id}`) ?? [],
     };
   });
 
@@ -416,6 +545,7 @@ export async function GET(req: Request) {
       href: `/admin/rentals/${id}`,
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,
+      warnReasons: warnByKey.get(`rental:${id}`) ?? [],
     };
   });
 

@@ -166,21 +166,43 @@ export function buildPaidMatch(fields: string[] = ['paymentStatus', 'paymentInfo
 
 /**
  * rental_orders(라켓 대여 결제) 정산 정책
- * - 매출: amount.fee (대여료 + 옵션 + 대여 플로우에서 발생한 교체비/픽업비 등)
- * - 보증금(amount.deposit): 추후 반환 예정 금액 → 기본 매출/순익에서 제외 (별도 합산만 제공)
+ * - 매출: (최종 결제액 - 보증금)
+ *   - amount.total: 포인트 차감까지 반영된 "최종 결제액" (deposit 포함)
+ *   - amount.deposit: 보증금(추후 반환) → 매출/순익에서 제외하고 별도 합산
+ * - 목적: 대여 통합(스트링 가격/교체비 포함) 케이스에서 누락 없이 매출 집계 + 보증금 분리
  */
 export const RENTAL_PAID_STATUS_VALUES = ['paid', 'out', 'returned'] as const;
 
 export function buildRentalPaidMatch() {
   return {
-    $or: [{ status: { $in: RENTAL_PAID_STATUS_VALUES as any } }, { paidAt: { $type: 'date' } }, { 'payment.paidAt': { $type: 'date' } }],
+    /**
+     * 주의:
+     * - 일부 흐름에서 status가 'canceled'로 바뀌더라도 paidAt이 남아있을 수 있음
+     * - paidAt만으로 포함시키는 OR 조건 때문에 취소건이 정산에 섞이지 않도록 명시적으로 제외
+     */
+    $and: [{ status: { $ne: 'canceled' } }, { $or: [{ status: { $in: RENTAL_PAID_STATUS_VALUES as any } }, { paidAt: { $type: 'date' } }, { 'payment.paidAt': { $type: 'date' } }] }],
   };
 }
 
 export function rentalPaidAmount(rental: any) {
-  // 정책: 보증금 제외, fee만 매출로 취급
-  const fee = rental?.amount?.fee ?? rental?.fee ?? rental?.rentalFee ?? 0;
-  return toNumber(fee);
+  /**
+   * 정책(안전 버전):
+   * - "대여 매출"은 최종 결제액(amount.total)에서 보증금(amount.deposit)을 뺀 값
+   * - 이유:
+   *   1) 대여 통합(스트링 가격/교체비 포함)에서 fee만 쓰면 매출 누락 가능
+   *   2) amount.total은 포인트 차감까지 반영된 값이라 정산 기준으로 가장 안전
+   */
+  const total = toNumber(rental?.amount?.total ?? rental?.paidAmount ?? rental?.totalPrice ?? rental?.total);
+  const deposit = toNumber(rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount);
+  if (total > 0) {
+    return Math.max(0, total - deposit);
+  }
+
+  // 레거시/예외 fallback: total이 비어있다면 (fee + stringPrice + stringingFee) 기반으로 계산(보증금 제외)
+  const fee = toNumber(rental?.amount?.fee ?? rental?.fee ?? rental?.rentalFee);
+  const stringPrice = toNumber(rental?.amount?.stringPrice ?? rental?.stringPrice);
+  const stringingFee = toNumber(rental?.amount?.stringingFee ?? rental?.stringingFee ?? rental?.serviceFeeHint);
+  return Math.max(0, fee + stringPrice + stringingFee);
 }
 
 export function rentalDepositAmount(rental: any) {

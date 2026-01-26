@@ -10,10 +10,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
+type FieldErrors = Partial<{
+  newPassword: string;
+  confirm: string;
+}>;
+
+// 8자 이상 + 영문/숫자 포함 (프로젝트 전반 정책과 충돌 없이 “최소 강화”)
+const PASSWORD_POLICY_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
+const focusById = (id: string) => {
+  if (typeof document === 'undefined') return;
+  const el = document.getElementById(id) as HTMLElement | null;
+  if (!el) return;
+  (el as any).focus?.();
+  el.scrollIntoView?.({ block: 'center' });
+};
+
 export default function ForceChangePasswordClient() {
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const router = useRouter();
   const qp = useSearchParams();
   const reason = qp.get('reason');
@@ -112,8 +129,36 @@ export default function ForceChangePasswordClient() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 8) return showErrorToast('비밀번호는 8자 이상이어야 합니다.');
-    if (newPassword !== confirm) return showErrorToast('비밀번호 확인이 일치하지 않습니다.');
+    // 제출 전 클라 검증: 인라인 + 첫 오류 포커스 이동
+    const nextErrors: FieldErrors = {};
+    const pw = newPassword.trim();
+    const cf = confirm;
+
+    if (!pw) {
+      nextErrors.newPassword = '새 비밀번호를 입력해주세요.';
+    } else if (!PASSWORD_POLICY_RE.test(pw)) {
+      nextErrors.newPassword = '비밀번호는 8자 이상이며 영문과 숫자를 포함해야 합니다.';
+    }
+
+    if (!cf) {
+      nextErrors.confirm = '비밀번호 확인을 입력해주세요.';
+    } else if (pw && pw !== cf) {
+      nextErrors.confirm = '비밀번호 확인이 일치하지 않습니다.';
+    }
+
+    const firstMsg = nextErrors.newPassword || nextErrors.confirm;
+    if (firstMsg) {
+      setFieldErrors(nextErrors);
+      // 기존 UX 유지: 토스트도 띄우되, “어디가 문제인지”는 인라인으로 보이게 함
+      showErrorToast(firstMsg);
+      if (nextErrors.newPassword) focusById('newPassword');
+      else focusById('confirmPassword');
+      return;
+    }
+
+    // 에러가 있었던 상태에서 통과한 경우 초기화
+    if (fieldErrors.newPassword || fieldErrors.confirm) setFieldErrors({});
+
     setLoading(true);
     try {
       const res = await fetch('/api/users/me/password', {
@@ -129,7 +174,7 @@ export default function ForceChangePasswordClient() {
       setLeaveGuard(false);
       router.replace('/'); // 성공 후 홈(또는 /mypage)로 이동
     } catch (e: any) {
-      showErrorToast(e.message);
+      showErrorToast(e?.message || '변경에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -150,13 +195,37 @@ export default function ForceChangePasswordClient() {
                   <Label htmlFor="newPassword" className="text-sm font-medium">
                     새 비밀번호 <span className="text-red-500">*</span>
                   </Label>
-                  <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="8자 이상 입력해주세요" required />
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      if (fieldErrors.newPassword) setFieldErrors((prev) => ({ ...prev, newPassword: undefined }));
+                    }}
+                    placeholder="8자 이상 입력해주세요"
+                    required
+                    className={fieldErrors.newPassword ? 'border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500/20' : ''}
+                  />
+                  <p className="min-h-[18px] text-sm text-red-600 dark:text-red-400">{fieldErrors.newPassword ?? ''}</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium">
                     새 비밀번호 확인 <span className="text-red-500">*</span>
                   </Label>
-                  <Input id="confirmPassword" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="비밀번호를 다시 입력해주세요" required />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirm}
+                    onChange={(e) => {
+                      setConfirm(e.target.value);
+                      if (fieldErrors.confirm) setFieldErrors((prev) => ({ ...prev, confirm: undefined }));
+                    }}
+                    placeholder="비밀번호를 다시 입력해주세요"
+                    required
+                    className={fieldErrors.confirm ? 'border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500/20' : ''}
+                  />
+                  <p className="min-h-[18px] text-sm text-red-600 dark:text-red-400">{fieldErrors.confirm ?? ''}</p>
                 </div>
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200">
                   {loading ? '변경 중…' : '비밀번호 변경'}

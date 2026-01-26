@@ -18,6 +18,7 @@ import { shortenId } from '@/lib/shorten';
 import { showSuccessToast } from '@/lib/toast';
 import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
 import { opsKindBadgeClass, opsKindLabel, opsStatusBadgeClass, type OpsKind } from '@/lib/admin-ops-taxonomy';
+import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
 
 type Kind = OpsKind;
 
@@ -41,6 +42,13 @@ type OpItem = {
   href: string;
   related?: { kind: Kind; id: string; href: string } | null;
   isIntegrated: boolean;
+
+  /**
+   * 서버에서 내려주는 운영 경고 사유.
+   * - 예: 연결된 문서가 DB에 없어서 통합/연결이 깨진 상태
+   * - 예: 연결 키(orderId/rentalId 등) 불일치
+   */
+  warnReasons?: string[];
 };
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
@@ -497,7 +505,7 @@ export default function OperationsClient() {
 
             <Button
               variant="outline"
-              title={onlyWarn ? '경고(혼재/결제불일치) 그룹만 조회 중입니다.' : '경고(혼재/결제불일치) 그룹만 모아봅니다.'}
+              title={onlyWarn ? '경고(연결오류/혼재/결제불일치) 항목만 조회 중입니다.' : '경고(연결오류/혼재/결제불일치) 항목만 모아봅니다.'}
               className={cn(onlyWarn && 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-50')}
               onClick={() => {
                 setOnlyWarn((v) => !v);
@@ -548,6 +556,8 @@ export default function OperationsClient() {
             <span className="mx-1">·</span>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-emerald-500/10 text-emerald-600')}>통합(연결됨)</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-600')}>단독</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700')}>연결오류</Badge>
+
             <span className="mx-1">·</span>
             <span className="font-medium text-foreground">시나리오</span>
             <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
@@ -619,12 +629,22 @@ export default function OperationsClient() {
                   const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
                   const payMismatch = isGroup && anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
 
-                  // 경고 그룹(혼재/결제불일치)에서만 자식 행에 "왜 연결인지" 라벨 노출
-                  const showLinkReason = onlyWarn || payMismatch || hasMixed;
-
                   // 경고 "근거"를 한 줄로 바로 보이게(운영자 인지부하 감소)
                   // - 테이블 폭을 망치지 않도록 데스크톱에서만 노출(xl 이상)
                   const uniq = (arr: (string | null | undefined)[]) => Array.from(new Set(arr.filter(Boolean).map(String)));
+
+                  // 서버가 내려준 warnReasons(연결 누락/불일치 등)를 그룹/단독 모두에서 수집
+                  const linkWarnReasons = uniq(
+                    (isGroup ? g.items : [g.anchor]).reduce((acc, x) => {
+                      if (Array.isArray(x.warnReasons) && x.warnReasons.length > 0) acc.push(...x.warnReasons);
+                      return acc;
+                    }, [] as string[]),
+                  );
+                  const hasLinkWarn = linkWarnReasons.length > 0;
+                  const linkWarnTitle = linkWarnReasons.slice(0, 3).join('\n') + (linkWarnReasons.length > 3 ? `\n외 ${linkWarnReasons.length - 3}개` : '');
+
+                  // 경고(혼재/결제불일치/연결오류) 항목에서는 자식 행에 "왜 연결인지" 라벨을 노출해 놓침을 줄입니다.
+                  const showLinkReason = onlyWarn || payMismatch || hasMixed || hasLinkWarn;
 
                   const childPayUniq = uniq(childPays).filter((p) => p !== '-');
                   const childStatusUniq = uniq(children.map((x) => x.statusLabel));
@@ -738,21 +758,27 @@ export default function OperationsClient() {
                             <div className="space-y-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
                                 <div className="font-medium">{shortenId(g.anchor.id)}</div>
-                                {isGroup && (
-                                  <>
-                                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-indigo-500/10 text-indigo-700')}>기준</Badge>
-                                    <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(g.anchor.kind))}>{opsKindLabel(g.anchor.kind)}</Badge>
-                                    {warnBadges.map((b) => (
-                                      <Badge key={b.label} title={b.title} className={cn(badgeBase, badgeSizeSm, 'bg-amber-500/10 text-amber-700')}>
-                                        {b.label}
-                                      </Badge>
-                                    ))}
-                                    {warnInline && (
-                                      <span className="ml-2 hidden xl:inline text-xs text-muted-foreground" title={warnInline}>
-                                        {warnInline}
-                                      </span>
-                                    )}
-                                  </>
+                    {(() => {
+                                  // 운영함에서 난잡해지는 구간(그룹 기준/경고 뱃지들)을 “접기”로 정리
+                                  const items: BadgeItem[] = [];
+
+                                  if (hasLinkWarn) {
+                                    items.push({ label: '연결오류', className: 'bg-rose-500/10 text-rose-700', title: linkWarnTitle });
+                                  }
+
+                                  if (isGroup) {
+                                    items.push({ label: '기준', className: 'bg-indigo-500/10 text-indigo-700', title: '그룹의 기준 문서' });
+                                    items.push({ label: opsKindLabel(g.anchor.kind), className: opsKindBadgeClass(g.anchor.kind), title: '기준 문서 종류' });
+                                    warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-amber-500/10 text-amber-700', title: b.title }));
+                                  }
+
+                                  return items.length > 0 ? <AdminBadgeRow maxVisible={3} items={items} /> : null;
+                                })()}
+
+                                {isGroup && warnInline && (
+                                  <span className="ml-2 hidden xl:inline text-xs text-muted-foreground" title={warnInline}>
+                                    {warnInline}
+                                  </span>
                                 )}
                               </div>
 
@@ -868,6 +894,11 @@ export default function OperationsClient() {
                                 <div className="flex flex-wrap items-center gap-2">
                                   <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>연결</Badge>
                                   <div className="font-medium">{shortenId(it.id)}</div>
+                                  {Array.isArray(it.warnReasons) && it.warnReasons.length > 0 && (
+                                    <Badge title={it.warnReasons.slice(0, 3).join('\n') + (it.warnReasons.length > 3 ? `\n외 ${it.warnReasons.length - 3}개` : '')} className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700')}>
+                                      연결오류
+                                    </Badge>
+                                  )}
                                 </div>
                                 {showLinkReason && (
                                   <div className="text-[11px] text-muted-foreground">
@@ -929,7 +960,7 @@ export default function OperationsClient() {
                 {groupsToRender.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
-                      {onlyWarn ? '경고(혼재/결제불일치) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}
+                      {onlyWarn ? '경고(연결오류/혼재/결제불일치) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}
                     </TableCell>
                   </TableRow>
                 )}

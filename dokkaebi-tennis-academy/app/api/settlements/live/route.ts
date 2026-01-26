@@ -75,7 +75,11 @@ export async function GET(req: Request) {
     const rentalPaid = rentals.reduce((s: number, r: any) => s + rentalPaidAmount(r), 0);
     const rentalDeposit = rentals.reduce((s: number, r: any) => s + rentalDepositAmount(r), 0);
 
-    const paid = paidOrders + paidApps + pkgPaid;
+    /**
+     * 실시간 정산 총매출(paid)에는 대여 매출도 포함되어야 한다.
+     * (보증금은 rentalPaidAmount에서 제외하고, rentalDeposit으로 별도 표시)
+     */
+    const paid = paidOrders + paidApps + pkgPaid + rentalPaid;
 
     // refund 계산
     // - paid에서 제외된 '연결된 신청서'는 refund에서도 제외(같은 이유로 중복 방지)

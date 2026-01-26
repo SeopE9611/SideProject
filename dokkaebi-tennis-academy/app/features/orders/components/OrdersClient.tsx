@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { shortenId } from '@/lib/shorten';
-import { badgeBase, badgeSizeSm, getShippingBadge, orderStatusColors, orderTypeColors, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, getShippingBadge, getShippingMethodBadge, getTrackingBadge, orderStatusColors, orderTypeColors, paymentStatusColors } from '@/lib/badge-style';
 import CustomerTypeFilter from '@/app/features/orders/components/order-filters/CustomerTypeFilter';
 import { OrderStatusFilter } from '@/app/features/orders/components/order-filters/OrderStatusFilter';
 import { PaymentStatusFilter } from '@/app/features/orders/components/order-filters/PaymentStatusFilter';
@@ -28,6 +28,7 @@ import ApplicationStatusBadge from '@/app/features/stringing-applications/compon
 import { Skeleton } from '@/components/ui/skeleton';
 import { useOrderStore } from '@/app/store/orderStore';
 import { useStringingStore } from '@/app/store/stringingStore';
+import { AdminBadgeRow } from '@/components/admin/AdminBadgeRow';
 
 /** 데이터를 받아오는 fetcher 함수 */
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -520,6 +521,7 @@ export default function OrdersClient() {
                   </TableHead>
                   <TableHead className={cn(thClasses, 'text-center')}>상태</TableHead>
                   <TableHead className={cn(thClasses, 'text-center')}>결제</TableHead>
+                  <TableHead className={cn(thClasses, 'text-center')}>수령방식</TableHead>
                   <TableHead className={cn(thClasses, 'text-center')}>운송장</TableHead>
                   <TableHead className={cn(thClasses, 'text-center')}>유형</TableHead>
                   <TableHead onClick={() => handleSort('total')} className={cn(thClasses, 'text-center cursor-pointer select-none', sortBy === 'total' && 'text-primary')}>
@@ -532,14 +534,14 @@ export default function OrdersClient() {
               <TableBody>
                 {error ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center text-red-500 dark:text-red-400">
+                    <TableCell colSpan={10} className="text-center text-red-500 dark:text-red-400">
                       주문 데이터를 불러오는 중 오류가 발생했습니다.
                     </TableCell>
                   </TableRow>
                 ) : !data ? (
                   Array.from({ length: limit }).map((_, rowIdx) => (
                     <TableRow key={rowIdx}>
-                      {Array.from({ length: 9 }).map((_, cellIdx) => (
+                      {Array.from({ length: 10 }).map((_, cellIdx) => (
                         <TableCell key={cellIdx}>
                           <Skeleton className="h-4 w-full" />
                         </TableCell>
@@ -548,13 +550,13 @@ export default function OrdersClient() {
                   ))
                 ) : data.items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className={tdClasses}>
+                    <TableCell colSpan={10} className={tdClasses}>
                       불러올 주문이 없습니다.
                     </TableCell>
                   </TableRow>
                 ) : sortedOrders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className={tdClasses}>
+                    <TableCell colSpan={10} className={tdClasses}>
                       검색 결과가 없습니다.
                     </TableCell>
                   </TableRow>
@@ -600,12 +602,20 @@ export default function OrdersClient() {
                                     </div>
 
                                     {/* 운영자에게 가장 중요한 정보: “이게 주문인지/신청서인지 + 통합/단독인지” */}
-                                    <div className="flex flex-wrap gap-1">
-                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kind.className)}>{kind.label}</Badge>
-                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', link.className)}>{link.label}</Badge>
-                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', flow.className)}>{flow.shortLabel}</Badge>
-                                      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', settlement.className)}>{settlement.label}</Badge>
-                                    </div>
+                                    {/* 
+                                      테이블 난잡도 개선:
+                                      - 테이블에서는 핵심 2개(종류/연결)만 우선 노출
+                                      - 나머지(flow/정산)는 +N으로 접어서(hover title) 필요할 때만 확인
+                                    */}
+                                    <AdminBadgeRow
+                                      maxVisible={2}
+                                      items={[
+                                        { label: kind.label, className: kind.className, title: '문서 종류' },
+                                        { label: link.label, className: link.className, title: '통합/연결 상태' },
+                                        { label: flow.shortLabel, className: flow.className, title: `시나리오: ${flow.label}` },
+                                        { label: settlement.label, className: settlement.className, title: '정산 앵커(금액 해석 기준)' },
+                                      ]}
+                                    />
                                   </div>
                                 </TooltipTrigger>
 
@@ -679,15 +689,34 @@ export default function OrdersClient() {
                           <TableCell className={tdClasses}>
                             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', paymentStatusColors[order.paymentStatus])}>{order.paymentStatus}</Badge>
                           </TableCell>
+                          {/* 수령방식 셀 */}
+                          <TableCell className={tdClasses}>
+                          {(() => {
+                              // 수령방식은 “사용자가 뭘 선택했는지”가 핵심이므로
+                              // 통합 주문(isLinkedProductOrder)이어도 그대로 표시해준다.
+                              const m = getShippingMethodBadge(order);
+                              return (
+                                <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', m.color)} title={`수령방식 코드: ${String(m.code ?? 'null')}`}>
+                                  {m.label}
+                                </Badge>
+                              );
+                            })()}
+                          </TableCell>
                           {/* 운송장 셀 */}
                           <TableCell className={tdClasses}>
                             {(() => {
-                              //  묶음의 "상품 주문"은 운송장을 직접 관리하지 않음
+                              // 통합 주문의 “상품 주문”은 운송장/배송정보를 신청서에서만 관리하도록 정책이 정해져 있으므로
+                              // 운송장 컬럼에서는 그 사실을 명시한다.
                               if (isLinkedProductOrder) {
                                 return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200')}>신청서에서 관리</Badge>;
                               }
-                              const { label, color } = getShippingBadge(order);
-                              return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', color)}>{label}</Badge>;
+
+                              const t = getTrackingBadge(order);
+                              return (
+                                <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', t.color)} title="택배인 경우만 운송장 등록/미등록 의미가 있습니다.">
+                                  {t.label}
+                                </Badge>
+                              );
                             })()}
                           </TableCell>
                           {/* 유형 셀 */}

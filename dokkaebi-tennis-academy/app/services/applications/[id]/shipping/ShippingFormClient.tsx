@@ -45,6 +45,28 @@ const FormSchema = z.object({
 });
 type FormValues = z.infer<typeof FormSchema>;
 
+type FieldErrors = Partial<Record<keyof FormValues, string>>;
+
+// zod 에러를 필드별 에러로 변환 (인라인 표시/포커스 이동용)
+function toFieldErrors(issues: z.ZodIssue[]): FieldErrors {
+  const next: FieldErrors = {};
+  for (const issue of issues) {
+    const key = issue.path?.[0] as keyof FormValues | undefined;
+    if (!key) continue;
+    // 첫 에러만 유지(동일 필드 중복 메시지 방지)
+    if (!next[key]) next[key] = issue.message;
+  }
+  return next;
+}
+
+function focusById(id: string) {
+  if (typeof document === 'undefined') return;
+  const el = document.getElementById(id) as HTMLElement | null;
+  if (!el) return;
+  (el as any).focus?.();
+  el.scrollIntoView?.({ block: 'center' });
+}
+
 const fetcher = (url: string) =>
   fetch(url, { credentials: 'include' }).then((r) => {
     if (!r.ok) throw new Error('데이터 로드 실패');
@@ -177,6 +199,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
 function SelfShipForm({ applicationId, application, returnTo }: { applicationId: string; application: Application; returnTo?: string }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   // 초기값은 항상 계산 (훅 순서 고정)
   const initial: FormValues = useMemo(
@@ -186,7 +209,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
       shippedAt: application.shippingInfo?.selfShip?.shippedAt ?? '',
       note: application.shippingInfo?.selfShip?.note ?? '',
     }),
-    [application]
+    [application],
   );
 
   const isEdit = Boolean(initial.trackingNo);
@@ -201,14 +224,32 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
   const [form, setForm] = useState<FormValues>(initial);
 
-  const onChange = (k: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm((prev) => ({ ...prev, [k]: e.target.value }));
+  const onChange = (k: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const v = e.target.value;
+    setForm((prev) => ({ ...prev, [k]: v }));
+    // 입력 중이면 해당 필드 에러를 즉시 해제 (UX)
+    if (fieldErrors[k]) {
+      setFieldErrors((prev) => ({ ...prev, [k]: undefined }));
+    }
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const parsed = FormSchema.safeParse(form);
     if (!parsed.success) {
-      showErrorToast(parsed.error.issues[0]?.message ?? '입력 값을 확인해 주세요.');
+      const issues = parsed.error.issues;
+      const nextErrors = toFieldErrors(issues);
+      setFieldErrors(nextErrors);
+
+      // 기존 토스트 흐름은 유지하되, 어디가 문제인지 인라인으로도 보이게 함
+      showErrorToast(issues[0]?.message ?? '입력 값을 확인해 주세요.');
+
+      const firstKey = issues[0]?.path?.[0];
+      if (typeof firstKey === 'string') {
+        const id = firstKey === 'courier' ? 'courier' : firstKey;
+        focusById(id);
+      }
       return;
     }
 
@@ -309,14 +350,20 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                   </Label>
                   <Select
                     value={form.courier}
-                    onValueChange={(value) =>
+                    onValueChange={(value) => {
                       setForm((prev) => ({
                         ...prev,
                         courier: value,
-                      }))
-                    }
+                      }));
+                      if (fieldErrors.courier) {
+                        setFieldErrors((prev) => ({ ...prev, courier: undefined }));
+                      }
+                    }}
                   >
-                    <SelectTrigger id="courier" className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20">
+                    <SelectTrigger
+                      id="courier"
+                      className={`h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20${fieldErrors.courier ? ' border-red-400 focus:border-red-500 focus:ring-red-500/20 dark:focus:ring-red-400/20' : ''}`}
+                    >
                       <SelectValue placeholder="택배사를 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
@@ -327,6 +374,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="min-h-[18px] text-sm text-red-600 dark:text-red-400">{fieldErrors.courier ?? ''}</p>
                 </div>
 
                 {/* Tracking Number Field */}
@@ -341,8 +389,9 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                     value={form.trackingNo}
                     onChange={onChange('trackingNo')}
                     placeholder="숫자 또는 영문 조합으로 입력해 주세요"
-                    className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20"
+                    className={`h-12 text-base border-slate-300 dark:border-slate-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20${fieldErrors.trackingNo ? ' border-red-400 focus:border-red-500 focus:ring-red-500/20 dark:focus:ring-red-400/20' : ''}`}
                   />
+                  <p className="min-h-[18px] text-sm text-red-600 dark:text-red-400">{fieldErrors.trackingNo ?? ''}</p>
                 </div>
 
                 {/* Shipped Date Field */}

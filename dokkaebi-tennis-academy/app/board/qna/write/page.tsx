@@ -36,9 +36,21 @@ const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
 const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
+type FieldKey = 'category' | 'product' | 'title' | 'content' | 'images';
+type FieldErrors = Partial<Record<FieldKey, string>>;
+const scrollIntoViewOpts: ScrollIntoViewOptions = { behavior: 'smooth', block: 'center' };
+
 export default function QnaWritePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const submitRef = useRef(false); // setSubmitting 타이밍 레이스 대비(연타/더블클릭 방지)
+  const categoryWrapRef = useRef<HTMLDivElement>(null);
+  const productWrapRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const imagesWrapRef = useRef<HTMLDivElement>(null);
+
+  const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const router = useRouter();
   const sp = useSearchParams();
   const [product, setProduct] = useState<{ id: string; name: string; image?: string | null } | null>(null);
@@ -115,35 +127,134 @@ export default function QnaWritePage() {
     }));
   }, [searchData]);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length + selectedFiles.length > 3) {
-      showErrorToast('최대 3개까지만 첨부할 수 있습니다.');
+  const clearErrors = (keys?: FieldKey | FieldKey[]) => {
+    if (!keys) {
+      setFormError(null);
+      setFieldErrors({});
       return;
     }
-    if (files.some((f) => f.size > 5 * 1024 * 1024)) {
-      showErrorToast('파일당 최대 5MB까지 업로드할 수 있어요.');
+    const ks = Array.isArray(keys) ? keys : [keys];
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const k of ks) {
+        if (k in next) {
+          delete next[k];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+    setFormError(null);
+  };
+
+  const focusFirstError = (errs: FieldErrors) => {
+    if (errs.category) {
+      categoryWrapRef.current?.scrollIntoView(scrollIntoViewOpts);
+      const el = document.getElementById('category') as HTMLElement | null;
+      el?.focus?.();
+      return;
+    }
+    if (errs.product) {
+      productWrapRef.current?.scrollIntoView(scrollIntoViewOpts);
+      return;
+    }
+    if (errs.title) {
+      titleRef.current?.scrollIntoView(scrollIntoViewOpts);
+      titleRef.current?.focus();
+      return;
+    }
+    if (errs.content) {
+      contentRef.current?.scrollIntoView(scrollIntoViewOpts);
+      contentRef.current?.focus();
+      return;
+    }
+    if (errs.images) {
+      imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts);
+    }
+  };
+
+  const validateBeforeSubmit = (): FieldErrors => {
+    const errs: FieldErrors = {};
+    const t = title.trim();
+    const c = content.trim();
+
+    // 카테고리 유효성(화이트리스트)
+    if (!category || !CATEGORY_LABELS[category]) {
+      errs.category = '카테고리를 선택해주세요.';
+      return errs;
+    }
+
+    // 상품문의인 경우: 상품 선택 필수(프리필 제외)
+    if (category === 'product' && !preProductId && !product?.id) {
+      errs.product = '상품을 선택해주세요.';
+    }
+
+    // 제목/내용
+    if (!t) errs.title = '제목을 입력해주세요.';
+    if (!c) errs.content = '내용을 입력해주세요.';
+
+    if (t && t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해주세요.`;
+    if (t && t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해주세요.`;
+    if (c && c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해주세요.`;
+    if (c && c.length > CONTENT_MAX) errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해주세요.`;
+
+    // HTML/스크립트 차단
+    if (t && (hasScriptLike(t) || hasHtmlLike(t))) {
+      errs.title = hasScriptLike(t) ? '스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.' : 'HTML 태그는 사용할 수 없습니다.';
+    }
+    if (c && (hasScriptLike(c) || hasHtmlLike(c))) {
+      errs.content = hasScriptLike(c) ? '스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.' : 'HTML 태그는 사용할 수 없습니다.';
+    }
+
+    // (방어) 이미지 첨부 재검증
+    const MAX = 3;
+    if (selectedFiles.length > MAX) errs.images = `최대 ${MAX}개까지만 업로드할 수 있어요.`;
+    if (selectedFiles.some((f) => f.size > 5 * 1024 * 1024)) errs.images = '파일당 최대 5MB까지 업로드할 수 있어요.';
+    if (selectedFiles.some((f) => !f.type.startsWith('image/'))) errs.images = '이미지 파일만 업로드할 수 있어요.';
+
+    return errs;
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const MAX = 3;
+    const MAX_BYTES = 5 * 1024 * 1024;
+
+    e.currentTarget.value = ''; // 같은 파일 재선택 허용(검증 실패 시에도)
+    clearErrors('images');
+
+    // 개수 제한
+    if (files.length + selectedFiles.length > MAX) {
+      setFieldErrors((prev) => ({ ...prev, images: `최대 ${MAX}개까지만 업로드할 수 있어요.` }));
+      setFormError('첨부 이미지를 확인해 주세요.');
+      requestAnimationFrame(() => imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts));
+      return;
+    }
+
+    // 용량 제한
+    if (files.some((f) => f.size > MAX_BYTES)) {
+      setFieldErrors((prev) => ({ ...prev, images: '파일당 최대 5MB까지 업로드할 수 있어요.' }));
+      setFormError('첨부 이미지를 확인해 주세요.');
+      requestAnimationFrame(() => imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts));
       return;
     }
 
     // 타입 화이트리스트: 이미지만 허용
     if (files.some((f) => !f.type.startsWith('image/'))) {
-      showErrorToast('이미지 파일만 업로드할 수 있어요.');
-      return;
-    }
-    // 개수 제한: 최대 3개
-    const MAX = 3;
-    if (selectedFiles.length + files.length > MAX) {
-      showErrorToast(`최대 ${MAX}개까지만 업로드할 수 있어요.`);
+      setFieldErrors((prev) => ({ ...prev, images: '이미지 파일만 업로드할 수 있어요.' }));
+      setFormError('첨부 이미지를 확인해 주세요.');
+      requestAnimationFrame(() => imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts));
       return;
     }
 
     setSelectedFiles([...selectedFiles, ...files]);
-    e.currentTarget.value = ''; // 같은 파일 재선택 허용
   };
 
   const removeFile = (index: number) => {
-    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+    const next = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(next);
+    if (next.length <= 3) clearErrors('images');
   };
 
   async function handleSubmit() {
@@ -151,49 +262,13 @@ export default function QnaWritePage() {
     if (submitting || submitRef.current) return;
     try {
       // 제출 직전 최종 유효성 체크(우회 방지)
-      const t = title.trim();
-      const c = content.trim();
+      clearErrors();
 
-      if (!t || !c) {
-        showErrorToast('제목과 내용을 입력해주세요.');
-        return;
-      }
-
-      if (t.length < TITLE_MIN) {
-        showErrorToast(`제목은 ${TITLE_MIN}자 이상 입력해주세요.`);
-        return;
-      }
-      if (t.length > TITLE_MAX) {
-        showErrorToast(`제목은 ${TITLE_MAX}자 이내로 입력해주세요.`);
-        return;
-      }
-      if (c.length < CONTENT_MIN) {
-        showErrorToast(`내용은 ${CONTENT_MIN}자 이상 입력해주세요.`);
-        return;
-      }
-      if (c.length > CONTENT_MAX) {
-        showErrorToast(`내용은 ${CONTENT_MAX}자 이내로 입력해주세요.`);
-        return;
-      }
-      // 게시판 입력은 기본적으로 HTML/스크립트 입력을 허용하지 않는 편이 안전
-      if (hasScriptLike(t) || hasScriptLike(c)) {
-        showErrorToast('스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.');
-        return;
-      }
-      if (hasHtmlLike(t) || hasHtmlLike(c)) {
-        showErrorToast('HTML 태그는 사용할 수 없습니다.');
-        return;
-      }
-
-      // 카테고리 유효성(서버로 보내기 전에 고정)
-      if (!category || !CATEGORY_LABELS[category]) {
-        showErrorToast('카테고리를 선택해주세요.');
-        return;
-      }
-
-      if (category === 'product' && !preProductId && !product?.id) {
-        showErrorToast('상품을 선택해주세요.');
-        return;
+      const errs = validateBeforeSubmit();
+      if (Object.keys(errs).length > 0) {
+        setFieldErrors(errs);
+        setFormError('입력값을 확인해 주세요.');
+        focusFirstError(errs);
       }
 
       // 여기까지 통과한 뒤에만 submitting ON (UI 잠금)
@@ -202,6 +277,8 @@ export default function QnaWritePage() {
 
       // 카테고리 값을 라벨로 정규화
       const mappedCategory = CATEGORY_LABELS[category] ?? category;
+      const t = title.trim();
+      const c = content.trim();
 
       // 첨부 업로드(Supabase)
       const BUCKET = 'tennis-images';
@@ -246,6 +323,7 @@ export default function QnaWritePage() {
       }
       router.replace('/board/qna');
     } catch (e: any) {
+      setFormError(e?.message || '저장 중 오류가 발생했습니다.');
       showErrorToast(e?.message || '저장 중 오류가 발생했습니다.');
     } finally {
       setSubmitting(false);
@@ -282,12 +360,21 @@ export default function QnaWritePage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
-              <div className="space-y-3">
+              <div aria-live="polite" className="min-h-[20px]">
+                {formError && <p className="text-sm text-red-600 dark:text-red-400">{formError}</p>}
+              </div>
+              <div ref={categoryWrapRef} className="space-y-3">
                 <Label htmlFor="category" className="text-base font-semibold">
                   카테고리 <span className="text-red-500">*</span>
                 </Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger id="category" className="h-12 bg-white dark:bg-gray-700">
+                <Select
+                  value={category}
+                  onValueChange={(v) => {
+                    setCategory(v);
+                    clearErrors(['category', 'product']);
+                  }}
+                >
+                  <SelectTrigger id="category" className={`h-12 bg-white dark:bg-gray-700 ${fieldErrors.category ? 'border-red-400 focus:ring-red-400' : ''}`}>
                     <SelectValue placeholder="문의 카테고리를 선택해주세요" />
                   </SelectTrigger>
                   <SelectContent>
@@ -300,6 +387,8 @@ export default function QnaWritePage() {
                     <SelectItem value="member">회원</SelectItem>
                   </SelectContent>
                 </Select>
+                {fieldErrors.category && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.category}</p>}
+
                 {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
                 {preProductId && (
                   <div className="mt-2 text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
@@ -315,10 +404,12 @@ export default function QnaWritePage() {
               </div>
 
               {category === 'product' && !preProductId && (
-                <div className="space-y-4">
+                <div ref={productWrapRef} className="space-y-4">
                   <div className="text-sm text-gray-600 dark:text-gray-300">
                     <span className="font-medium">상품 선택</span> — 본인이 구매했던 상품 또는 전체 상품에서 선택하세요.
                   </div>
+                  {fieldErrors.product && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.product}</p>}
+
                   {/* 탭처럼 보이는 간단한 토글 */}
                   <div className="grid md:grid-cols-2 gap-4">
                     {/* 내 구매상품 */}
@@ -332,6 +423,7 @@ export default function QnaWritePage() {
                             type="button"
                             onClick={() => {
                               setProduct(p);
+                              clearErrors('product');
                             }}
                             className={`w-full text-left px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
                           >
@@ -358,6 +450,7 @@ export default function QnaWritePage() {
                             type="button"
                             onClick={() => {
                               setProduct(p);
+                              clearErrors('product');
                             }}
                             className={`w-full text-left px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
                           >
@@ -388,24 +481,46 @@ export default function QnaWritePage() {
                 <Label htmlFor="title" className="text-base font-semibold">
                   제목 <span className="text-red-500">*</span>
                 </Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="문의 제목을 작성해주세요(4자이상)" className="h-12 bg-white dark:bg-gray-700 text-base" />
+                <Input
+                  id="title"
+                  ref={titleRef}
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    clearErrors('title');
+                  }}
+                  placeholder="문의 제목을 작성해주세요(4자이상)"
+                  className="h-12 bg-white dark:bg-gray-700 text-base"
+                />
+                {fieldErrors.title && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.title}</p>}
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="content" className="text-base font-semibold">
                   문의 내용 <span className="text-red-500">*</span>
                 </Label>
-                <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)" className="min-h-[200px] bg-white dark:bg-gray-700 text-base resize-none" />
+                <Textarea
+                  id="content"
+                  ref={contentRef}
+                  value={content}
+                  onChange={(e) => {
+                    setContent(e.target.value);
+                    clearErrors('content');
+                  }}
+                  placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)"
+                  className="min-h-[200px] bg-white dark:bg-gray-700 text-base resize-none"
+                />
+                {fieldErrors.content && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.content}</p>}
                 <p className="text-sm text-gray-500 dark:text-gray-400">상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.</p>
               </div>
 
-              <div className="space-y-3">
+              <div ref={imagesWrapRef} className="space-y-3">
                 <Label htmlFor="image" className="text-base font-semibold">
                   이미지 첨부 (선택사항)
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-teal-400 dark:hover:border-teal-500 transition-colors"
+                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg p-6 text-center hover:border-teal-400 dark:hover:border-teal-500 transition-colors`}
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -430,6 +545,7 @@ export default function QnaWritePage() {
                       파일 선택
                     </Button>
                   </div>
+                  {fieldErrors.images && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.images}</p>}
 
                   {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (

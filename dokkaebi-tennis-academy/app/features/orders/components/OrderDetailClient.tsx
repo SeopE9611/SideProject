@@ -197,7 +197,6 @@ export default function OrderDetailClient({ orderId }: Props) {
   })();
   const isShippingManagedByApplication = Boolean(linkedStringingAppId);
 
-
   /**
    *  구매확정(관리자 화면에서 처리 버튼)
    * - 서버(/api/orders/[id]/confirm)가 관리자 세션에서도 허용되어 있어야 정상 동작합니다.
@@ -714,8 +713,20 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <div className="flex items-start gap-2">
                       <LinkIcon className="mt-0.5 h-4 w-4 shrink-0" />
                       <div className="space-y-2">
-                        <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.</p>
-
+                        <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.</p> 
+                        <div className="flex items-center space-x-3 p-3 bg-white/60 dark:bg-slate-900/30 rounded-lg border border-blue-200/60 dark:border-blue-800/40">
+                          <Truck className="h-4 w-4 text-blue-600" />
+                          <div>
+                            <p className="text-sm text-blue-800/80 dark:text-blue-200/80">주문 시 선택한 수령 방식</p>
+                            <p className="font-semibold text-blue-950 dark:text-blue-50">
+                              {{
+                                delivery: '택배 배송',
+                                quick: '퀵 배송 (당일)',
+                                visit: '방문 수령',
+                              }[orderDetail.shippingInfo.shippingMethod] || '정보 없음'}
+                            </p>
+                          </div>
+                        </div>
                         <div className="flex flex-wrap gap-2">
                           <Button size="sm" variant="outline" className="bg-transparent" asChild>
                             <Link href={`/admin/applications/stringing/${linkedStringingAppId}`}>신청서 상세 보기</Link>
