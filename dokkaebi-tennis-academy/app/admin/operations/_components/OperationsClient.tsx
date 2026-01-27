@@ -49,6 +49,12 @@ type OpItem = {
    * - 예: 연결 키(orderId/rentalId 등) 불일치
    */
   warnReasons?: string[];
+
+  /**
+   * draft(초안) 등 '오류는 아니지만 아직 작성/제출이 끝나지 않은' 상태를 표시할 때 사용.
+   * 예: 스트링 구매 후 신청서 페이지에서 이탈 → stringing_application이 draft로만 존재
+   */
+  pendingReasons?: string[];
 };
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
@@ -248,6 +254,11 @@ function isWarnGroup(g: { anchor: OpItem; items: OpItem[] }) {
   return payMismatch || hasMixed;
 }
 
+const thClasses = 'px-4 py-3 text-left align-middle font-semibold text-muted-foreground text-xs whitespace-nowrap';
+const tdClasses = 'px-4 py-4 align-top';
+const th = thClasses;
+const td = tdClasses;
+
 export default function OperationsClient() {
   const router = useRouter();
   const pathname = usePathname();
@@ -403,7 +414,7 @@ export default function OperationsClient() {
               <span className="font-mono">{shortenId(d.id)}</span>
             </Link>
 
-            <Button type="button" size="sm" variant="outline" className="h-7 w-7 p-0" onClick={() => copy(d.id)} aria-label="연결 문서 ID 복사">
+            <Button type="button" size="sm" variant="outline" className="h-7 w-7 p-0 bg-transparent" onClick={() => copy(d.id)} aria-label="연결 문서 ID 복사">
               <Copy className="h-4 w-4" />
             </Button>
           </div>
@@ -414,31 +425,40 @@ export default function OperationsClient() {
     );
   }
 
-  const th = 'text-xs text-muted-foreground';
-  const td = 'align-top';
-
   return (
-    <div className="space-y-4">
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>운영함 (통합)</CardTitle>
-          <CardDescription>주문 · 신청서 · 대여를 한 화면에서 확인하고, 상세로 빠르게 이동합니다.</CardDescription>
+    <div className="container py-6">
+      {/* 페이지 헤더 */}
+      <div className="mx-auto max-w-7xl mb-5">
+        <h1 className="text-4xl font-semibold tracking-tight">운영함 (통합)</h1>
+        <p className="mt-1 text-xs text-muted-foreground">주문 · 신청서 · 대여를 한 화면에서 확인하고, 상세로 빠르게 이동합니다.</p>
+      </div>
+
+      {/* 필터 및 검색 카드 */}
+      <Card className="mb-5 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-6 py-5">
+        <CardHeader className="pb-3">
+          <CardTitle>필터 및 검색</CardTitle>
+          <CardDescription className="text-xs">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-col gap-2 md:flex-row md:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <CardContent className="space-y-4">
+          {/* 검색 input */}
+          <div className="w-full max-w-md">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                className="pl-9"
+                type="search"
+                className="pl-8 text-xs h-9 w-full"
                 value={q}
                 onChange={(e) => {
                   setQ(e.target.value);
-                  setPage(1); // 검색 바뀌면 1페이지로
+                  setPage(1);
                 }}
                 placeholder="ID, 고객명, 이메일, 요약(상품명/모델명) 검색..."
               />
             </div>
+          </div>
 
+          {/* 필터 컴포넌트들 */}
+          <div className="grid w-full gap-2 border-t border-gray-200 dark:border-gray-700 pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-6">
             <Select
               value={kind}
               onValueChange={(v: any) => {
@@ -446,7 +466,7 @@ export default function OperationsClient() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-full md:w-[220px]">
+              <SelectTrigger>
                 <SelectValue placeholder="종류(전체)" />
               </SelectTrigger>
               <SelectContent>
@@ -464,7 +484,7 @@ export default function OperationsClient() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-full md:w-[240px]">
+              <SelectTrigger>
                 <SelectValue placeholder="시나리오(전체)" />
               </SelectTrigger>
               <SelectContent>
@@ -486,7 +506,7 @@ export default function OperationsClient() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-full md:w-[180px]">
+              <SelectTrigger>
                 <SelectValue placeholder="연결(전체)" />
               </SelectTrigger>
               <SelectContent>
@@ -496,17 +516,11 @@ export default function OperationsClient() {
               </SelectContent>
             </Select>
 
-            <Button asChild variant="outline" className="gap-2 md:w-auto">
-              <Link href={settlementsHref}>
-                <BarChartBig className="h-4 w-4" />
-                정산 관리
-              </Link>
-            </Button>
-
             <Button
               variant="outline"
-              title={onlyWarn ? '경고(연결오류/혼재/결제불일치) 항목만 조회 중입니다.' : '경고(연결오류/혼재/결제불일치) 항목만 모아봅니다.'}
-              className={cn(onlyWarn && 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-50')}
+              size="sm"
+              title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
+              className={cn('w-full bg-transparent', onlyWarn && 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-700')}
               onClick={() => {
                 setOnlyWarn((v) => !v);
                 setPage(1);
@@ -515,50 +529,93 @@ export default function OperationsClient() {
               경고만 보기
             </Button>
 
-            <Button variant="outline" onClick={reset} className="md:w-auto">
+            <Button asChild variant="outline" size="sm" className="w-full bg-transparent">
+              <Link href={settlementsHref}>
+                <BarChartBig className="h-4 w-4 mr-1.5" />
+                정산 관리
+              </Link>
+            </Button>
+
+            <Button variant="outline" size="sm" onClick={reset} className="w-full bg-transparent">
               필터 초기화
             </Button>
           </div>
 
-          {/* 프리셋 버튼(원클릭) - 필터 1줄과 분리해서 Input 폭이 안 찌그러지게 */}
-          <div className="flex flex-wrap gap-2">
-            <Button variant={presetActive.integratedOnly ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.integratedOnly} onClick={() => applyPreset({ integrated: '1', flow: 'all', kind: 'all', warn: false })}>
+          {/* 프리셋 버튼(원클릭) */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button
+              variant={presetActive.integratedOnly ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.integratedOnly}
+              onClick={() => applyPreset({ integrated: '1', flow: 'all', kind: 'all', warn: false })}
+              className={!presetActive.integratedOnly ? 'bg-transparent' : ''}
+            >
               통합만
             </Button>
 
-            <Button variant={presetActive.singleOnly ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.singleOnly} onClick={() => applyPreset({ integrated: '0', flow: 'all', kind: 'all', warn: false })}>
+            <Button
+              variant={presetActive.singleOnly ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.singleOnly}
+              onClick={() => applyPreset({ integrated: '0', flow: 'all', kind: 'all', warn: false })}
+              className={!presetActive.singleOnly ? 'bg-transparent' : ''}
+            >
               단독만
             </Button>
 
-            <Button variant={presetActive.rentalBundle ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.rentalBundle} onClick={() => applyPreset({ integrated: '1', flow: '7', kind: 'all', warn: false })}>
+            <Button
+              variant={presetActive.rentalBundle ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.rentalBundle}
+              onClick={() => applyPreset({ integrated: '1', flow: '7', kind: 'all', warn: false })}
+              className={!presetActive.rentalBundle ? 'bg-transparent' : ''}
+            >
               대여+교체(통합)
             </Button>
 
-            <Button variant={presetActive.stringBundle ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.stringBundle} onClick={() => applyPreset({ integrated: '1', flow: '2', kind: 'all', warn: false })}>
+            <Button
+              variant={presetActive.stringBundle ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.stringBundle}
+              onClick={() => applyPreset({ integrated: '1', flow: '2', kind: 'all', warn: false })}
+              className={!presetActive.stringBundle ? 'bg-transparent' : ''}
+            >
               스트링+교체(통합)
             </Button>
 
-            <Button variant={presetActive.appSingle ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.appSingle} onClick={() => applyPreset({ integrated: '0', flow: '3', kind: 'stringing_application', warn: false })}>
+            <Button
+              variant={presetActive.appSingle ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.appSingle}
+              onClick={() => applyPreset({ integrated: '0', flow: '3', kind: 'stringing_application', warn: false })}
+              className={!presetActive.appSingle ? 'bg-transparent' : ''}
+            >
               교체신청(단독)
             </Button>
 
-            <Button variant={presetActive.racketBundle ? 'default' : 'outline'} size="sm" aria-pressed={presetActive.racketBundle} onClick={() => applyPreset({ integrated: '1', flow: '5', kind: 'all', warn: false })}>
+            <Button
+              variant={presetActive.racketBundle ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.racketBundle}
+              onClick={() => applyPreset({ integrated: '1', flow: '5', kind: 'all', warn: false })}
+              className={!presetActive.racketBundle ? 'bg-transparent' : ''}
+            >
               라켓+교체(통합)
             </Button>
           </div>
 
           {/* 범례(운영자 인지 부하 감소) */}
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground border-t border-gray-200 dark:border-gray-700 pt-3 mt-1">
             <span className="font-medium text-foreground">범례</span>
             <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass('order'))}>주문</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass('stringing_application'))}>신청서</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass('rental'))}>대여</Badge>
-            <span className="mx-1">·</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-emerald-500/10 text-emerald-600')}>통합(연결됨)</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-600')}>단독</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700')}>연결오류</Badge>
+            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400')}>통합(연결됨)</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-600 dark:text-slate-400')}>단독</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700 dark:text-rose-400')}>연결오류</Badge>
 
-            <span className="mx-1">·</span>
+            <span className="text-gray-300 dark:text-gray-600">|</span>
             <span className="font-medium text-foreground">시나리오</span>
             <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
@@ -568,418 +625,468 @@ export default function OperationsClient() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-sm">
-        <CardHeader className="flex-row items-center justify-between">
-          <div>
-            <CardTitle>업무 목록</CardTitle>
-            <CardDescription>총 {total.toLocaleString('ko-KR')}건</CardDescription>
+      {/* 업무 목록 카드 */}
+      <Card className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-4 py-5">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            {data ? (
+              <>
+                <CardTitle className="text-base font-medium">업무 목록</CardTitle>
+                <p className="text-xs text-muted-foreground">총 {total.toLocaleString('ko-KR')}건</p>
+              </>
+            ) : (
+              <>
+                <Skeleton className="h-5 w-24 rounded bg-gray-200 dark:bg-gray-700" />
+                <Skeleton className="h-4 w-36 rounded bg-gray-100 dark:bg-gray-600" />
+              </>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="text-sm text-muted-foreground">
-              {page} / {totalPages}
+          <div className="flex items-center gap-2 pt-2">
+            <div className="text-xs text-muted-foreground">
+              {page} / {totalPages} 페이지
             </div>
-            <Button type="button" size="sm" variant="outline" disabled={!hasExpandableGroups} title={!hasExpandableGroups ? '펼칠 통합 묶음이 없습니다.' : '통합 묶음(연결된 문서)을 한 번에 펼치거나 접습니다.'} onClick={toggleAllGroups}>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="bg-transparent"
+              disabled={!hasExpandableGroups}
+              title={!hasExpandableGroups ? '펼칠 통합 묶음이 없습니다.' : '통합 묶음(연결된 문서)을 한 번에 펼치거나 접습니다.'}
+              onClick={toggleAllGroups}
+            >
               {isAllExpanded ? '전체 접기' : '전체 펼치기'}
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 pt-2">
           {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
+            <div className="space-y-2 p-4">
+              <Skeleton className="h-12 w-full rounded bg-gray-200 dark:bg-gray-700" />
+              <Skeleton className="h-12 w-full rounded bg-gray-200 dark:bg-gray-700" />
+              <Skeleton className="h-12 w-full rounded bg-gray-200 dark:bg-gray-700" />
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className={th}>유형</TableHead>
-                  <TableHead className={th}>ID</TableHead>
-                  <TableHead className={th}>고객</TableHead>
-                  <TableHead className={th}>날짜</TableHead>
-                  <TableHead className={th}>상태</TableHead>
-                  <TableHead className={th}>결제</TableHead>
-                  <TableHead className={th}>금액</TableHead>
-                  <TableHead className={th}>연결</TableHead>
-                  <TableHead className={th}></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {groupsToRender.map((g) => {
-                  const isGroup = g.items.length > 1;
-                  const isOpen = !!openGroups[g.key];
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent border-b border-gray-200 dark:border-gray-700">
+                    <TableHead className={thClasses}>유형</TableHead>
+                    <TableHead className={thClasses}>ID</TableHead>
+                    <TableHead className={thClasses}>고객</TableHead>
+                    <TableHead className={thClasses}>날짜</TableHead>
+                    <TableHead className={thClasses}>상태</TableHead>
+                    <TableHead className={thClasses}>결제</TableHead>
+                    <TableHead className={thClasses}>금액</TableHead>
+                    <TableHead className={thClasses}>연결</TableHead>
+                    <TableHead className={cn(thClasses, 'text-right')}>작업</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {groupsToRender.map((g) => {
+                    const isGroup = g.items.length > 1;
+                    const isOpen = !!openGroups[g.key];
 
-                  // anchor 제외한 하위 아이템들(펼쳤을 때 표시)
-                  const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
-                  const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
+                    // anchor 제외한 하위 아이템들(펼쳤을 때 표시)
+                    const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
+                    const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
 
-                  // 그룹(통합) 대표 행에 노출할 "연결 문서 상태/결제 요약"
-                  const childStatusSummary = isGroup ? summarizeByKind(children, (it) => it.statusLabel) : [];
-                  const childPaymentSummary = isGroup ? summarizeByKind(children, (it) => it.paymentLabel) : [];
+                    // 그룹(통합) 대표 행에 노출할 "연결 문서 상태/결제 요약"
+                    const childStatusSummary = isGroup ? summarizeByKind(children, (it) => it.statusLabel) : [];
+                    const childPaymentSummary = isGroup ? summarizeByKind(children, (it) => it.paymentLabel) : [];
 
-                  // ===== 경고 배지(1개) 판단 =====
-                  // 1) 같은 kind 안에서 상태/결제 라벨이 여러 개 섞여 있으면(혼재)
-                  const hasMixed = childStatusSummary.some((s) => s.mixed) || childPaymentSummary.some((p) => p.mixed);
+                    // ===== 경고 배지(1개) 판단 =====
+                    // 1) 같은 kind 안에서 상태/결제 라벨이 여러 개 섞여 있으면(혼재)
+                    const hasMixed = childStatusSummary.some((s) => s.mixed) || childPaymentSummary.some((p) => p.mixed);
 
-                  // 2) 기준(앵커) 결제 라벨과 연결 문서 결제 라벨이 다르면(결제불일치)
-                  // - 앵커 결제가 "결제완료" 같은 확정 상태인데 연결이 "결제대기"면 운영 리스크가 큼
-                  // - 앵커가 '-'(없음)인 경우는 비교 기준이 없으므로 불일치로 보지 않음
-                  const anchorPay = g.anchor.paymentLabel ?? '-';
-                  const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
-                  const payMismatch = isGroup && anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
+                    // 2) 기준(앵커) 결제 라벨과 연결 문서 결제 라벨이 다르면(결제불일치)
+                    // - 앵커 결제가 "결제완료" 같은 확정 상태인데 연결이 "결제대기"면 운영 리스크가 큼
+                    // - 앵커가 '-'(없음)인 경우는 비교 기준이 없으므로 불일치로 보지 않음
+                    const anchorPay = g.anchor.paymentLabel ?? '-';
+                    const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
+                    const payMismatch = isGroup && anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
 
-                  // 경고 "근거"를 한 줄로 바로 보이게(운영자 인지부하 감소)
-                  // - 테이블 폭을 망치지 않도록 데스크톱에서만 노출(xl 이상)
-                  const uniq = (arr: (string | null | undefined)[]) => Array.from(new Set(arr.filter(Boolean).map(String)));
+                    // 경고 "근거"를 한 줄로 바로 보이게(운영자 인지부하 감소)
+                    // - 테이블 폭을 망치지 않도록 데스크톱에서만 노출(xl 이상)
+                    const uniq = (arr: (string | null | undefined)[]) => Array.from(new Set(arr.filter(Boolean).map(String)));
 
-                  // 서버가 내려준 warnReasons(연결 누락/불일치 등)를 그룹/단독 모두에서 수집
-                  const linkWarnReasons = uniq(
-                    (isGroup ? g.items : [g.anchor]).reduce((acc, x) => {
-                      if (Array.isArray(x.warnReasons) && x.warnReasons.length > 0) acc.push(...x.warnReasons);
-                      return acc;
-                    }, [] as string[]),
-                  );
-                  const hasLinkWarn = linkWarnReasons.length > 0;
-                  const linkWarnTitle = linkWarnReasons.slice(0, 3).join('\n') + (linkWarnReasons.length > 3 ? `\n외 ${linkWarnReasons.length - 3}개` : '');
+                    // 서버가 내려준 warnReasons(연결 누락/불일치 등)를 그룹/단독 모두에서 수집
+                    const linkWarnReasons = uniq(
+                      (isGroup ? g.items : [g.anchor]).reduce((acc, x) => {
+                        if (Array.isArray(x.warnReasons) && x.warnReasons.length > 0) acc.push(...x.warnReasons);
+                        return acc;
+                      }, [] as string[]),
+                    );
+                    const hasLinkWarn = linkWarnReasons.length > 0;
+                    const linkWarnTitle = linkWarnReasons.slice(0, 3).join('\n') + (linkWarnReasons.length > 3 ? `\n외 ${linkWarnReasons.length - 3}개` : '');
 
-                  // 경고(혼재/결제불일치/연결오류) 항목에서는 자식 행에 "왜 연결인지" 라벨을 노출해 놓침을 줄입니다.
-                  const showLinkReason = onlyWarn || payMismatch || hasMixed || hasLinkWarn;
+                    // draft(초안) 등 '오류는 아니지만 아직 작성/제출이 끝나지 않은' 상태를 수집
+                    const linkPendingReasons = uniq(
+                      (isGroup ? g.items : [g.anchor]).reduce((acc, x) => {
+                        if (Array.isArray(x.pendingReasons) && x.pendingReasons.length > 0) acc.push(...x.pendingReasons);
+                        return acc;
+                      }, [] as string[]),
+                    );
+                    const hasLinkPending = linkPendingReasons.length > 0;
+                    const linkPendingTitle = linkPendingReasons.slice(0, 3).join('\n') + (linkPendingReasons.length > 3 ? `\n외 ${linkPendingReasons.length - 3}개` : '');
 
-                  const childPayUniq = uniq(childPays).filter((p) => p !== '-');
-                  const childStatusUniq = uniq(children.map((x) => x.statusLabel));
+                    // 경고(혼재/결제불일치/연결오류) 항목에서는 자식 행에 "왜 연결인지" 라벨을 노출해 놓침을 줄입니다.
+                    const showLinkReason = onlyWarn || payMismatch || hasMixed || hasLinkWarn;
 
-                  const payHint = (() => {
-                    if (!payMismatch) return null;
-                    if (childPayUniq.length === 0) return `결제: ${anchorPay} ≠ (연결 없음)`;
-                    const head = childPayUniq.slice(0, 2).join(', ');
-                    const tail = childPayUniq.length > 2 ? ` 외 ${childPayUniq.length - 2}` : '';
-                    return `결제: ${anchorPay} ≠ ${head}${tail}`;
-                  })();
+                    const childPayUniq = uniq(childPays).filter((p) => p !== '-');
+                    const childStatusUniq = uniq(children.map((x) => x.statusLabel));
 
-                  const mixedHint = (() => {
-                    if (!hasMixed) return null;
-                    if (childStatusUniq.length === 0) return `상태: 혼재`;
-                    const head = childStatusUniq[0];
-                    const tail = childStatusUniq.length > 1 ? ` 외 ${childStatusUniq.length - 1}` : '';
-                    return `상태: ${head}${tail}`;
-                  })();
+                    const payHint = (() => {
+                      if (!payMismatch) return null;
+                      if (childPayUniq.length === 0) return `결제: ${anchorPay} ≠ (연결 없음)`;
+                      const head = childPayUniq.slice(0, 2).join(', ');
+                      const tail = childPayUniq.length > 2 ? ` 외 ${childPayUniq.length - 2}` : '';
+                      return `결제: ${anchorPay} ≠ ${head}${tail}`;
+                    })();
 
-                  // 표시 우선순위: 결제불일치 > 혼재
-                  const warnInline = payHint ?? mixedHint;
+                    const mixedHint = (() => {
+                      if (!hasMixed) return null;
+                      if (childStatusUniq.length === 0) return `상태: 혼재`;
+                      const head = childStatusUniq[0];
+                      const tail = childStatusUniq.length > 1 ? ` 외 ${childStatusUniq.length - 1}` : '';
+                      return `상태: ${head}${tail}`;
+                    })();
 
-                  const warnBadges: Array<{ label: '결제불일치' | '혼재'; title: string }> = [];
-                  if (payMismatch) {
-                    warnBadges.push({
-                      label: '결제불일치',
-                      title: `기준 결제: ${anchorPay} / 연결 결제: ${childPays.filter((p) => p && p !== '-').join(', ')}`,
-                    });
-                  }
-                  if (hasMixed) {
-                    warnBadges.push({
-                      label: '혼재',
-                      title: '연결 문서 내 상태/결제가 여러 값으로 섞여 있습니다.',
-                    });
-                  }
-                  // 그룹(통합)인 경우, 앵커를 제외한 “연결 문서” 요약(포함: 신청서 2건 · 대여 1건 …)
-                  const childKindCounts = isGroup
-                    ? children.reduce(
-                        (acc, x) => {
-                          acc[x.kind] = (acc[x.kind] ?? 0) + 1;
-                          return acc;
-                        },
-                        {} as Record<Kind, number>,
-                      )
-                    : null;
+                    // 표시 우선순위: 결제불일치 > 혼재
+                    const warnInline = payHint ?? mixedHint;
 
-                  const includesSummary = isGroup
-                    ? (['order', 'rental', 'stringing_application'] as Kind[])
-                        .filter((k) => (childKindCounts?.[k] ?? 0) > 0)
-                        .map((k) => `${opsKindLabel(k)} ${childKindCounts![k]}건`)
-                        .join(' · ')
-                    : '';
+                    const warnBadges: Array<{ label: '결제불일치' | '혼재'; title: string }> = [];
+                    if (payMismatch) {
+                      warnBadges.push({
+                        label: '결제불일치',
+                        title: `기준 결제: ${anchorPay} / 연결 결제: ${childPays.filter((p) => p && p !== '-').join(', ')}`,
+                      });
+                    }
+                    if (hasMixed) {
+                      warnBadges.push({
+                        label: '혼재',
+                        title: '연결 문서 내 상태/결제가 여러 값으로 섞여 있습니다.',
+                      });
+                    }
+                    // 그룹(통합)인 경우, 앵커를 제외한 “연결 문서” 요약(포함: 신청서 2건 · 대여 1건 …)
+                    const childKindCounts = isGroup
+                      ? children.reduce(
+                          (acc, x) => {
+                            acc[x.kind] = (acc[x.kind] ?? 0) + 1;
+                            return acc;
+                          },
+                          {} as Record<Kind, number>,
+                        )
+                      : null;
 
-                  // 연결 컬럼에 보여줄 문서들
-                  // - 그룹(통합)인 경우: 앵커 외 나머지 문서(신청서/대여 등)를 “바로” 노출
-                  // - 단독인 경우: API에서 내려준 related(있으면 1개)만 노출
-                  const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
+                    const includesSummary = isGroup
+                      ? (['order', 'rental', 'stringing_application'] as Kind[])
+                          .filter((k) => (childKindCounts?.[k] ?? 0) > 0)
+                          .map((k) => `${opsKindLabel(k)} ${childKindCounts![k]}건`)
+                          .join(' · ')
+                      : '';
 
-                  // 정산 화면 이동(운영 편의): 추천 yyyymm만 title로 안내 (정산 화면 쿼리 미지원이어도 즉시 유용)
-                  const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
-                  const settleTitle = settleYyyymm ? `정산 페이지로 이동 (추천 월: ${settleYyyymm})` : '정산 페이지로 이동';
-                  const settleHref = settleYyyymm ? `/admin/settlements?yyyymm=${settleYyyymm}` : '/admin/settlements';
+                    // 연결 컬럼에 보여줄 문서들
+                    // - 그룹(통합)인 경우: 앵커 외 나머지 문서(신청서/대여 등)를 “바로” 노출
+                    // - 단독인 경우: API에서 내려준 related(있으면 1개)만 노출
+                    const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
 
-                  return (
-                    <Fragment key={g.key}>
-                      {/* 그룹 대표(앵커) Row */}
-                      <TableRow className={cn(isGroup && 'bg-muted/30')}>
-                        <TableCell className={td}>
-                          <div className="flex flex-col gap-1">
-                            {/* 그룹에 포함된 종류들(주문/신청서/대여) */}
-                            <div className="flex flex-wrap gap-1">
-                              {g.kinds.map((k) => (
-                                <Badge key={k} className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(k))}>
-                                  {opsKindLabel(k)}
-                                </Badge>
-                              ))}
-                            </div>
+                    // 정산 화면 이동(운영 편의): 추천 yyyymm만 title로 안내 (정산 화면 쿼리 미지원이어도 즉시 유용)
+                    const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
+                    const settleTitle = settleYyyymm ? `정산 페이지로 이동 (추천 월: ${settleYyyymm})` : '정산 페이지로 이동';
+                    const settleHref = settleYyyymm ? `/admin/settlements?yyyymm=${settleYyyymm}` : '/admin/settlements';
 
-                            {/* 통합/단독 + (그룹 건수) */}
-                            <div className="flex flex-wrap gap-1">
-                              <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-emerald-500/10 text-emerald-600' : g.anchor.isIntegrated ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-500/10 text-slate-600')}>
-                                {isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독'}
-                              </Badge>
-                              {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>{g.items.length}건</Badge>}
-                            </div>
-                            {/* 7개 시나리오(Flow) */}
-                            <div className="flex flex-wrap gap-1">
-                              <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(g.anchor.flow))} title={`Flow ${g.anchor.flow}`}>
-                                {g.anchor.flowLabel}
-                              </Badge>
-                            </div>
-
-                            {/* 정산 기준(앵커) 라벨: 금액 해석 혼동 방지 */}
-                            <div className="flex flex-wrap gap-1">
-                              <Badge className={cn(badgeBase, badgeSizeSm, settlementBadgeClass())}>{g.anchor.settlementLabel}</Badge>
-                            </div>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className={td}>
-                          <div className="flex items-start gap-2">
-                            {/* 펼치기 토글: 그룹일 때만 */}
-                            {isGroup ? (
-                              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleGroup(g.key)} aria-label={isOpen ? '그룹 접기' : '그룹 펼치기'}>
-                                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                              </Button>
-                            ) : (
-                              <div className="h-8 w-8" />
-                            )}
-                            <div className="space-y-1 min-w-0">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <div className="font-medium">{shortenId(g.anchor.id)}</div>
-                    {(() => {
-                                  // 운영함에서 난잡해지는 구간(그룹 기준/경고 뱃지들)을 “접기”로 정리
-                                  const items: BadgeItem[] = [];
-
-                                  if (hasLinkWarn) {
-                                    items.push({ label: '연결오류', className: 'bg-rose-500/10 text-rose-700', title: linkWarnTitle });
-                                  }
-
-                                  if (isGroup) {
-                                    items.push({ label: '기준', className: 'bg-indigo-500/10 text-indigo-700', title: '그룹의 기준 문서' });
-                                    items.push({ label: opsKindLabel(g.anchor.kind), className: opsKindBadgeClass(g.anchor.kind), title: '기준 문서 종류' });
-                                    warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-amber-500/10 text-amber-700', title: b.title }));
-                                  }
-
-                                  return items.length > 0 ? <AdminBadgeRow maxVisible={3} items={items} /> : null;
-                                })()}
-
-                                {isGroup && warnInline && (
-                                  <span className="ml-2 hidden xl:inline text-xs text-muted-foreground" title={warnInline}>
-                                    {warnInline}
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="text-xs text-muted-foreground line-clamp-1">{isGroup ? `기준: ${g.anchor.title}` : g.anchor.title}</div>
-
-                              {isGroup && <div className="text-[11px] text-muted-foreground line-clamp-1">포함: {includesSummary || '-'}</div>}
-                            </div>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className={td}>
-                          <div className="space-y-1">
-                            <div className="font-medium">{g.anchor.customer?.name || '-'}</div>
-                            <div className="text-xs text-muted-foreground">{g.anchor.customer?.email || '-'}</div>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className={td}>{formatKST(g.createdAt)}</TableCell>
-
-                        <TableCell className={td}>
-                          <div className="space-y-1">
-                            <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(g.anchor.kind, g.anchor.statusLabel))}>{g.anchor.statusLabel}</Badge>
-
-                            {isGroup && childStatusSummary.length > 0 && (
-                              <div className="space-y-1">
-                                {childStatusSummary.map((s) => (
-                                  <div key={`st:${s.kind}`} className="text-[11px] text-muted-foreground">
-                                    {opsKindLabel(s.kind)}: {s.text}
-                                    {s.mixed ? ' (혼재)' : ''}
-                                  </div>
+                    return (
+                      <Fragment key={g.key}>
+                        {/* 그룹 대표(앵커) Row */}
+                        <TableRow className={cn('hover:bg-muted/50 transition-colors', isGroup && 'bg-slate-50/50 dark:bg-slate-900/30')}>
+                          <TableCell className={tdClasses}>
+                            <div className="flex flex-col gap-1">
+                              {/* 그룹에 포함된 종류들(주문/신청서/대여) */}
+                              <div className="flex flex-wrap gap-1">
+                                {g.kinds.map((k) => (
+                                  <Badge key={k} className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(k))}>
+                                    {opsKindLabel(k)}
+                                  </Badge>
                                 ))}
                               </div>
-                            )}
-                          </div>
-                        </TableCell>
 
-                        <TableCell className={td}>
-                          <div className="space-y-1">
-                            {g.anchor.paymentLabel ? (
-                              <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{g.anchor.paymentLabel}</Badge>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">-</span>
-                            )}
-
-                            {isGroup && childPaymentSummary.length > 0 && (
-                              <div className="space-y-1">
-                                {childPaymentSummary.map((p) => (
-                                  <div key={`pay:${p.kind}`} className="text-[11px] text-muted-foreground">
-                                    {opsKindLabel(p.kind)}: {p.text}
-                                    {p.mixed ? ' (혼재)' : ''}
-                                  </div>
-                                ))}
+                              {/* 통합/단독 + (그룹 건수) */}
+                              <div className="flex flex-wrap gap-1">
+                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-emerald-500/10 text-emerald-600' : g.anchor.isIntegrated ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-500/10 text-slate-600')}>
+                                  {isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독'}
+                                </Badge>
+                                {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>{g.items.length}건</Badge>}
                               </div>
-                            )}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className={cn(td, 'font-semibold')}>
-                          {isGroup ? (
-                            <div className="space-y-1">
-                              {pickOnePerKind(g.items).map((it) => (
-                                <div key={`${it.kind}:${it.id}`} className="flex items-center justify-between gap-3">
-                                  <span className="text-xs text-muted-foreground">{opsKindLabel(it.kind)}</span>
-                                  <span>{won(it.amount)}</span>
-                                </div>
-                              ))}
-                              <div className="text-[11px] text-muted-foreground">* 연결된 건은 합산하지 않고 종류별로 1회만 표시합니다.</div>
-                            </div>
-                          ) : (
-                            <div>{won(g.anchor.amount)}</div>
-                          )}
-                        </TableCell>
-
-                        <TableCell className={td}>{renderLinkedDocs(linkedDocsForAnchor)}</TableCell>
-
-                        <TableCell className={cn(td, 'text-right')}>
-                          <div className="flex justify-end gap-2">
-                            <Button size="sm" variant="outline" onClick={() => copy(g.anchor.id)}>
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button asChild size="sm" variant="outline">
-                              <Link href={g.anchor.href}>
-                                <Eye className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button asChild size="sm" variant="outline" title={settleTitle}>
-                              <Link href={settleHref} className="flex items-center gap-1">
-                                <BarChartBig className="h-4 w-4" />
-                                <span className="hidden md:inline">정산</span>
-                              </Link>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-
-                      {/* 그룹 하위 Row(펼쳤을 때) */}
-                      {isGroup &&
-                        isOpen &&
-                        children.map((it) => (
-                          <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-muted/10">
-                            <TableCell className={td}>
-                              <div className="flex flex-col gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(it.kind))}>{opsKindLabel(it.kind)}</Badge>
-                                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(it.flow))} title={`Flow ${it.flow}`}>
-                                  {it.flowLabel}
+                              {/* 7개 시나리오(Flow) */}
+                              <div className="flex flex-wrap gap-1">
+                                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(g.anchor.flow))} title={`Flow ${g.anchor.flow}`}>
+                                  {g.anchor.flowLabel}
                                 </Badge>
                               </div>
-                              <Badge className={cn(badgeBase, badgeSizeSm, settlementBadgeClass())}>{it.settlementLabel}</Badge>
-                            </TableCell>
 
-                            <TableCell className={td}>
-                              <div className="space-y-1 pl-10">
+                              {/* 정산 기준(앵커) 라벨: 금액 해석 혼동 방지 */}
+                              <div className="flex flex-wrap gap-1">
+                                <Badge className={cn(badgeBase, badgeSizeSm, settlementBadgeClass())}>{g.anchor.settlementLabel}</Badge>
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className={tdClasses}>
+                            <div className="flex items-start gap-2">
+                              {/* 펼치기 토글: 그룹일 때만 */}
+                              {isGroup ? (
+                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleGroup(g.key)} aria-label={isOpen ? '그룹 접기' : '그룹 펼치기'}>
+                                  {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                </Button>
+                              ) : (
+                                <div className="h-8 w-8" />
+                              )}
+                              <div className="space-y-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>연결</Badge>
-                                  <div className="font-medium">{shortenId(it.id)}</div>
-                                  {Array.isArray(it.warnReasons) && it.warnReasons.length > 0 && (
-                                    <Badge title={it.warnReasons.slice(0, 3).join('\n') + (it.warnReasons.length > 3 ? `\n외 ${it.warnReasons.length - 3}개` : '')} className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700')}>
-                                      연결오류
-                                    </Badge>
+                                  <div className="font-medium">{shortenId(g.anchor.id)}</div>
+                                  {(() => {
+                                    // 운영함에서 난잡해지는 구간(그룹 기준/경고 뱃지들)을 “접기”로 정리
+                                    const items: BadgeItem[] = [];
+
+                                    if (hasLinkWarn) {
+                                      items.push({
+                                        label: '연결오류',
+                                        className: 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
+                                        title: linkWarnTitle,
+                                      });
+                                    } else if (hasLinkPending) {
+                                      items.push({
+                                        label: '작성대기',
+                                        className: 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
+                                        title: linkPendingTitle,
+                                      });
+                                    }
+
+                                    if (isGroup) {
+                                      items.push({ label: '기준', className: 'bg-indigo-500/10 text-indigo-700', title: '그룹의 기준 문서' });
+                                      items.push({ label: opsKindLabel(g.anchor.kind), className: opsKindBadgeClass(g.anchor.kind), title: '기준 문서 종류' });
+                                      warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-amber-500/10 text-amber-700', title: b.title }));
+                                    }
+
+                                    return items.length > 0 ? <AdminBadgeRow maxVisible={3} items={items} /> : null;
+                                  })()}
+
+                                  {isGroup && warnInline && (
+                                    <span className="ml-2 hidden xl:inline text-xs text-muted-foreground" title={warnInline}>
+                                      {warnInline}
+                                    </span>
                                   )}
                                 </div>
-                                {showLinkReason && (
-                                  <div className="text-[11px] text-muted-foreground">
-                                    연결됨: {opsKindLabel(g.anchor.kind)}(#{shortenId(g.anchor.id)})
-                                  </div>
-                                )}
+
+                                <div className="text-xs text-muted-foreground line-clamp-1">{isGroup ? `기준: ${g.anchor.title}` : g.anchor.title}</div>
+
+                                {isGroup && <div className="text-[11px] text-muted-foreground line-clamp-1">포함: {includesSummary || '-'}</div>}
                               </div>
-                            </TableCell>
+                            </div>
+                          </TableCell>
 
-                            <TableCell className={td}>
-                              <div className="space-y-1">
-                                <div className="font-medium">{it.customer?.name || '-'}</div>
-                                <div className="text-xs text-muted-foreground">{it.customer?.email || '-'}</div>
-                              </div>
-                            </TableCell>
+                          <TableCell className={tdClasses}>
+                            <div className="space-y-1">
+                              <div className="font-medium text-sm">{g.anchor.customer?.name || '-'}</div>
+                              <div className="text-xs text-muted-foreground truncate max-w-[180px]">{g.anchor.customer?.email || '-'}</div>
+                            </div>
+                          </TableCell>
 
-                            <TableCell className={td}>{formatKST(it.createdAt)}</TableCell>
+                          <TableCell className={cn(tdClasses, 'text-sm text-muted-foreground whitespace-nowrap')}>{formatKST(g.createdAt)}</TableCell>
 
-                            <TableCell className={td}>
-                              <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(it.kind, it.statusLabel))}>{it.statusLabel}</Badge>
-                            </TableCell>
+                          <TableCell className={tdClasses}>
+                            <div className="space-y-1">
+                              <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(g.anchor.kind, g.anchor.statusLabel))}>{g.anchor.statusLabel}</Badge>
 
-                            <TableCell className={td}>
-                              {it.paymentLabel ? (
-                                <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[it.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{it.paymentLabel}</Badge>
+                              {isGroup && childStatusSummary.length > 0 && (
+                                <div className="space-y-1">
+                                  {childStatusSummary.map((s) => (
+                                    <div key={`st:${s.kind}`} className="text-[11px] text-muted-foreground">
+                                      {opsKindLabel(s.kind)}: {s.text}
+                                      {s.mixed ? ' (혼재)' : ''}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+
+                          <TableCell className={tdClasses}>
+                            <div className="space-y-1">
+                              {g.anchor.paymentLabel ? (
+                                <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{g.anchor.paymentLabel}</Badge>
                               ) : (
                                 <span className="text-xs text-muted-foreground">-</span>
                               )}
-                            </TableCell>
 
-                            <TableCell className={cn(td, 'font-semibold')}>
-                              {/* 그룹에서는 상단(대표 row)에서 종류별 금액을 1회만 보여주므로
-                                  하위 row에서는 금액을 반복 노출하지 않습니다(중복 해석 방지). */}
-                              <span className="text-xs text-muted-foreground" title="금액은 그룹(기준) 행에서 종류별로 1회만 표시합니다.">
-                                -
-                              </span>
-                            </TableCell>
+                              {isGroup && childPaymentSummary.length > 0 && (
+                                <div className="space-y-1">
+                                  {childPaymentSummary.map((p) => (
+                                    <div key={`pay:${p.kind}`} className="text-[11px] text-muted-foreground">
+                                      {opsKindLabel(p.kind)}: {p.text}
+                                      {p.mixed ? ' (혼재)' : ''}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
 
-                            <TableCell className={td}>{renderLinkedDocs(it.related ? [it.related] : [])}</TableCell>
-
-                            <TableCell className={cn(td, 'text-right')}>
-                              <div className="flex justify-end gap-2">
-                                <Button size="sm" variant="outline" onClick={() => copy(it.id)}>
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                                <Button asChild size="sm" variant="outline">
-                                  <Link href={it.href}>
-                                    <Eye className="h-4 w-4" />
-                                  </Link>
-                                </Button>
+                          <TableCell className={cn(tdClasses, 'font-semibold text-sm')}>
+                            {isGroup ? (
+                              <div className="space-y-1">
+                                {pickOnePerKind(g.items).map((it) => (
+                                  <div key={`${it.kind}:${it.id}`} className="flex items-center justify-between gap-3">
+                                    <span className="text-xs text-muted-foreground">{opsKindLabel(it.kind)}</span>
+                                    <span>{won(it.amount)}</span>
+                                  </div>
+                                ))}
+                                <div className="text-[11px] text-muted-foreground">* 종류별로 1회만 표시</div>
                               </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </Fragment>
-                  );
-                })}
+                            ) : (
+                              <div>{won(g.anchor.amount)}</div>
+                            )}
+                          </TableCell>
 
-                {groupsToRender.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
-                      {onlyWarn ? '경고(연결오류/혼재/결제불일치) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                          <TableCell className={tdClasses}>{renderLinkedDocs(linkedDocsForAnchor)}</TableCell>
+
+                          <TableCell className={cn(tdClasses, 'text-right')}>
+                            <div className="flex justify-end gap-1.5">
+                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copy(g.anchor.id)} title="ID 복사">
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button asChild size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" title="상세 보기">
+                                <Link href={g.anchor.href}>
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Link>
+                              </Button>
+                              <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent" title={settleTitle}>
+                                <Link href={settleHref} className="flex items-center gap-1">
+                                  <BarChartBig className="h-3.5 w-3.5" />
+                                  <span className="hidden bp-md:inline text-xs">정산</span>
+                                </Link>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+
+                        {/* 그룹 하위 Row(펼쳤을 때) */}
+                        {isGroup &&
+                          isOpen &&
+                          children.map((it) => (
+                            <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-slate-50/30 dark:bg-slate-900/20 hover:bg-muted/40 transition-colors border-l-2 border-l-primary/30">
+                              <TableCell className={tdClasses}>
+                                <div className="flex flex-col gap-1">
+                                  <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(it.kind))}>{opsKindLabel(it.kind)}</Badge>
+                                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(it.flow))} title={`Flow ${it.flow}`}>
+                                    {it.flowLabel}
+                                  </Badge>
+                                </div>
+                                <Badge className={cn(badgeBase, badgeSizeSm, settlementBadgeClass())}>{it.settlementLabel}</Badge>
+                              </TableCell>
+
+                              <TableCell className={tdClasses}>
+                                <div className="space-y-1 pl-6">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700 dark:text-slate-300')}>연결</Badge>
+                                    <div className="font-medium text-sm">{shortenId(it.id)}</div>
+                                    {Array.isArray(it.warnReasons) && it.warnReasons.length > 0 && (
+                                      <Badge
+                                        title={it.warnReasons.slice(0, 3).join('\n') + (it.warnReasons.length > 3 ? `\n외 ${it.warnReasons.length - 3}개` : '')}
+                                        className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700 dark:text-rose-400')}
+                                      >
+                                        연결오류
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {showLinkReason && (
+                                    <div className="text-[11px] text-muted-foreground">
+                                      연결됨: {opsKindLabel(g.anchor.kind)}(#{shortenId(g.anchor.id)})
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+
+                              <TableCell className={tdClasses}>
+                                <div className="space-y-1">
+                                  <div className="font-medium text-sm">{it.customer?.name || '-'}</div>
+                                  <div className="text-xs text-muted-foreground truncate max-w-[180px]">{it.customer?.email || '-'}</div>
+                                </div>
+                              </TableCell>
+
+                              <TableCell className={cn(tdClasses, 'text-sm text-muted-foreground whitespace-nowrap')}>{formatKST(it.createdAt)}</TableCell>
+
+                              <TableCell className={tdClasses}>
+                                <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(it.kind, it.statusLabel))}>{it.statusLabel}</Badge>
+                              </TableCell>
+
+                              <TableCell className={tdClasses}>
+                                {it.paymentLabel ? (
+                                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[it.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{it.paymentLabel}</Badge>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">-</span>
+                                )}
+                              </TableCell>
+
+                              <TableCell className={cn(tdClasses, 'font-semibold text-sm')}>
+                                {/* 그룹에서는 상단(대표 row)에서 종류별 금액을 1회만 보여주므로
+                                    하위 row에서는 금액을 반복 노출하지 않습니다(중복 해석 방지). */}
+                                <span className="text-xs text-muted-foreground" title="금액은 그룹(기준) 행에서 종류별로 1회만 표시합니다.">
+                                  -
+                                </span>
+                              </TableCell>
+
+                              <TableCell className={tdClasses}>{renderLinkedDocs(it.related ? [it.related] : [])}</TableCell>
+
+                              <TableCell className={cn(tdClasses, 'text-right')}>
+                                <div className="flex justify-end gap-1.5">
+                                  <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copy(it.id)} title="ID 복사">
+                                    <Copy className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button asChild size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" title="상세 보기">
+                                    <Link href={it.href}>
+                                      <Eye className="h-3.5 w-3.5" />
+                                    </Link>
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </Fragment>
+                    );
+                  })}
+
+                  {groupsToRender.length === 0 && (
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={9} className="py-16 text-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <Search className="h-8 w-8 text-muted-foreground/50" />
+                          <p className="text-sm text-muted-foreground">{onlyWarn ? '경고(연결오류/혼재/결제불일치) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           )}
 
-          {/* 페이지네이션(최소) */}
-          <div className="mt-4 flex items-center justify-between">
-            <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-              이전
-            </Button>
-            <div className="text-sm text-muted-foreground">
-              {page} / {totalPages}
+          {/* 페이지네이션 */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 pt-4 mt-4">
+              <p className="text-xs text-muted-foreground">
+                {page} / {totalPages} 페이지 (총 {total.toLocaleString('ko-KR')}건)
+              </p>
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="sm" className="h-8 px-3 bg-transparent" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                  이전
+                </Button>
+                <Button variant="outline" size="sm" className="h-8 px-3 bg-transparent" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                  다음
+                </Button>
+              </div>
             </div>
-            <Button variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
-              다음
-            </Button>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

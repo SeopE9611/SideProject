@@ -5,13 +5,23 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft, Package, Search, CheckCircle2, Clock, Truck } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft, Package, Search, CheckCircle2, Clock, Truck, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import LoginGate from '@/components/system/LoginGate';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, '');
 const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
+
+type GuestOrderMode = 'off' | 'legacy' | 'on';
+
+function getGuestOrderModeClient(): GuestOrderMode {
+  // 클라이언트에서는 NEXT_PUBLIC_만 접근 가능
+  // env가 없으면 legacy로 기본값 처리(= 신규 비회원 주문은 막고, 기존 조회만 유지 가능)
+  const raw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  return raw === 'off' || raw === 'legacy' || raw === 'on' ? raw : 'legacy';
+}
 
 // 주문 타입 정의
 interface Order {
@@ -65,6 +75,10 @@ export default function OrderLookupResultsPage() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null);
 
+  // 비회원 주문 조회(게스트) 접근 허용 여부(클라)
+  const guestOrderMode = getGuestOrderModeClient();
+  const allowGuestLookup = guestOrderMode !== 'off';
+
   // 이름과 이메일 파라미터 가져오기
   const rawName: string = searchParams.get('name') ?? '';
   const rawEmail: string = searchParams.get('email') ?? '';
@@ -74,6 +88,10 @@ export default function OrderLookupResultsPage() {
   const displayName = rawName.trim();
 
   useEffect(() => {
+    if (!allowGuestLookup) {
+      setLoading(false);
+      return;
+    }
     const fetchOrders = async () => {
       try {
         setFieldErrors(null);
@@ -162,7 +180,11 @@ export default function OrderLookupResultsPage() {
     };
 
     fetchOrders();
-  }, [rawName, rawEmail, rawPhone]);
+  }, [rawName, rawEmail, rawPhone, allowGuestLookup]);
+
+  if (!allowGuestLookup) {
+    return <LoginGate next="/mypage" variant="orderLookup" />;
+  }
 
   // 상세 페이지로 이동
   const handleViewDetails = (orderId: string) => {

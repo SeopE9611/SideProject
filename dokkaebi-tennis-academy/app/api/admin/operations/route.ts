@@ -28,6 +28,7 @@ type OpItem = {
   related?: { kind: Kind; id: string; href: string } | null;
   isIntegrated: boolean; // 통합(연결) 여부
   warnReasons?: string[]; // 서버가 판정한 “연결 무결성” 경고 사유(필요한 경우만 채움)
+  pendingReasons?: string[]; // '초안(draft) 작성대기' 등, 오류가 아닌 보류/대기 사유
 };
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -273,6 +274,7 @@ export async function GET(req: Request) {
       createdAt: 1,
       status: 1,
       paymentStatus: 1,
+      stringingApplicationId: 1,
       totalPrice: 1,
       customer: 1,
       userSnapshot: 1,
@@ -308,6 +310,87 @@ export async function GET(req: Request) {
     .limit(MAX_FETCH_EACH)
     .toArray();
 
+  /**
+   * 3-1) MAX_FETCH_EACH 컷 보강
+   *
+   * rawApps는 "신청서 상위 N개"만 가져오므로,
+   * - 화면에 보이는 주문/대여(rawOrders/rawRentals)에는 신청서가 실제로 연결되어 있는데
+   * - rawApps에 그 신청서가 포함되지 않아
+   *   (1) 단독/통합 판정이 틀어지거나
+   *   (2) "주문.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다" 같은 오탐 경고가 생기는 현상 발견.
+   *
+   * 따라서 "현재 응답 범위의 주문/대여"를 기준으로 연결된 신청서를 추가 조회하여(rawApps + 매핑) 보강함
+   */
+  const linkOr: any[] = [];
+  if (rawOrders.length > 0) {
+    const orderIds = (rawOrders as any[]).map((o) => o?._id).filter(Boolean);
+    if (orderIds.length > 0) linkOr.push({ orderId: { $in: orderIds } });
+  }
+  if (rawRentals.length > 0) {
+    const rentalIds = (rawRentals as any[]).map((r) => r?._id).filter(Boolean);
+    if (rentalIds.length > 0) linkOr.push({ rentalId: { $in: rentalIds } });
+  }
+
+  if (linkOr.length > 0) {
+    const extraLinkedApps = await db
+      .collection('stringing_applications')
+      .find({ status: { $ne: 'draft' }, $or: linkOr })
+      .project({
+        _id: 1,
+        createdAt: 1,
+        status: 1,
+        paymentStatus: 1,
+        stringingApplicationId: 1,
+        totalPrice: 1,
+        serviceAmount: 1,
+        orderId: 1,
+        rentalId: 1,
+        customer: 1,
+        userSnapshot: 1,
+        guestName: 1,
+        guestEmail: 1,
+      })
+      .toArray();
+
+    // rawApps에 없는 신청서만 추가 + 매핑 보강
+    const existingAppIds = new Set((rawApps as any[]).map((a) => String(a?._id)));
+    for (const a of extraLinkedApps as any[]) {
+      const aid = String(a?._id);
+      if (!aid) continue;
+
+      // 1) rawApps에 없으면 추가(목록/정렬은 아래 merge 단계에서 createdAt 기준으로 재정렬됨)
+      if (!existingAppIds.has(aid)) {
+        (rawApps as any[]).push(a);
+        existingAppIds.add(aid);
+      }
+
+      // 2) 주문/대여 → 신청서 매핑 보강(단독/통합 판정 + 경고 계산 정확도 향상)
+      if (a?.orderId) {
+        const oid = String(a.orderId);
+        if (oid) {
+          // orderToApp은 "대표 1개"만 가지므로 기존 값이 있으면 덮어쓰지 않음(최신값 유지 의도)
+          if (!orderToApp.has(oid)) orderToApp.set(oid, aid);
+          const arr = orderToAppIds.get(oid) ?? [];
+          if (!arr.includes(aid)) {
+            arr.push(aid);
+            orderToAppIds.set(oid, arr);
+          }
+        }
+      }
+      if (a?.rentalId) {
+        const rid = String(a.rentalId);
+        if (rid) {
+          if (!rentalToApp.has(rid)) rentalToApp.set(rid, aid);
+          const arr = rentalToAppIds.get(rid) ?? [];
+          if (!arr.includes(aid)) {
+            arr.push(aid);
+            rentalToAppIds.set(rid, arr);
+          }
+        }
+      }
+    }
+  }
+
   const userIds = Array.from(new Set(rawRentals.map((r: any) => r?.userId).filter(Boolean)));
   const userMap = new Map<string, { name?: string; email?: string }>();
   if (userIds.length > 0) {
@@ -336,6 +419,44 @@ export async function GET(req: Request) {
     warnByKey.set(key, arr);
   };
 
+  const pendingByKey = new Map<string, string[]>();
+  const pushPending = (kind: Kind, id: string, reason: string) => {
+    const key = `${kind}:${id}`;
+    const arr = pendingByKey.get(key) ?? [];
+    if (!arr.includes(reason)) arr.push(reason);
+    pendingByKey.set(key, arr);
+  };
+
+  // '작성대기' 판정: 주문/대여가 stringingApplicationId로 신청서를 가리키지만,
+  // rawApps는 status != 'draft' 조건으로 가져오므로(초안은 제외),
+  // 'DB에서 못 찾음'이 아니라 '초안 작성대기'로 분류해야 하는 케이스가 생긴다.
+  const draftById = new Map<string, any>();
+  {
+    const candidateIds = new Set<string>();
+    for (const o of rawOrders as any[]) {
+      if (o?.stringingApplicationId) candidateIds.add(String(o.stringingApplicationId));
+    }
+    for (const r of rawRentals as any[]) {
+      if (r?.stringingApplicationId) candidateIds.add(String(r.stringingApplicationId));
+    }
+
+    const missingIds = Array.from(candidateIds).filter((id) => !appById.has(id));
+    if (missingIds.length > 0) {
+      const objectIds = missingIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
+
+      if (objectIds.length > 0) {
+        const rawDrafts = await db
+          .collection('stringing_applications')
+          .find({ _id: { $in: objectIds }, status: 'draft' })
+          .project({ _id: 1, status: 1, orderId: 1, rentalId: 1, createdAt: 1 })
+          .toArray();
+        for (const d of rawDrafts as any[]) {
+          draftById.set(String(d._id), d);
+        }
+      }
+    }
+  }
+
   // 주문 ↔ 신청서(교체서비스) 양방향 체크
   for (const o of rawOrders as any[]) {
     const oid = String(o._id);
@@ -352,7 +473,12 @@ export async function GET(req: Request) {
     if (appIdInOrder) {
       const a = appById.get(appIdInOrder);
       if (!a) {
-        pushWarn('order', oid, '주문.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+        const d = draftById.get(appIdInOrder);
+        if (d) {
+          pushPending('order', oid, '교체서비스 신청서가 초안(draft) 상태입니다(작성대기).');
+        } else {
+          pushWarn('order', oid, '주문.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+        }
       } else {
         const aOrderId = a?.orderId ? String(a.orderId) : '';
         if (aOrderId && aOrderId !== oid) {
@@ -454,6 +580,7 @@ export async function GET(req: Request) {
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,
       warnReasons: warnByKey.get(`order:${id}`) ?? [],
+      pendingReasons: pendingByKey.get(`order:${id}`) ?? [],
     };
   });
 
@@ -515,6 +642,7 @@ export async function GET(req: Request) {
       related,
       isIntegrated,
       warnReasons: warnByKey.get(`stringing_application:${id}`) ?? [],
+      pendingReasons: pendingByKey.get(`stringing_application:${id}`) ?? [],
     };
   });
 
@@ -546,6 +674,7 @@ export async function GET(req: Request) {
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,
       warnReasons: warnByKey.get(`rental:${id}`) ?? [],
+      pendingReasons: pendingByKey.get(`rental:${id}`) ?? [],
     };
   });
 

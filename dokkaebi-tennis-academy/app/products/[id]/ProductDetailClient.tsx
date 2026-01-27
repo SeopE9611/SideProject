@@ -26,6 +26,15 @@ import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusCol
 import { useBuyNowStore } from '@/app/store/buyNowStore';
 import SiteContainer from '@/components/layout/SiteContainer';
 
+type GuestOrderMode = 'off' | 'legacy' | 'on';
+
+function getGuestOrderModeClient(): GuestOrderMode {
+  // 클라이언트에서는 NEXT_PUBLIC_만 접근 가능
+  // 기본값은 legacy(= 비회원 주문 흐름 숨김)로 두어 실수 노출을 방지
+  const raw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  return raw === 'off' || raw === 'legacy' || raw === 'on' ? raw : 'legacy';
+}
+
 export default function ProductDetailClient({ product }: { product: any }) {
   // 방어: 간헐적으로 images/reviews가 undefined인 데이터가 섞이면 상세페이지가 바로 크래시 나는 현상 대비
   const images: string[] = Array.isArray(product?.images) ? product.images : [];
@@ -157,6 +166,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
+  const guestOrderMode = getGuestOrderModeClient();
+  const allowGuestCheckout = guestOrderMode === 'on';
   const [loading, setLoading] = useState(true);
   const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then(async (r) => (r.status === 200 ? r.json() : null));
 
@@ -226,7 +237,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         threshold: 0.1,
         // CTA가 sticky 뒤에 가려졌는데도 intersecting으로 잡히는 걸 방지
         rootMargin: '0px 0px -160px 0px',
-      }
+      },
     );
 
     io.observe(el);
@@ -452,13 +463,22 @@ export default function ProductDetailClient({ product }: { product: any }) {
       toast('장바구니에 담았습니다', {
         description: (
           <>
-            <p className="text-sm">비회원이신 경우 로그인 또는</p>
-            <p className="text-sm">비회원 주문하기로 진행하세요.</p>
+            {allowGuestCheckout ? (
+              <>
+                <p className="text-sm">비회원이신 경우 로그인 또는</p>
+                <p className="text-sm">비회원 주문하기로 진행하세요.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm">로그인 후 주문을 진행해주세요.</p>
+              </>
+            )}
           </>
         ),
         action: {
           label: '로그인하기',
-          onClick: () => router.push('/login?from=cart'),
+          // onClick: () => router.push('/login?from=cart'),
+          onClick: () => router.push(`/login?redirectTo=${encodeURIComponent(`/products/${product._id}`)}`),
         },
       });
     } else {
@@ -488,7 +508,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
     setBuyNowItem(buyNowItem);
 
     // 장바구니는 건드리지 않고, buy-now 모드로 checkout 진입
-    router.push('/checkout?mode=buynow');
+    // router.push('/checkout?mode=buynow');
+    const target = '/checkout?mode=buynow';
+    if (!user && !allowGuestCheckout) {
+      router.push(`/login?redirectTo=${encodeURIComponent(target)}`);
+      return;
+    }
+    router.push(target);
   };
 
   // 즉시 구매 + 교체 서비스 포함 핸들러
@@ -523,7 +549,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
     });
 
     // Checkout으로 직접 진입 (장바구니는 건드리지 않음)
-    router.push(`/checkout?${search.toString()}`);
+    // router.push(`/checkout?${search.toString()}`);
+    const target = `/checkout?${search.toString()}`;
+    if (!user && !allowGuestCheckout) {
+      router.push(`/login?redirectTo=${encodeURIComponent(target)}`);
+      return;
+    }
+    router.push(target);
   };
 
   const handleWishlist = async () => {
@@ -1008,7 +1040,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">{review.user?.charAt(0) || 'U'}</div>
                                 <div>
                                   <div className="font-bold text-slate-800 dark:text-slate-200 text-sm sm:text-base">
-                                    {review.status === 'hidden' ? (review.ownedByMe ? `${review.user ?? '내 리뷰'} (비공개)` : review.adminView ? `${review.user ?? '사용자'} (비공개)` : '비공개 리뷰') : review.user ?? '익명'}
+                                    {review.status === 'hidden' ? (review.ownedByMe ? `${review.user ?? '내 리뷰'} (비공개)` : review.adminView ? `${review.user ?? '사용자'} (비공개)` : '비공개 리뷰') : (review.user ?? '익명')}
                                   </div>
                                   <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1">

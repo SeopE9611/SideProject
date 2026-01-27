@@ -32,6 +32,15 @@ const formatKoreanPhone = (v: string) => {
 // 연락처 정책: 010으로 시작 + 뒤 8자리(총 11자리)만 허용
 const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 
+type GuestOrderMode = 'off' | 'legacy' | 'on';
+
+function getGuestOrderModeClient(): GuestOrderMode {
+  // 클라이언트 번들에서는 NEXT_PUBLIC_만 안전하게 읽을 수 있음
+  // env가 없으면 "legacy"로 기본값(= 비회원 진입점 숨김) 처리해서 실수 노출을 방지.
+  const raw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  return raw === 'off' || raw === 'legacy' || raw === 'on' ? raw : 'legacy';
+}
+
 type LoginField = 'email' | 'password';
 type RegisterField = 'emailId' | 'emailDomain' | 'password' | 'confirmPassword' | 'name' | 'phone' | 'postalCode' | 'address' | 'addressDetail';
 
@@ -68,6 +77,10 @@ export default function LoginPageClient() {
   const router = useRouter();
   const params = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>('login');
+
+  // 비회원 중지
+  const guestOrderMode = getGuestOrderModeClient();
+  const showGuestLookup = guestOrderMode === 'on';
 
   // 소셜 회원가입(카카오/네이버) 모드 판별
   const oauthProvider = params.get('oauth'); // 'kakao' | 'naver'
@@ -673,21 +686,23 @@ export default function LoginPageClient() {
 
                 <SocialAuthButtons onKakaoClick={handleKakaoOAuth} onNaverClick={handleNaverOAuth} />
 
-                {/* <div className="text-center">
-                  <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-4 mb-4 border border-emerald-200/50 dark:border-emerald-800/50">
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                      <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">비회원도 주문하실 수 있습니다</p>
+                {showGuestLookup && (
+                  <div className="text-center">
+                    <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-4 mb-4 border border-emerald-200/50 dark:border-emerald-800/50">
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">비회원도 주문하실 수 있습니다</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
+                        onClick={() => router.push('/order-lookup')}
+                      >
+                        비회원 주문 조회하기
+                      </Button>
                     </div>
-                    <Button
-                      variant="outline"
-                      className="w-full border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
-                      onClick={() => router.push('/order-lookup')}
-                    >
-                      비회원 주문 조회하기
-                    </Button>
                   </div>
-                </div> */}
+                )}
               </div>
             </TabsContent>
 

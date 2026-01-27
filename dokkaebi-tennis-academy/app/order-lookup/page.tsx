@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { ArrowLeft, Search, Mail, User, Phone, Package, Shield, Clock } from 'lucide-react';
+import LoginGate from '@/components/system/LoginGate';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, '');
@@ -29,6 +30,15 @@ export default function OrderLookupPage() {
     phone: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+ // 비회원 주문 조회(게스트) UI 노출 여부(클라)
+  // - NEXT_PUBLIC_GUEST_ORDER_MODE=off 면: 입력 폼부터 막고 LoginGate로 유도
+  // - legacy/on 면: 조회 UI 유지
+  const guestModeRaw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const allowGuestLookup = guestModeRaw !== 'off';
+  if (!allowGuestLookup) {
+    return <LoginGate next="/mypage" variant="orderLookup" />;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

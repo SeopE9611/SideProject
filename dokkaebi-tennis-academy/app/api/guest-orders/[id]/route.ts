@@ -5,6 +5,12 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
 // 단일 비회원 주문 상세 조회
+type GuestOrderMode = 'off' | 'legacy' | 'on';
+
+function getGuestOrderMode(): GuestOrderMode {
+  const raw = (process.env.GUEST_ORDER_MODE ?? 'on').trim();
+  return raw === 'off' || raw === 'legacy' || raw === 'on' ? raw : 'on';
+}
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -17,6 +23,11 @@ function safeVerifyAccessToken(token?: string | null) {
 
 export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
   try {
+     // 운영 정책: 비회원 주문을 받지 않는 경우(off)에는 "비회원 주문 조회/상세"도 중단
+    // 주문 존재 여부를 외부에 노출하지 않기 위해 404로 통일.
+    if (getGuestOrderMode() === 'off') {
+      return NextResponse.json({ success: false, error: '비회원 주문 조회가 현재 중단되었습니다.' }, { status: 404 });
+    }
     const client = await clientPromise;
     const db = client.db();
 

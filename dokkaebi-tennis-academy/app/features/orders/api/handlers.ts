@@ -155,6 +155,24 @@ export async function createOrder(req: Request): Promise<Response> {
     const payload = token ? verifyAccessToken(token) : null;
     const userId = payload?.sub ?? null;
 
+    /** ================================================
+     * 비회원(게스트) 주문 생성 차단 플래그
+     * - 삭제 없이 "운영 정책"만으로 즉시 on/off 가능
+     *
+     * env: GUEST_ORDER_MODE = 'off' | 'legacy' | 'on'
+     *  - off:    비회원 주문 생성/조회 등 모두 중단
+     *  - legacy: 신규 비회원 주문 생성 중단(레거시 조회는 추후 P1에서 분기)
+     *  - on:     기존대로 비회원 주문 허용
+     *
+     * P0 목표: 신규 '주문 생성'만 서버에서 확실히 막는다(클라 우회 방지).
+     *=========================================================================
+     */
+    const gomRaw = (process.env.GUEST_ORDER_MODE ?? 'on').trim();
+    const guestOrderMode = gomRaw === 'off' || gomRaw === 'legacy' || gomRaw === 'on' ? gomRaw : 'on';
+    if (!userId && guestOrderMode !== 'on') {
+      return NextResponse.json({ error: '비회원 주문은 현재 중단되었습니다. 로그인 후 주문해주세요.', code: 'GUEST_ORDER_DISABLED' }, { status: 401 });
+    }
+
     // 요청 바디 파싱(JSON 깨짐 방어)
     let rawBody: unknown;
     try {

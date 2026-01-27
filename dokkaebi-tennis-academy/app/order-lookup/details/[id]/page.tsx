@@ -9,6 +9,7 @@ import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle, Pack
 import Link from 'next/link';
 import { bankLabelMap } from '@/lib/constants';
 import Image from 'next/image';
+import LoginGate from '@/components/system/LoginGate';
 
 // 주문 상세 타입 정의
 interface OrderDetail {
@@ -39,6 +40,15 @@ interface OrderDetail {
     quantity: number;
     image?: string;
   }[];
+}
+
+type GuestOrderMode = 'off' | 'legacy' | 'on';
+
+function getGuestOrderModeClient(): GuestOrderMode {
+  // 클라이언트에서는 NEXT_PUBLIC_만 접근 가능
+  // env가 없으면 legacy로 기본값 처리(= 신규 비회원 주문은 막고, 기존 조회만 유지 가능)
+  const raw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  return raw === 'off' || raw === 'legacy' || raw === 'on' ? raw : 'legacy';
 }
 
 const getStatusIcon = (status: string) => {
@@ -73,12 +83,20 @@ export default function OrderDetailPage() {
   const params = useParams();
   const orderId = params?.id as string;
 
+  // 비회원 주문 조회(게스트) 접근 허용 여부(클라)
+  const guestOrderMode = getGuestOrderModeClient();
+  const allowGuestLookup = guestOrderMode !== 'off';
+
   const router = useRouter();
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!allowGuestLookup) {
+      setLoading(false);
+      return;
+    }
     const fetchOrderDetail = async () => {
       try {
         const res = await fetch(`/api/guest-orders/${orderId}`, { credentials: 'include' });
@@ -98,7 +116,11 @@ export default function OrderDetailPage() {
     };
 
     fetchOrderDetail();
-  }, [params.id]);
+  }, [params.id, allowGuestLookup]);
+
+  if (!allowGuestLookup) {
+    return <LoginGate next="/mypage" variant="orderLookup" />;
+  }
 
   // 주문 목록으로 돌아가기
   const handleGoBack = () => {

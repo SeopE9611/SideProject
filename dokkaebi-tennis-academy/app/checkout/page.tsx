@@ -22,6 +22,7 @@ import { useBuyNowStore } from '@/app/store/buyNowStore';
 import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { cn } from '@/lib/utils';
+import LoginGate from '@/components/system/LoginGate';
 
 declare global {
   interface Window {
@@ -45,6 +46,15 @@ const formatKoreanPhone010 = (v: string) => {
 };
 const isValidKoreanPhone010 = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 
+type GuestOrderMode = 'off' | 'legacy' | 'on';
+
+function getGuestOrderModeClient(): GuestOrderMode {
+  // 클라이언트에서는 NEXT_PUBLIC_만 접근 가능
+  // env가 없으면 legacy로 기본값(= 비회원 진입점 숨김/차단) 처리해 실수 노출을 막음.
+  const raw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  return raw === 'off' || raw === 'legacy' || raw === 'on' ? raw : 'legacy';
+}
+
 export default function CheckoutPage() {
   const sp = useSearchParams();
 
@@ -66,6 +76,11 @@ export default function CheckoutPage() {
     setWithStringService(withServiceParam === '1');
   }, [withServiceParam]);
   const mode = sp.get('mode'); // 'buynow' | null
+
+  // 비회원 체크아웃 노출 정책(클라)
+  const guestOrderMode = getGuestOrderModeClient();
+  const allowGuestCheckout = guestOrderMode === 'on';
+  const checkoutHref = useMemo(() => (sp.toString() ? `/checkout?${sp.toString()}` : '/checkout'), [sp]);
 
   const { items: cartItems } = useCartStore();
   const { item: buyNowItem } = useBuyNowStore();
@@ -397,6 +412,11 @@ export default function CheckoutPage() {
       </div>
     );
 
+  // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출
+  if (!user && !allowGuestCheckout) {
+    return <LoginGate next={checkoutHref} variant="checkout" />;
+  }
+
   return (
     <div className="min-h-full bg-white dark:bg-slate-950 bp-lg:bg-gradient-to-br bp-lg:from-slate-50 bp-lg:via-blue-50/30 bp-lg:to-purple-50/20 bp-lg:dark:from-slate-900 bp-lg:dark:via-slate-800 bp-lg:dark:to-slate-900">
       {/* Hero Section */}
@@ -555,9 +575,7 @@ export default function CheckoutPage() {
                       </Button>
                     </div>
                     <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn('bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2', fieldErrors.postalCode && 'border-rose-500')} />
-                    <div className="min-h-[16px]">
-                      {fieldErrors.postalCode && <p className="text-xs text-rose-600">{fieldErrors.postalCode}</p>}
-                    </div>
+                    <div className="min-h-[16px]">{fieldErrors.postalCode && <p className="text-xs text-rose-600">{fieldErrors.postalCode}</p>}</div>
                   </div>
 
                   <div className="space-y-2">
@@ -567,7 +585,13 @@ export default function CheckoutPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="address-detail">상세 주소</Label>
-                    <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" className={cn('border-2 focus:border-blue-500 transition-colors', fieldErrors.addressDetail && 'border-rose-500 focus:border-rose-500')} />
+                    <Input
+                      id="address-detail"
+                      value={addressDetail}
+                      onChange={(e) => setAddressDetail(e.target.value)}
+                      placeholder="상세 주소를 입력하세요"
+                      className={cn('border-2 focus:border-blue-500 transition-colors', fieldErrors.addressDetail && 'border-rose-500 focus:border-rose-500')}
+                    />
                     <div className="min-h-[16px]">{fieldErrors.addressDetail && <p className="text-xs text-rose-600">{fieldErrors.addressDetail}</p>}</div>
                   </div>
 
@@ -700,7 +724,13 @@ export default function CheckoutPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="depositor-name">입금자명</Label>
-                    <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className={cn('border-2 focus:border-emerald-500 transition-colors', fieldErrors.depositor && 'border-rose-500 focus:border-rose-500')} />
+                    <Input
+                      id="depositor-name"
+                      value={depositor}
+                      onChange={(e) => setDepositor(e.target.value)}
+                      placeholder="입금자명을 입력하세요"
+                      className={cn('border-2 focus:border-emerald-500 transition-colors', fieldErrors.depositor && 'border-rose-500 focus:border-rose-500')}
+                    />
                     <div className="min-h-[16px]">{fieldErrors.depositor && <p className="text-xs text-rose-600">{fieldErrors.depositor}</p>}</div>
                   </div>
 

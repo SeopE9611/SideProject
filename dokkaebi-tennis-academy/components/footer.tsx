@@ -3,11 +3,22 @@ import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import SiteContainer from '@/components/layout/SiteContainer';
 
 const Footer = () => {
+
+  /**
+   * 비회원 주문(게스트) 기능 노출 정책
+   * - server env: GUEST_ORDER_MODE = 'off' | 'legacy' | 'on'
+   * - off/legacy: 비회원 주문/조회 진입점을 UI에서 숨김(직접 URL 접근은 레거시 케어용으로 남길 수 있음)
+   * - on: 비회원 주문을 운영할 때만 '주문 조회(/order-lookup)' 링크 노출
+   */
+  const rawMode = (process.env.GUEST_ORDER_MODE ?? 'on').trim();
+  const guestOrderMode = rawMode === 'off' || rawMode === 'legacy' || rawMode === 'on' ? rawMode : 'on';
+
   const quickLinks = [
     { name: '스트링 쇼핑', href: '/products' },
     { name: '장착 서비스', href: '/services' },
     { name: '패키지', href: '/services/packages' },
-    { name: '주문 조회', href: '/order-lookup' },
+    // { name: '주문 조회', href: '/order-lookup' },
+    ...(guestOrderMode === 'on' ? [{ name: '주문 조회', href: '/order-lookup' }] : []),
     { name: '오프라인 매장 찾기', href: '/services/locations' },
   ];
 

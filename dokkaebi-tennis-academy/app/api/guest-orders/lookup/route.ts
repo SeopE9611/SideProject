@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { z } from 'zod';
 
+type GuestOrderMode = 'off' | 'legacy' | 'on';
+
+function getGuestOrderMode(): GuestOrderMode {
+  const raw = (process.env.GUEST_ORDER_MODE ?? 'on').trim();
+  return raw === 'off' || raw === 'legacy' || raw === 'on' ? raw : 'on';
+}
+
 // 비회원 주문 조회는 "클라 입력"을 절대 신뢰하면 안 됨.
 //       (쿼리스트링/바디는 얼마든지 조작 가능)
 //       그래서 서버에서 최종 정규화 + 유효성 검증을 강제.
@@ -40,6 +47,11 @@ const requestSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    // 운영 정책: off이면 비회원 주문 "조회"도 중단.
+    // 주문 존재 여부/검색 결과 노출을 막기 위해 404로 통일.
+    if (getGuestOrderMode() === 'off') {
+      return NextResponse.json({ success: false, error: '비회원 주문 조회가 현재 중단되었습니다.' }, { status: 404 });
+    }
     const body = await req.json().catch(() => null);
     const parsed = requestSchema.safeParse(body);
 
