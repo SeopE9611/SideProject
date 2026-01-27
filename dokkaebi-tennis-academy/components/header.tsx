@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Menu, ChevronRight, Gift, MessageSquareText, Grid2X2, Package, MessageSquare, UserIcon, Mail } from 'lucide-react';
+import { ShoppingCart, Menu, ChevronRight, Gift, MessageSquareText, Grid2X2, Package, MessageSquare, UserIcon, Mail, Loader2 } from 'lucide-react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetOverlay, SheetTrigger } from '@/components/ui/sheet';
@@ -593,7 +593,16 @@ const Header = () => {
                           aria-label="포인트 보기"
                         >
                           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">P</span>
-                          <span>{pointsBalance === null ? '...' : pointsBalance.toLocaleString()}P</span>
+                          <span className="inline-flex items-center gap-1">
+                            {pointsBalance === null ? (
+                              <>
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-500 dark:text-slate-300" aria-hidden="true" />
+                                <span className="sr-only">포인트 불러오는 중</span>
+                              </>
+                            ) : (
+                              <>{pointsBalance.toLocaleString()}P</>
+                            )}
+                          </span>
                         </Link>
 
                         {isAdmin && <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-0 px-2 py-0 text-[10px] h-5">관리자</Badge>}
@@ -807,7 +816,16 @@ const Header = () => {
                   <Button variant="ghost" className="h-9 px-3 rounded-full" asChild>
                     <Link href="/mypage?tab=points" className="flex items-center gap-2">
                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">P</span>
-                      <span className="text-sm font-semibold tabular-nums">{pointsBalance === null ? '...' : pointsBalance.toLocaleString()}P</span>
+                      <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
+                        {pointsBalance === null ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin text-slate-500 dark:text-slate-300" aria-hidden="true" />
+                            <span className="sr-only">포인트 불러오는 중</span>
+                          </>
+                        ) : (
+                          <>{pointsBalance.toLocaleString()}P</>
+                        )}
+                      </span>
                     </Link>
                   </Button>
                 )}
