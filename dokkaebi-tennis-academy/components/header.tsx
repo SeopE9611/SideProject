@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Menu, ChevronRight, Gift, MessageSquareText, Grid2X2, Package, MessageSquare, UserIcon, Mail, Loader2 } from 'lucide-react';
+import { ShoppingCart, Menu, ChevronRight, ChevronDown, Gift, MessageSquareText, Grid2X2, Package, MessageSquare, UserIcon, Mail, Loader2 } from 'lucide-react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetOverlay, SheetTrigger } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UserNav } from '@/components/nav/UserNav';
 import { useRouter, usePathname } from 'next/navigation';
 import SearchPreview from '@/components/SearchPreview';
 import { useCartStore } from '@/app/store/cartStore';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MdSportsTennis } from 'react-icons/md';
 import { WeatherBadge } from '@/components/WeatherBadge';
 import { Badge } from '@/components/ui/badge';
@@ -66,17 +66,114 @@ const Header = () => {
   const router = useRouter();
   const headerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  // 장바구니 아이템 총 수량 (Zustand selector로 필요한 값만 구독)
+  const cartCount = useCartStore((s) => s.items.reduce((sum, it) => sum + (it.quantity || 0), 0));
+  const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
+
   const [open, setOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  /**
+   * "인터랙티브" 오버플로우 메뉴
+   * - nav 실제 너비(픽셀 단위)를 ResizeObserver로 관측
+   * - 각 메뉴/더보기 버튼의 실제 렌더 폭을 숨은 측정 DOM에서 계산
+   * - 남는 폭에 따라 마지막 메뉴부터 1개씩 overflow로 이동
+   */
+  const navRef = useRef<HTMLElement | null>(null);
+  const measureRef = useRef<HTMLDivElement | null>(null);
 
-  // 라우트 이동(검색 결과 클릭 등)으로 페이지가 바뀌면 모바일 Sheet를 자동으로 닫아 UX를 안정화
+  const [overflowCount, setOverflowCount] = useState(0);
+
+  /**
+   * 데스크톱 헤더: 화면 리사이즈 시 메뉴가 "..."로 접히거나 다시 펼쳐지는 기준을
+   * 현재 레이아웃(실제 DOM 너비)에만 의존해서 계산합니다.
+   *
+   * ✅ 중요한 포인트
+   * - "이전 상태"나 "가드(성장했을 때만 펼치기)"를 두지 않습니다.
+   *   → 1536↔1535 같은 브레이크포인트 전환에서도 메뉴가 정상적으로 다시 펼쳐집니다.
+   * - `getBoundingClientRect()` 대신 `offsetWidth`를 사용합니다.
+   *   → 상위 요소에 transform(scale) 같은 효과가 있어도 측정이 안정적입니다.
+   */
+  const recomputeOverflow = useCallback(() => {
+    const navEl = navRef.current;
+    const root = measureRef.current;
+    if (!navEl || !root) return;
+
+    const wrap = root.querySelector<HTMLElement>('[data-measure-wrap]');
+    if (!wrap) return;
+
+    const style = window.getComputedStyle(wrap);
+    const gap = Number.parseFloat(style.columnGap || style.gap || '0') || 0;
+
+    const itemEls = Array.from(root.querySelectorAll<HTMLElement>('[data-measure-item]'));
+    const itemWidths = itemEls.map((el) => el.offsetWidth);
+
+    const dotsEl = root.querySelector<HTMLElement>('[data-measure-dots]');
+    const dotsW = dotsEl ? dotsEl.offsetWidth : 0;
+
+    const n = itemWidths.length;
+    if (n === 0) return;
+
+    const available = Math.max(0, navEl.clientWidth);
+
+    const prefixWidth = (count: number) => {
+      if (count <= 0) return 0;
+      let w = 0;
+      for (let i = 0; i < count; i++) w += itemWidths[i] || 0;
+      w += gap * Math.max(0, count - 1);
+      return w;
+    };
+
+    let nextOverflow = 0;
+
+    // 가능한 한 많이 보여주되, 안 들어가면 끝에서부터 "..."로 보냅니다.
+    for (let visible = n; visible >= 0; visible--) {
+      const overflow = n - visible;
+      const base = prefixWidth(visible);
+      const total = overflow === 0 ? base : base + (visible > 0 ? gap : 0) + dotsW;
+
+      if (total <= available) {
+        nextOverflow = overflow;
+        break;
+      }
+    }
+
+    setOverflowCount((prev) => (prev === nextOverflow ? prev : nextOverflow));
+  }, []);
+
+  useLayoutEffect(() => {
+    // 첫 페인트 직후 너비가 확정되기 전에 계산이 한번 틀어지는 케이스가 있어
+    // 레이아웃 단계에서 1회 계산해 둡니다.
+    recomputeOverflow();
+  }, [recomputeOverflow]);
+
   useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+    const navEl = navRef.current;
+    if (!navEl) return;
 
-  const { items } = useCartStore();
-  const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
-  const cartBadge = cartCount > 99 ? '99+' : String(cartCount);
+    const ro = new ResizeObserver(() => recomputeOverflow());
+    ro.observe(navEl);
+
+    const onResize = () => recomputeOverflow();
+    window.addEventListener('resize', onResize);
+
+    // 폰트 로딩(특히 첫 진입 시)이 끝난 뒤 텍스트 폭이 바뀌면 오차가 생길 수 있어
+    // best-effort로 한번 더 계산합니다.
+    const fonts = (document as any).fonts as FontFaceSet | undefined;
+    if (fonts?.ready) {
+      fonts.ready.then(() => recomputeOverflow()).catch(() => {});
+    }
+
+    // 첫 렌더 직후 한 틱 더(레이아웃 확정)
+    const t = window.setTimeout(() => recomputeOverflow(), 0);
+
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener('resize', onResize);
+      ro.disconnect();
+    };
+  }, [recomputeOverflow]);
+
   const { user, loading } = useCurrentUser();
   const isAdmin = user?.role === 'admin';
   const { count: unreadCount } = useUnreadMessageCount(!loading && !!user);
@@ -220,6 +317,17 @@ const Header = () => {
     { name: '게시판', href: '/board', hasMegaMenu: true, isBoardMenu: true },
     { name: '라켓 파인더', href: '/rackets/finder', hasMegaMenu: false },
   ];
+
+  const visibleCount = Math.max(0, menuItems.length - overflowCount);
+  const primaryMenuItems = menuItems.slice(0, visibleCount);
+  const overflowMenuItems = menuItems.slice(visibleCount);
+
+  const isActiveMenu = (item: (typeof menuItems)[number]) => {
+    const p = pathname ?? '';
+    if (item.isServiceMenu) return p === item.href;
+    if (item.isRacketMenu) return p === item.href || (p.startsWith('/rackets/') && !p.startsWith('/rackets/finder'));
+    return p.startsWith(item.href);
+  };
 
   return (
     <>
@@ -719,16 +827,14 @@ const Header = () => {
             border-b border-slate-200 dark:border-slate-700`}
           />
           <SiteContainer
-            className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
+            className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:pl-64 bp-lg:pr-8 2xl:pl-72 2xl:pr-16 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
             style={{
-              // 높이는 header(h-56/h-72)가 책임지고, 내부는 "축소"만
               transform: isScrolled ? 'scale(0.96)' : 'scale(1)',
-              // 축소 기준점을 위로 잡으면 "위로 떠오르는 느낌"이 줄어듭니다.
               transformOrigin: 'top center',
               willChange: 'transform',
             }}
           >
-            <div className="flex items-center justify-between w-full bp-md:hidden">
+            <div className="flex items-center justify-between w-full bp-lg:hidden">
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 focus-visible:ring-2 ring-blue-500" aria-label="메뉴 열기">
                   <Menu className="h-5 w-5" />
@@ -750,24 +856,20 @@ const Header = () => {
               </div>
             </div>
 
-            <div className="hidden bp-md:flex items-center justify-between w-full min-w-0 gap-3 bp-lg:gap-6">
+            <div className="hidden bp-lg:flex items-center w-full min-w-0 gap-3 bp-lg:gap-4">
               <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈">
                 <div className="font-black text-lg bp-lg:text-xl tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">도깨비 테니스</div>
                 <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
               </Link>
 
-              <nav className="hidden bp-lg:flex items-center gap-1 xl:gap-2 ml-2 whitespace-nowrap shrink-0">
-                {menuItems.map((item) => {
-                  // 서비스(부모) 항목은 자식 경로와 매칭시키지 않고 정확히 비교하여
-                  // '/services/packages'에서 '/services'가 활성화되는 문제를 방지 (기억해놓자.)
-                  const p = pathname ?? '';
-                  const active = item.isServiceMenu ? p === item.href : item.isRacketMenu ? p === item.href || (p.startsWith('/rackets/') && !p.startsWith('/rackets/finder')) : p.startsWith(item.href);
+              <nav ref={navRef} className="hidden bp-lg:flex items-center gap-1.5 ml-2 whitespace-nowrap flex-1 min-w-0 overflow-hidden">
+                {primaryMenuItems.map((item) => {
+                  const active = isActiveMenu(item);
                   return (
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={`px-2 xl:px-3 py-2 rounded-lg text-[13px] xl:text-sm transition whitespace-nowrap
-
+                      className={`inline-flex items-center h-9 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
                       ${active ? 'text-blue-600 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/30 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50'}`}
                       aria-current={active ? 'page' : undefined}
                       aria-label={`${item.name} 페이지로 이동`}
@@ -776,6 +878,41 @@ const Header = () => {
                     </Link>
                   );
                 })}
+
+                {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
+                {overflowMenuItems.length > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
+          text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50"
+                        aria-label="더보기 메뉴"
+                      >
+                        ⋯
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="start" sideOffset={8}>
+                      {overflowMenuItems.map((item) => {
+                        const active = isActiveMenu(item);
+                        return (
+                          <DropdownMenuItem
+                            key={item.name}
+                            className={active ? 'bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 font-semibold' : undefined}
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              router.push(item.href);
+                            }}
+                          >
+                            {item.name}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </nav>
 
               {/* <div className="max-w-md w-full">
@@ -783,23 +920,29 @@ const Header = () => {
             </div> */}
 
               {/* 검색 (PC 전용) */}
-              <div className="flex flex-1 min-w-0 justify-end">
-                <div className="w-full max-w-[560px] min-w-[240px] xl:min-w-[320px] xl:max-w-[640px]">
-                  <SearchPreview
-                    placeholder="스트링 / 라켓 검색..."
-                    className="
-        w-full
-        rounded-full bg-white/80 dark:bg-slate-800/70
-        border border-slate-200 dark:border-slate-700
-        focus-within:ring-2 ring-blue-500
-        transition-all duration-200
-      "
-                  />
+              <div className="ml-auto shrink-0 flex justify-end">
+                <div className="min-w-[180px]" style={{ width: 'clamp(220px, 24vw, 560px)' }}>
+                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 focus-within:ring-2 ring-blue-500 transition-all duration-200" />
+                </div>
+              </div>
+
+              {/* 숨은 측정 DOM: 실제 렌더 폭(텍스트/패딩/아이콘/갭)을 그대로 재기 */}
+              <div ref={measureRef} className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
+                <div data-measure-wrap className="flex items-center gap-1.5 ml-2 whitespace-nowrap">
+                  {menuItems.map((it) => (
+                    <span key={`measure-${it.name}`} data-measure-item className="inline-flex items-center h-9 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap">
+                      {it.name}
+                    </span>
+                  ))}
+
+                  <span data-measure-dots className="inline-flex items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap">
+                    ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                  </span>
                 </div>
               </div>
 
               {/* 아이콘/유저 */}
-              <div className="flex items-center gap-3 xl:gap-4 pl-2 shrink-0">
+              <div className="flex items-center gap-3 bp-lg:gap-4 pl-2 shrink-0">
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 transition-all duration-300 focus-visible:ring-2 ring-blue-500" aria-label="메뉴 열기">
                     <Menu className="h-5 w-5" />

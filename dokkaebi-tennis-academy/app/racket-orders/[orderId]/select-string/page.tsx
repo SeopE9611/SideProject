@@ -2,6 +2,19 @@ import SelectStringClient from '@/app/racket-orders/[orderId]/select-string/Sele
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { notFound } from 'next/navigation';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { cookies } from 'next/headers';
+import LoginGate from '@/components/system/LoginGate';
+
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
 
 type PageProps = { params: Promise<{ orderId: string }> };
 
@@ -10,6 +23,18 @@ export default async function SelectStringPage({ params }: PageProps) {
 
   // orderId 형식 검증 (24자/hex 형태가 아니면 즉시 404)
   if (!ObjectId.isValid(orderId)) notFound();
+
+  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const allowGuestCheckout = guestOrderMode === 'on';
+
+  if (!allowGuestCheckout) {
+    const token = (await cookies()).get('accessToken')?.value;
+    const payload = safeVerifyAccessToken(token);
+    if (!payload?.sub) {
+      const next = `/racket-orders/${orderId}/select-string`;
+      return <LoginGate next={next} variant="checkout" />;
+    }
+  }
 
   // 주문 존재 여부 + 라켓 항목 포함 여부 확인
   const db = (await clientPromise).db();

@@ -15,6 +15,8 @@ import ClearCartOnMount from '@/app/checkout/success/_components/ClearCartOnMoun
 import SetGuestOrderToken from '@/app/checkout/success/_components/SetGuestOrderToken';
 import CheckoutApplyHandoffClient from '@/app/checkout/success/_components/CheckoutApplyHandoffClient';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import LoginGate from '@/components/system/LoginGate';
 
 type PopulatedItem = {
   name: string;
@@ -22,12 +24,40 @@ type PopulatedItem = {
   quantity: number;
 };
 
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string; autoApply?: string }> }) {
   const sp = await searchParams;
   const orderId = sp.orderId;
   const autoApply = sp.autoApply === '1';
 
   if (!orderId) return notFound();
+
+ // 비회원/게스트 주문 차단 모드면, success 페이지도 "로그인 필수"로 막는다.
+  // (orderId만으로 주문 정보가 렌더링되는 것을 DB 조회 전에 차단)
+  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const allowGuestCheckout = guestOrderMode === 'on';
+  if (!allowGuestCheckout) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+    const payload = safeVerifyAccessToken(token);
+    if (!payload?.sub) {
+      const qs = new URLSearchParams();
+      qs.set('orderId', orderId);
+      if (sp.autoApply) qs.set('autoApply', sp.autoApply);
+      const next = `/checkout/success?${qs.toString()}`;
+      return <LoginGate next={next} variant="checkout" />;
+    }
+  }
+
 
   const client = await clientPromise;
   const db = client.db();

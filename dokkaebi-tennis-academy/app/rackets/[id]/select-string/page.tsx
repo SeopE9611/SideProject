@@ -3,6 +3,19 @@ import { ObjectId } from 'mongodb';
 import { racketBrandLabel } from '@/lib/constants';
 import RacketSelectStringClient from '@/app/rackets/[id]/select-string/RacketSelectStringClient';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { cookies } from 'next/headers';
+import LoginGate from '@/components/system/LoginGate';
+
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +23,18 @@ type Params = { id: string };
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { id } = await params;
+
+  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const allowGuestCheckout = guestOrderMode === 'on';
+
+  if (!allowGuestCheckout) {
+    const token = (await cookies()).get('accessToken')?.value;
+    const payload = safeVerifyAccessToken(token);
+    if (!payload?.sub) {
+      const next = `/rackets/${id}/select-string`;
+      return <LoginGate next={next} variant="checkout" />;
+    }
+  }
 
   const db = (await clientPromise).db();
 

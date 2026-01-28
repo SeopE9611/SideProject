@@ -12,6 +12,8 @@ import { Separator } from '@/components/ui/separator';
 import BackButtonGuard from '@/app/services/_components/BackButtonGuard';
 import { Badge } from '@/components/ui/badge';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import LoginGate from '@/components/system/LoginGate';
+import { verifyAccessToken } from '@/lib/auth.utils';
 
 interface Props {
   searchParams: {
@@ -21,6 +23,16 @@ interface Props {
 
 function isValidObjectId(id: string | undefined): boolean {
   return typeof id === 'string' && /^[a-fA-F0-9]{24}$/.test(id);
+}
+
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
 }
 
 // 시간 2자리 포맷
@@ -60,6 +72,21 @@ export default async function StringServiceSuccessPage(props: Props) {
   const applicationId = searchParams.applicationId;
 
   if (!isValidObjectId(applicationId)) return notFound();
+
+  // 비회원 주문/신청 차단 모드면, success 페이지도 로그인 필수로 막는다.
+  // (applicationId/orderId/rentalId만으로 신청서/주문 정보가 렌더링되는 것을 DB 조회 전에 차단)
+  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const allowGuestCheckout = guestOrderMode === 'on';
+  if (!allowGuestCheckout) {
+    const token = (await cookies()).get('accessToken')?.value;
+    const payload = safeVerifyAccessToken(token);
+    if (!payload?.sub) {
+      const qs = new URLSearchParams();
+      qs.set('applicationId', String(applicationId));
+      const next = `/services/success?${qs.toString()}`;
+      return <LoginGate next={next} variant="checkout" />;
+    }
+  }
 
   const client = await clientPromise;
   const db = client.db();

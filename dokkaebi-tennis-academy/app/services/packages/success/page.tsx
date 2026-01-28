@@ -12,6 +12,7 @@ import clientPromise from '@/lib/mongodb';
 import { bankLabelMap } from '@/lib/constants';
 import DevMarkPaidButton from '@/app/services/packages/success/DevMarkPaidButton';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import LoginGate from '@/components/system/LoginGate';
 
 const Trophy = ({ className }: { className: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,11 +25,37 @@ const Trophy = ({ className }: { className: string }) => (
   </svg>
 );
 
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export default async function PackageSuccessPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
   const packageOrderId = Array.isArray(sp.packageOrderId) ? sp.packageOrderId[0] : sp.packageOrderId ?? '';
 
   if (!packageOrderId) return notFound();
+
+  // 비회원 주문/신청 차단 모드면, 패키지 success 페이지도 로그인 필수로 막는다.
+  // (packageOrderId만으로 주문 정보가 렌더링되는 것을 DB 조회 전에 차단)
+  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const allowGuestCheckout = guestOrderMode === 'on';
+  if (!allowGuestCheckout) {
+    const gateCookieStore = await cookies();
+    const token = gateCookieStore.get('accessToken')?.value;
+    const payload = safeVerifyAccessToken(token);
+    if (!payload?.sub) {
+      const qs = new URLSearchParams();
+      qs.set('packageOrderId', String(packageOrderId));
+      const next = `/services/packages/success?${qs.toString()}`;
+      return <LoginGate next={next} variant="checkout" />;
+    }
+  }
 
   const client = await clientPromise;
   const db = client.db();
