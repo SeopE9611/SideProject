@@ -274,6 +274,7 @@ export async function GET(req: Request) {
       createdAt: 1,
       status: 1,
       paymentStatus: 1,
+      isStringServiceApplied: 1,
       stringingApplicationId: 1,
       totalPrice: 1,
       customer: 1,
@@ -477,7 +478,17 @@ export async function GET(req: Request) {
         if (d) {
           pushPending('order', oid, '교체서비스 신청서가 초안(draft) 상태입니다(작성대기).');
         } else {
-          pushWarn('order', oid, '주문.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+          // 사용자가 신청을 "아예 진행하지 않은/완료하지 않은" 케이스까지 무조건 오류로 잡으면 오탐.
+          // - 주문이 "신청 완료" 상태라고 명시(isStringServiceApplied=true)했거나
+          // - 신청서 컬렉션에서 해당 주문으로 연결된 신청서(appIdsFromApps)가 실제로 존재하는데
+          //   주문이 그걸 못 가리키는 상황이면 => 진짜 연결 오류
+          // 그 외에는 "미신청/작성 전"으로 보고 pending으로 분류한다.
+          const orderClaimsApplied = Boolean((o as any)?.isStringServiceApplied);
+          if (!orderClaimsApplied && appIdsFromApps.length === 0) {
+            pushPending('order', oid, '교체서비스 신청이 아직 제출되지 않았습니다(미신청/작성 전).');
+          } else {
+            pushWarn('order', oid, '주문.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+          }
         }
       } else {
         const aOrderId = a?.orderId ? String(a.orderId) : '';
@@ -508,7 +519,17 @@ export async function GET(req: Request) {
     if (appIdInRental) {
       const a = appById.get(appIdInRental);
       if (!a) {
-        pushWarn('rental', rid, '대여.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+        const d = draftById.get(appIdInRental);
+        if (d) {
+          pushPending('rental', rid, '교체서비스 신청서가 초안(draft) 상태입니다(작성대기).');
+        } else {
+          const rentalClaimsApplied = Boolean((r as any)?.isStringServiceApplied);
+          if (!rentalClaimsApplied && appIdsFromApps.length === 0) {
+            pushPending('rental', rid, '교체서비스 신청이 아직 제출되지 않았습니다(미신청/작성 전).');
+          } else {
+            pushWarn('rental', rid, '대여.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+          }
+        }
       } else {
         const aRentalId = a?.rentalId ? String(a.rentalId) : '';
         if (aRentalId && aRentalId !== rid) {

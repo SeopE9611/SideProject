@@ -62,9 +62,9 @@
 //       name: product.name,
 //       price: product.price || 0,
 //       imageUrl: product.images?.[0] || null,
-//       mountingFee: product.mountingFee || 0, // 🔥 장착비 포함
+//       mountingFee: product.mountingFee || 0, // 장착비 포함
 //       quantity,
-//       kind: 'product' as const, // 🔥 스트링은 'product'
+//       kind: 'product' as const, // 스트링은 'product'
 //     };
 
 //     await db.collection('orders').updateOne(

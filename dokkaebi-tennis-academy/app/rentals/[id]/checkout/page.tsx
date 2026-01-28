@@ -2,7 +2,19 @@ import { notFound } from 'next/navigation';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import RentalsCheckoutClient from '@/app/rentals/[id]/checkout/_components/RentalsCheckoutClient';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { cookies } from 'next/headers';
+import LoginGate from '@/components/system/LoginGate';
 
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+ try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
 export const dynamic = 'force-dynamic';
 
 // [id] = racketId, period = 7|15|30
@@ -72,6 +84,22 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const rawPeriod = Number((s?.period as string | undefined) ?? NaN);
   const period = rawPeriod === 7 || rawPeriod === 15 || rawPeriod === 30 ? rawPeriod : 7;
   const stringId = (s?.stringId as string | undefined) ?? undefined;
+
+  // 비회원 주문(대여) 차단 정책(서버)
+  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const allowGuestCheckout = guestOrderMode === 'on';
+
+  if (!allowGuestCheckout) {
+    const token = (await cookies()).get('accessToken')?.value;
+    const payload = safeVerifyAccessToken(token);
+    if (!payload?.sub) {
+      const qs = new URLSearchParams();
+      qs.set('period', String(period));
+      if (stringId) qs.set('stringId', stringId);
+      const next = `/rentals/${id}/checkout` + (qs.toString() ? `?${qs.toString()}` : '');
+      return <LoginGate next={next} variant="checkout" />;
+    }
+  }
 
   const data = await getInitialForRacket(id, period, stringId);
   if (!data) notFound();

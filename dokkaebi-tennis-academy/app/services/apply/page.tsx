@@ -21,6 +21,7 @@ import Step3PaymentInfoRentalReadonly from '@/app/services/apply/_components/ste
 import Step4FinalRequest from '@/app/services/apply/_components/steps/Step4FinalRequest';
 import ApplyStepFooter from '@/app/services/apply/_components/steps/ApplyStepFooter';
 import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
+import LoginGate from '@/components/system/LoginGate';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -84,6 +85,7 @@ export default function StringServiceApplyPage() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const rentalId = searchParams.get('rentalId');
+  const [loading, setLoading] = useState(true);
 
   // PDP에서 넘어온 상품의 미니 정보(이름, 이미지)
   const [pdpProduct, setPdpProduct] = useState<PdpMiniProduct | null>(null);
@@ -113,6 +115,53 @@ export default function StringServiceApplyPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isUserLoading, setIsUserLoading] = useState(false);
 
+  // 비회원 주문/신청 차단 정책(클라)
+  // - NEXT_PUBLIC_GUEST_ORDER_MODE: 'off' | 'legacy' | 'on'
+  // - 'on' 일 때만 비회원 허용
+  const rawGuestMode = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const guestOrderMode = rawGuestMode === 'off' || rawGuestMode === 'legacy' || rawGuestMode === 'on' ? rawGuestMode : 'legacy';
+  const allowGuestCheckout = guestOrderMode === 'on';
+
+  // 로그인 여부(비회원 차단 모드에서만 의미 있음)
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const nextUrl = useMemo(() => {
+    const qs = searchParams.toString();
+    return qs ? `/services/apply?${qs}` : '/services/apply';
+  }, [searchParams]);
+
+  const blockedByLoginGate = !allowGuestCheckout && authChecked && !isAuthenticated;
+
+  // 로그인 상태 체크 (비회원 차단 모드에서만 필요)
+  // - 체크가 끝나기 전에는 아래 useEffect들이 (redirect/드래프트 생성/프리필 fetch)로 먼저 튀지 않도록 가드한다.
+  useEffect(() => {
+    if (allowGuestCheckout) {
+      setAuthChecked(true);
+      setIsAuthenticated(true);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/users/me', { credentials: 'include' });
+        const user = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        setIsAuthenticated(Boolean(user?.email));
+      } catch {
+        if (cancelled) return;
+        setIsAuthenticated(false);
+      } finally {
+        if (!cancelled) setAuthChecked(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [allowGuestCheckout]);
+
   const isOrderBased = Boolean(orderId);
   const isRentalBased = Boolean(rentalId);
 
@@ -125,13 +174,17 @@ export default function StringServiceApplyPage() {
    * - (이유) 스트링 금액/요금요약/성공페이지 정합성을 주문 데이터로 보장하기 위함
    */
   useEffect(() => {
+    // 게스트 모드 OFF라면 인증 체크가 끝나기 전(또는 로그인 필요 상태)에는 여기 로직을 실행하지 않음
+    if (!allowGuestCheckout && !authChecked) return;
+    if (blockedByLoginGate) return;
+
     // 주문 기반(orderId)이거나, 대여 기반(rentalId)이면 "직접진입 차단"을 하지 않는다.
     if (isOrderBased || isRentalBased) return;
     if (!pdpProductId) return;
 
     showErrorToast('교체 서비스 신청은 결제(주문) 이후 진행됩니다. 상품 페이지로 이동합니다.');
     router.replace(`/products/${encodeURIComponent(String(pdpProductId))}`);
-  }, [isOrderBased, isRentalBased, pdpProductId, router]);
+  }, [allowGuestCheckout, authChecked, blockedByLoginGate, isOrderBased, isRentalBased, pdpProductId, router]);
 
   // null 또는 빈문자열("")이면 NaN 처리, 그 외에는 Number 변환
   const mountingFeeParam = isOrderBased ? null : searchParams.get('mountingFee');
@@ -752,7 +805,7 @@ export default function StringServiceApplyPage() {
     (formData as any).pdpMountingFee,
     orderId,
     order,
-    usingPackage, // 🔥 패키지 사용 여부 변경 시 재계산
+    usingPackage, // 패키지 사용 여부 변경 시 재계산
   ]);
 
   // 선택된 스트링 상품 정보 (orderId 기반 진입용)
@@ -1803,6 +1856,19 @@ export default function StringServiceApplyPage() {
         return null;
     }
   };
+
+  // ===== 비회원 주문/신청 차단(LoginGate) =====
+  // - 게스트 모드가 꺼져 있을 때: 인증 체크 완료 후 미로그인이라면 LoginGate로 진입 차단
+  if (!allowGuestCheckout && !authChecked) {
+    if (loading)
+      return (
+        <div className="grid min-h-[100svh] place-items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      );
+  }
+
+  if (blockedByLoginGate) return <LoginGate next={nextUrl} variant="default" />;
 
   return (
     <div className="min-h-full bg-white dark:bg-slate-950 bp-lg:bg-gradient-to-br bp-lg:from-slate-50 bp-lg:via-blue-50 bp-lg:to-indigo-100 bp-lg:dark:from-slate-900 bp-lg:dark:via-slate-800 bp-lg:dark:to-slate-900">

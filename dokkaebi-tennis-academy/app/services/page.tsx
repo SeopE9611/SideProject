@@ -73,14 +73,14 @@ export default function ServicesPage() {
       duration: '45-60분',
       popular: false,
     },
-    {
-      service: '급행 서비스(서비스 X)',
-      price: 0,
-      description: '현재 해당 서비스는 이용하실 수 없습니다.',
-      icon: <Zap className="h-6 w-6" />,
-      duration: '1시간 이내',
-      popular: false,
-    },
+    // {
+    //   service: '급행 서비스(서비스 X)',
+    //   price: 0,
+    //   description: '현재 해당 서비스는 이용하실 수 없습니다.',
+    //   icon: <Zap className="h-6 w-6" />,
+    //   duration: '1시간 이내',
+    //   popular: false,
+    // },
   ];
 
   // 추가 서비스 정보
@@ -455,7 +455,7 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-6 mb-16">
             {pricingInfo.map((item) => (
               <Card
                 key={item.service}

@@ -575,11 +575,6 @@ function CommunityIntroCard() {
             <MessageSquare className="h-5 w-5 text-purple-600" />
             <span>커뮤니티 게시판</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
-              최신글 모아보기
-            </Badge>
-          </div>
         </CardTitle>
       </CardHeader>
 

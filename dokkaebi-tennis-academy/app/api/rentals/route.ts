@@ -131,6 +131,23 @@ export async function POST(req: Request) {
   const sub = typeof payload?.sub === 'string' && ObjectId.isValid(payload.sub) ? payload.sub : null;
   const userObjectId = sub ? new ObjectId(sub) : null;
 
+  /**
+   * 비회원 주문/대여 차단 (서버 1차 방어)
+   * - UI(LoginGate)만 막으면 API를 직접 호출해서 생성될 수 있으므로,
+   *   "비회원 주문 OFF" 모드에서는 여기서 바로 401로 차단.
+   * - 서버 env(GUEST_ORDER_MODE)를 우선 사용하고,
+   *   일부 환경에서 클라용 NEXT_PUBLIC_GUEST_ORDER_MODE만 존재할 수도 있어 방어적으로 함께 확인.
+   */
+  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const allowGuestCheckout = guestOrderMode === 'on';
+
+  if (!allowGuestCheckout && !userObjectId) {
+    return NextResponse.json(
+      { ok: false, message: 'LOGIN_REQUIRED' },
+      { status: 401, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
+
   // 은행 값 최종 방어(입금/환급)
   if (payment?.bank && !ALLOWED_BANKS.has(payment.bank as any)) {
     return NextResponse.json({ ok: false, message: 'INVALID_BANK' }, { status: 400 });
