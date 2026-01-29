@@ -215,7 +215,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
   // "서버 조회에 영향을 주는 값"들만 묶어서 키로 만든다. (viewMode 같은 UI-only 값은 제외)
   const filterKey = useMemo(() => {
     return [selectedBrand ?? '', selectedMaterial ?? '', selectedBounce ?? '', selectedDurability ?? '', selectedSpin ?? '', selectedControl ?? '', selectedComfort ?? '', submittedQuery ?? '', sortOption ?? '', priceRange[0], priceRange[1]].join(
-      '|'
+      '|',
     );
   }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, sortOption, priceRange]);
 
@@ -360,7 +360,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
       if (open) openFiltersSheet();
       else cancelFiltersSheet();
     },
-    [openFiltersSheet, cancelFiltersSheet]
+    [openFiltersSheet, cancelFiltersSheet],
   );
 
   // 뷰포트가 bp-lg(>=1200)로 커지면 Sheet는 자동으로 닫기(취소)
@@ -393,27 +393,36 @@ export default function FilterableProductList({ initialBrand = null, initialMate
   useEffect(() => {
     if (isInitializingRef.current) return;
 
-    const params = new URLSearchParams();
-    if (selectedBrand) params.set('brand', selectedBrand);
-    if (selectedMaterial) params.set('material', selectedMaterial);
-    if (selectedBounce !== null) params.set('power', String(selectedBounce));
-    if (selectedControl !== null) params.set('control', String(selectedControl));
-    if (selectedSpin !== null) params.set('spin', String(selectedSpin));
-    if (selectedDurability !== null) params.set('durability', String(selectedDurability));
-    if (selectedComfort !== null) params.set('comfort', String(selectedComfort));
-    if (submittedQuery) params.set('q', submittedQuery);
-    if (sortOption && sortOption !== 'latest') params.set('sort', sortOption);
-    if (viewMode !== 'grid') params.set('view', viewMode);
-    if (priceRange[0] > DEFAULT_MIN_PRICE) params.set('minPrice', String(priceRange[0]));
-    if (priceRange[1] < DEFAULT_MAX_PRICE) params.set('maxPrice', String(priceRange[1]));
+    // 현재 URL을 기반으로 시작: from=apply 같은 "기타 쿼리"를 유지하기 위함
+    const params = new URLSearchParams(searchParams.toString());
+
+    const setOrDelete = (key: string, value: string | null) => {
+      if (value && value.length > 0) params.set(key, value);
+      else params.delete(key);
+    };
+
+    setOrDelete('brand', selectedBrand);
+    setOrDelete('material', selectedMaterial);
+    setOrDelete('power', selectedBounce !== null ? String(selectedBounce) : null);
+    setOrDelete('control', selectedControl !== null ? String(selectedControl) : null);
+    setOrDelete('spin', selectedSpin !== null ? String(selectedSpin) : null);
+    setOrDelete('durability', selectedDurability !== null ? String(selectedDurability) : null);
+    setOrDelete('comfort', selectedComfort !== null ? String(selectedComfort) : null);
+    setOrDelete('q', submittedQuery ? submittedQuery : null);
+
+    // 기본값이면 URL에 굳이 남기지 않기(기존 동작 유지)
+    setOrDelete('sort', sortOption && sortOption !== 'latest' ? sortOption : null);
+    setOrDelete('view', viewMode !== 'grid' ? viewMode : null);
+    setOrDelete('minPrice', priceRange[0] > DEFAULT_MIN_PRICE ? String(priceRange[0]) : null);
+    setOrDelete('maxPrice', priceRange[1] < DEFAULT_MAX_PRICE ? String(priceRange[1]) : null);
 
     const newSearch = params.toString();
     if (newSearch === lastSerializedRef.current) return;
     lastSerializedRef.current = newSearch;
 
-    router.replace(`${pathname}?${newSearch}`, { scroll: false });
-  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, sortOption, viewMode, priceRange, router, pathname]);
-
+    const nextUrl = `${pathname}${newSearch ? `?${newSearch}` : ''}`;
+    router.replace(nextUrl, { scroll: false });
+  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, sortOption, viewMode, priceRange, router, pathname, searchParams]);
   // infinite scroll 관찰자
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastProductRef = useCallback(
@@ -427,7 +436,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
       });
       if (node) observerRef.current.observe(node);
     },
-    [isFetchingMore, hasMore, loadMore]
+    [isFetchingMore, hasMore, loadMore],
   );
 
   // 데스크톱(좌측 고정 패널): 선택 즉시 적용(=기존대로 selectedXXX 사용)

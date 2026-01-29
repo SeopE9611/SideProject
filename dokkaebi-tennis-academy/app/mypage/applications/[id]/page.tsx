@@ -11,7 +11,8 @@ export default async function ApplicationDetailPage({ params }: Props) {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect('/login');
+    const target = `/mypage/applications/${params.id}`;
+    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
   }
 
   const host = (await headers()).get('host');

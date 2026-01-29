@@ -6,7 +6,8 @@ export default async function MessagesPage() {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect('/login');
+    const target = '/messages';
+    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
   }
 
   return <MessagesClient user={user} />;

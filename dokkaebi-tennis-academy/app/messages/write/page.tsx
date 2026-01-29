@@ -7,10 +7,13 @@ import MessageWriteClient from '@/app/messages/write/MessageWriteClient';
 type SearchParams = { to?: string };
 
 export default async function MessageWritePage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const me = await getCurrentUser();
-  if (!me) redirect('/login');
-
   const sp = await searchParams;
+  const me = await getCurrentUser();
+  if (!me) {
+    const target = `/messages/write${typeof sp?.to === 'string' ? `?to=${sp.to}` : ''}`;
+    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
+  }
+
   const to = typeof sp?.to === 'string' ? sp.to : '';
   if (!ObjectId.isValid(to)) {
     return <MessageWriteClient me={me} toUser={null} />;

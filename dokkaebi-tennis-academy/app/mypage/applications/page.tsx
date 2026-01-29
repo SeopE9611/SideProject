@@ -6,7 +6,8 @@ export default async function ApplicationsPage() {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect('/login');
+    const target = '/mypage/applications';
+    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
   }
 
   return <ApplicationsClient />;

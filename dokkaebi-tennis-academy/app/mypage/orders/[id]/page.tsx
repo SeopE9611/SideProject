@@ -10,7 +10,8 @@ export default async function OrderDetailPage({ params: { id } }: { params: { id
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect('/login');
+    const target = `/mypage/orders/${id}`;
+    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
   }
   return (
     <div className="container py-8">

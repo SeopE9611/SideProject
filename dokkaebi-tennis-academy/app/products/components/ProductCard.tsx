@@ -176,8 +176,8 @@ const ProductCard = React.memo(
                       showSuccessToast(inWish ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
                     } catch (e: any) {
                       if (e?.message === 'unauthorized') {
-                        showErrorToast('로그인이 필요합니다.');
-                        router.push(`/login?from=/products/${product._id}`);
+                        const target = `/products/${product._id}`;
+                        router.push(`/login?redirectTo=${encodeURIComponent(target)}`);
                       } else {
                         showErrorToast('처리 중 오류가 발생했습니다.');
                       }

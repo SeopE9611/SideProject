@@ -64,7 +64,7 @@ function DialogContent({ className, children, ...props }: React.ComponentProps<t
           'data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[52%]',
           // 속도/이징(좀 더 “탄성” 체감)
           'data-[state=open]:duration-300 data-[state=closed]:duration-200',
-          'data-[state=open]:ease-[cubic-bezier(0.16,1,0.3,1)] data-[state=closed]:ease-in',
+          'data-[state=open]:[animation-timing-function:cubic-bezier(0.16,1,0.3,1)] data-[state=closed]:[animation-timing-function:ease-in]',
           className,
         )}
         {...props}

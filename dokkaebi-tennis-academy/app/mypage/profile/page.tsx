@@ -15,8 +15,18 @@ export default async function ProfilePage() {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect('/login');
+    const target = '/mypage/profile';
+    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
   }
 
-  return <ProfileClient user={user} />;
+  return (
+    <ProfileClient
+      user={{
+        id: user.id,
+        name: user.name ?? '회원',
+        email: user.email ?? '',
+        role: user.role,
+      }}
+    />
+  );
 }

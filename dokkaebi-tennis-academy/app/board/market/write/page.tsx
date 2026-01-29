@@ -13,7 +13,8 @@ export default async function FreeBoardWritePage() {
 
   // 비회원이면 로그인 페이지로 보냄
   if (!user) {
-    redirect('/login');
+    const target = '/board/market/write';
+    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
   }
   return <FreeBoardWriteClient />;
 }

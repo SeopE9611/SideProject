@@ -59,8 +59,16 @@ async function readJsonSafe(res: Response): Promise<any | null> {
   }
 }
 
-//  첫 오류 필드로 포커스를 이동. (id가 없으면 이동 불가하므로, 필요한 입력에는 id를 최소로 부여)
+function safeRedirectTarget(raw?: string) {
+  if (!raw) return '/';
+  // 외부 URL 오픈리다이렉트 방지: 반드시 내부 경로만 허용
+  if (!raw.startsWith('/')) return '/';
+  // /login으로 다시 보내는 루프 방지
+  if (raw.startsWith('/login')) return '/';
+  return raw;
+}
 
+//  첫 오류 필드로 포커스를 이동. (id가 없으면 이동 불가하므로, 필요한 입력에는 id를 최소로 부여)
 function focusFirst(ids: string[]) {
   for (const id of ids) {
     const el = document.getElementById(id) as HTMLElement | null;
@@ -279,7 +287,9 @@ export default function LoginPageClient() {
       setUser(meUser);
       showSuccessToast('로그인되었습니다.');
 
-      const redirectTo = params.get('redirectTo') || '/';
+      const redirectToRaw = params.get('redirectTo') || '/';
+      const redirectTo = safeRedirectTarget(redirectToRaw);
+
       // 로그인 페이지로 "뒤로가기" 했을 때 다시 로그인 폼이 보이지 않도록 replace가 더 안전
       router.replace(redirectTo);
       router.refresh();

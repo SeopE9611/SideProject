@@ -1,5 +1,7 @@
 import FilterableProductList from '@/app/products/components/FilterableProductList';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { Suspense } from 'react';
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -8,10 +10,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
 
   // 유틸: string | string[] | undefined → string | null 로 정리
-  const pickFirst = (v: string | string[] | undefined): string | null => (typeof v === 'string' ? v : Array.isArray(v) ? v[0] ?? null : null);
+  const pickFirst = (v: string | string[] | undefined): string | null => (typeof v === 'string' ? v : Array.isArray(v) ? (v[0] ?? null) : null);
 
   const initialBrand = pickFirst(sp.brand);
   const initialMaterial = pickFirst(sp.material);
+
+  const from = pickFirst(sp.from);
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
@@ -44,6 +48,24 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       </div>
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
+        {from === 'apply' && (
+          <div className="mb-4 bp-sm:mb-6 rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/90 dark:bg-slate-900/40 backdrop-blur p-4 bp-sm:p-5">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div className="min-w-0">
+                <p className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-slate-100">장착 서비스 즉시 예약 흐름으로 이동했어요</p>
+                <p className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">스트링 결제 완료 후 신청서가 자동으로 연결됩니다.</p>
+              </div>
+              <div className="flex w-full bp-sm:w-auto gap-2">
+                <Button asChild className="flex-1 bp-sm:flex-none">
+                  <Link href="/services/apply">신청 화면으로</Link>
+                </Button>
+                <Button asChild variant="outline" className="flex-1 bp-sm:flex-none">
+                  <Link href="/services">서비스 안내</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         <Suspense>
           <FilterableProductList initialBrand={initialBrand} initialMaterial={initialMaterial} />
         </Suspense>

@@ -567,7 +567,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
     } catch (e: any) {
       if (e?.message === 'unauthorized') {
         showErrorToast('로그인이 필요합니다.');
-        router.push(`/login?from=/products/${product._id}`);
+        const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/products/${product._id}`;
+        router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
       } else {
         showErrorToast('처리 중 오류가 발생했습니다.');
       }

@@ -15,6 +15,7 @@ export default function AuthGuard({ children }: Props) {
 
   useEffect(() => {
     (async () => {
+      const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
       try {
         const res = await fetch('/api/users/me', { credentials: 'include' });
         if (res.status === 403) {
@@ -22,16 +23,16 @@ export default function AuthGuard({ children }: Props) {
           return;
         }
         if (res.status === 401) {
-          router.replace('/login');
+          router.replace(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
           return;
         }
         if (!res.ok) {
-          router.replace('/login');
+          router.replace(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
           return;
         }
         setIsLoggedIn(true);
       } catch {
-        router.replace('/login');
+        router.replace(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
       } finally {
         setChecked(true);
       }

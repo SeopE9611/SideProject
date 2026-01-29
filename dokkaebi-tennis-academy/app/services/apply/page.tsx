@@ -23,6 +23,7 @@ import ApplyStepFooter from '@/app/services/apply/_components/steps/ApplyStepFoo
 import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
 import LoginGate from '@/components/system/LoginGate';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -1889,37 +1890,112 @@ export default function StringServiceApplyPage() {
 
               <CardContent className="p-5 bp-sm:p-6 bp-md:p-8">
                 <div className="grid grid-cols-1 bp-md:grid-cols-3 gap-4">
-                  <Card className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow">
+                  <Card
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => router.push('/products?from=apply')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push('/products?from=apply');
+                      }
+                    }}
+                    className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base bp-sm:text-lg">스트링 구매하고 신청</CardTitle>
+                      <CardTitle className="text-base bp-sm:text-lg flex items-center gap-2">
+                        <span>스트링 구매하고 신청</span>
+                        <Badge variant="secondary" className="h-5 px-2 text-xs">
+                          추천
+                        </Badge>
+                      </CardTitle>
                       <CardDescription className="text-xs bp-sm:text-sm">스트링 결제 후 신청서가 자동으로 연결돼요</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <Button type="button" variant="outline" className="w-full" onClick={() => router.push('/products')}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push('/products?from=apply');
+                        }}
+                      >
                         스트링 보러가기
                       </Button>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow">
+                  <Card
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => router.push('/rackets')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push('/rackets');
+                      }
+                    }}
+                    className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base bp-sm:text-lg">라켓 고르고 신청</CardTitle>
+                      <CardTitle className="text-base bp-sm:text-lg flex items-center gap-2">
+                        <span>라켓 고르고 신청</span>
+                        <Badge variant="secondary" className="h-5 px-2 text-xs">
+                          추천
+                        </Badge>
+                      </CardTitle>
                       <CardDescription className="text-xs bp-sm:text-sm">구매·대여 후 스트링까지 함께 신청해요</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <Button type="button" variant="outline" className="w-full" onClick={() => router.push('/rackets')}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push('/rackets');
+                        }}
+                      >
                         라켓 보러가기
                       </Button>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow">
+                  <Card
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => router.push('/services/apply?mode=single')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push('/services/apply?mode=single');
+                      }
+                    }}
+                    className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base bp-sm:text-lg">신청서만 작성</CardTitle>
-                      <CardDescription className="text-xs bp-sm:text-sm">이미 라켓·스트링이 있다면 바로 작성해요</CardDescription>
+                      <CardTitle className="text-base bp-sm:text-lg flex items-center gap-2">
+                        <span>신청서만 작성</span>
+                        <Badge variant="outline" className="h-5 px-2 text-xs">
+                          직접입력
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription className="text-xs bp-sm:text-sm">
+                        이미 라켓·스트링이 있다면 바로 작성해요
+                        <span className="block mt-1 text-[11px] text-rose-600 dark:text-rose-300">금액·결제정보 자동 반영 없음</span>
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <Button type="button" variant="outline" className="w-full" onClick={() => router.push('/services/apply?mode=single')}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push('/services/apply?mode=single');
+                        }}
+                      >
                         단독 신청하기
                       </Button>
                     </CardContent>
