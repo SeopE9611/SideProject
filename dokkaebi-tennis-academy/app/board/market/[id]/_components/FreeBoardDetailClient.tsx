@@ -38,7 +38,7 @@ const STYLE_LABEL: Record<string, string> = {
 };
 // 작성하지 않은 프로필 정보 - 처리
 const v = (x: any) => (x === null || x === undefined || String(x).trim() === '' ? '-' : String(x));
-const label = (map: Record<string, string>, v?: string) => (v ? map[v] ?? v : '-');
+const label = (map: Record<string, string>, v?: string) => (v ? (map[v] ?? v) : '-');
 
 type Props = {
   id: string;
@@ -175,7 +175,8 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const openCompose = (toUserId: string, toName?: string | null) => {
     if (!user) {
       showErrorToast('로그인 후 이용할 수 있습니다.');
-      router.push('/login');
+      const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/board/market/${id}`;
+      router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
       return;
     }
 
@@ -394,12 +395,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const comments = commentsData && commentsData.ok ? commentsData.items : [];
 
   // 전체 댓글 수(루트 + 대댓글) → 상단 뱃지 표시용
-  const totalComments = commentsData && commentsData.ok ? commentsData.total : item?.commentsCount ?? 0;
+  const totalComments = commentsData && commentsData.ok ? commentsData.total : (item?.commentsCount ?? 0);
 
   // 루트 댓글 수 → 실제 페이지 수 계산용
   const totalRootComments =
     commentsData && commentsData.ok
-      ? commentsData.rootTotal ?? totalComments // rootTotal 없으면 total로 fallback
+      ? (commentsData.rootTotal ?? totalComments) // rootTotal 없으면 total로 fallback
       : totalComments;
 
   const totalCommentPages = Math.max(1, Math.ceil(totalRootComments / COMMENT_LIMIT));
@@ -695,7 +696,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
             },
           };
         },
-        false // 재요청 없이 로컬 캐시만 갱신
+        false, // 재요청 없이 로컬 캐시만 갱신
       );
     } catch (err) {
       console.error(err);
@@ -1205,7 +1206,8 @@ export default function FreeBoardDetailClient({ id }: Props) {
                               e.stopPropagation();
 
                               if (!user) {
-                                router.push('/login');
+                                const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/board/market/${id}`;
+                                router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
                                 return;
                               }
 

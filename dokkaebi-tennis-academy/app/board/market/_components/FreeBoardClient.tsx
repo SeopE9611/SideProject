@@ -108,7 +108,8 @@ export default function FreeBoardClient() {
   const openCompose = (toUserId: string, toName?: string | null) => {
     if (!user) {
       showErrorToast('로그인 후 이용할 수 있습니다.');
-      router.push('/login');
+      const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/board/market';
+      router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
       return;
     }
 
@@ -301,7 +302,8 @@ export default function FreeBoardClient() {
               onClick={() => {
                 if (!user) {
                   // 비회원: 로그인 페이지로 이동
-                  router.push('/login');
+                  const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/board/market';
+                  router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
                   return;
                 }
 
@@ -523,7 +525,8 @@ export default function FreeBoardClient() {
                                     e.stopPropagation();
 
                                     if (!user) {
-                                      router.push('/login');
+                                      const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/board/market';
+                                      router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
                                       return;
                                     }
 

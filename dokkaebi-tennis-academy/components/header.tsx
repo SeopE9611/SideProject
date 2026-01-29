@@ -815,7 +815,8 @@ const Header = () => {
                 className="w-full justify-center rounded-xl h-11 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-md transition-all duration-200"
                 onClick={() => {
                   setOpen(false);
-                  router.push('/login');
+                  const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
+                  router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
                 }}
               >
                 로그인

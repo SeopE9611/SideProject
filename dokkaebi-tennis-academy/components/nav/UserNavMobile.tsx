@@ -26,7 +26,8 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
         className="w-full justify-center"
         onClick={() => {
           setOpen(false);
-          router.push('/login');
+          const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
+          router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
         }}
       >
         로그인

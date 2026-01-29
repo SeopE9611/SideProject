@@ -35,7 +35,14 @@ export function UserNav({ unreadCount }: UserNavProps) {
 
   if (!user) {
     return (
-      <Button variant="ghost" size="icon" onClick={() => router.push('/login')}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => {
+          const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
+          router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+        }}
+      >
         <UserIcon className="h-5 w-5" />
         <span className="sr-only">로그인</span>
       </Button>

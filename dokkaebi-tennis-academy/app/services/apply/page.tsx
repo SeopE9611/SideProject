@@ -1977,7 +1977,7 @@ export default function StringServiceApplyPage() {
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base bp-sm:text-lg flex items-center gap-2">
                         <span>신청서만 작성</span>
-                        <Badge variant="outline" className="h-5 px-2 text-xs">
+                        <Badge variant="secondary" className="h-5 px-2 text-xs">
                           직접입력
                         </Badge>
                       </CardTitle>
