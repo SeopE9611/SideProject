@@ -3,8 +3,10 @@ import LoginPageClient from '@/app/login/_components/LoginPageClient';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { redirect } from 'next/navigation';
 
+type SearchParams = Record<string, string | string[] | undefined>;
+
 type PageProps = {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: SearchParams | Promise<SearchParams>;
 };
 
 function safeRedirectTarget(raw?: string) {
@@ -19,7 +21,8 @@ function safeRedirectTarget(raw?: string) {
 export default async function LoginPage({ searchParams }: PageProps) {
   const user = await getCurrentUser();
   if (user?.id) {
-    const r = searchParams?.redirectTo;
+    const sp = await Promise.resolve(searchParams ?? {});
+    const r = sp.redirectTo;
     const redirectTo = Array.isArray(r) ? r[0] : r;
     redirect(safeRedirectTarget(redirectTo));
   }

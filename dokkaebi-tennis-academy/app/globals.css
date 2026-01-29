@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 드롭다운/시트가 열릴 때 스크롤바 유무가 바뀌어도 레이아웃이 덜 흔들리게 */
+html {
+  scrollbar-gutter: stable;
+}
+
 /* 다크 모드용 CSS 변수 정의 */
 .dark body {
   --background: 222.2 47.4% 11.2%; /* bg-gray-950 */

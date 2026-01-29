@@ -419,9 +419,19 @@ export default function LoginPageClient() {
           return;
         }
 
+        try {
+          const meRes = await fetch('/api/users/me', { credentials: 'include', cache: 'no-store' });
+          const me = await readJsonSafe(meRes);
+          if (meRes.ok && (me as any)?.id) {
+            setUser(me as any);
+          }
+        } catch {
+          // 세션 확인 실패는 회원가입 자체를 막지 않음(쿠키는 이미 발급됨)
+        }
+
         showSuccessToast('회원가입이 완료되었습니다.');
         resetRegisterForm();
-        router.push(data?.redirectTo || '/');
+        router.replace(data?.redirectTo || '/');
         router.refresh();
       } catch (err) {
         setRegisterFormError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');

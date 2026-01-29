@@ -891,7 +891,7 @@ const Header = () => {
 
                 {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
                 {overflowMenuItems.length > 0 && (
-                  <DropdownMenu open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
+                  <DropdownMenu modal={false} open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"

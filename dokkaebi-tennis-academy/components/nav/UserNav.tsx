@@ -48,7 +48,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
   const hasNaver = socialProviders.includes('naver');
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <div className="flex items-center gap-2 cursor-pointer hover:bg-accent/50 px-2 py-1.5 rounded-md transition min-w-0">
           {/* <Avatar className="h-6 w-6">
