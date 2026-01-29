@@ -17,6 +17,7 @@ import TokenRefresher from '@/components/system/TokenRefresher';
 import SessionWatcher from '@/components/system/SessionWatcher';
 import ClaimsAutoLinker from '@/components/system/ClaimsAutoLinker';
 import AppShell from '@/components/layout/AppShell';
+import KakaoInquiryWidget from '@/components/system/KakaoInquiryWidget';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -54,7 +55,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="ko" suppressHydrationWarning className="scroll-smooth">
       <body className={`${inter.className} bg-background text-foreground overflow-x-hidden`}>
         <Script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="beforeInteractive" />
-
+        {/* Kakao JavaScript SDK (채널 1:1 문의용) */}
+        <Script id="kakao-jssdk" src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js" strategy="afterInteractive" crossOrigin="anonymous" />
         <AuthHydrator initialUser={initialUser} />
         <GlobalTokenGuard />
         <TokenRefresher />
@@ -67,6 +69,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
             {/* SideMenu + 좌측패딩은 AppShell이 경로별로 처리 */}
             <AppShell>{children}</AppShell>
+
+            {/* 우측 하단 카카오 문의 위젯(관리자 페이지는 자동 숨김) */}
+            <KakaoInquiryWidget />
 
             <Footer />
           </div>
