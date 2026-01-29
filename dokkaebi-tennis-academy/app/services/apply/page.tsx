@@ -1895,7 +1895,7 @@ export default function StringServiceApplyPage() {
                       <CardDescription className="text-xs bp-sm:text-sm">스트링 결제 후 신청서가 자동으로 연결돼요</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <Button type="button" className="w-full" onClick={() => router.push('/products')}>
+                      <Button type="button" variant="outline" className="w-full" onClick={() => router.push('/products')}>
                         스트링 보러가기
                       </Button>
                     </CardContent>
@@ -1907,7 +1907,7 @@ export default function StringServiceApplyPage() {
                       <CardDescription className="text-xs bp-sm:text-sm">구매·대여 후 스트링까지 함께 신청해요</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <Button type="button" className="w-full" onClick={() => router.push('/rackets')}>
+                      <Button type="button" variant="outline" className="w-full" onClick={() => router.push('/rackets')}>
                         라켓 보러가기
                       </Button>
                     </CardContent>
@@ -1930,6 +1930,27 @@ export default function StringServiceApplyPage() {
                   <p className="leading-relaxed">
                     결제(주문) 이후 신청으로 진행하면 <span className="font-semibold text-slate-800 dark:text-slate-100">금액·결제정보가 자동 반영</span>되어 실수 가능성이 줄어들어요.
                   </p>
+                </div>
+
+                {/* 이미 주문/대여 내역이 있다면: 마이페이지에서 선택 후 신청으로 연결 */}
+                <div className="mt-4 bp-sm:mt-5">
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/20 p-4">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <p className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-slate-100">내 주문/대여 내역에서 이어서</p>
+                        <p className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300">마이페이지에서 주문/대여를 선택하면 신청서로 자동 연결돼요</p>
+                      </div>
+
+                      <div className="flex w-full bp-sm:w-auto gap-2">
+                        <Button type="button" variant="outline" className="flex-1 bp-sm:flex-none" onClick={() => router.push('/mypage?tab=orders')}>
+                          주문 내역
+                        </Button>
+                        <Button type="button" variant="outline" className="flex-1 bp-sm:flex-none" onClick={() => router.push('/mypage?tab=rentals')}>
+                          대여 내역
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
