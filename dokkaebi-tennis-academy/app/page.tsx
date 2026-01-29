@@ -36,9 +36,11 @@ type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
 const SLIDES = [
   {
     img: 'dokkaebi(1).jpg',
+    // imgMobile: '',
     alt: '이벤트',
     href: '/board/notice',
     caption: '신규 입고 & 이벤트',
+    // objectPosition: 'center 20%',
   },
   {
     img: 'dokkaebi(1).jpg',

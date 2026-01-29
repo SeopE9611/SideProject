@@ -231,7 +231,6 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
         </div>
       </div>
 
-      {/* ✅ 수거 방식: 2열 grid 밖으로 빼서 풀폭 + 카드 배치 안정화 */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">
           수거 방식 <span className="text-red-500">*</span>

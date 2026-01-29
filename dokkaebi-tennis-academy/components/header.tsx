@@ -83,18 +83,11 @@ const Header = () => {
   const measureRef = useRef<HTMLDivElement | null>(null);
 
   const [overflowCount, setOverflowCount] = useState(0);
+  // "⋯ 더보기" 드롭다운은 Header(레이아웃)에 남아있어서 라우트 이동 시 open 상태가 유지될 수 있음
+  const [overflowMenuOpen, setOverflowMenuOpen] = useState(false);
 
-  /**
-   * 데스크톱 헤더: 화면 리사이즈 시 메뉴가 "..."로 접히거나 다시 펼쳐지는 기준을
-   * 현재 레이아웃(실제 DOM 너비)에만 의존해서 계산합니다.
-   *
-   * ✅ 중요한 포인트
-   * - "이전 상태"나 "가드(성장했을 때만 펼치기)"를 두지 않습니다.
-   *   → 1536↔1535 같은 브레이크포인트 전환에서도 메뉴가 정상적으로 다시 펼쳐집니다.
-   * - `getBoundingClientRect()` 대신 `offsetWidth`를 사용합니다.
-   *   → 상위 요소에 transform(scale) 같은 효과가 있어도 측정이 안정적입니다.
-   */
   const recomputeOverflow = useCallback(() => {
+    // nav 폭 + 실제 메뉴 텍스트 폭(활성 시 font-semibold 포함)을 기준으로 overflow 계산
     const navEl = navRef.current;
     const root = measureRef.current;
     if (!navEl || !root) return;
@@ -114,7 +107,9 @@ const Header = () => {
     const n = itemWidths.length;
     if (n === 0) return;
 
-    const available = Math.max(0, navEl.clientWidth);
+    // 상단 헤더는 스크롤 시 transform: scale(...)을 사용하므로,
+    // clientWidth는 "스케일 전" 레이아웃 폭이라 계산이 틀어질 수 있음 → getBoundingClientRect() 사용
+    const available = Math.max(0, navEl.getBoundingClientRect().width);
 
     const prefixWidth = (count: number) => {
       if (count <= 0) return 0;
@@ -125,8 +120,9 @@ const Header = () => {
     };
 
     let nextOverflow = 0;
+    let found = false;
 
-    // 가능한 한 많이 보여주되, 안 들어가면 끝에서부터 "..."로 보냅니다.
+    // 가능한 한 많이 보여주되, 안 들어가면 끝에서부터 "..."로
     for (let visible = n; visible >= 0; visible--) {
       const overflow = n - visible;
       const base = prefixWidth(visible);
@@ -134,18 +130,32 @@ const Header = () => {
 
       if (total <= available) {
         nextOverflow = overflow;
+        found = true;
         break;
       }
+    }
+
+    // FAIL-SAFE:
+    // 어떤 이유로든(폰트 로딩/활성 메뉴 bold/아주 작은 폭) 위 루프에서 매칭을 못 찾으면,
+    // 최소한 "⋯"는 보이도록 전부 overflow 처리.
+    if (!found) {
+      nextOverflow = n; // visibleCount = 0 → "⋯"만 노출
     }
 
     setOverflowCount((prev) => (prev === nextOverflow ? prev : nextOverflow));
   }, []);
 
   useLayoutEffect(() => {
-    // 첫 페인트 직후 너비가 확정되기 전에 계산이 한번 틀어지는 케이스가 있어
-    // 레이아웃 단계에서 1회 계산해 둡니다.
     recomputeOverflow();
   }, [recomputeOverflow]);
+
+  // 페이지 이동 시(활성 메뉴 font-semibold으로 폭 변화)에도 overflow 재계산
+  useEffect(() => {
+    // 라우트 이동하면 드롭다운(⋯)은 무조건 닫기
+    setOverflowMenuOpen(false);
+    recomputeOverflow();
+    // 스크롤 상태 변화(scale 변경)도 실측 폭에 영향을 주므로 재계산 트리거로 포함
+  }, [recomputeOverflow, pathname, isScrolled]);
 
   useEffect(() => {
     const navEl = navRef.current;
@@ -158,7 +168,7 @@ const Header = () => {
     window.addEventListener('resize', onResize);
 
     // 폰트 로딩(특히 첫 진입 시)이 끝난 뒤 텍스트 폭이 바뀌면 오차가 생길 수 있어
-    // best-effort로 한번 더 계산합니다.
+    // best-effort로 한번 더 계산
     const fonts = (document as any).fonts as FontFaceSet | undefined;
     if (fonts?.ready) {
       fonts.ready.then(() => recomputeOverflow()).catch(() => {});
@@ -869,7 +879,7 @@ const Header = () => {
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={`inline-flex items-center h-9 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
+                      className={`inline-flex shrink-0 items-center h-9 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
                       ${active ? 'text-blue-600 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/30 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50'}`}
                       aria-current={active ? 'page' : undefined}
                       aria-label={`${item.name} 페이지로 이동`}
@@ -881,12 +891,13 @@ const Header = () => {
 
                 {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
                 {overflowMenuItems.length > 0 && (
-                  <DropdownMenu>
+                  <DropdownMenu open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
-          text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50"
+                        className="inline-flex shrink-0 items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
+                      text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50
+                        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         aria-label="더보기 메뉴"
                       >
                         ⋯
@@ -903,6 +914,7 @@ const Header = () => {
                             className={active ? 'bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 font-semibold' : undefined}
                             onSelect={(e) => {
                               e.preventDefault();
+                              setOverflowMenuOpen(false);
                               router.push(item.href);
                             }}
                           >
@@ -930,12 +942,12 @@ const Header = () => {
               <div ref={measureRef} className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
                 <div data-measure-wrap className="flex items-center gap-1.5 ml-2 whitespace-nowrap">
                   {menuItems.map((it) => (
-                    <span key={`measure-${it.name}`} data-measure-item className="inline-flex items-center h-9 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap">
+                    <span key={`measure-${it.name}`} data-measure-item className="inline-flex shrink-0 items-center h-9 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
                       {it.name}
                     </span>
                   ))}
 
-                  <span data-measure-dots className="inline-flex items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap">
+                  <span data-measure-dots className="inline-flex shrink-0 items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none whitespace-nowrap font-semibold">
                     ⋯ <ChevronDown className="h-4 w-4" aria-hidden="true" />
                   </span>
                 </div>

@@ -41,7 +41,7 @@ function variantCopy(variant: LoginGateVariant) {
         { icon: <Truck className="h-4 w-4 text-sky-600" />, text: '배송/수령 상태 확인' },
         { icon: <Shield className="h-4 w-4 text-emerald-600" />, text: '안전한 결제/보안' },
       ] satisfies Perk[],
-      secondary: { href: '/cart', label: '장바구니로' },
+      secondary: { href: '/', label: '홈으로' },
     };
   }
 
@@ -85,11 +85,9 @@ export default function LoginGate({ next, variant = 'default' }: { next: string;
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
           <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] backdrop-blur-sm bg-white/90 dark:bg-slate-800/85">
-            {/* top gradient bar */}
             <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500" />
 
             <CardContent className="p-8">
-              {/* Icon bubble */}
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white grid place-content-center shadow-lg mb-6">
                 <LogIn className="h-7 w-7" />
               </div>
@@ -99,7 +97,6 @@ export default function LoginGate({ next, variant = 'default' }: { next: string;
               </h1>
               <p className="text-slate-600 dark:text-slate-300">{v.description}</p>
 
-              {/* perks chips – 테두리 대신 아주 옅은 ring만 */}
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {v.perks.map((p) => (
                   <div key={p.text} className="flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm ring-1 ring-slate-200/70 dark:ring-slate-700/70">
@@ -117,7 +114,7 @@ export default function LoginGate({ next, variant = 'default' }: { next: string;
             <CardFooter className="px-8 pb-8">
               <div className="flex flex-wrap gap-3">
                 <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-                  <Link href={loginHref}>로그인하고 계속하기</Link>
+                  <Link href={loginHref}>로그인·회원가입하기</Link>
                 </Button>
                 <Button asChild variant="outline" className="border-slate-200 dark:border-slate-700">
                   <Link href={v.secondary.href}>{v.secondary.label}</Link>
@@ -125,7 +122,6 @@ export default function LoginGate({ next, variant = 'default' }: { next: string;
               </div>
             </CardFooter>
 
-            {/* soft glows */}
             <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-blue-400/25 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-purple-400/25 blur-3xl" />
           </Card>

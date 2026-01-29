@@ -12,6 +12,7 @@ import PhotosUploader from '@/components/reviews/PhotosUploader';
 import NextImage from 'next/image';
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
+import LoginGate from '@/components/system/LoginGate';
 
 /* ---- 별점 ---- */
 function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: number) => void; disabled?: boolean }) {
@@ -141,6 +142,53 @@ export default function ReviewWritePage() {
   const sp = useSearchParams();
   const router = useRouter();
 
+  // 비회원 주문/신청 차단 정책(클라)
+  // - NEXT_PUBLIC_GUEST_ORDER_MODE: 'off' | 'legacy' | 'on'
+  // - 'on' 일 때만 비회원 허용
+  const rawGuestMode = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const guestOrderMode = rawGuestMode === 'off' || rawGuestMode === 'legacy' || rawGuestMode === 'on' ? rawGuestMode : 'legacy';
+  const allowGuestCheckout = guestOrderMode === 'on';
+
+  // 로그인 여부(비회원 차단 모드에서만 의미 있음)
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const nextUrl = useMemo(() => {
+    const qs = sp.toString();
+    return qs ? `/reviews/write?${qs}` : '/reviews/write';
+  }, [sp]);
+
+  const blockedByLoginGate = !allowGuestCheckout && authChecked && !isAuthenticated;
+
+  // 로그인 상태 체크 (비회원 차단 모드에서만 필요)
+  // - 체크가 끝나기 전에는 아래 useEffect들이(eligibility/신청서 목록/주문 아이템 조회 등) 먼저 fetch를 치지 않도록 가드.
+  useEffect(() => {
+    if (allowGuestCheckout) {
+      setAuthChecked(true);
+      setIsAuthenticated(true);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/users/me', { credentials: 'include' });
+        const user = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        setIsAuthenticated(Boolean((user as any)?.email));
+      } catch {
+        if (cancelled) return;
+        setIsAuthenticated(false);
+      } finally {
+        if (!cancelled) setAuthChecked(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [allowGuestCheckout]);
+
   // URL 파라미터
   const productIdParam = sp.get('productId');
   const orderIdParam = sp.get('orderId'); // URL에서 orderId 읽기
@@ -185,6 +233,8 @@ export default function ReviewWritePage() {
 
   // orderId-only 진입 시 추천 productId 받기
   useEffect(() => {
+    if (!allowGuestCheckout && !authChecked) return;
+    if (blockedByLoginGate) return;
     if (productIdParam || !orderIdParam || resolvedProductId) return;
     let aborted = false;
     (async () => {
@@ -224,10 +274,12 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [productIdParam, orderIdParam, resolvedProductId, resolvedOrderId]);
+  }, [productIdParam, orderIdParam, resolvedProductId, resolvedOrderId, allowGuestCheckout, authChecked, blockedByLoginGate]);
 
   // 일반 eligibility 검사
   useEffect(() => {
+    if (!allowGuestCheckout && !authChecked) return;
+    if (blockedByLoginGate) return;
     let aborted = false;
     async function run() {
       setState('loading');
@@ -272,10 +324,12 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [mode, resolvedProductId, resolvedOrderId, orderIdParam]);
+  }, [mode, resolvedProductId, resolvedOrderId, orderIdParam, allowGuestCheckout, authChecked, blockedByLoginGate]);
 
   // 서비스 모드: 내 신청서 목록 + 추천값 세팅
   useEffect(() => {
+    if (!allowGuestCheckout && !authChecked) return;
+    if (blockedByLoginGate) return;
     if (mode !== 'service') return;
     let aborted = false;
 
@@ -330,10 +384,12 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [mode, applicationIdParam]);
+  }, [mode, applicationIdParam, allowGuestCheckout, authChecked, blockedByLoginGate]);
 
   // 서비스 모드: 신청서 선택 시 그 대상으로 재검사
   useEffect(() => {
+    if (!allowGuestCheckout && !authChecked) return;
+    if (blockedByLoginGate) return;
     if (mode !== 'service' || !selectedAppId) return;
     let aborted = false;
     (async () => {
@@ -348,12 +404,12 @@ export default function ReviewWritePage() {
         return;
       }
       const d = await r.json();
-      setState(d.eligible ? 'ok' : d.reason ?? 'error');
+      setState(d.eligible ? 'ok' : (d.reason ?? 'error'));
     })();
     return () => {
       aborted = true;
     };
-  }, [mode, selectedAppId]);
+  }, [mode, selectedAppId, allowGuestCheckout, authChecked, blockedByLoginGate]);
 
   // 선택된 AppLite 계산
   const selectedApp = useMemo(() => apps.find((a) => a._id === selectedAppId) || null, [apps, selectedAppId]);
@@ -369,19 +425,21 @@ export default function ReviewWritePage() {
     state === 'loading'
       ? '검증 중…'
       : state === 'already'
-      ? '이미 작성한 대상입니다'
-      : state === 'notPurchased'
-      ? '구매/이용 이력이 없습니다'
-      : state === 'unauthorized'
-      ? '로그인이 필요합니다'
-      : state === 'invalid'
-      ? '작성 불가'
-      : state === 'error'
-      ? '오류'
-      : null;
+        ? '이미 작성한 대상입니다'
+        : state === 'notPurchased'
+          ? '구매/이용 이력이 없습니다'
+          : state === 'unauthorized'
+            ? '로그인이 필요합니다'
+            : state === 'invalid'
+              ? '작성 불가'
+              : state === 'error'
+                ? '오류'
+                : null;
 
   // 주문 아이템 + 현재 상품 메타 로드
   useEffect(() => {
+    if (!allowGuestCheckout && !authChecked) return;
+    if (blockedByLoginGate) return;
     let aborted = false;
     // 주문 아이템
     if (resolvedOrderId) {
@@ -412,7 +470,7 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [resolvedOrderId, resolvedProductId]);
+  }, [resolvedOrderId, resolvedProductId, allowGuestCheckout, authChecked, blockedByLoginGate]);
 
   // orderItems/현재 상품 변경 때 currentMeta 보정 (주문 스냅샷 우선)
   useEffect(() => {
@@ -506,6 +564,18 @@ export default function ReviewWritePage() {
     }
   };
 
+  // 비회원 차단
+  if (!allowGuestCheckout && !authChecked) {
+    return (
+      <div className="grid min-h-[100svh] place-items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  if (blockedByLoginGate) {
+    return <LoginGate next={nextUrl} variant="default" />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.08] pointer-events-none">
@@ -594,8 +664,8 @@ export default function ReviewWritePage() {
                     const statusClass = it.reviewed
                       ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300'
                       : isCurrent
-                      ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300'
-                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+                        ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
 
                     return (
                       <div key={it.productId} className={`flex items-center gap-3 rounded-lg p-3 ${statusClass} transition-all duration-200 hover:shadow-sm`}>

@@ -291,21 +291,8 @@ export default function StringPackagesPage() {
 
   if (isLoading && packages.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="max-w-6xl mx-auto px-4 py-16">
-          <div className="h-6 w-48 mb-6 bg-slate-200 rounded animate-pulse" />
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, idx) => (
-              <div key={idx} className="rounded-3xl bg-white p-6 shadow-sm flex flex-col gap-4 animate-pulse">
-                <div className="h-4 w-24 bg-slate-200 rounded" />
-                <div className="h-8 w-32 bg-slate-200 rounded" />
-                <div className="h-4 w-20 bg-slate-200 rounded" />
-                <div className="h-24 w-full bg-slate-100 rounded" />
-                <div className="h-10 w-full bg-slate-200 rounded mt-4" />
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="grid min-h-[100svh] place-items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -463,10 +450,10 @@ export default function StringPackagesPage() {
                       pkg.color === 'blue'
                         ? 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20'
                         : pkg.color === 'indigo'
-                        ? 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20'
-                        : pkg.color === 'purple'
-                        ? 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20'
-                        : 'from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20'
+                          ? 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20'
+                          : pkg.color === 'purple'
+                            ? 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20'
+                            : 'from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20'
                     } rounded-xl p-4`}
                   >
                     <h4 className="font-semibold mb-3 flex items-center">
@@ -487,10 +474,10 @@ export default function StringPackagesPage() {
                       pkg.color === 'blue'
                         ? 'from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700'
                         : pkg.color === 'indigo'
-                        ? 'from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700'
-                        : pkg.color === 'purple'
-                        ? 'from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700'
-                        : 'from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700'
+                          ? 'from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700'
+                          : pkg.color === 'purple'
+                            ? 'from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700'
+                            : 'from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700'
                     } text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300`}
                     asChild
                   >

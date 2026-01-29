@@ -67,7 +67,13 @@ export default function MypageClient({ user }: Props) {
     setLoading(false);
   }, []);
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="grid min-h-[100svh] place-items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   if (!user) return null;
 
   const currentTab = searchParams.get('tab') ?? 'activity'; // 마이페이지 첫 진입 시 “전체”를 기본으로
