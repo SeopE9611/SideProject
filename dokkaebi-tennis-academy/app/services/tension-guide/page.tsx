@@ -388,12 +388,12 @@ export default function TensionGuidePage() {
                       </p>
                     </div>
 
-                    <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] text-white transition-all duration-200">
+                    {/* <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] text-white transition-all duration-200">
                       <Link href="/services/apply">
                         이 텐션으로 스트링 신청하기
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
-                    </Button>
+                    </Button> */}
                   </CardContent>
                 </Card>
 
