@@ -22,6 +22,7 @@ import Step4FinalRequest from '@/app/services/apply/_components/steps/Step4Final
 import ApplyStepFooter from '@/app/services/apply/_components/steps/ApplyStepFooter';
 import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
 import LoginGate from '@/components/system/LoginGate';
+import { Button } from '@/components/ui/button';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -85,6 +86,7 @@ export default function StringServiceApplyPage() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const rentalId = searchParams.get('rentalId');
+  const mode = searchParams.get('mode');
   const [loading, setLoading] = useState(true);
 
   // PDP에서 넘어온 상품의 미니 정보(이름, 이미지)
@@ -1869,6 +1871,72 @@ export default function StringServiceApplyPage() {
   }
 
   if (blockedByLoginGate) return <LoginGate next={nextUrl} variant="default" />;
+
+  const shouldShowEntryChooser = !isOrderBased && !isRentalBased && !pdpProductId && mode !== 'single';
+
+  if (shouldShowEntryChooser)
+    return (
+      <div className="min-h-full bg-white dark:bg-slate-950 bp-lg:bg-gradient-to-br bp-lg:from-slate-50 bp-lg:via-blue-50 bp-lg:to-indigo-100 bp-lg:dark:from-slate-900 bp-lg:dark:via-slate-800 bp-lg:dark:to-slate-900">
+        <ApplyHero />
+
+        <div className="container mx-auto px-4 py-8 bp-sm:py-12">
+          <div className="mx-auto max-w-4xl">
+            <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm dark:bg-gray-800/95 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 bp-sm:p-8 text-center text-white">
+                <h1 className="text-2xl bp-sm:text-3xl font-bold">교체·장착 신청</h1>
+                <p className="mt-2 text-blue-100">어떤 방식으로 진행할까요?</p>
+              </div>
+
+              <CardContent className="p-5 bp-sm:p-6 bp-md:p-8">
+                <div className="grid grid-cols-1 bp-md:grid-cols-3 gap-4">
+                  <Card className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base bp-sm:text-lg">스트링 구매하고 신청</CardTitle>
+                      <CardDescription className="text-xs bp-sm:text-sm">스트링 결제 후 신청서가 자동으로 연결돼요</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <Button type="button" className="w-full" onClick={() => router.push('/products')}>
+                        스트링 보러가기
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base bp-sm:text-lg">라켓 고르고 신청</CardTitle>
+                      <CardDescription className="text-xs bp-sm:text-sm">구매·대여 후 스트링까지 함께 신청해요</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <Button type="button" className="w-full" onClick={() => router.push('/rackets')}>
+                        라켓 보러가기
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base bp-sm:text-lg">신청서만 작성</CardTitle>
+                      <CardDescription className="text-xs bp-sm:text-sm">이미 라켓·스트링이 있다면 바로 작성해요</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <Button type="button" variant="outline" className="w-full" onClick={() => router.push('/services/apply?mode=single')}>
+                        단독 신청하기
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-5 bp-sm:mt-6 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 p-4 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300">
+                  <p className="leading-relaxed">
+                    결제(주문) 이후 신청으로 진행하면 <span className="font-semibold text-slate-800 dark:text-slate-100">금액·결제정보가 자동 반영</span>되어 실수 가능성이 줄어들어요.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
 
   return (
     <div className="min-h-full bg-white dark:bg-slate-950 bp-lg:bg-gradient-to-br bp-lg:from-slate-50 bp-lg:via-blue-50 bp-lg:to-indigo-100 bp-lg:dark:from-slate-900 bp-lg:dark:via-slate-800 bp-lg:dark:to-slate-900">

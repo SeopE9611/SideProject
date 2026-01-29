@@ -219,7 +219,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
   // 신청서로 돌아갈 URL (orderId를 응답에 포함시키고 있으니 그걸 사용)
   const applyUrl = useMemo(() => {
     const oid = (application as any)?.orderId;
-    return oid ? `/services/apply?orderId=${oid}` : '/services/apply';
+    return oid ? `/services/apply?orderId=${oid}` : '/services/apply?mode=single';
   }, [application]);
 
   const [form, setForm] = useState<FormValues>(initial);
