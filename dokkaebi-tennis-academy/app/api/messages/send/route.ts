@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
   const toOid = new ObjectId(toUserId);
   const toUser = (await db.collection('users').findOne({ _id: toOid, isDeleted: { $ne: true } }, { projection: { name: 1, role: 1 } })) as null | { name?: string; role?: string };
 
-  if (!toUser) return NextResponse.json({ ok: false, error: '받는 사용자를 찾을 수 없습니다.' }, { status: 404 });
+  if (!toUser) return NextResponse.json({ ok: false, error: '사용자를 찾을 수 없습니다. \n (탈퇴한 회원)' }, { status: 404 });
 
   const isFromAdmin = me.role === 'admin';
   const isToAdmin = toUser.role === 'admin';
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
           required: { posts: 5, comments: 5 },
           current: { posts: postCount, comments: commentCount },
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
   }

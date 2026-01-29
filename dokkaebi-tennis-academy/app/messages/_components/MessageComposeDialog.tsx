@@ -118,7 +118,7 @@ export default function MessageComposeDialog({ open, onOpenChange, toUserId, toN
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending} className="min-w-[80px]">
             취소
           </Button>
-          <Button onClick={handleSend} disabled={isSending} className="min-w-[100px] gap-2">
+          <Button variant="outline" onClick={handleSend} disabled={isSending} className="min-w-[100px] gap-2">
             {isSending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />

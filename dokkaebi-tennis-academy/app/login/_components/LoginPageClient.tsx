@@ -419,7 +419,7 @@ export default function LoginPageClient() {
           return;
         }
 
-        showSuccessToast('회원가입이 완료되었습니다. 로그인되었습니다.');
+        showSuccessToast('회원가입이 완료되었습니다.');
         resetRegisterForm();
         router.push(data?.redirectTo || '/');
         router.refresh();
