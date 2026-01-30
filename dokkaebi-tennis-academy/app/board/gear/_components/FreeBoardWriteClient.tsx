@@ -328,7 +328,7 @@ export default function FreeBoardWriteClient() {
               <span>글쓰기</span>
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">장비 사용기 글쓰기</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.</p>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">장비 사용기 글을 작성해보세요.</p>
           </div>
 
           {/* 우측 버튼들: 목록으로 / 게시판 홈 */}

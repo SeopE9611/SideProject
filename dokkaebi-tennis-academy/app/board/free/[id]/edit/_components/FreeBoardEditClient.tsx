@@ -1,11 +1,11 @@
 'use client';
 
-import { FormEvent, useEffect, useState, useRef, ChangeEvent } from 'react';
+import { FormEvent, useEffect, useState, useRef, ChangeEvent, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, ArrowLeft, Loader2, Upload, X } from 'lucide-react';
+import { MessageSquare, ArrowLeft, Loader2, Upload, X, AlertTriangle } from 'lucide-react';
 import useSWR, { mutate as globalMutate } from 'swr';
-
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,14 +61,79 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 기존 글 불러오기
   const { data, error, isLoading } = useSWR<DetailResponse>(`/api/community/posts/${id}`, fetcher);
 
+  /* 이탈 경고 */
+  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보가 초기화될 수 있습니다.\n수정 중이라면 취소를 눌러 현재 페이지에 머물러 주세요.';
+
+  type Baseline = {
+    title: string;
+    content: string;
+    category: string;
+    imagesJson: string;
+  };
+  const baselineRef = useRef<Baseline | null>(null);
+
+  const isDirty = useMemo(() => {
+    const b = baselineRef.current;
+    if (!b) return false;
+
+    const imagesJson = JSON.stringify(images);
+    return title !== b.title || content !== b.content || String(category) !== b.category || imagesJson !== b.imagesJson || selectedFiles.length > 0;
+  }, [title, content, category, images, selectedFiles.length]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    if (isSubmitting || isUploadingImages || isUploadingFiles) return;
+
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty, isSubmitting, isUploadingImages, isUploadingFiles]);
+
+  const confirmLeaveIfDirty = (go: () => void) => {
+    if (!isDirty) return go();
+    if (isSubmitting || isUploadingImages || isUploadingFiles) return;
+
+    const ok = window.confirm(confirmLeaveMessage);
+    if (ok) go();
+  };
+
+  const onLeaveLinkClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {
+    if (!isDirty) return;
+    if (isSubmitting || isUploadingImages || isUploadingFiles) return;
+
+    const ok = window.confirm(confirmLeaveMessage);
+    if (!ok) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   // 최초 로드 시 기존 제목/내용/이미지/첨부 세팅
   useEffect(() => {
     if (data && data.ok) {
       const item = data.item;
-      setTitle(item.title ?? '');
-      setContent(item.content ?? '');
-      setImages(Array.isArray(item.images) ? item.images : []);
-      setCategory((data.item.category as any) ?? 'general');
+      const nextTitle = item.title ?? '';
+      const nextContent = item.content ?? '';
+      const nextImages = Array.isArray(item.images) ? item.images : [];
+      const nextCategory = ((data.item.category as any) ?? 'general') as any;
+
+      setTitle(nextTitle);
+      setContent(nextContent);
+      setImages(nextImages);
+      setCategory(nextCategory);
+
+      // 최초 1회만 baseline 저장 (초기 로드 값 기준으로 dirty 판단)
+      if (!baselineRef.current) {
+        baselineRef.current = {
+          title: nextTitle,
+          content: nextContent,
+          category: String(nextCategory),
+          imagesJson: JSON.stringify(nextImages),
+        };
+      }
 
       if (Array.isArray(item.attachments)) {
         setAttachments(item.attachments as AttachmentItem[]);
@@ -304,7 +369,7 @@ export default function FreeBoardEditClient({ id }: Props) {
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
-              <Link href="/board/free" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
+              <Link href="/board/free" onClick={onLeaveLinkClick} className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
                 자유 게시판
               </Link>
               <span className="mx-1">›</span>
@@ -312,16 +377,23 @@ export default function FreeBoardEditClient({ id }: Props) {
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">자유 게시판 글 수정</h1>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.</p>
+            {/* 이탈 경고(고정 노출) */}
+            <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+              <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
+              <p className="leading-relaxed">
+                <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나 새로고침하면 입력한 내용이 <span className="font-semibold">초기화될 수 있습니다.</span>
+              </p>
+            </div>
           </div>
 
           {/* 우측 상단: 뒤로가기 */}
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="ghost" size="sm" className="gap-2 text-xs sm:text-sm" onClick={() => router.back()}>
+            <Button type="button" variant="ghost" size="sm" className="gap-2 text-xs sm:text-sm" onClick={() => confirmLeaveIfDirty(() => router.back())}>
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
             <Button asChild variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-              <Link href="/board/free">
+              <Link href="/board/free" onClick={onLeaveLinkClick}>
                 <MessageSquare className="h-4 w-4" />
                 <span>목록으로</span>
               </Link>
@@ -351,7 +423,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       onClick={() => setCategory(opt.value)}
                       className={cn(
                         'rounded-full border px-2 py-0.5 text-[11px]',
-                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300'
+                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300',
                       )}
                     >
                       {opt.label}
@@ -470,7 +542,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
               {/* 하단 버튼 */}
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" size="sm" className={cn('gap-2')} disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={() => router.push(`/board/free/${id}`)}>
+                <Button type="button" variant="outline" size="sm" className={cn('gap-2')} disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={() => confirmLeaveIfDirty(() => router.push(`/board/free/${id}`))}>
                   <ArrowLeft className="h-4 w-4" />
                   <span>취소</span>
                 </Button>

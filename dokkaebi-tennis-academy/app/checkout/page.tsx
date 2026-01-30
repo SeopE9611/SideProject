@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,11 +12,11 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CartItem, useCartStore } from '@/app/store/cartStore';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import CheckoutButton from '@/app/checkout/CheckoutButton';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
-import { CreditCard, MapPin, Truck, Shield, CheckCircle, UserIcon, Mail, Phone, Home, MessageSquare, Building2, Package, Star } from 'lucide-react';
+import { CreditCard, MapPin, Truck, Shield, CheckCircle, UserIcon, Mail, Phone, Home, MessageSquare, Building2, Package, Star, AlertTriangle } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { bankLabelMap } from '@/lib/constants';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
@@ -71,9 +72,13 @@ export default function CheckoutPage() {
   // 2) 기존 상태
   const [withStringService, setWithStringService] = useState(false);
 
+  // 이탈 경고/초기값 스냅샷을 위한 초기화 플래그
+  const initFlagsRef = useRef({ withServiceApplied: false, prefillDone: false });
+
   // 3) 최초 마운트 시 URL 파라미터가 1이면 기본 ON
   useEffect(() => {
     setWithStringService(withServiceParam === '1');
+    initFlagsRef.current.withServiceApplied = true;
   }, [withServiceParam]);
   const mode = sp.get('mode'); // 'buynow' | null
 
@@ -282,6 +287,107 @@ export default function CheckoutPage() {
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
 
+  /* 이탈 경고 */
+  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보가 초기화될 수 있습니다.\\n작성 중이라면 취소를 눌러 현재 페이지에 머물러 주세요.';
+
+  type CheckoutBaseline = {
+    withStringService: boolean;
+    selectedBank: string;
+    deliveryMethod: '택배수령' | '방문수령';
+    servicePickupMethod: ServicePickup;
+    name: string;
+    phone: string;
+    email: string;
+    postalCode: string;
+    address: string;
+    addressDetail: string;
+    deliveryRequest: string;
+    depositor: string;
+    pointsToUse: number;
+    agreeTerms: boolean;
+    agreePrivacy: boolean;
+    agreeRefund: boolean;
+  };
+
+  const baselineRef = useRef<CheckoutBaseline | null>(null);
+
+  // 초기값(프리필/URL 파라미터 적용이 끝난 시점)을 1회 스냅샷으로 저장
+  useEffect(() => {
+    if (baselineRef.current) return;
+    if (loading) return;
+    if (!initFlagsRef.current.withServiceApplied) return;
+
+    // 로그인 유저라면 /api/users/me 프리필이 끝난 뒤에 스냅샷을 잡아야 "아무 것도 안 했는데 경고"가 뜨지 않음
+    if (user && !initFlagsRef.current.prefillDone) return;
+
+    baselineRef.current = {
+      withStringService,
+      selectedBank,
+      deliveryMethod,
+      servicePickupMethod,
+      name,
+      phone,
+      email,
+      postalCode,
+      address,
+      addressDetail,
+      deliveryRequest,
+      depositor,
+      pointsToUse,
+      agreeTerms,
+      agreePrivacy,
+      agreeRefund,
+    };
+  }, [loading, user, withStringService, selectedBank, deliveryMethod, servicePickupMethod, name, phone, email, postalCode, address, addressDetail, deliveryRequest, depositor, pointsToUse, agreeTerms, agreePrivacy, agreeRefund]);
+
+  const isDirty = useMemo(() => {
+    const b = baselineRef.current;
+    if (!b) return false;
+
+    return (
+      b.withStringService !== withStringService ||
+      b.selectedBank !== selectedBank ||
+      b.deliveryMethod !== deliveryMethod ||
+      b.servicePickupMethod !== servicePickupMethod ||
+      b.name !== name ||
+      b.phone !== phone ||
+      b.email !== email ||
+      b.postalCode !== postalCode ||
+      b.address !== address ||
+      b.addressDetail !== addressDetail ||
+      b.deliveryRequest !== deliveryRequest ||
+      b.depositor !== depositor ||
+      b.pointsToUse !== pointsToUse ||
+      b.agreeTerms !== agreeTerms ||
+      b.agreePrivacy !== agreePrivacy ||
+      b.agreeRefund !== agreeRefund
+    );
+  }, [withStringService, selectedBank, deliveryMethod, servicePickupMethod, name, phone, email, postalCode, address, addressDetail, deliveryRequest, depositor, pointsToUse, agreeTerms, agreePrivacy, agreeRefund]);
+
+  // 새로고침/탭 닫기/브라우저 뒤로가기(주소창) 등 브라우저 레벨 이탈 경고
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty]);
+
+  // 내부 링크(예: 장바구니로 돌아가기) 클릭 시 confirm 경고
+  const onLeaveCartClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {
+    if (!isDirty) return;
+
+    const ok = window.confirm(confirmLeaveMessage);
+    if (!ok) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   const isLoggedIn = !!user;
   const needsShippingAddress = deliveryMethod === '택배수령';
 
@@ -342,17 +448,22 @@ export default function CheckoutPage() {
     if (!user) return;
 
     const fetchUserInfo = async () => {
-      const res = await fetch('/api/users/me', { credentials: 'include' });
-      if (!res.ok) return;
+      try {
+        const res = await fetch('/api/users/me', { credentials: 'include' });
+        if (!res.ok) return;
 
-      const data = await res.json();
+        const data = await res.json();
 
-      setName(data.name || '');
-      setPhone(formatKoreanPhone010(data.phone || ''));
-      setEmail(data.email || '');
-      setPostalCode(data.postalCode || '');
-      setAddress(data.address || '');
-      setAddressDetail(data.addressDetail || '');
+        setName(data.name || '');
+        setPhone(formatKoreanPhone010(data.phone || ''));
+        setEmail(data.email || '');
+        setPostalCode(data.postalCode || '');
+        setAddress(data.address || '');
+        setAddressDetail(data.addressDetail || '');
+      } finally {
+        // 프로필 프리필이 성공/실패하더라도 "초기값 스냅샷" 단계로 넘어갈 수 있게 플래그를 올림
+        initFlagsRef.current.prefillDone = true;
+      }
     };
 
     fetchUserInfo();
@@ -455,6 +566,13 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 bp-lg:grid-cols-3">
           {/* 주문 정보 입력 폼 */}
           <div className="bp-lg:col-span-2 space-y-4 bp-sm:space-y-6">
+            {/* 이탈 경고(고정 노출) */}
+            <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+              <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
+              <p className="leading-relaxed">
+                <span className="font-semibold">주의:</span> 작성 중에 다른 페이지로 이동하거나 새로고침하면 입력한 내용이 <span className="font-semibold">초기화될 수 있습니다.</span>
+              </p>
+            </div>
             {/* 주문 상품 */}
             <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-3 bp-sm:p-4 bp-lg:p-6">
@@ -985,7 +1103,9 @@ export default function CheckoutPage() {
                     pointsToUse={appliedPoints}
                   />
                   <Button variant="outline" className="w-full border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
-                    <Link href="/cart">장바구니로 돌아가기</Link>
+                    <Link href="/cart" onClick={onLeaveCartClick}>
+                      장바구니로 돌아가기
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>

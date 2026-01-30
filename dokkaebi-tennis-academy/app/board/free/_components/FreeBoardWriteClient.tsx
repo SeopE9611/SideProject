@@ -410,11 +410,6 @@ export default function FreeBoardWriteClient() {
 
           <CardContent className="p-6">
             <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* 폼 상단 공통 에러(레이아웃 깨짐 방지: 고정 높이) */}
-              <div aria-live="polite" className="min-h-[20px]">
-                {errorMsg ? <p className="text-sm text-red-600 dark:text-red-400">{errorMsg}</p> : null}
-              </div>
-
               {/* 분류 선택 */}
               <div className="space-y-2" ref={categoryRef}>
                 <Label>분류</Label>
