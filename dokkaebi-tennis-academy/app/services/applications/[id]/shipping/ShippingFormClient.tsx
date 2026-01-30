@@ -4,7 +4,7 @@ import type React from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR, { mutate as globalMutate } from 'swr';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -224,6 +224,28 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
   const [form, setForm] = useState<FormValues>(initial);
 
+  const isDirty = form.courier !== initial.courier || form.trackingNo !== initial.trackingNo || form.shippedAt !== initial.shippedAt || form.note !== initial.note;
+
+  const confirmLeaveIfDirty = (go: () => void) => {
+    if (submitting) return;
+    if (!isDirty) return go();
+    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    if (ok) go();
+  };
+
+  // 브라우저 탭 닫기/새로고침/주소 직접 변경 등 “페이지 이탈” 시 경고
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (submitting) return;
+      if (!isDirty) return;
+      e.preventDefault();
+      // Chrome 정책상 커스텀 문자열은 무시될 수 있지만, 아래 한 줄이 있어야 경고가 뜸
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty, submitting]);
+
   const onChange = (k: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const v = e.target.value;
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -434,11 +456,23 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
           <Card className="border-slate-200 dark:border-slate-700 shadow-lg">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button type="button" variant="outline" onClick={() => history.back()} className="flex-1 h-12 text-base border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => confirmLeaveIfDirty(() => history.back())}
+                  disabled={submitting}
+                  className="flex-1 h-12 text-base border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   돌아가기
                 </Button>
-                <Button type="button" variant="outline" onClick={() => router.push(applyUrl)} className="flex-1 h-12 text-base border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => confirmLeaveIfDirty(() => router.push(applyUrl))}
+                  disabled={submitting}
+                  className="flex-1 h-12 text-base border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
                   <Clock className="w-4 h-4 mr-2" />
                   나중에 등록할게요
                 </Button>
