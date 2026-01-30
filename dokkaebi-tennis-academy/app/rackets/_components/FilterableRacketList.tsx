@@ -146,6 +146,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   // API 호출
   const query = new URLSearchParams();
   query.set('withTotal', '1');
+  if (rentOnly) query.set('rentOnly', '1');
   if (selectedBrand) query.set('brand', selectedBrand);
   if (selectedCondition) query.set('cond', selectedCondition);
   if (submittedQuery) query.set('q', submittedQuery);
@@ -161,13 +162,13 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   /**
    * 중요:
    * filterKey에는 "네트워크 재요청(SWR key 변경)"을 유발하는 값만 넣는다.
-   * - 라켓 페이지는 brand/cond/q만 서버에 보내고,
+   * - 라켓 페이지는 brand/cond/q/rentOnly만 서버에 보내고,
    * - priceMin/priceMax/sortOption은 클라이언트 필터/정렬이므로 제외해야
    *   네트워크 없는 변경에서 스켈레톤이 불필요하게 켜지지 않는다.
    */
   const filterKey = useMemo(() => {
-    return [selectedBrand ?? '', selectedCondition ?? '', submittedQuery ?? ''].join('|');
-  }, [selectedBrand, selectedCondition, submittedQuery]);
+    return [selectedBrand ?? '', selectedCondition ?? '', submittedQuery ?? '', rentOnly ? '1' : '0'].join('|');
+  }, [selectedBrand, selectedCondition, submittedQuery, rentOnly]);
 
   useLayoutEffect(() => {
     if (isInitializingRef.current) return;
@@ -211,9 +212,6 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   const racketsList = useCallback(() => {
     let list = Array.isArray(rackets) ? [...rackets] : [];
 
-    // 대여 가능 라켓만 보기
-    if (rentOnly) list = list.filter((r) => Boolean(r.rental?.enabled));
-
     // 가격 필터
     if (priceMin !== null) list = list.filter((r) => r.price >= priceMin);
     if (priceMax !== null) list = list.filter((r) => r.price <= priceMax);
@@ -225,7 +223,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     }
 
     return list;
-  }, [rackets, sortOption, priceMin, priceMax, rentOnly]);
+  }, [rackets, sortOption, priceMin, priceMax]);
 
   const products = racketsList();
 
@@ -446,8 +444,8 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
               <div className="text-base bp-sm:text-lg font-semibold dark:text-white">
                 {rentOnly ? (
                   <>
-                    대여 가능 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{products.length}</span>}개 라켓
-                    {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-14 align-middle ml-2" /> : <span className="ml-2 text-sm text-muted-foreground">(전체 {total}개)</span>}
+                    대여 가능 총 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{total}</span>}개 라켓
+                    {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="ml-2 text-sm text-muted-foreground">(표시중 {products.length}개)</span>}
                   </>
                 ) : (
                   <>

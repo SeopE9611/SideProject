@@ -75,31 +75,50 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
         {from === 'apply' && (
-          <div className="mb-4 bp-sm:mb-6 rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/90 dark:bg-slate-900/40 backdrop-blur p-4 bp-sm:p-5">
-            <div className="flex items-start justify-between gap-3 flex-wrap">
-              <div className="min-w-0">
-                <p className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-slate-100">교체·장착 신청을 위한 라켓 선택 단계예요</p>
-                <p className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                  라켓을 선택한 뒤, 결제/대여 흐름에서 신청서가 자동으로 이어질 수 있어요.
-                  <span className="block mt-1 text-sm text-slate-500 dark:text-slate-400">[현재 보기: {rentOnly ? '대여 가능 라켓만' : '전체(구매/대여)'}]</span>
-                </p>
-              </div>
+          <div className="sticky top-[72px] z-40 mb-4 bp-sm:mb-6">
+            <div className="rounded-xl border border-blue-200/60 dark:border-blue-800/40 bg-white/90 dark:bg-slate-900/40 backdrop-blur p-4 bp-sm:p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <p className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-slate-100">교체·장착 신청을 위한 라켓 선택 단계예요</p>
+                  <p className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    라켓을 선택한 뒤, 결제/대여 흐름에서 신청서가 자동으로 이어질 수 있어요.
+                    <span className="block mt-1 text-sm text-slate-700 dark:text-slate-200">[현재 보기: {rentOnly ? '대여 가능 라켓만' : '전체(구매/대여)'}]</span>
+                  </p>
+                </div>
 
-              <div className="flex w-full bp-sm:w-auto gap-2 flex-wrap">
-                <Button variant="outline" asChild className="flex-1 bp-sm:flex-none">
-                  <Link href="/services/apply">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    신청 화면으로
-                  </Link>
-                </Button>
+                <div className="flex w-full bp-sm:w-auto items-center gap-2 flex-wrap">
+                  <Button asChild variant="outline" className="flex-1 bp-sm:flex-none border-blue-200 dark:border-blue-700">
+                    <Link href="/services/apply" className="flex items-center gap-2">
+                      <span className="text-base">←</span>
+                      신청 화면으로
+                    </Link>
+                  </Button>
 
-                <Button asChild variant={rentOnly ? 'outline' : 'default'} className={rentOnly ? 'flex-1 bp-sm:flex-none' : 'flex-1 bp-sm:flex-none bg-blue-600 hover:bg-blue-700 text-white'}>
-                  <Link href="/rackets?from=apply">전체 라켓 보기</Link>
-                </Button>
+                  {/* segmented-control: 전체 / 대여가능만 */}
+                  <div className="flex-1 bp-sm:flex-none">
+                    <div className="inline-flex w-full bp-sm:w-[320px] rounded-full border border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-800 p-1">
+                      <Link
+                        href="/rackets?from=apply"
+                        aria-current={!rentOnly ? 'page' : undefined}
+                        className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                          rentOnly ? 'text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'bg-blue-600 hover:bg-blue-700 text-white shadow'
+                        }`}
+                      >
+                        전체보기
+                      </Link>
 
-                <Button asChild variant={rentOnly ? 'default' : 'outline'} className={rentOnly ? 'flex-1 bp-sm:flex-none bg-blue-600 hover:bg-blue-700 text-white' : 'flex-1 bp-sm:flex-none'}>
-                  <Link href="/rackets?from=apply&rentOnly=1">대여 가능 라켓만 보기</Link>
-                </Button>
+                      <Link
+                        href="/rackets?from=apply&rentOnly=1"
+                        aria-current={rentOnly ? 'page' : undefined}
+                        className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                          rentOnly ? 'bg-blue-600 hover:bg-blue-700 text-white shadow' : 'text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                        }`}
+                      >
+                        대여가능만
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

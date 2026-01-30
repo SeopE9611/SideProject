@@ -24,6 +24,11 @@ export async function GET(req: Request) {
     return v === '1' || v === 'true' || v === 'yes';
   })();
 
+  const rentOnly = (() => {
+    const v = (searchParams.get('rentOnly') ?? '').toLowerCase();
+    return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+  })();
+
   const q: any = { $or: [{ status: { $exists: false } }, { status: { $nin: ['inactive', '비노출', 'sold'] } }] };
 
   // 브랜드(대소문자 무시) — 예: ?brand=yonex
@@ -31,6 +36,9 @@ export async function GET(req: Request) {
 
   // 상태등급 필터 — 예: ?cond=A
   if (cond === 'A' || cond === 'B' || cond === 'C') q.condition = cond;
+
+  // 대여 가능만 보기: rental.enabled=true
+  if (rentOnly) q['rental.enabled'] = true;
 
   // 키워드 검색: model(기본) + brand(보조)
   if (keyword) {
