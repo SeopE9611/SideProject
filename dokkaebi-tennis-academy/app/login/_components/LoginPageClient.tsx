@@ -287,7 +287,7 @@ export default function LoginPageClient() {
       setUser(meUser);
       showSuccessToast('로그인되었습니다.');
 
-      const redirectToRaw = params.get('redirectTo') || '/';
+      const redirectToRaw = params.get('next') || params.get('redirectTo') || '/';
       const redirectTo = safeRedirectTarget(redirectToRaw);
 
       // 로그인 페이지로 "뒤로가기" 했을 때 다시 로그인 폼이 보이지 않도록 replace가 더 안전

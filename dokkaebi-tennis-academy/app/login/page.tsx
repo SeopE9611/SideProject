@@ -22,9 +22,11 @@ export default async function LoginPage({ searchParams }: PageProps) {
   const user = await getCurrentUser();
   if (user?.id) {
     const sp = await Promise.resolve(searchParams ?? {});
-    const r = sp.redirectTo;
-    const redirectTo = Array.isArray(r) ? r[0] : r;
-    redirect(safeRedirectTarget(redirectTo));
+    const rNext = sp.next;
+    const rRedirectTo = sp.redirectTo;
+    const next = Array.isArray(rNext) ? rNext[0] : rNext;
+    const redirectTo = Array.isArray(rRedirectTo) ? rRedirectTo[0] : rRedirectTo;
+    redirect(safeRedirectTarget(next ?? redirectTo));
   }
   return (
     <Suspense fallback={null}>

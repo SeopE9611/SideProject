@@ -95,8 +95,14 @@ const RacketCard = React.memo(
           </div>
 
           <div className="flex flex-col bp-md:flex-row relative z-10">
-            <div className="relative w-full bp-md:w-48 bp-lg:w-56 h-40 bp-sm:h-64 bp-md:h-48 bp-lg:h-56 overflow-hidden">
-              <Image src={racket.images?.[0] || '/placeholder.svg?height=200&width=200&query=tennis+racket'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover" />
+            <div className="relative w-full bp-md:w-48 bp-lg:w-56 aspect-[4/3] bp-md:aspect-square overflow-hidden">
+              <Image
+                src={racket.images?.[0] || '/placeholder.svg?height=200&width=200&query=tennis+racket'}
+                alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
+                fill
+                sizes="(max-width: 768px) 100vw, 224px"
+                className="object-cover object-center"
+              />
               <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 z-10">
                 <div className="flex items-center gap-2">
                   {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
@@ -170,13 +176,13 @@ const RacketCard = React.memo(
       <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 group relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        <div className="relative">
+        <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
           <Image
             src={racket.images?.[0] || '/placeholder.svg?height=300&width=300&query=tennis+racket'}
             alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
-            width={300}
-            height={300}
-            className="h-40 bp-sm:h-64 bp-md:h-72 bp-lg:h-80 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
             <div className="flex items-center gap-2">
@@ -256,7 +262,7 @@ const RacketCard = React.memo(
       </Card>
     );
   },
-  (prev, next) => prev.racket.id === next.racket.id && prev.viewMode === next.viewMode && prev.brandLabel === next.brandLabel
+  (prev, next) => prev.racket.id === next.racket.id && prev.viewMode === next.viewMode && prev.brandLabel === next.brandLabel,
 );
 
 export default RacketCard;

@@ -23,16 +23,16 @@ export default function AuthGuard({ children }: Props) {
           return;
         }
         if (res.status === 401) {
-          router.replace(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+          router.replace(`/login?next=${encodeURIComponent(redirectTo)}`);
           return;
         }
         if (!res.ok) {
-          router.replace(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+          router.replace(`/login?next=${encodeURIComponent(redirectTo)}`);
           return;
         }
         setIsLoggedIn(true);
       } catch {
-        router.replace(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+        router.replace(`/login?next=${encodeURIComponent(redirectTo)}`);
       } finally {
         setChecked(true);
       }

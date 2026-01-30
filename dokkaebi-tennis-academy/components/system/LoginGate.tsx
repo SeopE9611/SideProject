@@ -78,7 +78,7 @@ function variantCopy(variant: LoginGateVariant) {
 
 export default function LoginGate({ next, variant = 'default' }: { next: string; variant?: LoginGateVariant }) {
   const v = variantCopy(variant);
-  const loginHref = `/login?redirectTo=${encodeURIComponent(next)}`;
+  const loginHref = `/login?next=${encodeURIComponent(next)}`;
 
   return (
     <div className={`${v.minHeight} bg-gradient-to-br from-slate-50 via-blue-50/40 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900`}>

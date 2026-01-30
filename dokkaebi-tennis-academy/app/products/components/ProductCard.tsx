@@ -110,7 +110,9 @@ const ProductCard = React.memo(
           </div>
 
           <div className="flex flex-col bp-md:flex-row relative z-10">
-            <div className="relative w-full bp-md:w-48 h-48 bp-md:h-56 flex-shrink-0">
+            +{' '}
+            <div className="relative w-full bp-md:w-48 aspect-[4/3] bp-md:aspect-square flex-shrink-0 overflow-hidden">
+              <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill sizes="(max-width: 768px) 100vw, 192px" className="object-cover" />
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
               {product.isNew && <Badge className="absolute right-2 top-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
             </div>
@@ -199,13 +201,13 @@ const ProductCard = React.memo(
         <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 group relative">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          <div className="relative">
+          <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
             <Image
               src={(product.images?.[0] as string) || '/placeholder.svg?height=300&width=300&query=tennis+string'}
               alt={product.name}
-              width={300}
-              height={300}
-              className="h-40 bp-sm:h-48 bp-md:h-44 bp-lg:h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
             {product.isNew && <Badge className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
