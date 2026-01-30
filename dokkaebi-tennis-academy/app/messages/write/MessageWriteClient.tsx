@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,30 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // 입력이 하나라도 있으면 "이탈 시 초기화" 대상(= dirty)
+  const isDirty = useMemo(() => title.trim().length > 0 || body.trim().length > 0, [title, body]);
+
+  // 탭 닫기/새로고침/주소 직접 변경 등 브라우저 이탈 감지
+  useEffect(() => {
+    if (!isDirty || loading) return;
+
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      // 크롬/사파리 계열은 returnValue 설정이 있어야 경고가 뜸
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty, loading]);
+
+  const confirmLeaveIfDirty = (go: () => void) => {
+    if (!isDirty || loading) return go();
+    const ok = window.confirm('이 페이지를 벗어나면 입력한 내용은 초기화됩니다. 이동할까요?');
+    if (!ok) return;
+    go();
+  };
 
   const canSubmit = useMemo(() => !!toUser?.id && title.trim().length > 0 && body.trim().length > 0, [toUser, title, body]);
 
@@ -47,12 +71,13 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">쪽지 보내기</CardTitle>
-          <Button variant="outline" onClick={() => router.back()}>
+          <Button variant="outline" onClick={() => confirmLeaveIfDirty(() => router.back())}>
             뒤로
           </Button>
         </CardHeader>
 
         <CardContent className="space-y-4">
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">이 페이지를 벗어나면 입력한 정보는 초기화됩니다.</div>
           <div className="text-sm text-muted-foreground">
             받는 사람: <span className="font-medium text-foreground">{toUser?.name ?? '알 수 없음'}</span>
           </div>
