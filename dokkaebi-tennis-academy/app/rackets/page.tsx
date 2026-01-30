@@ -1,7 +1,7 @@
 import FilterableRacketList from '@/app/rackets/_components/FilterableRacketList';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { ArrowLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
@@ -81,21 +81,24 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                 <p className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-slate-100">교체·장착 신청을 위한 라켓 선택 단계예요</p>
                 <p className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                   라켓을 선택한 뒤, 결제/대여 흐름에서 신청서가 자동으로 이어질 수 있어요.
-                  <span className="block mt-1 text-sm text-slate-500 dark:text-slate-400">[현재 보기: {rentOnly ? '대여 가능 라켓만]' : '전체(구매/대여)]'} </span>
+                  <span className="block mt-1 text-sm text-slate-500 dark:text-slate-400">[현재 보기: {rentOnly ? '대여 가능 라켓만' : '전체(구매/대여)'}]</span>
                 </p>
               </div>
 
               <div className="flex w-full bp-sm:w-auto gap-2 flex-wrap">
-                <Button asChild className="flex-1 bp-sm:flex-none">
-                  <Link href="/services/apply">신청 화면으로</Link>
+                <Button variant="outline" asChild className="flex-1 bp-sm:flex-none">
+                  <Link href="/services/apply">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    신청 화면으로
+                  </Link>
                 </Button>
 
-                <Button asChild variant={rentOnly ? 'outline' : 'default'} className="flex-1 bp-sm:flex-none">
-                  <Link href="/rackets?from=apply">구매만 가능한 라켓 보기</Link>
+                <Button asChild variant={rentOnly ? 'outline' : 'default'} className={rentOnly ? 'flex-1 bp-sm:flex-none' : 'flex-1 bp-sm:flex-none bg-blue-600 hover:bg-blue-700 text-white'}>
+                  <Link href="/rackets?from=apply">전체 라켓 보기</Link>
                 </Button>
 
-                <Button asChild variant={rentOnly ? 'default' : 'outline'} className="flex-1 bp-sm:flex-none">
-                  <Link href="/rackets?from=apply&rentOnly=1">대여만 가능한 라켓 보기</Link>
+                <Button asChild variant={rentOnly ? 'default' : 'outline'} className={rentOnly ? 'flex-1 bp-sm:flex-none bg-blue-600 hover:bg-blue-700 text-white' : 'flex-1 bp-sm:flex-none'}>
+                  <Link href="/rackets?from=apply&rentOnly=1">대여 가능 라켓만 보기</Link>
                 </Button>
               </div>
             </div>

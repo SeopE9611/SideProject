@@ -57,6 +57,8 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [rentOnly, setRentOnly] = useState(() => searchParams.get('rentOnly') === '1');
 
+  const isApplyFlow = searchParams.get('from') === 'apply';
+
   // 필터 상태들
   const [selectedBrand, setSelectedBrand] = useState<string | null>(initialBrand);
   const [selectedCondition, setSelectedCondition] = useState<string | null>(initialCondition);
@@ -105,6 +107,9 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
       const view = searchParams.get('view');
       setViewMode(view === 'list' ? 'list' : 'grid');
 
+      const rent = searchParams.get('rentOnly');
+      setRentOnly(rent === '1');
+
       const q = searchParams.get('q') || '';
       setSearchQuery(q);
       setSubmittedQuery(q);
@@ -129,6 +134,9 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     if (nextMax !== priceMax) setPriceMax(nextMax);
     const sort = searchParams.get('sort') || 'latest';
     if (sort !== sortOption) setSortOption(sort);
+
+    const urlRentOnly = searchParams.get('rentOnly') === '1';
+    if (urlRentOnly !== rentOnly) setRentOnly(urlRentOnly);
 
     const view = searchParams.get('view');
     const desiredView = view === 'list' ? 'list' : 'grid';
@@ -436,8 +444,17 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
           <div className="mb-6 bp-md:mb-8 space-y-3 bp-sm:space-y-0 bp-sm:flex bp-sm:items-center bp-sm:justify-between">
             <div className="flex items-center justify-between gap-3 bp-sm:justify-start">
               <div className="text-base bp-sm:text-lg font-semibold dark:text-white">
-                총 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{total}</span>}개 라켓
-                {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="ml-2 text-sm text-muted-foreground">(표시중 {products.length}개)</span>}
+                {rentOnly ? (
+                  <>
+                    대여 가능 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{products.length}</span>}개 라켓
+                    {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-14 align-middle ml-2" /> : <span className="ml-2 text-sm text-muted-foreground">(전체 {total}개)</span>}
+                  </>
+                ) : (
+                  <>
+                    총 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{total}</span>}개 라켓
+                    {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="ml-2 text-sm text-muted-foreground">(표시중 {products.length}개)</span>}
+                  </>
+                )}
               </div>
               <Button
                 variant="outline"
@@ -453,17 +470,22 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
                 <Filter className="w-4 h-4 mr-2" />
                 필터{activeDraftCount > 0 && `(${activeDraftCount})`}
               </Button>
-              <Button
-                type="button"
-                variant={rentOnly ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setRentOnly((v) => !v)}
-                className="h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                aria-pressed={rentOnly}
-                aria-label="대여 가능 라켓만 보기 토글"
-              >
-                대여만 보기
-              </Button>
+              {!isApplyFlow && (
+                <Button
+                  type="button"
+                  variant={rentOnly ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setRentOnly((v) => !v)}
+                  className={cn(
+                    'h-9 px-3',
+                    rentOnly ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600 dark:border-blue-500' : 'border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20',
+                  )}
+                  aria-pressed={rentOnly}
+                  aria-label="대여 가능 라켓만 보기 토글"
+                >
+                  대여만 보기
+                </Button>
+              )}
             </div>
 
             <div className="flex items-center justify-between gap-3">
