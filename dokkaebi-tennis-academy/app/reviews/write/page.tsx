@@ -211,6 +211,47 @@ export default function ReviewWritePage() {
   const [content, setContent] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 입력/사진/별점 중 하나라도 변경되면 이탈 경고 대상(= dirty)
+  const isDirty = useMemo(() => {
+    return rating !== 5 || content.trim().length > 0 || photos.length > 0;
+  }, [rating, content, photos.length]);
+
+  const resetForm = () => {
+    setRating(5);
+    setContent('');
+    setPhotos([]);
+  };
+
+  const confirmLeaveIfDirty = (go: () => void) => {
+    // 제출 중에는 이탈 확인을 띄우지 않음(중복 confirm 방지)
+    if (!isDirty || isSubmitting) {
+      go();
+      return;
+    }
+    if (typeof window === 'undefined') {
+      go();
+      return;
+    }
+    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    if (ok) go();
+  };
+
+  // 브라우저 탭 닫기/새로고침/주소 직접 변경 등 “페이지 이탈” 시 경고
+  useEffect(() => {
+    if (!isDirty || isSubmitting) return;
+    if (typeof window === 'undefined') return;
+
+    const onBeforeUnload = (ev: BeforeUnloadEvent) => {
+      ev.preventDefault();
+      // Chrome 정책상 커스텀 문자열은 무시될 수 있지만, 아래 한 줄이 있어야 경고가 뜸
+      ev.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty, isSubmitting]);
 
   // E2E에서만(쿠키 __e2e=1) 최초 진입 시 샘플 이미지 3장 시드
   useEffect(() => {
@@ -482,12 +523,16 @@ export default function ReviewWritePage() {
   //상품 전환
   function switchProduct(pid: string) {
     if (!pid || pid === resolvedProductId) return;
-    setResolvedProductId(pid);
-    setState('loading');
-    const qp = new URLSearchParams();
-    qp.set('productId', pid);
-    if (resolvedOrderId) qp.set('orderId', resolvedOrderId);
-    router.replace(`/reviews/write?${qp.toString()}`);
+    confirmLeaveIfDirty(() => {
+      // 대상 상품이 바뀌면 “작성 중인 내용”은 의미가 달라지므로 초기화
+      resetForm();
+      setResolvedProductId(pid);
+      setState('loading');
+      const qp = new URLSearchParams();
+      qp.set('productId', pid);
+      if (resolvedOrderId) qp.set('orderId', resolvedOrderId);
+      router.replace(`/reviews/write?${qp.toString()}`);
+    });
   }
 
   // 다음 미작성 상품 계산: 현재 이후 먼저 -> 없으면 앞쪽에서
@@ -531,6 +576,7 @@ export default function ReviewWritePage() {
       }
       payload.service = 'stringing';
       payload.serviceApplicationId = selectedAppId;
+      setIsSubmitting(true);
     }
     try {
       const r = await fetch('/api/reviews', {
@@ -561,6 +607,8 @@ export default function ReviewWritePage() {
       showErrorToast('리뷰 등록에 실패했습니다.');
     } catch {
       showErrorToast('네트워크 오류로 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -726,7 +774,15 @@ export default function ReviewWritePage() {
                  text-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus:border-blue-500 transition-all duration-200
                  text-left whitespace-normal leading-relaxed"
                         value={selectedAppId ?? ''}
-                        onChange={(e) => setSelectedAppId(e.target.value || null)}
+                        onChange={(e) => {
+                          const nextId = e.target.value || null;
+                          if (nextId === selectedAppId) return;
+                          confirmLeaveIfDirty(() => {
+                            // 대상 신청서가 바뀌면 “작성 중인 내용”은 의미가 달라지므로 초기화
+                            resetForm();
+                            setSelectedAppId(nextId);
+                          });
+                        }}
                         disabled={!apps.length}
                       >
                         {apps.length === 0 && <option value="">내 신청서가 없습니다</option>}
@@ -814,10 +870,10 @@ export default function ReviewWritePage() {
                     <div className="text-sm text-amber-800 dark:text-amber-200">
                       {state === 'notPurchased' && (
                         <div>
-                          구매/이용 이력이 확인되어야 작성할 수 있어요.{' '}
+                          구매/이용 이력이 확인되어야 작성할 수 있어요.
                           <button
                             type="button"
-                            onClick={() => (mode === 'product' && resolvedProductId ? router.replace(`/products/${resolvedProductId}`) : router.replace('/services'))}
+                            onClick={() => confirmLeaveIfDirty(() => (mode === 'product' && resolvedProductId ? router.replace(`/products/${resolvedProductId}`) : router.replace('/services')))}
                             className="underline underline-offset-2 hover:opacity-80 font-medium"
                           >
                             관련 페이지로 이동
@@ -831,10 +887,10 @@ export default function ReviewWritePage() {
 
                 {/* 액션 버튼들 */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-600">
-                  <Button type="button" variant="outline" onClick={goPrimary} className="rounded-xl shadow-sm order-2 sm:order-1 bg-transparent">
+                  <Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="rounded-xl shadow-sm order-2 sm:order-1 bg-transparent">
                     {mode === 'product' ? '제품 상세 이동' : mode === 'service' ? '서비스 소개' : '리뷰 홈'}
                   </Button>
-                  <Button type="button" variant="secondary" onClick={() => router.replace('/mypage?tab=orders')} className="rounded-xl shadow-sm order-3 sm:order-2">
+                  <Button type="button" variant="secondary" onClick={() => confirmLeaveIfDirty(() => router.replace('/mypage?tab=orders'))} className="rounded-xl shadow-sm order-3 sm:order-2">
                     주문 목록으로
                   </Button>
                   <Button
@@ -853,11 +909,11 @@ export default function ReviewWritePage() {
                   <div className="text-center py-6 text-sm text-slate-500 dark:text-slate-400">
                     <div className="font-medium text-slate-700 dark:text-slate-200 mb-2">도움이 필요하신가요?</div>
                     <div className="space-x-4">
-                      <button type="button" onClick={() => router.replace('/services')} className="underline underline-offset-2 hover:opacity-80 text-blue-600 dark:text-blue-400">
+                      <button type="button" onClick={() => confirmLeaveIfDirty(() => router.replace('/services'))} className="underline underline-offset-2 hover:opacity-80 text-blue-600 dark:text-blue-400">
                         스트링 서비스 소개
                       </button>
                       <span>·</span>
-                      <button type="button" onClick={() => router.replace('/reviews')} className="underline underline-offset-2 hover:opacity-80 text-blue-600 dark:text-blue-400">
+                      <button type="button" onClick={() => confirmLeaveIfDirty(() => router.replace('/reviews'))} className="underline underline-offset-2 hover:opacity-80 text-blue-600 dark:text-blue-400">
                         리뷰 모아보기
                       </button>
                     </div>

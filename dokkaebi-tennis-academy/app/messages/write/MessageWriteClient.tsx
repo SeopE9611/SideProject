@@ -36,7 +36,7 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty || loading) return go();
-    const ok = window.confirm('이 페이지를 벗어나면 입력한 내용은 초기화됩니다. 이동할까요?');
+    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
     if (!ok) return;
     go();
   };
@@ -77,7 +77,6 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">이 페이지를 벗어나면 입력한 정보는 초기화됩니다.</div>
           <div className="text-sm text-muted-foreground">
             받는 사람: <span className="font-medium text-foreground">{toUser?.name ?? '알 수 없음'}</span>
           </div>

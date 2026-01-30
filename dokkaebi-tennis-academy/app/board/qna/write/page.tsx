@@ -73,6 +73,40 @@ export default function QnaWritePage() {
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // 이탈 경고(입력값이 하나라도 있으면 dirty)
+  const isDirty = useMemo(() => {
+    const initCategory = preProductId ? 'product' : '';
+    return category !== initCategory || !!product?.id || title.trim().length > 0 || content.trim().length > 0 || selectedFiles.length > 0 || isPrivate;
+  }, [preProductId, category, product?.id, title, content, selectedFiles.length, isPrivate]);
+
+  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?';
+
+  const confirmGoIfDirty = (go: () => void) => {
+    if (!isDirty || submitting) return go();
+    const ok = window.confirm(confirmLeaveMessage);
+    if (!ok) return;
+    go();
+  };
+
+  const guardLinkLeave = (e: any) => {
+    if (!isDirty || submitting) return;
+    const ok = window.confirm(confirmLeaveMessage);
+    if (ok) return;
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+  };
+
+  // 탭 닫기/새로고침/주소 변경 등 브라우저 이탈 감지
+  useEffect(() => {
+    if (!isDirty || submitting) return;
+    const onBeforeUnload = (ev: BeforeUnloadEvent) => {
+      ev.preventDefault();
+      ev.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty, submitting]);
+
   // 라이트박스(Dialog) 상태
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerImages, setViewerImages] = useState<string[]>([]);
@@ -337,7 +371,7 @@ export default function QnaWritePage() {
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" asChild className="p-2">
-              <Link href="/board/qna">
+              <Link href="/board/qna" onClick={guardLinkLeave}>
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
@@ -396,7 +430,7 @@ export default function QnaWritePage() {
                     <span>
                       선택된 상품: <strong>{preProductName || preProductId}</strong>
                     </span>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => router.replace('/board/qna/write')}>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => confirmGoIfDirty(() => router.replace('/board/qna/write'))}>
                       제거
                     </Button>
                   </div>
@@ -620,7 +654,9 @@ export default function QnaWritePage() {
 
             <CardFooter className="flex justify-between p-8 border-t bg-gray-50/50 dark:bg-gray-700/20">
               <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
-                <Link href="/board/qna">취소</Link>
+                <Link href="/board/qna" onClick={guardLinkLeave}>
+                  취소
+                </Link>
               </Button>
               <Button size="lg" className="px-8 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 disabled:opacity-60" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? '등록 중…' : '문의 등록하기'}

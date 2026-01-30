@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useRef, useState, ChangeEvent } from 'react';
+import { FormEvent, useRef, useState, ChangeEvent, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, ArrowLeft, Loader2, Upload, X } from 'lucide-react';
@@ -71,6 +71,46 @@ export default function FreeBoardWriteClient() {
 
   // 더블클릭/연타 레이스 방지(제출 시작~끝까지 1회만 허용)
   const submitRef = useRef(false);
+
+  // 입력 중(Dirty) 판단: 내용/제목/분류/첨부가 하나라도 있으면 true
+  const isDirty = useMemo(() => {
+    const t = title.trim();
+    const c = content.trim();
+    if (t || c) return true;
+    if (category !== 'general') return true;
+    if (images.length > 0) return true;
+    if (selectedFiles.length > 0) return true;
+    return false;
+  }, [title, content, category, images.length, selectedFiles.length]);
+
+  // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
+  useEffect(() => {
+    if (!isDirty || isSubmitting) return;
+    const onBeforeUnload = (ev: BeforeUnloadEvent) => {
+      ev.preventDefault();
+      ev.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty, isSubmitting]);
+
+  const guardLeave = (e: any) => {
+    if (!isDirty || isSubmitting) return;
+    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    if (!ok) {
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
+    }
+  };
+
+  const handleCancel = () => {
+    if (!isDirty || isSubmitting) {
+      router.back();
+      return;
+    }
+    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    if (ok) router.back();
+  };
 
   const focusField = (key: FieldKey) => {
     if (key === 'category') {
@@ -332,7 +372,7 @@ export default function FreeBoardWriteClient() {
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
-              <Link href="/board/free" className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
+              <Link href="/board/free" onClick={guardLeave} className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
                 자유 게시판
               </Link>
               <span className="mx-1">›</span>
@@ -345,7 +385,7 @@ export default function FreeBoardWriteClient() {
           {/* 우측 버튼들: 목록으로 / 게시판 홈 */}
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm" className="gap-1">
-              <Link href="/board/free">
+              <Link href="/board/free" onClick={guardLeave}>
                 <ArrowLeft className="h-4 w-4" />
                 <span>목록으로</span>
               </Link>
@@ -537,7 +577,7 @@ export default function FreeBoardWriteClient() {
 
               {/* 버튼 영역 */}
               <div className="flex items-center justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" size="sm" disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={() => router.back()}>
+                <Button type="button" variant="outline" size="sm" disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={handleCancel}>
                   취소
                 </Button>
                 <Button type="submit" size="sm" className={cn('gap-2')} disabled={isSubmitting || isUploadingImages || isUploadingFiles}>

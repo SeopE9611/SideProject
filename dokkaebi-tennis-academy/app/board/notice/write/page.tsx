@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { type ChangeEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -46,6 +46,15 @@ export default function NoticeWritePage() {
   const prefilledRef = useRef(false);
   // setSubmitting 타이밍 레이스 대비(연타/더블클릭 방지)
   const submitRef = useRef(false);
+
+  // 수정 모드에서도 “기존 값”을 기준으로 dirty 판단하기 위한 스냅샷
+  const initialRef = useRef<{
+    title: string;
+    content: string;
+    category: string; // 코드값 (general/event/...)
+    isPinned: boolean;
+    existingUrls: string[]; // 기존 첨부 url 목록
+  } | null>(null);
 
   // 파일 상태
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -96,6 +105,11 @@ export default function NoticeWritePage() {
   const [submitting, setSubmitting] = useState(false);
   const [existingAttachments, setExistingAttachments] = useState<Array<{ url: string; name?: string; size?: number }>>([]);
 
+  // (작성 모드) 최초 기본값 스냅샷 세팅
+  useEffect(() => {
+    if (!editId && !initialRef.current) initialRef.current = { title: '', content: '', category: 'general', isPinned: false, existingUrls: [] };
+  }, [editId]);
+
   // 실제 PATCH 시 제외할 기존 첨부 제거
   const removeExisting = (idx: number) => {
     setExistingAttachments((prev) => prev.filter((_, i) => i !== idx));
@@ -109,6 +123,37 @@ export default function NoticeWritePage() {
     // https://.../storage/v1/object/public/<bucket>/<path>
     const m = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
     return m ? m[1] : '';
+  };
+
+  // dirty(편집 중) 판단: “초기 스냅샷”과 현재 상태 비교
+  const isDirty = useMemo(() => {
+    const base = initialRef.current;
+    if (!base) return false;
+
+    const curExisting = existingAttachments.map((a) => a.url);
+    const sameExisting = curExisting.length === base.existingUrls.length && curExisting.every((u, i) => u === base.existingUrls[i]);
+
+    return title !== base.title || content !== base.content || category !== base.category || isPinned !== base.isPinned || !sameExisting || selectedFiles.length > 0 || removedPaths.length > 0;
+  }, [title, content, category, isPinned, existingAttachments, selectedFiles.length, removedPaths.length]);
+
+  // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
+  useEffect(() => {
+    if (!isDirty || submitting) return;
+    const onBeforeUnload = (ev: BeforeUnloadEvent) => {
+      ev.preventDefault();
+      ev.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty, submitting]);
+
+  const guardLeave = (e: any) => {
+    if (!isDirty || submitting) return;
+    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    if (!ok) {
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
+    }
   };
 
   // 기존 첨부 제거 + 스토리지 삭제 경로 기록(옵션)
@@ -135,14 +180,30 @@ export default function NoticeWritePage() {
   useEffect(() => {
     if (!editId || !detail?.item || prefilledRef.current) return;
     const p = detail.item;
+    const code = NOTICE_CODE_BY_LABEL[p.category as string] ?? 'general';
+
     setTitle(p.title ?? '');
     setContent(p.content ?? '');
     setIsPinned(!!p.isPinned);
     setCategory(NOTICE_CODE_BY_LABEL[p.category as string] ?? 'general');
+    setCategory(code);
 
     if (Array.isArray(p.attachments)) {
       setExistingAttachments(p.attachments.map((a: any) => ({ url: String(a.url), name: a.name, size: a.size })));
     }
+
+    // 수정 모드 “초기 스냅샷”은 프리필 데이터 기준으로 1회만 세팅
+    if (!initialRef.current) {
+      const baseExistingUrls = Array.isArray(p.attachments) ? p.attachments.map((a: any) => String(a.url)) : [];
+      initialRef.current = {
+        title: p.title ?? '',
+        content: p.content ?? '',
+        category: code,
+        isPinned: !!p.isPinned,
+        existingUrls: baseExistingUrls,
+      };
+    }
+
     // 프리필 직후에 편집 중 임시 상태 초기화
     setSelectedFiles([]);
     setRemovedPaths([]);
@@ -631,7 +692,9 @@ export default function NoticeWritePage() {
 
             <CardFooter className="flex justify-between p-8 border-t bg-gray-50/50 dark:bg-gray-700/20">
               <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
-                <Link href="/board/notice">취소</Link>
+                <Link href="/board/notice" onClick={guardLeave}>
+                  취소
+                </Link>
               </Button>
               <div className="flex space-x-3">
                 <Button variant="outline" size="lg" className="px-6 border-blue-200 text-blue-700 hover:bg-blue-50 bg-transparent">
