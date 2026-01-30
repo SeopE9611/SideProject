@@ -107,7 +107,13 @@ export default function KakaoInquiryWidget() {
     <div className="fixed bottom-5 right-5 z-[70] bp-sm:bottom-4 bp-sm:right-4">
       <div className={['absolute right-0', 'bottom-[76px]', 'transition-all duration-150', open ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-2 pointer-events-none'].join(' ')}>
         <Card
-          className={['relative w-[320px] shadow-xl', "before:content-[''] before:absolute before:-bottom-2 before:right-7", 'before:h-4 before:w-4 before:rotate-45', 'before:bg-white before:border-b before:border-r before:border-border'].join(' ')}
+          className={[
+            'relative w-[320px] shadow-xl',
+            'border border-gray-200',
+            "before:content-[''] before:absolute before:-bottom-2 before:right-7",
+            'before:h-4 before:w-4 before:rotate-45',
+            'before:bg-white before:border-b before:border-r before:border-gray-200',
+          ].join(' ')}
         >
           <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold">
