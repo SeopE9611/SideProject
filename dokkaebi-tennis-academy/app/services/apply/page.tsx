@@ -1929,11 +1929,11 @@ export default function StringServiceApplyPage() {
                   <Card
                     role="button"
                     tabIndex={0}
-                    onClick={() => router.push('/rackets')}
+                    onClick={() => router.push('/rackets?from=apply')}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        router.push('/rackets');
+                        router.push('/rackets?from=apply');
                       }
                     }}
                     className="border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -1948,17 +1948,30 @@ export default function StringServiceApplyPage() {
                       <CardDescription className="text-xs bp-sm:text-sm">구매·대여 후 스트링까지 함께 신청해요</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push('/rackets');
-                        }}
-                      >
-                        라켓 보러가기
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push('/rackets?from=apply');
+                          }}
+                        >
+                          라켓 구매
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push('/rackets?from=apply&rentOnly=1');
+                          }}
+                        >
+                          라켓 대여
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
 

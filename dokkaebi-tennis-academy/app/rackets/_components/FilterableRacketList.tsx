@@ -55,6 +55,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   // 정렬 / 뷰 모드
   const [sortOption, setSortOption] = useState('latest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [rentOnly, setRentOnly] = useState(() => searchParams.get('rentOnly') === '1');
 
   // 필터 상태들
   const [selectedBrand, setSelectedBrand] = useState<string | null>(initialBrand);
@@ -202,6 +203,9 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   const racketsList = useCallback(() => {
     let list = Array.isArray(rackets) ? [...rackets] : [];
 
+    // 대여 가능 라켓만 보기
+    if (rentOnly) list = list.filter((r) => Boolean(r.rental?.enabled));
+
     // 가격 필터
     if (priceMin !== null) list = list.filter((r) => r.price >= priceMin);
     if (priceMax !== null) list = list.filter((r) => r.price <= priceMax);
@@ -213,7 +217,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     }
 
     return list;
-  }, [rackets, sortOption, priceMin, priceMax]);
+  }, [rackets, sortOption, priceMin, priceMax, rentOnly]);
 
   const products = racketsList();
 
@@ -241,6 +245,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
     setPriceMax(null);
     setSortOption('latest');
     setViewMode('grid');
+    setRentOnly(false);
     setSearchQuery('');
     setSubmittedQuery('');
     setIsUiTransitioning(true);
@@ -303,7 +308,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
       if (open) openFiltersSheet();
       else cancelFiltersSheet();
     },
-    [openFiltersSheet, cancelFiltersSheet]
+    [openFiltersSheet, cancelFiltersSheet],
   );
 
   // 뷰포트가 lg(>=1024)로 커지면 Sheet는 자동으로 "취소 닫기"
@@ -327,7 +332,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
 
   // active filter 개수
   const priceChanged = priceMin !== null || priceMax !== null;
-  const activeFiltersCount = [selectedBrand, selectedCondition, submittedQuery, priceChanged].filter(Boolean).length;
+  const activeFiltersCount = [selectedBrand, selectedCondition, submittedQuery, priceChanged, rentOnly].filter(Boolean).length;
   const draftPriceChanged = draftPriceMin !== null || draftPriceMax !== null;
   const activeDraftCount = [draftBrand, draftCondition, draftSearchQuery, draftPriceChanged].filter(Boolean).length;
 
@@ -335,21 +340,30 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
   useEffect(() => {
     if (isInitializingRef.current) return;
 
-    const params = new URLSearchParams();
-    if (selectedBrand) params.set('brand', selectedBrand);
-    if (selectedCondition) params.set('cond', selectedCondition);
-    if (submittedQuery) params.set('q', submittedQuery);
-    if (sortOption && sortOption !== 'latest') params.set('sort', sortOption);
-    if (viewMode !== 'grid') params.set('view', viewMode);
-    if (priceMin !== null) params.set('minPrice', String(priceMin));
-    if (priceMax !== null) params.set('maxPrice', String(priceMax));
+    // 현재 URL을 기반으로 시작: from=apply 같은 "기타 쿼리"를 유지하기 위함
+    const params = new URLSearchParams(searchParams.toString());
+
+    const setOrDelete = (key: string, value: string | null) => {
+      if (value && value.length > 0) params.set(key, value);
+      else params.delete(key);
+    };
+
+    setOrDelete('brand', selectedBrand);
+    setOrDelete('cond', selectedCondition);
+    setOrDelete('q', submittedQuery ? submittedQuery : null);
+    setOrDelete('sort', sortOption && sortOption !== 'latest' ? sortOption : null);
+    setOrDelete('view', viewMode !== 'grid' ? viewMode : null);
+    setOrDelete('minPrice', priceMin !== null ? String(priceMin) : null);
+    setOrDelete('maxPrice', priceMax !== null ? String(priceMax) : null);
+    setOrDelete('rentOnly', rentOnly ? '1' : null);
 
     const newSearch = params.toString();
     if (newSearch === lastSerializedRef.current) return;
     lastSerializedRef.current = newSearch;
 
-    router.replace(`${pathname}?${newSearch}`, { scroll: false });
-  }, [selectedBrand, selectedCondition, submittedQuery, sortOption, viewMode, priceMin, priceMax, router, pathname]);
+    const nextUrl = `${pathname}${newSearch ? `?${newSearch}` : ''}`;
+    router.replace(nextUrl, { scroll: false });
+  }, [selectedBrand, selectedCondition, submittedQuery, sortOption, viewMode, priceMin, priceMax, rentOnly, router, pathname, searchParams]);
 
   // 데스크톱(좌측 고정 패널): 선택 즉시 반영(=기존 selected 사용)
   const desktopFilterPanelProps = {
@@ -438,6 +452,17 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
               >
                 <Filter className="w-4 h-4 mr-2" />
                 필터{activeDraftCount > 0 && `(${activeDraftCount})`}
+              </Button>
+              <Button
+                type="button"
+                variant={rentOnly ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setRentOnly((v) => !v)}
+                className="h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                aria-pressed={rentOnly}
+                aria-label="대여 가능 라켓만 보기 토글"
+              >
+                대여만 보기
               </Button>
             </div>
 

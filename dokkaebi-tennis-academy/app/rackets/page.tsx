@@ -11,13 +11,16 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
 
   // 유틸: string | string[] | undefined → string | null 로 정리
-  const pickFirst = (v: string | string[] | undefined): string | null => (typeof v === 'string' ? v : Array.isArray(v) ? v[0] ?? null : null);
+  const pickFirst = (v: string | string[] | undefined): string | null => (typeof v === 'string' ? v : Array.isArray(v) ? (v[0] ?? null) : null);
 
   const initialBrand = pickFirst(sp.brand);
   const initialCondition = pickFirst(sp.cond);
   const initialQ = pickFirst(sp.q);
   const initialMinPrice = pickFirst(sp.minPrice);
   const initialMaxPrice = pickFirst(sp.maxPrice);
+
+  const from = pickFirst(sp.from);
+  const rentOnly = pickFirst(sp.rentOnly) === '1';
 
   // /rackets -> /rackets/finder 로 "현재 필터 상태"를 들고 가는 링크
   const finderHref = (() => {
@@ -71,6 +74,33 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
       </div>
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
+        {from === 'apply' && (
+          <div className="mb-4 bp-sm:mb-6 rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/90 dark:bg-slate-900/40 backdrop-blur p-4 bp-sm:p-5">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div className="min-w-0">
+                <p className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-slate-100">교체·장착 신청을 위한 라켓 선택 단계예요</p>
+                <p className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  라켓을 선택한 뒤, 결제/대여 흐름에서 신청서가 자동으로 이어질 수 있어요.
+                  <span className="block mt-1 text-sm text-slate-500 dark:text-slate-400">[현재 보기: {rentOnly ? '대여 가능 라켓만]' : '전체(구매/대여)]'} </span>
+                </p>
+              </div>
+
+              <div className="flex w-full bp-sm:w-auto gap-2 flex-wrap">
+                <Button asChild className="flex-1 bp-sm:flex-none">
+                  <Link href="/services/apply">신청 화면으로</Link>
+                </Button>
+
+                <Button asChild variant={rentOnly ? 'outline' : 'default'} className="flex-1 bp-sm:flex-none">
+                  <Link href="/rackets?from=apply">구매만 가능한 라켓 보기</Link>
+                </Button>
+
+                <Button asChild variant={rentOnly ? 'default' : 'outline'} className="flex-1 bp-sm:flex-none">
+                  <Link href="/rackets?from=apply&rentOnly=1">대여만 가능한 라켓 보기</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         <Suspense>
           <FilterableRacketList initialBrand={initialBrand} initialCondition={initialCondition} />
         </Suspense>
