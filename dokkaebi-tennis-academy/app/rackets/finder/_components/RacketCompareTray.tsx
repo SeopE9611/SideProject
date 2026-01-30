@@ -32,7 +32,7 @@ export default function RacketCompareTray() {
     <>
       <div className="h-32 bp-sm:h-36" />
 
-      <div className="fixed inset-x-0 bottom-0 z-50">
+      <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50">
         <div className="mx-auto w-full px-3 pb-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px]">
           <div className="rounded-xl bg-background/95 shadow-xl backdrop-blur-md ring-1 ring-primary/10 dark:ring-white/10">
             <div className="p-3 bp-sm:p-4">
@@ -86,7 +86,7 @@ export default function RacketCompareTray() {
                         'bg-card dark:bg-card/80',
                         'ring-1 ring-primary/20 dark:ring-primary/30',
                         'transition-all duration-200',
-                        'hover:ring-primary/40 hover:shadow-sm'
+                        'hover:ring-primary/40 hover:shadow-sm',
                       )}
                     >
                       <div className="relative h-11 w-11 bp-sm:h-12 bp-sm:w-12 shrink-0 overflow-hidden rounded-md bg-muted/50 dark:bg-muted/30 ring-1 ring-black/5 dark:ring-white/10">
@@ -110,7 +110,7 @@ export default function RacketCompareTray() {
                           'bg-destructive/90 text-destructive-foreground',
                           'shadow-sm transition-all duration-200',
                           'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100',
-                          'hover:bg-destructive'
+                          'hover:bg-destructive',
                         )}
                         aria-label={`${title} 제거`}
                       >

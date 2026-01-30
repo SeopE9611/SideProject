@@ -348,7 +348,7 @@ export default function CartPageClient() {
 
       {/* 모바일 하단 결제 바 */}
       {cartItems.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 bp-md:hidden">
+        <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-40 bp-md:hidden">
           <div className="rounded-t-2xl bg-white/95 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-slate-800/95">
             <SiteContainer variant="full" className="max-w-screen-sm py-3">
               <div className="mb-2 flex items-center justify-between">

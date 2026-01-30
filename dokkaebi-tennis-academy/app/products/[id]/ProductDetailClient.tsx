@@ -1476,7 +1476,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       </SiteContainer>
       {/* ===== 모바일 전용 하단 Sticky ===== */}
       {showSticky && (
-        <div className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-slate-200 dark:border-slate-800">
+        <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-slate-200 dark:border-slate-800">
           <div className="bg-white dark:bg-slate-900 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
             <SiteContainer variant="wide" className="py-3">
               {/* 상품 정보 섹션 */}

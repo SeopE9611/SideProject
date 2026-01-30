@@ -34,6 +34,9 @@ export default function KakaoInquiryWidget() {
   // 어떤 패널이 열려있는지(중복 오픈 방지)
   const [panel, setPanel] = useState<'inquiry' | 'bug' | null>(null);
 
+  // 하단 고정 바(모바일 CTA 등)와 겹치지 않도록 위로 올리는 픽셀
+  const [liftPx, setLiftPx] = useState(0);
+
   // 클라이언트 노출 가능한 env만 사용 (NEXT_PUBLIC_*)
   const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? '';
   const rawChannelPublicId = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_PUBLIC_ID ?? '';
@@ -96,6 +99,71 @@ export default function KakaoInquiryWidget() {
     return () => window.clearInterval(timer);
   }, [jsKey, shouldHide, canShowInquiry, panel]);
 
+  /**
+   * 모바일 하단 고정 CTA(장바구니/상품상세/라켓상세 등)가 있는 페이지에서는
+   * 우측 하단 문의 위젯이 버튼/콘텐츠를 가리지 않도록 "자동으로 위로 띄움".
+   *
+   * - 하단 고정 바 래퍼에 data-bottom-sticky="1" 을 달아두면 그 높이를 감지
+   * - 없으면 기존 위치 유지
+   */
+  useEffect(() => {
+    if (shouldHide) return;
+
+    let raf = 0;
+    let ro: ResizeObserver | null = null;
+
+    const pickTargets = (): HTMLElement[] => {
+      const marked = Array.from(document.querySelectorAll<HTMLElement>('[data-bottom-sticky="1"]'));
+      if (marked.length) return marked;
+      // (예비) 혹시 마킹을 빠뜨린 경우를 대비한 fallback
+      return Array.from(document.querySelectorAll<HTMLElement>('.fixed.inset-x-0.bottom-0'));
+    };
+
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const targets = pickTargets();
+
+        let maxCover = 0;
+        for (const el of targets) {
+          const rect = el.getBoundingClientRect();
+          // display:none 등으로 안 보이는 경우 제외
+          if (rect.width <= 0 || rect.height <= 0) continue;
+          // "진짜 하단에 붙어있는 바"만 대상으로(바텀에서 떨어져 있으면 제외)
+          if (rect.bottom < window.innerHeight - 2) continue;
+
+          const coverFromBottom = Math.max(0, window.innerHeight - rect.top);
+          maxCover = Math.max(maxCover, coverFromBottom);
+        }
+
+        // 여유 간격(클릭 여백/시각 여백)
+        const next = maxCover > 0 ? maxCover + 12 : 0;
+        setLiftPx((prev) => (prev === next ? prev : next));
+
+        // 높이 변화(텍스트 줄바꿈 등)에도 반응하도록 ResizeObserver 연결
+        ro?.disconnect();
+        ro = new ResizeObserver(() => schedule());
+        targets.forEach((t) => ro!.observe(t));
+      });
+    };
+
+    // 페이지 전환/조건부 렌더로 하단 바가 생겼다/사라지는 것도 감지
+    const mo = new MutationObserver(() => schedule());
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    schedule();
+    window.addEventListener('resize', schedule);
+    window.addEventListener('orientationchange', schedule);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', schedule);
+      window.removeEventListener('orientationchange', schedule);
+      mo.disconnect();
+      ro?.disconnect();
+    };
+  }, [shouldHide, pathname]);
+
   const openKakaoChat = () => {
     const Kakao = window.Kakao;
 
@@ -124,7 +192,7 @@ export default function KakaoInquiryWidget() {
   if (shouldHide) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-[70] bp-sm:bottom-4 bp-sm:right-4">
+    <div className="fixed bottom-5 right-5 z-[70] bp-sm:bottom-4 bp-sm:right-4" style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}>
       <div className="flex flex-col items-end gap-3">
         {/* ---------------- 버그 제보 ---------------- */}
         {canShowBug ? (
