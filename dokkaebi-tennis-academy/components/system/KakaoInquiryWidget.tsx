@@ -35,17 +35,20 @@ export default function KakaoInquiryWidget() {
   const [open, setOpen] = useState(false);
 
   // 클라이언트 노출 가능한 env만 사용 (NEXT_PUBLIC_*)
-  const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
-  const rawChannelPublicId = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_PUBLIC_ID;
-  const channelPublicId = rawChannelPublicId ? normalizeChannelPublicId(rawChannelPublicId) : '';
+  const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? '';
+  const rawChannelPublicId = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_PUBLIC_ID ?? '';
+  const channelPublicId = normalizeChannelPublicId(rawChannelPublicId);
 
-  // 관리자 페이지에서는 위젯이 UI를 가리지 않도록 숨김
-  if (pathname?.startsWith('/admin')) return null;
-
-  // 키가 없으면 렌더 자체를 하지 않음(배포/로컬 실수 방지)
-  if (!jsKey || !channelPublicId) return null;
+  // 훅 개수 불일치 방지 -  "숨김 여부"는 계산만 하고, return은 마지막에만 처리
+  const shouldHide = pathname?.startsWith('/admin') || !jsKey || !channelPublicId;
 
   useEffect(() => {
+    // 숨김 상태로 전환되면 패널은 닫아줌(UX + 상태 정리)
+    if (shouldHide) {
+      setOpen(false);
+      return;
+    }
+
     let ticks = 0;
 
     const initOnce = () => {
@@ -75,7 +78,7 @@ export default function KakaoInquiryWidget() {
     }, 50);
 
     return () => window.clearInterval(timer);
-  }, [jsKey]);
+  }, [jsKey, shouldHide]);
 
   const openKakaoChat = () => {
     const Kakao = window.Kakao;
@@ -96,6 +99,9 @@ export default function KakaoInquiryWidget() {
     window.open(`https://pf.kakao.com/${channelPublicId}/chat`, '_blank', 'noopener,noreferrer');
     setOpen(false);
   };
+
+  // 훅은 모두 호출한 뒤, 마지막에서만 조건부 렌더링
+  if (shouldHide) return null;
 
   return (
     <div className="fixed bottom-5 right-5 z-[70] bp-sm:bottom-4 bp-sm:right-4">
