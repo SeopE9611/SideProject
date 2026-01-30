@@ -147,14 +147,14 @@ export default function KakaoInquiryWidget() {
                 </CardHeader>
 
                 <CardContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground">사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래 오픈채팅으로 제보해주시면 빠르게 확인할게요.</p>
+                  <p className="text-sm text-muted-foreground">사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래 개발자의 오픈채팅으로 제보해주시면 빠르게 확인할게요.</p>
 
                   <div className="rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
                     <div className="font-medium text-foreground">제보 시 함께 적어주면 좋아요</div>
                     <ul className="mt-1 list-disc space-y-1 pl-4">
                       <li>어떤 페이지/기능에서 발생했는지</li>
                       <li>재현 절차(무슨 버튼을 눌렀는지)</li>
-                      <li>기대 결과 vs 실제 결과 + 스크린샷</li>
+                      <li>스크린샷</li>
                     </ul>
                   </div>
 
@@ -163,7 +163,7 @@ export default function KakaoInquiryWidget() {
                     onClick={openBugChat}
                     className={['w-full rounded-md py-3 text-sm font-semibold', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2'].join(' ')}
                   >
-                    오픈채팅으로 제보하기
+                    개발자에게 제보하기
                   </button>
                 </CardContent>
               </Card>
