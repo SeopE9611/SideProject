@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,20 +29,53 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
   const [busy, setBusy] = useState(false);
   const [hasExisting, setHasExisting] = useState(false);
 
+  const [prefillDone, setPrefillDone] = useState(false);
+
+  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.';
+  const fingerprint = useMemo(() => JSON.stringify({ courier, tracking, date, note }), [courier, tracking, date, note]);
+  const baselineRef = useRef<string | null>(null);
+  const isDirty = useMemo(() => baselineRef.current !== null && baselineRef.current !== fingerprint, [fingerprint]);
+
+  useEffect(() => {
+    if (!prefillDone) return;
+    if (baselineRef.current !== null) return;
+    baselineRef.current = fingerprint;
+  }, [prefillDone, fingerprint]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty]);
+
   // 프리필(수정 모드 지원)
   useEffect(() => {
+    let cancelled = false;
+    setPrefillDone(false);
     (async () => {
-      const res = await fetch(`/api/rentals/${rentalId}`, { credentials: 'include' });
-      const json = await res.json().catch(() => ({}));
-      const ret = json?.shipping?.return;
-      if (ret) {
-        setCourier(ret.courier || '');
-        setTracking(ret.trackingNumber || '');
-        setDate(ret.shippedAt ? String(ret.shippedAt).slice(0, 10) : '');
-        setNote(ret.note || '');
-        setHasExisting(true); // 기존 반납 운송장 여부 플래그
+      try {
+        const res = await fetch(`/api/rentals/${rentalId}`, { credentials: 'include' });
+        const json = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        const ret = json?.shipping?.return;
+        if (ret) {
+          setCourier(ret.courier || '');
+          setTracking(ret.trackingNumber || '');
+          setDate(ret.shippedAt ? String(ret.shippedAt).slice(0, 10) : '');
+          setNote(ret.note || '');
+          setHasExisting(true);
+        }
+      } finally {
+        if (!cancelled) setPrefillDone(true);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [rentalId]);
 
   const onSubmit = async () => {

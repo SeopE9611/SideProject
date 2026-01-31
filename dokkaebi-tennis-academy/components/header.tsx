@@ -816,7 +816,7 @@ const Header = () => {
                 onClick={() => {
                   setOpen(false);
                   const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
-                  router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+                  router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                 }}
               >
                 로그인

@@ -117,7 +117,7 @@ export default function FreeBoardClient() {
     if (!user) {
       showErrorToast('로그인 후 이용할 수 있습니다.');
       const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/board/free';
-      router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+      router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
       return;
       return;
     }
@@ -286,7 +286,7 @@ export default function FreeBoardClient() {
                 if (!user) {
                   // 비회원: 로그인 페이지로 이동
                   const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/board/free';
-                  router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+                  router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                   return;
                 }
 
@@ -497,7 +497,7 @@ export default function FreeBoardClient() {
 
                                     if (!user) {
                                       const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/board/free';
-                                      router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+                                      router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                                       return;
                                     }
 

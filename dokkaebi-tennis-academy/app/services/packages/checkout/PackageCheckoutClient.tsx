@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
@@ -200,6 +200,58 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
 
+  const [prefillDone, setPrefillDone] = useState(false);
+
+  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.';
+  const fingerprint = useMemo(
+    () =>
+      JSON.stringify({
+        serviceMethod,
+        name,
+        phone,
+        email,
+        postalCode,
+        address,
+        addressDetail,
+        serviceRequest,
+        depositor,
+        selectedBank,
+        agreeAll,
+        agreeTerms,
+        agreePrivacy,
+        saveInfo,
+      }),
+    [serviceMethod, name, phone, email, postalCode, address, addressDetail, serviceRequest, depositor, selectedBank, agreeAll, agreeTerms, agreePrivacy, saveInfo],
+  );
+  const baselineRef = useRef<string | null>(null);
+  const isDirty = useMemo(() => baselineRef.current !== null && baselineRef.current !== fingerprint, [fingerprint]);
+
+  useEffect(() => {
+    if (!prefillDone) return;
+    if (isPackageLoading) return;
+    if (baselineRef.current !== null) return;
+    baselineRef.current = fingerprint;
+  }, [prefillDone, isPackageLoading, fingerprint]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty]);
+
+  const onLeavePageClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isDirty) return;
+    const ok = window.confirm(confirmLeaveMessage);
+    if (!ok) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   // 패키지 설정 로딩 & 선택된 패키지 매핑
   useEffect(() => {
     const fetchPackage = async () => {
@@ -323,23 +375,35 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   }, []);
 
   useEffect(() => {
+    if (loading) return;
+    if (user) return;
+    setPrefillDone(true);
+  }, [loading, user]);
+
+  useEffect(() => {
     if (!user) return;
-
+    let cancelled = false;
+    setPrefillDone(false);
     const fetchUserInfo = async () => {
-      const res = await fetch('/api/users/me', { credentials: 'include' });
-      if (!res.ok) return;
-
-      const data = await res.json();
-
-      setName(data.name || '');
-      setPhone(data.phone || '');
-      setEmail(data.email || '');
-      setPostalCode(data.postalCode || '');
-      setAddress(data.address || '');
-      setAddressDetail(data.addressDetail || '');
+      try {
+        const res = await fetch('/api/users/me', { credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setName(data.name || '');
+        setPhone(data.phone || '');
+        setEmail(data.email || '');
+        setPostalCode(data.postalCode || '');
+        setAddress(data.address || '');
+        setAddressDetail(data.addressDetail || '');
+      } finally {
+        if (!cancelled) setPrefillDone(true);
+      }
     };
-
     fetchUserInfo();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   // 필드별 에러 계산
@@ -969,7 +1033,9 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     serviceMethod={serviceMethod}
                   />
                   <Button variant="outline" className="w-full border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
-                    <Link href="/services/packages">패키지 선택으로 돌아가기</Link>
+                    <Link href="/services/packages" onClick={onLeavePageClick}>
+                      패키지 선택으로 돌아가기
+                    </Link>
                   </Button>
                 </div>
               </Card>

@@ -627,6 +627,39 @@ export default function StringServiceApplyPage() {
     lines: [],
   });
 
+  // ---- 이탈(탭 닫기/새로고침) 보호: 입력 중 실수로 나가는 케이스 방지 ----
+  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.';
+  const fingerprint = useMemo(() => JSON.stringify(formData), [formData]);
+  const baselineRef = useRef<string | null>(null);
+
+  // (프리필/로딩이 끝나기 전에 baseline을 잡으면, 자동 입력 때문에 "변경됨"으로 오인될 수 있음)
+  const prefillReady = useMemo(() => {
+    if (blockedByLoginGate) return false;
+    if (!allowGuestCheckout && !authChecked) return false;
+    if (isUserLoading) return false;
+    if (isLoadingPdpProduct) return false;
+    if (fromPDP && pdpProductId) return formData.stringTypes.includes(pdpProductId);
+    return true;
+  }, [blockedByLoginGate, allowGuestCheckout, authChecked, isUserLoading, isLoadingPdpProduct, fromPDP, pdpProductId, formData.stringTypes]);
+
+  const isDirty = useMemo(() => baselineRef.current !== null && baselineRef.current !== fingerprint, [fingerprint]);
+
+  useEffect(() => {
+    if (!prefillReady) return;
+    if (baselineRef.current !== null) return;
+    baselineRef.current = fingerprint;
+  }, [prefillReady, fingerprint]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty]);
+
   // 패키지 미리보기 상태 + 패스조회
   const [packagePreview, setPackagePreview] = useState<null | {
     has: boolean;
@@ -2069,6 +2102,7 @@ export default function StringServiceApplyPage() {
                 <CardContent className="p-4 bp-sm:p-6 bp-lg:p-8">
                   {/* 라켓 주문 프리필 배지 */}
                   <OrderPrefillBadge orderId={orderId} rentalId={rentalId} />
+
                   <form onSubmit={handleSubmit}>
                     {getCurrentStepContent()}
 

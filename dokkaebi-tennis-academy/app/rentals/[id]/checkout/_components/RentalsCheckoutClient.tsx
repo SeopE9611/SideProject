@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
@@ -144,6 +144,59 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
 
+  const [prefillReady, setPrefillReady] = useState(false);
+
+  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.';
+  const fingerprint = useMemo(
+    () =>
+      JSON.stringify({
+        deliveryMethod,
+        name,
+        phone,
+        email,
+        postalCode,
+        address,
+        addressDetail,
+        deliveryRequest,
+        depositor,
+        selectedBank,
+        pointsInput,
+        pointsToUse,
+        useAllPoints,
+        refundBank,
+        refundAccount,
+        refundHolder,
+        agreeAll,
+        agreeTerms,
+        agreePrivacy,
+        agreeRefund,
+      }),
+    [deliveryMethod, name, phone, email, postalCode, address, addressDetail, deliveryRequest, depositor, selectedBank, pointsInput, pointsToUse, useAllPoints, refundBank, refundAccount, refundHolder, agreeAll, agreeTerms, agreePrivacy, agreeRefund],
+  );
+  const baselineRef = useRef<string | null>(null);
+  const isDirty = useMemo(() => baselineRef.current !== null && baselineRef.current !== fingerprint, [fingerprint]);
+
+  useEffect(() => {
+    if (!prefillReady) return;
+    if (baselineRef.current !== null) return;
+    baselineRef.current = fingerprint;
+  }, [prefillReady, fingerprint]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty]);
+
+  const pushIfSafe = (href: string) => {
+    if (isDirty && !window.confirm(confirmLeaveMessage)) return;
+    router.push(href);
+  };
+
   // 회원 배송 정보 자동 채움
   useEffect(() => {
     let cancelled = false;
@@ -164,6 +217,9 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       })
       .catch(() => {
         /* 게스트/401은 정상, 아무 것도 안 함 */
+      })
+      .finally(() => {
+        if (!cancelled) setPrefillReady(true);
       });
     return () => {
       cancelled = true;
@@ -240,7 +296,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
     if (loading) return;
     if (requestStringing && !selectedString?.id) {
       showErrorToast('스트링 교체를 함께 진행하려면 먼저 스트링을 선택해주세요.');
-      router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`);
+      pushIfSafe(`/rentals/${initial.racketId}/select-string?period=${initial.period}`);
       return;
     }
 
@@ -492,7 +548,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       </p>
                     </div>
 
-                    <Button type="button" variant={selectedString ? 'outline' : 'default'} onClick={() => router.push(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
+                    <Button type="button" variant={selectedString ? 'outline' : 'default'} onClick={() => pushIfSafe(`/rentals/${initial.racketId}/select-string?period=${initial.period}`)}>
                       {selectedString ? '스트링 변경' : '스트링 선택'}
                     </Button>
                   </div>

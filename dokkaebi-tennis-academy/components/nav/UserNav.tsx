@@ -40,7 +40,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
         size="icon"
         onClick={() => {
           const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
-          router.push(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+          router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
         }}
       >
         <UserIcon className="h-5 w-5" />

@@ -21,7 +21,7 @@ export function useTokenRefresher(user: any) {
         } catch (err) {
           console.error('세션 만료, 로그인 페이지로 이동');
           const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
-          router.replace(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+          router.replace(`/login?next=${encodeURIComponent(redirectTo)}`);
         }
       },
       5 * 60 * 1000,
