@@ -312,17 +312,24 @@ export async function createOrder(req: Request): Promise<Response> {
             const racket = await rackCol.findOne({ _id: racketId }, { projection: { status: 1, quantity: 1, brand: 1, model: 1 }, session });
             if (!racket) throw new HttpError(400, { error: '판매 가능한 라켓이 아닙니다.' });
 
-            const stockQty = Number(racket.quantity ?? 1);
+            // 재고형(다수 수량) 라켓 여부는 "값<=1"이 아니라,
+            //    "quantity 필드가 실제 숫자로 존재하는지"로 판단해야 함
+            //    (레거시 단품 라켓: quantity 없음)
+            const rawQtyField = (racket as any).quantity;
+            const hasStockQty = typeof rawQtyField === 'number' && Number.isFinite(rawQtyField);
+            const stockQty = hasStockQty ? rawQtyField : NaN;
+
             const racketName = `${(racket as any).brand ?? ''} ${(racket as any).model ?? ''}`.trim() || '중고 라켓';
 
             // 대여 점유 수량
             const activeRentalCount = await db.collection('rental_orders').countDocuments({ racketId, status: { $in: ['paid', 'out'] } }, { session });
 
-            const baseQty = !Number.isFinite(stockQty) || stockQty <= 1 ? (racket.status === 'available' ? 1 : 0) : stockQty;
+            // baseQty는 "실제 보유 수량"을 그대로 사용(0도 0으로 유지)
+            // - 레거시 단품 라켓은 status=available일 때만 1개로 취급
+            const baseQty = hasStockQty ? Math.max(0, Math.trunc(stockQty)) : racket.status === 'available' ? 1 : 0;
+            const sellableQty = Math.max(0, baseQty - activeRentalCount);
 
-            const sellableQty = baseQty - activeRentalCount;
-
-            if (sellableQty < 1) {
+            if (sellableQty < quantity) {
               const reason = activeRentalCount > 0 ? 'RENTAL_RESERVED' : 'OUT_OF_STOCK';
               throw new HttpError(400, {
                 error: 'INSUFFICIENT_STOCK',
@@ -336,7 +343,8 @@ export async function createOrder(req: Request): Promise<Response> {
             }
 
             // (A) 단품(1점)
-            if (!Number.isFinite(stockQty) || stockQty <= 1) {
+            // 단품 판단: "quantity가 없음"인 경우만 단품 로직 적용
+            if (!hasStockQty) {
               if (racket.status !== 'available') throw new HttpError(400, { error: '판매 가능한 라켓이 아닙니다.' });
               if (quantity !== 1) throw new HttpError(400, { error: '라켓은 1개만 구매할 수 있습니다.' });
 
@@ -355,12 +363,19 @@ export async function createOrder(req: Request): Promise<Response> {
             }
 
             // (B) 재고형(다수 수량)
-            if (quantity !== 1) throw new HttpError(400, { error: '라켓은 1개만 구매할 수 있습니다.' });
-
             const nowIso = new Date().toISOString();
             const updated = await rackCol.findOneAndUpdate(
-              { _id: racketId, quantity: { $gte: activeRentalCount + 1 }, status: { $nin: ['inactive', '비노출'] } },
-              [{ $set: { quantity: { $subtract: ['$quantity', 1] }, updatedAt: nowIso } }, { $set: { status: { $cond: [{ $lte: ['$quantity', 0] }, 'sold', 'available'] } } }] as any,
+              // 대여 점유(activeRentalCount)를 고려한 "판매 가능 수량" 확보
+              // quantity(요청 수량)만큼 판매하려면: quantity >= activeRentalCount + quantity
+              { _id: racketId, quantity: { $gte: activeRentalCount + quantity }, status: { $nin: ['inactive', '비노출'] } },
+              [
+                // 요청 수량만큼 차감
+                { $set: { quantity: { $subtract: ['$quantity', quantity] }, updatedAt: nowIso } },
+                // sold 처리는 "물리 재고(quantity)가 0 이하"일 때만
+                // - 대여로 인해 일시적으로 sellable이 0이 되는 경우까지 sold로 숨기면,
+                //   이후 반납되어도 sold가 유지되어 목록에서 사라지는 문제가 생길 수 있음.
+                { $set: { status: { $cond: [{ $lte: ['$quantity', 0] }, 'sold', 'available'] } } },
+              ] as any,
               { returnDocument: 'after', session } as any,
             );
 

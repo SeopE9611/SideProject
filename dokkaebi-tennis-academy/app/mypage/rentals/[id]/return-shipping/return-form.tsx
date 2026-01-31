@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Truck } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 서버 정규확 검증
 const onlyDigits = (v: string) => v.replace(/\D/g, '');
@@ -42,15 +43,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
     baselineRef.current = fingerprint;
   }, [prefillDone, fingerprint]);
 
-  useEffect(() => {
-    if (!isDirty) return;
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty]);
+useUnsavedChangesGuard(isDirty);
 
   // 프리필(수정 모드 지원)
   useEffect(() => {

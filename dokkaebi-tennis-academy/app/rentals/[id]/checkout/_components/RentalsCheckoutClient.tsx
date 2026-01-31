@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { showErrorToast } from '@/lib/toast';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 declare global {
   interface Window {
@@ -182,18 +183,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
     baselineRef.current = fingerprint;
   }, [prefillReady, fingerprint]);
 
-  useEffect(() => {
-    if (!isDirty) return;
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty]);
+  useUnsavedChangesGuard(isDirty);
 
   const pushIfSafe = (href: string) => {
-    if (isDirty && !window.confirm(confirmLeaveMessage)) return;
+    if (isDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
     router.push(href);
   };
 

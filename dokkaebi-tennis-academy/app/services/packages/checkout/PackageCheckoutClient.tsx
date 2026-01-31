@@ -17,6 +17,7 @@ import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
 import { CreditCard, MapPin, Shield, CheckCircle, UserIcon, Mail, Phone, MessageSquare, Building2, Package, Star, Calendar, Gift, Target, Award } from 'lucide-react';
 import PackageCheckoutButton from './PackageCheckoutButton';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 클라이언트 유효성(UX용)
 type CheckoutField = 'name' | 'email' | 'phone' | 'depositor' | 'postalCode' | 'address' | 'addressDetail';
@@ -233,19 +234,11 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
     baselineRef.current = fingerprint;
   }, [prefillDone, isPackageLoading, fingerprint]);
 
-  useEffect(() => {
-    if (!isDirty) return;
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty]);
+  useUnsavedChangesGuard(isDirty);
 
   const onLeavePageClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!isDirty) return;
-    const ok = window.confirm(confirmLeaveMessage);
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (!ok) {
       e.preventDefault();
       e.stopPropagation();

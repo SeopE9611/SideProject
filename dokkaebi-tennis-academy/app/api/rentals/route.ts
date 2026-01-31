@@ -142,10 +142,7 @@ export async function POST(req: Request) {
   const allowGuestCheckout = guestOrderMode === 'on';
 
   if (!allowGuestCheckout && !userObjectId) {
-    return NextResponse.json(
-      { ok: false, message: 'LOGIN_REQUIRED' },
-      { status: 401, headers: { 'Cache-Control': 'no-store' } },
-    );
+    return NextResponse.json({ ok: false, message: 'LOGIN_REQUIRED' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
   }
 
   // 은행 값 최종 방어(입금/환급)
@@ -239,9 +236,10 @@ export async function POST(req: Request) {
   });
 
   // 단품(<=1)은 status=available일 때만 1개로 취급, 아니면 0개
-  const rawQty = Number(racket.quantity ?? 1);
-  const baseQty = !Number.isFinite(rawQty) || rawQty <= 1 ? (racket.status === 'available' ? 1 : 0) : rawQty;
-  const available = baseQty - activeCount;
+  const rawQtyField = (racket as any).quantity;
+  const hasStockQty = typeof rawQtyField === 'number' && Number.isFinite(rawQtyField);
+  const baseQty = hasStockQty ? Math.max(0, Math.trunc(rawQtyField)) : racket.status === 'available' ? 1 : 0;
+  const available = Math.max(0, baseQty - activeCount);
 
   // 잔여 수량 체크
   if (available <= 0) {

@@ -24,6 +24,7 @@ import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
 import LoginGate from '@/components/system/LoginGate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -650,15 +651,7 @@ export default function StringServiceApplyPage() {
     baselineRef.current = fingerprint;
   }, [prefillReady, fingerprint]);
 
-  useEffect(() => {
-    if (!isDirty) return;
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty]);
+   useUnsavedChangesGuard(isDirty);
 
   // 패키지 미리보기 상태 + 패스조회
   const [packagePreview, setPackagePreview] = useState<null | {

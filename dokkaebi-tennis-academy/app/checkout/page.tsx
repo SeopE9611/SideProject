@@ -24,6 +24,7 @@ import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { cn } from '@/lib/utils';
 import LoginGate from '@/components/system/LoginGate';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 declare global {
   interface Window {
@@ -287,9 +288,6 @@ export default function CheckoutPage() {
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
 
-  /* 이탈 경고 */
-  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보가 초기화될 수 있습니다.\\n작성 중이라면 취소를 눌러 현재 페이지에 머물러 주세요.';
-
   type CheckoutBaseline = {
     withStringService: boolean;
     selectedBank: string;
@@ -365,23 +363,13 @@ export default function CheckoutPage() {
   }, [withStringService, selectedBank, deliveryMethod, servicePickupMethod, name, phone, email, postalCode, address, addressDetail, deliveryRequest, depositor, pointsToUse, agreeTerms, agreePrivacy, agreeRefund]);
 
   // 새로고침/탭 닫기/브라우저 뒤로가기(주소창) 등 브라우저 레벨 이탈 경고
-  useEffect(() => {
-    if (!isDirty) return;
-
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty]);
+  useUnsavedChangesGuard(isDirty);
 
   // 내부 링크(예: 장바구니로 돌아가기) 클릭 시 confirm 경고
   const onLeaveCartClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {
     if (!isDirty) return;
 
-    const ok = window.confirm(confirmLeaveMessage);
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (!ok) {
       e.preventDefault();
       e.stopPropagation();
@@ -1047,7 +1035,6 @@ export default function CheckoutPage() {
                       </div>
 
                       <p className="mt-2 text-xs text-slate-500">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
-                      <p className="mt-1 text-xs text-slate-500">현재 단계에서는 UI만 반영됩니다. 다음 단계에서 주문 생성(/api/orders)까지 연결되면 실제 결제에 반영됩니다.</p>
                     </div>
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center">

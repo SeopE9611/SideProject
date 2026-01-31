@@ -118,6 +118,61 @@ export default function Step2MountingInfo(props: Props) {
     visitTimeRange,
   } = props;
 
+  // ---- 라켓별 라인 입력: "공통 값"을 한 번에 적용하기 위한 보조 상태 ----
+  // - 단체 주문/다자루 작업에서 같은 텐션/요청사항을 반복 입력하는 피로를 줄이기 위함
+  const [bulkTensionMain, setBulkTensionMain] = React.useState<string>(() => String(formData?.defaultMainTension ?? ''));
+  const [bulkTensionCross, setBulkTensionCross] = React.useState<string>(() => String(formData?.defaultCrossTension ?? ''));
+  const [bulkLineNote, setBulkLineNote] = React.useState<string>('');
+
+  const applyBulkToAllLines = React.useCallback(
+    (opts?: { main?: string; cross?: string; note?: string }) => {
+      const main = (opts?.main ?? bulkTensionMain ?? '').trim();
+      const cross = (opts?.cross ?? bulkTensionCross ?? '').trim();
+      const note = (opts?.note ?? bulkLineNote ?? '').trim();
+
+      // 전부 빈 값이면 아무 것도 하지 않음(실수로 전체 초기화 방지)
+      if (!main && !cross && !note) return;
+
+      setFormData((prev: any) => {
+        const baseLines = Array.isArray(prev?.lines) && prev.lines.length > 0 ? prev.lines : (linesForSubmit ?? []);
+        if (!Array.isArray(baseLines) || baseLines.length === 0) return prev;
+
+        const nextLines = baseLines.map((line: any) => ({
+          ...line,
+          tensionMain: main ? main : (line?.tensionMain ?? ''),
+          tensionCross: cross ? cross : (line?.tensionCross ?? ''),
+          note: note ? note : (line?.note ?? ''),
+        }));
+
+        // page.tsx의 handleLineFieldChange와 동일하게 "기본 텐션"도 함께 갱신
+        return {
+          ...prev,
+          lines: nextLines,
+          ...(main ? { defaultMainTension: main } : {}),
+          ...(cross ? { defaultCrossTension: cross } : {}),
+        };
+      });
+    },
+    [bulkTensionMain, bulkTensionCross, bulkLineNote, setFormData, linesForSubmit],
+  );
+
+  const applyFirstLineTensionToAll = React.useCallback(() => {
+    const first = (linesForSubmit ?? [])[0];
+    if (!first) return;
+
+    const main = String(first?.tensionMain ?? '').trim();
+    const cross = String(first?.tensionCross ?? '').trim();
+
+    // 1번 라인에 텐션이 비어있으면 버튼을 눌러도 변화가 없도록 가드
+    if (!main && !cross) return;
+
+    // UI 입력칸도 같이 채워서, 이후 "입력값 → 전체" 버튼을 눌러도 일관되게 동작
+    if (main) setBulkTensionMain(main);
+    if (cross) setBulkTensionCross(cross);
+
+    applyBulkToAllLines({ main, cross });
+  }, [linesForSubmit, applyBulkToAllLines]);
+
   // 주문(orderId)이 아닌데도 스트링이 이미 확정된 흐름(PDP/대여)에서는
   // - (PDP) 체크박스/직접입력 UI를 잠그고(보기 전용)
   // - (대여) 체크박스 토글은 가능(다자루/다품목 대비), 다만 stringTypes가 비면 다음 단계로 진행 불가
@@ -145,7 +200,7 @@ export default function Step2MountingInfo(props: Props) {
   const isLockedIdSelected = Boolean(lockedId && Array.isArray(formData.stringTypes) && formData.stringTypes.includes(lockedId));
   const canShowQty = Boolean((isRentalNonOrder || isPdpLockedNonOrder) && lockedId && lockedId !== 'custom' && isLockedIdSelected);
 
-  const currentQty = lockedId ? formData.stringUseCounts?.[lockedId] ?? 1 : 1;
+  const currentQty = lockedId ? (formData.stringUseCounts?.[lockedId] ?? 1) : 1;
 
   // (대여) 체크박스를 숨기지 않는다. 체크 해제는 가능하되, stringTypes가 비면 다음 단계로 진행이 막히는 것이 정상.
   const shouldHideStringSelection = false;
@@ -302,15 +357,15 @@ export default function Step2MountingInfo(props: Props) {
                           mountingFee: i.mountingFee,
                         }))
                     : // 주문이 없더라도(PDP/대여) 이미 확정된 스트링은 1개 아이템으로 노출
-                    (isLockedNonOrder || isRentalNonOrder) && lockedStringId && lockedStringId !== 'custom'
-                    ? [
-                        {
-                          id: lockedStringId,
-                          name: pdpProduct?.name ?? '선택된 스트링',
-                          mountingFee: lockedMountingFee,
-                        },
-                      ]
-                    : [] // 단독 신청(직접 입력) 등은 빈 배열
+                      (isLockedNonOrder || isRentalNonOrder) && lockedStringId && lockedStringId !== 'custom'
+                      ? [
+                          {
+                            id: lockedStringId,
+                            name: pdpProduct?.name ?? '선택된 스트링',
+                            mountingFee: lockedMountingFee,
+                          },
+                        ]
+                      : [] // 단독 신청(직접 입력) 등은 빈 배열
                 }
                 stringTypes={formData.stringTypes}
                 customInput={formData.customStringType}
@@ -418,7 +473,7 @@ export default function Step2MountingInfo(props: Props) {
                     {formData.stringTypes
                       ?.filter((id: string) => id !== 'custom')
                       .map((id: string) => {
-                        const useQty = id === lockedId ? currentQty : formData.stringUseCounts?.[id] ?? 1;
+                        const useQty = id === lockedId ? currentQty : (formData.stringUseCounts?.[id] ?? 1);
                         const maxQty = typeof maxNonOrderQty === 'number' ? maxNonOrderQty : 99;
                         const name = pdpProduct?.name ?? (id === lockedId ? '선택한 스트링' : `스트링 (${id})`);
 
@@ -566,6 +621,57 @@ export default function Step2MountingInfo(props: Props) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="rounded-xl border border-slate-200/70 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/30 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-[220px]">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">일괄 입력</p>
+                    <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">같은 텐션/요청사항이면 한 번에 적용할 수 있어요.</p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button type="button" variant="outline" size="sm" className="h-8 px-3 text-xs" onClick={applyFirstLineTensionToAll} disabled={lineCount < 2}>
+                      1번 텐션 → 전체
+                    </Button>
+                    <Button type="button" size="sm" className="h-8 px-3 text-xs" onClick={() => applyBulkToAllLines()} disabled={lineCount < 1}>
+                      입력값 → 전체
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid gap-3 md:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">공통 메인 텐션(kg)</Label>
+                    <Input
+                      value={bulkTensionMain}
+                      onChange={(e) => setBulkTensionMain(e.target.value)}
+                      placeholder="예: 24"
+                      className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">공통 크로스 텐션(kg)</Label>
+                    <Input
+                      value={bulkTensionCross}
+                      onChange={(e) => setBulkTensionCross(e.target.value)}
+                      placeholder="예: 23"
+                      className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 md:col-span-3">
+                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">공통 메모 (선택)</Label>
+                    <Textarea
+                      value={bulkLineNote}
+                      onChange={(e) => setBulkLineNote(e.target.value)}
+                      rows={2}
+                      className="text-sm resize-none border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                      placeholder="예: 전부 동일 텐션으로 부탁드립니다. / 오버그립 제거하지 말아주세요 등"
+                    />
+                    <p className="text-[11px] text-slate-500 dark:text-slate-300">※ 공통 메모를 비워두면 기존 라켓별 메모는 유지됩니다.</p>
+                  </div>
+                </div>
+              </div>
               {linesForSubmit.map((line, index) => (
                 <div key={line.id ?? index} className="group relative rounded-xl bg-white dark:bg-slate-800/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
                   {/* 헤더 영역: 라켓 N, 스트링 이름 */}

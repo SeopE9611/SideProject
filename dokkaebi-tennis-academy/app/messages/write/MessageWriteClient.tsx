@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type SafeUser = { id: string; name: string | null; email: string | null; role: string };
 type ToUser = { id: string; name: string; role: string } | null;
@@ -21,22 +22,11 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
   const isDirty = useMemo(() => title.trim().length > 0 || body.trim().length > 0, [title, body]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 브라우저 이탈 감지
-  useEffect(() => {
-    if (!isDirty || loading) return;
-
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      // 크롬/사파리 계열은 returnValue 설정이 있어야 경고가 뜸
-      e.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty, loading]);
+  useUnsavedChangesGuard(isDirty && !loading);
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty || loading) return go();
-    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (!ok) return;
     go();
   };
@@ -85,7 +75,7 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
           <Textarea placeholder="내용" rows={10} value={body} onChange={(e) => setBody(e.target.value)} />
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => router.push('/messages')}>
+            <Button variant="outline" onClick={() => confirmLeaveIfDirty(() => router.push('/messages'))}>
               취소
             </Button>
             <Button disabled={!canSubmit || loading} onClick={submit}>

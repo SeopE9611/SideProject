@@ -15,6 +15,7 @@ import { AlertTriangle, Truck, Loader2, Check, Package, Calendar, FileText, Arro
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // ──────────────────────────────────────────────────────────────
 // 타입
@@ -226,25 +227,16 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
   const isDirty = form.courier !== initial.courier || form.trackingNo !== initial.trackingNo || form.shippedAt !== initial.shippedAt || form.note !== initial.note;
 
+  // submitting 중에는 confirm 중복 뜨는 걸 막기 위해 guard 비활성
+  useUnsavedChangesGuard(isDirty && !submitting);
+
   const confirmLeaveIfDirty = (go: () => void) => {
     if (submitting) return;
     if (!isDirty) return go();
-    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (ok) go();
   };
 
-  // 브라우저 탭 닫기/새로고침/주소 직접 변경 등 “페이지 이탈” 시 경고
-  useEffect(() => {
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (submitting) return;
-      if (!isDirty) return;
-      e.preventDefault();
-      // Chrome 정책상 커스텀 문자열은 무시될 수 있지만, 아래 한 줄이 있어야 경고가 뜸
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty, submitting]);
 
   const onChange = (k: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const v = e.target.value;

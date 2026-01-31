@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, ArrowLeft, MessageSquare, Upload, X, Search } from 'lucide-react';
 import { showErrorToast } from '@/lib/toast';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 const CATEGORY_LABELS: Record<string, string> = {
   product: '상품문의',
@@ -79,33 +80,22 @@ export default function QnaWritePage() {
     return category !== initCategory || !!product?.id || title.trim().length > 0 || content.trim().length > 0 || selectedFiles.length > 0 || isPrivate;
   }, [preProductId, category, product?.id, title, content, selectedFiles.length, isPrivate]);
 
-  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?';
+  useUnsavedChangesGuard(isDirty && !submitting);
 
   const confirmGoIfDirty = (go: () => void) => {
     if (!isDirty || submitting) return go();
-    const ok = window.confirm(confirmLeaveMessage);
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (!ok) return;
     go();
   };
 
   const guardLinkLeave = (e: any) => {
     if (!isDirty || submitting) return;
-    const ok = window.confirm(confirmLeaveMessage);
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (ok) return;
     e?.preventDefault?.();
     e?.stopPropagation?.();
   };
-
-  // 탭 닫기/새로고침/주소 변경 등 브라우저 이탈 감지
-  useEffect(() => {
-    if (!isDirty || submitting) return;
-    const onBeforeUnload = (ev: BeforeUnloadEvent) => {
-      ev.preventDefault();
-      ev.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty, submitting]);
 
   // 라이트박스(Dialog) 상태
   const [viewerOpen, setViewerOpen] = useState(false);

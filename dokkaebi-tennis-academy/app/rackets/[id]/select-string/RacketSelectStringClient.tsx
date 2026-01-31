@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
 import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
-import { CheckCircle2, ShoppingCart } from 'lucide-react';
+import { CheckCircle2, Minus, Plus, ShoppingCart } from 'lucide-react';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { Input } from '@/components/ui/input';
 
 type RacketMini = {
   id: string;
@@ -14,12 +15,27 @@ type RacketMini = {
   price: number;
   image?: string;
   status?: string;
+  maxQty?: number;
 };
 
 export default function RacketSelectStringClient({ racket }: { racket: RacketMini }) {
   const router = useRouter();
   const setItems = usePdpBundleStore((s) => s.setItems);
   const clear = usePdpBundleStore((s) => s.clear);
+
+  /**
+   * "몇 자루를 작업할지" = 이번 번들 결제에서 구매할 스트링 개수
+   * - STEP2의 라인(라켓별 세부 장착 정보)도 이 개수 기준으로 자동 생성.
+   * - 라켓(중고 라켓)은 서버 정책상 1자루만 구매 가능(수량 1 고정)
+   *   (즉, 여기서 개수를 늘리면 "스트링/교체비"만 여러 개 결제하는 형태)
+   */
+  const [workCount, setWorkCount] = useState<number>(1);
+
+  const clampWorkCount = (v: number) => {
+    if (!Number.isFinite(v)) return 1;
+    const max = Number.isFinite(racket.maxQty) && (racket.maxQty as number) > 0 ? (racket.maxQty as number) : 1;
+    return Math.max(1, Math.min(max, Math.trunc(v)));
+  };
 
   useEffect(() => {
     clear();
@@ -34,9 +50,13 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   const handleSelectString = (p: any) => {
     const stringImage = p?.images?.[0] ?? p?.imageUrl;
 
+    const qty = clampWorkCount(workCount);
+
     setItems([
-      { id: racket.id, name: racket.name, price: racket.price, quantity: 1, image: racket.image, kind: 'racket' },
-      { id: String(p._id), name: p.name, price: p.price, quantity: 1, image: stringImage, kind: 'product' },
+      { id: racket.id, name: racket.name, price: racket.price, quantity: qty, image: racket.image, kind: 'racket' },
+      // 라켓은 1자루 고정(중고 라켓 재고/주문 정책)
+      // 스트링은 workCount만큼 결제 → 체크아웃 금액/교체비가 함께 증가
+      { id: String(p._id), name: p.name, price: p.price, quantity: qty, image: stringImage, kind: 'product' },
     ]);
 
     router.push(`/checkout?mode=buynow&withService=1`);
@@ -85,6 +105,29 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                     <p className="text-lg font-semibold text-slate-700">{racket.price.toLocaleString()}원</p>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+          {/* 작업 개수(= 스트링 결제 개수) */}
+          <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 bp-md:p-6 shadow-sm">
+            <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-3">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-slate-900">작업할 라켓 수 (＝ 스트링 구매 개수)</p>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  이 값만큼 <span className="font-medium">스트링/교체비</span>가 체크아웃에서 함께 계산되고, 신청서 STEP2의 <span className="font-medium">라켓별 세부 장착 정보</span>도 자동으로 생성됩니다.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 self-start bp-md:self-auto">
+                <Button type="button" variant="outline" className="h-10 w-10 p-0" onClick={() => setWorkCount((prev) => clampWorkCount(prev - 1))} aria-label="작업 개수 감소">
+                  <Minus className="h-4 w-4" />
+                </Button>
+
+                <Input type="number" inputMode="numeric" min={1} max={30} value={workCount} onChange={(e) => setWorkCount(clampWorkCount(Number(e.target.value)))} className="h-10 w-20 text-center" />
+
+                <Button type="button" variant="outline" className="h-10 w-10 p-0" onClick={() => setWorkCount((prev) => clampWorkCount(prev + 1))} aria-label="작업 개수 증가">
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
