@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, Package, Settings, Plus, Trash2, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { type PackageConfig, type GeneralSettings, DEFAULT_PACKAGE_CONFIGS, DEFAULT_GENERAL_SETTINGS } from '@/lib/package-settings';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 export default function PackageSettingsClient() {
   // 서버에서 가져온 패키지 설정
@@ -28,6 +29,25 @@ export default function PackageSettingsClient() {
 
   // 저장 중 여부 (PUT /api/admin/packages/settings)
   const [isSaving, setIsSaving] = useState<boolean>(false);
+
+   const baselineRef = useRef<string | null>(null);
+  const snapshot = useMemo(() => JSON.stringify({ packageConfigs, generalSettings }), [packageConfigs, generalSettings]);
+
+ useEffect(() => {
+    // 최초 로드 완료 시 baseline 확정
+    if (!isLoading && baselineRef.current === null) baselineRef.current = snapshot;
+  }, [isLoading, snapshot]);
+
+  const isDirty = !isLoading && baselineRef.current !== null && baselineRef.current !== snapshot;
+  useUnsavedChangesGuard(isDirty && !isSaving);
+
+  const confirmLeave = (e: React.MouseEvent) => {
+    if (!isDirty) return;
+    if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
 
   const [editingPackage, setEditingPackage] = useState<string | null>(null);
 

@@ -5,9 +5,19 @@ import { ArrowLeft, Package } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
 
 export default function AdminRacketNewClient() {
   const r = useRouter();
+
+  const confirmLeave = (e: React.MouseEvent) => {
+    const hasUnsaved = typeof window !== 'undefined' && window.history.state?.__unsaved === true;
+    if (!hasUnsaved) return;
+    if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
 
   const onSubmit = async (data: RacketForm) => {
     const res = await fetch('/api/admin/rackets', {
@@ -45,7 +55,7 @@ export default function AdminRacketNewClient() {
               </div>
               <div className="flex items-center space-x-2">
                 <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-                  <Link href="/admin/rackets">
+                  <Link href="/admin/rackets" onClick={confirmLeave}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     취소
                   </Link>

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useEffect, useState } from 'react';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 export interface CustomerFormValues {
   name: string;
   email: string;
@@ -28,8 +29,12 @@ export default function CustomerEditForm({ initialData, resourcePath, entityId, 
     register,
     handleSubmit,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<CustomerFormValues>({ defaultValues: initialData });
+
+  // 입력값이 defaultValues 대비 변경되면 isDirty=true → 이탈(뒤로/탭닫기/링크이동) 경고
+  // 저장 중에는 경고가 뜨지 않게 해서 UX/오동작 방지
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
 
   // 다음 주소 API 준비 상태
   const [daumReady, setDaumReady] = useState(false);
@@ -43,9 +48,9 @@ export default function CustomerEditForm({ initialData, resourcePath, entityId, 
     if (!daumReady) return;
     new (window as any).daum.Postcode({
       oncomplete: (data: any) => {
-        setValue('postalCode', data.zonecode);
-        setValue('address', data.roadAddress);
-        setValue('addressDetail', ''); // 상세주소는 초기화
+        setValue('postalCode', data.zonecode, { shouldDirty: true });
+        setValue('address', data.roadAddress, { shouldDirty: true });
+        setValue('addressDetail', '', { shouldDirty: true }); // 상세주소는 초기화
       },
     }).open();
   };

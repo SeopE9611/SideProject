@@ -31,6 +31,9 @@ export default function CartPageClient() {
   // 선택 상태
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // "장착비 대상 스트링" 판별을 위해 /api/products/[id]/mini 를 조회해 mountingFee를 캐시
+  const [mountingFeeByProductId, setMountingFeeByProductId] = useState<Record<string, number>>({});
+
   useEffect(() => {
     let cancelled = false;
     getMyInfo({ quiet: true })
@@ -50,6 +53,81 @@ export default function CartPageClient() {
   const FREE_SHIP_THRESHOLD = 30000;
   const shippingFee = subtotal >= FREE_SHIP_THRESHOLD ? 0 : 3000;
   const total = subtotal + shippingFee;
+
+  const cartItemsKey = useMemo(() => cartItems.map((it) => `${it.kind ?? 'product'}:${it.id}:${it.quantity ?? 0}`).join('|'), [cartItems]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      const productIds = Array.from(new Set(cartItems.filter((it) => (it.kind ?? 'product') === 'product').map((it) => String(it.id))));
+
+      if (productIds.length === 0) {
+        if (!cancelled) setMountingFeeByProductId({});
+        return;
+      }
+
+      const pairs = await Promise.all(
+        productIds.map(async (id) => {
+          try {
+            const res = await fetch(`/api/products/${id}/mini`, { cache: 'no-store' });
+            if (!res.ok) return [id, 0] as const;
+            const json = await res.json();
+            const mf = Number(json?.mountingFee ?? 0);
+            return [id, Number.isFinite(mf) && mf > 0 ? mf : 0] as const;
+          } catch {
+            return [id, 0] as const;
+          }
+        }),
+      );
+
+      if (!cancelled) setMountingFeeByProductId(Object.fromEntries(pairs));
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [cartItemsKey]);
+
+  // 교체/장착 서비스 신청(체크아웃 withService=1)에서는
+  // 라켓(또는 중고라켓) 수량과 "장착 가능한 스트링" 수량이 반드시 일치해야함.
+  // (서버에서도 검증하지만, 장바구니에서 먼저 막아주면 사용자가 덜 헷갈림.)
+  const totalRacketQty = useMemo(() => cartItems.filter((it) => it.kind === 'racket').reduce((acc, it) => acc + Number(it.quantity ?? 0), 0), [cartItems]);
+
+  const totalMountableStringQty = useMemo(
+    () => cartItems.filter((it) => (it.kind ?? 'product') === 'product' && (mountingFeeByProductId[String(it.id)] ?? 0) > 0).reduce((acc, it) => acc + Number(it.quantity ?? 0), 0),
+    [cartItems, mountingFeeByProductId],
+  );
+  const blockServiceCheckout = totalRacketQty > 0 && totalMountableStringQty > 0 && totalRacketQty !== totalMountableStringQty;
+
+  // 번들(라켓 + 장착 가능 스트링)인 경우: 장바구니에서는 "수량 스테퍼"를 잠그고
+  // 스트링 선택 화면에서만 수량/스트링을 함께 바꾸도록 UX를 고정한다.
+  const bundleRacketItem = useMemo(() => cartItems.find((it) => (it.kind ?? 'product') === 'racket'), [cartItems]);
+
+  const bundleStringItem = useMemo(() => cartItems.find((it) => (it.kind ?? 'product') === 'product' && (mountingFeeByProductId[String(it.id)] ?? 0) > 0), [cartItems, mountingFeeByProductId]);
+
+  const bundleQty = useMemo(() => {
+    const rq = Number(bundleRacketItem?.quantity ?? 0);
+    const sq = Number(bundleStringItem?.quantity ?? 0);
+    const max = Math.max(rq, sq);
+    return Number.isFinite(max) && max > 0 ? max : 1;
+  }, [bundleRacketItem?.quantity, bundleStringItem?.quantity]);
+
+  const bundleEditHref = useMemo(() => {
+    if (!bundleRacketItem || !bundleStringItem) return null;
+
+    const params = new URLSearchParams({
+      from: 'cart',
+      qty: String(bundleQty),
+      stringId: String(bundleStringItem.id),
+      returnTo: '/cart',
+    });
+
+    return `/rackets/${bundleRacketItem.id}/select-string?${params.toString()}`;
+  }, [bundleRacketItem, bundleStringItem, bundleQty]);
+
+  const isBundleLocked = Boolean(bundleEditHref);
 
   // 선택/일괄
   const toggleSelect = (id: string) => {
@@ -146,10 +224,17 @@ export default function CartPageClient() {
                 <CardContent className="p-3 bp-sm:p-4 bp-md:p-6 space-y-3 bp-sm:space-y-4">
                   {cartItems.map((item) => {
                     // 버튼 비활성 판단
+                    const isRacket = (item.kind ?? 'product') === 'racket';
                     const stock = item.stock ?? Number.POSITIVE_INFINITY;
                     const canDec = item.quantity > 1;
                     const maxStock = getMaxStock(item.stock);
                     const canInc = item.quantity < maxStock;
+
+                    const isBundleRacket = isBundleLocked && !!bundleRacketItem && item.id === bundleRacketItem.id && (item.kind ?? 'product') === 'racket';
+
+                    const isBundleString = isBundleLocked && !!bundleStringItem && item.id === bundleStringItem.id && (item.kind ?? 'product') === 'product' && (mountingFeeByProductId[String(item.id)] ?? 0) > 0;
+
+                    const lockStepper = isBundleRacket || isBundleString;
 
                     return (
                       <div key={item.id} className="rounded-xl bg-white p-3 bp-sm:p-4 shadow-sm transition hover:shadow-md dark:bg-slate-800">
@@ -172,40 +257,58 @@ export default function CartPageClient() {
 
                           {/* 하단(모바일) */}
                           <div className="flex flex-wrap items-center gap-3 bp-sm:flex-nowrap bp-sm:justify-end bp-sm:flex-1">
-                            {/* 수량 스테퍼 (pill, 비활성 표시) */}
-                            <div className="order-1 flex flex-col items-center">
-                              <div className="flex items-center rounded-full bg-slate-100 px-1 dark:bg-slate-700">
-                                <Button variant="ghost" size="sm" className="h-8 w-8 disabled:opacity-40" aria-label={`${item.name} 수량 감소`} disabled={!canDec} onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                                <span className="tabular-nums w-8 select-none text-center font-medium">{item.quantity}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 disabled:opacity-40"
-                                  aria-label={`${item.name} 수량 증가`}
-                                  disabled={!canInc}
-                                  onClick={() => {
-                                    if (!canInc) {
-                                      showErrorToast(
-                                        <>
-                                          <p>
-                                            <strong>{item.name}</strong>의 최대 주문 수량은 {maxStock}개입니다.
-                                          </p>
-                                          <p>더 이상 수량을 늘릴 수 없습니다.</p>
-                                        </>,
-                                      );
-                                      return;
-                                    }
-                                    updateQuantity(item.id, item.quantity + 1);
-                                  }}
-                                >
-                                  <Plus className="h-4 w-4" />
-                                </Button>
-                              </div>
+                            {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
+                            {lockStepper ? (
+                              <div className="order-1 flex flex-col items-center">
+                                {/* 숫자만 표시(± 없음) */}
+                                <div className="flex h-8 items-center rounded-full bg-slate-100 px-3 dark:bg-slate-700">
+                                  <span className="tabular-nums w-8 select-none text-center font-medium">{item.quantity}</span>
+                                </div>
 
-                              {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>현재 가용 수량: {maxStock}개</span>}
-                            </div>
+                                {/* 번들 변경 링크: 라켓/스트링 양쪽에 보여줘도 UX가 덜 헷갈림 */}
+                                {bundleEditHref && (
+                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
+                                    번들 수량/스트링 변경
+                                  </Link>
+                                )}
+
+                                {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>현재 가용 수량: {maxStock}개</span>}
+                              </div>
+                            ) : (
+                              <div className="order-1 flex flex-col items-center">
+                                <div className="flex items-center rounded-full bg-slate-100 px-1 dark:bg-slate-700">
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 disabled:opacity-40" aria-label={`${item.name} 수량 감소`} disabled={!canDec} onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                                    <Minus className="h-4 w-4" />
+                                  </Button>
+                                  <span className="tabular-nums w-8 select-none text-center font-medium">{item.quantity}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 disabled:opacity-40"
+                                    aria-label={`${item.name} 수량 증가`}
+                                    disabled={!canInc}
+                                    onClick={() => {
+                                      if (!canInc) {
+                                        showErrorToast(
+                                          <>
+                                            <p>
+                                              <strong>{item.name}</strong>의 최대 주문 수량은 {maxStock}개입니다.
+                                            </p>
+                                            <p>더 이상 수량을 늘릴 수 없습니다.</p>
+                                          </>,
+                                        );
+                                        return;
+                                      }
+                                      updateQuantity(item.id, item.quantity + 1);
+                                    }}
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                  </Button>
+                                </div>
+
+                                {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>현재 가용 수량: {maxStock}개</span>}
+                              </div>
+                            )}
 
                             <div className="order-2 ml-auto text-right">
                               <div className="text-xs text-slate-500 dark:text-slate-400">합계</div>
@@ -299,19 +402,45 @@ export default function CartPageClient() {
                     </div>
                   </CardContent>
                   <CardFooter className="p-4 bp-sm:p-6 pt-0">
-                    <Button
-                      className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
-                      size="lg"
-                      asChild
-                    >
-                      {/* <Link href="/checkout?withService=1" className="flex items-center gap-3"> */}
-                      <Link href={user ? '/checkout?withService=1' : `/login?redirectTo=${encodeURIComponent('/checkout?withService=1')}`} className="flex items-center gap-3">
-                        <ShoppingBag className="h-5 w-5" />
-                        {/* {user ? '주문하기' : '비회원 주문하기'} */}
-                        {user ? '주문하기' : '로그인 후 주문하기'}
-                        <ArrowRight className="h-5 w-5" />
-                      </Link>
-                    </Button>
+                    {blockServiceCheckout ? (
+                      bundleEditHref ? (
+                        <Button
+                          className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
+                          size="lg"
+                          asChild
+                        >
+                          <Link href={bundleEditHref} className="flex items-center justify-center gap-3">
+                            <ShoppingBag className="h-5 w-5" />
+                            번들 수량/스트링 변경
+                            <ArrowRight className="h-5 w-5" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button
+                          className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl flex items-center justify-center gap-3"
+                          size="lg"
+                          onClick={() => showErrorToast(`교체/장착 서비스를 신청하려면 라켓 수량(${totalRacketQty}개)과 장착 스트링 수량(${totalMountableStringQty}개)을 동일하게 맞춰주세요.`)}
+                        >
+                          <ShoppingBag className="h-5 w-5" />
+                          수량 맞춘 뒤 주문하기
+                          <ArrowRight className="h-5 w-5" />
+                        </Button>
+                      )
+                    ) : (
+                      <Button
+                        className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
+                        size="lg"
+                        asChild
+                      >
+                        {/* <Link href="/checkout?withService=1" className="flex items-center gap-3"> */}
+                        <Link href={user ? '/checkout?withService=1' : `/login?redirectTo=${encodeURIComponent('/checkout?withService=1')}`} className="flex items-center gap-3">
+                          <ShoppingBag className="h-5 w-5" />
+                          {/* {user ? '주문하기' : '비회원은 주문하기'} */}
+                          {user ? '주문하기' : '로그인 후 주문하기'}
+                          <ArrowRight className="h-5 w-5" />
+                        </Link>
+                      </Button>
+                    )}
                   </CardFooter>
                 </Card>
               </div>
@@ -355,10 +484,30 @@ export default function CartPageClient() {
                 <span className="text-sm text-slate-600 dark:text-slate-300">결제 금액</span>
                 <span className="tabular-nums text-lg font-bold text-blue-600 dark:text-blue-400">{formatKRW(total)}원</span>
               </div>
-              <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
-                {/* <Link href="/checkout?withService=1">주문하기</Link> */}
-                <Link href={user ? '/checkout?withService=1' : `/login?redirectTo=${encodeURIComponent('/checkout?withService=1')}`}>{user ? '주문하기' : '로그인 후 주문하기'}</Link>
-              </Button>
+              {blockServiceCheckout ? (
+                <>
+                  <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/40 dark:text-orange-200">
+                    라켓 수량(<span className="font-semibold">{totalRacketQty}개</span>)과 장착 스트링 수량(<span className="font-semibold">{totalMountableStringQty}개</span>)이 다릅니다. 수량을 맞춘 뒤 주문해 주세요.
+                  </div>
+                  {bundleEditHref ? (
+                    <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
+                      <Link href={bundleEditHref}>번들 수량/스트링 변경</Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700"
+                      onClick={() => showErrorToast(`교체/장착 서비스를 신청하려면 라켓 수량(${totalRacketQty}개)과 장착 스트링 수량(${totalMountableStringQty}개)을 동일하게 맞춰주세요.`)}
+                    >
+                      수량 맞춘 뒤 주문하기
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
+                  {/* <Link href="/checkout?withService=1">주문하기</Link> */}
+                  <Link href={user ? '/checkout?withService=1' : `/login?redirectTo=${encodeURIComponent('/checkout?withService=1')}`}>{user ? '주문하기' : '로그인 후 주문하기'}</Link>
+                </Button>
+              )}
             </SiteContainer>
           </div>
         </div>

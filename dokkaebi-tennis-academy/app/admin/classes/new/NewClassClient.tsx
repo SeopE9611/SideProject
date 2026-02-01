@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, Users, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import AccessDenied from '@/components/system/AccessDenied';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 임시 강사 데이터
 const instructors = [
@@ -45,6 +46,40 @@ export default async function NewClassClient() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /**
+   * ---- 이탈 경고(unsaved changes) ----
+   * baseline(초기값) vs 현재 formData 비교로 dirty 판단
+   */
+  const baseline = useMemo(
+    () => ({
+      name: '',
+      instructor: '',
+      schedule: '',
+      capacity: '',
+     level: '초급',
+      location: '',
+      description: '',
+      status: true,
+    }),
+    [],
+  );
+
+  const isDirty = useMemo(() => {
+    return (
+      formData.name !== baseline.name ||
+      formData.instructor !== baseline.instructor ||
+      formData.schedule !== baseline.schedule ||
+      formData.capacity !== baseline.capacity ||
+      formData.level !== baseline.level ||
+      formData.location !== baseline.location ||
+      formData.description !== baseline.description ||
+      formData.status !== baseline.status
+    );
+  }, [formData, baseline]);
+
+  // 저장 중에는 경고를 띄우지 않도록(UX)
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
 
   // 폼 입력값 변경 처리
   const handleChange = (field: string, value: string | boolean) => {

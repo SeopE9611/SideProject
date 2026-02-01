@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showSuccessToast } from '@/lib/toast';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 사이트 설정 스키마
 const siteSettingsSchema = z.object({
@@ -121,25 +122,60 @@ export default function SettingsPage() {
     },
   });
 
+  /**
+   * -----------------------------
+   * Unsaved changes guard
+   * - 페이지 이탈(뒤로/새로고침/탭닫기)은 hook
+   * - Tabs 전환(내부 UI 이동)은 onValueChange에서 confirm
+   * -----------------------------
+   */
+  const dirtyByTab = useMemo(
+    () => ({
+      site: siteForm.formState.isDirty,
+      user: userForm.formState.isDirty,
+      email: emailForm.formState.isDirty,
+      payment: paymentForm.formState.isDirty,
+    }),
+    [siteForm.formState.isDirty, userForm.formState.isDirty, emailForm.formState.isDirty, paymentForm.formState.isDirty],
+  );
+
+  const isDirtyAny = Object.values(dirtyByTab).some(Boolean);
+  const isSubmittingAny = siteForm.formState.isSubmitting || userForm.formState.isSubmitting || emailForm.formState.isSubmitting || paymentForm.formState.isSubmitting;
+
+  // 페이지 이탈(뒤로/새로고침/탭닫기)
+  useUnsavedChangesGuard(isDirtyAny && !isSubmittingAny);
+
+  // 탭 전환(내부 UI 이동) - 현재 탭이 dirty면 confirm
+  const handleTabChange = (nextTab: string) => {
+    if (nextTab === activeTab) return;
+    const currentDirty = (dirtyByTab as Record<string, boolean>)[activeTab] ?? false;
+    if (currentDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
+    setActiveTab(nextTab);
+  };
+
   // 폼 제출 핸들러
   const onSubmitSiteSettings = (data: z.infer<typeof siteSettingsSchema>) => {
     // console.log('사이트 설정 저장:', data);
     showSuccessToast('사이트 설정이 저장되었습니다.');
+    siteForm.reset(data);
   };
 
   const onSubmitUserSettings = (data: z.infer<typeof userSettingsSchema>) => {
     // console.log('사용자 설정 저장:', data);
     showSuccessToast('사용자 설정이 저장되었습니다.');
+    userForm.reset(data);
   };
 
   const onSubmitEmailSettings = (data: z.infer<typeof emailSettingsSchema>) => {
     // console.log('이메일 설정 저장:', data);
     showSuccessToast('이메일 설정이 저장되었습니다.');
+    emailForm.reset(data);
   };
 
   const onSubmitPaymentSettings = (data: z.infer<typeof paymentSettingsSchema>) => {
     // console.log('결제 설정 저장:', data);
     showSuccessToast('결제 설정이 저장되었습니다.');
+    paymentForm.reset(data);
   };
 
   // 테스트 이메일 발송
@@ -162,7 +198,7 @@ export default function SettingsPage() {
           </div>
 
           {/* 설정 탭 */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 p-2">
               <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-1 bg-transparent h-auto p-0">
                 <TabsTrigger
@@ -349,7 +385,7 @@ export default function SettingsPage() {
                       <Switch
                         id="allowRegistration"
                         checked={userForm.watch('allowRegistration')}
-                        onCheckedChange={(checked) => userForm.setValue('allowRegistration', checked)}
+                        onCheckedChange={(checked) => userForm.setValue('allowRegistration', checked, { shouldDirty: true })}
                         className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-600 data-[state=checked]:to-indigo-600"
                       />
                     </div>
@@ -364,7 +400,7 @@ export default function SettingsPage() {
                       <Switch
                         id="requireEmailVerification"
                         checked={userForm.watch('requireEmailVerification')}
-                        onCheckedChange={(checked) => userForm.setValue('requireEmailVerification', checked)}
+                        onCheckedChange={(checked) => userForm.setValue('requireEmailVerification', checked, { shouldDirty: true })}
                         className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-600 data-[state=checked]:to-indigo-600"
                       />
                     </div>
@@ -373,7 +409,7 @@ export default function SettingsPage() {
                       <Label htmlFor="defaultUserRole" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                         기본 사용자 역할
                       </Label>
-                      <Select value={userForm.watch('defaultUserRole')} onValueChange={(value) => userForm.setValue('defaultUserRole', value)}>
+                      <Select value={userForm.watch('defaultUserRole')} onValueChange={(value) => userForm.setValue('defaultUserRole', value, { shouldDirty: true })}>
                         <SelectTrigger id="defaultUserRole" className="border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:bg-slate-700 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20">
                           <SelectValue placeholder="역할 선택" />
                         </SelectTrigger>
@@ -410,7 +446,7 @@ export default function SettingsPage() {
                       <Switch
                         id="allowSocialLogin"
                         checked={userForm.watch('allowSocialLogin')}
-                        onCheckedChange={(checked) => userForm.setValue('allowSocialLogin', checked)}
+                        onCheckedChange={(checked) => userForm.setValue('allowSocialLogin', checked, { shouldDirty: true })}
                         className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-600 data-[state=checked]:to-indigo-600"
                       />
                     </div>
@@ -504,7 +540,7 @@ export default function SettingsPage() {
                       <Label htmlFor="smtpEncryption" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                         SMTP 암호화
                       </Label>
-                      <Select value={emailForm.watch('smtpEncryption')} onValueChange={(value) => emailForm.setValue('smtpEncryption', value)}>
+                      <Select value={emailForm.watch('smtpEncryption')} onValueChange={(value) => emailForm.setValue('smtpEncryption', value, { shouldDirty: true })}>
                         <SelectTrigger id="smtpEncryption" className="border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:bg-slate-700 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20">
                           <SelectValue placeholder="암호화 방식 선택" />
                         </SelectTrigger>
@@ -575,7 +611,8 @@ export default function SettingsPage() {
                         <Label htmlFor="currency" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                           통화
                         </Label>
-                        <Select value={paymentForm.watch('currency')} onValueChange={(value) => paymentForm.setValue('currency', value)}>
+
+                        <Select value={paymentForm.watch('currency')} onValueChange={(value) => paymentForm.setValue('currency', value, { shouldDirty: true })}>
                           <SelectTrigger id="currency" className="border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:bg-slate-700 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20">
                             <SelectValue placeholder="통화 선택" />
                           </SelectTrigger>
@@ -615,7 +652,7 @@ export default function SettingsPage() {
                         <Switch
                           id="enablePaypal"
                           checked={paymentForm.watch('enablePaypal')}
-                          onCheckedChange={(checked) => paymentForm.setValue('enablePaypal', checked)}
+                          onCheckedChange={(checked) => paymentForm.setValue('enablePaypal', checked, { shouldDirty: true })}
                           className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-600 data-[state=checked]:to-indigo-600"
                         />
                       </div>
@@ -630,7 +667,7 @@ export default function SettingsPage() {
                         <Switch
                           id="enableCreditCard"
                           checked={paymentForm.watch('enableCreditCard')}
-                          onCheckedChange={(checked) => paymentForm.setValue('enableCreditCard', checked)}
+                          onCheckedChange={(checked) => paymentForm.setValue('enableCreditCard', checked, { shouldDirty: true })}
                           className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-600 data-[state=checked]:to-indigo-600"
                         />
                       </div>
@@ -645,7 +682,7 @@ export default function SettingsPage() {
                         <Switch
                           id="enableBankTransfer"
                           checked={paymentForm.watch('enableBankTransfer')}
-                          onCheckedChange={(checked) => paymentForm.setValue('enableBankTransfer', checked)}
+                          onCheckedChange={(checked) => paymentForm.setValue('enableBankTransfer', checked, { shouldDirty: true })}
                           className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-blue-600 data-[state=checked]:to-indigo-600"
                         />
                       </div>

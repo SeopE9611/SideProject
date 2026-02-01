@@ -74,6 +74,7 @@ export default function CheckoutButton({
   withStringService,
   servicePickupMethod,
   items,
+  serviceTargetIds = [],
   serviceFee = 0,
   pointsToUse = 0,
 }: {
@@ -94,6 +95,7 @@ export default function CheckoutButton({
   withStringService: boolean;
   servicePickupMethod: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
   items: CartItem[];
+  serviceTargetIds?: string[];
   serviceFee?: number;
   pointsToUse?: number;
 }) {
@@ -116,6 +118,30 @@ export default function CheckoutButton({
       showErrorToast('필수 입력값/약관 동의 항목을 확인해주세요.');
       return;
     }
+
+    // 번들(라켓+교체서비스) 수량 불일치 선제 차단
+    // - 라켓 수량과 “장착비 대상 스트링” 수량이 다르면, 서버에서도 BUNDLE_QTY_MISMATCH로 거절
+    // - 여기서는 사용자에게 즉시 원인을 알려주고 결제를 중단.
+    if (withStringService && Array.isArray(serviceTargetIds) && serviceTargetIds.length > 0) {
+      const racketQty = items.reduce((sum, it) => (it.kind === 'racket' ? sum + (it.quantity ?? 0) : sum), 0);
+      const targetSet = new Set(serviceTargetIds.map((v) => String(v)));
+
+      const serviceQty = items.reduce((sum, it) => {
+        const kind = it.kind ?? 'product';
+        if (kind !== 'product') return sum;
+
+        const id = String(it.id);
+        if (!targetSet.has(id)) return sum;
+
+        return sum + (it.quantity ?? 0);
+      }, 0);
+
+      if (racketQty > 0 && serviceQty > 0 && racketQty !== serviceQty) {
+        showErrorToast(`라켓(${racketQty}개)과 스트링(${serviceQty}개) 수량이 일치하지 않습니다. 스트링 선택 화면에서 수량을 수정해주세요.`);
+        return;
+      }
+    }
+
     // 동시 클릭 즉시 차단 (상태 업데이트 지연에도 안전)
     if (submittingRef.current) return;
     let success = false;

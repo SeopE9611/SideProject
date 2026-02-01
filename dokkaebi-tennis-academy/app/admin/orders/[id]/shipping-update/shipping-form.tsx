@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 interface ShippingFormProps {
   initialShippingMethod?: string;
@@ -57,6 +58,41 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
   // 기존 값이 하나라도 있으면 "수정", 아무것도 없으면 "등록"
   const isRegistered = Boolean(String(initialShippingMethod ?? '').trim() || String(initialEstimatedDelivery ?? '').trim() || String(initialCourier ?? '').trim() || String(initialTrackingNumber ?? '').trim());
   const formTitle = isRegistered ? '배송 정보 수정' : '배송 정보 등록';
+  /**
+   * ---- 이탈(탭 닫기/새로고침/뒤로가기/링크이동) 보호 ----
+   * - baseline은 "초기 props" 기준으로 잡는다.
+   * - 택배배송이 아닌 경우(courier/tracking은 의미 없으므로) 비교 시 ''로 정규화한다.
+   */
+  const baseline = useMemo(() => {
+    const baseMethod = String(initialShippingMethod ?? '').trim();
+    const baseEstimated = initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split('T')[0] : '';
+
+    // 택배배송이 아니면 택배정보는 의미 없으므로 baseline에서도 ''로 맞춘다
+    const baseCourier = baseMethod === 'delivery' ? String(initialCourier ?? '') : '';
+    const baseTracking = baseMethod === 'delivery' ? String(initialTrackingNumber ?? '') : '';
+
+    return {
+      shippingMethod: baseMethod,
+      estimatedDelivery: baseEstimated,
+      courier: baseCourier,
+      trackingNumber: baseTracking,
+    };
+  }, [initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber]);
+
+  const isDirty = useMemo(() => {
+    const curCourier = shippingMethod === 'delivery' ? courier : '';
+    const curTracking = shippingMethod === 'delivery' ? trackingNumber : '';
+
+    return (
+      baseline.shippingMethod !== shippingMethod ||
+      baseline.estimatedDelivery !== estimatedDelivery ||
+      baseline.courier !== curCourier ||
+      baseline.trackingNumber !== curTracking
+    );
+  }, [baseline, shippingMethod, estimatedDelivery, courier, trackingNumber]);
+
+  // 저장 중에는 굳이 경고 띄우지 않도록(UX)
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

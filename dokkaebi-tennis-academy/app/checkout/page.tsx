@@ -32,7 +32,7 @@ declare global {
   }
 }
 
-type CheckoutField = 'name' | 'phone' | 'email' | 'postalCode' | 'address' | 'addressDetail' | 'depositor' | 'items';
+type CheckoutField = 'name' | 'phone' | 'email' | 'postalCode' | 'address' | 'addressDetail' | 'depositor' | 'bundle' | 'items';
 type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
 
 // 유효성(클라 UI용) - 서버는 별도로 강제
@@ -177,6 +177,45 @@ export default function CheckoutPage() {
         return sum + mf * it.quantity;
       }, 0)
     : 0;
+
+  const bundleRacketId = useMemo(() => {
+    if (!isBundleCheckout) return null;
+    const rid = orderItems.find((it) => it.kind === 'racket')?.id;
+    return rid ? String(rid) : null;
+  }, [isBundleCheckout, orderItemsKey]);
+
+  // 교체서비스 ON일 때, “장착비 대상 스트링”과 “라켓” 수량 불일치를 선제 차단
+  // - 장착비 대상 스트링: /api/products/[id]/mini 로 조회한 mountingFee가 0보다 큰 상품
+  const serviceTargetIds = useMemo(() => {
+    if (!withStringService) return [];
+
+    const ids = orderItems
+      .filter((it) => isServiceFeeTarget(it))
+      .filter((it) => (mountingFeeByProductId[String(it.id)] ?? 0) > 0)
+      .map((it) => String(it.id));
+
+    return Array.from(new Set(ids));
+  }, [orderItemsKey, withStringService, mountingFeeByProductId]);
+
+  const bundleQtyGuard = useMemo(() => {
+    if (!withStringService) return { mismatch: false, racketQty: 0, serviceQty: 0 };
+
+    const racketQty = orderItems.reduce((sum, it) => (it.kind === 'racket' ? sum + (it.quantity ?? 0) : sum), 0);
+    const serviceSet = new Set(serviceTargetIds);
+
+    const serviceQty = orderItems.reduce((sum, it) => {
+      if ((it.kind ?? 'product') !== 'product') return sum;
+      const id = String(it.id);
+      if (!serviceSet.has(id)) return sum;
+      return sum + (it.quantity ?? 0);
+    }, 0);
+
+    return {
+      mismatch: racketQty > 0 && serviceQty > 0 && racketQty !== serviceQty,
+      racketQty,
+      serviceQty,
+    };
+  }, [orderItemsKey, withStringService, serviceTargetIds]);
 
   // 최종 결제 금액 = 상품 + 배송 + 서비스
   const total = subtotal + shippingFee + serviceFee;
@@ -414,8 +453,12 @@ export default function CheckoutPage() {
 
     if (!orderItems || orderItems.length === 0) errors.items = '주문 상품이 비어있습니다.';
 
+    if (bundleQtyGuard.mismatch) {
+      errors.bundle = `라켓(${bundleQtyGuard.racketQty}개)과 스트링(${bundleQtyGuard.serviceQty}개) 수량이 일치하지 않습니다. 수량은 스트링 선택 화면에서 수정해주세요.`;
+    }
+
     return errors;
-  }, [name, phone, email, postalCode, address, addressDetail, depositor, orderItems, isLoggedIn, needsShippingAddress, loading]);
+  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, isLoggedIn, needsShippingAddress]);
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors;
@@ -582,6 +625,13 @@ export default function CheckoutPage() {
                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                       라켓/스트링 수량은 동일하게 묶여 있으며, 수량 변경은 <span className="font-medium">스트링 선택 단계</span>에서만 가능합니다.
                     </p>
+                    {bundleRacketId && (
+                      <div className="mt-3">
+                        <Button type="button" variant="outline" size="sm" className="h-8" asChild>
+                          <Link href={`/rackets/${bundleRacketId}/select-string`}>수량/스트링 변경</Link>
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="space-y-4">
@@ -764,13 +814,26 @@ export default function CheckoutPage() {
 
                 <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
                   <div className="flex items-center space-x-2 mb-2">
-                    <Checkbox id="withStringService" checked={withStringService} onCheckedChange={(checked) => setWithStringService(!!checked)} />
+                    <Checkbox
+                      id="withStringService"
+                      checked={withStringService}
+                      disabled={isBundleCheckout}
+                      onCheckedChange={(checked) => {
+                        if (isBundleCheckout) return;
+                        setWithStringService(!!checked);
+                      }}
+                    />
                     <Label htmlFor="withStringService" className="font-medium text-orange-700 dark:text-orange-400">
                       스트링 장착 서비스도 함께 신청할게요
                     </Label>
                   </div>
                   <p className="text-sm text-orange-600 dark:text-orange-400 ml-6">{serviceHelpText}</p>
-
+                  {isBundleCheckout && (
+                    <p className="text-sm text-orange-600 dark:text-orange-400 ml-6 mt-1">
+                      번들 주문은 장착 서비스 포함이 <span className="font-semibold">고정</span>이며, 번들 수량은 <span className="font-semibold">{bundleQty}개</span>로 <span className="font-semibold">고정</span>됩니다. 수량 변경은{' '}
+                      <span className="font-semibold">스트링 선택 단계</span>에서만 가능합니다.
+                    </p>
+                  )}
                   {/* 서비스 ON일 때만 세부 방식 표시 */}
                   {withStringService &&
                     (deliveryMethod === '방문수령' ? (
@@ -1081,6 +1144,13 @@ export default function CheckoutPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
+                  {(fieldErrors.items || fieldErrors.bundle) && (
+                    <div className="w-full rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                      <p className="font-semibold mb-1">확인 필요</p>
+                      {fieldErrors.items && <p>• {fieldErrors.items}</p>}
+                      {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
+                    </div>
+                  )}
                   <CheckoutButton
                     disabled={!canSubmit}
                     name={name}
@@ -1096,6 +1166,7 @@ export default function CheckoutPage() {
                     deliveryRequest={deliveryRequest}
                     saveAddress={saveAddress}
                     deliveryMethod={deliveryMethod}
+                    serviceTargetIds={serviceTargetIds}
                     withStringService={withStringService}
                     servicePickupMethod={servicePickupMethod}
                     items={orderItems}

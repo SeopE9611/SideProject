@@ -9,17 +9,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // 입력이 있고(초기값 대비 변경), 아직 제출 완료 전이면 이탈 경고
+  const isDirty = !isSubmitted && email.trim() !== '';
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // 실제 구현에서는 여기에 API 호출 로직이 들어갑니다
+    // 실제 구현에서는 여기에 API 호출 로직
     // 예: await sendPasswordResetEmail(email)
 
     // 임시로 타이머를 사용하여 API 호출을 시뮬레이션

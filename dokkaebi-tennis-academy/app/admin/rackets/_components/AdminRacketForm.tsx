@@ -1,6 +1,6 @@
 'use client';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
-import { useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import { RACKET_BRANDS, racketBrandLabel, type RacketBrand } from '@/lib/constants';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 type BrandState = RacketBrand | ''; // 폼 상태에서만 '' 허용
 
 // 관리자 폼 유효성(클라이언트) 보강
@@ -108,6 +109,28 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
 
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+
+  // ---------------------------
+  // Unsaved changes guard
+  // ---------------------------
+  const baselineRef = useRef<string | null>(null);
+  const snapshot = useMemo(() => JSON.stringify({ form, searchKeywordsText }), [form, searchKeywordsText]);
+
+  useEffect(() => {
+    // 최초 1회 baseline 설정
+    if (baselineRef.current === null) baselineRef.current = snapshot;
+  }, [snapshot]);
+
+  const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
+  useUnsavedChangesGuard(isDirty && !loading);
+
+  const confirmLeave = (e: React.MouseEvent) => {
+    if (!isDirty) return;
+    if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
 
   const handleSubmit = async () => {
     // 중복 제출 방지
@@ -221,6 +244,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
       };
 
       await onSubmit(normalized);
+      // 저장 성공 → 현재 상태를 baseline으로 갱신(다음 이탈 시 경고 안 뜨게)
+      baselineRef.current = snapshot;
       showSuccessToast('저장되었습니다.');
     } catch (e) {
       console.error(e);
@@ -564,7 +589,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
 
       <div className="flex items-center justify-end space-x-2">
         <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-          <Link href="/admin/rackets">
+          <Link href="/admin/rackets" onClick={confirmLeave}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             취소
           </Link>

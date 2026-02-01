@@ -31,14 +31,54 @@ export function useUnsavedChangesGuard(enabled: boolean, message: string = UNSAV
       window.history.back();
     };
 
+    /**
+     * 링크 클릭(Next <Link> 포함) 이탈도 가드
+     * - Ctrl/Meta/Shift/Alt 클릭(새탭/특수동작), target=_blank, download, 해시 이동(#)은 제외
+     * - 예외가 필요하면 <a data-no-unsaved-guard ...> 로 opt-out 가능
+     */
+    const onClickCapture = (e: MouseEvent) => {
+      if (e.defaultPrevented) return;
+      if (e.button !== 0) return; // 좌클릭만
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // 새탭/특수동작은 제외
+
+      if (!(e.target instanceof Element)) return;
+      const a = e.target.closest('a');
+      if (!a) return;
+      if (a.hasAttribute('data-no-unsaved-guard')) return;
+      if ((a as HTMLAnchorElement).target === '_blank') return;
+      if (a.hasAttribute('download')) return;
+
+      const hrefAttr = a.getAttribute('href');
+      if (!hrefAttr) return;
+      if (hrefAttr.startsWith('#')) return; // 같은 페이지 해시 이동은 경고 X
+
+      // 현재 URL과 “경로+쿼리”가 같으면(해시만 바뀌는 경우 포함) 경고 X
+      try {
+        const nextUrl = new URL((a as HTMLAnchorElement).href, window.location.href);
+        const curUrl = new URL(window.location.href);
+        if (nextUrl.origin === curUrl.origin && nextUrl.pathname === curUrl.pathname && nextUrl.search === curUrl.search) return;
+      } catch {
+        // URL 파싱 실패는 무시
+        return;
+      }
+
+      const ok = window.confirm(message);
+      if (!ok) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
     // 브라우저 뒤로가기를 한번 “가로채기” 위한 더미 state
     window.history.pushState({ ...(window.history.state ?? {}), __unsaved_changes_guard: true }, '', window.location.href);
     window.addEventListener('beforeunload', onBeforeUnload);
     window.addEventListener('popstate', onPopState);
+     document.addEventListener('click', onClickCapture, true);
 
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload);
       window.removeEventListener('popstate', onPopState);
+      document.removeEventListener('click', onClickCapture, true);
 
       /**
        * 중요: 사용자가 입력을 되돌려서 isDirty=false가 되면 guard가 꺼지는데,

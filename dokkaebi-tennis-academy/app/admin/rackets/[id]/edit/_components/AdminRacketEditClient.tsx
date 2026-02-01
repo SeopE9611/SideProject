@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { racketBrandLabel } from '@/lib/constants';
+import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -27,6 +28,15 @@ function StockChip({ id, total }: { id: string; total: number }) {
 export default function AdminRacketEditClient({ id }: { id: string }) {
   const r = useRouter();
   const { data, isLoading, error } = useSWR(`/api/admin/rackets/${id}`, fetcher);
+
+  const confirmLeave = (e: React.MouseEvent) => {
+    const hasUnsaved = typeof window !== 'undefined' && window.history.state?.__unsaved === true;
+    if (!hasUnsaved) return;
+    if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
 
   const onSubmit = async (payload: RacketForm) => {
     const res = await fetch(`/api/admin/rackets/${id}`, {
@@ -88,7 +98,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-900 dark:via-teal-900 dark:to-cyan-900">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Link href="/admin/rackets">
+          <Link href="/admin/rackets" onClick={confirmLeave}>
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               목록으로

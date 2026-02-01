@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { format, parseISO } from 'date-fns';
 import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
 import { Switch } from '@/components/ui/switch';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 interface Props {
   id: string;
@@ -33,6 +34,7 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
   const [customStringType, setCustomStringType] = useState(initial.customStringName || '');
   const [racketType, setRacketType] = useState(initial.racketType || '');
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 섹션 on off 상태
   const [enableTime, setEnableTime] = useState(false);
@@ -41,6 +43,38 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
 
   // [추가] 유효 날짜 검사
   const isValidDate = (s: string | null | undefined): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+
+  /**
+   * ---- 이탈 경고(unsaved changes) ----
+   * baseline(초기값) vs 현재 state 비교로 dirty 판단
+   * - stringTypes는 “선택 집합” 개념이라 정렬 후 비교(순서 변동으로 인한 오탐 방지)
+   */
+  const baseline = useMemo(() => {
+    const baseDesired = initial.desiredDateTime ?? '';
+    const baseStrings = [...(initial.stringTypes ?? [])].sort();
+    return {
+      desiredDateTime: baseDesired,
+      stringTypes: baseStrings,
+      customStringName: initial.customStringName ?? '',
+      racketType: initial.racketType ?? '',
+    };
+  }, [initial.desiredDateTime, initial.stringTypes, initial.customStringName, initial.racketType]);
+
+  const isDirty = useMemo(() => {
+    const curDesired = !date && !time ? '' : `${date}T${time}`;
+    const curStrings = [...(stringTypes ?? [])].sort();
+    const stringsChanged = curStrings.length !== baseline.stringTypes.length || curStrings.some((v, i) => v !== baseline.stringTypes[i]);
+
+    return curDesired !== baseline.desiredDateTime || stringsChanged || (customStringType ?? '') !== baseline.customStringName || (racketType ?? '') !== baseline.racketType;
+  }, [baseline, date, time, stringTypes, customStringType, racketType]);
+
+  // 저장 중에는 confirm을 띄우지 않도록(UX)
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
+
+  const handleCancel = () => {
+    if (isDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
+    onDone();
+  };
 
   // 토글 핸들러: OFF 시 초기값 복원
   const handleTimeToggle = (on: boolean) => {
@@ -122,6 +156,7 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
       showErrorToast('날짜와 시간을 모두 선택해주세요.');
       return;
     }
+    setIsSubmitting(true);
     try {
       const payload: any = { stringDetails: {} };
       if (enableTime) {
@@ -144,9 +179,11 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
       showSuccessToast('스트링 정보가 수정되었습니다.');
       mutateData();
       mutateHistory();
+      setIsSubmitting(false);
       onDone();
     } catch (err) {
       console.error(err);
+      setIsSubmitting(false);
       showErrorToast('수정에 실패했습니다.');
     }
   };
@@ -195,7 +232,7 @@ export default function StringInfoEditForm({ id, initial, stringOptions, onDone,
       {/* 저장/취소 버튼 */}
       <div className="flex justify-end gap-2">
         <Button type="submit">저장</Button>
-        <Button variant="outline" type="button" onClick={onDone}>
+        <Button variant="outline" type="button" onClick={handleCancel}>
           취소
         </Button>
       </div>

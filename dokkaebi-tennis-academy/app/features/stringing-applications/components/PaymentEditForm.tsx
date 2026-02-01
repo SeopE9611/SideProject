@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 export interface PaymentFormValues {
   depositor: string;
@@ -21,8 +22,11 @@ export default function PaymentEditForm({ initialData, resourcePath, entityId, o
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<PaymentFormValues>({ defaultValues: initialData });
+
+  // 입력값이 defaultValues 대비 변경되면 isDirty=true → 이탈(뒤로/탭닫기/링크이동) 경고
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
 
   async function onSubmit(data: PaymentFormValues) {
     const res = await fetch(`${resourcePath}/${entityId}`, {
