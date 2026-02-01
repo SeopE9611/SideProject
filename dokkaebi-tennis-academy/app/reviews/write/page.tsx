@@ -13,6 +13,7 @@ import NextImage from 'next/image';
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import LoginGate from '@/components/system/LoginGate';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 /* ---- 별점 ---- */
 function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: number) => void; disabled?: boolean }) {
@@ -218,6 +219,8 @@ export default function ReviewWritePage() {
     return rating !== 5 || content.trim().length > 0 || photos.length > 0;
   }, [rating, content, photos.length]);
 
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
+
   const resetForm = () => {
     setRating(5);
     setContent('');
@@ -234,24 +237,9 @@ export default function ReviewWritePage() {
       go();
       return;
     }
-    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (ok) go();
   };
-
-  // 브라우저 탭 닫기/새로고침/주소 직접 변경 등 “페이지 이탈” 시 경고
-  useEffect(() => {
-    if (!isDirty || isSubmitting) return;
-    if (typeof window === 'undefined') return;
-
-    const onBeforeUnload = (ev: BeforeUnloadEvent) => {
-      ev.preventDefault();
-      // Chrome 정책상 커스텀 문자열은 무시될 수 있지만, 아래 한 줄이 있어야 경고가 뜸
-      ev.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty, isSubmitting]);
 
   // E2E에서만(쿠키 __e2e=1) 최초 진입 시 샘플 이미지 3장 시드
   useEffect(() => {

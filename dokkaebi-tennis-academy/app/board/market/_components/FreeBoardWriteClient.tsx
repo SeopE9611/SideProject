@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { getMarketBrandOptions, isMarketBrandCategory, isValidMarketBrandForCategory } from '@/app/board/market/_components/market.constants';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 export const CATEGORY_OPTIONS = [
   { value: 'racket', label: '라켓' },
@@ -86,19 +87,11 @@ export default function FreeBoardWriteClient() {
   }, [title, content, category, brand, images.length, selectedFiles.length]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
-  useEffect(() => {
-    if (!isDirty || isSubmitting) return;
-    const onBeforeUnload = (ev: BeforeUnloadEvent) => {
-      ev.preventDefault();
-      ev.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty, isSubmitting]);
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
 
   const guardLeave = (e: any) => {
     if (!isDirty || isSubmitting) return;
-    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE)
     if (!ok) {
       e?.preventDefault?.();
       e?.stopPropagation?.();
@@ -110,7 +103,7 @@ export default function FreeBoardWriteClient() {
       router.back();
       return;
     }
-    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE)
     if (ok) router.back();
   };
 

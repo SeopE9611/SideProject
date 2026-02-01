@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Save, ArrowLeft, Upload, Info, Package } from 'lucide-react';
@@ -24,6 +24,7 @@ import { Loader2 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import ImageUploader from '@/components/admin/ImageUploader';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 브랜드 목록
 const brands = [
@@ -259,6 +260,38 @@ export default function NewStringPage() {
 
   const router = useRouter(); // 페이지 이동을 위한 라우터
 
+   const snapshot = useMemo(
+    () =>
+      JSON.stringify({
+        basicInfo,
+        features,
+        tags,
+        inventory,
+        searchKeywordsInput,
+        additionalFeatures,
+        images,
+        hybridMain,
+        hybridCross,
+      }),
+    [basicInfo, features, tags, inventory, searchKeywordsInput, additionalFeatures, images, hybridMain, hybridCross],
+  );
+
+  const baselineRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (baselineRef.current === null) baselineRef.current = snapshot;
+  }, [snapshot]);
+
+  const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
+  useUnsavedChangesGuard(isDirty && !submitting && !uploading);
+
+  const confirmLeave = (e: React.MouseEvent<HTMLElement>) => {
+    if (!isDirty || submitting || uploading) return;
+    if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -466,7 +499,7 @@ export default function NewStringPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-                    <Link href="/admin/products">
+                    <Link href="/admin/products" onClick={confirmLeave}>
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       취소
                     </Link>
@@ -1143,7 +1176,7 @@ export default function NewStringPage() {
 
             <div className="flex items-center justify-end space-x-2">
               <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-                <Link href="/admin/products">
+                <Link href="/admin/products" onClick={confirmLeave}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   취소
                 </Link>

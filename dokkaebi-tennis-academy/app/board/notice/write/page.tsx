@@ -17,6 +17,7 @@ import { ChevronLeft, ChevronRight, ArrowLeft, Bell, Upload, X, Pin } from 'luci
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR, { mutate } from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 const NOTICE_LABEL_BY_CODE: Record<string, string> = {
   general: '일반',
@@ -137,19 +138,11 @@ export default function NoticeWritePage() {
   }, [title, content, category, isPinned, existingAttachments, selectedFiles.length, removedPaths.length]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
-  useEffect(() => {
-    if (!isDirty || submitting) return;
-    const onBeforeUnload = (ev: BeforeUnloadEvent) => {
-      ev.preventDefault();
-      ev.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty, submitting]);
+  useUnsavedChangesGuard(isDirty && !submitting);
 
   const guardLeave = (e: any) => {
     if (!isDirty || submitting) return;
-    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (!ok) {
       e?.preventDefault?.();
       e?.stopPropagation?.();

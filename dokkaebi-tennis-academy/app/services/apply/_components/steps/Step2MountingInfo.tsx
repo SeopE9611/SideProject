@@ -202,6 +202,35 @@ export default function Step2MountingInfo(props: Props) {
 
   const currentQty = lockedId ? (formData.stringUseCounts?.[lockedId] ?? 1) : 1;
 
+  const lockOrderUseQty = Boolean(orderId && isCombinedPdpMode);
+
+  // PDP 통합(번들) 주문에서는 수량 정합성(라켓=스트링=라인)을 깨면 안되므로
+  // 주문 수량을 기준으로 stringUseCounts를 강제로 동기화한다.
+  React.useEffect(() => {
+    if (!lockOrderUseQty) return;
+    if (!order?.items?.length) return;
+
+    setFormData((prev: any) => {
+      const ids = (prev.stringTypes ?? []).filter((id: any) => id && id !== 'custom');
+      if (ids.length === 0) return prev;
+
+      const nextCounts = { ...(prev.stringUseCounts ?? {}) };
+      let changed = false;
+
+      for (const id of ids) {
+        const item = (order.items as any[]).find((it: any) => it.id === id);
+        const orderQty = Number(item?.quantity ?? 0);
+        if (!Number.isFinite(orderQty) || orderQty <= 0) continue;
+        if (nextCounts[id] !== orderQty) {
+          nextCounts[id] = orderQty;
+          changed = true;
+        }
+      }
+      if (!changed) return prev;
+      return { ...prev, stringUseCounts: nextCounts };
+    });
+  }, [lockOrderUseQty, order, setFormData]);
+
   // (대여) 체크박스를 숨기지 않는다. 체크 해제는 가능하되, stringTypes가 비면 다음 단계로 진행이 막히는 것이 정상.
   const shouldHideStringSelection = false;
 
@@ -427,7 +456,7 @@ export default function Step2MountingInfo(props: Props) {
                       if (!item) return null;
 
                       const orderQty = item.quantity ?? 1;
-                      const useQty = formData.stringUseCounts[id] ?? orderQty;
+                      const useQty = lockOrderUseQty ? orderQty : (formData.stringUseCounts[id] ?? orderQty);
 
                       return (
                         <div key={id} className="flex items-center justify-between gap-2">
@@ -441,17 +470,23 @@ export default function Step2MountingInfo(props: Props) {
                             <Input
                               id={`useQty-${id}`}
                               type="number"
-                              className="h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500"
+                               className={`h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500 ${
+                                lockOrderUseQty ? 'cursor-not-allowed bg-slate-100 text-slate-500 dark:bg-slate-800/40 dark:text-slate-300' : ''
+                              }`}
                               min={0}
                               max={orderQty}
                               value={useQty}
-                              onChange={(e) => handleUseQtyChange(id, Number(e.target.value) || 0)}
-                            />
+                              disabled={lockOrderUseQty}
+                              readOnly={lockOrderUseQty}
+                              title={lockOrderUseQty ? '번들(라켓+스트링) 주문은 주문 수량과 자동 동기화됩니다.' : undefined}
+                              onChange={lockOrderUseQty ? undefined : (e) => handleUseQtyChange(id, Number(e.target.value) || 0)}
+                             />
                           </div>
                         </div>
                       );
                     })}
                   </div>
+                  {lockOrderUseQty && <p className="text-[11px] text-muted-foreground">* 번들(라켓+스트링) 주문은 주문 수량과 자동 동기화되며, 여기서 변경할 수 없습니다.</p>}
 
                   <p>
                     이번 신청으로 추가 납부할 교체비 합계: <span className="font-semibold text-foreground">{price.toLocaleString('ko-KR')}원</span>

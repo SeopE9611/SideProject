@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 export const CATEGORY_OPTIONS = [
   { value: 'general', label: '자유' },
@@ -83,20 +84,12 @@ export default function FreeBoardWriteClient() {
     return false;
   }, [title, content, category, images.length, selectedFiles.length]);
 
-  // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
-  useEffect(() => {
-    if (!isDirty || isSubmitting) return;
-    const onBeforeUnload = (ev: BeforeUnloadEvent) => {
-      ev.preventDefault();
-      ev.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty, isSubmitting]);
+  // 탭닫기/새로고침 + 뒤로가기(popstate)까지 통합 보호
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
 
   const guardLeave = (e: any) => {
     if (!isDirty || isSubmitting) return;
-    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (!ok) {
       e?.preventDefault?.();
       e?.stopPropagation?.();
@@ -108,7 +101,7 @@ export default function FreeBoardWriteClient() {
       router.back();
       return;
     }
-    const ok = window.confirm('이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다. 이동할까요?');
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (ok) router.back();
   };
 

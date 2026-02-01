@@ -203,7 +203,6 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
   const [prefillDone, setPrefillDone] = useState(false);
 
-  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.';
   const fingerprint = useMemo(
     () =>
       JSON.stringify({

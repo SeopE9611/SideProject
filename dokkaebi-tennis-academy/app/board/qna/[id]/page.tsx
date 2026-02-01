@@ -9,9 +9,10 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import useSWR from 'swr';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor } from '@/lib/badge-style';
 import type { BoardPost } from '@/lib/types/board';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type QnaItem = BoardPost & { type: 'qna' };
 
@@ -40,6 +41,26 @@ export default function QnaDetailPage() {
   const isAuthor = me?.sub && qna?.authorId && String(me.sub) === String(qna.authorId);
   const [answerText, setAnswerText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+
+  // 답변 "작성/수정" 상태에서만 dirty 판단
+  const answerBaseline = qna?.answer?.content ?? '';
+  const isAnswerDirty = useMemo(() => {
+    // 답변 작성(아직 답변 없음)
+    if (isAdmin && qna && !qna.answer) return answerText.trim().length > 0;
+    // 답변 수정(편집 모드)
+    if (isAdmin && qna?.answer && isEditing) return answerText !== answerBaseline;
+    return false;
+  }, [answerText, isAdmin, isEditing, qna, answerBaseline]);
+
+  useUnsavedChangesGuard(isAnswerDirty);
+
+  const confirmLeave = (e: React.MouseEvent) => {
+    if (!isAnswerDirty) return;
+    if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
 
   const [lightbox, setLightbox] = useState<{ open: boolean; src: string; alt: string }>({
     open: false,
@@ -74,6 +95,7 @@ export default function QnaDetailPage() {
               {/* Q&A 목록으로 돌아가기 */}
               <Link
                 href="/board/qna"
+                onClick={confirmLeave}
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white/80 border border-gray-200 rounded-full shadow-sm hover:bg-gray-50 hover:text-gray-900 transition-colors dark:bg-gray-800/80 dark:text-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -83,7 +105,9 @@ export default function QnaDetailPage() {
 
             {/* 고객센터 홈으로 이동 버튼 */}
             <Button asChild variant="outline" size="sm" className="shrink-0">
-              <Link href="/support">고객센터 홈으로</Link>
+              <Link href="/support" onClick={confirmLeave}>
+                고객센터 홈으로
+              </Link>
             </Button>
           </div>
 
@@ -240,7 +264,7 @@ export default function QnaDetailPage() {
             {(isAuthor || isAdmin) && qna && (
               <CardFooter className="flex justify-end gap-3 border-t border-gray-100 dark:border-gray-800 bg-gradient-to-r from-teal-50/50 to-cyan-50/50 dark:from-teal-950/20 dark:to-cyan-950/20 p-6">
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/board/qna/write?id=${qna._id}`}>
+                  <Link href={`/board/qna/write?id=${qna._id}`} onClick={confirmLeave}>
                     <Pencil className="mr-2 h-4 w-4" />
                     수정
                   </Link>
@@ -397,13 +421,13 @@ export default function QnaDetailPage() {
 
           <div className="flex justify-between items-center pt-4">
             <Button variant="outline" size="lg" asChild className="px-8 bg-white/80 hover:bg-white dark:bg-gray-800/80 dark:hover:bg-gray-800">
-              <Link href="/board/qna">
+              <Link href="/board/qna" onClick={confirmLeave}>
                 <ArrowUp className="mr-2 h-4 w-4" />
                 목록으로 돌아가기
               </Link>
             </Button>
             <Button size="lg" asChild className="px-8 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
-              <Link href="/board/qna/write">
+              <Link href="/board/qna/write" onClick={confirmLeave}>
                 <MessageCircle className="mr-2 h-4 w-4" />새 문의하기
               </Link>
             </Button>

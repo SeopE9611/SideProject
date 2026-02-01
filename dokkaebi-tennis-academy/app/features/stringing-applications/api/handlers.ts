@@ -2155,6 +2155,10 @@ export async function handleSubmitStringingApplication(req: Request) {
     }
     if (packageApplied) totalPrice = 0;
 
+    // 제출 시점의 "청구 공임"을 serviceAmount로 동기화
+    // (향후 운영/정산에서 totalPrice가 없거나 0인 케이스 fallback으로도 안전)
+    const serviceAmount = totalPrice;
+
     // === 7) 문서 저장: draft가 있거나 bodyAppId가 있으면 업데이트(승격), 아니면 신규 삽입 ===
     const baseDoc = {
       _id: applicationId,
@@ -2172,6 +2176,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       stringItems: normalizedStringItems,
       totalPrice,
       serviceFeeBefore,
+      serviceAmount,
 
       visitSlotCount,
       visitDurationMinutes,
@@ -2211,6 +2216,7 @@ export async function handleSubmitStringingApplication(req: Request) {
             stringDetails: baseDoc.stringDetails,
             totalPrice: baseDoc.totalPrice,
             serviceFeeBefore: baseDoc.serviceFeeBefore,
+            serviceAmount: baseDoc.serviceAmount,
             visitSlotCount: baseDoc.visitSlotCount,
             visitDurationMinutes: baseDoc.visitDurationMinutes,
             packageApplied: baseDoc.packageApplied,
@@ -2231,6 +2237,9 @@ export async function handleSubmitStringingApplication(req: Request) {
       await db.collection('stringing_applications').insertOne({
         ...baseDoc,
         createdAt: new Date(),
+        // 신규 제출 생성 케이스(주문 기반 draft 없이 바로 생성)에서도 필드 일관성 확보
+        servicePaid: false,
+        serviceAmount: baseDoc.serviceAmount,
       });
     }
 

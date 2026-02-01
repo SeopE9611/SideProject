@@ -147,7 +147,6 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
   const [prefillReady, setPrefillReady] = useState(false);
 
-  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.';
   const fingerprint = useMemo(
     () =>
       JSON.stringify({

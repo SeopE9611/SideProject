@@ -24,10 +24,10 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   const clear = usePdpBundleStore((s) => s.clear);
 
   /**
-   * "몇 자루를 작업할지" = 이번 번들 결제에서 구매할 스트링 개수
-   * - STEP2의 라인(라켓별 세부 장착 정보)도 이 개수 기준으로 자동 생성.
-   * - 라켓(중고 라켓)은 서버 정책상 1자루만 구매 가능(수량 1 고정)
-   *   (즉, 여기서 개수를 늘리면 "스트링/교체비"만 여러 개 결제하는 형태)
+   * "번들 수량" = 라켓 구매 수량 = 스트링 구매 수량
+   * - 이 값만큼 라켓/스트링이 동일 수량으로 체크아웃에 담기고, 결제 금액도 함께 증가.
+   * - 신청서 STEP2의 "라켓별 세부 장착 정보" 라인도 이 수량 기준으로 자동 생성.
+   * - 수량 변경은 이 화면(스트링 선택)에서만 하도록 UX를 단단하게 묶는 것을 전제로 함.
    */
   const [workCount, setWorkCount] = useState<number>(1);
 
@@ -54,8 +54,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
     setItems([
       { id: racket.id, name: racket.name, price: racket.price, quantity: qty, image: racket.image, kind: 'racket' },
-      // 라켓은 1자루 고정(중고 라켓 재고/주문 정책)
-      // 스트링은 workCount만큼 결제 → 체크아웃 금액/교체비가 함께 증가
+      // 번들 수량(workCount)만큼 라켓/스트링을 "같은 수량"으로 함께 결제
       { id: String(p._id), name: p.name, price: p.price, quantity: qty, image: stringImage, kind: 'product' },
     ]);
 
@@ -112,20 +111,20 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
           <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 bp-md:p-6 shadow-sm">
             <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-3">
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-slate-900">작업할 라켓 수 (＝ 스트링 구매 개수)</p>
+                <p className="text-sm font-semibold text-slate-900">번들 수량 (라켓 + 스트링)</p>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  이 값만큼 <span className="font-medium">스트링/교체비</span>가 체크아웃에서 함께 계산되고, 신청서 STEP2의 <span className="font-medium">라켓별 세부 장착 정보</span>도 자동으로 생성됩니다.
+                  이 수량만큼 <span className="font-medium">라켓/스트링/교체비</span>가 체크아웃에서 함께 계산되고, 신청서 STEP2의 <span className="font-medium">라켓별 세부 장착 정보</span>도 자동으로 생성됩니다.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 self-start bp-md:self-auto">
-                <Button type="button" variant="outline" className="h-10 w-10 p-0" onClick={() => setWorkCount((prev) => clampWorkCount(prev - 1))} aria-label="작업 개수 감소">
+                <Button type="button" variant="outline" className="h-10 w-10 p-0" onClick={() => setWorkCount((prev) => clampWorkCount(prev - 1))} aria-label="번들 수량 감소">
                   <Minus className="h-4 w-4" />
                 </Button>
 
                 <Input type="number" inputMode="numeric" min={1} max={30} value={workCount} onChange={(e) => setWorkCount(clampWorkCount(Number(e.target.value)))} className="h-10 w-20 text-center" />
 
-                <Button type="button" variant="outline" className="h-10 w-10 p-0" onClick={() => setWorkCount((prev) => clampWorkCount(prev + 1))} aria-label="작업 개수 증가">
+                <Button type="button" variant="outline" className="h-10 w-10 p-0" onClick={() => setWorkCount((prev) => clampWorkCount(prev + 1))} aria-label="번들 수량 증가">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>

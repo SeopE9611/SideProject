@@ -317,6 +317,14 @@ export default function CheckoutButton({
             <p>현재 재고: {data.currentStock}개</p>
           </div>,
         );
+             } else if (data?.error === 'BUNDLE_QTY_MISMATCH') {
+        showErrorToast(
+          <div>
+            <p>라켓 수량과 스트링(장착) 수량이 일치하지 않습니다.</p>
+            <p>라켓: {data?.racketQty ?? '-'}개, 스트링/교체: {data?.serviceQty ?? '-'}개</p>
+            <p className="mt-1 text-sm text-muted-foreground">이전 단계(스트링 선택)에서 ‘번들 수량’을 다시 맞춰주세요.</p>
+          </div>,
+        );
       } else {
         showErrorToast(data?.error ?? '주문 실패: 서버 오류');
       }

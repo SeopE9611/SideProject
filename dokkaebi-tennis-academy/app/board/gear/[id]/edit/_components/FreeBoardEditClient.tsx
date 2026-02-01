@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_OPTIONS } from '@/app/board/gear/_components/FreeBoardWriteClient';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type Props = {
   id: string;
@@ -61,9 +62,6 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 기존 글 불러오기
   const { data, error, isLoading } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=gear`, fetcher);
 
-  /* 이탈 경고 */
-  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보가 초기화될 수 있습니다.\n수정 중이라면 취소를 눌러 현재 페이지에 머물러 주세요.';
-
   type Baseline = {
     title: string;
     content: string;
@@ -80,23 +78,13 @@ export default function FreeBoardEditClient({ id }: Props) {
     return title !== b.title || content !== b.content || String(category) !== b.category || imagesJson !== b.imagesJson || selectedFiles.length > 0;
   }, [title, content, category, images, selectedFiles.length]);
 
-  useEffect(() => {
-    if (!isDirty) return;
-    if (isSubmitting || isUploadingImages || isUploadingFiles) return;
-
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty, isSubmitting, isUploadingImages, isUploadingFiles]);
+  useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty) return go();
     if (isSubmitting || isUploadingImages || isUploadingFiles) return;
 
-    const ok = window.confirm(confirmLeaveMessage);
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (ok) go();
   };
 
@@ -104,7 +92,7 @@ export default function FreeBoardEditClient({ id }: Props) {
     if (!isDirty) return;
     if (isSubmitting || isUploadingImages || isUploadingFiles) return;
 
-    const ok = window.confirm(confirmLeaveMessage);
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (!ok) {
       e.preventDefault();
       e.stopPropagation();

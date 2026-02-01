@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { MdSportsTennis } from 'react-icons/md';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 제출 직전 최종 유효성 가드
 const ALLOWED_LEVEL = new Set(['beginner', 'intermediate', 'advanced', 'pro']);
@@ -75,6 +76,19 @@ export default function TennisProfileForm() {
   const [profile, setProfile] = useState<TennisProfile>(defaultProfile);
   const [isLoading, setIsLoading] = useState(true); // 초기 로딩
   const [isSaving, setIsSaving] = useState(false); // 저장 중 상태
+
+  // 최초 로딩 완료 시점의 "기준 스냅샷" 저장 → 변경 여부 판단
+  const baselineRef = useRef<string | null>(null);
+  const snapshot = useMemo(() => JSON.stringify(profile), [profile]);
+
+  useEffect(() => {
+    if (!isLoading && baselineRef.current === null) {
+      baselineRef.current = snapshot;
+    }
+  }, [isLoading, snapshot]);
+
+  const isDirty = !isLoading && baselineRef.current !== null && baselineRef.current !== snapshot;
+  useUnsavedChangesGuard(isDirty && !isSaving);
 
   // 1) 마운트 시 내 테니스 프로필 불러오기
   useEffect(() => {
@@ -282,6 +296,8 @@ export default function TennisProfileForm() {
       }
 
       showSuccessToast('테니스 프로필이 저장되었습니다.');
+      // 저장 성공하면 현재 상태를 기준선으로 갱신 → "수정됨" 상태 해제
+      baselineRef.current = JSON.stringify(profile);
     } catch (err) {
       console.error(err);
       showErrorToast('테니스 프로필 저장 중 오류가 발생했습니다.');

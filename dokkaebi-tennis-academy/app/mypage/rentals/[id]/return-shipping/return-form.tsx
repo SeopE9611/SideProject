@@ -32,7 +32,6 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
 
   const [prefillDone, setPrefillDone] = useState(false);
 
-  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.';
   const fingerprint = useMemo(() => JSON.stringify({ courier, tracking, date, note }), [courier, tracking, date, note]);
   const baselineRef = useRef<string | null>(null);
   const isDirty = useMemo(() => baselineRef.current !== null && baselineRef.current !== fingerprint, [fingerprint]);

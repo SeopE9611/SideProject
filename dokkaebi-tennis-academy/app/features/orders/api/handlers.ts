@@ -438,6 +438,27 @@ export async function createOrder(req: Request): Promise<Response> {
           }),
         );
 
+         // 번들 수량 일치 검증(라켓 구매 + 스트링 장착 서비스)
+        // - 라켓이 주문에 포함된 경우에만 강제 (보유 라켓 교체 서비스는 라켓 아이템이 없을 수 있음)
+        // - 장착비(mountingFee)가 있는 상품을 "스트링(장착 대상)"으로 간주.
+        if (shippingInfo?.withStringService) {
+          const racketQty = itemsWithSnapshot
+            .filter((it) => it.kind === 'racket')
+            .reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
+
+          const serviceQty = itemsWithSnapshot
+            .filter((it) => it.kind === 'product' && Number((it as any).mountingFee || 0) > 0)
+            .reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
+
+          if (racketQty > 0 && serviceQty > 0 && racketQty !== serviceQty) {
+            throw new HttpError(400, {
+              error: 'BUNDLE_QTY_MISMATCH',
+              racketQty,
+              serviceQty,
+            });
+          }
+        }
+
         // 서버에서 금액 재계산(조작 무력화)
         const computedSubtotal = itemsWithSnapshot.reduce((sum, it) => {
           return sum + (Number(it.price) || 0) * (Number(it.quantity) || 0);

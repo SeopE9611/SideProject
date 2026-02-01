@@ -629,7 +629,6 @@ export default function StringServiceApplyPage() {
   });
 
   // ---- 이탈(탭 닫기/새로고침) 보호: 입력 중 실수로 나가는 케이스 방지 ----
-  const confirmLeaveMessage = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.';
   const fingerprint = useMemo(() => JSON.stringify(formData), [formData]);
   const baselineRef = useRef<string | null>(null);
 
@@ -651,7 +650,7 @@ export default function StringServiceApplyPage() {
     baselineRef.current = fingerprint;
   }, [prefillReady, fingerprint]);
 
-   useUnsavedChangesGuard(isDirty);
+  useUnsavedChangesGuard(isDirty);
 
   // 패키지 미리보기 상태 + 패스조회
   const [packagePreview, setPackagePreview] = useState<null | {
@@ -866,6 +865,20 @@ export default function StringServiceApplyPage() {
     const baseFee = priceView.base ?? 0;
     const isOrderMode = !!orderId && !!order;
 
+    // PDP 통합(번들) 주문인지 여부: "라켓 + (장착비가 있는 스트링 상품)"이 함께 결제된 주문
+    // - 번들 주문은 (라켓 수량 = 스트링 수량 = 신청 라인 수) 정합성이 핵심이므로,
+    //   여기서도 stringUseCounts를 신뢰하지 않고 "주문 수량"을 단일 소스로 사용한다.
+    const isBundleOrder = (() => {
+      if (!isOrderMode || !order) return false;
+      const items = (order as any)?.items;
+      if (!Array.isArray(items)) return false;
+
+      const hasRacket = items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
+      const hasMountableString = items.some((it: any) => it?.kind === 'product' && typeof it?.mountingFee === 'number' && it.mountingFee > 0);
+
+      return hasRacket && hasMountableString;
+    })();
+
     const getStringName = (prodId: string): string => {
       if (isOrderMode && order) {
         const found = order.items.find((it) => it.id === prodId);
@@ -947,7 +960,7 @@ export default function StringServiceApplyPage() {
       if (isOrderMode && order) {
         const found = order.items.find((it) => it.id === prodId);
         const orderQty = found?.quantity ?? 1;
-        const useQty = formData.stringUseCounts[prodId] ?? orderQty;
+        const useQty = isBundleOrder ? orderQty : (formData.stringUseCounts[prodId] ?? orderQty);
 
         for (let i = 0; i < useQty; i++) {
           const alias = (formData.racketType || '').trim() || racketNameFromOrder || `라켓 ${lines.length + 1}`;
@@ -1050,8 +1063,16 @@ export default function StringServiceApplyPage() {
     return n;
   }, [orderId, order]);
 
-  // PDP 통합 모드인지 여부: orderId가 있고, PDP에서 넘어온 경우
-  const isCombinedPdpMode = Boolean(orderId && fromPDP);
+  // PDP 통합(번들) 주문인지 여부: "라켓 + (장착비가 있는 스트링 상품)"이 함께 결제된 주문
+  // - 이 경우 (라켓 수량 = 스트링 수량 = 신청 라인 수) 정합성이 핵심이라 Step2에서 수량을 잠그는 용도로 사용
+  const isCombinedPdpMode = useMemo(() => {
+    if (!orderId || !order) return false;
+    const items = (order as any)?.items;
+    if (!Array.isArray(items)) return false;
+    const hasRacket = items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
+    const hasMountableString = items.some((it: any) => it?.kind === 'product' && Number(it?.mountingFee ?? 0) > 0);
+    return hasRacket && hasMountableString;
+  }, [orderId, order]);
 
   // 대여용 계산값 1
   const rentalRacketPrice = useMemo(() => {
@@ -1284,6 +1305,11 @@ export default function StringServiceApplyPage() {
 
   // 특정 스트링(productId)에 대해 "이번 신청에서 사용할 개수"를 수정하는 헬퍼
   const handleUseQtyChange = (id: string, value: number) => {
+    // 번들(라켓+스트링) 주문이면 수량 조절 UI를 잠그므로, 여기로 들어와도 무시한다.
+    // (실제 라인 생성은 주문 수량을 단일 소스로 사용)
+    if (orderId && order && isCombinedPdpMode) {
+      return;
+    }
     const raw = Number.isFinite(value) ? value : 0;
     const min = 0;
     let max: number;

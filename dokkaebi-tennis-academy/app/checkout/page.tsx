@@ -96,6 +96,11 @@ export default function CheckoutPage() {
   const orderItems: CartItem[] = mode === 'buynow' ? (pdpBundleItems.length > 0 ? pdpBundleItems : buyNowItem ? [buyNowItem] : []) : cartItems;
   const orderItemsKey = orderItems.map((it) => `${it.kind}:${it.id}:${it.quantity}`).join('|');
 
+  // 번들(라켓+스트링) 모드: 수량은 1곳(스트링 선택 페이지)에서만 제어한다
+  // - 체크아웃에서는 안내만 하고, 서버에서 최종 검증을 수행한다
+  const isBundleCheckout = mode === 'buynow' && withServiceParam === '1' && orderItems.length >= 2;
+  const bundleQty = isBundleCheckout ? (orderItems.find((it) => it.kind === 'racket')?.quantity ?? orderItems[0]?.quantity ?? 1) : null;
+
   useEffect(() => {
     let cancelled = false;
 
@@ -571,6 +576,14 @@ export default function CheckoutPage() {
                 <CardDescription className="mt-2">장바구니에서 선택한 상품 목록입니다.</CardDescription>
               </div>
               <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
+                {isBundleCheckout && bundleQty !== null && (
+                  <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
+                    <p className="font-semibold">번들 수량: {bundleQty}개</p>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      라켓/스트링 수량은 동일하게 묶여 있으며, 수량 변경은 <span className="font-medium">스트링 선택 단계</span>에서만 가능합니다.
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-4">
                   {orderItems.map((item) => (
                     <div

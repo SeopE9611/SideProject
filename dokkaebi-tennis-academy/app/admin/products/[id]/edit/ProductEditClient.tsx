@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Save, ArrowLeft, Upload, Info, Delete, Package } from 'lucide-react';
@@ -24,6 +24,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import useSWR from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 브랜드 목록
 const brands = [
@@ -159,6 +160,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   const submitRef = useRef(false);
   const [deleting, setDeleting] = useState(false);
   const deleteRef = useRef(false);
+  const baselineRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!data?.product) return;
@@ -214,6 +216,57 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     setAdditionalFeatures(p.additionalFeatures);
     setImages(p.images);
     setMainImageIndex(0);
+     if (baselineRef.current === null) {
+      baselineRef.current = JSON.stringify({
+        basicInfo: {
+          name: p.name,
+          sku: p.sku,
+          shortDescription: p.shortDescription,
+          description: p.description,
+          brand: p.brand,
+          material: p.material,
+          gauge: p.gauge,
+          color: p.color,
+          length: p.length,
+          price: p.price,
+          mountingFee: p.mountingFee,
+        },
+        features: p.features,
+        tags: p.tags,
+        inventory: {
+          stock: p.inventory.stock,
+          lowStock: p.inventory.lowStock,
+          status: p.inventory.status,
+          manageStock: p.inventory.manageStock,
+          allowBackorder: p.inventory.allowBackorder,
+          isFeatured: p.inventory.isFeatured,
+          isNew: p.inventory.isNew,
+          isSale: p.inventory.isSale,
+          salePrice: p.inventory.salePrice,
+        },
+        searchKeywordsInput: Array.isArray(p.searchKeywords) ? p.searchKeywords.join(', ') : '',
+        additionalFeatures: p.additionalFeatures,
+        images: p.images,
+        hybridMain: p?.specifications?.hybrid
+          ? {
+              brand: p.specifications.hybrid.main?.brand ?? '',
+              name: p.specifications.hybrid.main?.name ?? '',
+              gauge: p.specifications.hybrid.main?.gauge ?? '',
+              color: p.specifications.hybrid.main?.color ?? '',
+              role: 'mains',
+            }
+          : { brand: '', name: '', gauge: '', color: '', role: 'mains' },
+        hybridCross: p?.specifications?.hybrid
+          ? {
+              brand: p.specifications.hybrid.cross?.brand ?? '',
+              name: p.specifications.hybrid.cross?.name ?? '',
+              gauge: p.specifications.hybrid.cross?.gauge ?? '',
+              color: p.specifications.hybrid.cross?.color ?? '',
+              role: 'cross',
+            }
+          : { brand: '', name: '', gauge: '', color: '', role: 'cross' },
+      });
+    }
   }, [data]);
 
   // 이미지 추가 핸들러
@@ -312,6 +365,33 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   };
 
   const router = useRouter(); // 페이지 이동을 위한 라우터
+
+   const snapshot = useMemo(
+    () =>
+      JSON.stringify({
+        basicInfo,
+        features,
+        tags,
+        inventory,
+        searchKeywordsInput,
+        additionalFeatures,
+        images,
+        hybridMain,
+        hybridCross,
+      }),
+    [basicInfo, features, tags, inventory, searchKeywordsInput, additionalFeatures, images, hybridMain, hybridCross],
+  );
+
+  const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
+  useUnsavedChangesGuard(isDirty && !submitting && !uploading && !deleting);
+
+  const confirmLeave = (e: React.MouseEvent<HTMLElement>) => {
+    if (!isDirty || submitting || uploading || deleting) return;
+    if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
 
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
@@ -567,7 +647,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" type="button" asChild>
-                    <Link href="/admin/products">
+                    <Link href="/admin/products" onClick={confirmLeave}>
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       취소
                     </Link>
@@ -1257,7 +1337,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
             <div className="flex items-center justify-end space-x-2">
               <Button variant="outline" type="button" asChild>
-                <Link href="/admin/products">
+                <Link href="/admin/products" onClick={confirmLeave}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   취소
                 </Link>
