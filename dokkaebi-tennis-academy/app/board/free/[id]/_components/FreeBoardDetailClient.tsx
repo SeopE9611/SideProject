@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CommunityCategory, CommunityComment, CommunityPost } from '@/lib/types/community';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -20,6 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
@@ -375,6 +376,9 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
 
+  // 댓글 "수정" 모드에서의 입력 추적(언컨트롤드 textarea 유지 + onChange로만 draft 저장)
+  const [editDrafts, setEditDrafts] = useState<Record<string, string>>({});
+
   // 대댓글 입력 상태
   // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
   // - replyDrafts: 각 댓글별로 입력 중인 답글 내용을 보관 (IME 안정성을 위해 commentId별로 분리)
@@ -424,6 +428,41 @@ export default function FreeBoardDetailClient({ id }: Props) {
     }
     return acc;
   }, {});
+
+  // === unsaved changes guard 판단 ===
+  const originalEditingContent = useMemo(() => {
+    if (!editingCommentId) return '';
+    return comments.find((c) => c.id === editingCommentId)?.content ?? '';
+  }, [comments, editingCommentId]);
+
+  const isDirtyAny = useMemo(() => {
+    const postReportDirty = openReport && reason.trim() !== '';
+    const commentReportDirty = openCommentReport && commentReportReason.trim() !== '';
+    const rootCommentDirty = commentContent.trim() !== '';
+    const replyDirty = !!replyingToId && (replyDrafts[replyingToId] ?? '').trim() !== '';
+
+    const editingDraft = editingCommentId ? (editDrafts[editingCommentId] ?? originalEditingContent) : '';
+    const editDirty = !!editingCommentId && editingDraft.trim() !== originalEditingContent.trim();
+
+    return postReportDirty || commentReportDirty || rootCommentDirty || replyDirty || editDirty;
+  }, [openReport, reason, openCommentReport, commentReportReason, commentContent, replyingToId, replyDrafts, editingCommentId, editDrafts, originalEditingContent]);
+
+  const isBusyAny = isReporting || isCommentReporting || isCommentSubmitting || isReplySubmitting || isDeleting || isLiking;
+
+  // 브라우저 뒤로가기/새로고침/탭닫기(popstate/beforeunload)
+  useUnsavedChangesGuard(isDirtyAny && !isBusyAny);
+
+  // 내부 이동(Link/router.push) confirm
+  const confirmLeaveIfDirty = () => {
+    if (!isDirtyAny || isBusyAny) return true;
+    return window.confirm(UNSAVED_CHANGES_MESSAGE);
+  };
+
+  const onNavLinkClick = (e: any) => {
+    if (confirmLeaveIfDirty()) return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   useEffect(() => {
     // 로딩 끝, 2페이지 이상인데, 컨텐츠는 없고, 루트 댓글 수는 0이 아님 → 한 페이지 뒤로 밀기
@@ -553,6 +592,14 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
   // 댓글 수정 모드 취소
   const cancelEditComment = () => {
+    // draft 정리
+    if (editingCommentId) {
+      setEditDrafts((prev) => {
+        const next = { ...prev };
+        delete next[editingCommentId];
+        return next;
+      });
+    }
     setEditingCommentId(null);
   };
   // 댓글 수정 저장
@@ -584,6 +631,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
       // 수정 모드 종료
       setEditingCommentId(null);
+      // draft 정리
+      setEditDrafts((prev) => {
+        const next = { ...prev };
+        delete next[commentId];
+        return next;
+      });
 
       // 댓글 목록만 재검증
       await mutateComments();
@@ -894,6 +947,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                     onClick={() => {
                       if (!comment.userId) return;
                       const authorName = comment.nickname ?? '';
+                      if (!confirmLeaveIfDirty()) return;
                       router.push(`/board/free?authorId=${comment.userId}&authorName=${encodeURIComponent(authorName)}`);
                     }}
                   >
@@ -983,6 +1037,10 @@ export default function FreeBoardDetailClient({ id }: Props) {
               defaultValue={comment.content} // 초기값만 세팅, 이후는 브라우저가 관리
               disabled={isCommentSubmitting}
               autoFocus
+              onChange={(e) => {
+                const v = e.currentTarget.value ?? '';
+                setEditDrafts((prev) => ({ ...prev, [comment.id]: v }));
+              }}
             />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" size="sm" onClick={cancelEditComment} disabled={isCommentSubmitting} className="h-8 px-4 text-xs bg-transparent">
@@ -1060,6 +1118,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
                     replyInputRef.current.value = '';
                   }
                   setReplyingToId(null);
+                  setReplyDrafts((prev) => {
+                    const next = { ...prev };
+                    delete next[comment.id];
+                    return next;
+                  });
                   setReplyError(null);
 
                   await mutateComments();
@@ -1075,10 +1138,14 @@ export default function FreeBoardDetailClient({ id }: Props) {
             <Textarea
               ref={replyInputRef}
               className="min-h-[70px] resize-none border-gray-200 bg-white text-sm focus-visible:ring-1 focus-visible:ring-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:focus-visible:ring-gray-400"
-              defaultValue=""
+              defaultValue={replyDrafts[comment.id] ?? ''}
               disabled={isReplySubmitting}
               placeholder={`@${comment.nickname ?? '회원'} 님께 답글을 남겨 보세요.`}
               autoFocus
+              onChange={(e) => {
+                const v = e.currentTarget.value ?? '';
+                setReplyDrafts((prev) => ({ ...prev, [comment.id]: v }));
+              }}
             />
             {replyError && <p className="text-xs text-red-600 dark:text-red-400">{replyError}</p>}
             <div className="flex justify-end gap-2">
@@ -1091,6 +1158,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
                     replyInputRef.current.value = '';
                   }
                   setReplyingToId(null);
+                  setReplyDrafts((prev) => {
+                    const next = { ...prev };
+                    delete next[comment.id];
+                    return next;
+                  });
                   setReplyError(null);
                 }}
                 disabled={isReplySubmitting}
@@ -1137,7 +1209,16 @@ export default function FreeBoardDetailClient({ id }: Props) {
           </div>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" className="gap-1 bg-transparent" onClick={() => router.push('/board/free')}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1 bg-transparent"
+              onClick={() => {
+                if (!confirmLeaveIfDirty()) return;
+                router.push('/board/free');
+              }}
+            >
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
@@ -1206,6 +1287,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                             // 비회원/익명 글은 userId가 없을 수 있음
                             if (!item.userId) return;
                             const authorName = item.nickname ?? '';
+                            if (!confirmLeaveIfDirty()) return;
                             router.push(`/board/free?authorId=${item.userId}&authorName=${encodeURIComponent(authorName)}`);
                           }}
                         >
@@ -1220,6 +1302,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                               if (!user) {
                                 const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/board/free/${id}`;
+                                if (!confirmLeaveIfDirty()) return;
                                 router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                                 return;
                               }
@@ -1426,7 +1509,15 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                   {isAuthor && (
                     <>
-                      <Button type="button" variant="outline" size="sm" onClick={() => router.push(`/board/free/${item.id}/edit`)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (!confirmLeaveIfDirty()) return;
+                          router.push(`/board/free/${item.id}/edit`);
+                        }}
+                      >
                         수정
                       </Button>
 

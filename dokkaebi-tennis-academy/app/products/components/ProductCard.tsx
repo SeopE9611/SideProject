@@ -23,6 +23,9 @@ export type Product = {
   features?: Record<string, number>;
   isNew?: boolean;
   mountingFee?: number; // 교체(장착) 공임(1자루 기준)
+  ratingAvg?: number; // reviews API가 업데이트하는 필드
+  ratingCount?: number; // 리뷰 개수
+  ratingAverage?: number; // 레거시/호환(maintenance에서 쓰던 키)
 };
 
 // 한글 라벨 매핑
@@ -34,6 +37,27 @@ const keyMap: Record<string, string> = {
   comfort: '편안함',
 };
 
+function RatingStars({ avg, starClassName = 'w-3 h-3' }: { avg: number; starClassName?: string }) {
+  const safe = Math.max(0, Math.min(5, Number(avg) || 0)); // 0~5 고정
+
+  return (
+    <div className="flex items-center">
+      {[0, 1, 2, 3, 4].map((i) => {
+        const fill = Math.max(0, Math.min(1, safe - i)); // i번째 별의 채움 비율(0~1)
+
+        return (
+          <span key={i} className={`relative inline-block ${starClassName}`}>
+            <Star className={`${starClassName} text-yellow-400`} />
+            <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
+              <Star className={`${starClassName} fill-yellow-400 text-yellow-400`} />
+            </span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 type Props = {
   product: Product;
   viewMode: 'grid' | 'list';
@@ -43,6 +67,8 @@ type Props = {
 const ProductCard = React.memo(
   function ProductCard({ product, viewMode, brandLabel }: Props) {
     const router = useRouter();
+    const ratingAvg = Number(product.ratingAvg ?? product.ratingAverage ?? 0);
+    const ratingCount = Number(product.ratingCount ?? 0);
     const { has, toggle } = useWishlist();
     const inWish = has(product._id);
 
@@ -110,7 +136,6 @@ const ProductCard = React.memo(
           </div>
 
           <div className="flex flex-col bp-md:flex-row relative z-10">
-            +{' '}
             <div className="relative w-full bp-md:w-48 aspect-[4/3] bp-md:aspect-square flex-shrink-0 overflow-hidden">
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill sizes="(max-width: 768px) 100vw, 192px" className="object-cover" />
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
@@ -122,12 +147,8 @@ const ProductCard = React.memo(
                   <div className="text-xs sm:text-sm text-muted-foreground mb-1 font-medium">{brandLabel}</div>
                   <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 dark:text-white line-clamp-2">{product.name}</h3>
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="flex items-center">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <span className="text-xs sm:text-sm text-muted-foreground">(128)</span>
+                    <RatingStars avg={ratingAvg} starClassName="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="text-xs sm:text-sm text-muted-foreground">({ratingCount})</span>
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
@@ -244,12 +265,8 @@ const ProductCard = React.memo(
             <CardTitle className="text-sm sm:text-base font-semibold mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white min-h-[2.5rem] sm:min-h-[3rem]">{product.name}</CardTitle>
 
             <div className="flex items-center gap-1.5 mb-2">
-              <div className="flex items-center">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <span className="text-xs text-muted-foreground">(128)</span>
+              <RatingStars avg={ratingAvg} starClassName="w-3 h-3" />
+              <span className="text-xs text-muted-foreground">({ratingCount})</span>
             </div>
 
             <div className="hidden sm:block space-y-1.5 mb-3 text-xs">

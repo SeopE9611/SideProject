@@ -29,7 +29,10 @@ export async function GET(req: Request) {
     return v === '1' || v === 'true' || v === 'yes' || v === 'on';
   })();
 
-  const q: any = { $or: [{ status: { $exists: false } }, { status: { $nin: ['inactive', '비노출', 'sold'] } }] };
+  // 기본 목록에서는 sold(품절/판매완료)도 노출,
+  // 단 "대여 가능만(rentOnly)"에서는 sold를 제외해 결과/total을 정확히 유지
+  const hiddenStatuses = rentOnly ? ['inactive', '비노출', 'sold'] : ['inactive', '비노출'];
+  const q: any = { $or: [{ status: { $exists: false } }, { status: { $nin: hiddenStatuses } }] };
 
   // 브랜드(대소문자 무시) — 예: ?brand=yonex
   if (brand) q.brand = { $regex: brand, $options: 'i' };

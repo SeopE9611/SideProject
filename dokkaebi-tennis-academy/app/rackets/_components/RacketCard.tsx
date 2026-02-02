@@ -49,12 +49,19 @@ function useRacketAvailability(id: string) {
 }
 
 function RacketAvailBadge({ id }: { id: string }) {
-  const { qty, avail, rentedCount, isSold, isAllRented } = useRacketAvailability(id);
+  const { qty, avail, rentedCount, isSold, isAllRented, ready } = useRacketAvailability(id);
 
-  if (isSold) {
-    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap">판매 완료</div>;
+  // 로딩 중에 1/1 같은 가짜 값이 보이는 깜빡임 방지
+  if (!ready) {
+    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap animate-pulse">수량 확인중</div>;
   }
 
+  // 판매 완료(보유 0)
+  if (isSold) {
+    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap">판매 완료 (재고 0)</div>;
+  }
+
+  // 전량 대여중
   if (isAllRented) {
     return (
       <div className="text-xs font-medium px-2 py-1 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300 whitespace-nowrap">
@@ -63,13 +70,19 @@ function RacketAvailBadge({ id }: { id: string }) {
     );
   }
 
+  // “대여중 0”이면 19/19 같은 표기가 어색하므로 “재고 n개”로 표현
+  if (rentedCount === 0) {
+    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 whitespace-nowrap">재고 {qty}개</div>;
+  }
+
+  // 대여중이 있으면 분수(가용/보유) + 대여중 배지로 정보량 확보
   return (
     <div className="flex items-center gap-1.5">
       <div className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 whitespace-nowrap">
         가용 {avail}/{qty}
       </div>
 
-      {rentedCount > 0 && <div className="text-xs font-medium px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 whitespace-nowrap">대여중 {rentedCount}</div>}
+      <div className="text-xs font-medium px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 whitespace-nowrap">대여중 {rentedCount}</div>
     </div>
   );
 }
@@ -103,35 +116,29 @@ const RacketCard = React.memo(
                 sizes="(max-width: 768px) 100vw, 224px"
                 className="object-cover object-center"
               />
-              <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 z-10">
-                <div className="flex items-center gap-2">
-                  {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
-                  <StatusBadge kind="condition" state={racket.condition} />
-                </div>
-              </div>
             </div>
             <div className="flex-1 p-3 bp-sm:p-6 bp-md:p-7">
               <div className="flex flex-col bp-lg:flex-row bp-lg:justify-between bp-lg:items-start mb-3 bp-sm:mb-4 gap-3 bp-sm:gap-4">
                 <div className="flex-1">
                   <div className="text-sm bp-sm:text-base text-muted-foreground mb-1.5 font-medium">{brandLabel}</div>
                   <h3 className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold mb-2 bp-sm:mb-3 dark:text-white">{racket.model}</h3>
-                  <div className="flex items-center gap-2 mb-2 bp-sm:mb-3">
+                  <div className="flex flex-wrap items-center gap-2 mb-2 bp-sm:mb-3">
                     <StatusBadge kind="condition" state={racket.condition} />
                     {racket.rental?.enabled ? <RacketAvailBadge id={racket.id} /> : <StatusBadge kind="rental" state="unavailable" />}
                   </div>
                 </div>
                 <div className="text-left bp-lg:text-right">
                   <div className="text-lg bp-sm:text-2xl bp-md:text-3xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
-                  <div className="mt-3 flex flex-wrap gap-2 bp-lg:justify-end">
+                  <div className="mt-3 grid grid-cols-1 bp-sm:grid-cols-2 gap-2 bp-lg:max-w-[340px] bp-lg:ml-auto">
                     {canBuy ? (
-                      <Button asChild size="sm" className="shadow-lg text-xs bp-sm:text-base" onClick={(e) => e.stopPropagation()}>
+                      <Button asChild size="sm" className="shadow-lg text-xs bp-sm:text-base w-full justify-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <Link href={`/rackets/${racket.id}/select-string`} onClick={(e) => e.stopPropagation()}>
                           <ShoppingCart className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
                           구매하기
                         </Link>
                       </Button>
                     ) : (
-                      <Button size="sm" className="shadow-lg text-xs bp-sm:text-base" disabled title={buyDisabledTitle}>
+                      <Button size="sm" className="shadow-lg text-xs bp-sm:text-base w-full justify-center whitespace-nowrap" disabled title={buyDisabledTitle}>
                         <ShoppingCart className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
                         품절(구매 불가)
                       </Button>
@@ -139,29 +146,41 @@ const RacketCard = React.memo(
 
                     {racket.rental?.enabled ? (
                       canRent ? (
-                        <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
+                        <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} className="w-full justify-center whitespace-nowrap" />
                       ) : (
-                        <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm bp-sm:text-base" disabled aria-disabled title={rentDisabledTitle}>
+                        <Button
+                          size="sm"
+                          className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                          disabled
+                          aria-disabled
+                          title={rentDisabledTitle}
+                        >
                           <Briefcase className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
                           품절(대여 불가)
                         </Button>
                       )
                     ) : (
-                      <Button size="sm" className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-sm bp-sm:text-base" disabled aria-disabled title={rentDisabledTitle}>
+                      <Button
+                        size="sm"
+                        className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                        disabled
+                        aria-disabled
+                        title={rentDisabledTitle}
+                      >
                         <Briefcase className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
                         대여 불가
                       </Button>
                     )}
                   </div>
 
-                  <div className="mt-2 flex bp-lg:justify-end">
-                    <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                      <Button size="sm" variant="outline" className="bg-white/80 dark:bg-slate-900/30 shadow text-xs bp-sm:text-base">
+                  <div className="mt-2 bp-lg:max-w-[340px] bp-lg:ml-auto">
+                    <Button asChild size="sm" variant="outline" className="w-full bg-white/80 dark:bg-slate-900/30 shadow text-xs bp-sm:text-base justify-center whitespace-nowrap">
+                      <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
                         <Eye className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
                         <span className="bp-sm:hidden">상세</span>
                         <span className="hidden bp-sm:inline">상세보기</span>
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -184,12 +203,6 @@ const RacketCard = React.memo(
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
           />
-          <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
-            <div className="flex items-center gap-2">
-              {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
-              <StatusBadge kind="condition" state={racket.condition} />
-            </div>
-          </div>
 
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
             <div className="flex gap-2">
@@ -242,7 +255,7 @@ const RacketCard = React.memo(
               {racket.rental?.enabled ? (
                 canRent ? (
                   <div className="flex-1 min-w-0">
-                    <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} />
+                    <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} className="w-full justify-center" />
                   </div>
                 ) : (
                   <Button size="sm" className="flex-1 min-w-0 shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400" disabled aria-disabled title={rentDisabledTitle}>

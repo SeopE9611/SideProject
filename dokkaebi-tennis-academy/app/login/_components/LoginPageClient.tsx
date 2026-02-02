@@ -8,12 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '@/app/store/authStore';
 import { Mail, Lock, User, Phone, MapPin, Eye, EyeOff, CheckCircle, AlertCircle, Loader2, Shield } from 'lucide-react';
 import SocialAuthButtons from '@/app/login/_components/SocialAuthButtons';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 제출 직전 최종 유효성 가드
 const PASSWORD_POLICY_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/; // 8자 이상 + 영문/숫자 조합
@@ -102,6 +103,9 @@ export default function LoginPageClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
 
+  // 로그인 입력값이 “하나라도” 들어왔는지(=dirty)만 최소 추적 (uncontrolled input 유지)
+  const [loginDirty, setLoginDirty] = useState(false);
+
   // 로그인: 필드별/공통 에러 UX
   const [loginFieldErrors, setLoginFieldErrors] = useState<Partial<Record<LoginField, string>>>({});
   const [loginFormError, setLoginFormError] = useState<string>('');
@@ -149,6 +153,44 @@ export default function LoginPageClient() {
     setAddressDetail('');
     setRegisterFieldErrors({});
     setRegisterFormError('');
+  };
+
+  // 회원가입 폼 dirty 판정(에러/체크 상태 등 파생값 제외, “실제 입력값” 중심)
+  const registerDirty = useMemo(() => {
+    return (
+      emailId.trim() !== '' ||
+      emailDomain.trim() !== 'gmail.com' ||
+      isCustomDomain ||
+      password !== '' ||
+      confirmPassword !== '' ||
+      name.trim() !== '' ||
+      phone.trim() !== '' ||
+      postalCode.trim() !== '' ||
+      address.trim() !== '' ||
+      addressDetail.trim() !== ''
+    );
+  }, [emailId, emailDomain, isCustomDomain, password, confirmPassword, name, phone, postalCode, address, addressDetail]);
+
+  const isDirtyAny = loginDirty || registerDirty;
+  const isSubmittingAny = loginLoading || submitting;
+
+  // 뒤로가기/탭닫기/새로고침(popstate/beforeunload) 공통 가드
+  useUnsavedChangesGuard(isDirtyAny && !isSubmittingAny);
+
+  // 내부 이동(링크/router.push/OAuth)용 confirm
+  const confirmLeaveIfDirty = () => {
+    if (!isDirtyAny || isSubmittingAny) return true;
+    return window.confirm(UNSAVED_CHANGES_MESSAGE);
+  };
+
+  // 탭 전환은 “현재 탭 입력이 날아가는 행동”이 될 수 있으므로 별도 confirm
+  const handleTabChange = (nextTab: string) => {
+    if (nextTab === activeTab) return;
+    const currentDirty = activeTab === 'login' ? loginDirty : registerDirty;
+    if (currentDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
+    // login 탭의 uncontrolled input은 탭 전환 시 언마운트로 값이 날아갈 수 있어 dirty도 내려둠
+    if (activeTab === 'login') setLoginDirty(false);
+    setActiveTab(nextTab);
   };
 
   // URL 파라미터에 따라 탭 전환
@@ -532,12 +574,14 @@ export default function LoginPageClient() {
   };
 
   const handleKakaoOAuth = () => {
+    if (!confirmLeaveIfDirty()) return;
     const from = new URLSearchParams(window.location.search).get('from');
     const url = from ? `/api/oauth/kakao?from=${encodeURIComponent(from)}` : '/api/oauth/kakao';
     window.location.href = url;
   };
 
   const handleNaverOAuth = () => {
+    if (!confirmLeaveIfDirty()) return;
     const from = new URLSearchParams(window.location.search).get('from');
     const url = from ? `/api/oauth/naver?from=${encodeURIComponent(from)}` : '/api/oauth/naver';
     window.location.href = url;
@@ -579,7 +623,7 @@ export default function LoginPageClient() {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-slate-100 dark:bg-slate-700">
               <TabsTrigger value="login" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-md data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 font-semibold">
                 로그인
@@ -620,9 +664,11 @@ export default function LoginPageClient() {
                         id="email"
                         type="email"
                         placeholder="이메일 주소를 입력하세요"
-                        onChange={() => {
+                        onChange={(e) => {
                           setLoginFieldErrors((prev) => ({ ...prev, email: undefined }));
                           setLoginFormError('');
+                          const pwVal = (document.getElementById('password') as HTMLInputElement | null)?.value ?? '';
+                          setLoginDirty(!!e.currentTarget.value.trim() || !!pwVal);
                         }}
                         className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400"
                       />
@@ -645,9 +691,11 @@ export default function LoginPageClient() {
                         id="password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="비밀번호를 입력하세요"
-                        onChange={() => {
+                        onChange={(e) => {
                           setLoginFieldErrors((prev) => ({ ...prev, password: undefined }));
                           setLoginFormError('');
+                          const emailVal = (document.getElementById('email') as HTMLInputElement | null)?.value ?? '';
+                          setLoginDirty(!!emailVal.trim() || !!e.currentTarget.value);
                         }}
                         className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400"
                       />
@@ -674,7 +722,16 @@ export default function LoginPageClient() {
                       <input type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
                       이메일 저장
                     </label>
-                    <Link href="/forgot-password" className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline">
+                    <Link
+                      href="/forgot-password"
+                      onClick={(e) => {
+                        if (!confirmLeaveIfDirty()) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }
+                      }}
+                      className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline"
+                    >
                       비밀번호 찾기
                     </Link>
                   </div>
@@ -716,7 +773,10 @@ export default function LoginPageClient() {
                       <Button
                         variant="outline"
                         className="w-full border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
-                        onClick={() => router.push('/order-lookup')}
+                        onClick={() => {
+                          if (!confirmLeaveIfDirty()) return;
+                          router.push('/order-lookup');
+                        }}
                       >
                         비회원 주문 조회하기
                       </Button>

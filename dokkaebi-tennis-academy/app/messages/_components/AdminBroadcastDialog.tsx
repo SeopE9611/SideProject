@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Loader2, Bell, Calendar } from 'lucide-react';
+import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type Props = {
   open: boolean;
@@ -38,6 +39,25 @@ export default function AdminBroadcastDialog({ open, onOpenChange, defaultExpire
     setBody('');
     setExpireDays(String(defaultExpireDays));
   }, [open, defaultExpireDays]);
+
+  /**
+   * ---- 모달 닫기 시 입력 유실 방지 ----
+   * X/오버레이/ESC/취소 모두 onOpenChange(false)로 닫히므로 여기서 dirty면 confirm
+   */
+  const baselineExpireDays = String(defaultExpireDays);
+  const isDirty = useMemo(() => {
+    if (!open) return false;
+    if (isSending) return false; // 전송 중에는 닫기 confirm 없이 처리(UX)
+    return title.trim() !== '' || body.trim() !== '' || expireDays !== baselineExpireDays;
+  }, [open, isSending, title, body, expireDays, baselineExpireDays]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) return onOpenChange(true);
+    if (!isDirty) return onOpenChange(false);
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
+    if (!ok) return; // 닫기 취소
+    onOpenChange(false);
+  };
 
   async function handleSend() {
     const t = title.trim();
@@ -81,7 +101,7 @@ export default function AdminBroadcastDialog({ open, onOpenChange, defaultExpire
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[640px]">
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
@@ -121,7 +141,7 @@ export default function AdminBroadcastDialog({ open, onOpenChange, defaultExpire
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending} className="min-w-[80px]">
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSending} className="min-w-[80px]">
             취소
           </Button>
           <Button onClick={handleSend} disabled={isSending} className="min-w-[100px] gap-2">

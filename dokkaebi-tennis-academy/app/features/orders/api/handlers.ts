@@ -438,24 +438,55 @@ export async function createOrder(req: Request): Promise<Response> {
           }),
         );
 
-         // 번들 수량 일치 검증(라켓 구매 + 스트링 장착 서비스)
+        // 번들 수량/구성 검증(라켓 구매 + 스트링 장착 서비스)
         // - 라켓이 주문에 포함된 경우에만 강제 (보유 라켓 교체 서비스는 라켓 아이템이 없을 수 있음)
         // - 장착비(mountingFee)가 있는 상품을 "스트링(장착 대상)"으로 간주.
         if (shippingInfo?.withStringService) {
-          const racketQty = itemsWithSnapshot
-            .filter((it) => it.kind === 'racket')
-            .reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
+          // ✅ 라켓/장착스트링 라인들
+          const racketItems = itemsWithSnapshot.filter((it) => it.kind === 'racket');
+          const serviceItems = itemsWithSnapshot.filter((it) => it.kind === 'product' && Number((it as any).mountingFee || 0) > 0);
 
-          const serviceQty = itemsWithSnapshot
-            .filter((it) => it.kind === 'product' && Number((it as any).mountingFee || 0) > 0)
-            .reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
+          // ✅ 총 수량(단체 주문은 quantity로만 증가)
+          const racketQty = racketItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
+          const serviceQty = serviceItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
 
-          if (racketQty > 0 && serviceQty > 0 && racketQty !== serviceQty) {
-            throw new HttpError(400, {
-              error: 'BUNDLE_QTY_MISMATCH',
-              racketQty,
-              serviceQty,
-            });
+          /**
+           * 핵심 정책(강화)
+           * 라켓이 포함된 주문(= 라켓 구매/대여 + 장착 서비스)이라면:
+           *  1) 라켓 라인은 1종만 허용 (다종 라켓은 STEP2/일괄 적용 의미가 깨짐)
+           *  2) 장착 대상 스트링도 1종만 허용 (중복 스트링은 어떤 스트링이 어떤 라켓에 매핑되는지 불명확)
+           *  3) 라켓 총수량 === 장착 대상 스트링 총수량
+           *
+           * 라켓이 없는 주문(= 보유 라켓 교체 서비스 등)은 기존처럼 통과시키되,
+           * 여기서는 라켓 기반 번들 규칙을 강제하지 않는다.
+           */
+          if (racketQty > 0) {
+            const racketLineCount = racketItems.length;
+            const serviceLineCount = serviceItems.length;
+
+            // 1) 구성(라인 개수) 강제: 라켓 1종 + 장착 스트링 1종만 허용
+            // - 단체 주문은 "라인 수"가 아니라 quantity로 처리한다.
+            if (racketLineCount !== 1 || serviceLineCount !== 1) {
+              throw new HttpError(400, {
+                error: 'BUNDLE_QTY_MISMATCH',
+                reason: 'INVALID_COMPOSITION',
+                racketLineCount,
+                serviceLineCount,
+                racketQty,
+                serviceQty,
+              });
+            }
+
+            // 2) 수량 강제: 라켓 수량과 장착 스트링 수량은 반드시 같아야 함
+            // - serviceQty가 0이어도 "불일치"로 간주해서 차단해야 함 (스트링 제거 우회 방지)
+            if (racketQty !== serviceQty) {
+              throw new HttpError(400, {
+                error: 'BUNDLE_QTY_MISMATCH',
+                reason: 'QTY_MISMATCH',
+                racketQty,
+                serviceQty,
+              });
+            }
           }
         }
 

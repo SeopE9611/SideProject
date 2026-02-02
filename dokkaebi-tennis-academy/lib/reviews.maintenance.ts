@@ -72,7 +72,7 @@ export async function ensureReviewIndexes(db: Db) {
         orderId: { $exists: true },
         isDeleted: false,
       },
-    }
+    },
   );
 
   // 신정책 유니크 인덱스: (userId, service, serviceApplicationId) — 서비스 리뷰 1회
@@ -87,7 +87,7 @@ export async function ensureReviewIndexes(db: Db) {
         serviceApplicationId: { $exists: true },
         isDeleted: false,
       },
-    }
+    },
   );
 
   // 조회/정렬용 인덱스(중복이면 ensureIndex가 스킵)
@@ -146,37 +146,39 @@ export async function rebuildProductRatingSummary(db: any) {
   const reviews = db.collection('reviews');
   const products = db.collection('products');
 
-  // 집계 대상: productId가 있는 리뷰가 존재하는 모든 상품
-  const pids: string[] = await reviews.distinct('productId', { productId: { $exists: true } });
-  let updated = 0;
+  // 1) 먼저 "고스트 값" 제거: 리뷰가 0개인 상품도 평점/리뷰수를 0으로 초기화
+  //    (목록 페이지는 products.ratingCount를 그대로 쓰기 때문에 이 단계가 필수)
+  await products.updateMany({ $or: [{ ratingCount: { $exists: true } }, { ratingAvg: { $exists: true } }, { ratingAverage: { $exists: true } }] }, { $set: { ratingAvg: 0, ratingAverage: 0, ratingCount: 0 } });
 
-  for (const pid of pids) {
-    // 공개 리뷰만 + 소프트 삭제 제외
-    const agg = await reviews
-      .aggregate([
-        {
-          $match: {
-            productId: new ObjectId(pid),
-            isDeleted: false,
-            status: 'visible', // 공개 리뷰만 반영
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            avg: { $avg: '$rating' },
-            cnt: { $sum: 1 },
-          },
-        },
-      ])
-      .next();
+  // 2) 공개(visible) + 삭제 아님 리뷰가 있는 상품만 다시 계산해서 덮어쓰기
+  const pidsRaw: any[] = await reviews.distinct('productId', {
+    productId: { $exists: true },
+    status: 'visible',
+    isDeleted: { $ne: true },
+  });
+
+  const toObjectId = (v: any): ObjectId | null => {
+    if (!v) return null;
+    if (v instanceof ObjectId) return v;
+    const s = typeof v === 'string' ? v : typeof v?.toString === 'function' ? v.toString() : '';
+    if (!ObjectId.isValid(s)) return null;
+    return new ObjectId(s);
+  };
+
+  let touched = 0;
+  for (const raw of pidsRaw) {
+    const pid = toObjectId(raw);
+    if (!pid) continue;
+
+    const agg = await reviews.aggregate([{ $match: { productId: pid, status: 'visible', isDeleted: { $ne: true } } }, { $group: { _id: null, avg: { $avg: '$rating' }, cnt: { $sum: 1 } } }]).next();
 
     const avg = agg?.avg ? Math.round(agg.avg * 10) / 10 : 0;
     const cnt = agg?.cnt ?? 0;
 
-    // products 컬렉션의 평점 요약 필드 업데이트
-    const r = await products.updateOne({ _id: new ObjectId(String(pid)) }, { $set: { ratingAverage: avg, ratingCount: cnt } });
-    updated += r.modifiedCount;
+    // products 목록은 ratingAvg를 우선 사용하고, 일부 코드는 ratingAverage도 fallback으로 쓰고 있어서 둘 다 세팅
+    await products.updateOne({ _id: pid }, { $set: { ratingAvg: avg, ratingAverage: avg, ratingCount: cnt } });
+    touched += 1;
   }
-  return { productsUpdated: updated, totalProducts: pids.length };
+
+  return { productsTouched: touched, totalProducts: pidsRaw.length };
 }

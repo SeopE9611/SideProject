@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Loader2, Send, User } from 'lucide-react';
+import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type Props = {
   open: boolean;
@@ -41,6 +42,28 @@ export default function MessageComposeDialog({ open, onOpenChange, toUserId, toN
     setBody((defaultBody ?? '').trim());
   }, [open, defaultTitle, defaultBody]);
 
+  // 모달 닫기 시 "입력 유실" 방지용 dirty 판단(기본값 대비 변경됨 + 값이 존재)
+  const baselineTitle = (defaultTitle ?? '').trim();
+  const baselineBody = (defaultBody ?? '').trim();
+  const isDirty = useMemo(() => {
+    if (!open) return false;
+    if (isSending) return false; // 전송 중에는 닫기 허용(차단하면 UX가 더 나빠짐)
+    const t = title.trim();
+    const b = body.trim();
+    const changed = t !== baselineTitle || b !== baselineBody;
+    const hasAny = t.length > 0 || b.length > 0;
+    return changed && hasAny;
+  }, [open, isSending, title, body, baselineTitle, baselineBody]);
+
+  // X 버튼/오버레이 클릭/ESC 포함: Dialog가 onOpenChange(false)를 호출하므로 여기서 가드
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) return onOpenChange(true);
+    if (!isDirty) return onOpenChange(false);
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
+    if (!ok) return; // 닫기 취소
+    onOpenChange(false);
+  };
+
   async function handleSend() {
     if (!toUserId) return showErrorToast('받는 사람이 없습니다.');
     if (!title.trim()) return showErrorToast('제목을 입력해주세요.');
@@ -70,7 +93,7 @@ export default function MessageComposeDialog({ open, onOpenChange, toUserId, toN
 
       showSuccessToast('쪽지를 전송했습니다.');
       onSent?.(String(data.id ?? ''));
-      onOpenChange(false);
+      onOpenChange(false); // isSending=true 상태이므로 dirty confirm 없이 닫힘
     } catch {
       showErrorToast('네트워크 오류로 전송에 실패했습니다.');
     } finally {
@@ -79,7 +102,7 @@ export default function MessageComposeDialog({ open, onOpenChange, toUserId, toN
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
@@ -115,7 +138,7 @@ export default function MessageComposeDialog({ open, onOpenChange, toUserId, toN
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSending} className="min-w-[80px]">
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSending} className="min-w-[80px]">
             취소
           </Button>
           <Button variant="outline" onClick={handleSend} disabled={isSending} className="min-w-[100px] gap-2">

@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { ArrowLeft, Search, Mail, User, Phone, Package, Shield, Clock } from 'lucide-react';
 import LoginGate from '@/components/system/LoginGate';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, '');
@@ -31,14 +32,30 @@ export default function OrderLookupPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
- // 비회원 주문 조회(게스트) UI 노출 여부(클라)
+  // 비회원 주문 조회(게스트) UI 노출 여부(클라)
   // - NEXT_PUBLIC_GUEST_ORDER_MODE=off 면: 입력 폼부터 막고 LoginGate로 유도
   // - legacy/on 면: 조회 UI 유지
   const guestModeRaw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
   const allowGuestLookup = guestModeRaw !== 'off';
-  if (!allowGuestLookup) {
-    return <LoginGate next="/mypage" variant="orderLookup" />;
-  }
+
+  // 입력이 한 글자라도 있으면 dirty로 간주(프리필/초기값 없음)
+  const isDirty = !!formData.name.trim() || !!formData.email.trim() || !!formData.phone.trim();
+
+  // 새로고침/탭 닫기/브라우저 뒤로가기(주소창) 등 브라우저 레벨 이탈 경고
+  // - router.push(조회 성공 후 결과 페이지 이동)는 의도된 이동이라 guard 불필요
+  useUnsavedChangesGuard(allowGuestLookup && isDirty && !isSubmitting);
+
+  // 내부 링크 클릭(예: 로그인으로 돌아가기) 시 confirm 경고
+  const onLeaveToLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isDirty || isSubmitting) return;
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
+    if (!ok) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  if (!allowGuestLookup) return <LoginGate next="/mypage" variant="orderLookup" />;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -178,9 +195,8 @@ export default function OrderLookupPage() {
 
       <div className="container mx-auto py-12 px-4 md:px-6">
         <div className="max-w-2xl mx-auto">
-          {/* Back Button */}
           <div className="mb-8">
-            <Link href="/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-emerald-600 transition-colors group">
+            <Link href="/login" onClick={onLeaveToLoginClick} className="inline-flex items-center text-sm text-muted-foreground hover:text-emerald-600 transition-colors group">
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               이전 페이지로 돌아가기
             </Link>

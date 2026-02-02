@@ -8,6 +8,9 @@ type Product = {
   images?: string[];
   features?: Record<string, number>;
   isNew?: boolean;
+  ratingAvg?: number;
+  ratingCount?: number;
+  ratingAverage?: number;
 };
 
 type Filters = {
@@ -115,7 +118,7 @@ export function useInfiniteProducts(filters: Filters) {
         setIsFetchingMore(false);
       }
     },
-    [filters]
+    [filters],
   );
 
   // 다음 페이지 요청 헬퍼

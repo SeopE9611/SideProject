@@ -99,7 +99,27 @@ export default function CartPageClient() {
     () => cartItems.filter((it) => (it.kind ?? 'product') === 'product' && (mountingFeeByProductId[String(it.id)] ?? 0) > 0).reduce((acc, it) => acc + Number(it.quantity ?? 0), 0),
     [cartItems, mountingFeeByProductId],
   );
-  const blockServiceCheckout = totalRacketQty > 0 && totalMountableStringQty > 0 && totalRacketQty !== totalMountableStringQty;
+
+  // "종류(라인) 개수" 체크: 서버 INVALID_COMPOSITION 규칙과 동일한 기준
+  const racketLineCount = useMemo(() => cartItems.filter((it) => (it.kind ?? 'product') === 'racket').length, [cartItems]);
+
+  const mountableStringLineCount = useMemo(() => cartItems.filter((it) => (it.kind ?? 'product') === 'product' && (mountingFeeByProductId[String(it.id)] ?? 0) > 0).length, [cartItems, mountingFeeByProductId]);
+
+  // 장착 대상 스트링이 2종 이상이면, 어떤 라인을 정리해야 하는지 표시하기 위한 id 목록
+  const mountableStringIds = useMemo(() => {
+    return cartItems.filter((it) => (it.kind ?? 'product') === 'product' && (mountingFeeByProductId[String(it.id)] ?? 0) > 0).map((it) => String(it.id));
+  }, [cartItems, mountingFeeByProductId]);
+
+  const blockServiceCheckoutByComposition = totalRacketQty > 0 && (racketLineCount !== 1 || mountableStringLineCount !== 1);
+
+  const blockServiceCheckoutByQty = totalRacketQty > 0 && totalRacketQty !== totalMountableStringQty;
+
+  const blockServiceCheckout = blockServiceCheckoutByComposition || blockServiceCheckoutByQty;
+
+  // CTA/토스트 문구를 한 곳에서 관리 (서버 INVALID_COMPOSITION 기준과 동일)
+  const serviceBlockToastMessage = blockServiceCheckoutByComposition
+    ? `구성 오류: 라켓 1종 + 장착 스트링 1종만 가능해요. (현재 라켓 ${racketLineCount}종 / 장착 스트링 ${mountableStringLineCount}종)`
+    : `수량 오류: 라켓 ${totalRacketQty}개 / 장착 스트링 ${totalMountableStringQty}개 → 수량을 맞춰주세요.`;
 
   // 번들(라켓 + 장착 가능 스트링)인 경우: 장바구니에서는 "수량 스테퍼"를 잠그고
   // 스트링 선택 화면에서만 수량/스트링을 함께 바꾸도록 UX를 고정한다.
@@ -115,6 +135,9 @@ export default function CartPageClient() {
   }, [bundleRacketItem?.quantity, bundleStringItem?.quantity]);
 
   const bundleEditHref = useMemo(() => {
+    // 라켓/스트링 종류가 여러 개면(select-string 링크를 어떤 라켓 기준으로 만들지 불명확)
+    // 서버에서도 INVALID_COMPOSITION으로 막고 있으므로, 장바구니에서도 번들 편집 링크를 비활성화한다.
+    if (blockServiceCheckoutByComposition) return null;
     if (!bundleRacketItem || !bundleStringItem) return null;
 
     const params = new URLSearchParams({
@@ -125,9 +148,16 @@ export default function CartPageClient() {
     });
 
     return `/rackets/${bundleRacketItem.id}/select-string?${params.toString()}`;
-  }, [bundleRacketItem, bundleStringItem, bundleQty]);
+  }, [bundleRacketItem, bundleStringItem, bundleQty, blockServiceCheckoutByComposition]);
 
   const isBundleLocked = Boolean(bundleEditHref);
+
+  // 번들(라켓 + 장착 스트링) 구성품 id를 "원자적(묶음) 삭제" 단위로 묶는다.
+  // - 번들이 완성된 상태(isBundleLocked=true)에서만 2개 id가 채워짐
+  const bundleLockedIds = useMemo(() => {
+    if (!isBundleLocked || !bundleRacketItem || !bundleStringItem) return [] as string[];
+    return [bundleRacketItem.id, bundleStringItem.id];
+  }, [isBundleLocked, bundleRacketItem?.id, bundleStringItem?.id]);
 
   // 선택/일괄
   const toggleSelect = (id: string) => {
@@ -139,8 +169,22 @@ export default function CartPageClient() {
   };
   const removeSelected = () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`선택한 ${selectedIds.length}개 상품을 장바구니에서 삭제할까요?`)) return;
-    selectedIds.forEach((id) => removeItem(id));
+
+    // 선택 삭제 우회 방지:
+    // 번들 구성품(라켓/장착 스트링) 중 하나라도 선택되면,
+    // 불일치가 생기지 않도록 번들 2개를 "같이" 삭제한다.
+    const idsToRemove = new Set(selectedIds);
+
+    if (bundleLockedIds.length === 2 && (idsToRemove.has(bundleLockedIds[0]) || idsToRemove.has(bundleLockedIds[1]))) {
+      bundleLockedIds.forEach((id) => idsToRemove.add(id));
+    }
+
+    const finalIds = Array.from(idsToRemove);
+    const bundleHint = bundleLockedIds.length === 2 && (idsToRemove.has(bundleLockedIds[0]) || idsToRemove.has(bundleLockedIds[1])) ? '\n(번들 상품은 구성품이 함께 삭제됩니다.)' : '';
+
+    if (!confirm(`선택한 ${finalIds.length}개 상품을 장바구니에서 삭제할까요?${bundleHint}`)) return;
+
+    finalIds.forEach((id) => removeItem(id));
     setSelectedIds([]);
     showSuccessToast?.('선택한 상품을 삭제했어요.');
   };
@@ -225,6 +269,8 @@ export default function CartPageClient() {
                   {cartItems.map((item) => {
                     // 버튼 비활성 판단
                     const isRacket = (item.kind ?? 'product') === 'racket';
+                    // 라켓은 /rackets/[id], 일반 상품은 /products/[id]
+                    const itemHref = isRacket ? `/rackets/${item.id}` : `/products/${item.id}`;
                     const stock = item.stock ?? Number.POSITIVE_INFINITY;
                     const canDec = item.quantity > 1;
                     const maxStock = getMaxStock(item.stock);
@@ -236,22 +282,42 @@ export default function CartPageClient() {
 
                     const lockStepper = isBundleRacket || isBundleString;
 
+                    //- "구성 정리 필요" 상태에서 어떤 라인을 정리해야 하는지(장착 대상 스트링)를 시각적으로 강조
+                    // - 장착 대상 스트링: mountingFee > 0 인 스트링 상품
+                    const isMountableString = (item.kind ?? 'product') === 'product' && (mountingFeeByProductId[String(item.id)] ?? 0) > 0;
+
+                    // - 구성 정리 필요 상태: 라켓이 있고 + (라켓 1종 / 장착 스트링 1종 규칙 위반) + 특히 장착 스트링이 2종 이상인 경우
+                    const needsCompositionCleanup = blockServiceCheckoutByComposition && totalRacketQty > 0 && mountableStringLineCount > 1;
+
+                    // - 정리 대상 하이라이트: 구성 정리 상태에서 "장착 대상 스트링" 라인들을 강조 표시
+                    const highlightCleanupTarget = needsCompositionCleanup && isMountableString;
+
                     return (
-                      <div key={item.id} className="rounded-xl bg-white p-3 bp-sm:p-4 shadow-sm transition hover:shadow-md dark:bg-slate-800">
+                      <div key={item.id} className={`rounded-xl bg-white p-3 bp-sm:p-4 shadow-sm transition hover:shadow-md dark:bg-slate-800 ${highlightCleanupTarget ? 'ring-2 ring-orange-300 bg-orange-50/40 dark:bg-orange-950/20' : ''}`}>
                         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
                           {/* 상단(모바일): 체크+썸네일+이름 */}
                           <div className="flex items-center gap-3 min-w-0">
                             <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} className="h-4 w-4 accent-blue-600" aria-label={`${item.name} 선택`} />
-                            <Link href={`/products/${item.id}`} className="shrink-0">
+                            <Link href={itemHref} className="shrink-0">
                               <Image src={item.image || '/placeholder.svg?height=72&width=72'} alt={item.name} width={72} height={72} loading="lazy" className="aspect-square rounded-lg object-cover" />
                             </Link>
                             <div className="min-w-0 flex-1">
-                              <Link href={`/products/${item.id}`} className="block line-clamp-2 bp-sm:line-clamp-1 font-medium text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400">
+                              <Link href={itemHref} className="block line-clamp-2 bp-sm:line-clamp-1 font-medium text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400">
                                 {item.name}
                               </Link>
                               <div className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
                                 개당 <span className="tabular-nums font-medium text-slate-700 dark:text-slate-200">{formatKRW(item.price)}원</span>
                               </div>
+                              {highlightCleanupTarget && (
+                                <>
+                                  <span className="mt-1 inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-orange-700 ring-1 ring-inset ring-orange-200 dark:bg-orange-900/30 dark:text-orange-200 dark:ring-orange-700/50">
+                                    장착 대상 스트링(정리 필요)
+                                  </span>
+                                  <p className="mt-1 text-[11px] leading-snug text-orange-700/90 dark:text-orange-200/90">
+                                    👉 장착 대상 스트링은 <b>1종만</b> 남겨주세요. (나머지는 삭제)
+                                  </p>
+                                </>
+                              )}
                             </div>
                           </div>
 
@@ -275,18 +341,30 @@ export default function CartPageClient() {
                                 {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>현재 가용 수량: {maxStock}개</span>}
                               </div>
                             ) : (
+                              /* 수량 스테퍼 (pill, 비활성 표시) */
                               <div className="order-1 flex flex-col items-center">
                                 <div className="flex items-center rounded-full bg-slate-100 px-1 dark:bg-slate-700">
-                                  <Button variant="ghost" size="sm" className="h-8 w-8 disabled:opacity-40" aria-label={`${item.name} 수량 감소`} disabled={!canDec} onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 disabled:opacity-40"
+                                    aria-label={`${item.name} 수량 감소`}
+                                    disabled={lockStepper ? true : !canDec}
+                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                    title={lockStepper ? '번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요.' : undefined}
+                                  >
                                     <Minus className="h-4 w-4" />
                                   </Button>
-                                  <span className="tabular-nums w-8 select-none text-center font-medium">{item.quantity}</span>
+
+                                  <span className={`tabular-nums w-8 select-none text-center font-medium ${lockStepper ? 'opacity-60' : ''}`}>{item.quantity}</span>
+
                                   <Button
                                     variant="ghost"
                                     size="sm"
                                     className="h-8 w-8 disabled:opacity-40"
                                     aria-label={`${item.name} 수량 증가`}
-                                    disabled={!canInc}
+                                    disabled={lockStepper ? true : !canInc}
+                                    title={lockStepper ? '번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요.' : undefined}
                                     onClick={() => {
                                       if (!canInc) {
                                         showErrorToast(
@@ -306,11 +384,17 @@ export default function CartPageClient() {
                                   </Button>
                                 </div>
 
-                                {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>현재 가용 수량: {maxStock}개</span>}
+                                {lockStepper && bundleEditHref ? (
+                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
+                                    번들 수량/스트링 변경
+                                  </Link>
+                                ) : (
+                                  Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>현재 가용 수량: {maxStock}개</span>
+                                )}
                               </div>
                             )}
 
-                            <div className="order-2 ml-auto text-right">
+                            <div className="order-2 ml-auto bp-sm:ml-0 text-right">
                               <div className="text-xs text-slate-500 dark:text-slate-400">합계</div>
                               <div className="tabular-nums text-lg font-semibold text-slate-900 dark:text-slate-100">{formatKRW(item.price * item.quantity)}원</div>
                             </div>
@@ -319,8 +403,20 @@ export default function CartPageClient() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              aria-label={`${item.name} 삭제`}
+                              aria-label={lockStepper ? `번들(라켓+스트링) 삭제` : `${item.name} 삭제`}
+                              title={lockStepper ? '번들 구성품은 개별 삭제가 아니라 묶음(라켓+스트링)으로 함께 삭제됩니다.' : undefined}
                               onClick={() => {
+                                // 번들(라켓/장착 스트링) 라인에서 삭제를 누르면
+                                // "불일치"가 생기지 않도록 번들 2개를 같이 삭제한다.
+                                if (lockStepper && bundleLockedIds.length === 2) {
+                                  if (confirm('번들(라켓 + 장착 스트링)을 통째로 장바구니에서 삭제할까요?')) {
+                                    bundleLockedIds.forEach((id) => removeItem(id));
+                                    setSelectedIds((prev) => prev.filter((id) => !bundleLockedIds.includes(id)));
+                                  }
+                                  return;
+                                }
+
+                                // 일반 상품은 기존처럼 개별 삭제
                                 if (confirm(`"${item.name}"을(를) 장바구니에서 삭제할까요?`)) {
                                   removeItem(item.id);
                                 }
@@ -401,31 +497,40 @@ export default function CartPageClient() {
                       </p>
                     </div>
                   </CardContent>
-                  <CardFooter className="p-4 bp-sm:p-6 pt-0">
+                  <CardFooter className="flex flex-col items-stretch gap-3 p-4 bp-sm:p-6 pt-0">
                     {blockServiceCheckout ? (
-                      bundleEditHref ? (
-                        <Button
-                          className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
-                          size="lg"
-                          asChild
-                        >
-                          <Link href={bundleEditHref} className="flex items-center justify-center gap-3">
+                      <>
+                        {blockServiceCheckoutByQty && (
+                          <div className="w-full rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/40 dark:text-orange-200">
+                            라켓 수량(<span className="font-semibold">{totalRacketQty}개</span>)과 장착 스트링 수량(
+                            <span className="font-semibold">{totalMountableStringQty}개</span>)이 다릅니다.
+                            <br />
+                            👉 수량을 맞춘 뒤 주문해 주세요.
+                          </div>
+                        )}
+                        {bundleEditHref ? (
+                          <Button
+                            asChild
+                            className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl flex items-center justify-center gap-3"
+                          >
+                            <Link href={bundleEditHref}>
+                              <ShoppingBag className="h-5 w-5" />
+                              번들 수량/스트링 변경
+                              <ArrowRight className="h-5 w-5" />
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button
+                            className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl flex items-center justify-center gap-3"
+                            size="lg"
+                            onClick={() => showErrorToast(serviceBlockToastMessage)}
+                          >
                             <ShoppingBag className="h-5 w-5" />
-                            번들 수량/스트링 변경
+                            {blockServiceCheckoutByComposition ? '구성 정리 후 주문하기' : '수량 맞춘 뒤 주문하기'}
                             <ArrowRight className="h-5 w-5" />
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button
-                          className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl flex items-center justify-center gap-3"
-                          size="lg"
-                          onClick={() => showErrorToast(`교체/장착 서비스를 신청하려면 라켓 수량(${totalRacketQty}개)과 장착 스트링 수량(${totalMountableStringQty}개)을 동일하게 맞춰주세요.`)}
-                        >
-                          <ShoppingBag className="h-5 w-5" />
-                          수량 맞춘 뒤 주문하기
-                          <ArrowRight className="h-5 w-5" />
-                        </Button>
-                      )
+                          </Button>
+                        )}
+                      </>
                     ) : (
                       <Button
                         className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
@@ -481,27 +586,27 @@ export default function CartPageClient() {
           <div className="rounded-t-2xl bg-white/95 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-slate-800/95">
             <SiteContainer variant="full" className="max-w-screen-sm py-3">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-slate-300">결제 금액</span>
+                <span className="text-sm text-slate-600 dark:text-slate-300">총 결제 금액</span>
                 <span className="tabular-nums text-lg font-bold text-blue-600 dark:text-blue-400">{formatKRW(total)}원</span>
               </div>
               {blockServiceCheckout ? (
-                <>
-                  <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/40 dark:text-orange-200">
-                    라켓 수량(<span className="font-semibold">{totalRacketQty}개</span>)과 장착 스트링 수량(<span className="font-semibold">{totalMountableStringQty}개</span>)이 다릅니다. 수량을 맞춘 뒤 주문해 주세요.
-                  </div>
+                <div className="space-y-2">
+                  {blockServiceCheckoutByQty && (
+                    <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/40 dark:text-orange-200">
+                      라켓 수량(<span className="font-semibold">{totalRacketQty}개</span>)과 장착 스트링 수량(
+                      <span className="font-semibold">{totalMountableStringQty}개</span>)이 다릅니다. 수량을 맞춘 뒤 주문해 주세요.
+                    </div>
+                  )}
                   {bundleEditHref ? (
                     <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
                       <Link href={bundleEditHref}>번들 수량/스트링 변경</Link>
                     </Button>
                   ) : (
-                    <Button
-                      className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700"
-                      onClick={() => showErrorToast(`교체/장착 서비스를 신청하려면 라켓 수량(${totalRacketQty}개)과 장착 스트링 수량(${totalMountableStringQty}개)을 동일하게 맞춰주세요.`)}
-                    >
-                      수량 맞춘 뒤 주문하기
+                    <Button className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700" onClick={() => showErrorToast(serviceBlockToastMessage)}>
+                      {blockServiceCheckoutByComposition ? '구성 정리 후 주문하기' : '수량 맞춘 뒤 주문하기'}
                     </Button>
                   )}
-                </>
+                </div>
               ) : (
                 <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
                   {/* <Link href="/checkout?withService=1">주문하기</Link> */}

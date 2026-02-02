@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CommunityCategory, CommunityComment, CommunityPost } from '@/lib/types/community';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -20,6 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { getMarketBrandLabel, isMarketBrandCategory } from '@/app/board/market/_components/market.constants';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
@@ -175,6 +176,8 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const openCompose = (toUserId: string, toName?: string | null) => {
     if (!user) {
       showErrorToast('로그인 후 이용할 수 있습니다.');
+      // 입력 중인 내용이 있으면 로그인 이동 전에 한 번 더 확인
+      if (!confirmLeaveIfDirty()) return;
       const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/board/market/${id}`;
       router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
       return;
@@ -236,6 +239,14 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [commentReportReason, setCommentReportReason] = useState(''); // 신고 사유
   const [isCommentReporting, setIsCommentReporting] = useState(false); // 처리 중 플래그
   const [targetComment, setTargetComment] = useState<CommunityComment | null>(null); // 신고 대상 댓글
+
+  // 댓글 신고 닫기(입력 유실 방지)
+  const closeCommentReport = () => {
+    if (commentReportReason.trim() && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
+    setOpenCommentReport(false);
+    setTargetComment(null);
+    setCommentReportReason('');
+  };
 
   // 조회수 중복 방지 TTL (24시간)
   const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
@@ -366,6 +377,9 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
 
+  // 댓글 수정 입력값(unsaved changes 감지용)
+  const [editDrafts, setEditDrafts] = useState<Record<string, string>>({});
+
   // 대댓글 입력 상태
   // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
   // - replyDrafts: 각 댓글별로 입력 중인 답글 내용을 보관 (IME 안정성을 위해 commentId별로 분리)
@@ -415,6 +429,44 @@ export default function FreeBoardDetailClient({ id }: Props) {
     }
     return acc;
   }, {});
+
+  const originalEditingContent = useMemo(() => {
+    if (!editingCommentId) return '';
+    return comments.find((c) => c.id === editingCommentId)?.content ?? '';
+  }, [comments, editingCommentId]);
+
+  const isDirtyAny = useMemo(() => {
+    const hasCommentDraft = commentContent.trim().length > 0;
+    const hasReplyDraft = Object.values(replyDrafts).some((v) => v.trim().length > 0);
+
+    const hasEditDraft = (() => {
+      if (!editingCommentId) return false;
+      const cur = (editDrafts[editingCommentId] ?? originalEditingContent).trim();
+      return cur !== originalEditingContent.trim();
+    })();
+
+    const hasPostReportDraft = reason.trim().length > 0;
+    const hasCommentReportDraft = commentReportReason.trim().length > 0;
+
+    return hasCommentDraft || hasReplyDraft || hasEditDraft || hasPostReportDraft || hasCommentReportDraft;
+  }, [commentContent, replyDrafts, editingCommentId, editDrafts, originalEditingContent, reason, commentReportReason]);
+
+  const isBusyAny = isCommentSubmitting || isReplySubmitting || isDeleting || isLiking || isReporting || isCommentReporting;
+
+  // 뒤로가기/탭닫기 등 브라우저 이탈 방지
+  useUnsavedChangesGuard(isDirtyAny && !isBusyAny);
+
+  function confirmLeaveIfDirty() {
+    if (!isDirtyAny || isBusyAny) return true;
+    return window.confirm(UNSAVED_CHANGES_MESSAGE);
+  }
+
+  // <Link> 이동 시 입력값 보호
+  const onNavLinkClick = (e: any) => {
+    if (confirmLeaveIfDirty()) return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   useEffect(() => {
     // 로딩 끝, 2페이지 이상인데, 컨텐츠는 없고, 루트 댓글 수는 0이 아님 → 한 페이지 뒤로 밀기
@@ -539,11 +591,22 @@ export default function FreeBoardDetailClient({ id }: Props) {
   // 댓글 수정 모드 진입
   const startEditComment = (commentId: string) => {
     setEditingCommentId(commentId);
+    const original = comments.find((c) => c.id === commentId)?.content ?? '';
+    setEditDrafts((prev) => ({
+      ...prev,
+      [commentId]: prev[commentId] ?? original,
+    }));
     setCommentError(null);
   };
 
   // 댓글 수정 모드 취소
   const cancelEditComment = () => {
+    setEditDrafts((prev) => {
+      if (!editingCommentId) return prev;
+      const next = { ...prev };
+      delete next[editingCommentId];
+      return next;
+    });
     setEditingCommentId(null);
   };
   // 댓글 수정 저장
@@ -573,7 +636,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
         return;
       }
 
-      // 수정 모드 종료
+      // 수정 모드 종료 + draft 정리
+      setEditDrafts((prev) => {
+        const next = { ...prev };
+        delete next[commentId];
+        return next;
+      });
       setEditingCommentId(null);
 
       // 댓글 목록만 재검증
@@ -884,11 +952,10 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                   <DropdownMenuContent align="start" className="w-44">
                     <DropdownMenuItem
-                      disabled={!comment.userId}
                       onClick={() => {
+                        if (!confirmLeaveIfDirty()) return;
                         if (!comment.userId) return;
-                        const authorName = comment.nickname ?? '';
-                        router.push(`/board/market?authorId=${comment.userId}&authorName=${encodeURIComponent(authorName)}`);
+                        router.push(`/board/market?authorId=${comment.userId}&authorName=${encodeURIComponent(comment.nickname ?? '회원')}`);
                       }}
                     >
                       이 작성자의 글 보기
@@ -972,6 +1039,10 @@ export default function FreeBoardDetailClient({ id }: Props) {
               ref={editInputRef}
               className="min-h-[80px] resize-none border-gray-200 text-sm focus-visible:ring-1 focus-visible:ring-gray-900 dark:border-gray-700 dark:focus-visible:ring-gray-400"
               defaultValue={comment.content} // 초기값만 세팅, 이후는 브라우저가 관리
+              onChange={(e) => {
+                const v = e.currentTarget.value;
+                setEditDrafts((prev) => ({ ...prev, [comment.id]: v }));
+              }}
               disabled={isCommentSubmitting}
               autoFocus
             />
@@ -1050,6 +1121,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   if (replyInputRef.current) {
                     replyInputRef.current.value = '';
                   }
+                  setReplyDrafts((prev) => {
+                    const next = { ...prev };
+                    delete next[comment.id];
+                    return next;
+                  });
                   setReplyingToId(null);
                   setReplyError(null);
 
@@ -1066,7 +1142,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
             <Textarea
               ref={replyInputRef}
               className="min-h-[70px] resize-none border-gray-200 bg-white text-sm focus-visible:ring-1 focus-visible:ring-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:focus-visible:ring-gray-400"
-              defaultValue=""
+              defaultValue={replyDrafts[comment.id] ?? ''}
+              onChange={(e) => {
+                const v = e.currentTarget.value;
+                setReplyDrafts((prev) => ({ ...prev, [comment.id]: v }));
+              }}
               disabled={isReplySubmitting}
               placeholder={`@${comment.nickname ?? '회원'} 님께 답글을 남겨 보세요.`}
               autoFocus
@@ -1081,6 +1161,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   if (replyInputRef.current) {
                     replyInputRef.current.value = '';
                   }
+                  setReplyDrafts((prev) => {
+                    const next = { ...prev };
+                    delete next[comment.id];
+                    return next;
+                  });
                   setReplyingToId(null);
                   setReplyError(null);
                 }}
@@ -1128,7 +1213,16 @@ export default function FreeBoardDetailClient({ id }: Props) {
           </div>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" className="gap-1 bg-transparent" onClick={() => router.push('/board/market')}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1 bg-transparent"
+              onClick={() => {
+                if (!confirmLeaveIfDirty()) return;
+                router.push('/board/market');
+              }}
+            >
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
@@ -1192,6 +1286,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                           onClick={() => {
                             // 비회원/익명 글은 userId가 없을 수 있음
                             if (!item.userId) return;
+                            if (!confirmLeaveIfDirty()) return;
                             const authorName = item.nickname ?? '';
                             router.push(`/board/market?authorId=${item.userId}&authorName=${encodeURIComponent(authorName)}`);
                           }}
@@ -1207,6 +1302,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                               if (!user) {
                                 const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/board/market/${id}`;
+                                if (!confirmLeaveIfDirty()) return;
                                 router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                                 return;
                               }
@@ -1361,13 +1457,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
+
                   <Dialog
                     open={openCommentReport}
                     onOpenChange={(next) => {
                       if (!next) {
-                        setOpenCommentReport(false);
-                        setTargetComment(null);
-                        setCommentReportReason('');
+                        if (!next) closeCommentReport();
                         return;
                       }
 
@@ -1400,7 +1495,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       </div>
 
                       <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpenCommentReport(false)}>
+                        <Button type="button" variant="outline" onClick={closeCommentReport}>
                           취소
                         </Button>
                         <Button type="button" onClick={handleSubmitCommentReport} disabled={isCommentReporting}>
@@ -1412,7 +1507,15 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                   {isAuthor && (
                     <>
-                      <Button type="button" variant="outline" size="sm" onClick={() => router.push(`/board/market/${item.id}/edit`)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (!confirmLeaveIfDirty()) return;
+                          router.push(`/board/market/${item.id}/edit`);
+                        }}
+                      >
                         수정
                       </Button>
 

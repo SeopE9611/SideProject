@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
 import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
+import { useCartStore } from '@/app/store/cartStore';
 import { CheckCircle2, Minus, Plus, ShoppingCart } from 'lucide-react';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { Input } from '@/components/ui/input';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 type RacketMini = {
   id: string;
@@ -20,14 +22,32 @@ type RacketMini = {
 
 export default function RacketSelectStringClient({ racket }: { racket: RacketMini }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // cart에서 들어왔는지
+  const from = searchParams.get('from');
+  const isFromCart = from === 'cart';
+
+  // cart 편집 모드일 때: 기존 선택 값
+  const initialQtyParam = Number(searchParams.get('qty') ?? 1);
+  const initialStringId = searchParams.get('stringId'); // cart에 있던 “번들 스트링” id
+  const returnTo = searchParams.get('returnTo') ?? '/cart';
+
+  // buy-now 모드에서만 사용하는 store
   const setItems = usePdpBundleStore((s) => s.setItems);
-  const clear = usePdpBundleStore((s) => s.clear);
+  const clearBundle = usePdpBundleStore((s) => s.clear);
+
+  // cart 편집/장바구니 담기에서 사용하는 store
+  const cartItems = useCartStore((s) => s.items);
+  const addItem = useCartStore((s) => s.addItem);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
 
   /**
    * "번들 수량" = 라켓 구매 수량 = 스트링 구매 수량
-   * - 이 값만큼 라켓/스트링이 동일 수량으로 체크아웃에 담기고, 결제 금액도 함께 증가.
-   * - 신청서 STEP2의 "라켓별 세부 장착 정보" 라인도 이 수량 기준으로 자동 생성.
-   * - 수량 변경은 이 화면(스트링 선택)에서만 하도록 UX를 단단하게 묶는 것을 전제로 함.
+   * - 이 값만큼 라켓/스트링이 동일 수량으로 체크아웃(또는 카트)에 담김.
+   * - STEP2 라인도 이 수량 기준으로 자동 생성.
+   * - 수량 변경은 이 화면에서만 하도록 UX를 묶는 것이 전제.
    */
   const [workCount, setWorkCount] = useState<number>(1);
 
@@ -37,28 +57,120 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     return Math.max(1, Math.min(max, Math.trunc(v)));
   };
 
+  // 초기 workCount 세팅: cart에서 넘어온 qty를 그대로 반영
   useEffect(() => {
-    clear();
-  }, [clear]);
+    setWorkCount(clampWorkCount(initialQtyParam));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQtyParam, racket.maxQty]);
+
+  // buy-now 모드에서만 bundle store clear (cart 편집 모드에서는 굳이 건드리지 않음)
+  useEffect(() => {
+    if (!isFromCart) clearBundle();
+  }, [clearBundle, isFromCart]);
 
   const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({
     limit: 6,
-    // 교체 서비스에 사용되는 "스트링"만 노출
-    purpose: 'stringing',
+    purpose: 'stringing', // 교체 서비스에 사용되는 "스트링"만
   });
 
-  const handleSelectString = (p: any) => {
-    const stringImage = p?.images?.[0] ?? p?.imageUrl;
+  // cart 편집 모드에서: “현재 선택된 스트링” 표시용
+  const selectedStringIdForHighlight = useMemo(() => (isFromCart ? initialStringId : null), [isFromCart, initialStringId]);
 
+  /**
+   * cartStore에 "라켓 + 스트링" 번들을 동일 수량으로 반영
+   * - 라켓 라인은 없으면 add, 있으면 updateQuantity
+   * - 스트링 라인은 (cart 편집 모드인 경우) 기존 stringId가 있으면 교체 처리
+   */
+  const upsertCartBundle = (selectedString: any, qty: number) => {
+    const newStringId = String(selectedString?._id);
+    const newStringImage = selectedString?.images?.[0] ?? selectedString?.imageUrl;
+
+    // 1) 라켓 라인: 없으면 add, 있으면 수량 update
+    const hasRacket = cartItems.some((it) => it.id === racket.id && (it.kind ?? 'product') === 'racket');
+    if (!hasRacket) {
+      addItem({
+        id: racket.id,
+        name: racket.name,
+        price: racket.price,
+        quantity: qty,
+        image: racket.image,
+        kind: 'racket',
+        stock: racket.maxQty, // maxQty를 재고 상한으로 활용 (없으면 undefined)
+      });
+    } else {
+      updateQuantity(racket.id, qty);
+    }
+
+    // 2) 스트링 라인: cart 편집 모드(from=cart)에서만 “기존 스트링 교체”를 명시적으로 처리
+    // - 같은 스트링이면 updateQuantity
+    // - 다른 스트링이면 기존 제거 후 새로 add(또는 기존에 있으면 update)
+    if (initialStringId && initialStringId !== newStringId) {
+      removeItem(initialStringId);
+    }
+
+    const hasNewString = cartItems.some((it) => it.id === newStringId && (it.kind ?? 'product') === 'product');
+
+    if (hasNewString) {
+      updateQuantity(newStringId, qty);
+    } else {
+      addItem({
+        id: newStringId,
+        name: selectedString?.name ?? '스트링',
+        price: Number(selectedString?.price ?? 0),
+        quantity: qty,
+        image: newStringImage,
+        kind: 'product',
+        stock: typeof selectedString?.stock === 'number' ? selectedString.stock : undefined,
+      });
+    }
+  };
+
+  /**
+   * 기존 정책:
+   * - from=cart면: cartStore를 직접 수정하고 returnTo로 복귀
+   * - from!=cart면: pdpBundleStore로 buy-now checkout 이동
+   */
+  const handleSelectString = (p: any) => {
     const qty = clampWorkCount(workCount);
+
+    // 1) cart 편집 모드: cartStore를 직접 수정하고 returnTo로 복귀
+    if (isFromCart) {
+      try {
+        upsertCartBundle(p, qty);
+        showSuccessToast?.('장바구니 번들(라켓+스트링) 수량/스트링을 수정했어요.');
+        router.push(returnTo);
+      } catch (e) {
+        showErrorToast?.('장바구니 수정 중 오류가 발생했어요. 다시 시도해주세요.');
+      }
+      return;
+    }
+
+    // 2) buy-now 모드: pdpBundleStore로 checkout 이동
+    const stringImage = p?.images?.[0] ?? p?.imageUrl;
 
     setItems([
       { id: racket.id, name: racket.name, price: racket.price, quantity: qty, image: racket.image, kind: 'racket' },
-      // 번들 수량(workCount)만큼 라켓/스트링을 "같은 수량"으로 함께 결제
       { id: String(p._id), name: p.name, price: p.price, quantity: qty, image: stringImage, kind: 'product' },
     ]);
 
     router.push(`/checkout?mode=buynow&withService=1`);
+  };
+
+  /**
+   * ✅ 신규: buy-now 모드에서 “장바구니 담기”
+   * - 라켓 + 선택 스트링을 동일 수량으로 cartStore에 반영하고 /cart로 이동
+   * - (중요) from=cart가 아니므로 “기존 스트링 교체(initialStringId)”는 개입하지 않음
+   *   → 이미 카트에 여러 스트링이 있는 복잡 케이스는 다음 옵션1(우회 방지)에서 더 강하게 잠글 예정
+   */
+  const handleAddToCart = (p: any) => {
+    const qty = clampWorkCount(workCount);
+    try {
+      upsertCartBundle(p, qty);
+      showSuccessToast?.('장바구니에 번들(라켓+스트링)을 담았어요.');
+      router.push('/cart');
+    } catch {
+      showErrorToast?.('장바구니 담기 중 오류가 발생했어요. 다시 시도해주세요.');
+    }
   };
 
   if (isLoadingInitial) {
@@ -79,7 +191,14 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       <SiteContainer variant="wide" className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <h1 className="text-2xl bp-md:text-4xl font-bold tracking-tight text-slate-900">스트링 선택</h1>
-          <p className="text-sm bp-md:text-base text-slate-600 leading-relaxed">라켓과 함께 구매하실 스트링을 선택해주세요. 선택한 스트링은 라켓과 함께 한 번에 결제됩니다.</p>
+
+          {isFromCart ? (
+            <p className="text-sm bp-md:text-base text-slate-600 leading-relaxed">
+              <span className="font-semibold">장바구니 번들 수정 모드</span>입니다. 수량과 스트링을 변경한 뒤 장바구니로 돌아갑니다.
+            </p>
+          ) : (
+            <p className="text-sm bp-md:text-base text-slate-600 leading-relaxed">라켓과 함께 구매하실 스트링을 선택해주세요. 선택한 스트링은 라켓과 함께 한 번에 결제됩니다.</p>
+          )}
         </div>
 
         <div className="max-w-3xl mx-auto">
@@ -107,13 +226,14 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
               </div>
             </div>
           </div>
-          {/* 작업 개수(= 스트링 결제 개수) */}
+
+          {/* 번들 수량 */}
           <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 bp-md:p-6 shadow-sm">
             <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-3">
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-slate-900">번들 수량 (라켓 + 스트링)</p>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  이 수량만큼 <span className="font-medium">라켓/스트링/교체비</span>가 체크아웃에서 함께 계산되고, 신청서 STEP2의 <span className="font-medium">라켓별 세부 장착 정보</span>도 자동으로 생성됩니다.
+                  이 수량만큼 <span className="font-medium">라켓/스트링/교체비</span>가 함께 계산되고, STEP2의 <span className="font-medium">라켓별 세부 장착 정보</span>도 자동 생성됩니다.
                 </p>
               </div>
 
@@ -132,16 +252,25 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
           </div>
         </div>
 
+        {/* 스트링 목록 */}
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-slate-900 text-center">사용 가능한 스트링</h2>
           <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
             {products.map((p: any) => {
+              const stringId = String(p._id);
               const stringImage = p?.images?.[0] ?? p?.imageUrl;
 
+              const isCurrent = Boolean(selectedStringIdForHighlight) && selectedStringIdForHighlight === stringId && isFromCart;
+
               return (
-                <div key={String(p._id)} className="group relative overflow-hidden border border-slate-200 rounded-2xl bg-white hover:border-slate-300 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div
+                  key={stringId}
+                  className={[
+                    'group relative overflow-hidden border rounded-2xl bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
+                    isCurrent ? 'border-blue-500 ring-2 ring-blue-300' : 'border-slate-200 hover:border-slate-300',
+                  ].join(' ')}
+                >
                   <div className="p-5 flex flex-col h-full">
-                    {/* String Image */}
                     <div className="mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 aspect-square flex items-center justify-center">
                       {stringImage ? (
                         <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
@@ -159,21 +288,40 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                       )}
                     </div>
 
-                    {/* Product Info */}
                     <div className="flex-1 space-y-2">
-                      <h3 className="font-semibold text-slate-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">{p.name}</h3>
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-slate-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">{p.name}</h3>
+                        {isCurrent && <span className="shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">현재 선택</span>}
+                      </div>
                       <p className="text-lg font-bold text-slate-900">{Number(p.price ?? 0).toLocaleString()}원</p>
                     </div>
 
-                    {/* Select Button */}
-                    <Button className="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl py-5 group-hover:bg-blue-600 group-hover:shadow-lg transition-all duration-300" onClick={() => handleSelectString(p)}>
-                      <span className="flex items-center justify-center gap-2">
-                        선택하기
-                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </span>
-                    </Button>
+                    {/* 버튼 영역 */}
+                    {isFromCart ? (
+                      <Button className="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl py-5 group-hover:bg-blue-600 group-hover:shadow-lg transition-all duration-300" onClick={() => handleSelectString(p)}>
+                        <span className="flex items-center justify-center gap-2">
+                          이 스트링으로 변경
+                          <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </Button>
+                    ) : (
+                      <div className="mt-4 grid grid-cols-1 gap-2">
+                        <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl py-5 group-hover:bg-blue-600 group-hover:shadow-lg transition-all duration-300" onClick={() => handleSelectString(p)}>
+                          <span className="flex items-center justify-center gap-2">
+                            바로 결제
+                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </span>
+                        </Button>
+
+                        <Button variant="outline" className="w-full rounded-xl py-5 font-medium" onClick={() => handleAddToCart(p)}>
+                          장바구니 담기
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

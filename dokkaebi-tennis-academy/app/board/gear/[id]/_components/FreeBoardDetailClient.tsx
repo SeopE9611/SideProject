@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CommunityCategory, CommunityComment, CommunityPost } from '@/lib/types/community';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -20,6 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
@@ -199,6 +200,8 @@ export default function FreeBoardDetailClient({ id }: Props) {
     if (!user) {
       showErrorToast('로그인 후 이용할 수 있습니다.');
       const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/board/gear/${id}`;
+      if (!confirmLeaveIfDirty()) return;
+
       router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
       return;
     }
@@ -253,6 +256,46 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [commentReportReason, setCommentReportReason] = useState(''); // 신고 사유
   const [isCommentReporting, setIsCommentReporting] = useState(false); // 처리 중 플래그
   const [targetComment, setTargetComment] = useState<CommunityComment | null>(null); // 신고 대상 댓글
+
+  // 리폿 모달 닫기 시 "입력 유실" 방지
+  const closeReport = () => {
+    // 제출 중에는 ESC/오버레이 클릭으로 닫히지 않게 방어
+    if (isReporting) {
+      setOpenReport(true);
+      return;
+    }
+
+    // 입력이 남아있으면 닫기 전에 확인
+    if (reason.trim().length > 0) {
+      const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
+      if (!ok) {
+        setOpenReport(true);
+        return;
+      }
+    }
+
+    setOpenReport(false);
+    setReason('');
+  };
+
+  const closeCommentReport = () => {
+    if (isCommentReporting) {
+      setOpenCommentReport(true);
+      return;
+    }
+
+    if (commentReportReason.trim().length > 0) {
+      const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
+      if (!ok) {
+        setOpenCommentReport(true);
+        return;
+      }
+    }
+
+    setOpenCommentReport(false);
+    setTargetComment(null);
+    setCommentReportReason('');
+  };
 
   // 조회수 중복 방지 TTL (24시간)
   const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
@@ -382,6 +425,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [commentError, setCommentError] = useState<string | null>(null);
 
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editDrafts, setEditDrafts] = useState<Record<string, string>>({});
 
   // 대댓글 입력 상태
   // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
@@ -390,6 +434,31 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [isReplySubmitting, setIsReplySubmitting] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
+
+  const isDirty = useMemo(() => {
+    if (commentContent.trim()) return true;
+    if (reason.trim()) return true; // 게시글 신고 사유
+    if (commentReportReason.trim()) return true; // 댓글 신고 사유
+
+    // 대댓글 draft 중 하나라도 내용 있으면 dirty
+    if (Object.values(replyDrafts).some((v) => v.trim().length > 0)) return true;
+
+    // 댓글 수정 draft 중 하나라도 내용 있으면 dirty
+    if (Object.values(editDrafts).some((v) => v.trim().length > 0)) return true;
+
+    return false;
+  }, [commentContent, reason, commentReportReason, replyDrafts, editDrafts]);
+
+  const isBusy = isDeleting || isLiking || isReporting || isCommentReporting || isCommentSubmitting || isReplySubmitting;
+
+  // 프로젝트 공용 guard (뒤로가기/탭닫기/a링크 클릭)
+  useUnsavedChangesGuard(isDirty && !isBusy, UNSAVED_CHANGES_MESSAGE);
+
+  // router.push 같은 “프로그램 네비게이션”은 위 hook이 못 잡으니 수동 confirm
+  function confirmLeaveIfDirty() {
+    if (!isDirty || isBusy) return true;
+    return window.confirm(UNSAVED_CHANGES_MESSAGE);
+  }
 
   // 루트 댓글별 전체 답글 펼침 상태
   const [expandedRootIds, setExpandedRootIds] = useState<Set<string>>(new Set());
@@ -557,12 +626,24 @@ export default function FreeBoardDetailClient({ id }: Props) {
   const startEditComment = (commentId: string) => {
     setEditingCommentId(commentId);
     setCommentError(null);
+
+    // 현재 댓글 본문을 draft로 잡아두면 guard가 “수정 중”을 감지할 수 있음
+    const origin = comments.find((c) => c.id === commentId)?.content ?? '';
+    setEditDrafts((prev) => ({ ...prev, [commentId]: origin }));
   };
 
   // 댓글 수정 모드 취소
-  const cancelEditComment = () => {
+  const cancelEditComment = (commentId?: string) => {
     setEditingCommentId(null);
+
+    if (!commentId) return;
+    setEditDrafts((prev) => {
+      const next = { ...prev };
+      delete next[commentId];
+      return next;
+    });
   };
+
   // 댓글 수정 저장
   const handleUpdateComment = async (commentId: string, newContent: string) => {
     const trimmed = newContent.trim();
@@ -592,6 +673,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
       // 수정 모드 종료
       setEditingCommentId(null);
+
+      setEditDrafts((prev) => {
+        const next = { ...prev };
+        delete next[commentId];
+        return next;
+      });
 
       // 댓글 목록만 재검증
       await mutateComments();
@@ -903,6 +990,8 @@ export default function FreeBoardDetailClient({ id }: Props) {
                     <DropdownMenuItem
                       onClick={() => {
                         if (!comment.userId) return;
+                        if (!confirmLeaveIfDirty()) return;
+
                         const authorName = comment.nickname ?? '';
                         router.push(`/board/gear?authorId=${comment.userId}&authorName=${encodeURIComponent(authorName)}`);
                       }}
@@ -987,12 +1076,16 @@ export default function FreeBoardDetailClient({ id }: Props) {
             <Textarea
               ref={editInputRef}
               className="min-h-[80px] resize-none border-gray-200 text-sm focus-visible:ring-1 focus-visible:ring-gray-900 dark:border-gray-700 dark:focus-visible:ring-gray-400"
-              defaultValue={comment.content} // 초기값만 세팅, 이후는 브라우저가 관리
+              defaultValue={editDrafts[comment.id] ?? comment.content}
+              onChange={(e) => {
+                const v = e.target.value;
+                setEditDrafts((prev) => ({ ...prev, [comment.id]: v }));
+              }}
               disabled={isCommentSubmitting}
               autoFocus
             />
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={cancelEditComment} disabled={isCommentSubmitting} className="h-8 px-4 text-xs bg-transparent">
+              <Button type="button" variant="outline" size="sm" onClick={() => cancelEditComment(comment.id)} disabled={isCommentSubmitting} className="h-8 px-4 text-xs bg-transparent">
                 취소
               </Button>
               <Button
@@ -1066,6 +1159,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   if (replyInputRef.current) {
                     replyInputRef.current.value = '';
                   }
+                  setReplyDrafts((prev) => {
+                    const next = { ...prev };
+                    delete next[comment.id];
+                    return next;
+                  });
                   setReplyingToId(null);
                   setReplyError(null);
 
@@ -1081,8 +1179,12 @@ export default function FreeBoardDetailClient({ id }: Props) {
           >
             <Textarea
               ref={replyInputRef}
-              className="min-h-[70px] resize-none border-gray-200 bg-white text-sm focus-visible:ring-1 focus-visible:ring-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:focus-visible:ring-gray-400"
-              defaultValue=""
+              className="min-h-[70px] ..."
+              defaultValue={replyDrafts[comment.id] ?? ''}
+              onChange={(e) => {
+                const v = e.target.value;
+                setReplyDrafts((prev) => ({ ...prev, [comment.id]: v }));
+              }}
               disabled={isReplySubmitting}
               placeholder={`@${comment.nickname ?? '회원'} 님께 답글을 남겨 보세요.`}
               autoFocus
@@ -1094,9 +1196,14 @@ export default function FreeBoardDetailClient({ id }: Props) {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  if (replyInputRef.current) {
-                    replyInputRef.current.value = '';
-                  }
+                  if (replyInputRef.current) replyInputRef.current.value = '';
+
+                  setReplyDrafts((prev) => {
+                    const next = { ...prev };
+                    delete next[comment.id];
+                    return next;
+                  });
+
                   setReplyingToId(null);
                   setReplyError(null);
                 }}
@@ -1144,7 +1251,16 @@ export default function FreeBoardDetailClient({ id }: Props) {
           </div>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" className="gap-1 bg-transparent" onClick={() => router.push('/board/gear')}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1 bg-transparent"
+              onClick={() => {
+                if (!confirmLeaveIfDirty()) return;
+                router.push('/board/gear');
+              }}
+            >
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
@@ -1210,8 +1326,9 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       <DropdownMenuContent align="start" className="w-44">
                         <DropdownMenuItem
                           onClick={() => {
-                            // 비회원/익명 글은 userId가 없을 수 있음
                             if (!item.userId) return;
+                            if (!confirmLeaveIfDirty()) return;
+
                             const authorName = item.nickname ?? '';
                             router.push(`/board/gear?authorId=${item.userId}&authorName=${encodeURIComponent(authorName)}`);
                           }}
@@ -1227,10 +1344,11 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                               if (!user) {
                                 const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/board/gear/${id}`;
+                                if (!confirmLeaveIfDirty()) return;
+
                                 router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                                 return;
                               }
-
                               const toUserId = item.userId;
                               if (!toUserId) return;
 
@@ -1350,11 +1468,18 @@ export default function FreeBoardDetailClient({ id }: Props) {
                   <Dialog
                     open={openReport}
                     onOpenChange={(next) => {
-                      if (next && !user) {
-                        showErrorToast('로그인이 필요 합니다.');
+                      // 열기: 로그인 필요
+                      if (next) {
+                        if (!user) {
+                          showErrorToast('로그인이 필요 합니다.');
+                          return;
+                        }
+                        setOpenReport(true);
                         return;
                       }
-                      setOpenReport(next);
+
+                      // 닫기: 입력 보호(closeReport에서 confirm 처리)
+                      closeReport();
                     }}
                   >
                     <DialogTrigger asChild>
@@ -1372,7 +1497,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       <Textarea placeholder="신고 사유를 구체적으로 작성해주세요. (최소 10자)" value={reason} onChange={(e) => setReason(e.target.value)} className="h-32" disabled={isReporting} />
 
                       <DialogFooter className="gap-2 sm:justify-end">
-                        <Button type="button" variant="outline" onClick={() => setOpenReport(false)} disabled={isReporting}>
+                        <Button type="button" variant="outline" onClick={closeReport} disabled={isReporting}>
                           취소
                         </Button>
                         <Button type="button" variant="destructive" onClick={handleSubmitReport} disabled={isReporting}>
@@ -1385,9 +1510,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                     open={openCommentReport}
                     onOpenChange={(next) => {
                       if (!next) {
-                        setOpenCommentReport(false);
-                        setTargetComment(null);
-                        setCommentReportReason('');
+                        closeCommentReport();
                         return;
                       }
 
@@ -1420,7 +1543,7 @@ export default function FreeBoardDetailClient({ id }: Props) {
                       </div>
 
                       <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpenCommentReport(false)}>
+                        <Button type="button" variant="outline" onClick={closeCommentReport} disabled={isCommentReporting}>
                           취소
                         </Button>
                         <Button type="button" onClick={handleSubmitCommentReport} disabled={isCommentReporting}>
@@ -1432,7 +1555,15 @@ export default function FreeBoardDetailClient({ id }: Props) {
 
                   {isAuthor && (
                     <>
-                      <Button type="button" variant="outline" size="sm" onClick={() => router.push(`/board/gear/${item.id}/edit`)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (!confirmLeaveIfDirty()) return;
+                          router.push(`/board/gear/${item.id}/edit`);
+                        }}
+                      >
                         수정
                       </Button>
 
