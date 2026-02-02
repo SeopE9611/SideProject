@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { mutate } from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { XCircle } from 'lucide-react';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 const CANCEL_REASONS = ['상품 품절', '고객 요청', '배송 지연', '결제 오류', '기타'];
 
@@ -42,6 +43,13 @@ export default function AdminCancelOrderDialog({
   const [selectedReason, setSelectedReason] = useState<string>('');
   const [detail, setDetail] = useState('');
   const [loading, setLoading] = useState(false);
+
+  /**
+   * 취소 다이얼로그 입력 이탈 방지
+   * - 다이얼로그가 열린 상태에서 사유/상세를 입력했다면 dirty
+   */
+  const isDirty = open && (selectedReason !== '' || detail.trim().length > 0);
+  useUnsavedChangesGuard(isDirty);
 
   const handleSubmit = async () => {
     if (!selectedReason) {

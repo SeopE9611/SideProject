@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CardFooter, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 interface Props {
   orderId: string;
@@ -14,6 +15,12 @@ interface Props {
 
 export default function PaymentEditForm({ orderId, initialData, onSuccess, onCancel }: Props) {
   const [total, setTotal] = useState(initialData.total);
+  const [baselineTotal] = useState(initialData.total);
+
+  // 입력값이 초기값과 달라지면 이탈 경고(뒤로가기/링크이동/탭닫기)
+  const isDirty = total !== baselineTotal;
+  useUnsavedChangesGuard(isDirty);
+
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {

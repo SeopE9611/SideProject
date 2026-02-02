@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { mutate } from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { XCircle } from 'lucide-react';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // props: 주문 ID만 전달받음
 interface CancelOrderDialogProps {
@@ -31,6 +32,14 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
   // 교체 신청 동시 취소 확인 단계 여부 / 신청 개수
   const [confirmWithStringing, setConfirmWithStringing] = useState(false);
   const [linkedCount, setLinkedCount] = useState<number | null>(null);
+
+  /**
+   * 이탈 경고(Unsaved Changes Guard)
+   * - 다이얼로그가 열린 상태에서 입력/선택이 있으면 경고
+   * - 409로 “연결된 신청 함께 취소” 확인 단계로 들어간 상태도 dirty로 간주
+   */
+  const isDirty = !!open && (selectedReason !== undefined || otherReason.trim().length > 0 || confirmWithStringing || linkedCount !== null);
+  useUnsavedChangesGuard(isDirty);
 
   //  제출 처리 함수
   const handleSubmit = async () => {

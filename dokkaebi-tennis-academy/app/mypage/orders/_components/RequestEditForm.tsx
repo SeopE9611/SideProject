@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 interface Props {
   initialData: string;
@@ -13,7 +14,11 @@ interface Props {
 
 export default function RequestEditForm({ initialData, orderId, onSuccess, onCancel }: Props) {
   const [value, setValue] = useState(initialData);
+  const [baseline, setBaseline] = useState(initialData);
   const [loading, setLoading] = useState(false);
+
+  const isDirty = value !== baseline;
+  useUnsavedChangesGuard(isDirty);
 
   const handleSave = async () => {
     setLoading(true);
@@ -24,8 +29,10 @@ export default function RequestEditForm({ initialData, orderId, onSuccess, onCan
       credentials: 'include',
     });
     setLoading(false);
-    if (res.ok) onSuccess();
-    else alert('저장에 실패했습니다.');
+    if (res.ok) {
+      setBaseline(value);
+      onSuccess();
+    } else alert('저장에 실패했습니다.');
   };
 
   return (
