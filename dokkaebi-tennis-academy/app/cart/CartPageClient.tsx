@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import WishlistSidebar from '@/app/cart/_components/WishlistSidebar';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // 통화 포맷 유틸 (일관성)
 const formatKRW = (n: number) => n.toLocaleString('ko-KR');
@@ -30,6 +31,27 @@ export default function CartPageClient() {
 
   // 선택 상태
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // 장착 대상 스트링 "이 스트링만 남기기" 확인 다이얼로그 상태
+  const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
+  const [cleanupKeepId, setCleanupKeepId] = useState<string | null>(null);
+  const [cleanupRemoveIds, setCleanupRemoveIds] = useState<string[]>([]);
+
+  // [장착 대상 스트링 정리 다이얼로그] 남길/삭제될 대상 텍스트 생성
+  const keepStringItem = cleanupKeepId ? cartItems.find((i) => i.id === cleanupKeepId) : undefined;
+  const keepStringLabel = keepStringItem ? `${keepStringItem.name} (수량 ${keepStringItem.quantity}개)` : '선택한 스트링';
+
+  const removeStringItems = cartItems.filter((i) => cleanupRemoveIds.includes(i.id));
+  const removeCount = removeStringItems.length;
+  const removePreview =
+    removeCount === 0
+      ? ''
+      : removeCount <= 2
+        ? removeStringItems.map((i) => i.name).join(', ')
+        : `${removeStringItems
+            .slice(0, 2)
+            .map((i) => i.name)
+            .join(', ')} 외 ${removeCount - 2}개`;
 
   // "장착비 대상 스트링" 판별을 위해 /api/products/[id]/mini 를 조회해 mountingFee를 캐시
   const [mountingFeeByProductId, setMountingFeeByProductId] = useState<Record<string, number>>({});
@@ -199,19 +221,74 @@ export default function CartPageClient() {
     const idsToRemove = mountableIds.filter((id) => id !== keepId);
     if (idsToRemove.length === 0) return;
 
-    if (!confirm(`장착 대상 스트링은 1종만 가능합니다.\n\n이 스트링만 남기고 나머지 ${idsToRemove.length}개 스트링을 삭제할까요?`)) return;
+    // confirm() 대신 AlertDialog로 확인 UX 통일
+    setCleanupKeepId(keepId);
+    setCleanupRemoveIds(idsToRemove);
+    setCleanupDialogOpen(true);
+  };
+
+  const confirmCleanupMountableStrings = () => {
+    if (cleanupRemoveIds.length === 0) {
+      setCleanupDialogOpen(false);
+      setCleanupKeepId(null);
+      setCleanupRemoveIds([]);
+      return;
+    }
 
     // 나머지 장착 스트링 삭제
-    idsToRemove.forEach((id) => removeItem(id));
+    cleanupRemoveIds.forEach((id) => removeItem(id));
 
     // 선택 상태에서도 제거(선택삭제/전체선택 UX 꼬임 방지)
-    setSelectedIds((prev) => prev.filter((id) => !idsToRemove.includes(id)));
+    setSelectedIds((prev) => prev.filter((id) => !cleanupRemoveIds.includes(id)));
 
     showSuccessToast?.('장착 대상 스트링을 1종으로 정리했어요.');
+
+    // 상태 정리 + 닫기
+    setCleanupDialogOpen(false);
+    setCleanupKeepId(null);
+    setCleanupRemoveIds([]);
   };
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+      {/* 장착 대상 스트링 정리 확인 다이얼로그 */}
+      <AlertDialog
+        open={cleanupDialogOpen}
+        onOpenChange={(open) => {
+          setCleanupDialogOpen(open);
+          if (!open) {
+            setCleanupKeepId(null);
+            setCleanupRemoveIds([]);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-semibold">장착 대상 스트링 정리</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p>
+                  장착 대상 스트링은 <span className="font-medium">1종만</span> 가능합니다.
+                </p>
+                <p>
+                  남길 스트링(선택): <span className="font-medium text-gray-900">{keepStringLabel}</span>
+                </p>
+                <p>
+                  삭제될 스트링(정리 대상): <span className="font-medium text-gray-900">{removeCount}개</span>
+                  {removePreview ? <span className="text-gray-500"> ({removePreview})</span> : null}
+                </p>
+                <p className="text-gray-500">
+                  “정리하기”를 누르면 <b>선택한 스트링 1종만 유지</b>되고, 나머지 스트링은 장바구니에서 삭제됩니다. (취소 시 변경 없음)
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmCleanupMountableStrings}>정리하기</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* 헤더 */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
         <div className="absolute inset-0 bg-black/10" />
@@ -335,10 +412,10 @@ export default function CartPageClient() {
                                     장착 대상 스트링(정리 필요)
                                   </span>
                                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-snug text-orange-700/90 dark:text-orange-200/90">
-                                    <span>
-                                      👉 장착 대상 스트링은 <b>1종만</b> 남겨주세요. (나머지는 삭제)
+                                    <span className="inline-flex items-center gap-1.5">
+                                      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                                      장착 대상 스트링은 <b>1종만</b> 남겨주세요. (나머지는 삭제)
                                     </span>
-
                                     <button
                                       type="button"
                                       className="font-semibold underline underline-offset-2 text-orange-700 hover:text-orange-800 dark:text-orange-200 dark:hover:text-orange-100"
@@ -540,7 +617,10 @@ export default function CartPageClient() {
                             라켓 수량(<span className="font-semibold">{totalRacketQty}개</span>)과 장착 스트링 수량(
                             <span className="font-semibold">{totalMountableStringQty}개</span>)이 다릅니다.
                             <br />
-                            👉 수량을 맞춘 뒤 주문해 주세요.
+                            <span className="mt-1 inline-flex items-center gap-1.5">
+                              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                              수량을 맞춘 뒤 주문해 주세요.
+                            </span>
                           </div>
                         )}
                         {bundleEditHref ? (
