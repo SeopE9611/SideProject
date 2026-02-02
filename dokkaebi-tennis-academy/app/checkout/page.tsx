@@ -1172,7 +1172,7 @@ export default function CheckoutPage() {
                       {fieldErrors.composition && (
                         <p>
                           • {fieldErrors.composition}{' '}
-                          <Link href="/cart" data-no-unsaved-guard className="underline underline-offset-2">
+                          <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="underline underline-offset-2">
                             (장바구니에서 정리)
                           </Link>
                         </p>
@@ -1180,7 +1180,7 @@ export default function CheckoutPage() {
                       {/* CTA 강화: composition 에러면 "장바구니로 가서 정리하기"를 버튼으로도 제공 */}
                       {fieldErrors.composition && (
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <Link href="/cart" data-no-unsaved-guard className="inline-flex items-center justify-center rounded-md bg-black px-3 py-2 text-sm font-medium text-white hover:bg-black/90">
+                          <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-black px-3 py-2 text-sm font-medium text-white hover:bg-black/90">
                             장바구니로 가서 정리하기
                           </Link>
                           <span className="text-xs text-gray-600">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
@@ -1211,7 +1211,7 @@ export default function CheckoutPage() {
                     pointsToUse={appliedPoints}
                   />
                   <Button variant="outline" className="w-full border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
-                    <Link href="/cart" onClick={onLeaveCartClick}>
+                    <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
                       장바구니로 돌아가기
                     </Link>
                   </Button>
