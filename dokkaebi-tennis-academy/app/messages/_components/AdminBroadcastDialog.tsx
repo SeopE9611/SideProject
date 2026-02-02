@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Loader2, Bell, Calendar } from 'lucide-react';
-import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type Props = {
   open: boolean;
@@ -50,6 +50,9 @@ export default function AdminBroadcastDialog({ open, onOpenChange, defaultExpire
     if (isSending) return false; // 전송 중에는 닫기 confirm 없이 처리(UX)
     return title.trim() !== '' || body.trim() !== '' || expireDays !== baselineExpireDays;
   }, [open, isSending, title, body, expireDays, baselineExpireDays]);
+
+  // 모달 열린 상태에서 "페이지 이탈(뒤로가기/링크/탭닫기)"까지 보호
+  useUnsavedChangesGuard(isDirty);
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen) return onOpenChange(true);

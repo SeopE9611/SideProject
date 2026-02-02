@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast } from '@/lib/toast';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 interface CancelStringingDialogProps {
   open: boolean;
@@ -19,6 +20,19 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
   // 로컬 상태: 사유 선택값, 기타 입력값
   const [selectedReason, setSelectedReason] = useState<string | undefined>();
   const [otherReason, setOtherReason] = useState('');
+
+  // 입력/선택이 있는 상태에서 이탈(뒤로가기/링크/탭닫기) 방지
+  const isDirty = open && (selectedReason !== undefined || otherReason.trim().length > 0);
+  useUnsavedChangesGuard(isDirty);
+
+  // X/오버레이/ESC/닫기 버튼으로 “모달 자체”를 닫을 때도 입력 유실 방지
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) return onOpenChange(true);
+    if (!isDirty) return onOpenChange(false);
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
+    if (!ok) return; // 닫기 취소
+    onOpenChange(false);
+  };
 
   // 모달이 닫힐 때마다 선택값 초기화
   useEffect(() => {
@@ -45,7 +59,7 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>신청 취소 요청을 보내시겠습니까?</DialogTitle>
@@ -71,7 +85,7 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
             닫기
           </Button>
           <Button variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>

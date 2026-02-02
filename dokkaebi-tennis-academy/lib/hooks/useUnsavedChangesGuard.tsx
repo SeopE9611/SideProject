@@ -53,6 +53,10 @@ function __installGuard() {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // 새탭/특수동작은 제외
 
     if (!(e.target instanceof Element)) return;
+
+    // <a>가 아니어도(버튼/래퍼 등) 상위에 data-no-unsaved-guard가 있으면 opt-out
+    if (e.target.closest('[data-no-unsaved-guard]')) return;
+
     const a = e.target.closest('a');
     if (!a) return;
     if (a.hasAttribute('data-no-unsaved-guard')) return;
@@ -81,7 +85,10 @@ function __installGuard() {
   };
 
   // 브라우저 뒤로가기를 한번 “가로채기” 위한 더미 state
-  window.history.pushState({ ...(window.history.state ?? {}), __unsaved_changes_guard: true }, '', window.location.href);
+  const alreadyMarked = (window.history.state as any)?.__unsaved_changes_guard;
+  if (!alreadyMarked) {
+    window.history.pushState({ ...(window.history.state ?? {}), __unsaved_changes_guard: true }, '', window.location.href);
+  }
   window.addEventListener('beforeunload', __onBeforeUnload);
   window.addEventListener('popstate', __onPopState);
   document.addEventListener('click', __onClickCapture, true);

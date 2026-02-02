@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { fallbackReason, parsePointRefKey, pointTxStatusLabel, pointTxTypeLabel, safeLocalDateTime } from '@/lib/points.display';
 import { Badge } from '@/components/ui/badge';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type Props = {
   open: boolean;
@@ -60,6 +61,32 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // 입력 중 이탈 방지(dirty): 입력칸에 뭐라도 있으면 보호
+  const isDirty = open && (amount.trim().length > 0 || reason.trim().length > 0 || refKey.trim().length > 0);
+  useUnsavedChangesGuard(isDirty);
+
+  // 오버레이/ESC/닫기 등 “다이얼로그 자체 닫기”에서도 입력 유실 방지
+  const handleOpenChange = (nextOpen: boolean) => {
+    // 열기
+    if (nextOpen) return onOpenChange(true);
+
+    // 제출 중이면 사용자가 실수로 닫지 못하게 보호(기존 UX 유지 목적)
+    if (submitting) return;
+
+    // 닫기: dirty면 confirm
+    if (isDirty) {
+      const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
+      if (!ok) return;
+    }
+
+    // 닫기 확정 → 입력 상태 초기화
+    setAmount('');
+    setReason('');
+    setRefKey('');
+    setShowAdvanced(false);
+    onOpenChange(false);
+  };
+
   async function onAdjust(delta: number) {
     if (!userId) return;
     setSubmitting(true);
@@ -109,7 +136,7 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
   const canSubmit = Number.isFinite(amountNum) && amountNum !== 0 && !!userId;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => onOpenChange(v)}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
@@ -191,7 +218,7 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
                           </Badge>
                         </span>
                       </div>
-                      <div className="text-xs text-muted-foreground">{tx.reason && tx.reason.trim().length >= 2 ? tx.reason : fallbackReason(tx.type) ?? '-'}</div>
+                      <div className="text-xs text-muted-foreground">{tx.reason && tx.reason.trim().length >= 2 ? tx.reason : (fallbackReason(tx.type) ?? '-')}</div>
                       {(() => {
                         const ref = parsePointRefKey(tx.refKey);
                         if (!ref) return null;

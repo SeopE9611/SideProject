@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { mutate } from 'swr';
 import { XCircle } from 'lucide-react';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 interface CancelRentalDialogProps {
   rentalId: string;
@@ -26,6 +27,33 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
   const [otherReason, setOtherReason] = useState('');
   // API 호출 중 여부
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 입력/선택이 있는 상태에서 페이지 이탈(뒤로가기/링크/탭닫기) 방지
+  const isDirty = open && (selectedReason !== undefined || otherReason.trim().length > 0);
+  useUnsavedChangesGuard(isDirty);
+
+  // “닫기” 시 입력 유실 방지 (ESC/오버레이/닫기 버튼 모두 여기로 들어옴)
+  const handleOpenChange = (next: boolean) => {
+    // 제출 중/비활성 상태에서는 상태 변경 차단(기존 규칙 유지)
+    if (isSubmitting || disabled) return;
+
+    // 열기
+    if (next) {
+      setOpen(true);
+      return;
+    }
+
+    // 닫기: dirty면 confirm
+    if (isDirty) {
+      const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
+      if (!ok) return; // 닫기 취소
+    }
+
+    // 닫힐 때는 “버리기”가 확정이므로 상태를 정리
+    setOpen(false);
+    setSelectedReason(undefined);
+    setOtherReason('');
+  };
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
@@ -71,6 +99,9 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
       // 마이페이지 목록 갱신
       await mutate((key: string) => key?.startsWith('/api/me/rentals'), undefined, { revalidate: true });
 
+      // 성공 종료 시에도 입력값은 초기화(다음 오픈 시 이전 선택값 잔존 방지)
+      setSelectedReason(undefined);
+      setOtherReason('');
       // 모달 닫기
       setOpen(false);
       if (onSuccess) {
@@ -85,14 +116,7 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        // 제출 중에는 강제로 닫히지 않도록 보호 + 비활성 상태에서는 열리지 않음
-        if (isSubmitting || disabled) return;
-        setOpen(next);
-      }}
-    >
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm" disabled={isSubmitting || disabled} className={`gap-2 ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}>
           <XCircle className="mr-2 h-4 w-4" />
@@ -130,7 +154,7 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
         </div>
 
         <DialogFooter>
-          <Button variant="outline" type="button" disabled={isSubmitting} onClick={() => setOpen(false)}>
+          <Button variant="outline" type="button" disabled={isSubmitting} onClick={() => handleOpenChange(false)}>
             닫기
           </Button>
           <Button variant="destructive" type="button" onClick={handleSubmit} disabled={isSubmitting}>

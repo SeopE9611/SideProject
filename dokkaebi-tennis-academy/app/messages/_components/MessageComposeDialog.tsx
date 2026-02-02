@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Loader2, Send, User } from 'lucide-react';
-import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type Props = {
   open: boolean;
@@ -54,6 +54,9 @@ export default function MessageComposeDialog({ open, onOpenChange, toUserId, toN
     const hasAny = t.length > 0 || b.length > 0;
     return changed && hasAny;
   }, [open, isSending, title, body, baselineTitle, baselineBody]);
+
+   // 모달이 열린 상태에서 "페이지 이탈(뒤로가기/링크/탭닫기)"까지 보호
+  useUnsavedChangesGuard(isDirty);
 
   // X 버튼/오버레이 클릭/ESC 포함: Dialog가 onOpenChange(false)를 호출하므로 여기서 가드
   const handleOpenChange = (nextOpen: boolean) => {
