@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Camera, Save, User, Mail, Phone, MapPin, Shield, Bell, Settings, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { MdSportsTennis } from 'react-icons/md';
 import TennisProfileForm from '@/app/mypage/profile/_components/TennisProfileForm';
 import { Badge } from '@/components/ui/badge';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 제출 직전 최종 유효성 가드
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,6 +30,20 @@ const isValidKoreanPhone = (v: string) => {
 // "8자 이상 + 영문/숫자 조합" (특수문자는 허용)
 const PW_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
+// ProfileClient에서 “이탈 경고 기준”으로 삼을 필드만 뽑아 시그니처 문자열로 만듦(비교용)
+const profileDirtySignature = (d: { name?: string; email?: string; phone?: string; address?: { postalCode?: string; address1?: string; address2?: string }; marketing?: { email?: boolean; sms?: boolean; push?: boolean } }) =>
+  JSON.stringify({
+    name: String(d.name ?? '').trim(),
+    email: String(d.email ?? '').trim(),
+    phone: String(d.phone ?? '').trim(),
+    address: {
+      postalCode: String(d.address?.postalCode ?? '').trim(),
+      address1: String(d.address?.address1 ?? '').trim(),
+      address2: String(d.address?.address2 ?? '').trim(),
+    },
+    marketing: { email: !!d.marketing?.email, sms: !!d.marketing?.sms, push: !!d.marketing?.push },
+  });
+
 type Props = {
   user: {
     id: string;
@@ -40,6 +55,9 @@ type Props = {
 
 export default function ProfileClient({ user }: Props) {
   const router = useRouter();
+
+  // 서버에서 불러온 “초기값(baseline)” 시그니처 (로드 완료 후 1회 세팅)
+  const [initialProfileSig, setInitialProfileSig] = useState('');
 
   const [profileData, setProfileData] = useState({
     name: '',
@@ -71,6 +89,16 @@ export default function ProfileClient({ user }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
 
+  // 현재 입력 상태 시그니처(편집 가능한 핵심 필드만 비교)
+  const currentProfileSig = useMemo(() => profileDirtySignature(profileData), [profileData]);
+  const isProfileDirty = Boolean(initialProfileSig) && currentProfileSig !== initialProfileSig;
+
+  // 비밀번호 탭: 입력 중이면 dirty (서버 baseline 필요 없음)
+  const isPasswordDirty = Boolean(passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword);
+
+  // 최종 dirty (프로필/주소/마케팅 변경 OR 비밀번호 입력 중)
+  useUnsavedChangesGuard(isProfileDirty || isPasswordDirty);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -89,15 +117,20 @@ export default function ProfileClient({ user }: Props) {
         const { address, postalCode, addressDetail, ...rest } = user;
 
         // 최신 state 기반으로 안전하게 병합(closure stale 방지)
-        setProfileData((prev) => ({
-          ...prev,
-          ...rest,
-          address: {
-            address1: address ?? '',
-            postalCode: postalCode ?? '',
-            address2: addressDetail ?? '',
-          },
-        }));
+        +setProfileData((prev) => {
+          const next = {
+            ...prev,
+            ...rest,
+            address: {
+              address1: address ?? '',
+              postalCode: postalCode ?? '',
+              address2: addressDetail ?? '',
+            },
+          };
+          // baseline은 “서버 로드 성공 시점”의 값으로 1회만 세팅
+          setInitialProfileSig((sig) => sig || profileDirtySignature(next));
+          return next;
+        });
       } catch (err) {
         console.error(err);
         showErrorToast('회원 정보를 불러오는 중 오류가 발생했습니다.');
@@ -184,6 +217,8 @@ export default function ProfileClient({ user }: Props) {
       if (!res.ok) throw new Error('저장 실패');
 
       showSuccessToast('회원 정보가 성공적으로 저장되었습니다.');
+      // 저장 성공 → 현재 상태를 baseline으로 갱신(이탈 경고 해제)
+      setInitialProfileSig(profileDirtySignature(profileData));
     } catch (err) {
       console.error(err);
       showErrorToast('오류가 발생했습니다. 다시 시도해주세요.');

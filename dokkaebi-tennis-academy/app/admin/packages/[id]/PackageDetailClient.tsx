@@ -20,6 +20,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import PackagePaymentStatusSelect from '@/app/features/packages/components/PackagePaymentStatusSelect';
 import PackagePassStatusSelect from '@/app/features/packages/components/PackagePassStatusSelect';
 import PackageCurrentStatusSelect from '@/app/features/packages/components/PackageCurrentStatusSelect';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 interface PackageDetail {
   id: string;
@@ -223,6 +224,15 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
   const [opsLimit, setOpsLimit] = useState(5);
   useEffect(() => setOpsLimit(5), [data?.id]);
+
+  /**
+  * 입력 이탈 경고(Unsaved Changes Guard)
+   * - 이 페이지에서 실제 “입력 폼”은 모달 2개(연장/횟수조절)
+   */
+  const isExtensionDirty = showExtensionForm && (extensionData.days > 0 || extensionData.reason.trim().length > 0);
+  const isAdjustDirty = editingSessions && (sessionAdjustment.amount !== 0 || sessionAdjustment.reason.trim().length > 0);
+  const isDirty = isExtensionDirty || isAdjustDirty;
+  useUnsavedChangesGuard(isDirty);
 
   // 최신순 정렬(내림차순)
   const operationsHistorySorted = [...operationsHistory].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

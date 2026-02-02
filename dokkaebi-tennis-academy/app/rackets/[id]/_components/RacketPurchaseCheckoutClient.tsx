@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { showErrorToast } from '@/lib/toast';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type RacketView = {
   id: string;
@@ -49,6 +50,26 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
   // const canSubmit = racket.status === 'available' && agree && !submitting && name.trim() && phone.trim() && address.trim() && postalCode.trim() && depositor.trim();
   // canSubmit은 boolean으로 유지(기존은 && 체인 때문에 string이 될 수 있음)
   const canSubmit = racket.status === 'available' && agree && !submitting && Boolean(name.trim() && phone.trim() && address.trim() && postalCode.trim() && depositor.trim());
+
+  /**
+   * 입력 이탈 경고(Unsaved Changes Guard)
+   * - 초기값 대비 “뭐라도” 바뀌면 dirty=true
+   * - 입력했다가 다시 초기값으로 되돌리면 dirty=false로 복귀
+   */
+  const isDirty = useMemo(() => {
+    const hasText =
+      Boolean(name) ||
+      Boolean(phone) ||
+      Boolean(address) ||
+      Boolean(addressDetail) ||
+      Boolean(postalCode) ||
+      Boolean(depositor) ||
+      Boolean(deliveryRequest);
+    const hasNonDefault = pickupMethod !== 'courier' || bank !== 'shinhan' || agree !== false;
+    return hasText || hasNonDefault;
+  }, [name, phone, address, addressDetail, postalCode, depositor, deliveryRequest, pickupMethod, bank, agree]);
+
+  useUnsavedChangesGuard(isDirty);
 
   async function onSubmit() {
     // 0) 중복 클릭 방지

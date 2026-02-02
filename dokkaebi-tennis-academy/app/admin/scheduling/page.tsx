@@ -14,6 +14,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 const BRAND = {
   bg: 'bg-emerald-600',
@@ -49,6 +50,29 @@ type StringingSettings = {
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 
+// “저장 전 변경 여부(dirty)” 판별용 시그니처
+// - 배열(요일/휴무/예외)은 정렬해서 “순서 차이”로 불필요하게 dirty 되는 것을 방지
+const settingsDirtySignature = (v: { capacity: number; start: string; end: string; interval: number; bookingWindowDays: number; businessDays: number[]; holidays: string[]; exceptions: ExceptionItem[] }) =>
+  JSON.stringify({
+    capacity: Number(v.capacity),
+    start: String(v.start),
+    end: String(v.end),
+    interval: Number(v.interval),
+    bookingWindowDays: Number(v.bookingWindowDays),
+    businessDays: [...(v.businessDays ?? [])].slice().sort((a, b) => a - b),
+    holidays: [...(v.holidays ?? [])].slice().sort(),
+    exceptions: [...(v.exceptions ?? [])]
+      .map((x) => ({
+        date: String(x.date ?? ''),
+        closed: !!x.closed,
+        start: x.start == null ? undefined : String(x.start),
+        end: x.end == null ? undefined : String(x.end),
+        interval: x.interval == null ? undefined : Number(x.interval),
+        capacity: x.capacity == null ? undefined : Number(x.capacity),
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date)),
+  });
+
 export default function StringingSettingsPage() {
   // 기본 설정
   const [capacity, setCapacity] = useState<number>(1);
@@ -70,6 +94,28 @@ export default function StringingSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // 서버/초기 로드 완료 후 baseline(초기값)으로 삼을 시그니처
+  const [initialSig, setInitialSig] = useState('');
+
+  // 현재 상태 시그니처
+  const currentSig = useMemo(
+    () =>
+      settingsDirtySignature({
+        capacity,
+        start,
+        end,
+        interval,
+        bookingWindowDays,
+        businessDays,
+        holidays,
+        exceptions,
+      }),
+    [capacity, start, end, interval, bookingWindowDays, businessDays, holidays, exceptions],
+  );
+
+  const isDirty = Boolean(initialSig) && currentSig !== initialSig;
+  useUnsavedChangesGuard(isDirty);
+
   // 초기 로드
   useEffect(() => {
     (async () => {
@@ -77,16 +123,29 @@ export default function StringingSettingsPage() {
         const res = await fetch('/api/admin/settings/stringing', { credentials: 'include', cache: 'no-store' });
         if (!res.ok) throw new Error('권한 또는 네트워크 오류');
         const data: StringingSettings | null = await res.json();
-        if (data) {
-          setCapacity(Number(data.capacity ?? 1));
-          setStart(String(data.start ?? '10:00'));
-          setEnd(String(data.end ?? '19:00'));
-          setInterval(Number(data.interval ?? 30));
-          setBusinessDays(Array.isArray(data.businessDays) ? data.businessDays : [1, 2, 3, 4, 5]);
-          setHolidays(Array.isArray(data.holidays) ? data.holidays : []);
-          setBookingWindowDays(Number((data as any).bookingWindowDays ?? 30));
-          setExceptions(Array.isArray(data.exceptions) ? data.exceptions : []);
-        }
+        // baseline을 “로드된 값”으로 잡기 위해, 로컬 next 값을 만든 뒤 state + initialSig를 같이 세팅
+        const next = {
+          capacity: Number(data?.capacity ?? 1),
+          start: String(data?.start ?? '10:00'),
+          end: String(data?.end ?? '19:00'),
+          interval: Number(data?.interval ?? 30),
+          businessDays: Array.isArray(data?.businessDays) ? data!.businessDays! : [1, 2, 3, 4, 5],
+          holidays: Array.isArray(data?.holidays) ? data!.holidays! : [],
+          bookingWindowDays: Number((data as any)?.bookingWindowDays ?? 30),
+          exceptions: Array.isArray(data?.exceptions) ? data!.exceptions! : [],
+        };
+
+        setCapacity(next.capacity);
+        setStart(next.start);
+        setEnd(next.end);
+        setInterval(next.interval);
+        setBusinessDays(next.businessDays);
+        setHolidays(next.holidays);
+        setBookingWindowDays(next.bookingWindowDays);
+        setExceptions(next.exceptions);
+
+        // ✅ baseline은 1회만 세팅(재렌더/재호출로 덮어쓰기 방지)
+        setInitialSig((sig) => sig || settingsDirtySignature(next));
       } catch (err: any) {
         showErrorToast(err?.message || '설정을 불러오지 못했습니다.');
       } finally {
@@ -120,6 +179,7 @@ export default function StringingSettingsPage() {
         throw new Error(j?.message || '저장 실패');
       }
       showSuccessToast('저장되었습니다. 새 예약/제출부터 즉시 반영됩니다.');
+      setInitialSig(currentSig);
     } catch (err: any) {
       showErrorToast(err?.message || '저장 실패');
     } finally {

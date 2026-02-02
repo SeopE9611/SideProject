@@ -45,6 +45,7 @@ import { Section, SectionHeader, SectionBody } from '@/components/admin/Section'
 import { InfoItem } from '@/components/admin/InfoItem';
 import StatusBadge from '@/components/admin/StatusBadge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 변경이력 포맷터 유틸
 const AUDIT_LABELS: Record<string, string> = {
@@ -203,7 +204,7 @@ export default function UserDetailClient({ id }: { id: string }) {
       applications: kpi?.applications ?? asTotal(appsResp) ?? apps?.length ?? 0,
       reviews: kpi?.reviews ?? asTotal(reviewsResp) ?? reviews?.length ?? 0,
     }),
-    [kpi, ordersResp, appsResp, reviewsResp, orders, apps, reviews]
+    [kpi, ordersResp, appsResp, reviewsResp, orders, apps, reviews],
   );
 
   const [localAudit, setLocalAudit] = useState<AuditLog[]>([]);
@@ -213,6 +214,9 @@ export default function UserDetailClient({ id }: { id: string }) {
   // 폼 로컬 상태 (미저장 변경 탐지)
   const [form, setForm] = useState<Partial<UserDetail>>({});
   const hasDirty = useMemo(() => Object.keys(form).length > 0, [form]);
+
+  // 입력 중 이탈 방지(뒤로가기/탭닫기/링크이동)
+  useUnsavedChangesGuard(hasDirty);
 
   const user = data;
   const onChange = (k: keyof UserDetail, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
@@ -507,7 +511,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                       'absolute -right-1 -bottom-1 size-3 rounded-full ring-2 ring-white dark:ring-slate-900',
                       statusKey(user) === 'active' && 'bg-emerald-500',
                       statusKey(user) === 'suspended' && 'bg-amber-500',
-                      statusKey(user) === 'deleted' && 'bg-rose-500'
+                      statusKey(user) === 'deleted' && 'bg-rose-500',
                     )}
                   />
                 </div>

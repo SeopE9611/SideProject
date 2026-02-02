@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+
+// dirty 비교용 시그니처(운송장 번호는 공백/하이픈 제거한 값 기준으로 비교)
+const shippingSig = (v: { courier: string; tracking: string; date: string }) =>
+  JSON.stringify({
+    courier: String(v.courier ?? ''),
+    tracking: String(v.tracking ?? '')
+      .replaceAll('-', '')
+      .replaceAll(' ', ''),
+    date: String(v.date ?? ''),
+  });
 
 export default function ShippingForm({ rentalId }: { rentalId: string }) {
   const [courier, setCourier] = useState('');
@@ -14,17 +25,32 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   const [date, setDate] = useState('');
   const [busy, setBusy] = useState(false);
   const [hasExisting, setHasExisting] = useState(false);
+
+  // 프리필(초기 로드) 기준선(baseline)
+  const [initialSig, setInitialSig] = useState('');
+  // 저장 성공 후 뒤로가기 시 confirm 뜨지 않게 가드 제어
+  const [guardOn, setGuardOn] = useState(true);
+
+  const currentSig = useMemo(() => shippingSig({ courier, tracking, date }), [courier, tracking, date]);
+  const isDirty = Boolean(initialSig) && currentSig !== initialSig;
+  useUnsavedChangesGuard(guardOn && isDirty);
+
   // 프리필(수정용): GET /api/rentals/[id] 읽어서 shipping.outbound 있으면 기본값 세팅
   useEffect(() => {
     (async () => {
       const res = await fetch(`/api/rentals/${rentalId}`, { credentials: 'include' });
       const json = await res.json().catch(() => ({}));
       const out = json?.shipping?.outbound;
-      if (out) {
-        setCourier(out.courier || '');
-        setTracking(out.trackingNumber || '');
-        setDate(out.shippedAt ? String(out.shippedAt).slice(0, 10) : '');
-      }
+      const next = {
+        courier: out?.courier || '',
+        tracking: out?.trackingNumber || '',
+        date: out?.shippedAt ? String(out.shippedAt).slice(0, 10) : '',
+      };
+      setCourier(next.courier);
+      setTracking(next.tracking);
+      setDate(next.date);
+      // baseline은 “로드 완료 시점” 값으로 1회만 세팅
+      setInitialSig((sig) => sig || shippingSig(next));
       setHasExisting(true);
     })();
   }, [rentalId]);
@@ -42,7 +68,15 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
     setBusy(false);
     if (!res.ok) return showErrorToast('등록 실패');
     showSuccessToast('출고 운송장을 저장했습니다');
-    history.back();
+
+    /**
+     * 저장 성공 후 뒤로가기 UX
+     * - guard가 켜져 있으면(popstate confirm) 저장 직후에도 경고가 뜰 수 있음
+     * - guardOn=false로 내려서 훅 cleanup이 더미 히스토리를 먼저 정리(back 1회)
+     * - 그 다음 tick에서 실제로 이전 페이지로 back (back 1회 추가)
+     */
+    setGuardOn(false);
+    setTimeout(() => history.back(), 0);
   };
 
   return (
