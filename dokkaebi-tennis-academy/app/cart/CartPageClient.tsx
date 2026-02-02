@@ -189,6 +189,27 @@ export default function CartPageClient() {
     showSuccessToast?.('선택한 상품을 삭제했어요.');
   };
 
+  // "장착 대상 스트링"이 2종 이상 섞였을 때,
+  // 사용자가 남길 스트링 1종을 직접 선택해서 나머지를 빠르게 정리하는 유틸(선제 차단 UX 강화)
+  const keepOnlyThisMountableString = (keepId: string) => {
+    const mountableIds = cartItems.filter((it) => (it.kind ?? 'product') === 'product' && (mountingFeeByProductId[String(it.id)] ?? 0) > 0).map((it) => it.id);
+
+    if (mountableIds.length <= 1) return;
+
+    const idsToRemove = mountableIds.filter((id) => id !== keepId);
+    if (idsToRemove.length === 0) return;
+
+    if (!confirm(`장착 대상 스트링은 1종만 가능합니다.\n\n이 스트링만 남기고 나머지 ${idsToRemove.length}개 스트링을 삭제할까요?`)) return;
+
+    // 나머지 장착 스트링 삭제
+    idsToRemove.forEach((id) => removeItem(id));
+
+    // 선택 상태에서도 제거(선택삭제/전체선택 UX 꼬임 방지)
+    setSelectedIds((prev) => prev.filter((id) => !idsToRemove.includes(id)));
+
+    showSuccessToast?.('장착 대상 스트링을 1종으로 정리했어요.');
+  };
+
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
       {/* 헤더 */}
@@ -313,9 +334,23 @@ export default function CartPageClient() {
                                   <span className="mt-1 inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-orange-700 ring-1 ring-inset ring-orange-200 dark:bg-orange-900/30 dark:text-orange-200 dark:ring-orange-700/50">
                                     장착 대상 스트링(정리 필요)
                                   </span>
-                                  <p className="mt-1 text-[11px] leading-snug text-orange-700/90 dark:text-orange-200/90">
-                                    👉 장착 대상 스트링은 <b>1종만</b> 남겨주세요. (나머지는 삭제)
-                                  </p>
+                                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-snug text-orange-700/90 dark:text-orange-200/90">
+                                    <span>
+                                      👉 장착 대상 스트링은 <b>1종만</b> 남겨주세요. (나머지는 삭제)
+                                    </span>
+
+                                    <button
+                                      type="button"
+                                      className="font-semibold underline underline-offset-2 text-orange-700 hover:text-orange-800 dark:text-orange-200 dark:hover:text-orange-100"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        keepOnlyThisMountableString(item.id);
+                                      }}
+                                    >
+                                      이 스트링만 남기기
+                                    </button>
+                                  </div>
                                 </>
                               )}
                             </div>
