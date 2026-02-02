@@ -860,9 +860,9 @@ export default function StringServiceApplyPage() {
     const baseFee = priceView.base ?? 0;
     const isOrderMode = !!orderId && !!order;
 
-    // PDP 통합(번들) 주문인지 여부: "라켓 + (장착비가 있는 스트링 상품)"이 함께 결제된 주문
-    // - 번들 주문은 (라켓 수량 = 스트링 수량 = 신청 라인 수) 정합성이 핵심이므로,
-    //   여기서도 stringUseCounts를 신뢰하지 않고 "주문 수량"을 단일 소스로 사용한다.
+    // PDP 통합(번들) 주문도 포함해서, 실제 전송 라인은 stringUseCounts를 기준으로 만든다.
+    // - 번들 주문에서 수량 잠금 여부는 Step2에서 remainingSlots를 보고 결정한다.
+    //   (잠김 상태면 stringUseCounts가 주문 수량과 자동 동기화됨)
     const isBundleOrder = (() => {
       if (!isOrderMode || !order) return false;
       const items = (order as any)?.items;
@@ -955,7 +955,7 @@ export default function StringServiceApplyPage() {
       if (isOrderMode && order) {
         const found = order.items.find((it) => it.id === prodId);
         const orderQty = found?.quantity ?? 1;
-        const useQty = isBundleOrder ? orderQty : (formData.stringUseCounts[prodId] ?? orderQty);
+        const useQty = formData.stringUseCounts[prodId] ?? orderQty;
 
         for (let i = 0; i < useQty; i++) {
           const alias = (formData.racketType || '').trim() || racketNameFromOrder || `라켓 ${lines.length + 1}`;
@@ -1300,11 +1300,25 @@ export default function StringServiceApplyPage() {
 
   // 특정 스트링(productId)에 대해 "이번 신청에서 사용할 개수"를 수정하는 헬퍼
   const handleUseQtyChange = (id: string, value: number) => {
-    // 번들(라켓+스트링) 주문이면 수량 조절 UI를 잠그므로, 여기로 들어와도 무시한다.
-    // (실제 라인 생성은 주문 수량을 단일 소스로 사용)
+    // 번들(라켓+스트링) 주문이라도 remainingSlots < 주문수량(=부분 사용/재신청)이면 수량 조절이 필요하므로 잠금하지 않는다.
+    // - remainingSlots 정보가 없으면(구버전/예외) 기존처럼 잠금
     if (orderId && order && isCombinedPdpMode) {
-      return;
+      if (typeof orderRemainingSlots !== 'number') return;
+
+      const ids = (formData.stringTypes ?? []).filter((t) => t && t !== 'custom');
+      const sumOrderQty = ids.reduce((sum, sid) => {
+        const found = order.items.find((it) => it.id === sid);
+        const q = Number((found as any)?.quantity ?? 0);
+        return sum + (Number.isFinite(q) ? q : 0);
+      }, 0);
+
+      // 주문 수량을 못 구하면 안전하게 잠금
+      if (!Number.isFinite(sumOrderQty) || sumOrderQty <= 0) return;
+
+      // remainingSlots가 주문 수량과 동일할 때만 잠금
+      if (orderRemainingSlots === sumOrderQty) return;
     }
+
     const raw = Number.isFinite(value) ? value : 0;
     const min = 0;
     let max: number;

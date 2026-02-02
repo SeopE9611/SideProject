@@ -202,7 +202,30 @@ export default function Step2MountingInfo(props: Props) {
 
   const currentQty = lockedId ? (formData.stringUseCounts?.[lockedId] ?? 1) : 1;
 
-  const lockOrderUseQty = Boolean(orderId && isCombinedPdpMode);
+  // 번들(라켓+스트링) 주문 수량 잠금 여부
+  // - remainingSlots 정보가 없으면(구버전/예외) 기존처럼 잠금
+  // - remainingSlots가 주문 수량과 동일할 때만 잠금 (부분 사용/재신청 등 remainingSlots < 주문수량이면 잠금 해제)
+  const lockOrderUseQty = React.useMemo(() => {
+    if (!orderId || !isCombinedPdpMode) return false;
+
+    // 슬롯 정보가 없으면(구버전/예외) 기존 정책 유지: 잠금
+    if (typeof orderRemainingSlots !== 'number') return true;
+
+    const ids = (formData.stringTypes ?? []).filter((id: any) => id && id !== 'custom');
+    if (ids.length === 0) return true;
+
+    const items = Array.isArray(order?.items) ? order.items : [];
+    const sumOrderQty = ids.reduce((sum: number, id: any) => {
+      const item = (items as any[]).find((it: any) => it.id === id);
+      const q = Number(item?.quantity ?? 0);
+      return sum + (Number.isFinite(q) ? q : 0);
+    }, 0);
+
+    // 주문 수량을 못 구하면 안전하게 잠금
+    if (!Number.isFinite(sumOrderQty) || sumOrderQty <= 0) return true;
+
+    return orderRemainingSlots === sumOrderQty;
+  }, [orderId, isCombinedPdpMode, orderRemainingSlots, order, formData.stringTypes]);
 
   // PDP 통합(번들) 주문에서는 수량 정합성(라켓=스트링=라인)을 깨면 안되므로
   // 주문 수량을 기준으로 stringUseCounts를 강제로 동기화한다.
@@ -470,7 +493,7 @@ export default function Step2MountingInfo(props: Props) {
                             <Input
                               id={`useQty-${id}`}
                               type="number"
-                               className={`h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500 ${
+                              className={`h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500 ${
                                 lockOrderUseQty ? 'cursor-not-allowed bg-slate-100 text-slate-500 dark:bg-slate-800/40 dark:text-slate-300' : ''
                               }`}
                               min={0}
@@ -480,7 +503,7 @@ export default function Step2MountingInfo(props: Props) {
                               readOnly={lockOrderUseQty}
                               title={lockOrderUseQty ? '번들(라켓+스트링) 주문은 주문 수량과 자동 동기화됩니다.' : undefined}
                               onChange={lockOrderUseQty ? undefined : (e) => handleUseQtyChange(id, Number(e.target.value) || 0)}
-                             />
+                            />
                           </div>
                         </div>
                       );
