@@ -32,7 +32,7 @@ declare global {
   }
 }
 
-type CheckoutField = 'name' | 'phone' | 'email' | 'postalCode' | 'address' | 'addressDetail' | 'depositor' | 'bundle' | 'items';
+type CheckoutField = 'name' | 'phone' | 'email' | 'postalCode' | 'address' | 'addressDetail' | 'depositor' | 'bundle' | 'items' | 'composition';
 type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
 
 // 유효성(클라 UI용) - 서버는 별도로 강제
@@ -215,6 +215,22 @@ export default function CheckoutPage() {
       racketQty,
       serviceQty,
     };
+  }, [orderItemsKey, withStringService, serviceTargetIds]);
+
+  // Checkout 최종 방어선: “라켓 1종 + 장착 스트링 1종”만 허용
+  const bundleCompositionGuard = useMemo(() => {
+    // 교체/장착 서비스를 선택하지 않았다면 구성 검증은 스킵
+    if (!withStringService) return { invalid: false, racketKinds: 0, mountableStringKinds: 0 };
+
+    // 라켓은 "종(라인)" 기준으로 1개만 허용 (서로 다른 라켓 2종이면 매칭 불가)
+    const racketKinds = new Set(orderItems.filter((it) => it.kind === 'racket').map((it) => String(it.id))).size;
+
+    // 장착 대상 스트링도 "종(라인)" 기준으로 1개만 허용
+    // (serviceTargetIds는 mountingFee>0 인 “장착 가능 스트링” id 목록)
+    const mountableStringKinds = serviceTargetIds.length;
+
+    const invalid = racketKinds !== 1 || mountableStringKinds !== 1;
+    return { invalid, racketKinds, mountableStringKinds };
   }, [orderItemsKey, withStringService, serviceTargetIds]);
 
   // 최종 결제 금액 = 상품 + 배송 + 서비스
@@ -457,8 +473,12 @@ export default function CheckoutPage() {
       errors.bundle = `라켓(${bundleQtyGuard.racketQty}개)과 스트링(${bundleQtyGuard.serviceQty}개) 수량이 일치하지 않습니다. 수량은 스트링 선택 화면에서 수정해주세요.`;
     }
 
+    if (bundleCompositionGuard.invalid) {
+      errors.composition = `교체/장착 서비스는 “라켓 1종 + 장착 스트링 1종”만 지원합니다. (현재: 라켓 ${bundleCompositionGuard.racketKinds}종, 장착 스트링 ${bundleCompositionGuard.mountableStringKinds}종)\n장바구니에서 구성 정리 후 다시 시도해 주세요.`;
+    }
+
     return errors;
-  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, isLoggedIn, needsShippingAddress]);
+  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, bundleCompositionGuard, isLoggedIn, needsShippingAddress]);
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors;
@@ -1144,11 +1164,19 @@ export default function CheckoutPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
-                  {(fieldErrors.items || fieldErrors.bundle) && (
+                  {(fieldErrors.items || fieldErrors.bundle || fieldErrors.composition) && (
                     <div className="w-full rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
                       <p className="font-semibold mb-1">확인 필요</p>
                       {fieldErrors.items && <p>• {fieldErrors.items}</p>}
                       {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
+                      {fieldErrors.composition && (
+                        <p>
+                          • {fieldErrors.composition}{' '}
+                          <Link href="/cart" className="underline underline-offset-2">
+                            (장바구니에서 정리)
+                          </Link>
+                        </p>
+                      )}
                     </div>
                   )}
                   <CheckoutButton
