@@ -558,7 +558,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                     label="전화"
                     value={
                       user.phone ? (
-                        <a className="underline decoration-dotted" href={`tel:${user.phone}`}>
+                        <a className="underline decoration-dotted" data-no-unsaved-guard href={`tel:${user.phone}`}>
                           {user.phone}
                         </a>
                       ) : (
@@ -974,7 +974,7 @@ function StatCard({
   );
 
   return href ? (
-    <Link href={href} className="hover:-translate-y-0.5 transition-transform">
+    <Link href={href} target="_blank" rel="noreferrer" className="hover:-translate-y-0.5 transition-transform">
       {content}
     </Link>
   ) : (
@@ -1008,7 +1008,7 @@ function Row({ title, subtitle, right, href }: { title: React.ReactNode; subtitl
     </div>
   );
   return href ? (
-    <Link href={href} className="block hover:bg-slate-50 dark:hover:bg-slate-900/50 rounded-lg px-2 -mx-2 py-2 transition-colors">
+    <Link href={href} target="_blank" rel="noreferrer" className="block hover:bg-slate-50 dark:hover:bg-slate-900/50 rounded-lg px-2 -mx-2 py-2 transition-colors">
       {core}
     </Link>
   ) : (

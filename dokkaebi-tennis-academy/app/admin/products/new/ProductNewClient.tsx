@@ -260,7 +260,7 @@ export default function NewStringPage() {
 
   const router = useRouter(); // 페이지 이동을 위한 라우터
 
-   const snapshot = useMemo(
+  const snapshot = useMemo(
     () =>
       JSON.stringify({
         basicInfo,
@@ -499,7 +499,7 @@ export default function NewStringPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-                    <Link href="/admin/products" onClick={confirmLeave}>
+                    <Link href="/admin/products" data-no-unsaved-guard onClick={confirmLeave}>
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       취소
                     </Link>
@@ -1176,7 +1176,7 @@ export default function NewStringPage() {
 
             <div className="flex items-center justify-end space-x-2">
               <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-                <Link href="/admin/products" onClick={confirmLeave}>
+                <Link href="/admin/products" data-no-unsaved-guard onClick={confirmLeave}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   취소
                 </Link>

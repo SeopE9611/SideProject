@@ -589,7 +589,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
 
       <div className="flex items-center justify-end space-x-2">
         <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-          <Link href="/admin/rackets" onClick={confirmLeave}>
+          <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             취소
           </Link>

@@ -71,6 +71,8 @@ function __installGuard() {
     try {
       const nextUrl = new URL((a as HTMLAnchorElement).href, window.location.href);
       const curUrl = new URL(window.location.href);
+      if (nextUrl.protocol !== 'http:' && nextUrl.protocol !== 'https:') return;
+      if (nextUrl.origin !== curUrl.origin) return;
       if (nextUrl.origin === curUrl.origin && nextUrl.pathname === curUrl.pathname && nextUrl.search === curUrl.search) return;
     } catch {
       // URL 파싱 실패는 무시

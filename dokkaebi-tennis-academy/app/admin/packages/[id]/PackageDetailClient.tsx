@@ -138,25 +138,25 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
           ? it.paymentStatus === '결제완료'
             ? 'bg-blue-500'
             : it.paymentStatus === '결제취소' || it.paymentStatus === '취소'
-            ? 'bg-red-500'
-            : 'bg-amber-500'
+              ? 'bg-red-500'
+              : 'bg-amber-500'
           : isExtend
-          ? 'bg-emerald-500'
-          : it.extendedSessions! < 0
-          ? 'bg-red-500'
-          : 'bg-blue-500';
+            ? 'bg-emerald-500'
+            : it.extendedSessions! < 0
+              ? 'bg-red-500'
+              : 'bg-blue-500';
 
         const headTextCls = isPayment
           ? it.paymentStatus === '결제완료'
             ? 'text-blue-700 dark:text-blue-300'
             : it.paymentStatus === '결제취소' || it.paymentStatus === '취소'
-            ? 'text-red-700 dark:text-red-300'
-            : 'text-amber-700 dark:text-amber-300'
+              ? 'text-red-700 dark:text-red-300'
+              : 'text-amber-700 dark:text-amber-300'
           : isExtend
-          ? 'text-emerald-700 dark:text-emerald-300'
-          : it.extendedSessions! < 0
-          ? 'text-red-700 dark:text-red-300'
-          : 'text-blue-700 dark:text-blue-300';
+            ? 'text-emerald-700 dark:text-emerald-300'
+            : it.extendedSessions! < 0
+              ? 'text-red-700 dark:text-red-300'
+              : 'text-blue-700 dark:text-blue-300';
 
         return (
           <li key={it.id} className="pl-8 py-4 border-l border-border relative">
@@ -226,7 +226,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   useEffect(() => setOpsLimit(5), [data?.id]);
 
   /**
-  * 입력 이탈 경고(Unsaved Changes Guard)
+   * 입력 이탈 경고(Unsaved Changes Guard)
    * - 이 페이지에서 실제 “입력 폼”은 모달 2개(연장/횟수조절)
    */
   const isExtensionDirty = showExtensionForm && (extensionData.days > 0 || extensionData.reason.trim().length > 0);
@@ -531,7 +531,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                             {u.adminNote && <p className="text-sm text-sky-700 dark:text-sky-300 mt-1">관리자 메모: {u.adminNote}</p>}
                           </div>
                           <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/admin/applications/stringing/${u.applicationId}`}>상세 보기</Link>
+                            <Link href={`/admin/applications/stringing/${u.applicationId}`} target="_blank" rel="noreferrer">
+                              상세 보기
+                            </Link>
                           </Button>
                         </div>
                       </div>

@@ -647,7 +647,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" type="button" asChild>
-                    <Link href="/admin/products" onClick={confirmLeave}>
+                    <Link href="/admin/products" data-no-unsaved-guard onClick={confirmLeave}>
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       취소
                     </Link>
@@ -1337,7 +1337,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
             <div className="flex items-center justify-end space-x-2">
               <Button variant="outline" type="button" asChild>
-                <Link href="/admin/products" onClick={confirmLeave}>
+                <Link href="/admin/products" data-no-unsaved-guard onClick={confirmLeave}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   취소
                 </Link>
