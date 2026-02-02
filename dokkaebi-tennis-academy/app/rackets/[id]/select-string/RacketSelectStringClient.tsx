@@ -51,9 +51,13 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
    */
   const [workCount, setWorkCount] = useState<number>(1);
 
-  const clampWorkCount = (v: number) => {
+  const clampWorkCount = (v: number, stringStock?: number) => {
     if (!Number.isFinite(v)) return 1;
-    const max = Number.isFinite(racket.maxQty) && (racket.maxQty as number) > 0 ? (racket.maxQty as number) : 1;
+
+    const racketMax = Number.isFinite(racket.maxQty) && (racket.maxQty as number) > 0 ? (racket.maxQty as number) : 1;
+    const stockMax = Number.isFinite(stringStock) && (stringStock as number) > 0 ? (stringStock as number) : Infinity;
+    const max = Math.min(racketMax, stockMax);
+
     return Math.max(1, Math.min(max, Math.trunc(v)));
   };
 
@@ -131,7 +135,16 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
    * - from!=cart면: pdpBundleStore로 buy-now checkout 이동
    */
   const handleSelectString = (p: any) => {
-    const qty = clampWorkCount(workCount);
+    const manageStock = Boolean(p?.manageStock);
+    const stock = typeof p?.stock === 'number' ? p.stock : undefined;
+
+    // 관리 재고가 0이면(품절) 번들 진행 자체를 막음
+    if (manageStock && typeof stock === 'number' && stock <= 0) {
+      showErrorToast?.('선택한 스트링의 재고가 부족합니다.');
+      return;
+    }
+
+    const qty = clampWorkCount(workCount, manageStock ? stock : undefined);
 
     // 1) cart 편집 모드: cartStore를 직접 수정하고 returnTo로 복귀
     if (isFromCart) {
@@ -157,15 +170,23 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   };
 
   /**
-   * ✅ 신규: buy-now 모드에서 “장바구니 담기”
+   *  buy-now 모드에서 “장바구니 담기”
    * - 라켓 + 선택 스트링을 동일 수량으로 cartStore에 반영하고 /cart로 이동
    * - (중요) from=cart가 아니므로 “기존 스트링 교체(initialStringId)”는 개입하지 않음
    *   → 이미 카트에 여러 스트링이 있는 복잡 케이스는 다음 옵션1(우회 방지)에서 더 강하게 잠글 예정
    */
   const handleAddToCart = (p: any) => {
-    const qty = clampWorkCount(workCount);
-    try {
-      upsertCartBundle(p, qty);
+    const manageStock = Boolean(p?.manageStock);
+    const stock = typeof p?.stock === 'number' ? p.stock : undefined;
+
+    if (manageStock && typeof stock === 'number' && stock <= 0) {
+      showErrorToast?.('선택한 스트링의 재고가 부족합니다.');
+      return;
+    }
+
+    const qty = clampWorkCount(workCount, manageStock ? stock : undefined);
+     try {
+       upsertCartBundle(p, qty);
       showSuccessToast?.('장바구니에 번들(라켓+스트링)을 담았어요.');
       router.push('/cart');
     } catch {
