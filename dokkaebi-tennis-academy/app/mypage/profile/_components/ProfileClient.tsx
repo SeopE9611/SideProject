@@ -117,7 +117,7 @@ export default function ProfileClient({ user }: Props) {
         const { address, postalCode, addressDetail, ...rest } = user;
 
         // 최신 state 기반으로 안전하게 병합(closure stale 방지)
-        +setProfileData((prev) => {
+        setProfileData((prev) => {
           const next = {
             ...prev,
             ...rest,
