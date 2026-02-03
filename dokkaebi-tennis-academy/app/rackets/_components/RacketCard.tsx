@@ -124,7 +124,8 @@ const RacketCard = React.memo(
                   <h3 className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold mb-2 bp-sm:mb-3 dark:text-white">{racket.model}</h3>
                   <div className="flex flex-wrap items-center gap-2 mb-2 bp-sm:mb-3">
                     <StatusBadge kind="condition" state={racket.condition} />
-                    {racket.rental?.enabled ? <RacketAvailBadge id={racket.id} /> : <StatusBadge kind="rental" state="unavailable" />}
+                    <RacketAvailBadge id={racket.id} />
+                    {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
                   </div>
                 </div>
                 <div className="text-left bp-lg:text-right">
@@ -221,15 +222,12 @@ const RacketCard = React.memo(
           <div className="text-xs bp-sm:text-base text-muted-foreground mb-2 font-medium">{brandLabel}</div>
           <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
 
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
             <StatusBadge kind="condition" state={racket.condition} />
-            {racket.rental?.enabled ? (
-              <div className="ml-1">
-                <RacketAvailBadge id={racket.id} />
-              </div>
-            ) : (
-              <StatusBadge kind="rental" state="unavailable" />
-            )}
+            <div className="ml-1">
+              <RacketAvailBadge id={racket.id} />
+            </div>
+            {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
           </div>
         </CardContent>
 

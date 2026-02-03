@@ -117,6 +117,8 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     if (hasNewString) {
       updateQuantity(newStringId, qty);
     } else {
+      const stringManageStock = Boolean(selectedString?.inventory?.manageStock);
+      const stringStock = stringManageStock && typeof selectedString?.inventory?.stock === 'number' ? selectedString.inventory.stock : undefined;
       addItem({
         id: newStringId,
         name: selectedString?.name ?? '스트링',
@@ -124,7 +126,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
         quantity: qty,
         image: newStringImage,
         kind: 'product',
-        stock: typeof selectedString?.stock === 'number' ? selectedString.stock : undefined,
+        stock: stringStock,
       });
     }
   };
@@ -135,12 +137,18 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
    * - from!=cart면: pdpBundleStore로 buy-now checkout 이동
    */
   const handleSelectString = (p: any) => {
-    const manageStock = Boolean(p?.manageStock);
-    const stock = typeof p?.stock === 'number' ? p.stock : undefined;
+    const manageStock = Boolean(p?.inventory?.manageStock);
+    const stock = typeof p?.inventory?.stock === 'number' ? p.inventory.stock : undefined;
 
     // 관리 재고가 0이면(품절) 번들 진행 자체를 막음
     if (manageStock && typeof stock === 'number' && stock <= 0) {
       showErrorToast?.('선택한 스트링의 재고가 부족합니다.');
+      return;
+    }
+
+    // 번들 수량(workCount)보다 재고가 적으면, checkout으로 보내지 않고 여기서 차단
+    if (manageStock && typeof stock === 'number' && stock < workCount) {
+      showErrorToast?.(`선택한 스트링 재고가 부족합니다. (요청 ${workCount}개 / 현재 ${stock}개)`);
       return;
     }
 
@@ -162,8 +170,9 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     const stringImage = p?.images?.[0] ?? p?.imageUrl;
 
     setItems([
-      { id: racket.id, name: racket.name, price: racket.price, quantity: qty, image: racket.image, kind: 'racket' },
-      { id: String(p._id), name: p.name, price: p.price, quantity: qty, image: stringImage, kind: 'product' },
+      // stock을 같이 들고가면, 이후 화면에서도 “클램프/사전 경고”에 활용 가능
+      { id: racket.id, name: racket.name, price: racket.price, quantity: qty, image: racket.image, kind: 'racket', stock: racket.maxQty },
+      { id: String(p._id), name: p.name, price: p.price, quantity: qty, image: stringImage, kind: 'product', stock: manageStock ? stock : undefined },
     ]);
 
     router.push(`/checkout?mode=buynow&withService=1`);
@@ -176,17 +185,22 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
    *   → 이미 카트에 여러 스트링이 있는 복잡 케이스는 다음 옵션1(우회 방지)에서 더 강하게 잠글 예정
    */
   const handleAddToCart = (p: any) => {
-    const manageStock = Boolean(p?.manageStock);
-    const stock = typeof p?.stock === 'number' ? p.stock : undefined;
+    const manageStock = Boolean(p?.inventory?.manageStock);
+    const stock = typeof p?.inventory?.stock === 'number' ? p.inventory.stock : undefined;
 
     if (manageStock && typeof stock === 'number' && stock <= 0) {
       showErrorToast?.('선택한 스트링의 재고가 부족합니다.');
       return;
     }
 
+    if (manageStock && typeof stock === 'number' && stock < workCount) {
+      showErrorToast?.(`선택한 스트링 재고가 부족합니다. (요청 ${workCount}개 / 현재 ${stock}개)`);
+      return;
+    }
+
     const qty = clampWorkCount(workCount, manageStock ? stock : undefined);
-     try {
-       upsertCartBundle(p, qty);
+    try {
+      upsertCartBundle(p, qty);
       showSuccessToast?.('장바구니에 번들(라켓+스트링)을 담았어요.');
       router.push('/cart');
     } catch {
@@ -276,10 +290,15 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
         {/* 스트링 목록 */}
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-slate-900 text-center">사용 가능한 스트링</h2>
-          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
+          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6 items-start">
             {products.map((p: any) => {
               const stringId = String(p._id);
               const stringImage = p?.images?.[0] ?? p?.imageUrl;
+              const manageStock = Boolean(p?.inventory?.manageStock);
+              const stock = typeof p?.inventory?.stock === 'number' ? p.inventory.stock : undefined;
+              const lowStock = typeof p?.inventory?.lowStock === 'number' ? p.inventory.lowStock : 5;
+              const isSoldOut = manageStock && typeof stock === 'number' && stock <= 0;
+              const isShort = manageStock && typeof stock === 'number' && stock < workCount;
 
               const isCurrent = Boolean(selectedStringIdForHighlight) && selectedStringIdForHighlight === stringId && isFromCart;
 
@@ -315,6 +334,14 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                         {isCurrent && <span className="shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">현재 선택</span>}
                       </div>
                       <p className="text-lg font-bold text-slate-900">{Number(p.price ?? 0).toLocaleString()}원</p>
+                      {/* 재고 힌트 */}
+                      {manageStock && typeof stock === 'number' && stock > 0 && stock <= lowStock && <p className="text-xs text-orange-600">현재 남은 수량 {stock}개</p>}
+                      {isShort && (
+                        <p className="text-xs text-red-600">
+                          재고 {stock}개로 번들 수량({workCount}개)을 충족할 수 없어요
+                        </p>
+                      )}
+                      {isSoldOut && <p className="text-xs text-red-600">품절</p>}
                     </div>
 
                     {/* 버튼 영역 */}
@@ -329,7 +356,11 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                       </Button>
                     ) : (
                       <div className="mt-4 grid grid-cols-1 gap-2">
-                        <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl py-5 group-hover:bg-blue-600 group-hover:shadow-lg transition-all duration-300" onClick={() => handleSelectString(p)}>
+                        <Button
+                          className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl py-5 group-hover:bg-blue-600 group-hover:shadow-lg transition-all duration-300"
+                          disabled={isSoldOut || isShort}
+                          onClick={() => handleSelectString(p)}
+                        >
                           <span className="flex items-center justify-center gap-2">
                             바로 결제
                             <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -338,7 +369,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                           </span>
                         </Button>
 
-                        <Button variant="outline" className="w-full rounded-xl py-5 font-medium" onClick={() => handleAddToCart(p)}>
+                        <Button variant="outline" className="w-full rounded-xl py-5 font-medium" disabled={isSoldOut || isShort} onClick={() => handleAddToCart(p)}>
                           장바구니 담기
                         </Button>
                       </div>
