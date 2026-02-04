@@ -15,6 +15,19 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
+/**
+ * Mongo ObjectId 안전 변환
+ * - ObjectId면 그대로 반환
+ * - string/기타는 유효할 때만 ObjectId로 변환
+ */
+function toObjectIdMaybe(v: any): ObjectId | null {
+  if (!v) return null;
+  if (v instanceof ObjectId) return v;
+  const s = String(v);
+  if (!ObjectId.isValid(s)) return null;
+  return new ObjectId(s);
+}
+
 export async function GET(req: Request) {
   // 인증
   const token = (await cookies()).get('accessToken')?.value;
@@ -53,6 +66,34 @@ export async function GET(req: Request) {
     .limit(limit)
     .toArray();
 
+  /**
+   * order 기반 신청서의 "라켓 포함 여부"를 미리 조회해서 Map으로 만듬
+   * - order.items[].kind === 'racket' 이면: 매장 보유 라켓 기반 작업 → 고객 입고/운송장 불필요
+   * - 성능을 위해 N+1 대신 $in으로 한 번에 조회
+   */
+  const orderIdSet = new Set<string>();
+  const orderObjectIds: ObjectId[] = [];
+  for (const doc of rawList as any[]) {
+    const oid = toObjectIdMaybe((doc as any).orderId);
+    if (!oid) continue;
+    const key = oid.toString();
+    if (orderIdSet.has(key)) continue;
+    orderIdSet.add(key);
+    orderObjectIds.push(oid);
+  }
+
+  const orderHasRacketById = new Map<string, boolean>();
+  if (orderObjectIds.length > 0) {
+    const orders = await db
+      .collection('orders')
+      .find({ _id: { $in: orderObjectIds } }, { projection: { items: 1 } })
+      .toArray();
+    for (const o of orders as any[]) {
+      const hasRacket = Array.isArray(o.items) && o.items.some((it: any) => it?.kind === 'racket');
+      orderHasRacketById.set(String(o._id), hasRacket);
+    }
+  }
+
   // sanitize + stringType 매핑
   const items = await Promise.all(
     rawList.map(async (doc) => {
@@ -78,6 +119,22 @@ export async function GET(req: Request) {
       const hasTracking = Boolean(trackingNo);
       // 비-방문이면 값 null로 내림
       const cm = normalizeCollection((doc as any)?.shippingInfo?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+
+      /**
+       * 고증 보정 핵심: "고객이 매장으로 보내야 하는 신청인가?"
+       * - rental 기반: 매장 라켓 → 고객 입고 불필요
+       * - order 기반 + 주문에 racket 포함: 매장 라켓(구매/대여) 기반 → 고객 입고/운송장 불필요
+       * - 그 외(단독 신청 / 스트링만 구매 + 서비스 등): 고객 라켓 기반 → 입고 필요
+       */
+      const orderIdStr = (doc as any).orderId ? String((doc as any).orderId) : null;
+      const fromOrder = Boolean((doc as any).orderId || (doc as any)?.meta?.fromOrder);
+      const orderHasRacket = fromOrder && orderIdStr ? Boolean(orderHasRacketById.get(orderIdStr)) : false;
+      const inboundRequired = (() => {
+        if ((doc as any).rentalId) return false;
+        if (fromOrder && orderHasRacket) return false;
+        return true;
+      })();
+      const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
 
       // 취소 요청 정보 정리
       const cancel: any = (doc as any).cancelRequest ?? {};
@@ -140,11 +197,18 @@ export async function GET(req: Request) {
           selfShip: { trackingNo },
         },
         hasTracking,
+
+        // 프론트가 "운송장 등록 버튼"을 띄울지 말지 판단할 핵심 플래그
+        inboundRequired,
+        needsInboundTracking,
+
         // 이 신청이 연결된 주문 ID (없으면 null)
         orderId: (doc as any).orderId ? String((doc as any).orderId) : null,
         rentalId: (doc as any).rentalId ? String((doc as any).rentalId) : null,
+
         // 사용자 확정 시각 (없으면 null)
         userConfirmedAt: (doc as any).userConfirmedAt instanceof Date ? (doc as any).userConfirmedAt.toISOString() : typeof (doc as any).userConfirmedAt === 'string' ? (doc as any).userConfirmedAt : null,
+
         // 마이페이지 목록 카드용 취소 요청 정보
         cancelStatus: rawCancelStatus, //'요청' | '승인' | '거절' | 'none'
         cancelReasonSummary, // 한 줄 요약

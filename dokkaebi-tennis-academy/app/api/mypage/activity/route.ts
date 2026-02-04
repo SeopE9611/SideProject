@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,6 +59,8 @@ type ActivityApplicationSummary = {
   userConfirmedAt: string | null;
   cancelStatus?: string | null;
   cancelReasonSummary?: string | null;
+  inboundRequired: boolean; // 고객→매장 입고가 필요한가?
+  needsInboundTracking: boolean; // 입고가 필요하고 + 자가발송(self_ship)이라 운송장 입력이 필요한가?
 };
 
 export type ActivityGroup = {
@@ -241,6 +244,18 @@ export async function GET(req: Request) {
       .toArray(),
   ]);
 
+  /**
+   * order 기반 신청서의 "라켓 포함 여부"를 미리 계산
+   * - order.items[].kind === 'racket' 이면: 매장 라켓(구매) 기반 → 고객 입고/운송장 불필요
+   * - (Activity API는 take만큼만 로드하므로, 여기서는 로드된 orders 범위에서만 판단하면 충분)
+   */
+  const orderHasRacketById = new Map<string, boolean>();
+  for (const o of orders as any[]) {
+    const items = Array.isArray(o.items) ? o.items : [];
+    const hasRacket = items.some((it: any) => it?.kind === 'racket');
+    orderHasRacketById.set(String(o._id), hasRacket);
+  }
+
   // 5) 연결 신청서 로드(주문/대여 후보에 붙일 용도)
   const orderIdsAny = orders.flatMap((o: any) => [o._id, String(o._id)]);
   const rentalIdsAny = rentals.flatMap((r: any) => [r._id, String(r._id)]);
@@ -280,6 +295,17 @@ export async function GET(req: Request) {
     const shipping = doc.shippingInfo ?? {};
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
 
+    // 수거 방식(visit/self_ship) 정규화
+    const collectionMethod = normalizeCollection((shipping as any)?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+
+    // 입고 필요 여부 판단
+    // - rentalId 연결: 매장 라켓 기반 → 고객 입고 불필요
+    // - orderId 연결 + 해당 주문에 racket 포함: 매장 라켓(구매) 기반 → 고객 입고 불필요
+    // - 그 외(주문에 라켓 없음 / 스트링만 구매+서비스 등): 고객 라켓 기반 → 입고 필요
+    const orderIdStr = doc.orderId ? String(doc.orderId) : null;
+    const inboundRequired = doc.rentalId ? false : orderIdStr && orderHasRacketById.get(orderIdStr) ? false : true;
+    const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+
     const rawCancelStatus = doc?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
     const reasonCode = doc?.cancelRequest?.reasonCode;
@@ -302,6 +328,8 @@ export async function GET(req: Request) {
       userConfirmedAt: doc.userConfirmedAt instanceof Date ? doc.userConfirmedAt.toISOString() : typeof doc.userConfirmedAt === 'string' ? doc.userConfirmedAt : null,
       cancelStatus: rawCancelStatus,
       cancelReasonSummary,
+      inboundRequired,
+      needsInboundTracking,
     };
 
     if (doc.orderId) appByOrderId.set(String(doc.orderId), app);
@@ -392,6 +420,11 @@ export async function GET(req: Request) {
     const trackingNo = String((shipping as any)?.trackingNo ?? shipping?.trackingNumber ?? '').trim();
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
 
+    // 단독 신청서는 기본적으로 "고객 라켓 입고"가 필요
+    const collectionMethod = normalizeCollection((shipping as any)?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+    const inboundRequired = true;
+    const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+
     const rawCancelStatus = doc?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
     const reasonCode = doc?.cancelRequest?.reasonCode;
@@ -418,6 +451,8 @@ export async function GET(req: Request) {
         userConfirmedAt: doc.userConfirmedAt instanceof Date ? doc.userConfirmedAt.toISOString() : typeof doc.userConfirmedAt === 'string' ? doc.userConfirmedAt : null,
         cancelStatus: rawCancelStatus,
         cancelReasonSummary,
+        inboundRequired,
+        needsInboundTracking,
       },
     });
   }

@@ -53,6 +53,11 @@ type ActivityApplicationSummary = {
   rentalId: string | null;
   hasTracking: boolean;
   userConfirmedAt: string | null;
+  // 서버(/api/mypage/activity)에서 내려주는 “입고/운송장 필요 여부”
+  // - 라켓 구매+장착(매장 라켓 기반): needsInboundTracking=false
+  // - 고객 라켓 자가발송: needsInboundTracking=true
+  inboundRequired?: boolean;
+  needsInboundTracking?: boolean;
 };
 
 type ActivityGroup = {
@@ -187,7 +192,13 @@ function isDone(g: ActivityGroup) {
 function needsAction(g: ActivityGroup) {
   const app = g.application;
   if (!app) return false;
-  return app.hasTracking === false;
+
+  // "자가발송 입고가 필요한 경우"에만 운송장 액션이 필요함
+  // - needsInboundTracking === false (라켓 구매+장착 등): 운송장 액션 불필요
+  // - needsInboundTracking === true: 운송장 미등록이면 액션 필요
+  // - (호환) 값이 없으면 기존 로직처럼 동작(=예전 응답 대비)
+  const needs = app.needsInboundTracking ?? true;
+  return needs && app.hasTracking === false;
 }
 
 // 카드 “정보 밀도”를 올리기 위한 메타 칩 데이터
@@ -233,11 +244,15 @@ function metaPills(g: ActivityGroup): MetaPill[] {
   // 주문/대여에 연결된 신청서가 있으면 상태/운송장을 메타칩으로 포함
   if (g.kind !== 'application' && g.application?.id) {
     const linked = g.application;
+    const needs = linked.needsInboundTracking ?? true;
 
-    pills.push({
-      text: linked.hasTracking ? '운송장 등록' : '운송장 대기',
-      className: linked.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 dark:text-green-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400',
-    });
+    // 입고(자가발송) 필요할 때만 운송장 칩을 보여줌
+    if (needs) {
+      pills.push({
+        text: linked.hasTracking ? '운송장 등록' : '운송장 대기',
+        className: linked.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 dark:text-green-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400',
+      });
+    }
   }
 
   // 4) 신청
@@ -245,10 +260,14 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     const app = g.application;
 
     if (app) {
-      pills.push({
-        text: app.hasTracking ? '운송장 등록' : '운송장 대기',
-        className: app.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 dark:text-green-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400',
-      });
+      const needs = app.needsInboundTracking ?? true;
+      // 단독 신청서도 “입고 필요”일 때만 운송장 칩 표시
+      if (needs) {
+        pills.push({
+          text: app.hasTracking ? '운송장 등록' : '운송장 대기',
+          className: app.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 dark:text-green-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400',
+        });
+      }
     }
   }
 
@@ -651,6 +670,7 @@ export default function ActivityFeed() {
                   const date = groupDate(g);
                   const meta = compactPills(metaPills(g), 3);
                   const { detailHref, shippingHref, shippingLabel } = linksOf(g);
+                  const canShowShipping = Boolean(app?.needsInboundTracking ?? true);
 
                   return (
                     <div key={`action:${g.key}`} className="rounded-xl bg-white dark:bg-slate-800/50 p-4 border border-amber-200/50 dark:border-amber-800/30 activity-card-hover">
@@ -686,12 +706,14 @@ export default function ActivityFeed() {
 
                       <div className="flex flex-wrap gap-2">
                         {/* 1) 운송장 등록/수정 */}
-                        <Button asChild size="sm" className="rounded-lg flex-1 min-w-[160px]">
-                          <Link href={shippingHref}>
-                            {shippingLabel}
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
+                        {canShowShipping ? (
+                          <Button asChild size="sm" className="rounded-lg flex-1 min-w-[160px]">
+                            <Link href={shippingHref}>
+                              {shippingLabel}
+                              <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                          </Button>
+                        ) : null}
 
                         {/* 2) 상세 */}
                         <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent flex-1 min-w-[120px]">
@@ -854,13 +876,15 @@ export default function ActivityFeed() {
 
                       const app = g.application;
                       const appId = app?.id;
+                      const canShowShipping = Boolean(appId && (app?.needsInboundTracking ?? true));
+                      const canShowShippingEdit = Boolean(canShowShipping && app?.hasTracking);
                       const menuKey = `row:${g.key}`;
                       const showMore = Boolean(
-                        (appId && !hasAction) || // 운송장 수정(이미 등록된 경우)은 보조로 내리기
-                          (appDetailHref && g.kind !== 'application') ||
-                          (g.kind === 'order' && g.order?.id && g.order.status === '배송완료') ||
-                          (appId && canShowStringingReviewCta(app)) ||
-                          (appId && canShowStringingConfirmCta(app))
+                        canShowShippingEdit || // 운송장 수정(이미 등록된 경우)만 보조로 내리기
+                        (appDetailHref && g.kind !== 'application') ||
+                        (g.kind === 'order' && g.order?.id && g.order.status === '배송완료') ||
+                        (appId && canShowStringingReviewCta(app)) ||
+                        (appId && canShowStringingConfirmCta(app)),
                       );
 
                       return (
@@ -931,7 +955,7 @@ export default function ActivityFeed() {
                                 {g.kind === 'order' && g.order && g.order.id && canShowOrderReviewCta(g.order.status) ? <ActivityOrderReviewCTA orderId={g.order.id} orderStatus={g.order.status} className="rounded-lg" /> : null}
 
                                 {/* 운송장: 액션 필요(미등록)일 때만 ‘강조’(primary)로 노출 */}
-                                {appId && hasAction ? (
+                                {canShowShipping && hasAction ? (
                                   <Button asChild size="sm" className="rounded-lg">
                                     <Link href={shippingHref}>{shippingLabel}</Link>
                                   </Button>
@@ -950,7 +974,7 @@ export default function ActivityFeed() {
                                       <DropdownMenuSeparator />
 
                                       {/* 운송장 수정: 이미 등록된 경우 보조 액션으로 내림 */}
-                                      {appId && !hasAction ? (
+                                      {canShowShippingEdit ? (
                                         <DropdownMenuItem asChild>
                                           <Link href={shippingHref}>{shippingLabel}</Link>
                                         </DropdownMenuItem>

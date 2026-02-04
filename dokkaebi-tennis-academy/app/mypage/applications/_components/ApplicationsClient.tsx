@@ -37,6 +37,10 @@ export interface Application {
   cancelStatus?: string; // '요청' | '승인' | '거절' | 'none'
   cancelReasonSummary?: string | null;
 
+  // /api/applications/me 에서 내려주는 파생값
+  inboundRequired?: boolean; // 고객→매장 입고 필요 여부
+  needsInboundTracking?: boolean; // 입고가 필요하고 + 자가발송(self_ship)이라 운송장 입력이 필요한지
+
   // 이 신청이 어떤 주문에서 생성되었는지 연결 정보
   orderId?: string | null;
   rentalId?: string | null;
@@ -292,16 +296,26 @@ export default function ApplicationsClient() {
       ) : (
         applications.map((app) => {
           const isStringService = app.type === '스트링 장착 서비스';
-          // 자가발송 여부(신청서/배송정보 양쪽 필드 중 하나라도 기준 충족 시 true)
+          // collectionMethod는 "방문/자가발송" 라벨 표시에만 사용 (버튼 노출 조건은 needsInboundTracking 사용)
           const cm = normalizeCollection((app as any).collectionMethod ?? (app as any).shippingInfo?.collectionMethod);
-          const isSelfShip = isStringService && cm === 'self_ship';
+
+          // Step1에서 내려준 파생값(고증 보정 핵심)
+          // - inboundRequired=false  : 주문(라켓 포함)/대여 기반 → 고객이 보낼 필요 없음
+          // - needsInboundTracking=true : 고객 자가발송 케이스 → 운송장 등록 UI 필요
+          const inboundRequired = isStringService ? Boolean((app as any).inboundRequired) : false;
+          const needsInboundTracking = isStringService ? Boolean((app as any).needsInboundTracking) : false;
+
+          // 자가발송(운송장 입력이 필요한 경우에만 true)
+          const isSelfShip = isStringService && needsInboundTracking;
           const isVisit = isStringService && cm === 'visit';
 
           // 방문 예약 희망 일시 라벨 (목록 카드용)
           const visitTimeLabel =
             isStringService && isVisit && app.preferredDate && app.preferredTime ? formatVisitTimeRange(app.preferredDate, app.preferredTime, app.visitDurationMinutes ?? null, app.visitSlotCount ?? null).replace(/-/g, '.') : null;
 
-          const collectionLabel = !isStringService ? null : cm === 'self_ship' ? '수령 방법: 자가 발송(택배)' : cm === 'visit' ? '수령 방법: 매장 방문' : '수령 방법: 기타';
+          // 라벨 고증에 맞게 보정
+          const collectionLabel = !isStringService ? null : !inboundRequired ? '수령 방법: 입고 불필요(주문/대여 기반)' : cm === 'self_ship' ? '수령 방법: 자가 발송(택배)' : cm === 'visit' ? '수령 방법: 매장 방문' : '수령 방법: 기타';
+
           // 운송장 등록 여부
           const hasTracking = app.hasTracking;
           // 연결된 주문/대여 ID
