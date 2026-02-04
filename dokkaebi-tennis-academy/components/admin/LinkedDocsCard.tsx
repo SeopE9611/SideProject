@@ -79,8 +79,8 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
   const list = sortDocs((docs ?? []).filter((d) => d?.id && d?.href));
 
   return (
-    <Card className={className}>
-      <CardHeader className="pb-3">
+    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden mb-8">
+      <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
         <CardTitle className="flex items-center gap-2">
           <Link2 className="h-4 w-4" />
           {title}
@@ -88,7 +88,7 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
         <CardDescription>{description ?? (list.length > 0 ? `연결 문서 ${list.length}개` : '연결된 문서가 없습니다.')}</CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="pt-4">
         {list.length === 0 ? (
           <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">현재 문서는 단독 건으로 보입니다. (주문/대여/신청서 연결 없음)</div>
         ) : (
@@ -99,14 +99,11 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
               const short = shortenId(String(d.id));
 
               return (
-                <div key={`${d.kind}:${d.id}`} className="flex items-start justify-between gap-3 rounded-lg border p-3">
+                <div key={`${d.kind}:${d.id}`} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <Badge className={`${badgeBase} ${badgeSizeSm} ${badgeClass}`}>{kindLabel}</Badge>
-                      <div className="truncate text-sm font-medium">{short}</div>
-                      <div className="text-xs text-muted-foreground">({String(d.id)})</div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">주문번호 : ({String(d.id)})</p>
                     </div>
-                    {d.subtitle ? <div className="mt-1 text-xs text-muted-foreground">{d.subtitle}</div> : null}
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
@@ -114,12 +111,12 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
                       <Copy className="h-4 w-4" />
                       복사
                     </Button>
-                    <Button asChild variant="default" size="sm" className="gap-1">
-                      <Link href={d.href} aria-label="상세 보기">
+                    <Link href={d.href} aria-label="상세 보기">
+                      <Button type="button" variant="outline" size="sm">
                         <ExternalLink className="h-4 w-4" />
-                        상세
-                      </Link>
-                    </Button>
+                        주문 상세 보기
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               );

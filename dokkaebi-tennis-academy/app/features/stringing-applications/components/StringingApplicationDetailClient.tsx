@@ -802,9 +802,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           )}
         </div>
 
-        {/* 연결 문서(공용 카드) */}
-        {linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-8" />}
-
         {/* 상태 카드 */}
         <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden mb-8">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
@@ -812,7 +809,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               <CardTitle>신청 상태</CardTitle>
               <ApplicationStatusBadge status={data.status} />
             </div>
-            <CardDescription>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -874,24 +870,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </div>
             </div>
           </CardContent>
-
-          {/* 연결된 주문 링크 */}
-          {data?.orderId && (
-            <Card className="border border-muted text-sm text-muted-foreground m-4">
-              <CardContent className="flex justify-between items-center py-3">
-                <div className="flex items-center gap-2">
-                  <LinkIcon className="w-4 h-4" />
-                  <span>이 신청은 상품 주문서와 연결되어 있습니다.</span>
-                </div>
-                <Link href={isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&orderId=${data.orderId}`}>
-                  <Button variant="ghost" size="sm">
-                    주문 상세 보기
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          )}
         </Card>
+        {/* 연결 문서(공용 카드) */}
+        {linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-8" />}
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}
