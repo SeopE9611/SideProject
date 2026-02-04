@@ -155,6 +155,18 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       return code === 'courier' ? 'delivery' : code;
     })();
 
+    // -------------------------------------------
+    //고객→매장 "입고/운송장" 필요 여부 판단
+    // - rentalId 연결: 매장 라켓 기반 → 고객 입고 불필요
+    // - orderId 연결 + 주문 items 중 kind==='racket' 포함: 매장 라켓(구매) 기반 → 고객 입고 불필요
+    // - 그 외(스트링만 구매+교체 / 단독 신청): 고객 라켓 기반 → 입고 필요
+    // - 운송장 필요: 입고가 필요 + self_ship(자가발송)인 경우
+    // -------------------------------------------
+    const collectionMethod = normalizeCollection(app.collectionMethod ?? app.shippingInfo?.collectionMethod ?? 'self_ship');
+    const orderHasRacket = Array.isArray(order?.items) && (order as any).items.some((it: any) => it?.kind === 'racket');
+    const inboundRequired = (app as any).rentalId ? false : app.orderId ? !orderHasRacket : true;
+    const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+
     // 체크박스 옵션으로 그대로 사용
     const purchasedStrings = orderStrings;
     const sd = app.stringDetails || {};
@@ -249,7 +261,9 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       status: app.status,
       paymentStatus: app.paymentStatus,
       shippingInfo: app.shippingInfo || null,
-      collectionMethod: normalizeCollection(app.collectionMethod ?? app.shippingInfo?.collectionMethod ?? 'self_ship'),
+      collectionMethod,
+      inboundRequired,
+      needsInboundTracking,
       memo: app.memo || '',
       photos: app.photos || [],
       stringDetails: {

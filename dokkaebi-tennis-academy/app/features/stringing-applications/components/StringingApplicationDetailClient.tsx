@@ -142,6 +142,10 @@ interface ApplicationDetail {
     count: number;
     reverted?: boolean;
   }>;
+
+  // 고객→매장 입고/운송장 필요 여부 (서버에서 내려줌)
+  inboundRequired?: boolean;
+  needsInboundTracking?: boolean;
 }
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -598,6 +602,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const isSelfShip = cm === 'self_ship';
   const isVisit = cm === 'visit';
 
+  // 서버에서 내려준 값 우선 사용 (라켓 구매/대여 연결이면 false로 내려옴)
+  const inboundRequired = data.inboundRequired ?? true;
+  const needsInboundTracking = data.needsInboundTracking ?? (inboundRequired && isSelfShip);
+
   // "매장→고객" 배송은 shippingMethod로 별도 유지
   const shippingMethod = data.shippingInfo?.shippingMethod;
 
@@ -652,7 +660,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </Link>
 
                 {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
-                {!isAdmin && isSelfShip && (
+                {!isAdmin && needsInboundTracking && (
                   <Link
                     href={`/services/applications/${data.id}/shipping?${new URLSearchParams({
                       return: `/mypage/applications/${data.id}`,
