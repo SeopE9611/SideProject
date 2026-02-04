@@ -15,12 +15,24 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: dokkaebi-tennis-academy
 
+    
+    env:
+      CYPRESS_INSTALL_BINARY: "0"
+
     steps:
       - uses: actions/checkout@v4
+
+      
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+          package_json_file: dokkaebi-tennis-academy/package.json
 
       - uses: actions/setup-node@v4
         with:
@@ -28,8 +40,9 @@ jobs:
           cache: pnpm
           cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
 
-      - run: corepack enable
+      - run: pnpm --version
       - run: pnpm install --frozen-lockfile
+
       - run: pnpm run lint
       - run: pnpm exec tsc -p tsconfig.json --noEmit
       - run: pnpm run build
