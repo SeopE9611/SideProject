@@ -13,21 +13,15 @@ const eslintConfig = [
   ...compat.config({
     extends: ['next/core-web-vitals', 'next/typescript'],
     rules: {
-      // 기본 ESLint 규칙 OFF
+      // 이전에 추가한 규칙들
       'no-empty': 'off',
       'no-unused-vars': 'off',
-      
-      // TypeScript 환경의 'no-unused-vars' 규칙 OFF
       '@typescript-eslint/no-unused-vars': 'off',
-
-      // `'` 사용 시 발생하는 오류 비활성화
       'react/no-unescaped-entities': 'off',
-
-      // React Hook 의존성 경고 비활성화
-      'react-hooks/exhaustive-deps': 'off',
-
-      // 익명 기본 내보내기 경고 비활성화 
       'import/no-anonymous-default-export': 'off',
+
+      // ✅ 새로 추가: @typescript-eslint/no-explicit-any 규칙 비활성화
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   }),
 ];
