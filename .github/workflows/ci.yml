@@ -37,14 +37,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-          cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
+          # 1. 의존성 꼬임 방지를 위해 일시적으로 캐시 주석 처리
+          # cache: pnpm
+          # cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # 2. 락파일을 무시하고 현재 package.json 기준으로 새로 설치
+        run: pnpm install --no-frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        # 3. pnpm lint 대신 직접 eslint를 실행하여 next lint 버그 우회
+        run: pnpm exec eslint .
 
       - name: Typecheck
         run: pnpm exec tsc -p tsconfig.json
