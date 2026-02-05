@@ -62,6 +62,7 @@
     "zustand": "^5.0.4"
   },
   "devDependencies": {
+    "@eslint/compat": "^2.0.2",
     "@testing-library/cypress": "^10.0.3",
     "@types/axios": "^0.9.36",
     "@types/bcrypt": "^5.0.2",
@@ -71,6 +72,8 @@
     "@types/nodemailer": "^7.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
     "autoprefixer": "10.4.19",
     "cypress": "^15.0.0",
     "eslint": "^9.19.0",
