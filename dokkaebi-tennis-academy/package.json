@@ -7,7 +7,7 @@
     "dev:turbo": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . --cache" ,
     "cy:open": "cypress open",
     "cy:run": "cypress run"
   },
