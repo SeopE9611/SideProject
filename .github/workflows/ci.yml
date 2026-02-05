@@ -37,16 +37,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          # 캐시를 다시 활성화하여 빌드 속도를 높입니다.
           cache: pnpm
           cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
 
       - name: Install dependencies
-        # 버전이 고정되었으므로 다시 frozen-lockfile을 사용합니다.
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        # package.json의 "lint": "eslint ." 또는 "next lint"를 실행합니다.
         run: pnpm lint
 
       - name: Typecheck
