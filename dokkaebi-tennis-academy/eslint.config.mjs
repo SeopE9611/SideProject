@@ -12,10 +12,12 @@ const compat = new FlatCompat({
 const eslintConfig = [
   //검사 제외 대상 설정
   {
-    ignores: ['.next/**', 'dist/**', 'node_modules/**'],
+    ignores: ['.next/**', 'node_modules/**', 'out/**', 'public/**'],
   },
   // Next.js 및 TypeScript 설정 로드
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...compat.config({
+    extends: ['next/core-web-vitals', 'next/typescript'],
+  }),
   // 추가 규칙 (필요 시)
   {
     rules: {
