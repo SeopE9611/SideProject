@@ -42,7 +42,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: npx eslint .
 
       - name: Typecheck
         run: pnpm exec tsc -p tsconfig.json
