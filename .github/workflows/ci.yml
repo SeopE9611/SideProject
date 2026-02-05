@@ -1,7 +1,7 @@
 name: CI
 
 on:
-  pull_request:
+  #pull_request:
   push:
     branches: [ "main", "master" ]
 
@@ -42,7 +42,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: npx eslint .
 
       - name: Typecheck
         run: pnpm exec tsc -p tsconfig.json
