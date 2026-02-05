@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  # Pull Request 이벤트 트리거를 제거하여
+  # 가상 병합 환경에서 발생하는 오류를 우회합니다.
+  # pull_request: 
+  push:
+    branches: [ "main", "master" ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      CI: true
+      NEXT_TELEMETRY_DISABLED: 1
+
+    defaults:
+      run:
+        working-directory: dokkaebi-tennis-academy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          # 캐시 설정을 활성화하여 속도를 유지합니다.
+          cache: pnpm
+          cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
+
+      - name: Install dependencies
+        # frozen-lockfile을 사용하여 의존성을 안정적으로 설치합니다.
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        # package.json에 설정된 명령어를 실행합니다.
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm exec tsc -p tsconfig.json
+
+      - name: Build
+        run: pnpm build
