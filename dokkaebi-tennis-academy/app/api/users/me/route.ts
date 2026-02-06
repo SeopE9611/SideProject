@@ -24,28 +24,11 @@ export async function GET() {
 
   dbg && console.log('[me] cookies', (performance.now() - t0).toFixed(1), 'ms');
 
-  if (!accessToken) {
-    dbg && console.log('[me] no token total', (performance.now() - t0).toFixed(1), 'ms');
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const t1 = performance.now();
-  const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as JwtPayload;
-  dbg && console.log('[me] jwt.verify', (performance.now() - t1).toFixed(1), 'ms');
-
-  const t2 = performance.now();
-  const db = await getDb();
-  dbg && console.log('[me] getDb', (performance.now() - t2).toFixed(1), 'ms');
-
-  const t3 = performance.now();
-  const user = await db.collection('users').findOne({ _id: new ObjectId(decoded.sub as string) }, { projection: { hashedPassword: 0 } });
-  dbg && console.log('[me] findOne', (performance.now() - t3).toFixed(1), 'ms');
-
-  dbg && console.log('[me] total', (performance.now() - t0).toFixed(1), 'ms');
-
   try {
     // sub(= user._id)를 사용
+    const t1 = performance.now();
     const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as JwtPayload;
+    dbg && console.log('[me] jwt.verify', (performance.now() - t1).toFixed(1), 'ms');
     const sub = decoded?.sub as string | undefined;
     if (!sub) {
       // 구 토큰 등에서 email만 담겼다면 과도기적으로 email fallback을 두어도 됨.
@@ -53,8 +36,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Invalid token (no sub)' }, { status: 401 });
     }
 
+    const t2 = performance.now();
     const db = await getDb();
+    dbg && console.log('[me] getDb', (performance.now() - t2).toFixed(1), 'ms');
+    const t3 = performance.now();
     const user = await db.collection('users').findOne({ _id: new ObjectId(sub) }, { projection: { hashedPassword: 0 } });
+    dbg && console.log('[me] findOne', (performance.now() - t3).toFixed(1), 'ms');
+    dbg && console.log('[me] total', (performance.now() - t0).toFixed(1), 'ms');
 
     // 1) 존재X
     if (!user) {
