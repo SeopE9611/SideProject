@@ -16,6 +16,7 @@ const eslintConfig = [
       // 이전에 추가한 규칙들
       'no-empty': 'off',
       'no-unused-vars': 'off',
+      'no-unused-expressions': ['error', { allowShortCircuit: true }],
       '@typescript-eslint/no-unused-vars': 'off',
       'react/no-unescaped-entities': 'off',
       'import/no-anonymous-default-export': 'off',
