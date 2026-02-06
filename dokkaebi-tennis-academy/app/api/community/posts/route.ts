@@ -46,7 +46,7 @@ async function resolveDisplayName(payload: any | null): Promise<string> {
       // 1) (나중에 nickname 필드가 생기면) u.nickname
       // 2) u.name
       // 3) 그 외는 fallback
-      // @ts-ignore
+      // @ts-expect-error - users 스키마에는 nickname이 없을 수 있음
       displayName = u?.nickname ?? u?.name ?? null;
     }
   } catch {

@@ -130,7 +130,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     }
 
     const tokens = base
-      .split(/[\s,()\/+]+/)
+      .split(/[\s,()/+]+/)
       .map((t) => t.trim())
       .filter((t) => t.length > 1);
 

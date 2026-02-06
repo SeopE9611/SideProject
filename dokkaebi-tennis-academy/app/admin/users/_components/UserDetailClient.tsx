@@ -398,12 +398,12 @@ export default function UserDetailClient({ id }: { id: string }) {
                   className="whitespace-nowrap shrink-0"
                   disabled={pending}
                   onClick={async () => {
-                    const next = !Boolean(user.isSuspended);
+                    const next = !user.isSuspended;
                     await patchUser({ isSuspended: next }, next ? '비활성화' : '비활성 해제');
                     await mutate();
                   }}
                 >
-                  {Boolean(user.isSuspended) ? '비활성 해제' : '비활성화'}
+                  {user.isSuspended ? '비활성 해제' : '비활성화'}
                 </Button>
 
                 {/* 비밀번호 초기화 (실수 방지: 확인 다이얼로그 1단계) */}

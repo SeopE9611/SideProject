@@ -132,6 +132,10 @@ export default function AdminRentalsClient() {
 
   const [payFilter, setPayFilter] = useState<'all' | 'unpaid' | 'paid'>((searchParams.get('pay') as any) ?? 'all');
   const [shipFilter, setShipFilter] = useState<'all' | 'none' | 'outbound-set' | 'return-set' | 'both-set'>((searchParams.get('ship') as any) ?? 'all');
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<'customer' | 'date' | 'total' | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const pageSize = 20;
   // 쿼리 → 상태 1회 동기화(직접 새로고침 대비)
   /** URL 쿼리스트링을 읽어 현재 화면의 필터 상태로 반영 */
   function applyURLParamsToFilterState() {
@@ -164,11 +168,6 @@ export default function AdminRentalsClient() {
   useEffect(() => {
     applyURLParamsToFilterState();
   }, []);
-
-  const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<'customer' | 'date' | 'total' | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const pageSize = 20;
 
   const qs = new URLSearchParams();
   if (payFilter !== 'all') qs.set('pay', payFilter);

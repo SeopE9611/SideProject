@@ -18,7 +18,6 @@ const ALLOWED_ATTR = ['href', 'title', 'target', 'rel', 'src', 'alt', 'width', '
 DOMPurify.addHook('afterSanitizeAttributes', (node) => {
   // 모든 on* 속성 제거
   // (DOMPurify 기본도 제거하지만 확실하게 한 번 더)
-  // eslint-disable-next-line guard-for-in
   for (const name in node) {
     // noop (TS 만족용)
   }

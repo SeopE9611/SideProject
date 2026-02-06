@@ -25,10 +25,8 @@ export type LogBase = {
 function jlog(payload: LogBase) {
   try {
     // 한 줄 JSON 로그
-    // eslint-disable-next-line no-console
     console.log(JSON.stringify(payload));
   } catch {
-    // eslint-disable-next-line no-console
     console.log(payload);
   }
 }
