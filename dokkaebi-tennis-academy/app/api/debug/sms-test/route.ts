@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-const { SolapiMessageService } = require('solapi');
+import { SolapiMessageService } from 'solapi';
 
 const normalize = (n?: string) => (n || '').replace(/[^\d]/g, '');
 

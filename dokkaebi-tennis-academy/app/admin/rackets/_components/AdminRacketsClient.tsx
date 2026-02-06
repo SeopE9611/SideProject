@@ -68,10 +68,11 @@ export default function AdminRacketsClient() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [conditionFilter, setConditionFilter] = useState<string>('all');
 
+  const items = data?.items ?? [];
   const filteredItems = useMemo(() => {
-    if (!data?.items) return [];
+    if (!items.length) return [];
 
-    return data.items.filter((item) => {
+    return items.filter((item) => {
       const matchesSearch = item.brand.toLowerCase().includes(searchQuery.toLowerCase()) || item.model.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
@@ -79,7 +80,7 @@ export default function AdminRacketsClient() {
 
       return matchesSearch && matchesStatus && matchesCondition;
     });
-  }, [data?.items, searchQuery, statusFilter, conditionFilter]);
+  }, [items, searchQuery, statusFilter, conditionFilter]);
 
   const stats = useMemo(() => {
     const total = filteredItems.length;

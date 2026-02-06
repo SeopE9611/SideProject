@@ -37,7 +37,11 @@ export function Accordion({ type = 'single', defaultValue, className, children }
           next.clear();
           if (willOpen) next.add(id);
         } else {
-          next.has(id) ? next.delete(id) : next.add(id);
+          if (next.has(id)) {
+            next.delete(id);
+          } else {
+            next.add(id);
+          }
         }
         return next;
       });

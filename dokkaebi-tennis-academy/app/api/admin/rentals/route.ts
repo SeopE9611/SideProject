@@ -99,7 +99,7 @@ export async function GET(req: Request) {
     ),
   );
 
-  let userMap = new Map<string, { name?: string; email?: string }>();
+  const userMap = new Map<string, { name?: string; email?: string }>();
   if (userIds.length > 0) {
     const users = await db
       .collection('users')
