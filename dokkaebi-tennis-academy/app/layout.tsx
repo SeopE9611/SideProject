@@ -18,6 +18,8 @@ import SessionWatcher from '@/components/system/SessionWatcher';
 import ClaimsAutoLinker from '@/components/system/ClaimsAutoLinker';
 import AppShell from '@/components/layout/AppShell';
 import KakaoInquiryWidget from '@/components/system/KakaoInquiryWidget';
+import ScrollLockCompensator from '@/components/system/ScrollLockCompensator';
+import ScrollLockKeepScrollbar from '@/components/system/ScrollLockKeepScrollbar';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -62,7 +64,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <TokenRefresher />
         <SessionWatcher />
         <ClaimsAutoLinker />
-
+        <ScrollLockCompensator />
+        <ScrollLockKeepScrollbar />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Header />

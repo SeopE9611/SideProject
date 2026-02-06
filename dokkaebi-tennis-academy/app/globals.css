@@ -2,9 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* body 스크롤 잠금 시(overflow:hidden) 스크롤바 폭만큼 padding-right를 보정해 레이아웃 점프 방지 */
-body[data-scroll-locked] {
-  padding-right: var(--removed-body-scroll-bar-size, 0px);
+/* ✅ 핵심: Radix(remove-scroll)가 overflow:hidden으로 스크롤바를 없애며
+   viewport width가 바뀌어서(Windows) "움찔"이 발생한다.
+   => scroll-locked 상태에서도 스크롤바를 유지해서 viewport 폭을 고정한다. */
+
+/* 스크롤바를 항상 확보(페이지가 짧아도 공간을 예약) */
+html {
+  overflow-y: scroll;
+}
+
+/* Radix가 걸어버리는 overflow:hidden/padding-right를 무력화 */
+body[data-scroll-locked],
+html[data-scroll-locked] body {
+  overflow-y: scroll !important; /* 스크롤바 유지 */
+  padding-right: 0 !important;   /* remove-scroll이 주는 보정 제거 */
+}
+
+html[data-scroll-locked] {
+  overflow-y: scroll !important;
 }
 
 /* 다크 모드용 CSS 변수 정의 */
@@ -34,6 +49,8 @@ body[data-scroll-locked] {
 
 /* 라이트 모드용 CSS 변수 정의 */
 :root {
+  /* ScrollLockCompensator가 설정하는 값(기본 0) */
+  --scrollbar-compensation: 0px;
   --background: 0 0% 100%; /* bg-white */
   --foreground: 222.2 84% 4.9%; /* text-gray-900 */
   --muted: 210 40% 96.1%;
