@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { X, ImagePlus, Loader2, AlertCircle } from 'lucide-react';
@@ -25,6 +25,8 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const queueIdPrefix = useId();
+  const queueIdRef = useRef(0);
 
   const totalCount = (value?.length ?? 0) + queue.length;
   const hasRoom = totalCount < max;
@@ -47,7 +49,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
 
   const uploadOne = async (file: File): Promise<string | null> => {
     const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `${FOLDER}/${Date.now()}-${queueIdPrefix}-${queueIdRef.current++}.${ext}`;
 
     const res = await withTimeout(
       supabase.storage.from(BUCKET).upload(path, file, {
@@ -91,7 +93,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
         }
 
         // 미리보기 큐 추가
-        const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const id = `${queueIdPrefix}-${Date.now()}-${queueIdRef.current++}`;
         const objectUrl = URL.createObjectURL(f);
         setQueue((q) => [...q, { id, url: objectUrl }]);
 
