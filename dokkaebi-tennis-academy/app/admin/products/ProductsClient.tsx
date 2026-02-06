@@ -144,6 +144,7 @@ export default function ProductsClient() {
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
 
   // 전역 카운트(필터 무시)
   const totalsByStatus = data?.totalsByStatus ?? { active: 0, low_stock: 0, out_of_stock: 0 };
@@ -151,17 +152,6 @@ export default function ProductsClient() {
   const activeAll = totalsByStatus.active;
   const lowStockAll = totalsByStatus.low_stock;
   const outOfStockAll = totalsByStatus.out_of_stock;
-
-  // 필터/검색 변경 시 1페이지로
-  useEffect(() => {
-    setPage(1);
-  }, [brandFilter, materialFilter, statusFilter, debouncedTerm]);
-
-  // totalPages 변동 시 현재 페이지 보정(로딩 중에는 클램프 금지)
-  useEffect(() => {
-    if (isLoading || isValidating) return;
-    setPage((p) => Math.min(p, totalPages));
-  }, [totalPages, isLoading, isValidating]);
 
   // 삭제 핸들러
   const handleDelete = async (id: string) => {
@@ -181,14 +171,13 @@ export default function ProductsClient() {
   };
 
   // 접근성(aria-sort) + 클릭 가능한 헤더
-  const SortBtn: React.FC<{ field: SortField; children: React.ReactNode; align?: 'left' | 'center' | 'right' }> = ({ field, children, align = 'left' }) => {
+  const renderSortButton = ({ field, children, align = 'left' }: { field: SortField; children: React.ReactNode; align?: 'left' | 'center' | 'right' }) => {
     const active = !!sort && sort.field === field;
-    const aria = active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : 'none';
     return (
       <button
         type="button"
         onClick={() => handleSort(field)}
-        aria-sort={aria as any}
+        aria-label={`${children} ${active ? (sort!.dir === 'asc' ? '오름차순 정렬됨' : '내림차순 정렬됨') : '정렬 안 됨'}`}
         className={cn('group inline-flex w-full items-center gap-1 select-none whitespace-nowrap', align === 'right' ? 'justify-end text-right' : align === 'center' ? 'justify-center text-center' : 'justify-start text-left')}
         title={active ? (sort!.dir === 'asc' ? '오름차순' : '내림차순') : '등록순'}
       >
@@ -196,6 +185,34 @@ export default function ProductsClient() {
         {active ? sort!.dir === 'asc' ? <ArrowUp className="h-3.5 w-3.5 opacity-80" /> : <ArrowDown className="h-3.5 w-3.5 opacity-80" /> : <ArrowUpDown className="h-3.5 w-3.5 opacity-50 group-hover:opacity-80" />}
       </button>
     );
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  };
+
+  const handleBrandFilterChange = (value: string) => {
+    setBrandFilter(value);
+    setPage(1);
+  };
+
+  const handleMaterialFilterChange = (value: string) => {
+    setMaterialFilter(value);
+    setPage(1);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setPage(1);
+  };
+
+  const resetFilters = () => {
+    setBrandFilter('all');
+    setMaterialFilter('all');
+    setStatusFilter('all');
+    setSearchTerm('');
+    setPage(1);
   };
 
   return (
@@ -299,14 +316,14 @@ export default function ProductsClient() {
                       type="search"
                       placeholder="스트링명, 브랜드, SKU로 검색"
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                       className="pl-8 h-9 text-xs
              border-blue-200 focus:border-blue-400
              dark:border-slate-700 dark:focus:border-blue-500
              bg-white dark:bg-slate-900"
                     />
                     {searchTerm && (
-                      <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-blue-50 dark:hover:bg-blue-950/20" onClick={() => setSearchTerm('')}>
+                      <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-blue-50 dark:hover:bg-blue-950/20" onClick={() => handleSearchChange('')}>
                         <X className="h-4 w-4" />
                       </Button>
                     )}
@@ -315,18 +332,13 @@ export default function ProductsClient() {
 
                 {/* 필터 */}
                 <div className="grid w-full gap-2 border-t border-blue-100 dark:border-blue-800/30 pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                  <BrandFilter value={brandFilter} onChange={setBrandFilter} options={BRAND_OPTIONS.map((o) => o.id)} />
-                  <MaterialFilter value={materialFilter} onChange={setMaterialFilter} options={MATERIAL_OPTIONS.map((o) => o.id)} />
-                  <StockStatusFilter value={statusFilter} onChange={setStatusFilter} />
+                  <BrandFilter value={brandFilter} onChange={handleBrandFilterChange} options={BRAND_OPTIONS.map((o) => o.id)} />
+                  <MaterialFilter value={materialFilter} onChange={handleMaterialFilterChange} options={MATERIAL_OPTIONS.map((o) => o.id)} />
+                  <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setBrandFilter('all');
-                      setMaterialFilter('all');
-                      setStatusFilter('all');
-                      setSearchTerm('');
-                    }}
+                    onClick={resetFilters}
                     className="w-full border-blue-200 hover:bg-blue-50
              dark:border-slate-700 dark:hover:bg-slate-900/40"
                   >
@@ -357,32 +369,22 @@ export default function ProductsClient() {
                   >
                     <TableRow className="border-b border-blue-100 dark:border-blue-800/30">
                       <TableHead className="w-[32%] text-left text-blue-700 dark:text-blue-300">
-                        <SortBtn field="name">스트링명</SortBtn>
+                        {renderSortButton({ field: 'name', children: '스트링명' })}
                       </TableHead>
                       <TableHead className="w-[12%] text-center text-blue-700 dark:text-blue-300">
-                        <SortBtn field="brand" align="center">
-                          브랜드
-                        </SortBtn>
+                        {renderSortButton({ field: 'brand', align: 'center', children: '브랜드' })}
                       </TableHead>
                       <TableHead className="w-[10%] text-center text-blue-700 dark:text-blue-300">
-                        <SortBtn field="gauge" align="center">
-                          게이지
-                        </SortBtn>
+                        {renderSortButton({ field: 'gauge', align: 'center', children: '게이지' })}
                       </TableHead>
                       <TableHead className="w-[14%] text-center text-blue-700 dark:text-blue-300">
-                        <SortBtn field="material" align="center">
-                          재질
-                        </SortBtn>
+                        {renderSortButton({ field: 'material', align: 'center', children: '재질' })}
                       </TableHead>
                       <TableHead className="w-[12%] text-right text-blue-700 dark:text-blue-300">
-                        <SortBtn field="price" align="right">
-                          가격
-                        </SortBtn>
+                        {renderSortButton({ field: 'price', align: 'right', children: '가격' })}
                       </TableHead>
                       <TableHead className="w-[10%] text-right text-blue-700 dark:text-blue-300">
-                        <SortBtn field="stock" align="right">
-                          재고
-                        </SortBtn>
+                        {renderSortButton({ field: 'stock', align: 'right', children: '재고' })}
                       </TableHead>
                       <TableHead className="w-[10%] text-center text-blue-700 dark:text-blue-300">상태</TableHead>
                       <TableHead className="w-[10%] text-right text-blue-700 dark:text-blue-300">관리</TableHead>
@@ -404,17 +406,14 @@ export default function ProductsClient() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                  setBrandFilter('all');
-                                  setMaterialFilter('all');
-                                  setStatusFilter('all');
-                                  setSearchTerm('');
+                                  resetFilters();
                                 }}
                                 className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20"
                               >
                                 필터 초기화
                               </Button>
                               {searchTerm && (
-                                <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')} className="hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                                <Button variant="ghost" size="sm" onClick={() => handleSearchChange('')} className="hover:bg-blue-50 dark:hover:bg-blue-950/20">
                                   검색어 지우기
                                 </Button>
                               )}
@@ -516,12 +515,12 @@ export default function ProductsClient() {
             <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                  {page} / {totalPages}
+                  {currentPage} / {totalPages}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, Math.min(p, totalPages) - 1))} disabled={currentPage <= 1} className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
                   이전
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, Math.min(p, totalPages) + 1))} disabled={currentPage >= totalPages} className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
                   다음
                 </Button>
               </div>

@@ -8,7 +8,7 @@ const compat = new FlatCompat();
 const eslintConfig = [
   js.configs.recommended,
   {
-    ignores: ['.next/**', 'node_modules/**'],
+    ignores: ['.next/**', 'node_modules/**', 'lib/shadcn-plugin.js'],
   },
   ...compat.config({
     extends: ['next/core-web-vitals', 'next/typescript'],
@@ -22,6 +22,7 @@ const eslintConfig = [
 
       // ✅ 새로 추가: @typescript-eslint/no-explicit-any 규칙 비활성화
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true }],
     },
   }),
 ];

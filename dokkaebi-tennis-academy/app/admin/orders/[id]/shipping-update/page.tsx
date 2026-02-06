@@ -1,5 +1,6 @@
 import ShippingFormClient from './ShippingFormClient';
 import { headers } from 'next/headers';
+import Link from 'next/link';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import AccessDenied from '@/components/system/AccessDenied';
 import { Truck } from 'lucide-react';
@@ -52,20 +53,18 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
               입력한 ID가 <strong>주문 ID</strong>가 아닐 수 있습니다. (예: <strong>교체서비스 신청서 ID</strong>를 주문 URL에 넣은 경우)
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <a href="/admin/orders" className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
+              <Link href="/admin/orders" className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
                 주문 목록으로
-              </a>
-              <a href="/admin/applications/stringing" className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
+              </Link>
+              <Link href="/admin/applications/stringing" className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
                 교체서비스 신청 목록으로
-              </a>
+              </Link>
             </div>
           </div>
         </div>
       </div>
     );
   }
-
-  if (!res.ok) throw new Error('주문 데이터를 불러올 수 없습니다.');
 
   const order = await res.json();
 

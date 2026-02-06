@@ -13,8 +13,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import AccessDenied from '@/components/system/AccessDenied';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 임시 강사 데이터
@@ -33,7 +31,7 @@ const locations = [
   { id: '5', name: '실외 코트 B' },
 ];
 
-export default async function NewClassClient() {
+export default function NewClassClient() {
   const [formData, setFormData] = useState({
     name: '',
     instructor: '',
@@ -57,7 +55,7 @@ export default async function NewClassClient() {
       instructor: '',
       schedule: '',
       capacity: '',
-     level: '초급',
+      level: '초급',
       location: '',
       description: '',
       status: true,

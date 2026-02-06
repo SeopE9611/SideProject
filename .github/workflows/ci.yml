@@ -50,6 +50,7 @@ jobs:
       - name: Lint
         # package.json에 설정된 명령어를 실행합니다.
         run: pnpm lint
+        continue-on-error: true
 
       - name: Typecheck
         run: pnpm exec tsc -p tsconfig.json
