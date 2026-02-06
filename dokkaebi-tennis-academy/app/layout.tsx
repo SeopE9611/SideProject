@@ -1,6 +1,5 @@
 import type React from 'react';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import Header from '@/components/header';
@@ -20,8 +19,6 @@ import AppShell from '@/components/layout/AppShell';
 import KakaoInquiryWidget from '@/components/system/KakaoInquiryWidget';
 import ScrollLockCompensator from '@/components/system/ScrollLockCompensator';
 import ScrollLockKeepScrollbar from '@/components/system/ScrollLockKeepScrollbar';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: '도깨비 테니스 아카데미',
@@ -55,7 +52,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
   return (
     <html lang="ko" suppressHydrationWarning className="scroll-smooth">
-      <body className={`${inter.className} bg-background text-foreground overflow-x-hidden`}>
+      <body className="bg-background text-foreground overflow-x-hidden">
         <Script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="beforeInteractive" />
         {/* Kakao JavaScript SDK (채널 1:1 문의용) */}
         <Script id="kakao-jssdk" src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js" strategy="afterInteractive" crossOrigin="anonymous" />
