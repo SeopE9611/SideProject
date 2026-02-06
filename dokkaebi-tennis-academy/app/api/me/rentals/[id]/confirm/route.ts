@@ -83,7 +83,7 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
     await grantPoints(db, {
       userId: new ObjectId(userId),
       amount: earnedPoints,
-      type: 'rental_confirm_reward',
+      type: 'order_reward',
       reason,
       refKey: rewardRefKey,
     });
