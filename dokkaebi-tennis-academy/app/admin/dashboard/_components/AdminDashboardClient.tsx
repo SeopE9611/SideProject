@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { Activity, AlertTriangle, Bell, Boxes, ClipboardList, Package, ShoppingCart, Star, TrendingUp, Users, Wrench } from 'lucide-react';
@@ -265,6 +265,7 @@ function labelStringingStatus(raw?: string) {
 // ----------------------------- 그래프(가벼운 SVG) -----------------------------
 
 function SparkLine({ data, height = 56 }: { data: Array<{ date: string; value: number }>; height?: number }) {
+  const gradientId = useId();
   const width = 220;
   const padding = 6;
 
@@ -287,9 +288,6 @@ function SparkLine({ data, height = 56 }: { data: Array<{ date: string; value: n
   const toY = (v: number) => height - padding - ((v - min) * (height - padding * 2)) / Math.max(1, max - min);
 
   const d = safeData.map((p, i) => `${i === 0 ? 'M' : 'L'} ${toX(i).toFixed(2)} ${toY(p.value).toFixed(2)}`).join(' ');
-
-  // SVG id 충돌 방지: SparkLine이 여러 개라 id는 유니크해야 안전
-  const gradientId = `sparkGradient-${Math.random().toString(36).slice(2, 10)}`;
 
   const firstX = toX(0).toFixed(2);
   const lastX = toX(safeData.length - 1).toFixed(2);
