@@ -8,7 +8,6 @@ import { ensurePointsIndexes } from '@/lib/points.indexes';
 import { ensureUsedRacketsIndexes } from '@/lib/usedRackets.indexes';
 
 const uri = process.env.MONGODB_URI;
-if (!uri) throw new Error('MONGODB_URI 환경변수가 설정되지 않았습니다.');
 
 const dbName = process.env.MONGODB_DB || 'tennis_academy';
 
@@ -43,7 +42,9 @@ declare global {
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
-if (process.env.NODE_ENV === 'development') {
+if (!uri) {
+  clientPromise = Promise.reject(new Error('MONGODB_URI 환경변수가 설정되지 않았습니다.'));
+} else if (process.env.NODE_ENV === 'development') {
   if (!global._mongoClientPromise) {
     client = new MongoClient(uri);
     global._mongoClientPromise = client.connect();

@@ -83,6 +83,9 @@ export async function POST(req: Request) {
     const user = safeVerifyAccessToken(token);
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
+    const userId = String((user as any).sub ?? '');
+    if (!ObjectId.isValid(userId)) return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
+
     let body: any = null;
     try {
       body = await req.json();
@@ -130,6 +133,9 @@ export async function DELETE() {
     const token = cookieStore.get('accessToken')?.value;
     const user = safeVerifyAccessToken(token);
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+    const userId = String((user as any).sub ?? '');
+    if (!ObjectId.isValid(userId)) return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
 
     const db = await getDb();
     await db.collection('wishlists').deleteMany({ userId: new ObjectId(userId) });
