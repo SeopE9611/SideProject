@@ -80,7 +80,6 @@ if (!uri) {
         createCollection: async () => undefined,
       }),
     } as unknown as MongoClient;
-    } as MongoClient;
 
     clientPromise = Promise.resolve(mockClient);
   } else {
