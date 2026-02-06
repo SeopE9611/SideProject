@@ -39,7 +39,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
   const sp = await searchParams;
   const packageOrderId = Array.isArray(sp.packageOrderId) ? sp.packageOrderId[0] : sp.packageOrderId ?? '';
 
-  if (!packageOrderId) return notFound();
+  if (!packageOrderId || !ObjectId.isValid(packageOrderId)) return notFound();
 
   // 비회원 주문/신청 차단 모드면, 패키지 success 페이지도 로그인 필수로 막는다.
   // (packageOrderId만으로 주문 정보가 렌더링되는 것을 DB 조회 전에 차단)

@@ -39,7 +39,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const orderId = sp.orderId;
   const autoApply = sp.autoApply === '1';
 
-  if (!orderId) return notFound();
+  if (!orderId || !ObjectId.isValid(orderId)) return notFound();
 
  // 비회원/게스트 주문 차단 모드면, success 페이지도 "로그인 필수"로 막는다.
   // (orderId만으로 주문 정보가 렌더링되는 것을 DB 조회 전에 차단)

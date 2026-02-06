@@ -8,6 +8,7 @@ import { ensurePointsIndexes } from '@/lib/points.indexes';
 import { ensureUsedRacketsIndexes } from '@/lib/usedRackets.indexes';
 
 const uri = process.env.MONGODB_URI;
+const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
 
 const dbName = process.env.MONGODB_DB || 'tennis_academy';
 
@@ -43,7 +44,47 @@ let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
 if (!uri) {
-  clientPromise = Promise.reject(new Error('MONGODB_URI 환경변수가 설정되지 않았습니다.'));
+  if (isBuildPhase) {
+    const createMockCursor = () => {
+      const cursor: any = {
+        sort: () => cursor,
+        limit: () => cursor,
+        skip: () => cursor,
+        project: () => cursor,
+        toArray: async () => [],
+      };
+      return cursor;
+    };
+
+    const createMockCollection = () => ({
+      find: () => createMockCursor(),
+      aggregate: () => createMockCursor(),
+      findOne: async () => null,
+      findOneAndUpdate: async () => ({ value: null }),
+      updateOne: async () => ({ matchedCount: 0, modifiedCount: 0, upsertedId: null }),
+      updateMany: async () => ({ matchedCount: 0, modifiedCount: 0 }),
+      insertOne: async () => ({ insertedId: null }),
+      insertMany: async () => ({ insertedIds: [] }),
+      deleteOne: async () => ({ deletedCount: 0 }),
+      deleteMany: async () => ({ deletedCount: 0 }),
+      countDocuments: async () => 0,
+      estimatedDocumentCount: async () => 0,
+      distinct: async () => [],
+      indexes: async () => [],
+      createIndex: async () => undefined,
+    });
+
+    const mockClient = {
+      db: () => ({
+        collection: () => createMockCollection(),
+        createCollection: async () => undefined,
+      }),
+    } as MongoClient;
+
+    clientPromise = Promise.resolve(mockClient);
+  } else {
+    clientPromise = Promise.reject(new Error('MONGODB_URI 환경변수가 설정되지 않았습니다.'));
+  }
 } else if (process.env.NODE_ENV === 'development') {
   if (!global._mongoClientPromise) {
     client = new MongoClient(uri);
