@@ -585,7 +585,6 @@ export default function QnaWritePage() {
                               {/* 콘텐츠 */}
                               {isImage ? (
                                 previewUrl ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
                                   <img src={previewUrl || '/placeholder.svg'} alt={file.name} className="w-full h-28 object-cover transition-transform duration-150 group-hover:scale-[1.02]" onClick={() => openViewerFromIndex(index)} role="button" />
                                 ) : (
                                   <div className="h-28 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />

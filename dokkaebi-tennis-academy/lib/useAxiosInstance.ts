@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { emitAuthExpired, emitAuthForbidden } from '@/lib/authEvents';
 
-const instance = axios.create({
+export const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || '',
   timeout: 15000,
   withCredentials: true,
@@ -11,7 +11,7 @@ const instance = axios.create({
 
 let refreshPromise: Promise<void> | null = null;
 
-instance.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const status = error?.response?.status;
@@ -62,7 +62,7 @@ instance.interceptors.response.use(
 
       try {
         await refreshPromise; // 자동 갱신 시도
-        return instance(config); // 원 요청 재시도
+        return axiosInstance(config); // 원 요청 재시도
       } catch {
         emitAuthExpired(); // 갱신 실패 → 만료 알림
         return Promise.reject(error);
@@ -75,5 +75,5 @@ instance.interceptors.response.use(
 );
 
 export default function useAxiosInstance() {
-  return instance;
+  return axiosInstance;
 }

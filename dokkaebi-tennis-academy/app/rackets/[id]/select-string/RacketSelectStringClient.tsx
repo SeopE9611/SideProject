@@ -64,7 +64,6 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   // 초기 workCount 세팅: cart에서 넘어온 qty를 그대로 반영
   useEffect(() => {
     setWorkCount(clampWorkCount(initialQtyParam));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQtyParam, racket.maxQty]);
 
   // buy-now 모드에서만 bundle store clear (cart 편집 모드에서는 굳이 건드리지 않음)

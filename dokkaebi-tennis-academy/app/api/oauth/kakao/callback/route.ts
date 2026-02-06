@@ -118,7 +118,7 @@ export async function GET(req: NextRequest) {
 
   const pendings = db.collection('oauth_pending_signups') as Collection<PendingDoc>;
 
-  let user = await users.findOne({ email });
+  const user = await users.findOne({ email });
 
   // 신규 유저: users를 만들지 말고 pending으로 보냄
   if (!user) {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +27,11 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 
 export default function PassList() {
   const { data, isLoading, error, mutate } = useSWR<Res>('/api/passes/me', fetcher);
+  const [now, setNow] = useState(0);
+
+  useEffect(() => {
+    setNow(Date.now());
+  }, []);
 
   if (isLoading) {
     return <div className="text-center py-8 text-muted-foreground">패키지 내역을 불러오는 중입니다...</div>;
@@ -55,7 +61,7 @@ export default function PassList() {
         {items.length === 0 && <div className="text-slate-500 dark:text-slate-400">보유 중인 패키지 이용권이 없습니다.</div>}
         {items.map((p) => {
           const remainPct = Math.max(0, Math.min(100, (p.remainingCount / p.packageSize) * 100));
-          const dday = Math.ceil((new Date(p.expiresAt).getTime() - Date.now()) / 86400000);
+          const dday = now ? Math.ceil((new Date(p.expiresAt).getTime() - now) / 86400000) : null;
           const statusBadge = p.status === 'active' ? p.isExpiringSoon ? <Badge variant="destructive">만료 임박</Badge> : <Badge>활성</Badge> : p.status === 'expired' ? <Badge variant="outline">만료</Badge> : <Badge variant="secondary">정지</Badge>;
 
           return (
@@ -78,7 +84,7 @@ export default function PassList() {
                   {statusBadge}
                   <div className="flex items-center gap-1 text-sm text-slate-600 dark:text-slate-300">
                     <Clock className="h-4 w-4" />
-                    {dday >= 0 ? `D-${dday}` : `만료됨`}
+                    {dday === null ? '계산중' : dday >= 0 ? `D-${dday}` : `만료됨`}
                   </div>
                 </div>
               </div>

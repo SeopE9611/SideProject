@@ -40,6 +40,24 @@ export default function RentalsSuccessClient({ data }: Props) {
   const searchParams = useSearchParams();
   const withService = searchParams.get('withService') === '1';
 
+  useEffect(() => {
+    if (withService) return;
+
+    try {
+      sessionStorage.setItem('rentals-success', '1');
+      const onPop = (e: PopStateEvent) => {
+        if (sessionStorage.getItem('rentals-success') === '1') {
+          history.pushState(null, '', location.href);
+        }
+      };
+      window.addEventListener('popstate', onPop);
+      return () => {
+        window.removeEventListener('popstate', onPop);
+        sessionStorage.removeItem('rentals-success');
+      };
+    } catch {}
+  }, [withService]);
+
   // withService=1 인 경우: 성공 페이지에서 상세(대여 정보/계좌/요약)를 보여주지 않고,
   // 교체 서비스 신청서 작성으로만 안내/이동
   // (최종 결제/계산서/계좌 안내는 신청서 제출 후 success 페이지에서 노출)
@@ -54,22 +72,6 @@ export default function RentalsSuccessClient({ data }: Props) {
       </div>
     );
   }
-
-  useEffect(() => {
-    try {
-      sessionStorage.setItem('rentals-success', '1');
-      const onPop = (e: PopStateEvent) => {
-        if (sessionStorage.getItem('rentals-success') === '1') {
-          history.pushState(null, '', location.href);
-        }
-      };
-      window.addEventListener('popstate', onPop);
-      return () => {
-        window.removeEventListener('popstate', onPop);
-        sessionStorage.removeItem('rentals-success');
-      };
-    } catch {}
-  }, []);
 
   const total = typeof data.total === 'number' ? data.total : data.fee + data.deposit + (data.stringPrice ?? 0) + (data.stringingFee ?? 0);
   const bankKeyFromServer = data.payment?.bank || '';

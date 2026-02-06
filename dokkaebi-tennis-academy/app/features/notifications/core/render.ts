@@ -83,7 +83,6 @@ function buildICS(app: ApplicationCtx): string | undefined {
 function pickPhone(app: ApplicationCtx) {
   const anyApp = app as any;
   const raw = anyApp?.contactPhone ?? anyApp?.phone ?? anyApp?.customer?.phone ?? app.shippingInfo?.phone ?? '';
-  ('');
   return String(raw || '').replace(/[^\d]/g, '');
 }
 
