@@ -37,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   // 허용되지 않은 상태값이면 에러 처리
-  if (!APPLICATION_STATUSES.includes(status)) {
+  if (!APPLICATION_STATUSES.includes(status as (typeof APPLICATION_STATUSES)[number])) {
     return new NextResponse('Invalid status value', { status: 400 });
   }
 
