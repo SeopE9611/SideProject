@@ -79,6 +79,7 @@ if (!uri) {
         collection: () => createMockCollection(),
         createCollection: async () => undefined,
       }),
+    } as unknown as MongoClient;
     } as MongoClient;
 
     clientPromise = Promise.resolve(mockClient);

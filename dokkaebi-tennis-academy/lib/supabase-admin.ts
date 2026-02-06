@@ -12,6 +12,7 @@ const createMockAdmin = () =>
         upload: async () => ({ data: null, error: null }),
       }),
     },
+  }) as unknown as ReturnType<typeof createClient>;
   }) as ReturnType<typeof createClient>;
 
 if (!url || !serviceKey) {
