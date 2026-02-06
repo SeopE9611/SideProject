@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
   const db = await getDb();
   const users = db.collection('users');
 
-  let user = await users.findOne({ email });
+  const user = await users.findOne({ email });
 
   // 신규 유저: users를 만들지 말고 pending으로 보냄
   if (!user) {

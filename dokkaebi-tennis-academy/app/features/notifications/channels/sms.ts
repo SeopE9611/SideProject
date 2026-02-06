@@ -1,4 +1,4 @@
-const { SolapiMessageService } = require('solapi');
+import { SolapiMessageService } from 'solapi';
 
 const norm = (n?: string) => (n || '').replace(/[^\d]/g, '');
 

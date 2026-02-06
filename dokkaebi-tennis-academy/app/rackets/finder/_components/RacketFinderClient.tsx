@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type React from 'react';
 
 import useSWR from 'swr';
@@ -314,13 +314,13 @@ export default function RacketFinderClient() {
     router.replace(pathname, { scroll: false });
   };
 
-  const applyNow = (next: Filters) => {
+  const applyNow = useCallback((next: Filters) => {
     setDraft(next);
     setApplied(next);
     setPage(1);
     setHasSearched(true);
     syncUrl(next, 1);
-  };
+  }, [syncUrl]);
 
   const chips = useMemo(() => {
     if (!hasSearched) return [];
@@ -377,7 +377,7 @@ export default function RacketFinderClient() {
     }
 
     return list;
-  }, [applied, hasSearched]);
+  }, [applied, hasSearched, applyNow]);
 
   return (
     <div className="space-y-6">

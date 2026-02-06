@@ -75,7 +75,7 @@ const badgeSm = 'px-2 py-0.5 text-[11px] rounded-md font-medium border';
 // 페이지 목록(… 포함)
 const buildPageItems = (page: number, totalPages: number) => {
   const arr: (number | '...')[] = [];
-  const DOT: '...' = '...';
+  const DOT = '...' as const;
   if (totalPages <= 7) {
     for (let i = 1; i <= totalPages; i++) arr.push(i);
   } else {

@@ -248,7 +248,7 @@ export default function NewStringPage() {
 
     // 공백 / 괄호 / 슬래시 / + 기준으로 토큰 분리
     const tokens = base
-      .split(/[\s,()\/+]+/)
+      .split(/[\s,()/+]+/)
       .map((t) => t.trim())
       .filter((t) => t.length > 1);
 
