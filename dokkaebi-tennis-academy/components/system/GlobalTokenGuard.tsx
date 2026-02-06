@@ -23,7 +23,7 @@ export default function GlobalTokenGuard() {
 
     bootstrapOnce(setUser, () => latestUser.current as any);
     // 의도적으로 빈 배열: 마운트 때 한 번만
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 }
