@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 드롭다운/시트가 열릴 때 스크롤바 유무가 바뀌어도 레이아웃이 덜 흔들리게 */
-html {
-  scrollbar-gutter: stable;
+/* body 스크롤 잠금 시(overflow:hidden) 스크롤바 폭만큼 padding-right를 보정해 레이아웃 점프 방지 */
+body[data-scroll-locked] {
+  padding-right: var(--removed-body-scroll-bar-size, 0px);
 }
 
 /* 다크 모드용 CSS 변수 정의 */
