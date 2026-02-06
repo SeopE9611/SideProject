@@ -4,16 +4,27 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 
+// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
+function safeVerifyAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params;
+  if (!ObjectId.isValid(id)) {
+    return <div className="p-6 text-red-500 font-bold">상품을 찾을 수 없습니다</div>;
+  }
   const client = await clientPromise;
   const db = client.db();
   const token = (await cookies()).get('accessToken')?.value;
   let currentUserId: ObjectId | null = null;
-  if (token) {
-    const payload = verifyAccessToken(token);
-    if (payload?.sub) currentUserId = new ObjectId(String(payload.sub));
-  }
+  const payload = safeVerifyAccessToken(token);
+  if (payload?.sub) currentUserId = new ObjectId(String(payload.sub));
 
   const product = await db.collection('products').findOne({ _id: new ObjectId(id) });
   if (!product) return <div className="p-6 text-red-500 font-bold">상품을 찾을 수 없습니다</div>;
