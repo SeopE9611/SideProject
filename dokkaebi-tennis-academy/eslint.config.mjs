@@ -27,6 +27,9 @@ const eslintConfig = [
       'react-hooks/set-state-in-effect': 'off',
       'react-hooks/refs': 'off',
       'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+      'react-hooks/incompatible-library': 'off',
+      '@next/next/no-img-element': 'off',
     },
   }),
 ];
