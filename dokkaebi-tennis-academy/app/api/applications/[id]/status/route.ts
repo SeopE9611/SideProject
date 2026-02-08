@@ -7,7 +7,7 @@ import { ObjectId } from 'mongodb';
 import { APPLICATION_STATUSES } from '@/lib/application-status';
 
 // PATCH 요청 핸들러: 신청서 상태를 변경함
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth(); // 현재 로그인한 사용자 인증
 
   // 관리자만 접근 가능

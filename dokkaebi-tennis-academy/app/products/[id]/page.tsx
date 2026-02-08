@@ -14,7 +14,7 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ObjectId.isValid(id)) {
     return <div className="p-6 text-red-500 font-bold">상품을 찾을 수 없습니다</div>;

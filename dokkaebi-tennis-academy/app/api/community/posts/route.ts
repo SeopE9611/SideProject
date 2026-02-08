@@ -46,8 +46,8 @@ async function resolveDisplayName(payload: any | null): Promise<string> {
       // 1) (나중에 nickname 필드가 생기면) u.nickname
       // 2) u.name
       // 3) 그 외는 fallback
-      // @ts-ignore
-      displayName = u?.nickname ?? u?.name ?? null;
+      const userDoc = u as { nickname?: string; name?: string } | null;
+      displayName = userDoc?.nickname ?? userDoc?.name ?? null;
     }
   } catch {
     // 조회 실패해도 치명적이진 않으니 무시

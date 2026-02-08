@@ -2032,7 +2032,6 @@ export async function handleSubmitStringingApplication(req: Request) {
       }
     } else {
       // 비-방문: 저장 직전에 예약값 제거
-      (shippingInfo as any) && (stringDetails as any); // 타입 가드용 no-op
     }
 
     if (shippingInfo && typeof shippingInfo === 'object') {

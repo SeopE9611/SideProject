@@ -16,9 +16,9 @@ import LoginGate from '@/components/system/LoginGate';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
 interface Props {
-  searchParams: {
+  searchParams: Promise<{
     applicationId?: string;
-  };
+  }>;
 }
 
 function isValidObjectId(id: string | undefined): boolean {

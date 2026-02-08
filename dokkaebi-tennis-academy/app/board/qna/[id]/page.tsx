@@ -222,7 +222,6 @@ export default function QnaDetailPage() {
                                   onClick={() => setLightbox({ open: true, src: url, alt: name })}
                                   className="relative block w-full rounded-lg overflow-hidden border-2 border-gray-200 hover:border-teal-500 transition-all duration-300 shadow-md hover:shadow-lg dark:border-gray-700 dark:hover:border-teal-400"
                                 >
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img src={url || '/placeholder.svg'} alt={name} className="w-full h-32 object-cover" />
                                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                                     <ExternalLink className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

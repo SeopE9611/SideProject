@@ -42,7 +42,7 @@ function parseShippedAt(input?: unknown): { ok: true; value: Date } | { ok: fals
   return { ok: true, value: d };
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 로그인 검증
   const at = (await cookies()).get('accessToken')?.value;
   let payload: any = null;
@@ -56,7 +56,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (!ObjectId.isValid(subStr)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   // 파라미터/바디 검증
-  const { id } = params;
+  const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
   const body = await req.json().catch(() => ({}));
   const schema = z.object({

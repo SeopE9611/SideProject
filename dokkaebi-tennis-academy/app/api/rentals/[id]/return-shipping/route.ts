@@ -37,7 +37,7 @@ const requestSchema = z.object({
     .refine((v) => !v || v.length <= 200, { message: '메모는 200자 이내로 입력해주세요.' }),
 });
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 로그인 검증
   const at = (await cookies()).get('accessToken')?.value;
   let payload: any = null;
@@ -57,7 +57,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (!sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   // 파라미터/바디 검증
-  const { id } = params;
+  const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
   const body = await req.json().catch(() => null);
   const parsed = requestSchema.safeParse(body);

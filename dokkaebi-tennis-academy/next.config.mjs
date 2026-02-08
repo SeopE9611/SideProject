@@ -2,9 +2,6 @@
 process.env.NEXT_FONT_GOOGLE_DISABLE_DOWNLOADS = '1';
 
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },

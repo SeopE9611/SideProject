@@ -6,7 +6,8 @@ import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { redirect } from 'next/navigation';
 
-export default async function OrderDetailPage({ params: { id } }: { params: { id: string } }) {
+export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
 
   if (!user) {

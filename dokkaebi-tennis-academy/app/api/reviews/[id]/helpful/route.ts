@@ -21,7 +21,7 @@ async function ensureVotesIndexes(db: DbAny) {
     await col.createIndex({ reviewId: 1 }, { name: 'reviewId_idx' });
   }
 }
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const db = await getDb();
   await ensureVotesIndexes(db);
 
@@ -40,7 +40,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   // sub는 ObjectId 문자열이어야 함 (new ObjectId에서 500 방지)
   if (!subStr || !ObjectId.isValid(subStr)) return NextResponse.json({ ok: false, reason: 'unauthorized' }, { status: 401 });
 
-  const { id } = params;
+  const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, reason: 'badRequest' }, { status: 400 });
 
   const url = new URL(_req.url);

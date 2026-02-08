@@ -3,7 +3,8 @@ import LoginGate from '@/components/system/LoginGate';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { cookies } from 'next/headers';
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
   function safeVerifyAccessToken(token?: string) {
     if (!token) return null;
@@ -21,10 +22,10 @@ export default async function Page({ params }: { params: { id: string } }) {
     const token = (await cookies()).get('accessToken')?.value;
     const payload = safeVerifyAccessToken(token);
     if (!payload?.sub) {
-      const next = `/mypage/rentals/${params.id}/return-shipping`;
+      const next = `/mypage/rentals/${id}/return-shipping`;
       return <LoginGate next={next} variant="default" />;
     }
   }
 
-  return <ReturnShippingForm rentalId={params.id} />;
+  return <ReturnShippingForm rentalId={id} />;
 }

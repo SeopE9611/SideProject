@@ -36,12 +36,13 @@ async function getRacketMini(racketId: string) {
   };
 }
 
-export default async function Page({ params, searchParams }: { params: { id: string }; searchParams?: { period?: string } }) {
-  const racketId = params.id;
+export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams?: Promise<{ period?: string }> }) {
+  const { id: racketId } = await params;
 
   if (!ObjectId.isValid(racketId)) notFound();
 
-  const raw = Number(searchParams?.period ?? 7);
+  const sp = (await Promise.resolve(searchParams ?? {})) as { period?: string };
+  const raw = Number(sp.period ?? 7);
   const period = raw === 7 || raw === 15 || raw === 30 ? (raw as 7 | 15 | 30) : 7;
 
   const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();

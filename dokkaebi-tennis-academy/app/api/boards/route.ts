@@ -299,8 +299,8 @@ export async function POST(req: NextRequest) {
       displayName = u?.name ?? u?.nickname ?? undefined;
     }
   } catch (_) {}
-  // @ts-ignore - 런타임 안전
-  if (!displayName) displayName = payload?.name ?? payload?.nickname ?? payload?.email?.split('@')?.[0];
+  const payloadName = payload as { name?: string; nickname?: string; email?: string } | undefined;
+  if (!displayName) displayName = payloadName?.name ?? payloadName?.nickname ?? payloadName?.email?.split('@')?.[0];
 
   // 카테고리 정규화 (qna에서만 사용)
   let normalizedCategory: QnaCategory | undefined = undefined;
@@ -325,7 +325,7 @@ export async function POST(req: NextRequest) {
   const safeAttachments = Array.isArray(body.attachments) ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url)) : [];
 
   // 본문 content 서버에서 정제
-  const safeContent = sanitizeHtml(String(body.content ?? ''));
+  const safeContent = await sanitizeHtml(String(body.content ?? ''));
 
   const doc: BoardPost = {
     type: body.type,

@@ -16,8 +16,6 @@ interface AuthState {
   logout: () => void;
 }
 
-let store: ReturnType<typeof createAuthStore> | undefined;
-
 const createAuthStore = () =>
   createStore<AuthState>((set) => ({
     user: null,
@@ -25,9 +23,8 @@ const createAuthStore = () =>
     logout: () => set({ user: null }),
   }));
 
+const store = createAuthStore();
+
 export const useAuthStore = () => {
-  if (!store) {
-    store = createAuthStore();
-  }
   return useStore(store);
 };

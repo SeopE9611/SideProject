@@ -30,9 +30,9 @@ type PassHistoryItem = {
 
 // POST /api/package-orders/:id/pass-status
 // body: { status: 'active' | 'paused' | 'cancelled', reason?: string }
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+  const { id } = await params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ error: 'invalid id' }, { status: 400 });
 
     // 인증 + 관리자

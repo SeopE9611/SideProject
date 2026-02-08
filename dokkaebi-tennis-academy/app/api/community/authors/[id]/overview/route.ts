@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 
-export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
-  const { id } = ctx.params;
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
 
   // ObjectId 유효성 검사
   if (!ObjectId.isValid(id)) {

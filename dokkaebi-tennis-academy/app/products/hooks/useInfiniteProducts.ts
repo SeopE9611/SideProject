@@ -87,7 +87,6 @@ export function useInfiniteProducts(filters: Filters) {
       // initial load
       fetchPage(1, true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serializedFilters]);
 
   // 실제 데이터를 가져오는 함수

@@ -241,7 +241,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   };
   // content가 오면 서버에서 정제
   if (typeof patch.content === 'string') {
-    patch.content = sanitizeHtml(patch.content);
+    patch.content = await sanitizeHtml(patch.content);
   }
   // removedPaths가 오면 patch.attachments에서 해당 항목 제거(이중 안전망)
   if (removedPaths.length > 0 && Array.isArray(patch.attachments)) {

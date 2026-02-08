@@ -294,7 +294,6 @@ export default function OperationsClient() {
     if (query) setQ(query);
     if (warn === '1') setOnlyWarn(true);
     if (!Number.isNaN(p) && p > 0) setPage(p);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)

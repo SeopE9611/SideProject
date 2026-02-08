@@ -1287,7 +1287,7 @@ export default function StringServiceApplyPage() {
       const nextLines = baseLines.map((line, i) => (i === index ? { ...line, [field]: value } : line));
 
       // 첫 번째 라인의 텐션을 "기본값"으로 들고 가고 싶을 때 (선택)
-      let next: FormData = { ...prev, lines: nextLines };
+      const next: FormData = { ...prev, lines: nextLines };
       if (index === 0 && field === 'tensionMain') {
         next.defaultMainTension = String(value ?? '');
       }
