@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   if (!ObjectId.isValid(id)) {
     return NextResponse.json({ reviews: [], summary: { count: 0, avg: 0 } });
   }

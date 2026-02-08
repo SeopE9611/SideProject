@@ -1,10 +1,9 @@
-// // runtime: nodejs, dynamic: force-dynamic 유지
-// export const dynamic = 'force-dynamic';
+import { NextResponse } from 'next/server';
 
-// import { NextResponse } from 'next/server';
-// import clientPromise from '@/lib/mongodb';
-// import { cookies } from 'next/headers';
-// import { verifyAccessToken } from '@/lib/auth.utils';
+// NOTE: 현재 비활성화된 엔드포인트. 필요 시 주석 해제 후 복원.
+export async function POST() {
+  return NextResponse.json({ ok: false, error: 'disabled' }, { status: 404 });
+}
 
 // /**
 //  * 관리자 전용: 오래된 created 대여신청 삭제

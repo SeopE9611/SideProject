@@ -5,17 +5,18 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 export default async function ApplicationDetailPage({ params }: Props) {
   const user = await getCurrentUser();
+  const { id } = await params;
 
   if (!user) {
-    const target = `/mypage/applications/${params.id}`;
+    const target = `/mypage/applications/${id}`;
     redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
   }
 
   const host = (await headers()).get('host');
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
-  return <StringingApplicationDetailClient id={params.id} baseUrl={baseUrl} isAdmin={false} backUrl="/mypage?tab=applications" />;
+  return <StringingApplicationDetailClient id={id} baseUrl={baseUrl} isAdmin={false} backUrl="/mypage?tab=applications" />;
 }

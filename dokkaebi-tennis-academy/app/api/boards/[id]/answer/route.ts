@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const parsed = answerSchema.safeParse(bodyRaw);
   if (!parsed.success) return NextResponse.json({ ok: false, error: 'invalid_body' }, { status: 400 });
   const { content } = parsed.data;
-  const clean = sanitizeHtml(String(content || '')); // 정제
+  const clean = await sanitizeHtml(String(content || '')); // 정제
 
   const db = await getDb();
   const post = await db.collection('board_posts').findOne({ _id: postId });
@@ -80,7 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!parsed.success) return NextResponse.json({ ok: false, error: 'invalid_body' }, { status: 400 });
   const { content } = parsed.data;
   // 먼저 파싱
-  const clean = sanitizeHtml(String(content || '')); // 정제
+  const clean = await sanitizeHtml(String(content || '')); // 정제
 
   const db = await getDb();
 

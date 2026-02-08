@@ -21,7 +21,7 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
      // 운영 정책: 비회원 주문을 받지 않는 경우(off)에는 "비회원 주문 조회/상세"도 중단
     // 주문 존재 여부를 외부에 노출하지 않기 위해 404로 통일.
@@ -32,7 +32,8 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
     const db = client.db();
 
     // 요청된 주문 ID로 주문 조회
-    const order = await db.collection('orders').findOne({ _id: new ObjectId(params.id) });
+    const { id } = await params;
+    const order = await db.collection('orders').findOne({ _id: new ObjectId(id) });
 
     if (!order) {
       return NextResponse.json({ success: false, error: '주문을 찾을 수 없습니다.' }, { status: 404 });

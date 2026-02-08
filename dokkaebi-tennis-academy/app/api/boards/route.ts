@@ -325,7 +325,7 @@ export async function POST(req: NextRequest) {
   const safeAttachments = Array.isArray(body.attachments) ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url)) : [];
 
   // 본문 content 서버에서 정제
-  const safeContent = sanitizeHtml(String(body.content ?? ''));
+  const safeContent = await sanitizeHtml(String(body.content ?? ''));
 
   const doc: BoardPost = {
     type: body.type,

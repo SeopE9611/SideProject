@@ -5,7 +5,7 @@ import MyPageClient from '@/app/mypage/MypageClient';
 type SearchParams = Record<string, string | string[] | undefined>;
 
 type PageProps = {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams>;
 };
 
 export default async function MyPagePage({ searchParams }: PageProps) {
@@ -13,7 +13,7 @@ export default async function MyPagePage({ searchParams }: PageProps) {
   if (!user) {
     // 탭(tab) 등 쿼리스트링을 보존한 채 로그인으로 보내기
     // (로그인 성공 후 /login?redirectTo=... 값을 사용해 원래 경로로 복귀)
-    const sp = searchParams ?? {};
+    const sp = await Promise.resolve(searchParams ?? {});
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(sp)) {
       if (typeof v === 'string') qs.set(k, v);

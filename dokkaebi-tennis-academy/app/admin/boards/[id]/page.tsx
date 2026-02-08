@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import AccessDenied from '@/components/system/AccessDenied';
 
-export default async function BoardPostDetailPage({ params }: { params: { id: string } }) {
-  const postId = Number.parseInt(params.id);
+export default async function BoardPostDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const postId = Number.parseInt(id);
   const user = await getCurrentUser();
 
   if (!user || user.role !== 'admin') {

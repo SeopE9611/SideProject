@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation';
 
 type SP = Record<string, string | string[] | undefined>;
 
-export default async function AdminNotificationsPage({ searchParams }: { searchParams?: SP | Promise<SP> }) {
-  const params = await searchParams; //
+export default async function AdminNotificationsPage({ searchParams }: { searchParams?: Promise<SP> }) {
+  const params = await Promise.resolve(searchParams ?? {}); //
   const sp = new URLSearchParams();
   for (const [k, v] of Object.entries(params ?? {})) {
     if (typeof v === 'string') sp.set(k, v);

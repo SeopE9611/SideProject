@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 type SearchParams = Record<string, string | string[] | undefined>;
 
 type PageProps = {
-  searchParams?: SearchParams | Promise<SearchParams>;
+  searchParams?: Promise<SearchParams>;
 };
 
 function safeRedirectTarget(raw?: string) {
@@ -21,7 +21,7 @@ function safeRedirectTarget(raw?: string) {
 export default async function LoginPage({ searchParams }: PageProps) {
   const user = await getCurrentUser();
   if (user?.id) {
-    const sp = await Promise.resolve(searchParams ?? {});
+    const sp = (await Promise.resolve(searchParams ?? {})) as SearchParams;
     const rNext = sp.next;
     const rRedirectTo = sp.redirectTo;
     const next = Array.isArray(rNext) ? rNext[0] : rNext;

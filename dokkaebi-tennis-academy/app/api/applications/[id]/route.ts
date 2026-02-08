@@ -15,7 +15,7 @@ function safeVerifyAccessToken(token?: string) {
 
 
 // GET 메서드 정의
-export async function GET(req: Request, context: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   // 인증 처리
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
@@ -25,7 +25,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
   if (!payload) return new NextResponse('Unauthorized', { status: 401 });
 
   try {
-    const id = context.params.id;
+    const { id } = await context.params;
 
     // 유효성 검사: 빈 ID일 경우 400 반환
     if (!id) {
