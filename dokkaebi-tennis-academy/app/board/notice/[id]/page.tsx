@@ -221,7 +221,6 @@ export default function NoticeDetailPage() {
                               aria-label="이미지 확대 보기"
                             >
                               <div className="relative">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={(typeof imageAtts[0] === 'string' ? imageAtts[0] : imageAtts[0].url) as string}
                                   alt={(imageAtts[0] as any)?.name || 'image-1'}
@@ -246,7 +245,6 @@ export default function NoticeDetailPage() {
                                     className="relative block w-full rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg dark:border-gray-700 dark:hover:border-blue-400"
                                     aria-label={`${name} 이미지 보기`}
                                   >
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src={url || '/placeholder.svg'} alt={name} className="w-full h-40 object-cover" />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                                       <ExternalLink className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

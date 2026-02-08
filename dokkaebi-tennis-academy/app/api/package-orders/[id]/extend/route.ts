@@ -38,9 +38,9 @@ const PASS_STATUS = {
   cancelled: 'cancelled' as PassStatus,
 };
 // body: { mode: 'days'|'absolute', days?: number, newExpiry?: string, reason?: string }
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+  const { id } = await params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ error: 'invalid id' }, { status: 400 });
 
     // 인증 & 관리자 체크 (access -> refresh, ADMIN_EMAILS 포함)

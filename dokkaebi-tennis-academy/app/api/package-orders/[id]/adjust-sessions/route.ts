@@ -42,9 +42,9 @@ const PASS_STATUS = {
 // 이제 상태 변경해보기.STEP 3: 결제 상태에 따라 동작 잠금(서버+UI)
 
 // body: { delta: number, clampZero?: boolean, reason?: string }
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+  const { id } = await params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ error: 'invalid id' }, { status: 400 });
 
     // 인증 & 관리자 체크

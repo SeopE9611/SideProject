@@ -66,7 +66,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   if (!order) return notFound();
 
   const appParams = new URLSearchParams({ orderId: order._id.toString() });
-  let appHref = `/services/apply?${appParams.toString()}`;
+  const appHref = `/services/apply?${appParams.toString()}`;
 
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refreshToken')?.value;

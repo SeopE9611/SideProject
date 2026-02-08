@@ -241,7 +241,6 @@ export default function PackageOrdersClient() {
       setPage(parsed.page);
     }
     didInitFromURL.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // 한 페이지에 보여줄 항목 수
@@ -258,7 +257,6 @@ export default function PackageOrdersClient() {
     if (newQuery !== currQuery) {
       router.replace(`${pathname}?${newQuery}`, { scroll: false });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, searchTerm, statusFilter, packageTypeFilter, paymentFilter, serviceTypeFilter, sortBy, sortDirection, limit]);
 
   // URL 동기화/표시용 쿼리

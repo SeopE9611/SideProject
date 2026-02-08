@@ -125,7 +125,6 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
       queue.forEach((q) => URL.revokeObjectURL(q.url));
       setQueue([]);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

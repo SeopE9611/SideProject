@@ -16,7 +16,7 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const client = await clientPromise;
     const db = client.db();
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // 상품 정보 업데이트
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   // 인증 권한 검사
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
@@ -98,7 +98,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ message: '서버 오류' }, { status: 500 });
   }
 }
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   // 인증 권한 검사
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;

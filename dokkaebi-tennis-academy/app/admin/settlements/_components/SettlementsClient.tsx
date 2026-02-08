@@ -1147,7 +1147,11 @@ export default function SettlementsClient() {
                                   setDiffMap((prev) => ({ ...prev, [key]: { live: livePack, snap } }));
                                   setStatusMap((prev) => ({ ...prev, [key]: ok ? 'ok' : 'stale' }));
                                   setStaleMap((prev) => ({ ...prev, [key]: !ok }));
-                                  ok ? showSuccessToast('스냅샷이 현재 집계와 일치합니다.') : showInfoToast(`변경 감지됨: ${key} 스냅샷과 현재 집계가 다릅니다.`);
+                                  if (ok) {
+                                    showSuccessToast('스냅샷이 현재 집계와 일치합니다.');
+                                  } else {
+                                    showInfoToast(`변경 감지됨: ${key} 스냅샷과 현재 집계가 다릅니다.`);
+                                  }
                                   setOpenMap((prev) => ({ ...prev, [key]: !ok }));
                                 } catch {
                                   setStatusMap((prev) => ({ ...prev, [key]: 'stale' }));

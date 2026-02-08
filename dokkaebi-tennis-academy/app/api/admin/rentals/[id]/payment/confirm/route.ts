@@ -24,11 +24,11 @@ async function requireAdmin() {
   return payload;
 }
 
-export async function POST(_: Request, { params }: { params: { id: string } }) {
+export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
 
-  const { id } = params;
+  const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, message: 'BAD_ID' }, { status: 400 });
 
   const db = (await clientPromise).db();

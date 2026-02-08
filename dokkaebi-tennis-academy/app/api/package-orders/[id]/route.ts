@@ -32,9 +32,9 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+  const { id } = await params;
     if (!ObjectId.isValid(String(id))) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
 
     // 토큰 읽기 (access 우선, refresh 보조)

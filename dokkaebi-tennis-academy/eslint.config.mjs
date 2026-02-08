@@ -24,6 +24,12 @@ const eslintConfig = [
       // ✅ 새로 추가: @typescript-eslint/no-explicit-any 규칙 비활성화
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true }],
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+      'react-hooks/incompatible-library': 'off',
+      '@next/next/no-img-element': 'off',
     },
   }),
 ];

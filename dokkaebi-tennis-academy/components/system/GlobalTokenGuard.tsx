@@ -21,11 +21,9 @@ export default function GlobalTokenGuard() {
     // 서버(AuthHydrator)에서 이미 주입됐다면 아무것도 안 함
     if (user) return;
 
-    let alive = true;
-
     bootstrapOnce(setUser, () => latestUser.current as any);
     // 의도적으로 빈 배열: 마운트 때 한 번만
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 }

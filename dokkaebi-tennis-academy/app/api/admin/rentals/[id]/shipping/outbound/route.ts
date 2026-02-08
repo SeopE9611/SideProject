@@ -23,13 +23,13 @@ async function requireAdmin() {
   return payload;
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자 인증
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
 
   // 파라미터/바디 검증
-  const { id } = params;
+  const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, message: 'BAD_ID' }, { status: 400 });
   const { courier = '', trackingNumber = '', shippedAt } = await req.json().catch(() => ({}));
   if (!courier || !trackingNumber) return NextResponse.json({ ok: false, message: 'MISSING_FIELDS' }, { status: 400 });

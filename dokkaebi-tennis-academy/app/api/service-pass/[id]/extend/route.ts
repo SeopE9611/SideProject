@@ -24,9 +24,9 @@ function safeVerifyAccessToken(token?: string | null) {
  *   "reason": "고객 요청으로 1개월 연장"
  * }
  */
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+  const { id } = await params;
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'invalid id' }, { status: 400 });
     }

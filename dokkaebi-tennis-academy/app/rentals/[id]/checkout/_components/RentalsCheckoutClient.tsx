@@ -254,7 +254,6 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
     const v = clampPoints(maxPointsToUse);
     setPointsToUse(v);
     setPointsInput(String(v));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useAllPoints, maxPointsToUse]);
 
   // 총액/포인트한도 변화로 기존 입력이 한도를 넘으면 자동 clamp
@@ -264,7 +263,6 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       setPointsToUse(v);
       setPointsInput(String(v));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maxPointsToUse]);
 
   // 우편번호 검색기

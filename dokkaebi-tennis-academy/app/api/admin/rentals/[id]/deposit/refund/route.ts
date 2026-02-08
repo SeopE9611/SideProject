@@ -27,12 +27,12 @@ async function requireAdmin() {
  * - 'mark'  : depositRefundedAt = now   (이미 있으면 멱등 200)
  * - 'clear' : depositRefundedAt = null  (이미 null이면 멱등 200)
  */
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자 권한 체크
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
 
-  const { id } = params;
+  const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, message: '잘못된 ID' }, { status: 400 });
 
   const { action = 'mark' } = await req.json().catch(() => ({}));

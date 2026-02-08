@@ -32,7 +32,6 @@ export default function RacketsClient() {
     setBrand(search.get('brand') || '');
     const c = search.get('cond');
     setCond(['A', 'B', 'C'].includes(c ?? '') ? (c as string) : '');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const query = new URLSearchParams();

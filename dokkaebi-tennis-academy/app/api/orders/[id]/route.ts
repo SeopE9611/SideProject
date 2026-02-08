@@ -275,10 +275,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     // 파라미터/바디 파싱
-    const { id } = params; // 동적 세그먼트
+    const { id } = await params; // 동적 세그먼트
     // 깨진 JSON이면 throw → 500 방지 (400으로 정리)
     let body: any = null;
     try {
