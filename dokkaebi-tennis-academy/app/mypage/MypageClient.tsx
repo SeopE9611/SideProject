@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import SiteContainer from '@/components/layout/SiteContainer';
 import ActivityFeedSkeleton from '@/app/mypage/tabs/ActivityFeedSkeleton';
 import ActivityFeed from '@/app/mypage/tabs/ActivityFeed';
+import { FullPageSpinner } from '@/components/system/PageLoading';
 
 type Props = {
   user: {
@@ -68,12 +69,9 @@ export default function MypageClient({ user }: Props) {
   }, []);
 
   if (loading) {
-    return (
-      <div className="grid min-h-[100svh] place-items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageSpinner label="마이페이지 불러오는 중..." />;
   }
+  
   if (!user) return null;
 
   const currentTab = searchParams.get('tab') ?? 'activity'; // 마이페이지 첫 진입 시 “전체”를 기본으로

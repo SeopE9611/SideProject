@@ -143,6 +143,12 @@ export default function CartPageClient() {
     ? `구성 오류: 라켓 1종 + 장착 스트링 1종만 가능해요. (현재 라켓 ${racketLineCount}종 / 장착 스트링 ${mountableStringLineCount}종)`
     : `수량 오류: 라켓 ${totalRacketQty}개 / 장착 스트링 ${totalMountableStringQty}개 → 수량을 맞춰주세요.`;
 
+  // 체크아웃 진입 URL 분리
+  // - 라켓이 있는 경우만 withService=1 (라켓+스트링 번들/장착 서비스 플로우)
+  // - 라켓이 없으면 일반 체크아웃(/checkout)로 진입해야 구성 정리 카드가 오작동하지 않음
+  const checkoutBasePath = totalRacketQty > 0 ? '/checkout?withService=1' : '/checkout';
+  const checkoutHref = user ? checkoutBasePath : `/login?next=${encodeURIComponent(checkoutBasePath)}`;
+
   // 번들(라켓 + 장착 가능 스트링)인 경우: 장바구니에서는 "수량 스테퍼"를 잠그고
   // 스트링 선택 화면에서만 수량/스트링을 함께 바꾸도록 UX를 고정한다.
   const bundleRacketItem = useMemo(() => cartItems.find((it) => (it.kind ?? 'product') === 'racket'), [cartItems]);
@@ -653,7 +659,7 @@ export default function CartPageClient() {
                       </Button>
                     ) : (
                       <Button className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl" size="lg" asChild>
-                        <Link href={user ? '/checkout?withService=1' : `/login?next=${encodeURIComponent('/checkout?withService=1')}`} className="flex items-center gap-3">
+                        <Link href={checkoutHref} className="flex items-center gap-3">
                           <ShoppingBag className="h-5 w-5" />
                           {user ? '주문하기' : '로그인 후 주문하기'}
                           <ArrowRight className="h-5 w-5" />
@@ -728,7 +734,7 @@ export default function CartPageClient() {
                 </Button>
               ) : (
                 <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
-                  <Link href={user ? '/checkout?withService=1' : `/login?next=${encodeURIComponent('/checkout?withService=1')}`}>{user ? '주문하기' : '로그인 후 주문하기'}</Link>
+                  <Link href={checkoutHref}>{user ? '주문하기' : '로그인 후 주문하기'}</Link>
                 </Button>
               )}
             </SiteContainer>

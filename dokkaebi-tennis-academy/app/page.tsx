@@ -85,13 +85,38 @@ type PromoBanner = {
 };
 
 // 히어로 하단 문의/광고 배너(4개 고정)
-// TODO: 실제 운영 값으로 교체하세요 (전화번호/이미지/링크)
-const PROMO_BANNERS: PromoBanner[] = [
-  { key: 'teacher', label: '광고 문의\n010-0000-0000', href: '/support' },
-  { key: 'stringing', label: '광고 문의\n010-0000-0000', href: '/support' },
-  { key: 'used', label: '광고 문의\n010-0000-0000', href: '/support' },
-  { key: 'ads', label: '광고 문의\n010-0000-0000', href: '/support' },
-];
+// 운영에서는 NEXT_PUBLIC_HOME_PROMO_BANNERS_JSON 로 주입
+// - 미설정/파싱 실패 시: 섹션 숨김(더미 노출 방지)
+// - 최대 4개만 사용
+// - label에 줄바꿈이 필요하면 JSON 문자열에서 "\\n" 로 넣기
+const PROMO_BANNERS: PromoBanner[] = (() => {
+  const raw = process.env.NEXT_PUBLIC_HOME_PROMO_BANNERS_JSON;
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map((v, idx): PromoBanner | null => {
+        if (!v || typeof v !== 'object') return null;
+        const obj = v as Record<string, unknown>;
+
+        const key = typeof obj.key === 'string' && obj.key.trim() ? obj.key : `promo-${idx}`;
+        const label = typeof obj.label === 'string' ? obj.label : '';
+        if (!label.trim()) return null;
+
+        const img = typeof obj.img === 'string' && obj.img.trim() ? obj.img : undefined;
+        const alt = typeof obj.alt === 'string' && obj.alt.trim() ? obj.alt : undefined;
+        const href = typeof obj.href === 'string' && obj.href.trim() ? obj.href : undefined;
+
+        return { key, label, img, alt, href };
+      })
+      .filter((v): v is PromoBanner => Boolean(v))
+      .slice(0, 4);
+  } catch {
+    return [];
+  }
+})();
 
 export default function Home() {
   const [activeBrand, setActiveBrand] = useState<BrandKey>('all');
@@ -321,8 +346,9 @@ export default function Home() {
       {/* 상단 배너 + 히어로 하단 배너 */}
       <SiteContainer variant="wide" className="px-0">
         <HeroSlider slides={SLIDES} />
-        {/* 히어로 하단: 문의/광고 배너 4개 */}
-        {/* <section className="mt-3 bp-sm:mt-4 bp-md:mt-5">
+        {/* 히어로 하단: 문의/광고 배너(운영값 있을 때만 노출) */}
+        {/* {PROMO_BANNERS.length > 0 && (
+          <section className="mt-3 bp-sm:mt-4 bp-md:mt-5">
           <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
             <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
               {PROMO_BANNERS.map((b) => {
@@ -376,7 +402,8 @@ export default function Home() {
               })}
             </div>
           </div>
-        </section> */}
+         </section>
+        )} */}
       </SiteContainer>
 
       {/* 빠른 메뉴 */}

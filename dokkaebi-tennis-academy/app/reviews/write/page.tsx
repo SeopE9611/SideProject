@@ -14,6 +14,7 @@ import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import LoginGate from '@/components/system/LoginGate';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { FullPageSpinner } from '@/components/system/PageLoading';
 
 /* ---- 별점 ---- */
 function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: number) => void; disabled?: boolean }) {
@@ -602,11 +603,7 @@ export default function ReviewWritePage() {
 
   // 비회원 차단
   if (!allowGuestCheckout && !authChecked) {
-    return (
-      <div className="grid min-h-[100svh] place-items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FullPageSpinner label="로그인 상태 확인 중..." />;
   }
   if (blockedByLoginGate) {
     return <LoginGate next={nextUrl} variant="default" />;

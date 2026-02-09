@@ -25,6 +25,7 @@ import SiteContainer from '@/components/layout/SiteContainer';
 import { cn } from '@/lib/utils';
 import LoginGate from '@/components/system/LoginGate';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { FullPageSpinner } from '@/components/system/PageLoading';
 
 declare global {
   interface Window {
@@ -572,12 +573,7 @@ export default function CheckoutPage() {
     };
   }, [user]);
 
-  if (loading)
-    return (
-      <div className="grid min-h-[100svh] place-items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+  if (loading) return <FullPageSpinner label="결제 정보 불러오는 중..." />;
 
   // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출
   if (!user && !allowGuestCheckout) {
