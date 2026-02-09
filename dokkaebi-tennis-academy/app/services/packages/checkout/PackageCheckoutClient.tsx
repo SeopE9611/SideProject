@@ -18,6 +18,7 @@ import { getMyInfo } from '@/lib/auth.client';
 import { CreditCard, MapPin, Shield, CheckCircle, UserIcon, Mail, Phone, MessageSquare, Building2, Package, Star, Calendar, Gift, Target, Award } from 'lucide-react';
 import PackageCheckoutButton from './PackageCheckoutButton';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { FullPageSpinner } from '@/components/system/PageLoading';
 
 // 클라이언트 유효성(UX용)
 type CheckoutField = 'name' | 'email' | 'phone' | 'depositor' | 'postalCode' | 'address' | 'addressDetail';
@@ -434,11 +435,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   const canSubmit = agreeTerms && agreePrivacy && agreeRefund && isFormValid;
 
   if (loading || isPackageLoading) {
-    return (
-      <div className="grid min-h-[100svh] place-items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+   return <FullPageSpinner label="패키지 결제 화면 준비 중..." />;
   }
 
   if (!selectedPackage) {

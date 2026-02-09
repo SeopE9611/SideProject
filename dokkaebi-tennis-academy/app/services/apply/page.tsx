@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { File, Grid2X2 } from 'lucide-react';
 import { MdSportsTennis } from 'react-icons/md';
+import { FullPageSpinner } from '@/components/system/PageLoading';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -1924,12 +1925,7 @@ export default function StringServiceApplyPage() {
   // ===== 비회원 주문/신청 차단(LoginGate) =====
   // - 게스트 모드가 꺼져 있을 때: 인증 체크 완료 후 미로그인이라면 LoginGate로 진입 차단
   if (!allowGuestCheckout && !authChecked) {
-    if (loading)
-      return (
-        <div className="grid min-h-[100svh] place-items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      );
+    return <FullPageSpinner label="로그인 상태 확인 중..." />;
   }
 
   if (blockedByLoginGate) return <LoginGate next={nextUrl} variant="default" />;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { AlertTriangle, RefreshCw, Home, ShieldAlert, RotateCcw, MessageCircleQuestion } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home} from 'lucide-react';
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {

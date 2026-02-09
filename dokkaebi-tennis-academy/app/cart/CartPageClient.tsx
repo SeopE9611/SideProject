@@ -143,12 +143,6 @@ export default function CartPageClient() {
     ? `구성 오류: 라켓 1종 + 장착 스트링 1종만 가능해요. (현재 라켓 ${racketLineCount}종 / 장착 스트링 ${mountableStringLineCount}종)`
     : `수량 오류: 라켓 ${totalRacketQty}개 / 장착 스트링 ${totalMountableStringQty}개 → 수량을 맞춰주세요.`;
 
-  // 체크아웃 진입 URL 분리
-  // - 라켓이 있는 경우만 withService=1 (라켓+스트링 번들/장착 서비스 플로우)
-  // - 라켓이 없으면 일반 체크아웃(/checkout)로 진입해야 구성 정리 카드가 오작동하지 않음
-  const checkoutBasePath = totalRacketQty > 0 ? '/checkout?withService=1' : '/checkout';
-  const checkoutHref = user ? checkoutBasePath : `/login?next=${encodeURIComponent(checkoutBasePath)}`;
-
   // 번들(라켓 + 장착 가능 스트링)인 경우: 장바구니에서는 "수량 스테퍼"를 잠그고
   // 스트링 선택 화면에서만 수량/스트링을 함께 바꾸도록 UX를 고정한다.
   const bundleRacketItem = useMemo(() => cartItems.find((it) => (it.kind ?? 'product') === 'racket'), [cartItems]);
@@ -179,6 +173,13 @@ export default function CartPageClient() {
   }, [bundleRacketItem, bundleStringItem, bundleQty, blockServiceCheckoutByComposition]);
 
   const isBundleLocked = Boolean(bundleEditHref);
+
+  // 체크아웃 진입 URL을 "번들 완성"일 때만 withService=1로
+  // - isBundleLocked: 라켓 1종 + 장착 스트링 1종이 동시에 존재하고, 편집 링크까지 만들어질 정도로 번들이 성립한 상태
+  // - blockServiceCheckout: 구성/수량 불일치면 장바구니에서 이미 막히는 상태
+  const shouldEnterCheckoutWithService = !blockServiceCheckout && isBundleLocked;
+  const checkoutBasePath = shouldEnterCheckoutWithService ? '/checkout?withService=1' : '/checkout';
+  const checkoutHref = user ? checkoutBasePath : `/login?next=${encodeURIComponent(checkoutBasePath)}`;
 
   // 번들(라켓 + 장착 스트링) 구성품 id를 "원자적(묶음) 삭제" 단위로 묶는다.
   // - 번들이 완성된 상태(isBundleLocked=true)에서만 2개 id가 채워짐

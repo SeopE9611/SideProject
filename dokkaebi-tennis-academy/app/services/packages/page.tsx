@@ -11,6 +11,7 @@ import { Package, Star, CheckCircle, Clock, Shield, Award, Zap, Target, Users, A
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { FullPageSpinner } from '@/components/system/PageLoading';
 
 interface PackageOption {
   id: string;
@@ -290,11 +291,7 @@ export default function StringPackagesPage() {
   }, [searchParams]);
 
   if (isLoading && packages.length === 0) {
-    return (
-      <div className="grid min-h-[100svh] place-items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+   return <FullPageSpinner label="패키지 목록 불러오는 중..." />;
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">

@@ -347,63 +347,63 @@ export default function Home() {
       <SiteContainer variant="wide" className="px-0">
         <HeroSlider slides={SLIDES} />
         {/* 히어로 하단: 문의/광고 배너(운영값 있을 때만 노출) */}
-        {/* {PROMO_BANNERS.length > 0 && (
+        {PROMO_BANNERS.length > 0 && (
           <section className="mt-3 bp-sm:mt-4 bp-md:mt-5">
-          <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
-            <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
-              {PROMO_BANNERS.map((b) => {
-                const title = (b.label ?? '').split('\n')[0] || '광고 문의';
+            <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
+              <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
+                {PROMO_BANNERS.map((b) => {
+                  const title = (b.label ?? '').split('\n')[0] || '광고 문의';
 
-                const baseClass =
-                  'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';
+                  const baseClass =
+                    'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';
 
-                const inner = (
-                  <>
-                    {b.img ? (
-                      <>
-                        <img src={b.img} alt={b.alt ?? title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/0" />
-                      </>
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950" />
-                    )}
+                  const inner = (
+                    <>
+                      {b.img ? (
+                        <>
+                          <img src={b.img} alt={b.alt ?? title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/0" />
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950" />
+                      )}
 
-                    <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
+                      <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
 
-                    <div className="relative z-10 flex h-full items-center justify-center p-4 text-center">
-                      <div className={b.img ? 'text-white' : 'text-slate-900 dark:text-white'}>
-                        <div className="text-2xl bp-sm:text-2xl font-bold leading-tight">{title}</div>
+                      <div className="relative z-10 flex h-full items-center justify-center p-4 text-center">
+                        <div className={b.img ? 'text-white' : 'text-slate-900 dark:text-white'}>
+                          <div className="text-2xl bp-sm:text-2xl font-bold leading-tight">{title}</div>
+                        </div>
                       </div>
+                    </>
+                  );
+
+                  if (b.href?.startsWith('/')) {
+                    return (
+                      <Link key={b.key} href={b.href} className={baseClass} aria-label={title}>
+                        {inner}
+                      </Link>
+                    );
+                  }
+
+                  if (b.href) {
+                    return (
+                      <a key={b.key} href={b.href} className={baseClass} aria-label={title}>
+                        {inner}
+                      </a>
+                    );
+                  }
+
+                  return (
+                    <div key={b.key} className={baseClass} aria-label={title}>
+                      {inner}
                     </div>
-                  </>
-                );
-
-                if (b.href?.startsWith('/')) {
-                  return (
-                    <Link key={b.key} href={b.href} className={baseClass} aria-label={title}>
-                      {inner}
-                    </Link>
                   );
-                }
-
-                if (b.href) {
-                  return (
-                    <a key={b.key} href={b.href} className={baseClass} aria-label={title}>
-                      {inner}
-                    </a>
-                  );
-                }
-
-                return (
-                  <div key={b.key} className={baseClass} aria-label={title}>
-                    {inner}
-                  </div>
-                );
-              })}
+                })}
+              </div>
             </div>
-          </div>
-         </section>
-        )} */}
+          </section>
+        )}
       </SiteContainer>
 
       {/* 빠른 메뉴 */}
