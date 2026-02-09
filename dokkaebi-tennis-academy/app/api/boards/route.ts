@@ -24,14 +24,23 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
 async function mustAdmin() {
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
-  // verifyAccessToken은 throw 가능 → 500 방지를 위해 try/catch로 401 흐름 유지
   if (!at) return null;
+
+  let payload: any = null;
   try {
-    const payload = verifyAccessToken(at);
-    return payload && payload.role === 'admin' ? payload : null;
+    payload = verifyAccessToken(at);
   } catch {
-    return null;
+    payload = null;
   }
+
+  const subStr = payload?.sub ? String(payload.sub) : '';
+  if (!subStr || !ObjectId.isValid(subStr)) return null;
+
+  const db = await getDb();
+  const u = await db.collection('users').findOne({ _id: new ObjectId(subStr) }, { projection: { _id: 1, role: 1 } });
+
+  if (!u || u.role !== 'admin') return null;
+  return payload;
 }
 
 /**
@@ -282,11 +291,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
   }
   const body = parsed.data;
-
-  // 권한: 공지는 관리자만, QnA는 로그인 유저면 가능
-  if (body.type === 'notice' && payload.role !== 'admin') {
-    return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
-  }
 
   // 표시명 결정: users.name -> users.nickname -> payload.name -> payload.nickname -> email local-part
   const db = await getDb();
