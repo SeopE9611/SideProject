@@ -77,11 +77,6 @@ export default function CheckoutPage() {
   // 이탈 경고/초기값 스냅샷을 위한 초기화 플래그
   const initFlagsRef = useRef({ withServiceApplied: false, prefillDone: false });
 
-  // 3) 최초 마운트 시 URL 파라미터가 1이면 기본 ON
-  useEffect(() => {
-    setWithStringService(withServiceParam === '1');
-    initFlagsRef.current.withServiceApplied = true;
-  }, [withServiceParam]);
   const mode = sp.get('mode'); // 'buynow' | null
 
   // 비회원 체크아웃 노출 정책(클라)
@@ -96,6 +91,29 @@ export default function CheckoutPage() {
   // 장바구니 결제 vs 즉시 구매 모드 분기
   const orderItems: CartItem[] = mode === 'buynow' ? (pdpBundleItems.length > 0 ? pdpBundleItems : buyNowItem ? [buyNowItem] : []) : cartItems;
   const orderItemsKey = orderItems.map((it) => `${it.kind}:${it.id}:${it.quantity}`).join('|');
+
+  // 2중 방어: /checkout?withService=1 이 와도 "라켓이 있을 때만" 자동 ON
+  // - 스트링 단독 주문이 실수로 withService=1로 들어오는 경우, 번들 전용 검증 UI가 뜨는 사고 방지
+  // - orderItems가 아직 비어있는 경우(스토어 하이드레이션 전)에는 결정을 미루고 기다림
+  useEffect(() => {
+    // 이미 한 번 적용했으면 이후엔 URL로 상태를 덮어쓰지 않음(사용자 토글 보호)
+    if (initFlagsRef.current.withServiceApplied) return;
+
+    // URL이 withService=1이 아니면 기본 OFF 확정
+    if (withServiceParam !== '1') {
+      setWithStringService(false);
+      initFlagsRef.current.withServiceApplied = true;
+      return;
+    }
+
+    // withService=1인 경우: 아이템이 로드되기 전이면 기다림
+    if (!orderItems || orderItems.length === 0) return;
+
+    // 라켓이 실제로 있을 때만 자동 ON
+    const hasRacket = orderItems.some((it) => it.kind === 'racket');
+    setWithStringService(hasRacket);
+    initFlagsRef.current.withServiceApplied = true;
+  }, [withServiceParam, orderItemsKey]);
 
   // 번들(라켓+스트링) 모드: 수량은 1곳(스트링 선택 페이지)에서만 제어한다
   // - 체크아웃에서는 안내만 하고, 서버에서 최종 검증을 수행한다
