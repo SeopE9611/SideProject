@@ -303,36 +303,6 @@ export default function Home() {
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
 
-  const [notices, setNotices] = useState<Array<{ id: string; title: string; createdAt: string }>>([]);
-  const [hotPosts, setHotPosts] = useState<Array<{ id: string; title: string; type: string; likesCount?: number }>>([]);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/boards?type=notice&limit=3', { credentials: 'include' });
-        const json = await res.json();
-        if (json.ok && Array.isArray(json.items)) {
-          setNotices(json.items.slice(0, 3));
-        }
-      } catch {
-        setNotices([]);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/community/posts?sort=popular&limit=4', { credentials: 'include' });
-        const json = await res.json();
-        if (json.ok && Array.isArray(json.items)) {
-          setHotPosts(json.items.slice(0, 4));
-        }
-      } catch {
-        setHotPosts([]);
-      }
-    })();
-  }, []);
   // throw new Error('[TEST] app/error.tsx 동작 확인용(홈 페이지)');
   return (
     <div>

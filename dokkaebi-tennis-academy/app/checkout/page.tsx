@@ -82,7 +82,6 @@ export default function CheckoutPage() {
   // 비회원 체크아웃 노출 정책(클라)
   const guestOrderMode = getGuestOrderModeClient();
   const allowGuestCheckout = guestOrderMode === 'on';
-  const checkoutHref = useMemo(() => (sp.toString() ? `/checkout?${sp.toString()}` : '/checkout'), [sp]);
 
   const { items: cartItems } = useCartStore();
   const { item: buyNowItem } = useBuyNowStore();
@@ -91,6 +90,31 @@ export default function CheckoutPage() {
   // 장바구니 결제 vs 즉시 구매 모드 분기
   const orderItems: CartItem[] = mode === 'buynow' ? (pdpBundleItems.length > 0 ? pdpBundleItems : buyNowItem ? [buyNowItem] : []) : cartItems;
   const orderItemsKey = orderItems.map((it) => `${it.kind}:${it.id}:${it.quantity}`).join('|');
+
+  // 현재 URL 쿼리 스트링(로그인 gate next에도 사용됨)
+  const queryString = sp.toString();
+
+  // orderItems가 "결정 가능한 상태"인지(스토어 하이드레이션 전이면 빈 배열일 수 있음)
+  const isOrderItemsReady = orderItems.length > 0;
+
+  // 현재 주문 구성에 라켓이 실제로 포함되어 있는지
+  const hasRacketInOrder = useMemo(() => orderItems.some((it) => it.kind === 'racket'), [orderItemsKey]);
+
+  //  next(로그인 리디렉션)에도 URL 오염이 남지 않도록:
+  // 잘못 들어온 withService=1(라켓 없음)은 next에서 제거해서 전달
+  const checkoutHref = useMemo(() => {
+    if (!queryString) return '/checkout';
+
+    const params = new URLSearchParams(queryString);
+
+    // withService=1 이지만 라켓이 없으면(스트링 단독 등) URL/next에서 제거
+    if (params.get('withService') === '1' && isOrderItemsReady && !hasRacketInOrder) {
+      params.delete('withService');
+    }
+
+    const nextQs = params.toString();
+    return nextQs ? `/checkout?${nextQs}` : '/checkout';
+  }, [queryString, isOrderItemsReady, hasRacketInOrder]);
 
   // 2중 방어: /checkout?withService=1 이 와도 "라켓이 있을 때만" 자동 ON
   // - 스트링 단독 주문이 실수로 withService=1로 들어오는 경우, 번들 전용 검증 UI가 뜨는 사고 방지
@@ -107,13 +131,22 @@ export default function CheckoutPage() {
     }
 
     // withService=1인 경우: 아이템이 로드되기 전이면 기다림
-    if (!orderItems || orderItems.length === 0) return;
+    if (!isOrderItemsReady) return;
 
     // 라켓이 실제로 있을 때만 자동 ON
-    const hasRacket = orderItems.some((it) => it.kind === 'racket');
-    setWithStringService(hasRacket);
+    setWithStringService(hasRacketInOrder);
+
+    // 라켓이 없는데 withService=1이 들어온 "오염 URL"이면 주소창에서 제거(replaceState)
+    if (!hasRacketInOrder) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('withService');
+
+      // Next 내부 history state는 유지한 채 주소만 정리
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+    }
+
     initFlagsRef.current.withServiceApplied = true;
-  }, [withServiceParam, orderItemsKey]);
+  }, [withServiceParam, isOrderItemsReady, hasRacketInOrder]);
 
   // 번들(라켓+스트링) 모드: 수량은 1곳(스트링 선택 페이지)에서만 제어한다
   // - 체크아웃에서는 안내만 하고, 서버에서 최종 검증을 수행한다
