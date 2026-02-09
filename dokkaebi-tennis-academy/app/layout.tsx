@@ -19,6 +19,7 @@ import AppShell from '@/components/layout/AppShell';
 import KakaoInquiryWidget from '@/components/system/KakaoInquiryWidget';
 import ScrollLockCompensator from '@/components/system/ScrollLockCompensator';
 import ScrollLockKeepScrollbar from '@/components/system/ScrollLockKeepScrollbar';
+import 'spoqa-han-sans/css/SpoqaHanSansNeo.css';
 
 export const metadata: Metadata = {
   title: '도깨비 테니스 아카데미',

@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ✅ 핵심: Radix(remove-scroll)가 overflow:hidden으로 스크롤바를 없애며
-   viewport width가 바뀌어서(Windows) "움찔"이 발생한다.
-   => scroll-locked 상태에서도 스크롤바를 유지해서 viewport 폭을 고정한다. */
-
 /* 스크롤바를 항상 확보(페이지가 짧아도 공간을 예약) */
 html {
   overflow-y: scroll;
@@ -15,7 +11,7 @@ html {
 body[data-scroll-locked],
 html[data-scroll-locked] body {
   overflow-y: scroll !important; /* 스크롤바 유지 */
-  padding-right: 0 !important;   /* remove-scroll이 주는 보정 제거 */
+  padding-right: 0 !important; /* remove-scroll이 주는 보정 제거 */
 }
 
 html[data-scroll-locked] {
@@ -96,6 +92,16 @@ html[data-scroll-locked] {
 }
 
 body {
+  font-family:
+    'Spoqa Han Sans Neo',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Noto Sans KR',
+    'Apple SD Gothic Neo',
+    'Malgun Gothic',
+    sans-serif;
   @apply bg-white text-black transition-colors duration-300 dark:bg-gray-950 dark:text-white;
 }
 

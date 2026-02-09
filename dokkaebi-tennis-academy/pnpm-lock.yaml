@@ -137,6 +137,9 @@ importers:
       sonner:
         specifier: ^2.0.3
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      spoqa-han-sans:
+        specifier: ^3.3.0
+        version: 3.3.0
       swr:
         specifier: ^2.3.3
         version: 2.4.0(react@19.2.4)
@@ -3304,6 +3307,9 @@ packages:
 
   sparse-bitfield@3.0.3:
     resolution: {integrity: sha512-kvzhi7vqKTfkh0PZU+2D2PIllw2ymqJKujUcyPMd9Y75Nv4nPbGJZXNhxsgdQab2BmlDct1YnfQCguEvHr7VsQ==}
+
+  spoqa-han-sans@3.3.0:
+    resolution: {integrity: sha512-uEetiueUQdfc8MW+JN0Dj9aN3oONctICzBljqbd+a7XXeQV0+Cg3bKFJVtSyIgjQkpG8F7csAVX86ZUEzTt+Iw==}
 
   sshpk@1.18.0:
     resolution: {integrity: sha512-2p2KJZTSqQ/I3+HX42EpYOa2l3f8Erv8MWKsy2I9uf4wA7yFIkXRffYdsx86y6z4vHtV8u7g+pPlr8/4ouAxsQ==}
@@ -7051,6 +7057,8 @@ snapshots:
   sparse-bitfield@3.0.3:
     dependencies:
       memory-pager: 1.5.0
+
+  spoqa-han-sans@3.3.0: {}
 
   sshpk@1.18.0:
     dependencies:
