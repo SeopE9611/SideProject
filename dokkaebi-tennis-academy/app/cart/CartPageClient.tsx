@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Star, Package, Truck, Shield, PackageOpen } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Star, Package, Truck, Shield, PackageOpen, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -646,16 +646,15 @@ export default function CartPageClient() {
                           </Button>
                         )}
                       </>
+                    ) : loading ? (
+                      <Button className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold opacity-70" size="lg" disabled>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        로그인 확인 중...
+                      </Button>
                     ) : (
-                      <Button
-                        className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
-                        size="lg"
-                        asChild
-                      >
-                        {/* <Link href="/checkout?withService=1" className="flex items-center gap-3"> */}
-                        <Link href={user ? '/checkout?withService=1' : `/login?redirectTo=${encodeURIComponent('/checkout?withService=1')}`} className="flex items-center gap-3">
+                      <Button className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl" size="lg" asChild>
+                        <Link href={user ? '/checkout?withService=1' : `/login?next=${encodeURIComponent('/checkout?withService=1')}`} className="flex items-center gap-3">
                           <ShoppingBag className="h-5 w-5" />
-                          {/* {user ? '주문하기' : '비회원은 주문하기'} */}
                           {user ? '주문하기' : '로그인 후 주문하기'}
                           <ArrowRight className="h-5 w-5" />
                         </Link>
@@ -722,10 +721,14 @@ export default function CartPageClient() {
                     </Button>
                   )}
                 </div>
+              ) : loading ? (
+                <Button className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold opacity-70" disabled>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  로그인 확인 중...
+                </Button>
               ) : (
                 <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
-                  {/* <Link href="/checkout?withService=1">주문하기</Link> */}
-                  <Link href={user ? '/checkout?withService=1' : `/login?redirectTo=${encodeURIComponent('/checkout?withService=1')}`}>{user ? '주문하기' : '로그인 후 주문하기'}</Link>
+                  <Link href={user ? '/checkout?withService=1' : `/login?next=${encodeURIComponent('/checkout?withService=1')}`}>{user ? '주문하기' : '로그인 후 주문하기'}</Link>
                 </Button>
               )}
             </SiteContainer>

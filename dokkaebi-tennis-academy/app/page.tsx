@@ -253,8 +253,6 @@ export default function Home() {
     [premiumItemsSource],
   );
 
-  const [usedRackets, setUsedRackets] = useState<{ id: string; brand: string; model: string; price: number; images?: string[] }[]>([]);
-
   // 탭 변경 시 해당 브랜드만 최초 1회 로드
   useEffect(() => {
     if (rackByBrand[activeBrand]) return; // 캐시 있으면 스킵
