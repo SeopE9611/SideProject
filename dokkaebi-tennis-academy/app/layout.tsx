@@ -49,7 +49,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       // 토큰 오류는 초기유저 null
     }
   }
-
+  // throw new Error('[TEST] app/global error.tsx 동작 확인용');
   return (
     <html lang="ko" suppressHydrationWarning className="scroll-smooth overflow-x-hidden">
       <body className="bg-background text-foreground">

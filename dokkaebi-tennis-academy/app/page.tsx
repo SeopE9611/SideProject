@@ -283,7 +283,7 @@ export default function Home() {
       }
     })();
   }, []);
-
+  // throw new Error('[TEST] app/error.tsx 동작 확인용(홈 페이지)');
   return (
     <div>
       <SignupBonusPromoPopup
