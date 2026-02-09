@@ -44,7 +44,12 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const shippingFee = useMemo(() => 0, []); // TODO:  프로젝트 배송비 정책 붙일 자리
+  const shippingFee = useMemo(() => {
+    // 방문 수령이면 배송비 0
+    if (pickupMethod === 'visit') return 0;
+    // 택배: 30,000원 이상 무료배송, 미만 3,000원
+    return racket.price >= 30000 ? 0 : 3000;
+  }, [pickupMethod, racket.price]);
   const totalPrice = useMemo(() => racket.price + shippingFee, [racket.price, shippingFee]);
 
   // const canSubmit = racket.status === 'available' && agree && !submitting && name.trim() && phone.trim() && address.trim() && postalCode.trim() && depositor.trim();
@@ -57,14 +62,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
    * - 입력했다가 다시 초기값으로 되돌리면 dirty=false로 복귀
    */
   const isDirty = useMemo(() => {
-    const hasText =
-      Boolean(name) ||
-      Boolean(phone) ||
-      Boolean(address) ||
-      Boolean(addressDetail) ||
-      Boolean(postalCode) ||
-      Boolean(depositor) ||
-      Boolean(deliveryRequest);
+    const hasText = Boolean(name) || Boolean(phone) || Boolean(address) || Boolean(addressDetail) || Boolean(postalCode) || Boolean(depositor) || Boolean(deliveryRequest);
     const hasNonDefault = pickupMethod !== 'courier' || bank !== 'shinhan' || agree !== false;
     return hasText || hasNonDefault;
   }, [name, phone, address, addressDetail, postalCode, depositor, deliveryRequest, pickupMethod, bank, agree]);
