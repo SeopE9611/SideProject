@@ -1,3 +1,5 @@
+import { CardGridSkeleton } from '@/components/system/PageLoading';
+
 export default function Loading() {
-  return null;
+  return <CardGridSkeleton />;
 }

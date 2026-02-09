@@ -1,3 +1,5 @@
+import { FullPageSpinner } from "@/components/system/PageLoading";
+
 export default function Loading() {
-  return null;
+  return <FullPageSpinner label="결제 정보를 준비하는 중..." />;
 }
