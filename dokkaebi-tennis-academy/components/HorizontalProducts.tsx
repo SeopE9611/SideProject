@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, Inbox, AlertTriangle, RefreshCcw } from 'lucide-react';
 import StatusBadge from '@/components/badges/StatusBadge';
 import useEmblaCarousel from 'embla-carousel-react';
 import type { EmblaOptionsType, EmblaCarouselType } from 'embla-carousel';
@@ -32,9 +32,33 @@ type Props = {
   firstPageSlots?: number;
   moveMoreToSecondWhen5Plus?: boolean;
   loading?: boolean;
+
+  // 상태 구분용
+  error?: boolean;
+  onRetry?: () => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  errorTitle?: string;
+  errorDescription?: string;
 };
 
-export default function HorizontalProducts({ title, subtitle, items, moreHref, cardWidthClass, showHeader = true, firstPageSlots, moveMoreToSecondWhen5Plus, loading }: Props) {
+export default function HorizontalProducts({
+  title,
+  subtitle,
+  items,
+  moreHref,
+  cardWidthClass,
+  showHeader = true,
+  firstPageSlots,
+  moveMoreToSecondWhen5Plus,
+  loading,
+  error,
+  onRetry,
+  emptyTitle,
+  emptyDescription,
+  errorTitle,
+  errorDescription,
+}: Props) {
   // 한 화면에 몇 장 보여줄지(2/3/4장 고정)
   const [itemsPerPage, setItemsPerPage] = useState(4);
 
@@ -75,7 +99,15 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
   // ─────────────────────────────
   const slides = useMemo(() => {
     // skeleton 타입 추가
-    const list: Array<{ kind: 'item' | 'placeholder' | 'more' | 'skeleton'; data?: HItem }> = [];
+    const list: Array<{ kind: 'item' | 'placeholder' | 'more' | 'skeleton' | 'error' | 'empty'; data?: HItem }> = [];
+
+    // 에러 상태: 사용자에게 “실패”를 명확히 알림
+    if (error) {
+      for (let i = 0; i < itemsPerPage; i++) {
+        list.push({ kind: 'error' });
+      }
+      return list;
+    }
 
     // 로딩 중일 때: 스켈레톤 카드만 채우기
     if (loading) {
@@ -85,10 +117,10 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
       return list;
     }
 
-    // 데이터 0개: "준비 중인 상품" 플레이스홀더
+    // 빈 상태: “상품이 없음”을 명확히 알림
     if (items.length === 0) {
       for (let i = 0; i < itemsPerPage; i++) {
-        list.push({ kind: 'placeholder' });
+        list.push({ kind: 'empty' });
       }
       return list;
     }
@@ -109,7 +141,7 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
     // itemsPerPage 이상: 아이템 전부 + 더많은상품(맨 뒤)
     list.push({ kind: 'more' });
     return list;
-  }, [items, itemsPerPage, loading]); // ← loading 의존성 추가
+  }, [items, itemsPerPage, loading, error]);
 
   const shouldCenter = slides.length <= itemsPerPage;
 
@@ -252,6 +284,40 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
     </Link>
   );
 
+  const EmptyCard = () => (
+    <div
+      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
+      bg-slate-50 dark:bg-slate-800/50
+      flex flex-col items-center justify-center text-center"
+    >
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-3">
+        <Inbox className="h-6 w-6 text-slate-600 dark:text-slate-300" />
+      </div>
+      <div className="text-sm bp-sm:text-base font-semibold text-slate-700 dark:text-slate-200">{emptyTitle ?? '등록된 상품이 없습니다'}</div>
+      <div className="mt-1 text-xs bp-sm:text-sm text-slate-500 dark:text-slate-400">{emptyDescription ?? '곧 상품이 업데이트됩니다.'}</div>
+    </div>
+  );
+
+  const ErrorCard = () => (
+    <div
+      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
+      bg-red-50/70 dark:bg-red-950/20
+      flex flex-col items-center justify-center text-center"
+    >
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center mb-3">
+        <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-300" />
+      </div>
+      <div className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">{errorTitle ?? '불러오지 못했어요'}</div>
+      <div className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300">{errorDescription ?? '네트워크 상태를 확인 후 다시 시도해 주세요.'}</div>
+      {onRetry && (
+        <Button type="button" variant="outline" size="sm" onClick={onRetry} className="mt-3 rounded-full">
+          <RefreshCcw className="mr-2 h-4 w-4" />
+          다시 시도
+        </Button>
+      )}
+    </div>
+  );
+
   // 렌더
   return (
     <section className="relative">
@@ -279,6 +345,22 @@ export default function HorizontalProducts({ title, subtitle, items, moreHref, c
                   return (
                     <div key={`sk-${i}`} className={slideClass}>
                       <SkeletonCard />
+                    </div>
+                  );
+                }
+
+                if (s.kind === 'empty') {
+                  return (
+                    <div key={`em-${i}`} className={slideClass}>
+                      <EmptyCard />
+                    </div>
+                  );
+                }
+
+                if (s.kind === 'error') {
+                  return (
+                    <div key={`er-${i}`} className={slideClass}>
+                      <ErrorCard />
                     </div>
                   );
                 }

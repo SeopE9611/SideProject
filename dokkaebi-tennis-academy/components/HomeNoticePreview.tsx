@@ -1,13 +1,19 @@
 'use client';
 import useSWR from 'swr';
 import Link from 'next/link';
+import { AlertTriangle } from 'lucide-react';
 
 type Notice = { id: string; title: string; createdAt: string };
-const fetcher = (u: string) => fetch(u).then((r) => r.json());
+const fetcher = async (u: string) => {
+  const res = await fetch(u, { credentials: 'include' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+};
 
 export default function HomeNoticePreview() {
-  const { data, isLoading } = useSWR<{ ok: boolean; items: Notice[] }>('/api/boards?type=notice&limit=5', fetcher);
+  const { data, error, isLoading, mutate } = useSWR<{ ok: boolean; items: Notice[] }>('/api/boards?type=notice&limit=5', fetcher);
   const items = data?.ok ? data.items : [];
+  const hasError = Boolean(error) || (data && !data.ok);
 
   return (
     <section className="mt-8 bp-sm:mt-10 bp-md:mt-12">
@@ -27,6 +33,25 @@ export default function HomeNoticePreview() {
               </li>
             ))}
           </>
+           ) : hasError ? (
+          <li className="rounded-lg border border-red-200 bg-red-50 p-4 bp-sm:p-5 text-sm bp-sm:text-base text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold">공지사항을 불러오지 못했어요.</p>
+                <p className="mt-1 text-xs bp-sm:text-sm opacity-90">
+                  네트워크/서버 상태를 확인한 뒤 다시 시도해 주세요.
+               </p>
+                <button
+                  type="button"
+                  onClick={() => mutate()}
+                  className="mt-3 inline-flex items-center rounded-md bg-white px-3 py-1.5 text-xs bp-sm:text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-white dark:ring-slate-700 dark:hover:bg-slate-800"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
+          </li>
         ) : items.length > 0 ? (
           items.map((p, idx) => (
             <li key={p.id ?? `${p.createdAt}-${idx}`}>

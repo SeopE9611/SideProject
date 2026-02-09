@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import HeroSlider from '@/components/HeroSlider';
 import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
@@ -148,6 +148,7 @@ export default function Home() {
   // 전체 상품 + 로딩
   const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [productsError, setProductsError] = useState(false);
 
   // 탭별 데이터 캐시: brand -> items
   type RItem = {
@@ -160,23 +161,53 @@ export default function Home() {
     rental?: { enabled: boolean; deposit?: number; fee?: { d7?: number; d15?: number; d30?: number } };
   };
   const [rackByBrand, setRackByBrand] = useState<Record<string, RItem[]>>({});
+  const [racketsLoadingByBrand, setRacketsLoadingByBrand] = useState<Record<string, boolean>>({});
+  const [racketsErrorByBrand, setRacketsErrorByBrand] = useState<Record<string, boolean>>({});
 
-  // 데이터 로딩: /api/products?limit=48
-  // 서버가 products 혹은 items 키로 내려와도 대응
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/products?limit=48', { credentials: 'include' });
-        const json = await res.json();
-        const items: ApiProduct[] = json.products ?? json.items ?? [];
-        setAllProducts(items);
-      } catch {
-        setAllProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    })();
+  const loadUsedRackets = useCallback(async (brand: BrandKey) => {
+    setRacketsLoadingByBrand((prev) => ({ ...prev, [brand]: true }));
+    setRacketsErrorByBrand((prev) => ({ ...prev, [brand]: false }));
+
+    try {
+      const qs = brand === 'all' ? '?sort=createdAt_desc&limit=12' : `?brand=${brand}&sort=createdAt_desc&limit=12`;
+
+      const res = await fetch(`/api/rackets${qs}`, { credentials: 'include' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const list = await res.json();
+      setRackByBrand((prev) => ({ ...prev, [brand]: Array.isArray(list) ? list : [] }));
+    } catch {
+      // “빈 목록”과 구분하기 위해 error 플래그를 세움
+      setRackByBrand((prev) => ({ ...prev, [brand]: [] }));
+      setRacketsErrorByBrand((prev) => ({ ...prev, [brand]: true }));
+    } finally {
+      setRacketsLoadingByBrand((prev) => ({ ...prev, [brand]: false }));
+    }
   }, []);
+
+  const fetchHomeProducts = useCallback(async () => {
+    setLoading(true);
+    setProductsError(false);
+
+    try {
+      const res = await fetch('/api/products?limit=48', { credentials: 'include' });
+      // status code 기반으로 실패 판정 (빈 목록과 “에러”를 분리)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const json = await res.json();
+      const items: ApiProduct[] = json.products ?? json.items ?? [];
+      setAllProducts(items);
+    } catch {
+      setAllProducts([]);
+      setProductsError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchHomeProducts();
+  }, [fetchHomeProducts]);
 
   // 홈 노출 대상: 전체 스트링 상품 (등록 순으로)
   const homeStringProducts = useMemo(() => {
@@ -226,16 +257,9 @@ export default function Home() {
 
   // 탭 변경 시 해당 브랜드만 최초 1회 로드
   useEffect(() => {
-    (async () => {
-      if (rackByBrand[activeBrand]) return; // 캐시 있으면 스킵
-
-      const qs = activeBrand === 'all' ? '?sort=createdAt_desc&limit=12' : `?brand=${activeBrand}&sort=createdAt_desc&limit=12`;
-
-      const res = await fetch(`/api/rackets${qs}`, { credentials: 'include' });
-      const list = await res.json();
-      setRackByBrand((prev) => ({ ...prev, [activeBrand]: Array.isArray(list) ? list : [] }));
-    })();
-  }, [activeBrand, rackByBrand]);
+    if (rackByBrand[activeBrand]) return; // 캐시 있으면 스킵
+    void loadUsedRackets(activeBrand);
+  }, [activeBrand, rackByBrand, loadUsedRackets]);
 
   // 중고라켓 데이터- HorizontalProducts가 요구하는 HItem으로 매핑
   const usedRacketsItems: HItem[] = useMemo(() => {
@@ -252,6 +276,9 @@ export default function Home() {
       rentalEnabled: r?.rental?.enabled ?? undefined,
     }));
   }, [rackByBrand, activeBrand]);
+
+  const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
+  const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
 
   const [notices, setNotices] = useState<Array<{ id: string; title: string; createdAt: string }>>([]);
   const [hotPosts, setHotPosts] = useState<Array<{ id: string; title: string; type: string; likesCount?: number }>>([]);
@@ -576,6 +603,12 @@ export default function Home() {
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
             loading={loading}
+            error={productsError}
+            onRetry={fetchHomeProducts}
+            emptyTitle={activeStringBrand === 'all' ? '등록된 스트링이 없습니다' : '해당 브랜드 스트링이 없습니다'}
+            emptyDescription={activeStringBrand === 'all' ? '곧 상품이 업데이트됩니다.' : '다른 브랜드를 선택해 보세요.'}
+            errorTitle="스트링을 불러오지 못했어요"
+            errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
             showHeader={false}
           />
         </SiteContainer>
@@ -624,7 +657,13 @@ export default function Home() {
             moreHref={activeBrand === 'all' ? '/rackets' : `/rackets?brand=${activeBrand}`}
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
-            loading={false}
+            loading={usedRacketsLoading}
+            error={usedRacketsError}
+            onRetry={() => loadUsedRackets(activeBrand)}
+            emptyTitle={activeBrand === 'all' ? '등록된 중고 라켓이 없습니다' : '해당 브랜드 중고 라켓이 없습니다'}
+            emptyDescription={activeBrand === 'all' ? '곧 상품이 업데이트됩니다.' : '다른 브랜드를 선택해 보세요.'}
+            errorTitle="중고 라켓을 불러오지 못했어요"
+            errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
             showHeader={false}
           />
         </SiteContainer>
