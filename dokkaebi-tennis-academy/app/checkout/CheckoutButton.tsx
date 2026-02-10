@@ -56,6 +56,46 @@ const readJsonSafe = async (res: Response) => {
   }
 };
 
+// idemKey 재시도 안전장치
+// - 같은 cart(시그니처)로 "재시도"할 땐 동일 idemKey를 재사용해야 중복 주문을 방지할 수 있음
+// - 성공 시에는 즉시 삭제하여, 다음 주문은 새 idemKey를 쓰게 함
+const IDEM_STORE_KEY = 'checkout.idem.v1';
+const IDEM_TTL_MS = 15 * 60 * 1000; // 15분(너무 길면 의도치 않은 재사용 가능)
+
+const cartSignature = (items: CartItem[]) => {
+  // 순서 바뀌어도 동일 서명이 되도록 정렬
+  return items
+    .map((it) => `${it.kind ?? 'product'}:${String(it.id)}:${Number(it.quantity ?? 0)}`)
+    .sort()
+    .join('|');
+};
+
+const getOrCreateIdemKey = (sig: string) => {
+  // SSR/빌드 환경 보호
+  if (typeof window === 'undefined') return crypto.randomUUID();
+  try {
+    const raw = window.sessionStorage.getItem(IDEM_STORE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { key?: string; sig?: string; ts?: number };
+      const fresh = typeof parsed.ts === 'number' && Date.now() - parsed.ts < IDEM_TTL_MS;
+      if (fresh && parsed.sig === sig && typeof parsed.key === 'string' && parsed.key) return parsed.key;
+    }
+    const key = crypto.randomUUID();
+    window.sessionStorage.setItem(IDEM_STORE_KEY, JSON.stringify({ key, sig, ts: Date.now() }));
+    return key;
+  } catch {
+    // sessionStorage/JSON 에러가 나도 주문은 진행 가능해야 함
+    return crypto.randomUUID();
+  }
+};
+
+const clearIdemKey = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.removeItem(IDEM_STORE_KEY);
+  } catch {}
+};
+
 export default function CheckoutButton({
   disabled,
   name,
@@ -265,7 +305,7 @@ export default function CheckoutButton({
       const shippingInfo = {
         name: nameTrim,
         phone: phoneDigits,
-       address: addressTrim,
+        address: addressTrim,
         addressDetail: addressDetailTrim,
         postalCode: postalDigits,
         depositor: depositorTrim,
@@ -299,7 +339,8 @@ export default function CheckoutButton({
         servicePickupMethod,
       };
 
-      const idemKey = crypto.randomUUID();
+      const sig = cartSignature(items);
+      const idemKey = getOrCreateIdemKey(sig);
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -316,6 +357,8 @@ export default function CheckoutButton({
       }
 
       if (data?.orderId) {
+        // 성공한 주문은 idemKey를 즉시 제거(다음 주문은 새 키)
+        clearIdemKey();
         // 주문 성공한 경우에만 배송지 저장
         if (user && saveAddress) {
           await fetch('/api/users/me', {
@@ -343,11 +386,13 @@ export default function CheckoutButton({
             <p>현재 재고: {data.currentStock}개</p>
           </div>,
         );
-             } else if (data?.error === 'BUNDLE_QTY_MISMATCH') {
+      } else if (data?.error === 'BUNDLE_QTY_MISMATCH') {
         showErrorToast(
           <div>
             <p>라켓 수량과 스트링(장착) 수량이 일치하지 않습니다.</p>
-            <p>라켓: {data?.racketQty ?? '-'}개, 스트링/교체: {data?.serviceQty ?? '-'}개</p>
+            <p>
+              라켓: {data?.racketQty ?? '-'}개, 스트링/교체: {data?.serviceQty ?? '-'}개
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">이전 단계(스트링 선택)에서 ‘번들 수량’을 다시 맞춰주세요.</p>
           </div>,
         );
