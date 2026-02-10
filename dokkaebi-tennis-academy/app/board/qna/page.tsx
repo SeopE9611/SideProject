@@ -33,7 +33,20 @@ export default function QnaPage() {
     viewCount?: number;
     isSecret?: boolean;
   };
-  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+
+  type BoardListRes = { items: QnaItem[]; total: number };
+
+  async function fetcher(url: string): Promise<BoardListRes> {
+    const res = await fetch(url, { credentials: 'include' });
+    const data = (await res.json().catch(() => null)) as any;
+
+    if (!res.ok) {
+      const message = typeof data === 'object' && data !== null && 'error' in data && typeof (data as { error?: unknown }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+      throw new Error(message);
+    }
+
+    return data as BoardListRes;
+  }
   const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
   // 필터/페이지 상태
@@ -58,7 +71,8 @@ export default function QnaPage() {
     qs.set('q', keyword.trim());
     qs.set('field', field);
   }
-  const { data, error, isLoading } = useSWR(`/api/boards?${qs.toString()}`, fetcher);
+  // const { data, error, isLoading } = useSWR(`/api/boards?${qs.toString()}`, fetcher);
+  const { data, error, isLoading } = useSWR<BoardListRes>(`/api/boards?${qs.toString()}`, fetcher);
   const serverItems: QnaItem[] = data?.items ?? [];
   const items = useMemo(() => {
     // 클라에서 답변상태 필터

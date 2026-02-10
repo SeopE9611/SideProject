@@ -2,6 +2,7 @@
 import { getBaseUrl } from '@/lib/getBaseUrl';
 import NoticeListClient from './_components/NoticeListClient';
 import { getBoardList } from '@/lib/boards.queries';
+import { getCurrentUser } from '@/lib/hooks/get-current-user';
 
 // ISR(30s): 페이지 단위 캐시
 export const revalidate = 30;
@@ -31,21 +32,10 @@ async function fetchNotices() {
   }
 }
 
-// 2) 관리자 여부 조회: cache: 'no-store' 동적 페이지로 처리됨
+// 2) 관리자 여부 조회
 async function fetchIsAdmin() {
-  try {
-    const res = await fetch('/api/users/me', {
-      cache: 'no-store',
-      // 여기서는 쿠키를 자동으로 Next가 전달해줌 (요청 컨텍스트 기반)
-    });
-
-    if (!res.ok) return false;
-
-    const me = await res.json();
-    return me?.role === 'admin' || me?.isAdmin === true || (Array.isArray(me?.roles) && me.roles.includes('admin'));
-  } catch {
-    return false;
-  }
+  const me = await getCurrentUser();
+  return me?.role === 'admin';
 }
 
 export default async function Page() {

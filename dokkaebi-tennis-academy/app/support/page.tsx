@@ -30,7 +30,20 @@ type QnaItem = {
   viewCount?: number;
 };
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+type BoardsMainRes = { ok?: boolean; notices?: NoticeItem[]; qna?: QnaItem[] };
+type MeRes = { role?: string };
+
+async function fetcher<T>(url: string): Promise<T> {
+  const res = await fetch(url, { credentials: 'include' });
+  const data = (await res.json().catch(() => null)) as any;
+
+  if (!res.ok) {
+    const message = typeof data === 'object' && data !== null && 'error' in data && typeof (data as { error?: unknown }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+    throw new Error(message);
+  }
+
+  return data as T;
+}
 const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
 function FiveLineSkeleton() {
@@ -220,14 +233,14 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
 
 export default function SupportPage() {
   // 공지/Q&A 묶어서 가져오는 기존 API 재사용
-  const { data, error, isLoading } = useSWR('/api/boards/main', fetcher);
-  const notices = (data?.notices ?? []) as NoticeItem[];
-  const qnas = (data?.qna ?? []) as QnaItem[];
+  const { data, error, isLoading } = useSWR<BoardsMainRes>('/api/boards/main', fetcher);
+  const notices = data?.notices ?? [];
+  const qnas = data?.qna ?? [];
 
   // 관리자 여부 확인 (공지 쓰기 버튼 제어)
-  const { data: me } = useSWR('/api/users/me', fetcher);
-  const isAdmin = me?.role === 'admin' || me?.isAdmin === true || (Array.isArray(me?.roles) && me.roles.includes('admin'));
-
+  const { data: me } = useSWR<MeRes>('/api/users/me', fetcher);
+  const isAdmin = me?.role === 'admin';
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">

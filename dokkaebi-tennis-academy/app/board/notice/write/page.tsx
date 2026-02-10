@@ -163,12 +163,33 @@ export default function NoticeWritePage() {
   };
 
   // 상세 불러오기 (수정 모드일 때만)
-  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
-  const { data: detail } = useSWR(editId ? `/api/boards/${editId}` : null, fetcher, {
+  type NoticeDetail = {
+    title?: string;
+    content?: string;
+    category?: string | null;
+    isPinned?: boolean;
+    attachments?: any[];
+  };
+  type NoticeDetailRes = { item: NoticeDetail };
+
+  async function fetcher(url: string): Promise<NoticeDetailRes> {
+    const res = await fetch(url, { credentials: 'include' });
+    const data = (await res.json().catch(() => null)) as any;
+
+    if (!res.ok) {
+      const message = typeof data === 'object' && data !== null && 'error' in data && typeof (data as { error?: unknown }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+      throw new Error(message);
+    }
+
+    return data as NoticeDetailRes;
+  }
+
+  const { data: detail, error: detailError } = useSWR<NoticeDetailRes>(editId ? `/api/boards/${editId}` : null, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 60_000, // 1분 정도
+    dedupingInterval: 60_000,
   });
+
   // 프리필: 상세 응답을 코드값으로 역변환해서 넣는다.
   useEffect(() => {
     if (!editId || !detail?.item || prefilledRef.current) return;
@@ -444,7 +465,9 @@ export default function NoticeWritePage() {
               </div>
             </div>
           </div>
-
+          {editId && detailError && (
+            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-200">공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)</div>
+          )}
           <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50 border-b">
               <CardTitle className="flex items-center space-x-2">

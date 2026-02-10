@@ -118,10 +118,24 @@ export default function QnaWritePage() {
   const prevViewer = () => setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   // SWR fetcher
-  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : Promise.reject(r)));
+  type OrdersListRes = { items?: any[]; orders?: any[]; total?: number };
+  type ProductsListRes = { products?: any[]; items?: any[]; total?: number; page?: number; limit?: number };
+
+  async function fetcher<T>(url: string): Promise<T> {
+    const res = await fetch(url, { credentials: 'include' });
+    const data = (await res.json().catch(() => null)) as any;
+
+    if (!res.ok) {
+      const message = typeof data === 'object' && data !== null && 'error' in data && typeof (data as { error?: unknown }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+      throw new Error(message);
+    }
+
+    return data as T;
+  }
 
   // “내 구매상품” 목록
-  const { data: myOrders } = useSWR('/api/orders?limit=100', fetcher);
+  const { data: myOrders, error: ordersError } = useSWR<OrdersListRes>('/api/orders?limit=100', fetcher);
+
   // 주문 내 모든 상품을 평탄화 후 productId 기준으로 중복 제거
   const myProducts: { id: string; name: string; image?: string | null }[] = useMemo(() => {
     const set = new Map<string, { id: string; name: string; image?: string | null }>();
@@ -141,9 +155,9 @@ export default function QnaWritePage() {
 
   // 전체 상품 검색
   const [q, setQ] = useState('');
-  const { data: searchData } = useSWR(q.trim() ? `/api/products?query=${encodeURIComponent(q.trim())}&limit=20` : null, fetcher);
+  const { data: searchData } = useSWR<ProductsListRes>(q.trim() ? `/api/products?q=${encodeURIComponent(q.trim())}&limit=20` : null, fetcher);
   const searchProducts: { id: string; name: string; image?: string | null }[] = useMemo(() => {
-    const rows = searchData?.items ?? searchData?.products ?? [];
+    const rows = searchData?.products ?? searchData?.items ?? [];
     return rows.map((p: any) => ({
       id: String(p._id ?? p.id),
       name: p.name ?? p.title ?? '상품',
@@ -293,6 +307,7 @@ export default function QnaWritePage() {
         setFieldErrors(errs);
         setFormError('입력값을 확인해 주세요.');
         focusFirstError(errs);
+        return;
       }
 
       // 여기까지 통과한 뒤에만 submitting ON (UI 잠금)
@@ -384,9 +399,6 @@ export default function QnaWritePage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
-              <div aria-live="polite" className="min-h-[20px]">
-                {formError && <p className="text-sm text-red-600 dark:text-red-400">{formError}</p>}
-              </div>
               <div ref={categoryWrapRef} className="space-y-3">
                 <Label htmlFor="category" className="text-base font-semibold">
                   카테고리 <span className="text-red-500">*</span>
@@ -439,6 +451,7 @@ export default function QnaWritePage() {
                     {/* 내 구매상품 */}
                     <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                       <div className="font-semibold mb-3">내 구매상품</div>
+                      {ordersError && <div className="mb-2 text-sm text-red-600 dark:text-red-400">구매 상품 목록을 불러오지 못했습니다. 로그인/네트워크를 확인해주세요.</div>}
                       <div className="space-y-2 max-h-60 overflow-auto">
                         {myProducts.length === 0 && <div className="text-sm text-gray-500">구매 이력이 없습니다.</div>}
                         {myProducts.map((p) => (

@@ -126,7 +126,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
         )}
       </DialogTrigger>
 
-      <DialogContent className={cn('w-[calc(100vw-24px)] p-0 overflow-hidden bg-card shadow-2xl', 'max-w-[920px] bp-md:max-w-[1040px] bp-lg:max-w-[1120px]', 'bp-sm:w-[calc(100vw-48px)]')}>
+      <DialogContent className={cn('w-[calc(100%-24px)] p-0 overflow-hidden bg-card shadow-2xl', 'max-w-[920px] bp-md:max-w-[1040px] bp-lg:max-w-[1120px]', 'bp-sm:w-[calc(100%-48px)]')}>
         <div className="relative">
           <div className={cn('absolute inset-x-0 top-0 h-1', 'bg-gradient-to-r from-primary/80 via-primary to-primary/80')} />
           <DialogHeader className="px-4 pt-5 pb-3 bp-sm:px-6 bp-sm:pt-6 bp-sm:pb-4">

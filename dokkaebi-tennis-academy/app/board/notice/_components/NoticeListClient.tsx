@@ -33,7 +33,19 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
     hasFile?: boolean;
   };
 
-  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+  type BoardListRes = { items: NoticeItem[]; total: number };
+
+  async function fetcher(url: string): Promise<BoardListRes> {
+    const res = await fetch(url, { credentials: 'include' });
+    const data = (await res.json().catch(() => null)) as any;
+
+    if (!res.ok) {
+      const message = typeof data === 'object' && data !== null && 'error' in data && typeof (data as { error?: unknown }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+      throw new Error(message);
+    }
+
+    return data as BoardListRes;
+  }
   const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
@@ -58,8 +70,8 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
     qs.set('field', field);
   }
 
-  const { data, error, isLoading } = useSWR(`/api/boards?${qs.toString()}`, fetcher, {
-    fallbackData: { items: initialItems, total: initialTotal },
+  const { data, error, isLoading } = useSWR<BoardListRes>(`/api/boards?${qs.toString()}`, fetcher, {
+    fallbackData: { items: (initialItems as NoticeItem[]) ?? [], total: initialTotal },
   });
 
   const items: NoticeItem[] = data?.items ?? initialItems ?? [];
@@ -158,6 +170,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
           </CardHeader>
           <CardContent className="p-5 sm:p-6 md:p-8">
             <div className="space-y-4 sm:space-y-5">
+              {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-200">공지 목록을 불러오지 못했습니다. (네트워크/권한을 확인해주세요)</div>}
               {!isLoading && !error && items.length === 0 && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-gray-500">검색 결과가 없습니다.</div>}
               {items.map((notice) => (
                 <Link key={notice._id} href={`/board/notice/${notice._id}`}>
