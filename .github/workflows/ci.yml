@@ -3,9 +3,9 @@ name: CI
 on:
   # Pull Request 이벤트 트리거를 제거하여
   # 가상 병합 환경에서 발생하는 오류를 우회합니다.
-  # pull_request: 
+  # pull_request:
   push:
-    branches: [ "main", "master" ]
+    branches: ['main', 'master']
 
 permissions:
   contents: read
@@ -57,3 +57,31 @@ jobs:
 
       - name: Build
         run: pnpm build
+      - name: Start server (prod)
+        run: |
+          pnpm start &
+          echo $! > server.pid
+
+      - name: Wait for server
+        run: |
+          ok=""
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000/ > /dev/null; then
+              ok="1"
+              break
+            fi
+            sleep 1
+          done
+          if [ -z "$ok" ]; then
+            echo "Server did not become ready in time."
+            exit 1
+          fi
+
+      - name: Smoke test
+        run: pnpm smoke
+
+      - name: Stop server
+        if: always()
+        run: |
+          kill $(cat server.pid) || true
+          pkill -f "next start" || true

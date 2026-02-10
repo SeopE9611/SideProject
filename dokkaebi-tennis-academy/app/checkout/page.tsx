@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import LoginGate from '@/components/system/LoginGate';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { FullPageSpinner } from '@/components/system/PageLoading';
+import { calcShippingFee } from '@/lib/shipping-fee';
 
 declare global {
   interface Window {
@@ -198,8 +199,13 @@ export default function CheckoutPage() {
   // 상품 금액 합계
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  const [deliveryMethod, setDeliveryMethod] = useState<'택배수령' | '방문수령'>('택배수령');
+
   // 배송비
-  const shippingFee = subtotal >= 30000 ? 0 : 3000;
+  const shippingFee = calcShippingFee({
+    subtotal,
+    isVisitPickup: deliveryMethod === '방문수령',
+  });
 
   // 교체 서비스 공임(serviceFee) 계산
   // let serviceFee = 0;
@@ -289,14 +295,6 @@ export default function CheckoutPage() {
   const total = subtotal + shippingFee + serviceFee;
 
   const [selectedBank, setSelectedBank] = useState('shinhan');
-
-  const bankAccounts = [
-    { bank: '신한은행', account: '123-456-789012', owner: '도깨비테니스' },
-    { bank: '국민은행', account: '123-45-6789-012', owner: '도깨비테니스' },
-    { bank: '우리은행', account: '1234-567-890123', owner: '도깨비테니스' },
-  ];
-
-  const [deliveryMethod, setDeliveryMethod] = useState<'택배수령' | '방문수령'>('택배수령');
 
   // 장착 서비스 수거방식(신청서 Step1과 1:1 매핑)
   // (UI에서는 COURIER_VISIT 선택지를 숨김)

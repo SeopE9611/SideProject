@@ -14,6 +14,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import WishlistSidebar from '@/app/cart/_components/WishlistSidebar';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { calcShippingFee } from '@/lib/shipping-fee';
 
 // 통화 포맷 유틸 (일관성)
 const formatKRW = (n: number) => n.toLocaleString('ko-KR');
@@ -72,8 +73,7 @@ export default function CartPageClient() {
   }, []);
 
   const subtotal = useMemo(() => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [cartItems]);
-  const FREE_SHIP_THRESHOLD = 30000;
-  const shippingFee = subtotal >= FREE_SHIP_THRESHOLD ? 0 : 3000;
+  const shippingFee = calcShippingFee({ subtotal });
   const total = subtotal + shippingFee;
 
   const cartItemsKey = useMemo(() => cartItems.map((it) => `${it.kind ?? 'product'}:${it.id}:${it.quantity ?? 0}`).join('|'), [cartItems]);

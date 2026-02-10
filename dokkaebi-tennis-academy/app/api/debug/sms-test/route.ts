@@ -40,14 +40,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: 'SOLAPI env is not set' }, { status: 500 });
   }
 
-  // ✅ 수신 허용 목록(최소 1개)은 반드시 있어야 함
-  const allowlist =
-    process.env.SAFE_SMS_TO_ALLOWLIST?.split(',')
-      .map((s) => normalize(s.trim()))
-      .filter(Boolean) ?? [];
+  //  수신 허용 목록(최소 1개)은 반드시 있어야 함
+  // - 정식: SAFE_SMS_ALLOWLIST
+  // - fallback: SAFE_SMS_TO_ALLOWLIST
+  const allowEnv = process.env.SAFE_SMS_ALLOWLIST ?? process.env.SAFE_SMS_TO_ALLOWLIST ?? '';
+  const allowlist = allowEnv
+    .split(',')
+    .map((s) => normalize(s.trim()))
+    .filter(Boolean);
 
   if (allowlist.length === 0) {
-    return NextResponse.json({ ok: false, error: 'SAFE_SMS_TO_ALLOWLIST is empty' }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'SMS allowlist is empty (set SAFE_SMS_ALLOWLIST)' }, { status: 400 });
   }
 
   const from = normalize(fromEnv);

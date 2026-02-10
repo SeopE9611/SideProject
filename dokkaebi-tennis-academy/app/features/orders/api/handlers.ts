@@ -9,6 +9,7 @@ import { createStringingApplicationFromOrder } from '@/app/features/stringing-ap
 import { deductPoints } from '@/lib/points.service';
 import { getShippingBadge } from '@/lib/badge-style';
 import { z } from 'zod';
+import { calcShippingFee } from '@/lib/shipping-fee';
 
 /**
  * 서버 최종 유효성 검사 스키마(주문 생성)
@@ -504,11 +505,10 @@ export async function createOrder(req: Request): Promise<Response> {
             }, 0)
           : 0;
 
-        const computedShippingFee = (() => {
-          if (computedSubtotal === 0) return 0;
-          if (shippingInfo?.deliveryMethod === '방문수령') return 0;
-          return computedSubtotal >= 30000 ? 0 : 3000;
-        })();
+        const computedShippingFee = calcShippingFee({
+          subtotal: computedSubtotal,
+          isVisitPickup: shippingInfo?.deliveryMethod === '방문수령',
+        });
 
         const computedTotalPrice = computedSubtotal + computedServiceFee + computedShippingFee;
 

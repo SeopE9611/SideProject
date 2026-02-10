@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bug, MessageCircle, X } from 'lucide-react';
@@ -33,6 +33,12 @@ export default function KakaoInquiryWidget() {
   const pathname = usePathname();
   // 어떤 패널이 열려있는지(중복 오픈 방지)
   const [panel, setPanel] = useState<'inquiry' | 'bug' | null>(null);
+
+  // outside click 닫기용 ref
+  const bugTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const inquiryTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const bugPanelRef = useRef<HTMLDivElement | null>(null);
+  const inquiryPanelRef = useRef<HTMLDivElement | null>(null);
 
   // 하단 고정 바(모바일 CTA 등)와 겹치지 않도록 위로 올리는 픽셀
   const [liftPx, setLiftPx] = useState(0);
@@ -164,6 +170,30 @@ export default function KakaoInquiryWidget() {
     };
   }, [shouldHide, pathname]);
 
+  // X 안 눌러도: 패널 바깥 클릭 시 닫기
+  useEffect(() => {
+    if (!panel) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+
+      const activePanelEl = panel === 'bug' ? bugPanelRef.current : inquiryPanelRef.current;
+      const activeTriggerEl = panel === 'bug' ? bugTriggerRef.current : inquiryTriggerRef.current;
+
+      // 패널 내부 클릭 or 트리거 버튼 클릭이면 유지
+      if (activePanelEl?.contains(target)) return;
+      if (activeTriggerEl?.contains(target)) return;
+
+      // 그 외(바깥 클릭)면 닫기
+      setPanel(null);
+    };
+
+    // 캡처 단계로 잡으면(= true) 다른 UI 핸들러보다 먼저 안정적으로 닫힘 처리 가능
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
+  }, [panel]);
+
   const openKakaoChat = () => {
     const Kakao = window.Kakao;
 
@@ -192,53 +222,62 @@ export default function KakaoInquiryWidget() {
   if (shouldHide) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-[70] bp-sm:bottom-4 bp-sm:right-4" style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}>
+    <div
+      className="fixed bottom-5 right-[calc(1.25rem+var(--removed-body-scroll-bar-size,0px))] z-[70] bp-sm:bottom-4 bp-sm:right-[calc(1rem+var(--removed-body-scroll-bar-size,0px))]"
+      style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
+    >
       <div className="flex flex-col items-end gap-3">
         {/* ---------------- 버그 제보 ---------------- */}
         {canShowBug ? (
           <div className="relative">
             <div className={['absolute right-0 bottom-[76px]', 'transition-all duration-150', panel === 'bug' ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-2 pointer-events-none'].join(' ')}>
-              <Card
-                className={[
-                  'relative w-[320px] shadow-xl',
-                  'border border-gray-200',
-                  "before:content-[''] before:absolute before:-bottom-2 before:right-7",
-                  'before:h-4 before:w-4 before:rotate-45',
-                  'before:bg-white before:border-b before:border-r before:border-gray-200', // 화살표 테두리
-                ].join(' ')}
-              >
-                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-semibold">버그 제보</CardTitle>
-                  <button type="button" aria-label="닫기" className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setPanel(null)}>
-                    <X className="h-4 w-4" />
-                  </button>
-                </CardHeader>
+              <div ref={bugPanelRef} className="relative">
+                <Card
+                  className={[
+                    'relative w-[320px] shadow-xl',
+                    // 다크/라이트 공통 테마 토큰
+                    'border-border',
+                  ].join(' ')}
+                >
+                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-semibold">버그 제보</CardTitle>
+                    <button type="button" aria-label="닫기" className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setPanel(null)}>
+                      <X className="h-4 w-4" />
+                    </button>
+                  </CardHeader>
 
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground">사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래 개발자의 오픈채팅으로 제보해주시면 빠르게 확인할게요.</p>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래 개발자의 오픈채팅으로 제보해주시면 빠르게 확인할게요.</p>
 
-                  <div className="rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
-                    <div className="font-medium text-foreground">제보 시 함께 적어주면 좋아요</div>
-                    <ul className="mt-1 list-disc space-y-1 pl-4">
-                      <li>어떤 페이지/기능에서 발생했는지</li>
-                      <li>재현 절차(무슨 버튼을 눌렀는지)</li>
-                      <li>스크린샷</li>
-                    </ul>
-                  </div>
+                    <div className="rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
+                      <div className="font-medium text-foreground">제보 시 함께 적어주면 좋아요</div>
+                      <ul className="mt-1 list-disc space-y-1 pl-4">
+                        <li>어떤 페이지/기능에서 발생했는지</li>
+                        <li>재현 절차(무슨 버튼을 눌렀는지)</li>
+                        <li>스크린샷</li>
+                      </ul>
+                    </div>
 
-                  <button
-                    type="button"
-                    onClick={openBugChat}
-                    className={['w-full rounded-md py-3 text-sm font-semibold', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2'].join(' ')}
-                  >
-                    개발자에게 제보하기
-                  </button>
-                </CardContent>
-              </Card>
+                    <button
+                      type="button"
+                      onClick={openBugChat}
+                      className={['w-full rounded-md py-3 text-sm font-semibold', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2'].join(' ')}
+                    >
+                      개발자에게 제보하기
+                    </button>
+                  </CardContent>
+                </Card>
+
+                {/* 말풍선 꼬리 */}
+                <svg aria-hidden="true" viewBox="0 0 24 12" className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]">
+                  <path d="M1 1H23L12 11Z" strokeWidth="1" />
+                </svg>
+              </div>
             </div>
 
             <button
               type="button"
+              ref={bugTriggerRef}
               aria-label="버그 제보"
               onClick={() => setPanel((cur) => (cur === 'bug' ? null : 'bug'))}
               className={['h-14 w-14 rounded-full shadow-xl', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2', 'flex items-center justify-center'].join(' ')}
@@ -252,40 +291,40 @@ export default function KakaoInquiryWidget() {
         {canShowInquiry ? (
           <div className="relative">
             <div className={['absolute right-0 bottom-[76px]', 'transition-all duration-150', panel === 'inquiry' ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-2 pointer-events-none'].join(' ')}>
-              <Card
-                className={[
-                  'relative w-[320px] shadow-xl',
-                  'border border-gray-200',
-                  "before:content-[''] before:absolute before:-bottom-2 before:right-7",
-                  'before:h-4 before:w-4 before:rotate-45',
-                  'before:bg-white before:border-b before:border-r before:border-gray-200', // 화살표 테두리
-                ].join(' ')}
-              >
-                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-semibold">
-                    문의하기 <span className="ml-1 text-xs font-normal text-muted-foreground">(카카오톡 1:1)</span>
-                  </CardTitle>
-                  <button type="button" aria-label="닫기" className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setPanel(null)}>
-                    <X className="h-4 w-4" />
-                  </button>
-                </CardHeader>
+              <div ref={inquiryPanelRef} className="relative">
+                <Card className={['relative w-[320px] shadow-xl', 'border-border'].join(' ')}>
+                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-semibold">
+                      문의하기 <span className="ml-1 text-xs font-normal text-muted-foreground">(카카오톡 1:1)</span>
+                    </CardTitle>
+                    <button type="button" aria-label="닫기" className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setPanel(null)}>
+                      <X className="h-4 w-4" />
+                    </button>
+                  </CardHeader>
 
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground">카카오톡 채널로 1:1 문의를 남겨주세요. 운영시간 외에는 답변이 늦을 수 있어요.</p>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">카카오톡 채널로 1:1 문의를 남겨주세요. 운영시간 외에는 답변이 늦을 수 있어요.</p>
 
-                  <button
-                    type="button"
-                    onClick={openKakaoChat}
-                    className={['w-full rounded-md py-3 text-sm font-semibold', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2'].join(' ')}
-                  >
-                    카카오톡으로 문의하기
-                  </button>
-                </CardContent>
-              </Card>
+                    <button
+                      type="button"
+                      onClick={openKakaoChat}
+                      className={['w-full rounded-md py-3 text-sm font-semibold', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2'].join(' ')}
+                    >
+                      카카오톡으로 문의하기
+                    </button>
+                  </CardContent>
+                </Card>
+
+                {/* 말풍선 꼬리 */}
+                <svg aria-hidden="true" viewBox="0 0 24 12" className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]">
+                  <path d="M1 1H23L12 11Z" strokeWidth="1" />
+                </svg>
+              </div>
             </div>
 
             <button
               type="button"
+              ref={inquiryTriggerRef}
               aria-label="카카오톡 문의"
               onClick={() => setPanel((cur) => (cur === 'inquiry' ? null : 'inquiry'))}
               className={['h-14 w-14 rounded-full shadow-xl', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2', 'flex items-center justify-center'].join(' ')}

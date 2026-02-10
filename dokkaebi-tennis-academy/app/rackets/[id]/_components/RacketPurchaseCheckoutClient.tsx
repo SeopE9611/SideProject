@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { showErrorToast } from '@/lib/toast';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { calcShippingFee } from '@/lib/shipping-fee';
 
 type RacketView = {
   id: string;
@@ -77,10 +78,10 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
   const [submitting, setSubmitting] = useState(false);
 
   const shippingFee = useMemo(() => {
-    // 방문 수령이면 배송비 0
-    if (pickupMethod === 'visit') return 0;
-    // 택배: 30,000원 이상 무료배송, 미만 3,000원
-    return racket.price >= 30000 ? 0 : 3000;
+    return calcShippingFee({
+      subtotal: racket.price,
+      isVisitPickup: pickupMethod === 'visit',
+    });
   }, [pickupMethod, racket.price]);
   const totalPrice = useMemo(() => racket.price + shippingFee, [racket.price, shippingFee]);
 
@@ -196,7 +197,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
       }
       // 성공 시에는 다음 주문을 위해 제거
       clearIdemKey();
-      
+
       router.push(`/racket-orders/${json.orderId}/select-string`);
     } catch (e) {
       showErrorToast('주문 처리 중 오류가 발생했습니다.');

@@ -13,7 +13,11 @@ const maskPhone = (n: string) => {
 export async function sendSMS(toRaw: string, text: string) {
   // 안전장치 (플래그 & 허용목록)
   const enabled = process.env.NOTIFY_SMS_ENABLED === 'true';
-  const allow = (process.env.SAFE_SMS_ALLOWLIST ?? '')
+  // allowlist env 통일(호환 fallback)
+  // - 정식: SAFE_SMS_ALLOWLIST
+  // - fallback: SAFE_SMS_TO_ALLOWLIST (과거/디버그용 이름)
+  const allowEnv = process.env.SAFE_SMS_ALLOWLIST ?? process.env.SAFE_SMS_TO_ALLOWLIST ?? '';
+  const allow = allowEnv
     .split(',')
     .map((s) => norm(s.trim()))
     .filter(Boolean);
