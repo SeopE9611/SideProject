@@ -27,6 +27,38 @@ const isValidKoreanPhone = (v: string) => {
 const ALLOWED_BANKS = new Set<Bank>(['shinhan', 'kookmin', 'woori']);
 const ALLOWED_PICKUP = new Set<PickupMethod>(['courier', 'visit']);
 
+// idemKey 재시도 안전장치(라켓 구매 전용)
+const IDEM_STORE_KEY = 'racket-checkout.idem.v1';
+const IDEM_TTL_MS = 15 * 60 * 1000;
+const fnv1a32 = (str: string) => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16);
+};
+const getOrCreateIdemKey = (sig: string) => {
+  try {
+    const raw = window.sessionStorage.getItem(IDEM_STORE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { key?: string; sig?: string; ts?: number };
+      const fresh = typeof parsed.ts === 'number' && Date.now() - parsed.ts < IDEM_TTL_MS;
+      if (fresh && parsed.sig === sig && parsed.key) return parsed.key;
+    }
+    const key = crypto.randomUUID();
+    window.sessionStorage.setItem(IDEM_STORE_KEY, JSON.stringify({ key, sig, ts: Date.now() }));
+    return key;
+  } catch {
+    return crypto.randomUUID();
+  }
+};
+const clearIdemKey = () => {
+  try {
+    window.sessionStorage.removeItem(IDEM_STORE_KEY);
+  } catch {}
+};
+
 export default function RacketPurchaseCheckoutClient({ racket }: { racket: RacketView }) {
   const router = useRouter();
 
@@ -144,8 +176,9 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
         servicePickupMethod: pickupMethod, // 서버에서 (order as any).servicePickupMethod로 저장 중
       };
 
-      // 멱등 키(Idempotency-Key): 같은 요청의 중복 주문 방지
-      const idemKey = typeof crypto?.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+      // payload 기반 시그니처(PII 원문은 저장하지 않고 해시만 사용)
+      const sig = `v1:${fnv1a32(JSON.stringify(payload))}`;
+      const idemKey = getOrCreateIdemKey(sig);
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -161,7 +194,9 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
         showErrorToast(json?.error ?? '주문 생성 실패');
         return;
       }
-
+      // 성공 시에는 다음 주문을 위해 제거
+      clearIdemKey();
+      
       router.push(`/racket-orders/${json.orderId}/select-string`);
     } catch (e) {
       showErrorToast('주문 처리 중 오류가 발생했습니다.');
