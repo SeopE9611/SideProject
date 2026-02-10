@@ -8,25 +8,7 @@ import sanitizeHtmlLib from 'sanitize-html';
  */
 
 // 최소 허용 태그 (필요 시 점진적으로 추가)
-const ALLOWED_TAGS = [
-  'p',
-  'br',
-  'ul',
-  'ol',
-  'li',
-  'strong',
-  'em',
-  'b',
-  'i',
-  'u',
-  'blockquote',
-  'code',
-  'pre',
-  'a',
-  'img',
-  'hr',
-  'span',
-];
+const ALLOWED_TAGS = ['p', 'br', 'ul', 'ol', 'li', 'strong', 'em', 'b', 'i', 'u', 'blockquote', 'code', 'pre', 'a', 'img', 'hr', 'span'];
 
 // 태그별 허용 속성 (style/on* 등은 아예 허용하지 않음)
 const ALLOWED_ATTRIBUTES: Record<string, string[]> = {
@@ -70,7 +52,21 @@ export async function sanitizeHtml(dirty: string): Promise<string> {
     transformTags: {
       a: (tagName, attribs) => {
         const next = { ...attribs };
+        // 절대 URL(http/https)만 허용 (상대경로/기타 스킴 제거)
+        const href = next.href ?? '';
+        if (!/^https?:\/\//i.test(href)) {
+          delete next.href;
+        }
         next.rel = normalizeRel();
+        return { tagName, attribs: next };
+      },
+      img: (tagName, attribs) => {
+        const next = { ...attribs };
+        // 절대 URL(http/https)만 허용 (상대경로/기타 스킴 제거)
+        const src = next.src ?? '';
+        if (!/^https?:\/\//i.test(src)) {
+          delete next.src;
+        }
         return { tagName, attribs: next };
       },
     },
