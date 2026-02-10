@@ -997,9 +997,10 @@ export default function StringServiceApplyPage() {
     return lines;
   }, [formData.lines, formData.stringTypes, formData.stringUseCounts, formData.racketType, formData.requirements, priceView.base, order, orderId, pdpProductId, pdpProduct, pdpMountingFee]);
 
-  // 4. 디버깅을 위한 콘솔 로그 추가
+  // 4. 디버깅 콘솔 로그 (개발 환경에서만)
   useEffect(() => {
-    console.log('🔍 Debug Info:', {
+    if (process.env.NODE_ENV !== 'development') return;
+    console.log('Debug Info:', {
       pdpProductId,
       pdpMountingFee,
       orderId,

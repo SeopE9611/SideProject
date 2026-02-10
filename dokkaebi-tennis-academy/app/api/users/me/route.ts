@@ -13,13 +13,14 @@ export async function GET() {
   // 서버 쿠키 저장소에서 accessToken 읽기
   const jar = await cookies();
   const accessToken = jar.get('accessToken')?.value;
+  const dbg = process.env.DEBUG_USERS_ME === '1';
 
   // accessToken이 없으면 인증 실패
   if (!accessToken) {
-    console.log('[API users/me] No cookie token!');
+    // 운영 노이즈 방지: 디버그 플래그 ON일 때만 출력
+    dbg && console.warn('[API users/me] No cookie token!');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const dbg = process.env.DEBUG_USERS_ME === '1';
   const t0 = performance.now();
 
   dbg && console.log('[me] cookies', (performance.now() - t0).toFixed(1), 'ms');
@@ -150,7 +151,7 @@ export async function PATCH(req: NextRequest) {
           // ...(marketing !== undefined && { marketing }),
           updatedAt: new Date(),
         },
-      }
+      },
     );
 
     return NextResponse.json({ success: true });

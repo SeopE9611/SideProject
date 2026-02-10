@@ -259,7 +259,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // QnA에는 isPinned 없음
     delete patch.isPinned;
   }
-  console.log('[PATCH boards]', { paramId: id, savedIdType: typeof post._id, savedId: String(post._id) });
+  // 운영 노이즈/내부 식별자 노출 방지: 개발 환경에서만
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[PATCH boards]', { paramId: id, savedIdType: typeof post._id, savedId: String(post._id) });
+  }
 
   // 스토리지 파일 삭제 (옵션)
   if (removedPaths.length > 0) {
