@@ -238,9 +238,12 @@ export default function SupportPage() {
   const qnas = data?.qna ?? [];
 
   // 관리자 여부 확인 (공지 쓰기 버튼 제어)
-  const { data: me } = useSWR<MeRes>('/api/users/me', fetcher);
+  const { data: me } = useSWR<MeRes>('/api/users/me', fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const isAdmin = me?.role === 'admin';
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
