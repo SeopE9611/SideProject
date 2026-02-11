@@ -39,6 +39,9 @@ export type BoardListParams = {
   // 필터
   category?: string | null;
   productId?: string | null;
+
+  // QnA 전용: 답변 상태 필터
+  answer?: 'waiting' | 'completed' | null;
 };
 
 /**
@@ -47,7 +50,7 @@ export type BoardListParams = {
  * - HTTP 없이 MongoDB에서 바로 읽는다.
  */
 export async function getBoardList(params: BoardListParams): Promise<{ items: BoardListItem[]; total: number }> {
-  const { type, page, limit, q = '', field = 'all', category, productId } = params;
+  const { type, page, limit, q = '', field = 'all', category, productId, answer } = params;
 
   const db = await getDb();
   const col = db.collection('board_posts');
@@ -66,6 +69,17 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
   // 3) 상품 필터 (QnA 전용)
   if (productId) {
     filter['productRef.productId'] = productId;
+  }
+
+  // 답변 상태 필터 (QnA 전용)
+  // - waiting: answer가 null(또는 없음)인 글
+  // - completed: answer가 존재하고 null이 아닌 글
+  if (type === 'qna' && answer) {
+    if (answer === 'waiting') {
+      filter.answer = null; // null 또는 미존재까지 포함
+    } else if (answer === 'completed') {
+      filter.answer = { $exists: true, $ne: null };
+    }
   }
 
   // 4) 검색어 필터
@@ -90,11 +104,9 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
   const total = await col.countDocuments(filter);
 
   // 6) 정렬 조건
-  const sort: Sort = { createdAt: -1 };
-  if (type === 'notice') {
-    // 공지는 상단 고정(isPinned) 우선
-    (sort as any).isPinned = -1;
-  }
+  const sort: Sort = type === 'notice'
+    ? { isPinned: -1, createdAt: -1 } // pinned가 1순위, 그 다음 최신순
+    : { createdAt: -1 };
 
   // 7) 실제 목록 조회
   const rawItems = await col
