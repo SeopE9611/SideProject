@@ -71,16 +71,13 @@ export default function QnaPage() {
     qs.set('q', keyword.trim());
     qs.set('field', field);
   }
+  //  답변상태 필터는 서버에서 처리해서 total/page와 일치
+  if (answerFilter !== 'all') qs.set('answer', answerFilter);
+
   // const { data, error, isLoading } = useSWR(`/api/boards?${qs.toString()}`, fetcher);
   const { data, error, isLoading } = useSWR<BoardListRes>(`/api/boards?${qs.toString()}`, fetcher);
   const serverItems: QnaItem[] = data?.items ?? [];
-  const items = useMemo(() => {
-    // 클라에서 답변상태 필터
-    let arr = serverItems;
-    if (answerFilter === 'waiting') arr = arr.filter((q) => !q.answer);
-    if (answerFilter === 'completed') arr = arr.filter((q) => !!q.answer);
-    return arr;
-  }, [serverItems, answerFilter]);
+  const items = serverItems;
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const answeredCount = serverItems.filter((q) => !!q.answer).length;
@@ -210,7 +207,13 @@ export default function QnaPage() {
                     <SelectItem value="member">회원</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={answerFilter} onValueChange={(v: any) => setAnswerFilter(v)}>
+                <Select
+                  value={answerFilter}
+                  onValueChange={(v: any) => {
+                    setAnswerFilter(v);
+                    setPage(1); // 필터 바꾸면 첫 페이지로
+                  }}
+                >
                   <SelectTrigger className="w-[120px] bg-white dark:bg-gray-700">
                     <SelectValue placeholder="답변 상태" />
                   </SelectTrigger>

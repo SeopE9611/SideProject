@@ -190,6 +190,7 @@ export async function GET(req: NextRequest) {
   const typeParam = url.searchParams.get('type');
   const rawCategory = url.searchParams.get('category'); // string | null
   const productId = url.searchParams.get('productId');
+  const answerRaw = url.searchParams.get('answer') || '';
 
   // NaN 방지: page/limit가 비정상 값이면 기본값으로 안전하게 보정
   const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
@@ -221,9 +222,11 @@ export async function GET(req: NextRequest) {
     msg: 'boards:list:query',
     status: 200,
     durationMs: 0,
-    extra: { type: typeParam, category: rawCategory, productId, page, limit, q, field: fieldRaw },
+    extra: { type: typeParam, category: rawCategory, productId, answer: answerRaw, page, limit, q, field: fieldRaw },
     ...meta,
   });
+
+  const answer = answerRaw === 'waiting' || answerRaw === 'completed' ? (answerRaw as 'waiting' | 'completed') : null;
 
   // 공용 MongoDB 쿼리 함수 사용
   const { items, total } = await getBoardList({
@@ -234,6 +237,7 @@ export async function GET(req: NextRequest) {
     field,
     category,
     productId: productId || null,
+    answer,
   });
 
   logInfo({
