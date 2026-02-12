@@ -2,40 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+html:has(body[data-scroll-locked]) {
+  overflow: hidden;
 }
 
-/*  "스크롤바 폭(=viewport 폭) 고정" */
-html {
-  /* 항상 스크롤바 공간을 예약해서 모달/셀렉트 열 때 폭이 절대 변하지 않게 */
-  overflow-y: scroll;
-  scrollbar-gutter: stable;
-}
-
-body {
-  min-height: 100%;
-}
-
-/* Radix(shadcn)가 scroll-lock으로 overflow:hidden을 걸어도 무력화 (폭 변화 방지) */
-html[data-scroll-locked],
-body[data-scroll-locked],
-html[style*='overflow: hidden'],
-body[style*='overflow: hidden'] {
-  overflow-y: scroll !important;
-}
-
-/* 추가 안전장치: 혹시라도 보정 padding/margin을 넣는 케이스까지 전부 0으로 */
-html[data-scroll-locked],
-body[data-scroll-locked],
-html[style*='--removed-body-scroll-bar-size'],
-body[style*='--removed-body-scroll-bar-size'],
-html[style*='padding-right'],
-body[style*='padding-right'],
-html[style*='margin-right'],
-body[style*='margin-right'] {
-  padding-right: 0px !important;
-  margin-right: 0px !important;
-  --removed-body-scroll-bar-size: 0px !important;
+body[data-scroll-locked] .app-header {
+  padding-right: var(--removed-body-scroll-bar-size, 0px);
 }
 /* 다크 모드용 CSS 변수 정의 */
 .dark body {
@@ -65,7 +37,7 @@ body[style*='margin-right'] {
 /* 라이트 모드용 CSS 변수 정의 */
 :root {
   /* ScrollLockCompensator가 설정하는 값(기본 0) */
-  --scrollbar-compensation: 0px;
+  /* --scrollbar-compensation: 0px; */
   --background: 0 0% 100%; /* bg-white */
   --foreground: 222.2 84% 4.9%; /* text-gray-900 */
   --muted: 210 40% 96.1%;

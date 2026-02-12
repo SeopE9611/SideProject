@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { MessageSquare, Search, Users, CheckCircle, Clock, ArrowLeft, Plus, Lock } from 'lucide-react';
 import useSWR from 'swr';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getQnaCategoryColor } from '@/lib/badge-style';
 
 const CAT_LABELS: Record<string, string> = {
@@ -29,12 +29,18 @@ export default function QnaPage() {
     createdAt: string | Date;
     authorName?: string | null;
     category?: string | null; // '상품문의' | '일반문의'
-    answer?: any; // 있으면 답변완료
+    answer?: { authorName?: string; createdAt?: string | Date; updatedAt?: string | Date } | undefined; // 있으면 답변완료
     viewCount?: number;
     isSecret?: boolean;
   };
 
-  type BoardListRes = { items: QnaItem[]; total: number };
+  type BoardListRes = {
+    ok: boolean;
+    items: QnaItem[];
+    total: number;
+    page?: number;
+    limit?: number;
+  };
 
   async function fetcher(url: string): Promise<BoardListRes> {
     const res = await fetch(url, { credentials: 'include' });
@@ -45,6 +51,7 @@ export default function QnaPage() {
       throw new Error(message);
     }
 
+    if (!data || data.ok !== true) throw new Error('invalid_response');
     return data as BoardListRes;
   }
   const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
@@ -74,8 +81,24 @@ export default function QnaPage() {
   //  답변상태 필터는 서버에서 처리해서 total/page와 일치
   if (answerFilter !== 'all') qs.set('answer', answerFilter);
 
-  // const { data, error, isLoading } = useSWR(`/api/boards?${qs.toString()}`, fetcher);
-  const { data, error, isLoading } = useSWR<BoardListRes>(`/api/boards?${qs.toString()}`, fetcher);
+  const key = `/api/boards?${qs.toString()}`;
+
+  // "사용자 액션으로 요청 중" 상태 (검색/필터/페이지 변경 시 스피너 통일용)
+  const [uiLoading, setUiLoading] = useState(false);
+
+  const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(key, fetcher, {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+  // 검증이 끝나면 uiLoading 종료
+  useEffect(() => {
+    if (uiLoading && !isValidating) setUiLoading(false);
+  }, [uiLoading, isValidating]);
+
+  // "진짜 로딩"만 잡기: 초기엔 data가 없을 수 있으니 그때만 로딩 취급
+  const isInitialLoading = isLoading && !data && !error;
+  const isBusy = uiLoading || isInitialLoading;
   const serverItems: QnaItem[] = data?.items ?? [];
   const items = serverItems;
   const total = data?.total ?? 0;
@@ -174,6 +197,7 @@ export default function QnaPage() {
               <div className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-teal-600" />
                 <span>Q&A 목록</span>
+                {isBusy && <div className="h-4 w-4 border-2 border-gray-300/70 border-t-gray-700 rounded-full animate-spin" />}
               </div>
               <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
                 <Link href="/board/qna/write">
@@ -189,6 +213,7 @@ export default function QnaPage() {
                 <Select
                   value={category}
                   onValueChange={(v) => {
+                    setUiLoading(true);
                     setCategory(v);
                     setPage(1);
                   }}
@@ -210,6 +235,7 @@ export default function QnaPage() {
                 <Select
                   value={answerFilter}
                   onValueChange={(v: any) => {
+                    setUiLoading(true);
                     setAnswerFilter(v);
                     setPage(1); // 필터 바꾸면 첫 페이지로
                   }}
@@ -251,6 +277,7 @@ export default function QnaPage() {
                     onChange={(e) => setInputKeyword(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
+                        setUiLoading(true);
                         setPage(1);
                         setKeyword(inputKeyword);
                         setField(inputField);
@@ -261,19 +288,21 @@ export default function QnaPage() {
                 <Button
                   type="button"
                   onClick={() => {
+                    setUiLoading(true);
                     setPage(1);
                     setKeyword(inputKeyword);
                     setField(inputField);
                   }}
                   className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
+                  disabled={isBusy}
                 >
+                  {isBusy && <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
               </div>
             </div>
 
             <div className="space-y-4">
-              {isLoading && <div className="text-sm text-gray-500">불러오는 중…</div>}
               {error && <div className="text-sm text-red-500">불러오기에 실패했습니다.</div>}
               {!isLoading &&
                 !error &&
@@ -326,7 +355,7 @@ export default function QnaPage() {
             <div className="mt-8 flex items-center justify-center">
               <div className="flex items-center space-x-2">
                 {/* 이전 페이지 */}
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="15 18 9 12 15 6" />
@@ -337,13 +366,23 @@ export default function QnaPage() {
                   .map((_, i) => i + 1)
                   .slice(0, 3)
                   .map((pageNumber) => (
-                    <Button key={pageNumber} variant="outline" size="sm" className={pageNumber === page ? 'h-10 w-10 bg-teal-600 text-white border-teal-600' : 'h-10 w-10 bg-white dark:bg-gray-700'} onClick={() => setPage(pageNumber)}>
+                    <Button
+                      key={pageNumber}
+                      variant="outline"
+                      size="sm"
+                      className={pageNumber === page ? 'h-10 w-10 bg-teal-600 text-white border-teal-600' : 'h-10 w-10 bg-white dark:bg-gray-700'}
+                      onClick={() => {
+                        setUiLoading(true);
+                        setPage(pageNumber);
+                      }}
+                      disabled={isBusy}
+                    >
                       {pageNumber}
                     </Button>
                   ))}
 
                 {/* 다음 페이지 */}
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">다음 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="9 18 15 12 9 6" />

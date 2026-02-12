@@ -829,7 +829,7 @@ const Header = () => {
             </div>
           </div>
         </SheetContent>
-        <header ref={headerRef as any} data-scrolled={isScrolled} className={`sticky top-0 z-[50] w-full isolate transition-[height] duration-300 ${isScrolled ? 'h-[56px]' : 'h-[72px]'}`}>
+        <header ref={headerRef as any} data-scrolled={isScrolled} className={`app-header fixed top-0 inset-x-0 z-[40] w-full isolate transition-[height] duration-300 ${isScrolled ? 'h-[56px]' : 'h-[72px]'}`}>
           <div
             aria-hidden="true"
             className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300

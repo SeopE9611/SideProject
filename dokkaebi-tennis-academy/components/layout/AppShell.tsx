@@ -23,16 +23,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <>
       {showSideMenu && <SideMenu />}
 
-      <main id="main" className="flex-1">
-        <div
-          className={cn(
-            // 우측 패딩도 헤더/사이드메뉴 체계에 맞춰 조금 넉넉히(선택)
-            'w-full px-0 bp-lg:pr-8 xl:pr-12 2xl:pr-16',
-            showSideMenu ? 'bp-lg:pl-64 xl:pl-72' : 'bp-lg:pl-0 xl:pl-0',
-          )}
-        >
-          {children}
-        </div>
+      <main id="main" className="flex-1" style={{ paddingTop: 'var(--header-h, 0px)' }}>
+        <div className={cn('w-full px-0 bp-lg:pr-8 xl:pr-12 2xl:pr-16', showSideMenu ? 'bp-lg:pl-64 xl:pl-72' : 'bp-lg:pl-0 xl:pl-0')}>{children}</div>
       </main>
     </>
   );

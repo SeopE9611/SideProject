@@ -33,7 +33,13 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
     hasFile?: boolean;
   };
 
-  type BoardListRes = { items: NoticeItem[]; total: number };
+  type BoardListRes = {
+    ok: boolean;
+    items: NoticeItem[];
+    total: number;
+    page: number;
+    limit: number;
+  };
 
   async function fetcher(url: string): Promise<BoardListRes> {
     const res = await fetch(url, { credentials: 'include' });
@@ -44,6 +50,10 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
       throw new Error(message);
     }
 
+    // 서버가 200으로 내려도 ok:false면 여기서 차단 (스키마 안정성)
+    if (!data || data.ok !== true) {
+      throw new Error('invalid_response');
+    }
     return data as BoardListRes;
   }
   const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
@@ -70,9 +80,29 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
     qs.set('field', field);
   }
 
-  const { data, error, isLoading } = useSWR<BoardListRes>(`/api/boards?${qs.toString()}`, fetcher, {
-    fallbackData: { items: (initialItems as NoticeItem[]) ?? [], total: initialTotal },
+  const key = `/api/boards?${qs.toString()}`;
+  const initialQs = new URLSearchParams({ type: 'notice', page: '1', limit: String(limit) });
+  const initialKey = `/api/boards?${initialQs.toString()}`;
+
+  // fallbackData는 "초기 진입 키"에서만 제공해야 페이지/검색 전환 시 튐이 사라짐
+  const fallbackData: BoardListRes | undefined =
+    key === initialKey
+      ? {
+          ok: true,
+          items: (initialItems as NoticeItem[]) ?? [],
+          total: initialTotal,
+          page: 1,
+          limit,
+        }
+      : undefined;
+  const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(key, fetcher, {
+    fallbackData,
+    keepPreviousData: true, // 키 변경 시 이전 data 유지 → 깜빡임 제거
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
+  // 초기(SSR fallback)에서의 revalidate는 "로딩 UI"로 취급하지 않기
+  const isBusy = key !== initialKey && (isLoading || isValidating);
 
   const items: NoticeItem[] = data?.items ?? initialItems ?? [];
   const total: number = data?.total ?? initialTotal ?? 0;
@@ -140,6 +170,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
                     onChange={(e) => setInputKeyword(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
+                        setPage(1);
                         setKeyword(inputKeyword);
                         setField(inputField);
                       }
@@ -149,12 +180,15 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
                 <Button
                   type="button"
                   onClick={() => {
+                    setPage(1);
                     setKeyword(inputKeyword);
                     setField(inputField);
                   }}
                   size="sm"
                   className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 h-10 sm:h-11 text-sm sm:text-base"
+                  disabled={isBusy}
                 >
+                  {isBusy && <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
                 {isAdmin && (
@@ -171,7 +205,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
           <CardContent className="p-5 sm:p-6 md:p-8">
             <div className="space-y-4 sm:space-y-5">
               {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-200">공지 목록을 불러오지 못했습니다. (네트워크/권한을 확인해주세요)</div>}
-              {!isLoading && !error && items.length === 0 && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-gray-500">검색 결과가 없습니다.</div>}
+              {!isBusy && !error && items.length === 0 && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-gray-500">검색 결과가 없습니다.</div>}
               {items.map((notice) => (
                 <Link key={notice._id} href={`/board/notice/${notice._id}`}>
                   <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-gray-200 dark:border-gray-700">
@@ -230,7 +264,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
 
             <div className="mt-8 sm:mt-10 flex items-center justify-center">
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="15 18 9 12 15 6" />
@@ -246,12 +280,13 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
                       size="sm"
                       className={pageNumber === page ? 'h-10 w-10 sm:h-12 sm:w-12 bg-blue-600 text-white border-blue-600 text-sm sm:text-base' : 'h-10 w-10 sm:h-12 sm:w-12 bg-white dark:bg-gray-700 text-sm sm:text-base'}
                       onClick={() => setPage(pageNumber)}
+                      disabled={isBusy}
                     >
                       {pageNumber}
                     </Button>
                   ))}
 
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">다음 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="9 18 15 12 9 6" />

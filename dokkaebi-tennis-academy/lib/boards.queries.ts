@@ -1,4 +1,3 @@
-// lib/boards.queries.ts
 import { getDb } from '@/lib/mongodb';
 import type { BoardType } from '@/lib/types/board';
 import type { Sort } from 'mongodb';
@@ -14,6 +13,15 @@ export type BoardListItem = {
   viewCount: number;
   isPinned?: boolean;
   category?: string | null;
+
+  // QnA 전용 메타
+  authorName?: string | null;
+  isSecret?: boolean;
+  /**
+   * answer는 목록 화면에서 '답변 완료/대기' 판별용으로만 사용.
+   * - 본문(content)은 목록 응답에서 제외(불필요한 payload/노출 방지)
+   */
+  answer?: { authorName?: string; createdAt?: Date; updatedAt?: Date };
 
   // 첨부 메타 정보
   attachmentsCount?: number;
@@ -104,22 +112,31 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
   const total = await col.countDocuments(filter);
 
   // 6) 정렬 조건
-  const sort: Sort = type === 'notice'
-    ? { isPinned: -1, createdAt: -1 } // pinned가 1순위, 그 다음 최신순
-    : { createdAt: -1 };
+  const sort: Sort =
+    type === 'notice'
+      ? { isPinned: -1, createdAt: -1 } // pinned가 1순위, 그 다음 최신순
+      : { createdAt: -1 };
 
   // 7) 실제 목록 조회
+  const projection: Record<string, 0 | 1> = {
+    title: 1,
+    createdAt: 1,
+    viewCount: 1,
+    isPinned: 1,
+    category: 1,
+    attachments: 1,
+  };
+
+  // QnA 목록에서 필요한 필드만 추가로 내려준다.
+  if (type === 'qna') {
+    projection.authorName = 1;
+    projection.isSecret = 1;
+    projection['answer.authorName'] = 1;
+    projection['answer.createdAt'] = 1;
+    projection['answer.updatedAt'] = 1;
+  }
   const rawItems = await col
-    .find(filter, {
-      projection: {
-        title: 1,
-        createdAt: 1,
-        viewCount: 1,
-        isPinned: 1,
-        category: 1,
-        attachments: 1,
-      },
-    })
+    .find(filter, { projection })
     .sort(sort)
     .skip((page - 1) * limit)
     .limit(limit)
@@ -147,6 +164,17 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
       viewCount: doc.viewCount ?? 0,
       isPinned: !!doc.isPinned,
       category: doc.category ?? null,
+      // QnA 리스트 UI에서 필요한 필드(답변상태/비밀글/작성자)
+      authorName: type === 'qna' ? (doc.authorName ?? null) : undefined,
+      isSecret: type === 'qna' ? !!doc.isSecret : undefined,
+      answer:
+        type === 'qna' && doc.answer
+          ? {
+              authorName: doc.answer?.authorName,
+              createdAt: doc.answer?.createdAt,
+              updatedAt: doc.answer?.updatedAt,
+            }
+          : undefined,
       attachmentsCount: attachments.length,
       imagesCount: imageAttachments.length,
       filesCount: fileAttachments.length,
