@@ -19,9 +19,57 @@ type QnaItem = BoardPost & { type: 'qna' };
 export default function QnaDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
-  const { data, error, isLoading, mutate } = useSWR(id ? `/api/boards/${id}` : null, fetcher);
+  type FetchError = Error & { status?: number; info?: unknown };
+
+  function isRecord(v: unknown): v is Record<string, unknown> {
+    return typeof v === 'object' && v !== null;
+  }
+
+  // /api/boards/:id가 401/403/404를 내려줄 때
+  // fetcher가 에러를 던지지 않으면(SWR error 미발생) 화면이 "그냥 비어 보이는" 문제발생.
+  // -> res.ok / json.ok 를 확인하고, 실패면 throw 해서 error UI가 확실히 뜨게 만듬.
+  const boardFetcher = async (url: string) => {
+    const res = await fetch(url, { credentials: 'include' });
+    const json = await res.json().catch(() => null);
+
+    const okFalse = isRecord(json) && json['ok'] === false;
+    if (!res.ok || okFalse) {
+      const message = isRecord(json) && typeof json['error'] === 'string' ? json['error'] : 'request_failed';
+
+      const err: FetchError = new Error(message);
+      err.status = res.status;
+      err.info = json;
+      throw err;
+    }
+
+    return json;
+  };
+  const { data, error, isLoading, mutate } = useSWR(id ? `/api/boards/${id}` : null, boardFetcher, {
+    // 404/401/403 같은 “회복 불가” 에러에서 불필요한 재시도 차단
+    shouldRetryOnError: false,
+    onErrorRetry: () => {}, // SWR 내부 retry 로직 자체 차단
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 30_000, // 짧은 시간 중복 호출 방지
+  });
   const qna = data?.item as QnaItem | undefined;
+
+  // 에러 메시지 분리
+  const errorTitle = (() => {
+    const status = (error as FetchError | undefined)?.status;
+    if (status === 404) return '존재하지 않는 Q&A 글입니다';
+    if (status === 401) return '로그인이 필요합니다';
+    if (status === 403) return '열람 권한이 없습니다';
+    return '불러오기에 실패했습니다';
+  })();
+
+  const errorBody = (() => {
+    const status = (error as FetchError | undefined)?.status;
+    if (status === 404) return '삭제되었거나 잘못된 주소입니다.';
+    if (status === 401) return '로그인 후 다시 시도해주세요.';
+    if (status === 403) return '작성자/관리자만 볼 수 있는 글일 수 있습니다.';
+    return '페이지를 새로고침하거나 잠시 후 다시 시도해주세요.';
+  })();
 
   const fmt = (v?: string | Date) =>
     v
@@ -35,7 +83,11 @@ export default function QnaDetailPage() {
       : '';
 
   // 로그인 사용자 정보
-  const meRes = useSWR(`/api/users/me`, (url: string) => fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null)));
+  const meRes = useSWR(`/api/users/me`, (url: string) => fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null)), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 30_000,
+  });
   const me = meRes.data;
   const isAdmin = me?.role === 'admin';
   const isAuthor = me?.sub && qna?.authorId && String(me.sub) === String(qna.authorId);
@@ -120,10 +172,9 @@ export default function QnaDetailPage() {
                     <div className="h-4 bg-gray-200 rounded w-1/2 dark:bg-gray-700"></div>
                   </div>
                 )}
-                {error && (
-                  <div className="text-center py-8">
-                    <div className="text-red-500 text-lg font-semibold mb-2">불러오기에 실패했습니다</div>
-                    <p className="text-gray-500 text-sm">페이지를 새로고침하거나 잠시 후 다시 시도해주세요.</p>
+                {!isLoading && error && (
+                  <div className="space-y-3">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">{errorTitle}</h1>
                   </div>
                 )}
                 {!isLoading && !error && qna && (
@@ -192,6 +243,11 @@ export default function QnaDetailPage() {
             </CardHeader>
 
             <CardContent className="p-8 space-y-6">
+              {!isLoading && error && (
+                <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
+                  <div className="whitespace-pre-line break-words leading-relaxed text-gray-800 dark:text-gray-200">{errorBody}</div>
+                </div>
+              )}
               {!isLoading && !error && qna && (
                 <>
                   <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">

@@ -52,7 +52,14 @@ export async function GET() {
   // QnA 5개 (최신순) — 필요하면 뱃지용 필드 추가
   const qna = await col
     .aggregate([
-      { $match: { type: 'qna', status: 'published' } },
+      {
+        $match: {
+          type: 'qna',
+          status: 'published',
+          // 메인(/support)에서는 비밀글을 노출X
+          isSecret: { $ne: true },
+        },
+      },
       { $sort: { createdAt: -1 } },
       { $limit: 5 },
 

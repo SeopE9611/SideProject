@@ -149,17 +149,31 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const isAdmin = payload?.role === 'admin';
   const isOwner = payload?.sub && String(payload.sub) === String(post.authorId);
 
-  // 비밀글: 권한 없으면 본문/첨부 마스킹
-  if (post.isSecret && !isAdmin && !isOwner) {
-    delete (post as any).content;
-    delete (post as any).attachments;
-  } else {
-    // 조회수 증가 (published만)
-    if (post.status === 'published') {
-      await BoardRepo.incViewCount(db, id);
-
-      post.viewCount = (post.viewCount ?? 0) + 1; // 응답 일관성
+  // 비밀글: 권한 없으면 401/403로 명확하게 반환
+  if (post.isSecret) {
+    // 로그인 자체가 없으면 -> 401 (로그인 유도 UX)
+    if (!payload) {
+      logInfo({ msg: 'boards:get:unauthorized_secret', status: 401, docId: id, durationMs: stop(), ...meta });
+      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
     }
+    // 로그인은 했지만 작성자/관리자가 아니면 -> 403
+    if (!isAdmin && !isOwner) {
+      logInfo({
+        msg: 'boards:get:forbidden_secret',
+        status: 403,
+        docId: id,
+        userId: String(payload.sub ?? ''),
+        durationMs: stop(),
+        ...meta,
+      });
+      return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
+    }
+  }
+
+  // 조회수 증가 (published만)
+  if (post.status === 'published') {
+    await BoardRepo.incViewCount(db, id);
+    post.viewCount = (post.viewCount ?? 0) + 1; // 응답 일관성
   }
 
   logInfo({ msg: 'boards:get:ok', status: 200, docId: id, durationMs: stop(), ...meta });

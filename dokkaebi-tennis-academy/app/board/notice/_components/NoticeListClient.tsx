@@ -14,9 +14,15 @@ type Props = {
   initialItems: any[];
   initialTotal: number;
   isAdmin: boolean;
+
+  // URL 쿼리로 직접 진입하는 경우(/board/notice?page=...&q=...)
+  // 서버 프리로드와 클라이언트 SWR key를 일치시켜 "한 번 튐"을 줄임.
+  initialPage?: number;
+  initialKeyword?: string;
+  initialField?: 'all' | 'title' | 'content' | 'title_content';
 };
 
-export default function NoticeListClient({ initialItems, initialTotal, isAdmin }: Props) {
+export default function NoticeListClient({ initialItems, initialTotal, isAdmin, initialPage = 1, initialKeyword = '', initialField = 'all' }: Props) {
   type NoticeItem = {
     _id: string;
     title: string;
@@ -60,13 +66,13 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
   // 입력용 상태 (타이핑 중)
-  const [inputKeyword, setInputKeyword] = useState('');
-  const [inputField, setInputField] = useState<'all' | 'title' | 'content' | 'title_content'>('all');
+  const [inputKeyword, setInputKeyword] = useState(initialKeyword);
+  const [inputField, setInputField] = useState<'all' | 'title' | 'content' | 'title_content'>(initialField);
   // 제출용 상태 (버튼/엔터로 확정된 값만 SWR에 반영)
-  const [keyword, setKeyword] = useState('');
-  const [field, setField] = useState<'all' | 'title' | 'content' | 'title_content'>('all');
+  const [keyword, setKeyword] = useState(initialKeyword);
+  const [field, setField] = useState<'all' | 'title' | 'content' | 'title_content'>(initialField);
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const limit = 20;
   // 목록 불러오기 (검색 파라미터 포함)
   const qs = new URLSearchParams({
@@ -81,7 +87,16 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
   }
 
   const key = `/api/boards?${qs.toString()}`;
-  const initialQs = new URLSearchParams({ type: 'notice', page: '1', limit: String(limit) });
+  const initialQs = new URLSearchParams({
+    type: 'notice',
+    page: String(initialPage),
+    limit: String(limit),
+  });
+
+  if (initialKeyword.trim()) {
+    initialQs.set('q', initialKeyword.trim());
+    initialQs.set('field', initialField);
+  }
   const initialKey = `/api/boards?${initialQs.toString()}`;
 
   // fallbackData는 "초기 진입 키"에서만 제공해야 페이지/검색 전환 시 튐이 사라짐
@@ -91,7 +106,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
           ok: true,
           items: (initialItems as NoticeItem[]) ?? [],
           total: initialTotal,
-          page: 1,
+          page: initialPage,
           limit,
         }
       : undefined;
@@ -100,6 +115,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin }
     keepPreviousData: true, // 키 변경 시 이전 data 유지 → 깜빡임 제거
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
+    revalidateOnMount: fallbackData ? false : true,
   });
   // 초기(SSR fallback)에서의 revalidate는 "로딩 UI"로 취급하지 않기
   const isBusy = key !== initialKey && (isLoading || isValidating);
