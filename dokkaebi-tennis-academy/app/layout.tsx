@@ -62,8 +62,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <TokenRefresher />
         <SessionWatcher />
         <ClaimsAutoLinker />
-        {/* <ScrollLockCompensator />
-        <ScrollLockKeepScrollbar /> */}
+        <ScrollLockCompensator />
+        <ScrollLockKeepScrollbar />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Header />
