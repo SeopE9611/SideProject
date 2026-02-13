@@ -1,61 +1,59 @@
 # 프로젝트 점검 리포트 (동기/비동기 + 로딩 UX)
 
-작성일: 2026-02-13
+작성일: 2026-02-13 (업데이트)
 
-## 1) 우선순위 높음 (바로 수정 권장)
+## 진행 상태 요약
 
-### 1-1. 로그인 로딩 파일 네이밍 이슈
-- 현재 로그인 라우트에 `app/login/Loading.tsx`(대문자 L)가 있습니다.
-- Next.js App Router의 표준 파일명은 `loading.tsx`이며, 대소문자 구분 환경(Linux/CI)에서는 자동 로딩 UI가 동작하지 않을 수 있습니다.
-- **권장 작업**: `Loading.tsx` → `loading.tsx`로 변경하고, `return null` 대신 최소 스피너/스켈레톤을 표시.
+- ✅ 완료: `app/login/loading.tsx` 표준화 및 로딩 UI 적용
+- ✅ 완료: `app/login/page.tsx` Suspense fallback 시각화
+- ✅ 완료: `app/messages/loading.tsx` 추가
+- ✅ 완료: `app/products/loading.tsx` 추가 + Suspense fallback 연결
+- ✅ 완료: 후속 핵심 라우트 로딩 추가
+  - `app/products/[id]/loading.tsx`
+  - `app/checkout/success/loading.tsx`
+  - `app/messages/write/loading.tsx`
+  - `app/mypage/orders/[id]/loading.tsx`
 
-### 1-2. 로그인 페이지 Suspense fallback이 null
-- `app/login/page.tsx`에서 `<Suspense fallback={null}>`을 사용 중입니다.
-- 네트워크 지연 시 공백 화면처럼 보일 수 있어 UX가 저하됩니다.
-- **권장 작업**: 로그인 전용 로딩 컴포넌트(브랜드 로고 + 스피너)를 fallback으로 지정.
+## 다음 우선순위 (남은 작업)
 
-## 2) 우선순위 중간 (이번 스프린트 권장)
+### 1) 타입 안정성 게이트 복구 (높음)
+- 현재 `next.config.mjs`에서 `typescript.ignoreBuildErrors: true`로 설정되어 있어 타입 에러가 빌드에서 차단되지 않습니다.
+- 권장:
+  1. `ignoreBuildErrors` 제거(또는 false)
+  2. CI에 `tsc --noEmit`를 필수 체크로 추가
 
-### 2-1. 인증/데이터 대기 페이지의 route-level loading 부재
-- `app/messages/page.tsx`는 `getCurrentUser()`를 await 하고 redirect 분기까지 수행하지만, 같은 경로의 `loading.tsx`가 없습니다.
-- **권장 작업**: `app/messages/loading.tsx` 추가 (간단 카드 스켈레톤 권장).
+### 2) 사용자 핵심 async 라우트 loading 보강 2차 (중간)
+- 아직 loading이 없는 사용자 async 페이지를 우선 보강합니다.
+- 권장 후보:
+  - `app/rackets/[id]/purchase/page.tsx`
+  - `app/rackets/[id]/select-string/page.tsx`
+  - `app/rentals/[id]/select-string/page.tsx`
+  - `app/services/applications/[id]/shipping/page.tsx`
 
-### 2-2. 상품 목록 페이지 Suspense fallback 미지정 + route loading 없음
-- `app/products/page.tsx`는 async 페이지이며 내부에 `<Suspense>`가 있으나 fallback 미지정입니다.
-- 같은 경로 `app/products/loading.tsx`도 없어 느린 환경에서 초기 체감 성능이 떨어질 수 있습니다.
-- **권장 작업**:
-  1. `app/products/loading.tsx` 추가
-  2. `Suspense fallback={<ListPageSkeleton .../>}` 지정
+### 3) 마이페이지 fetch 안정화 (중간)
+- `MypageClient`의 초기 fetch(주문/신청 카운트)에 에러 처리/abort 처리 보강 필요.
+- 권장:
+  - `Promise.allSettled`
+  - `AbortController`
+  - 실패 시 기본값 + 사용자 메시지
 
-## 3) 우선순위 중간~낮음 (운영 안정성)
+### 4) 테스트 커버리지 확대 (중간)
+- 현재 E2E는 리뷰 중심.
+- 권장:
+  - 로그인/상품상세/메시지작성/결제완료 로딩 스냅샷 또는 smoke 케이스 추가
 
-### 3-1. 비동기 작업(크론/정산)의 모니터링 보강
-- 월 정산 크론 API(`app/api/settlements/cron-monthly/route.ts`)가 집계/업서트는 수행하지만,
-  실패 재시도/중복 실행 감지/알림 연동(예: Slack, Sentry) 정책은 코드상 명확히 보이지 않습니다.
-- **권장 작업**:
-  - 실행 로그를 외부 APM/Sentry로 전송
-  - 크론 실행 idempotency 키 또는 월 단위 락 문서 도입
-  - 실패 시 운영 알림 채널 연결
-
-### 3-2. 동기/비동기 품질 검증 자동화 확대
-- 현재 package script 기준 공식 검증은 lint/smoke/cypress 위주입니다.
-- 로딩 UI 표시 여부(특히 route-level loading)는 회귀가 쉬운 항목입니다.
-- **권장 작업**:
-  - 핵심 라우트(로그인/메시지/상품/체크아웃)에 대해 Playwright 또는 Cypress 시각 회귀 테스트 1~2개 추가
-  - throttling 환경에서 skeleton/spinner 노출 여부 확인 케이스 추가
-
-## 4) 점검 명령어 (재현용)
+## 점검 명령어 (재현용)
 
 ```bash
 npm run lint
-rg -n "export default async function" app/**/page.tsx
-find app -name 'loading.tsx' -o -name 'Loading.tsx'
+npm run build
+python - <<'PY'
+import glob,os
+for p in sorted(glob.glob('app/**/page.tsx', recursive=True)):
+    t=open(p,encoding='utf-8').read()
+    if 'export default async function' in t:
+        d=os.path.dirname(p)
+        if not (os.path.exists(os.path.join(d,'loading.tsx')) or os.path.exists(os.path.join(d,'Loading.tsx'))):
+            print(p)
+PY
 ```
-
-## 5) 빠른 실행 체크리스트
-
-- [ ] `app/login/Loading.tsx` 파일명 소문자화 및 로딩 UI 적용
-- [ ] `app/login/page.tsx` Suspense fallback 교체
-- [ ] `app/messages/loading.tsx` 추가
-- [ ] `app/products/loading.tsx` 추가 + `Suspense` fallback 연결
-- [ ] 비동기 크론 작업 알림/모니터링 체계 문서화 및 1차 연동
