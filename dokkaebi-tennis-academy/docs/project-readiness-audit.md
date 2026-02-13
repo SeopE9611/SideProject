@@ -8,7 +8,7 @@
 - ✅ 완료: `app/login/page.tsx` Suspense fallback 시각화
 - ✅ 완료: `app/messages/loading.tsx` 추가
 - ✅ 완료: `app/products/loading.tsx` 추가 + Suspense fallback 연결
-- ✅ 완료: 후속 핵심 라우트 로딩 추가
+- ✅ 완료: 후속 핵심 라우트 로딩 추가 (3차 포함)
   - `app/products/[id]/loading.tsx`
   - `app/checkout/success/loading.tsx`
   - `app/messages/write/loading.tsx`
@@ -18,17 +18,25 @@
   - `app/rentals/[id]/select-string/loading.tsx`
   - `app/services/applications/[id]/shipping/loading.tsx`
   - `app/mypage/rentals/[id]/return-shipping/loading.tsx`
+  - `app/board/free/write/loading.tsx`
+  - `app/board/free/[id]/loading.tsx`
+  - `app/board/free/[id]/edit/loading.tsx`
+  - `app/board/gear/write/loading.tsx`
+  - `app/board/gear/[id]/loading.tsx`
+  - `app/board/gear/[id]/edit/loading.tsx`
+  - `app/board/market/write/loading.tsx`
+  - `app/board/market/[id]/loading.tsx`
+  - `app/board/market/[id]/edit/loading.tsx`
+  - `app/racket-orders/[orderId]/select-string/loading.tsx`
 - ✅ 완료: 타입 안정성 게이트 1차 복구
   - `next.config.mjs`의 `typescript.ignoreBuildErrors`를 `false`로 변경
   - `package.json`에 `typecheck` 스크립트(`tsc --noEmit`) 추가
 
 ## 다음 우선순위 (남은 작업)
 
-### 1) 사용자 async 라우트 loading 보강 3차 (중간)
-- 아직 loading이 없는 사용자 async 페이지를 우선 보강합니다.
-- 권장 후보:
-  - `app/racket-orders/[orderId]/select-string/page.tsx`
-  - board write/edit/detail async 페이지 묶음
+### 1) 사용자 async 라우트 loading 보강 4차 (중간)
+- 사용자 영역에서는 주요 비동기 라우트 보강이 대부분 완료되었습니다.
+- 남은 후보는 운영 우선순위에 따라 선택 적용합니다.
 
 ### 2) 마이페이지 fetch 안정화 후속 (중간)
 - 초기 카운트 fetch는 안정화 완료.
@@ -39,8 +47,8 @@
 - 추가 권장:
   - 로그인/상품상세/메시지작성/결제완료/라켓구매 흐름의 로딩 회귀 케이스 확대
 
-### 4) 설정 파일 정리 (중간)
-- `next.config.mjs`와 `next.config.ts`가 함께 존재하므로 사용 파일을 하나로 통일합니다.
+### 4) 설정 파일 정리 (완료)
+- `next.config.ts`를 제거하고 `next.config.mjs` 단일 설정으로 통일했습니다.
 
 ## 점검 명령어 (재현용)
 
