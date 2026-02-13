@@ -4,6 +4,13 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
 
+type SelectableStringProduct = {
+  _id: string;
+  name?: string;
+  price?: number;
+  mountingFee?: number;
+};
+
 export default function SelectStringClient({ orderId }: { orderId: string }) {
   const router = useRouter();
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
@@ -29,7 +36,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
 
   if (isLoadingInitial) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-cy="racket-string-grid">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="h-28 animate-pulse rounded-lg border bg-white" />
         ))}
@@ -48,13 +55,14 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {products.map((p: any) => {
+        {products.map((p: SelectableStringProduct) => {
           const isAdding = addingProductId === p._id;
 
           return (
             <button
               key={p._id}
               type="button"
+              data-cy="racket-string-option"
               disabled={!!addingProductId}
               className="rounded-lg border p-3 text-left transition hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => handleSelectString(p._id)}
@@ -70,7 +78,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
 
       {hasMore && (
         <div className="pt-2">
-          <button type="button" onClick={loadMore} disabled={isFetchingMore || !!addingProductId} className="w-full rounded-lg border bg-white px-3 py-2 text-sm hover:bg-slate-50 disabled:opacity-60">
+          <button type="button" data-cy="racket-string-load-more" onClick={loadMore} disabled={isFetchingMore || !!addingProductId} className="w-full rounded-lg border bg-white px-3 py-2 text-sm hover:bg-slate-50 disabled:opacity-60">
             {isFetchingMore ? '불러오는 중…' : '더 보기'}
           </button>
         </div>

@@ -32,6 +32,7 @@ import SiteContainer from '@/components/layout/SiteContainer';
 import ActivityFeedSkeleton from '@/app/mypage/tabs/ActivityFeedSkeleton';
 import ActivityFeed from '@/app/mypage/tabs/ActivityFeed';
 import { FullPageSpinner } from '@/components/system/PageLoading';
+import { showErrorToast } from '@/lib/toast';
 
 type Props = {
   user: {
@@ -55,13 +56,45 @@ export default function MypageClient({ user }: Props) {
   const [applicationsCount, setApplicationsCount] = useState(0);
 
   useEffect(() => {
-    fetch('/api/users/me/orders')
-      .then((res) => res.json())
-      .then((data: { items: Order[]; total: number }) => setOrdersCount(data.total));
+    let mounted = true;
+    const controller = new AbortController();
 
-    fetch('/api/applications/me')
-      .then((res) => res.json())
-      .then((data: { items: any[]; total: number }) => setApplicationsCount(data.total));
+    const parseCountResponse = async (res: Response, label: 'orders' | 'applications') => {
+      if (!res.ok) {
+        throw new Error(`${label} fetch failed: ${res.status}`);
+      }
+
+      const data = (await res.json().catch(() => null)) as { total?: unknown } | null;
+      return typeof data?.total === 'number' ? data.total : 0;
+    };
+
+    (async () => {
+      const [ordersResult, applicationsResult] = await Promise.allSettled([
+        fetch('/api/users/me/orders', { signal: controller.signal }).then((res) => parseCountResponse(res, 'orders')),
+        fetch('/api/applications/me', { signal: controller.signal }).then((res) => parseCountResponse(res, 'applications')),
+      ]);
+
+      if (!mounted) return;
+
+      if (ordersResult.status === 'fulfilled') {
+        setOrdersCount(ordersResult.value);
+      } else if (!(ordersResult.reason instanceof DOMException && ordersResult.reason.name === 'AbortError')) {
+        setOrdersCount(0);
+        showErrorToast('주문 카운트 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      }
+
+      if (applicationsResult.status === 'fulfilled') {
+        setApplicationsCount(applicationsResult.value);
+      } else if (!(applicationsResult.reason instanceof DOMException && applicationsResult.reason.name === 'AbortError')) {
+        setApplicationsCount(0);
+        showErrorToast('신청 카운트 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      }
+    })();
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
   }, []);
 
   useEffect(() => {

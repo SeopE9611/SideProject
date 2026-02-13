@@ -58,7 +58,7 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">
-      <Card>
+      <Card data-cy="message-write-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">쪽지 보내기</CardTitle>
           <Button variant="outline" onClick={() => confirmLeaveIfDirty(() => router.back())}>
@@ -67,18 +67,18 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground" data-cy="message-recipient">
             받는 사람: <span className="font-medium text-foreground">{toUser?.name ?? '알 수 없음'}</span>
           </div>
 
-          <Input placeholder="제목" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <Textarea placeholder="내용" rows={10} value={body} onChange={(e) => setBody(e.target.value)} />
+          <Input data-cy="message-title" placeholder="제목" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Textarea data-cy="message-body" placeholder="내용" rows={10} value={body} onChange={(e) => setBody(e.target.value)} />
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => confirmLeaveIfDirty(() => router.push('/messages'))}>
+            <Button data-cy="message-cancel" variant="outline" onClick={() => confirmLeaveIfDirty(() => router.push('/messages'))}>
               취소
             </Button>
-            <Button disabled={!canSubmit || loading} onClick={submit}>
+            <Button data-cy="message-submit" disabled={!canSubmit || loading} onClick={submit}>
               {loading ? '전송 중…' : '전송'}
             </Button>
           </div>
