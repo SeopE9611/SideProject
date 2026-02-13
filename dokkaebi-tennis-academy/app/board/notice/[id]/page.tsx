@@ -14,9 +14,61 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 export default function NoticeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  type FetchError = Error & { status?: number; info?: unknown };
+
+  function isRecord(v: unknown): v is Record<string, unknown> {
+    return typeof v === 'object' && v !== null;
+  }
+
+  // /api/boards/:id가 401/403/404를 내려줄 때
+  // fetcher가 에러를 던지지 않으면(SWR error 미발생) 화면이 "그냥 비어 보이는" 문제발생
+  // -> res.ok / json.ok 를 확인하고, 실패면 throw 해서 error UI가 확실히 뜨게 만듬.
+  const boardFetcher = async (url: string) => {
+    const res = await fetch(url, { credentials: 'include' });
+    const json = await res.json().catch(() => null);
+
+    const okFalse = isRecord(json) && json['ok'] === false;
+    if (!res.ok || okFalse) {
+      const message = isRecord(json) && typeof json['error'] === 'string' ? json['error'] : 'request_failed';
+
+      const err: FetchError = new Error(message);
+      err.status = res.status;
+      err.info = json;
+      throw err;
+    }
+
+    return json;
+  };
+
+  // (me 로드는 기존처럼 "에러로 던지지 않는" fetcher 유지)
   const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
-  const { data, error, isLoading } = useSWR(id ? `/api/boards/${id}` : null, fetcher);
+  const { data, error, isLoading } = useSWR(id ? `/api/boards/${id}` : null, boardFetcher, {
+    // 404/401/403 같은 “회복 불가” 에러에서 불필요한 재요청 차단
+    shouldRetryOnError: false,
+    onErrorRetry: () => {}, // SWR 내부 재시도 로직 자체를 강제 차단
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 30_000, // 짧은 시간 중복 요청 방지
+  });
+
   const notice = data?.item;
+
+  // 에러 메시지를 "제목/본문"으로 분리
+  const errorTitle = (() => {
+    const status = (error as FetchError | undefined)?.status;
+    if (status === 404) return '존재하지 않는 공지입니다';
+    if (status === 401) return '로그인이 필요합니다';
+    if (status === 403) return '열람 권한이 없습니다';
+    return '불러오기에 실패했습니다';
+  })();
+
+  const errorBody = (() => {
+    const status = (error as FetchError | undefined)?.status;
+    if (status === 404) return '삭제되었거나 잘못된 주소입니다.';
+    if (status === 401) return '로그인 후 다시 시도해주세요.';
+    if (status === 403) return '관리자에게 문의해주세요.';
+    return '페이지를 새로고침하거나 잠시 후 다시 시도해주세요.';
+  })();
 
   // 관리자 정보 로드
   const { data: me } = useSWR('/api/users/me', fetcher);
@@ -109,8 +161,7 @@ export default function NoticeDetailPage() {
                 )}
                 {error && (
                   <div className="text-center py-8">
-                    <div className="text-red-500 text-lg font-semibold mb-2">불러오기에 실패했습니다</div>
-                    <p className="text-gray-500 text-sm">페이지를 새로고침하거나 잠시 후 다시 시도해주세요.</p>
+                    <div className="text-red-500 text-lg font-semibold">{errorTitle}</div>
                   </div>
                 )}
                 {!isLoading && !error && notice && (
@@ -188,6 +239,11 @@ export default function NoticeDetailPage() {
             </CardHeader>
 
             <CardContent className="p-8 space-y-8">
+              {!isLoading && error && (
+                <div className="text-center py-10">
+                  <p className="text-gray-600 dark:text-gray-300">{errorBody}</p>
+                </div>
+              )}
               {!isLoading && !error && notice && (
                 <>
                   <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
