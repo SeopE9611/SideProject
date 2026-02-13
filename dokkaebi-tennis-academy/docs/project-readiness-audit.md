@@ -37,6 +37,10 @@
   - `scripts/smoke.mjs` 공개 경로 점검 범위 확대
   - `cypress/e2e/public.routes.smoke.cy.ts` 추가
   - `cypress/e2e/products.loading.query.cy.ts` 추가
+  - `cypress/e2e/login.route.smoke.cy.ts` 추가
+  - `cypress/e2e/messages.auth-gate.cy.ts` 추가
+  - `cypress/e2e/checkout.success.guard.cy.ts` 추가
+  - `cypress/e2e/racket-order.guard.cy.ts` 추가
 
 ## 다음 우선순위 (남은 작업)
 
@@ -51,7 +55,7 @@
 ### 3) 테스트 커버리지 확대 (중간)
 - 진행: `cypress/e2e/loading.states.cy.ts`, `cypress/e2e/products.loading.query.cy.ts`, `cypress/e2e/public.routes.smoke.cy.ts`로 로딩/공개 라우트 검증을 확대했습니다.
 - 추가 권장:
-  - 로그인/메시지작성/결제완료/라켓구매 흐름의 로딩 회귀 케이스 확대
+  - 로그인/메시지/결제/라켓 흐름의 UI 상호작용 회귀(폼 입력/버튼 상태/토스트) 케이스 확대
 
 ### 4) 설정 파일 정리 (완료)
 - `next.config.ts`를 제거하고 `next.config.mjs` 단일 설정으로 통일했습니다.
