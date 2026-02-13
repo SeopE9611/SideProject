@@ -3,6 +3,7 @@ import SiteContainer from '@/components/layout/SiteContainer';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { CardGridSkeleton } from '@/components/system/PageLoading';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -66,7 +67,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             </div>
           </div>
         )}
-        <Suspense>
+        <Suspense fallback={<CardGridSkeleton count={12} />}>
           <FilterableProductList initialBrand={initialBrand} initialMaterial={initialMaterial} />
         </Suspense>
       </SiteContainer>
