@@ -25,6 +25,31 @@ function stabilizeRootLayout() {
   const html = document.documentElement;
   const body = document.body;
 
+  const htmlCS = getComputedStyle(html);
+  const bodyCS = getComputedStyle(body);
+
+  // 0) Radix(react-remove-scroll)이 body를 position:fixed + top:-scrollY 로 잠가두면
+  //    window.scrollY가 0처럼 취급되어 position:sticky가 풀리며 위로 튀는 현상이 생깁니다.
+  //    → fixed 잠금을 무력화하고, body.top에 저장된 스크롤 위치로 window 스크롤을 복구합니다.
+  const isOverlayLocked = html.hasAttribute(LOCK_ATTR) || body.hasAttribute(LOCK_ATTR) || bodyCS.pointerEvents === 'none' || htmlCS.overflowY === 'hidden' || bodyCS.overflowY === 'hidden';
+
+  if (isOverlayLocked && bodyCS.position === 'fixed') {
+    const top = body.style.top || bodyCS.top; // inline이 비면 computed 사용
+    const savedY = top && top !== 'auto' ? Math.abs(parseInt(top, 10) || 0) : 0;
+
+    // body를 fixed로 두지 않으면 sticky 계산이 정상으로 돌아옵니다.
+    setImportant(body, 'position', 'static');
+    setImportant(body, 'top', '0px');
+    setImportant(body, 'left', '0px');
+    setImportant(body, 'right', '0px');
+    setImportant(body, 'width', 'auto');
+
+    // fixed 해제 후 실제 스크롤을 원래 위치로 복구
+    if (savedY > 0 && Math.abs(window.scrollY - savedY) > 1) {
+      window.scrollTo(0, savedY);
+    }
+  }
+
   // 1) 스크롤바 공간을 "항상" 안정적으로 유지 (Chrome/Edge 최신에서 안정적)
   //    - gutter stable: 스크롤바 유무와 무관하게 공간을 예약
   //    - overflow-y scroll: 어떤 라이브러리가 hidden을 걸어도 다시 scroll로 강제
@@ -50,7 +75,7 @@ function getIsLockedByOverlay() {
   if (html.hasAttribute(LOCK_ATTR) || body.hasAttribute(LOCK_ATTR)) return true;
 
   // Select/Popover 등에서 outside pointer 차단 시 body inline style에 들어오는 케이스 대응
-  if (body.style.pointerEvents === 'none') return true;
+  if (getComputedStyle(body).pointerEvents === 'none') return true;
 
   // 혹시 overflow hidden만 걸리는 변종 케이스(라이브러리/브라우저 조합)까지 커버
   const htmlOy = getComputedStyle(html).overflowY;
@@ -64,9 +89,7 @@ function findScrollableAncestor(target: EventTarget | null) {
   let node = target as HTMLElement | null;
   while (node && node !== document.body) {
     const style = getComputedStyle(node);
-    const canScrollY =
-      (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
-      node.scrollHeight > node.clientHeight;
+    const canScrollY = (style.overflowY === 'auto' || style.overflowY === 'scroll') && node.scrollHeight > node.clientHeight;
 
     if (canScrollY) return node;
     node = node.parentElement;
