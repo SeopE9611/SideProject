@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import LoginPageClient from '@/app/login/_components/LoginPageClient';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { redirect } from 'next/navigation';
+import { FullPageSpinner } from '@/components/system/PageLoading';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -29,7 +30,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
     redirect(safeRedirectTarget(next ?? redirectTo));
   }
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<FullPageSpinner label="로그인 정보를 확인하는 중..." minHeightClassName="min-h-[60svh]" />}>
       <LoginPageClient />
     </Suspense>
   );
