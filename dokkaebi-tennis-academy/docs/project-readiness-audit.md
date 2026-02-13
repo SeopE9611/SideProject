@@ -13,39 +13,40 @@
   - `app/checkout/success/loading.tsx`
   - `app/messages/write/loading.tsx`
   - `app/mypage/orders/[id]/loading.tsx`
+  - `app/rackets/[id]/purchase/loading.tsx`
+  - `app/rackets/[id]/select-string/loading.tsx`
+  - `app/rentals/[id]/select-string/loading.tsx`
+  - `app/services/applications/[id]/shipping/loading.tsx`
+  - `app/mypage/rentals/[id]/return-shipping/loading.tsx`
+- ✅ 완료: 타입 안정성 게이트 1차 복구
+  - `next.config.mjs`의 `typescript.ignoreBuildErrors`를 `false`로 변경
+  - `package.json`에 `typecheck` 스크립트(`tsc --noEmit`) 추가
 
 ## 다음 우선순위 (남은 작업)
 
-### 1) 타입 안정성 게이트 복구 (높음)
-- 현재 `next.config.mjs`에서 `typescript.ignoreBuildErrors: true`로 설정되어 있어 타입 에러가 빌드에서 차단되지 않습니다.
-- 권장:
-  1. `ignoreBuildErrors` 제거(또는 false)
-  2. CI에 `tsc --noEmit`를 필수 체크로 추가
-
-### 2) 사용자 핵심 async 라우트 loading 보강 2차 (중간)
+### 1) 사용자 async 라우트 loading 보강 3차 (중간)
 - 아직 loading이 없는 사용자 async 페이지를 우선 보강합니다.
 - 권장 후보:
-  - `app/rackets/[id]/purchase/page.tsx`
-  - `app/rackets/[id]/select-string/page.tsx`
-  - `app/rentals/[id]/select-string/page.tsx`
-  - `app/services/applications/[id]/shipping/page.tsx`
+  - `app/racket-orders/[orderId]/select-string/page.tsx`
+  - board write/edit/detail async 페이지 묶음
 
-### 3) 마이페이지 fetch 안정화 (중간)
-- `MypageClient`의 초기 fetch(주문/신청 카운트)에 에러 처리/abort 처리 보강 필요.
-- 권장:
-  - `Promise.allSettled`
-  - `AbortController`
-  - 실패 시 기본값 + 사용자 메시지
+### 2) 마이페이지 fetch 안정화 후속 (중간)
+- 초기 카운트 fetch는 안정화 완료.
+- 후속으로 탭별 상세 API 응답 실패 시 리트라이/백오프 정책을 검토합니다.
 
-### 4) 테스트 커버리지 확대 (중간)
+### 3) 테스트 커버리지 확대 (중간)
 - 진행: `cypress/e2e/loading.states.cy.ts`에 상품 목록 초기 로딩 스켈레톤 노출/해제 E2E를 추가했습니다.
 - 추가 권장:
-  - 로그인/상품상세/메시지작성/결제완료 로딩 스냅샷 또는 smoke 케이스 확대
+  - 로그인/상품상세/메시지작성/결제완료/라켓구매 흐름의 로딩 회귀 케이스 확대
+
+### 4) 설정 파일 정리 (중간)
+- `next.config.mjs`와 `next.config.ts`가 함께 존재하므로 사용 파일을 하나로 통일합니다.
 
 ## 점검 명령어 (재현용)
 
 ```bash
 npm run lint
+npm run typecheck
 npm run build
 python - <<'PY'
 import glob,os

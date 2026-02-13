@@ -3,7 +3,7 @@ process.env.NEXT_FONT_GOOGLE_DISABLE_DOWNLOADS = '1';
 
 const nextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     unoptimized: true,
