@@ -10,7 +10,8 @@
     "smoke": "node scripts/smoke.mjs",
     "lint": "eslint . --cache",
     "cy:open": "cypress open",
-    "cy:run": "cypress run"
+    "cy:run": "cypress run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
