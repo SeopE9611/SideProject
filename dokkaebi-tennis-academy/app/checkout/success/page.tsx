@@ -24,6 +24,9 @@ type PopulatedItem = {
   quantity: number;
 };
 
+type NumericLike = number | string | null | undefined;
+type OrderItemLike = { name?: string; price?: NumericLike; quantity?: NumericLike } | null | undefined;
+
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
   if (!token) return null;
@@ -93,7 +96,9 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
         <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
           <SiteContainer variant="wide" className="py-12">
-            <CheckoutApplyHandoffClient href={appHref} orderId={order._id.toString()} seconds={8} />
+            <div data-cy="checkout-handoff">
+              <CheckoutApplyHandoffClient href={appHref} orderId={order._id.toString()} seconds={8} />
+            </div>
 
             <div className="mt-6 flex justify-center">
               <Button variant="outline" asChild>
@@ -109,18 +114,18 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   }
 
   // 안전한 가격 표시 함수
-  const formatPrice = (price: any): string => {
+  const formatPrice = (price: NumericLike): string => {
     const numPrice = Number(price);
     return isNaN(numPrice) || numPrice === null || numPrice === undefined ? '0' : numPrice.toLocaleString();
   };
 
   // 안전한 수량 표시 함수
-  const formatQuantity = (quantity: any): number => {
+  const formatQuantity = (quantity: NumericLike): number => {
     const numQuantity = Number(quantity);
     return isNaN(numQuantity) || numQuantity === null || numQuantity === undefined ? 1 : numQuantity;
   };
 
-  const populatedItems: PopulatedItem[] = (order.items || []).map((it: any) => {
+  const populatedItems: PopulatedItem[] = (order.items || []).map((it: OrderItemLike) => {
     const quantity = formatQuantity(it?.quantity);
     const price = Number(it?.price);
 
@@ -198,14 +203,14 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         <SiteContainer variant="wide" className="py-8">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* 주문 정보 카드 */}
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
+            <Card data-cy="checkout-success-order-card" className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
               <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-6">
                 <CardTitle className="flex items-center gap-3 text-2xl">
                   <Package className="h-6 w-6 text-blue-600" />
                   주문 정보
                 </CardTitle>
                 <CardDescription className="mt-2 text-lg">
-                  주문 번호: <span className="font-mono font-semibold text-blue-600">{order._id.toString()}</span>
+                  주문 번호: <span data-cy="checkout-order-id" className="font-mono font-semibold text-blue-600">{order._id.toString()}</span>
                 </CardDescription>
               </div>
               <CardContent className="p-6">

@@ -4,7 +4,26 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { getHangulInitials } from '@/lib/hangul-utils';
 import { ObjectId } from 'mongodb';
+import type { Filter } from 'mongodb';
 
+type ProductDoc = {
+  _id: ObjectId;
+  name?: string;
+  price?: number;
+  images?: string[];
+  brand?: string;
+  material?: string;
+  mountingFee?: number;
+  features?: { power?: number; control?: number; spin?: number; durability?: number; comfort?: number };
+  inventory?: { isFeatured?: boolean };
+  isDeleted?: boolean;
+};
+
+type ProductCreatePayload = {
+  name?: unknown;
+  price?: unknown;
+  [key: string]: unknown;
+};
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -27,22 +46,24 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    let body: any = null;
+    let body: ProductCreatePayload | null = null;
     try {
-      body = await req.json();
+      body = (await req.json()) as ProductCreatePayload;
     } catch (e) {
       console.error('[products] invalid json', e);
       return NextResponse.json({ error: 'INVALID_JSON' }, { status: 400 });
     }
 
     // 유효성 검사 (기초)
-    if (!body.name || !body.price) {
+    const name = typeof body?.name === 'string' ? body.name.trim() : '';
+    const price = Number(body?.price);
+    if (!name || !Number.isFinite(price)) {
       return NextResponse.json({ message: '상품명과 가격은 필수입니다.' }, { status: 400 });
     }
 
     const client = await clientPromise;
     const db = client.db(); // 기본 DB: dokkaebi-tennis
-    const result = await db.collection('products').insertOne(body);
+    const result = await db.collection<ProductDoc>('products').insertOne({ ...body, name, price } as ProductDoc);
 
     return NextResponse.json(
       {
@@ -69,14 +90,14 @@ export async function GET(req: NextRequest) {
       const db = client.db();
       // isDeleted 플래그가 true인 문서는 제외
       const products = await db
-        .collection('products')
+        .collection<ProductDoc>('products')
         .find({ isDeleted: { $ne: true } })
         .toArray();
 
       const initialsQuery = getHangulInitials(query);
       const isChosungOnly = /^[ㄱ-ㅎ]+$/.test(query); // 초성만 입력된 경우
 
-      const filtered = products.filter((product: any) => {
+      const filtered = products.filter((product) => {
         const name = product.name ?? '';
         const nameInitials = getHangulInitials(name);
 
@@ -89,7 +110,7 @@ export async function GET(req: NextRequest) {
         }
       });
       return NextResponse.json(
-        filtered.slice(0, 10).map((product: any) => ({
+        filtered.slice(0, 10).map((product) => ({
           _id: product._id.toString(),
           name: product.name,
           price: product.price,
@@ -120,7 +141,7 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(100, Number(params.get('limit') || '20'));
     const skip = (page - 1) * limit;
 
-    const filter: Record<string, any> = { isDeleted: { $ne: true } }; // Soft-Delete된 상품은 기본적으로 제외
+    const filter: Filter<ProductDoc> = { isDeleted: { $ne: true } }; // Soft-Delete된 상품은 기본적으로 제외
     if (brand) filter.brand = brand;
     if (power) filter['features.power'] = { $gte: Number(power) };
     if (control) filter['features.control'] = { $gte: Number(control) };
@@ -133,7 +154,7 @@ export async function GET(req: NextRequest) {
 
     // 가격 범위 필터(기존 훅(useInfiniteProducts)에서 이미 사용중인 파라미터를 서버에서 반영)
     if (minPrice || maxPrice) {
-      const priceFilter: Record<string, number> = {};
+      const priceFilter: { $gte?: number; $lte?: number } = {};
       if (minPrice !== null && minPrice !== undefined && minPrice !== '') {
         const min = Number(minPrice);
         if (Number.isFinite(min)) priceFilter.$gte = min;
@@ -152,19 +173,19 @@ export async function GET(req: NextRequest) {
     }
     const client = await clientPromise;
     const db = client.db();
-    const collection = db.collection('products');
+    const collection = db.collection<ProductDoc>('products');
 
     let sortObj: { [key: string]: 1 | -1 } = { _id: -1 };
 
     if (sort === 'price-low') sortObj = { price: 1 };
     else if (sort === 'price-high') sortObj = { price: -1 };
 
-    const idFilter = exclude ? { _id: { $ne: new ObjectId(exclude) } } : {};
+    const idFilter = exclude && ObjectId.isValid(exclude) ? { _id: { $ne: new ObjectId(exclude) } } : {};
     const composed = { ...filter, ...idFilter };
 
     const [total, itemsRaw] = await Promise.all([collection.countDocuments(composed), collection.find(composed).sort(sortObj).skip(skip).limit(limit).toArray()]);
 
-    const items = itemsRaw.map((product: any) => ({
+    const items = itemsRaw.map((product) => ({
       ...product,
       _id: product._id.toString(),
     }));

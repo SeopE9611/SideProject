@@ -75,8 +75,8 @@ function focusFirst(ids: string[]) {
     const el = document.getElementById(id) as HTMLElement | null;
     if (!el) continue;
     // HTMLElement#focus 존재 여부를 런타임에서 확인
-    if (typeof (el as any).focus === 'function') {
-      (el as any).focus();
+    if (typeof (el as HTMLInputElement).focus === 'function') {
+      (el as HTMLInputElement).focus();
       break;
     }
   }
@@ -647,6 +647,7 @@ export default function LoginPageClient() {
                     handleLogin();
                   }}
                   className="space-y-4"
+                  data-cy="login-form"
                 >
                   {/* {loginFormError && (
                     <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
@@ -662,6 +663,7 @@ export default function LoginPageClient() {
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="email"
+                        data-cy="login-email"
                         type="email"
                         placeholder="이메일 주소를 입력하세요"
                         onChange={(e) => {
@@ -689,6 +691,7 @@ export default function LoginPageClient() {
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="password"
+                        data-cy="login-password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="비밀번호를 입력하세요"
                         onChange={(e) => {
@@ -740,6 +743,7 @@ export default function LoginPageClient() {
                     type="submit"
                     className="w-full h-12 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                     disabled={loginLoading}
+                    data-cy="login-submit"
                   >
                     {loginLoading ? (
                       <>
