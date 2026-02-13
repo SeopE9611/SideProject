@@ -120,6 +120,22 @@ export default function QnaWritePage() {
   // SWR fetcher
   type OrdersListRes = { items?: any[]; orders?: any[]; total?: number };
   type ProductsListRes = { products?: any[]; items?: any[]; total?: number; page?: number; limit?: number };
+  type MeRes = { role?: string };
+
+  async function fetcherAllow401<T>(url: string): Promise<T | null> {
+    const res = await fetch(url, { credentials: 'include' });
+    const data = (await res.json().catch(() => null)) as any;
+
+    // 비로그인(401)은 '에러'가 아니라 '로그인 안 됨' 상태로 취급
+    if (res.status === 401) return null;
+
+    if (!res.ok) {
+      const message = typeof data === 'object' && data !== null && typeof (data as { error: string }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+      throw new Error(message);
+    }
+
+    return data as T;
+  }
 
   async function fetcher<T>(url: string): Promise<T> {
     const res = await fetch(url, { credentials: 'include' });
@@ -133,8 +149,21 @@ export default function QnaWritePage() {
     return data as T;
   }
 
-  // “내 구매상품” 목록
-  const { data: myOrders, error: ordersError } = useSWR<OrdersListRes>('/api/orders?limit=100', fetcher);
+  // 로그인 여부 확인 (비로그인 401은 정상 흐름으로 처리)
+  const { data: me } = useSWR<MeRes | null>('/api/users/me', fetcherAllow401, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: false,
+  });
+
+  const ordersKey = me ? '/api/orders?limit=100' : null;
+
+  // “내 구매상품” 목록 (로그인일 때만 호출)
+  const { data: myOrders, error: ordersError } = useSWR<OrdersListRes>(ordersKey, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: false,
+  });
 
   // 주문 내 모든 상품을 평탄화 후 productId 기준으로 중복 제거
   const myProducts: { id: string; name: string; image?: string | null }[] = useMemo(() => {
@@ -451,9 +480,10 @@ export default function QnaWritePage() {
                     {/* 내 구매상품 */}
                     <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                       <div className="font-semibold mb-3">내 구매상품</div>
-                      {ordersError && <div className="mb-2 text-sm text-red-600 dark:text-red-400">구매 상품 목록을 불러오지 못했습니다. 로그인/네트워크를 확인해주세요.</div>}
+                      {!me && <div className="mb-2 text-xs text-gray-500 dark:text-gray-400">로그인하면 "내 구매상품" 목록을 불러와 빠르게 선택할 수 있어요.</div>}
+                      {me && ordersError && <div className="mb-2 text-sm text-red-600 dark:text-red-400">구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.</div>}
                       <div className="space-y-2 max-h-60 overflow-auto">
-                        {myProducts.length === 0 && <div className="text-sm text-gray-500">구매 이력이 없습니다.</div>}
+                        {me && myProducts.length === 0 && <div className="text-sm text-gray-500">구매 이력이 없습니다.</div>}
                         {myProducts.map((p) => (
                           <button
                             key={p.id}

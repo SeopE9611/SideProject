@@ -44,6 +44,21 @@ async function fetcher<T>(url: string): Promise<T> {
 
   return data as T;
 }
+
+async function fetcherAllow401<T>(url: string): Promise<T | null> {
+  const res = await fetch(url, { credentials: 'include' });
+  const data = (await res.json().catch(() => null)) as any;
+
+  // 비로그인(401)은 '에러'가 아니라 '로그인 안 됨' 상태로 취급
+  if (res.status === 401) return null;
+
+  if (!res.ok) {
+    const message = typeof data === 'object' && data !== null && typeof (data as { error: string }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+    throw new Error(message);
+  }
+
+  return data as T;
+}
 const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
 function FiveLineSkeleton() {
@@ -238,9 +253,10 @@ export default function SupportPage() {
   const qnas = data?.qna ?? [];
 
   // 관리자 여부 확인 (공지 쓰기 버튼 제어)
-  const { data: me } = useSWR<MeRes>('/api/users/me', fetcher, {
+  const { data: me } = useSWR<MeRes | null>('/api/users/me', fetcherAllow401, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
+    shouldRetryOnError: false,
   });
   const isAdmin = me?.role === 'admin';
 
