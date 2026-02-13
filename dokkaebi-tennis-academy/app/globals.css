@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-html:has(body[data-scroll-locked]) {
+/* html:has(body[data-scroll-locked]) {
   overflow: hidden;
-}
+} */
 
 body[data-scroll-locked] .app-header {
   padding-right: var(--removed-body-scroll-bar-size, 0px);
