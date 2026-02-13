@@ -236,7 +236,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
           수거 방식 <span className="text-red-500">*</span>
         </Label>
 
-        {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
+        {/* {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
           <div
             className="
                 block cursor-pointer rounded-xl
@@ -272,7 +272,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
               운송장/자가발송 안내 보기
             </button>
           </div>
-        )}
+        )} */}
         <RadioGroup
           value={formData.collectionMethod}
           onValueChange={(v) =>
