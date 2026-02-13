@@ -24,6 +24,12 @@ async function main() {
   // 2) 공개 페이지: 인증/DB 없이도 렌더 가능한 라우트만 선택
   await check('/services', [200]);
   await check('/products', [200]);
+  await check('/rackets', [200]);
+  await check('/board', [200]);
+  await check('/reviews', [200]);
+  await check('/support', [200]);
+  await check('/privacy', [200]);
+  await check('/terms', [200]);
   await check('/login', [200]);
 
   // 3) prod 모드(next start)에서는 debug endpoint가 "존재 자체를 숨김" → 404가 정상

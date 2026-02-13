@@ -31,21 +31,27 @@
 - ✅ 완료: 타입 안정성 게이트 1차 복구
   - `next.config.mjs`의 `typescript.ignoreBuildErrors`를 `false`로 변경
   - `package.json`에 `typecheck` 스크립트(`tsc --noEmit`) 추가
+- ✅ 완료: admin 비동기 라우트 로딩 보강
+  - `app/admin/*` async 페이지 12개에 route-level loading 적용
+- ✅ 완료: smoke/E2E 확장
+  - `scripts/smoke.mjs` 공개 경로 점검 범위 확대
+  - `cypress/e2e/public.routes.smoke.cy.ts` 추가
+  - `cypress/e2e/products.loading.query.cy.ts` 추가
 
 ## 다음 우선순위 (남은 작업)
 
-### 1) 사용자 async 라우트 loading 보강 4차 (중간)
-- 사용자 영역에서는 주요 비동기 라우트 보강이 대부분 완료되었습니다.
-- 남은 후보는 운영 우선순위에 따라 선택 적용합니다.
+### 1) 로딩 UX 미세 개선 (중간)
+- 현재 주요 사용자/관리자 async 라우트의 로딩은 보강 완료 상태입니다.
+- 후속으로 페이지별 스켈레톤 형태(리스트/상세/폼) 세분화 품질을 높입니다.
 
 ### 2) 마이페이지 fetch 안정화 후속 (중간)
 - 초기 카운트 fetch는 안정화 완료.
 - 후속으로 탭별 상세 API 응답 실패 시 리트라이/백오프 정책을 검토합니다.
 
 ### 3) 테스트 커버리지 확대 (중간)
-- 진행: `cypress/e2e/loading.states.cy.ts`에 상품 목록 초기 로딩 스켈레톤 노출/해제 E2E를 추가했습니다.
+- 진행: `cypress/e2e/loading.states.cy.ts`, `cypress/e2e/products.loading.query.cy.ts`, `cypress/e2e/public.routes.smoke.cy.ts`로 로딩/공개 라우트 검증을 확대했습니다.
 - 추가 권장:
-  - 로그인/상품상세/메시지작성/결제완료/라켓구매 흐름의 로딩 회귀 케이스 확대
+  - 로그인/메시지작성/결제완료/라켓구매 흐름의 로딩 회귀 케이스 확대
 
 ### 4) 설정 파일 정리 (완료)
 - `next.config.ts`를 제거하고 `next.config.mjs` 단일 설정으로 통일했습니다.
