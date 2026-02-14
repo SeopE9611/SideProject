@@ -77,3 +77,6 @@ export type DashboardMetrics = {
     latest: null | { yyyymm: string; lastGeneratedAt: string | null; lastGeneratedBy: string | null };
   };
 };
+
+
+export type AdminDashboardMetricsResponseDto = DashboardMetrics;

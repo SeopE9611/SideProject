@@ -13,7 +13,8 @@
     "cy:run": "cypress run",
     "typecheck": "tsc --noEmit",
     "check:next-page-props": "node scripts/check-next-page-props.mjs",
-    "db:ensure-admin-user-indexes": "node scripts/db/ensure-admin-user-indexes.mjs"
+    "db:ensure-admin-user-indexes": "node scripts/db/ensure-admin-user-indexes.mjs",
+    "report:type-debt": "node scripts/report-admin-any-count.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

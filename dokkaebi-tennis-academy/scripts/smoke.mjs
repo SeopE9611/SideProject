@@ -2,6 +2,7 @@
 // - 목적: "빌드는 되는데 런타임에서 죽는" 상황을 최소 비용으로 조기 탐지
 // - 원칙: DB/외부 서비스에 의존하지 않는 경로만 점검
 // - Node 22+ 환경에서는 fetch가 기본 제공됩니다.
+import { execSync } from 'node:child_process';
 
 const BASE = process.env.SMOKE_BASE_URL || 'http://localhost:3000';
 
@@ -53,6 +54,10 @@ async function main() {
   // 3) prod 모드(next start)에서는 debug endpoint가 "존재 자체를 숨김" → 404가 정상
   await check('/api/debug/sendgrid-test', [404]);
   await check('/api/debug/sms-test?text=test', [404]);
+
+  // 4) 타입 부채 지표(any 개수) 리포트
+  const typeDebtReport = execSync('node scripts/report-admin-any-count.mjs', { encoding: 'utf8' }).trim();
+  console.log(`[TYPE_DEBT] ${typeDebtReport}`);
 
   console.log('✅ Smoke test passed');
 }

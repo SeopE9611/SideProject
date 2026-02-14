@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/admin.guard';
 import { collectDashboardMetrics } from './_core/query-collector';
 import { transformDashboardMetrics } from './_core/aggregate-transformer';
 import { mapDashboardMetricsResponse } from './_core/response-mapper';
+import type { AdminDashboardMetricsResponseDto } from '@/types/admin/dashboard';
 
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
@@ -10,7 +11,7 @@ export async function GET(req: Request) {
 
   const raw = await collectDashboardMetrics(guard.db);
   const aggregate = transformDashboardMetrics(raw.payload);
-  const dto = mapDashboardMetricsResponse(aggregate);
+  const dto: AdminDashboardMetricsResponseDto = mapDashboardMetricsResponse(aggregate);
 
   return NextResponse.json(dto, { headers: raw.headers });
 }

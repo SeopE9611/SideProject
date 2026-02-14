@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 import { toISO, normalizeOrderStatus, normalizePaymentStatus, normalizeRentalStatus, summarizeOrderItems, pickCustomerFromDoc, normalizeRentalAmountTotal } from '@/lib/admin-ops-normalize';
-import type { AdminOperationFlow as Flow, AdminOperationItem as OpItem, AdminOperationKind as Kind, SettlementAnchor } from '@/types/admin/operations';
+import type { AdminOperationFlow as Flow, AdminOperationItem as OpItem, AdminOperationKind as Kind, SettlementAnchor, AdminOperationsListRequestDto, AdminOperationsListResponseDto } from '@/types/admin/operations';
 export const dynamic = 'force-dynamic';
 
 /** Responsibility: transport + orchestration only (쿼리/집계 호출 및 응답). */
@@ -26,8 +26,34 @@ const KIND_PRIORITY: Record<Kind, number> = {
   stringing_application: 2,
 };
 
-function hasRacketItems(items: any[] | undefined) {
-  return Array.isArray(items) && items.some((it) => it?.kind === 'racket' || it?.kind === 'used_racket');
+type UnknownDoc = Record<string, unknown>;
+type UnknownArray = UnknownDoc[];
+
+function asObject(value: unknown): UnknownDoc | null {
+  return typeof value === 'object' && value !== null ? (value as UnknownDoc) : null;
+}
+
+function asObjectArray(value: unknown): UnknownArray {
+  return Array.isArray(value) ? value.filter((item): item is UnknownDoc => asObject(item) !== null) : [];
+}
+
+function getString(value: unknown): string | null {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return null;
+}
+
+function getIdString(value: unknown): string | null {
+  const asString = getString(value);
+  if (asString) return asString;
+  const obj = asObject(value);
+  if (!obj) return null;
+  if (typeof obj.toString === 'function') return obj.toString();
+  return null;
+}
+
+function hasRacketItems(items: unknown) {
+  return asObjectArray(items).some((it) => it.kind === 'racket' || it.kind === 'used_racket');
 }
 
 function flowLabelOf(flow: Flow) {
@@ -193,6 +219,7 @@ export async function GET(req: Request) {
   const warn = url.searchParams.get('warn') === '1';
   const flow = parseFlow(url.searchParams.get('flow'));
   const integrated = parseIntegrated(url.searchParams.get('integrated'));
+  const requestDto: AdminOperationsListRequestDto = { page, pageSize, kind, q, warn, flow, integrated };
 
   // 1) 신청서 먼저 조회해서 “연결 매핑(orderId/rentalId)”을 만든다.
   const rawApps = await db
@@ -227,7 +254,7 @@ export async function GET(req: Request) {
   // 경고용: orderId/rentalId 기준으로 신청서가 “여러 개” 붙는 경우까지 집계(기존 orderToApp/rentalToApp은 1개만 매핑)
   const orderToAppIds = new Map<string, string[]>();
   const rentalToAppIds = new Map<string, string[]>();
-  for (const a of rawApps as any[]) {
+  for (const a of asObjectArray(rawApps)) {
     if (a?.orderId) {
       const key = String(a.orderId);
       const arr = orderToAppIds.get(key) ?? [];
@@ -299,13 +326,13 @@ export async function GET(req: Request) {
    *
    * 따라서 "현재 응답 범위의 주문/대여"를 기준으로 연결된 신청서를 추가 조회하여(rawApps + 매핑) 보강함
    */
-  const linkOr: any[] = [];
+  const linkOr: Array<Record<string, unknown>> = [];
   if (rawOrders.length > 0) {
-    const orderIds = (rawOrders as any[]).map((o) => o?._id).filter(Boolean);
+    const orderIds = rawOrders.map((o) => o?._id).filter(Boolean);
     if (orderIds.length > 0) linkOr.push({ orderId: { $in: orderIds } });
   }
   if (rawRentals.length > 0) {
-    const rentalIds = (rawRentals as any[]).map((r) => r?._id).filter(Boolean);
+    const rentalIds = rawRentals.map((r) => r?._id).filter(Boolean);
     if (rentalIds.length > 0) linkOr.push({ rentalId: { $in: rentalIds } });
   }
 
@@ -331,14 +358,14 @@ export async function GET(req: Request) {
       .toArray();
 
     // rawApps에 없는 신청서만 추가 + 매핑 보강
-    const existingAppIds = new Set((rawApps as any[]).map((a) => String(a?._id)));
-    for (const a of extraLinkedApps as any[]) {
+    const existingAppIds = new Set(rawApps.map((a) => String(a?._id)));
+    for (const a of asObjectArray(extraLinkedApps)) {
       const aid = String(a?._id);
       if (!aid) continue;
 
       // 1) rawApps에 없으면 추가(목록/정렬은 아래 merge 단계에서 createdAt 기준으로 재정렬됨)
       if (!existingAppIds.has(aid)) {
-        (rawApps as any[]).push(a);
+        rawApps.push(a);
         existingAppIds.add(aid);
       }
 
@@ -369,26 +396,26 @@ export async function GET(req: Request) {
     }
   }
 
-  const userIds = Array.from(new Set(rawRentals.map((r: any) => r?.userId).filter(Boolean)));
+  const userIds = Array.from(new Set(rawRentals.map((r) => r?.userId).filter(Boolean)));
   const userMap = new Map<string, { name?: string; email?: string }>();
   if (userIds.length > 0) {
     const users = await db
       .collection('users')
-      .find({ _id: { $in: userIds.map((id: any) => (ObjectId.isValid(String(id)) ? new ObjectId(String(id)) : id)) } })
+      .find({ _id: { $in: userIds.map((id) => (ObjectId.isValid(String(id)) ? new ObjectId(String(id)) : id)) } })
       .project({ name: 1, email: 1 })
       .toArray();
-    users.forEach((u: any) => userMap.set(String(u._id), { name: u.name, email: u.email }));
+    users.forEach((u) => userMap.set(String(u._id), { name: u.name, email: u.email }));
   }
 
   // 주문 아이템에서 '라켓 포함 여부'를 미리 계산해두면,
   // 신청서가 주문에 연결된 경우에도(Flow 2 vs 5) 정확히 판정가능
   const orderHasRacket = new Map<string, boolean>();
-  for (const o of rawOrders as any[]) {
+  for (const o of rawOrders) {
     orderHasRacket.set(String(o?._id), hasRacketItems(o?.items));
   }
 
   // 3) 연결 무결성(양방향 링크) 경고 사유 계산
-  const appById = new Map<string, any>((rawApps as any[]).map((a) => [String(a._id), a]));
+  const appById = new Map<string, UnknownDoc>(asObjectArray(rawApps).map((a) => [String(a._id), a]));
   const warnByKey = new Map<string, string[]>();
   const pushWarn = (kind: Kind, id: string, reason: string) => {
     const key = `${kind}:${id}`;
@@ -408,13 +435,13 @@ export async function GET(req: Request) {
   // '작성대기' 판정: 주문/대여가 stringingApplicationId로 신청서를 가리키지만,
   // rawApps는 status != 'draft' 조건으로 가져오므로(초안은 제외),
   // 'DB에서 못 찾음'이 아니라 '초안 작성대기'로 분류해야 하는 케이스가 생긴다.
-  const draftById = new Map<string, any>();
+  const draftById = new Map<string, UnknownDoc>();
   {
     const candidateIds = new Set<string>();
-    for (const o of rawOrders as any[]) {
+    for (const o of rawOrders) {
       if (o?.stringingApplicationId) candidateIds.add(String(o.stringingApplicationId));
     }
-    for (const r of rawRentals as any[]) {
+    for (const r of rawRentals) {
       if (r?.stringingApplicationId) candidateIds.add(String(r.stringingApplicationId));
     }
 
@@ -428,7 +455,7 @@ export async function GET(req: Request) {
           .find({ _id: { $in: objectIds }, status: 'draft' })
           .project({ _id: 1, status: 1, orderId: 1, rentalId: 1, createdAt: 1 })
           .toArray();
-        for (const d of rawDrafts as any[]) {
+        for (const d of asObjectArray(rawDrafts)) {
           draftById.set(String(d._id), d);
         }
       }
@@ -436,7 +463,7 @@ export async function GET(req: Request) {
   }
 
   // 주문 ↔ 신청서(교체서비스) 양방향 체크
-  for (const o of rawOrders as any[]) {
+  for (const o of rawOrders) {
     const oid = String(o._id);
     const appIdsFromApps = orderToAppIds.get(oid) ?? [];
     const appIdInOrder = o?.stringingApplicationId ? String(o.stringingApplicationId) : null;
@@ -460,7 +487,7 @@ export async function GET(req: Request) {
           // - 신청서 컬렉션에서 해당 주문으로 연결된 신청서(appIdsFromApps)가 실제로 존재하는데
           //   주문이 그걸 못 가리키는 상황이면 => 진짜 연결 오류
           // 그 외에는 "미신청/작성 전"으로 보고 pending으로 분류한다.
-          const orderClaimsApplied = Boolean((o as any)?.isStringServiceApplied);
+          const orderClaimsApplied = Boolean(o?.isStringServiceApplied);
           if (!orderClaimsApplied && appIdsFromApps.length === 0) {
             pushPending('order', oid, '교체서비스 신청이 아직 제출되지 않았습니다(미신청/작성 전).');
           } else {
@@ -481,7 +508,7 @@ export async function GET(req: Request) {
   }
 
   // 대여 ↔ 신청서(교체서비스) 양방향 체크
-  for (const r of rawRentals as any[]) {
+  for (const r of rawRentals) {
     const rid = String(r._id);
     const appIdsFromApps = rentalToAppIds.get(rid) ?? [];
     const appIdInRental = r?.stringingApplicationId ? String(r.stringingApplicationId) : null;
@@ -500,7 +527,7 @@ export async function GET(req: Request) {
         if (d) {
           pushPending('rental', rid, '교체서비스 신청서가 초안(draft) 상태입니다(작성대기).');
         } else {
-          const rentalClaimsApplied = Boolean((r as any)?.isStringServiceApplied);
+          const rentalClaimsApplied = Boolean(r?.isStringServiceApplied);
           if (!rentalClaimsApplied && appIdsFromApps.length === 0) {
             pushPending('rental', rid, '교체서비스 신청이 아직 제출되지 않았습니다(미신청/작성 전).');
           } else {
@@ -521,12 +548,12 @@ export async function GET(req: Request) {
   }
 
   // 신청서 기준: 존재성 + 역방향 링크
-  for (const a of rawApps as any[]) {
+  for (const a of asObjectArray(rawApps)) {
     const aid = String(a._id);
 
     const oid = a?.orderId ? String(a.orderId) : null;
     if (oid) {
-      const o = (rawOrders as any[]).find((x) => String(x._id) === oid);
+      const o = rawOrders.find((x) => String(x._id) === oid);
       if (!o) {
         pushWarn('stringing_application', aid, '신청서.orderId가 가리키는 주문이 DB에 없습니다.');
       } else {
@@ -541,7 +568,7 @@ export async function GET(req: Request) {
 
     const rid = a?.rentalId ? String(a.rentalId) : null;
     if (rid) {
-      const r = (rawRentals as any[]).find((x) => String(x._id) === rid);
+      const r = rawRentals.find((x) => String(x._id) === rid);
       if (!r) {
         pushWarn('stringing_application', aid, '신청서.rentalId가 가리키는 대여가 DB에 없습니다.');
       } else {
@@ -556,7 +583,7 @@ export async function GET(req: Request) {
   }
 
   // 4) 공통 포맷으로 매핑
-  const orderItems: OpItem[] = rawOrders.map((o: any) => {
+  const orderItems: OpItem[] = rawOrders.map((o) => {
     const id = String(o._id);
     const cust = pickCustomerFromDoc(o);
     const appId = orderToApp.get(id) ?? null;
@@ -582,7 +609,7 @@ export async function GET(req: Request) {
     };
   });
 
-  const appItems: OpItem[] = rawApps.map((a: any) => {
+  const appItems: OpItem[] = asObjectArray(rawApps).map((a) => {
     const id = String(a._id);
     const cust = pickCustomerFromDoc(a);
     const linkedOrderId = a?.orderId ? String(a.orderId) : null;
@@ -603,7 +630,7 @@ export async function GET(req: Request) {
       customer: cust,
       title: '교체 서비스 신청',
       statusLabel: String(a?.status ?? '접수완료'),
-      paymentLabel: normalizePaymentStatus(a?.paymentStatus),
+      paymentLabel: normalizePaymentStatus(getString(a?.paymentStatus)),
       amount,
       flow: (() => {
         if (!isIntegrated) return 3 as Flow;
@@ -644,14 +671,14 @@ export async function GET(req: Request) {
     };
   });
 
-  const rentalItems: OpItem[] = rawRentals.map((r: any) => {
+  const rentalItems: OpItem[] = rawRentals.map((r) => {
     const id = String(r._id);
     const u = r?.userId ? userMap.get(String(r.userId)) : null;
     const cust = u?.name || u?.email ? { name: String(u?.name ?? ''), email: String(u?.email ?? '') } : pickCustomerFromDoc(r);
-    const rawAppId = (r as any)?.stringingApplicationId ?? null;
-    const stringingApplicationId = rawAppId ? (typeof rawAppId === 'string' ? rawAppId : (rawAppId?.toString?.() ?? String(rawAppId))) : null;
+    const rawAppId = r?.stringingApplicationId ?? null;
+    const stringingApplicationId = rawAppId ? getIdString(rawAppId) : null;
     const appId = stringingApplicationId || (rentalToApp.get(id) ?? null);
-    const withStringService = Boolean(r?.stringing?.requested) || Boolean((r as any)?.isStringServiceApplied) || Boolean(appId);
+    const withStringService = Boolean(r?.stringing?.requested) || Boolean(r?.isStringServiceApplied) || Boolean(appId);
     const isIntegrated = Boolean(appId);
     const days = Number(r?.days ?? r?.period ?? 0);
     const amount = normalizeRentalAmountTotal(r);
@@ -728,9 +755,14 @@ export async function GET(req: Request) {
   // warn=1이면 서버에서 "경고 그룹"만 남긴 뒤 페이지네이션
   if (warn) merged = filterWarnGroups(merged);
 
+  const { page: requestedPage, pageSize: requestedPageSize } = requestDto;
   const total = merged.length;
-  const start = (page - 1) * pageSize;
-  const items = merged.slice(start, start + pageSize);
+  const start = (requestedPage - 1) * requestedPageSize;
+  const items = merged.slice(start, start + requestedPageSize);
 
-  return NextResponse.json({ items, total });
+  const responseDto: AdminOperationsListResponseDto = {
+    items: items.map((item) => ({ ...item, createdAt: item.createdAt ?? null })),
+    total,
+  };
+  return NextResponse.json(responseDto);
 }
