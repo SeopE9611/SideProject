@@ -214,7 +214,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
     error,
     isLoading,
     mutate,
-  } = useSWR<{ item: PackageDetail }>(`/api/package-orders/${packageId}`, fetcher, {
+  } = useSWR<{ item: PackageDetail }>(`/api/admin/package-orders/${packageId}`, fetcher, {
     revalidateOnFocus: false,
   });
 
@@ -295,7 +295,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
     setIsSavingExtend(true);
     try {
-      const res = await fetch(`/api/package-orders/${packageId}/extend`, {
+      const res = await fetch(`/api/admin/package-orders/${packageId}/extend`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode: 'days', days: extensionData.days, reason: extensionData.reason }),
@@ -323,7 +323,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
     setIsSavingAdjust(true);
     try {
-      const res = await fetch(`/api/package-orders/${packageId}/adjust-sessions`, {
+      const res = await fetch(`/api/admin/package-orders/${packageId}/adjust-sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ delta: sessionAdjustment.amount, clampZero: true, reason: sessionAdjustment.reason }),

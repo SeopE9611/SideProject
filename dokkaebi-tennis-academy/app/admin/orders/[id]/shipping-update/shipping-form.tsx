@@ -121,7 +121,7 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`/api/orders/${orderId}/shipping`, {
+      const res = await fetch(`/api/admin/orders/${orderId}/shipping`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

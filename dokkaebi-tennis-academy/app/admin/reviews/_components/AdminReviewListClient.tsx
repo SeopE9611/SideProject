@@ -110,7 +110,7 @@ export default function AdminReviewListClient() {
     (async () => {
       try {
         setDetailLoading(true);
-        const res = await fetch(`/api/reviews/${detail._id}`, { credentials: 'include' });
+        const res = await fetch(`/api/admin/reviews/${detail._id}`, { credentials: 'include' });
         if (!res.ok) return;
         const j = await res.json();
         if (!aborted) setFullDetail(j);
@@ -157,7 +157,7 @@ export default function AdminReviewListClient() {
     const snapshot = data;
     await mutate((pages?: Page[]) => (pages ? pages.map((p) => ({ ...p, items: p.items.filter((r) => r._id !== id) })) : pages), false);
     try {
-      const res = await fetch(`/api/reviews/${id}`, { method: 'DELETE', credentials: 'include' });
+      const res = await fetch(`/api/admin/reviews/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) throw new Error('삭제 실패');
       showSuccessToast('삭제되었습니다.');
     } catch (e: any) {
@@ -171,7 +171,7 @@ export default function AdminReviewListClient() {
     const snapshot = data;
     await mutate((pages?: Page[]) => (pages ? pages.map((p) => ({ ...p, items: p.items.filter((r) => !selected.includes(r._id)) })) : pages), false);
     try {
-      await Promise.allSettled(selected.map((id) => fetch(`/api/reviews/${id}`, { method: 'DELETE', credentials: 'include' })));
+      await Promise.allSettled(selected.map((id) => fetch(`/api/admin/reviews/${id}`, { method: 'DELETE', credentials: 'include' })));
       setSelected([]);
       showSuccessToast('선택 항목을 삭제했습니다.');
     } catch {
@@ -204,7 +204,7 @@ export default function AdminReviewListClient() {
         const part = selected.slice(i, i + CHUNK);
         await Promise.all(
           part.map(async (id) => {
-            const res = await fetch(`/api/reviews/${id}`, {
+            const res = await fetch(`/api/admin/reviews/${id}`, {
               method: 'PATCH',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
@@ -229,7 +229,7 @@ export default function AdminReviewListClient() {
     const snapshot = data;
     await mutate((pages?: Page[]) => (pages ? pages.map((p) => ({ ...p, items: p.items.map((r) => (r._id === it._id ? { ...r, status: next } : r)) })) : pages), false);
     try {
-      const res = await fetch(`/api/reviews/${it._id}`, {
+      const res = await fetch(`/api/admin/reviews/${it._id}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

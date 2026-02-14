@@ -278,7 +278,7 @@ export default function PackageOrdersClient() {
   }
 
   // SWR은 디바운스된 키를 사용
-  const { data, error, isValidating, mutate } = useSWR<PackagesResponse>(`/api/package-orders?${swrQs.toString()}`, fetcher, {
+  const { data, error, isValidating, mutate } = useSWR<PackagesResponse>(`/api/admin/package-orders?${swrQs.toString()}`, fetcher, {
     dedupingInterval: 1000,
     revalidateOnFocus: false,
   });
