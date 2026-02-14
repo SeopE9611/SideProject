@@ -170,8 +170,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
   }
 
-  // 조회수 증가 (published만)
-  if (post.status === 'published') {
+  // 조회수 증가 정책
+  // - "상세 열람"에서만 증가시키기 위해, 클라이언트가 명시적으로 `?view=1`을 붙여서 호출할 때만 증가.
+  // - (중요) 수정/프리필/관리자 확인 같은 "단순 조회(GET)"에서는 조회수가 오염되지 않도록 기본값은 증가하지 않음
+  const shouldIncView = req.nextUrl.searchParams.get('view') === '1';
+
+  // published + view=1 일 때만 증가
+  if (post.status === 'published' && shouldIncView) {
     await BoardRepo.incViewCount(db, id);
     post.viewCount = (post.viewCount ?? 0) + 1; // 응답 일관성
   }

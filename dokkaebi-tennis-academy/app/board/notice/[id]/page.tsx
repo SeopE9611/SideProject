@@ -24,7 +24,11 @@ export default function NoticeDetailPage() {
   // fetcher가 에러를 던지지 않으면(SWR error 미발생) 화면이 "그냥 비어 보이는" 문제발생
   // -> res.ok / json.ok 를 확인하고, 실패면 throw 해서 error UI가 확실히 뜨게 만듬.
   const boardFetcher = async (url: string) => {
-    const res = await fetch(url, { credentials: 'include' });
+    // 조회수는 API가 `?view=1`일 때만 증가하도록 되어있어서,
+    // 상세 페이지에서만 명시적으로 view=1을 붙여 호출.
+    const viewUrl = url.includes('?') ? `${url}&view=1` : `${url}?view=1`;
+
+    const res = await fetch(viewUrl, { credentials: 'include' });
     const json = await res.json().catch(() => null);
 
     const okFalse = isRecord(json) && json['ok'] === false;
