@@ -26,6 +26,11 @@ export interface AdminOutboxListItemDto {
 export interface AdminOutboxListResponseDto {
   items: AdminOutboxListItemDto[];
   total: number;
+  counts?: {
+    queued: number;
+    failed: number;
+    sent: number;
+  };
 }
 
 export interface AdminOutboxDetailChannelDto {

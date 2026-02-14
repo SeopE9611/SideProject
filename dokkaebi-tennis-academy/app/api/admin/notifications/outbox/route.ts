@@ -72,13 +72,14 @@ export async function GET(req: NextRequest) {
   const parsed = querySchema.parse(Object.fromEntries(new URL(req.url).searchParams.entries()));
 
   const filter: Filter<Document> = {};
+  const baseFilter: Filter<Document> = {};
   if (parsed.status !== 'all') {
     filter.status = parsed.status as AdminOutboxStatus;
   }
 
   if (parsed.q) {
     const rx = new RegExp(escapeRegExp(parsed.q), 'i');
-    filter.$or = [
+    const keywordFilter: NonNullable<Filter<Document>['$or']> = [
       { eventType: rx },
       { 'rendered.email.to': rx },
       { 'rendered.email.subject': rx },
@@ -91,11 +92,18 @@ export async function GET(req: NextRequest) {
       { 'payload.application.applicationId': rx },
       { 'payload.application.orderId': rx },
     ];
+    filter.$or = keywordFilter;
+    baseFilter.$or = keywordFilter;
   }
 
   const coll = db.collection('notifications_outbox');
   const sort: Record<string, SortDirection> = { createdAt: -1, _id: -1 };
-  const total = await coll.countDocuments(filter);
+  const [total, queued, failed, sent] = await Promise.all([
+    coll.countDocuments(filter),
+    coll.countDocuments({ ...baseFilter, status: 'queued' }),
+    coll.countDocuments({ ...baseFilter, status: 'failed' }),
+    coll.countDocuments({ ...baseFilter, status: 'sent' }),
+  ]);
 
   const docs = await coll
     .find(filter, {
@@ -143,6 +151,14 @@ export async function GET(req: NextRequest) {
     };
   });
 
-  const response: AdminOutboxListResponseDto = { items, total };
+  const response: AdminOutboxListResponseDto = {
+    items,
+    total,
+    counts: {
+      queued,
+      failed,
+      sent,
+    },
+  };
   return NextResponse.json(response);
 }
