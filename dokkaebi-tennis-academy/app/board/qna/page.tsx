@@ -26,21 +26,22 @@ function parsePositiveInt(v: string | undefined, fallback: number) {
   return i >= 1 ? i : fallback;
 }
 
-export default async function Page({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
+export default async function Page({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
+  const resolvedSearchParams = await searchParams;
   const limit = 20;
 
   // 1) URL → 초기 상태로 파싱
-  const page = parsePositiveInt(first(searchParams?.page), 1);
+  const page = parsePositiveInt(first(resolvedSearchParams?.page), 1);
 
-  const rawCategory = first(searchParams?.category); // code(예: product) 또는 label(예: 상품문의) 모두 올 수 있음
+  const rawCategory = first(resolvedSearchParams?.category); // code(예: product) 또는 label(예: 상품문의) 모두 올 수 있음
   const initialCategory = (rawCategory && (rawCategory in CODE_TO_LABEL ? rawCategory : LABEL_TO_CODE[rawCategory])) || 'all';
 
-  const rawAnswer = first(searchParams?.answer);
+  const rawAnswer = first(resolvedSearchParams?.answer);
   const initialAnswerFilter = rawAnswer === 'waiting' || rawAnswer === 'completed' ? rawAnswer : 'all';
 
-  const initialKeyword = first(searchParams?.q) ?? '';
+  const initialKeyword = first(resolvedSearchParams?.q) ?? '';
 
-  const rawField = first(searchParams?.field);
+  const rawField = first(resolvedSearchParams?.field);
   const allowedFields = new Set(['all', 'title', 'content', 'title_content'] as const);
   const initialField = (rawField && allowedFields.has(rawField as any) ? (rawField as any) : 'all') as 'all' | 'title' | 'content' | 'title_content';
 

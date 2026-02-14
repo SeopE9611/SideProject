@@ -43,15 +43,17 @@ async function fetchIsAdmin() {
 export default async function Page({
   searchParams,
 }: {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // URL 쿼리로 직접 진입하는 케이스(/board/notice?page=3&q=...&field=title 등)에서
   // 서버 프리로드가 항상 page=1로 뜨는 문제를 방지
   const pick = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-  const rawPage = pick(searchParams?.page);
-  const rawQ = pick(searchParams?.q) ?? '';
-  const rawField = pick(searchParams?.field) ?? 'all';
+  const resolvedSearchParams = await searchParams;
+
+  const rawPage = pick(resolvedSearchParams?.page);
+  const rawQ = pick(resolvedSearchParams?.q) ?? '';
+  const rawField = pick(resolvedSearchParams?.field) ?? 'all';
 
   const page = clamp(Number.parseInt(String(rawPage ?? '1'), 10) || 1, 1, 10_000);
   const limit = 20;
