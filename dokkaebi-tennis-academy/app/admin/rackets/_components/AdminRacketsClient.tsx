@@ -14,11 +14,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { MdSportsTennis } from 'react-icons/md';
 import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { racketBrandLabel } from '@/lib/constants';
-
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 
 function StockChip({ id, total }: { id: string; total: number }) {
-  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, (u) => fetch(u, { credentials: 'include' }).then((r) => r.json()), { dedupingInterval: 5000 });
+  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, adminFetcher, { dedupingInterval: 5000 });
   const qty = Math.max(1, total ?? 1);
   const avail = Math.max(0, Number(data?.available ?? 0));
   const soldOut = avail <= 0;
@@ -62,13 +61,14 @@ function ConditionBadge({ condition }: { condition: string }) {
 }
 
 export default function AdminRacketsClient() {
-  const { data, isLoading, error } = useSWR<{ items: Item[]; total: number; page: number; pageSize: number }>('/api/admin/rackets?page=1&pageSize=50', fetcher);
+  const { data, isLoading, error } = useSWR<{ items: Item[]; total: number; page: number; pageSize: number }>('/api/admin/rackets?page=1&pageSize=50', adminFetcher);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [conditionFilter, setConditionFilter] = useState<string>('all');
 
   const items = data?.items ?? [];
+  const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
   const filteredItems = useMemo(() => {
     if (!items.length) return [];
 
@@ -242,10 +242,10 @@ export default function AdminRacketsClient() {
                     ))}
                   </div>
                 </div>
-              ) : error ? (
+              ) : commonErrorMessage ? (
                 <div className="overflow-auto rounded-lg border border-red-200 dark:border-red-900">
                   <div className="p-8 text-center">
-                    <p className="text-red-600 dark:text-red-400">목록을 불러오지 못했습니다.</p>
+                    <p className="text-red-600 dark:text-red-400">{commonErrorMessage}</p>
                   </div>
                 </div>
               ) : !filteredItems.length ? (

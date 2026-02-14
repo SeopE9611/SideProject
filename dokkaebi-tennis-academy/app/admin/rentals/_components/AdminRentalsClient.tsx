@@ -24,6 +24,7 @@ import { racketBrandLabel } from '@/lib/constants';
 import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import type { AdminRentalListItemDto, AdminRentalPaymentFilter, AdminRentalsListResponseDto, AdminRentalShippingFilter } from '@/types/admin/rentals';
+import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 
 type RentalRow = AdminRentalListItemDto & { id: string; createdAt: string; dueAt: string | null; depositRefundedAt: string | null };
 
@@ -50,7 +51,6 @@ function mapApiToViewModel(response?: AdminRentalsListResponseDto): { items: Ren
   };
 }
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
@@ -251,8 +251,13 @@ export default function AdminRentalsClient() {
     return () => clearTimeout(timer);
   }, [searchTerm, status, payFilter, shipFilter, from, to, page, sortBy, sortDirection]);
 
-  const { data: apiData, isLoading, mutate } = useSWR<AdminRentalsListResponseDto>(key, fetcher);
+  const { data: apiData, isLoading, mutate, error } = useSWR<AdminRentalsListResponseDto>(key, adminFetcher);
   const data = useMemo(() => mapApiToViewModel(apiData), [apiData]);
+  const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
+
+  useEffect(() => {
+    if (commonErrorMessage) showErrorToast(commonErrorMessage);
+  }, [commonErrorMessage]);
 
   const filteredRentals = data.items.filter((rental) => {
     const searchMatch =

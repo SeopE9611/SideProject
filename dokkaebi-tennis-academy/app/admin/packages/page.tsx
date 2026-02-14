@@ -16,8 +16,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import useSWR from 'swr';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useDebouncedValue } from '@/app/admin/packages/_hooks/useDebouncedValue';
+import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { DEFAULT_PACKAGE_LIST_FILTERS, PASS_STATUS_LABELS, badgeSizeCls, fetcher, packageStatusColors, packageTypeColors, paymentStatusColors, type PackageListItem, type PackageMetrics, type PackageOrder, type PackageType, type PackagesResponse, type PassStatus, type PaymentStatus, type ServiceType, type SortKey } from '@/app/admin/packages/_lib/packagesPageConfig';
 
 function SkeletonBox({ className = '' }: { className?: string }) {
@@ -201,6 +202,12 @@ export default function PackageOrdersClient() {
     revalidateOnFocus: false,
   });
 
+  const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
+
+  useEffect(() => {
+    if (commonErrorMessage) showErrorToast(commonErrorMessage);
+  }, [commonErrorMessage]);
+
   // 데이터 준비
   const packages: PackageListItem[] = data?.items ?? [];
   const totalPages = useMemo(() => Math.max(1, Math.ceil((data?.total ?? 0) / limit)), [data?.total, limit]);
@@ -257,7 +264,7 @@ export default function PackageOrdersClient() {
           <Card className="border-red-200 bg-red-50/60">
             <CardHeader>
               <CardTitle className="text-red-700">목록을 불러오지 못했습니다.</CardTitle>
-              <CardDescription>네트워크 상태를 확인한 뒤 다시 시도해 주세요.</CardDescription>
+              <CardDescription>{commonErrorMessage}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button onClick={() => mutate()} variant="destructive">
