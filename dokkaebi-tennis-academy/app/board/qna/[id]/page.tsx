@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import useSWR from 'swr';
 import { useParams, useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor } from '@/lib/badge-style';
 import type { BoardPost } from '@/lib/types/board';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -53,6 +53,24 @@ export default function QnaDetailPage() {
     dedupingInterval: 30_000, // 짧은 시간 중복 호출 방지
   });
   const qna = data?.item as QnaItem | undefined;
+
+  // 조회수는 GET이 아니라 POST /view에서만 증가
+  const viewedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+   if (!id) return;
+    if (error) return;
+    if (!qna?._id) return;
+    if (viewedIdRef.current === String(id)) return;
+    viewedIdRef.current = String(id);
+
+    (async () => {
+     const res = await fetch(`/api/boards/${id}/view`, { method: 'POST', credentials: 'include' });
+      const json = await res.json().catch(() => null);
+      if (res.ok && json?.ok === true && typeof json.viewCount === 'number') {
+        mutate((prev: any) => (prev?.item ? { ...prev, item: { ...prev.item, viewCount: json.viewCount } } : prev), false);
+      }
+    })();
+  }, [id, error, qna?._id, mutate]);
 
   // 에러 메시지 분리
   const errorTitle = (() => {

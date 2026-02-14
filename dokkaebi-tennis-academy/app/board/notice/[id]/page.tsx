@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import useSWR from 'swr';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getNoticeCategoryColor, badgeBaseOutlined, badgeSizeSm, attachImageColor, attachFileColor, noticePinColor } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
@@ -24,11 +24,8 @@ export default function NoticeDetailPage() {
   // fetcher가 에러를 던지지 않으면(SWR error 미발생) 화면이 "그냥 비어 보이는" 문제발생
   // -> res.ok / json.ok 를 확인하고, 실패면 throw 해서 error UI가 확실히 뜨게 만듬.
   const boardFetcher = async (url: string) => {
-    // 조회수는 API가 `?view=1`일 때만 증가하도록 되어있어서,
-    // 상세 페이지에서만 명시적으로 view=1을 붙여 호출.
-    const viewUrl = url.includes('?') ? `${url}&view=1` : `${url}?view=1`;
-
-    const res = await fetch(viewUrl, { credentials: 'include' });
+    // 조회수는 GET이 아니라 POST /api/boards/:id/view 에서만 증가
+    const res = await fetch(url, { credentials: 'include' });
     const json = await res.json().catch(() => null);
 
     const okFalse = isRecord(json) && json['ok'] === false;
@@ -46,7 +43,7 @@ export default function NoticeDetailPage() {
 
   // (me 로드는 기존처럼 "에러로 던지지 않는" fetcher 유지)
   const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
-  const { data, error, isLoading } = useSWR(id ? `/api/boards/${id}` : null, boardFetcher, {
+  const { data, error, isLoading, mutate } = useSWR(id ? `/api/boards/${id}` : null, boardFetcher, {
     // 404/401/403 같은 “회복 불가” 에러에서 불필요한 재요청 차단
     shouldRetryOnError: false,
     onErrorRetry: () => {}, // SWR 내부 재시도 로직 자체를 강제 차단
@@ -56,6 +53,27 @@ export default function NoticeDetailPage() {
   });
 
   const notice = data?.item;
+
+  // 조회수 +1은 "정석 설계"로 POST /view에서만 처리
+  // - 새로고침/재진입 연타는 서버(30분 디듀프)가 막아줌
+  // - 클라에서는 동일 id에서 불필요한 POST를 줄이기 위해 1회만 호출
+  const viewedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!id) return;
+    if (error) return;
+    if (!notice?._id) return;
+    if (viewedIdRef.current === String(id)) return;
+    viewedIdRef.current = String(id);
+
+    (async () => {
+      const res = await fetch(`/api/boards/${id}/view`, { method: 'POST', credentials: 'include' });
+      const json = await res.json().catch(() => null);
+      if (res.ok && json?.ok === true && typeof json.viewCount === 'number') {
+        // 화면에서 조회수 숫자 즉시 반영(추가 GET 없이)
+        mutate((prev: any) => (prev?.item ? { ...prev, item: { ...prev.item, viewCount: json.viewCount } } : prev), false);
+      }
+    })();
+  }, [id, error, notice?._id, mutate]);
 
   // 에러 메시지를 "제목/본문"으로 분리
   const errorTitle = (() => {

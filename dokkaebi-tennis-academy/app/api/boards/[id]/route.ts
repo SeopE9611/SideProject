@@ -7,9 +7,14 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { logError, logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { baseCookie } from '@/lib/cookieOptions';
+import { createHash } from 'crypto';
 
 // supabase 상수/핼퍼
 const STORAGE_BUCKET = 'tennis-images';
+
+// 비로그인 사용자 조회 중복 방지용(익명 식별자)
+const ANON_VIEWER_COOKIE = 'anonViewerId';
 
 function toStoragePathFromPublicUrl(url: string) {
   // 예: https://.../storage/v1/object/public/<bucket>/<path>
@@ -24,6 +29,49 @@ function safeVerifyAccessToken(token?: string) {
   } catch {
     return null;
   }
+}
+
+function getClientIp(req: NextRequest) {
+  // Vercel/프록시 환경: x-forwarded-for가 가장 흔함(쉼표로 여러 값이 올 수 있어 첫 번째를 사용)
+  const xff = req.headers.get('x-forwarded-for');
+  if (xff) return xff.split(',')[0]?.trim() || '';
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp) return realIp.trim();
+  return '';
+}
+
+function getIpUaHash(req: NextRequest) {
+  const ip = getClientIp(req);
+  const ua = req.headers.get('user-agent') ?? '';
+  // IP가 비어도(로컬/특정 환경) UA 기반으로는 최소한의 안정성 유지
+  return createHash('sha256').update(`${ip}|${ua}`).digest('hex').slice(0, 16);
+}
+
+/**
+ * same-origin 하드닝(익명 사용자에만 적용)
+ * - 브라우저가 보내는 헤더(Sec-Fetch-Site / Origin / Referer)로 "동일 출처" 요청인지 대략 판별
+ * - 완벽한 보안 장치는 아니지만, 외부에서 URL만 두드려 조회수 트리거하는 난이도를 올려줌
+ */
+function isLikelySameOriginRequest(req: NextRequest) {
+  const fetchSite = req.headers.get('sec-fetch-site');
+  if (fetchSite === 'same-origin' || fetchSite === 'same-site') return true;
+
+  const host = req.headers.get('host') ?? '';
+  const origin = req.headers.get('origin');
+  if (origin) {
+    try {
+      if (new URL(origin).host === host) return true;
+    } catch {}
+  }
+
+  const referer = req.headers.get('referer');
+  if (referer) {
+    try {
+      if (new URL(referer).host === host) return true;
+    } catch {}
+  }
+
+  return false;
 }
 
 async function mustAdmin() {
@@ -111,6 +159,28 @@ const BoardRepo = {
     await col.updateOne({ _id: id as any }, { $inc: { viewCount: 1 } });
   },
 
+  /**
+   * 조회수 중복 방지(30분)
+   * - (postId, viewerKey) 유니크 인덱스가 존재한다는 전제에서,
+   *   insert 성공이면 "이번 요청은 조회수 증가 허용"으로 판단
+   * - 중복(11000)이면 "이미 30분 내에 본 적 있음"으로 판단하여 증가를 막는다.
+   */
+  async tryAcquireViewSlot(db: any, postId: string, viewerKey: string) {
+    const col = db.collection('board_view_dedupe');
+    try {
+      await col.insertOne({
+        postId: String(postId),
+        viewerKey,
+        createdAt: new Date(),
+      });
+      return true;
+    } catch (e: any) {
+      // Mongo duplicate key error
+      if (e?.code === 11000) return false;
+      throw e;
+    }
+  },
+
   async findOneAndUpdateById(db: any, id: string, patch: any) {
     const col = db.collection('board_posts');
     const oid = toObjectId(id);
@@ -143,8 +213,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     logInfo({ msg: 'boards:get:not_found', status: 404, docId: id, durationMs: stop(), ...meta });
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
-  // 권한 확인
-  const token = (await cookies()).get('accessToken')?.value;
+  // 권한 확인 + (비로그인 디듀프용) 쿠키 접근
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
   const payload = safeVerifyAccessToken(token);
   const isAdmin = payload?.role === 'admin';
   const isOwner = payload?.sub && String(payload.sub) === String(post.authorId);
@@ -170,19 +241,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
   }
 
-  // 조회수 증가 정책
-  // - "상세 열람"에서만 증가시키기 위해, 클라이언트가 명시적으로 `?view=1`을 붙여서 호출할 때만 증가.
-  // - (중요) 수정/프리필/관리자 확인 같은 "단순 조회(GET)"에서는 조회수가 오염되지 않도록 기본값은 증가하지 않음
-  const shouldIncView = req.nextUrl.searchParams.get('view') === '1';
-
-  // published + view=1 일 때만 증가
-  if (post.status === 'published' && shouldIncView) {
-    await BoardRepo.incViewCount(db, id);
-    post.viewCount = (post.viewCount ?? 0) + 1; // 응답 일관성
-  }
-
   logInfo({ msg: 'boards:get:ok', status: 200, docId: id, durationMs: stop(), ...meta });
-  return NextResponse.json({ ok: true, item: post }, { headers: { 'Cache-Control': 'no-store' } });
+  const response = NextResponse.json({ ok: true, item: post }, { headers: { 'Cache-Control': 'no-store' } });
+
+  return response;
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

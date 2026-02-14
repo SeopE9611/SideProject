@@ -38,4 +38,8 @@ export async function ensureBoardIndexes(db: Db) {
   await ensureIndex(db, 'board_posts', { updatedAt: -1 }, { name: 'boards_updatedAt_desc' });
   // 첨부 경로: attachments.storagePath (스토리지 삭제/정합 점검용)
   await ensureIndex(db, 'board_posts', { 'attachments.storagePath': 1 }, { name: 'boards_attachments_storagePath' });
+
+  // 조회수 중복 방지(dedupe)
+  await ensureIndex(db, 'board_view_dedupe', { postId: 1, viewerKey: 1 }, { name: 'board_view_dedupe_unique', unique: true });
+  await ensureIndex(db, 'board_view_dedupe', { createdAt: 1 }, { name: 'board_view_dedupe_ttl_30m', expireAfterSeconds: 60 * 30 });
 }
