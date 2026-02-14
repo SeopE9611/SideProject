@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Copy, Eye, Filter, MoreHorizontal, Search, X, Package, Calendar, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useDebouncedValue } from '@/app/admin/packages/_hooks/useDebouncedValue';
 import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { buildQueryString } from '@/lib/admin/urlQuerySync';
+import { useAdminListQueryState } from '@/lib/admin/useAdminListQueryState';
 import { DEFAULT_PACKAGE_LIST_FILTERS, PASS_STATUS_LABELS, badgeSizeCls, fetcher, packageStatusColors, packageTypeColors, paymentStatusColors, type PackageListItem, type PackageMetrics, type PackageOrder, type PackageType, type PackagesResponse, type PassStatus, type PaymentStatus, type ServiceType, type SortKey } from '@/app/admin/packages/_lib/packagesPageConfig';
 
 function SkeletonBox({ className = '' }: { className?: string }) {
@@ -63,29 +65,9 @@ function SortableTH({
 }
 
 export default function PackageOrdersClient() {
-  // 현재 페이지 번호 상태
-  const [page, setPage] = useState(1);
-
-  // 검색어 상태
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const debouncedSearch = useDebouncedValue(searchTerm, 300);
-
-  // 필터 상태들
-  const [packageTypeFilter, setPackageTypeFilter] = useState<'all' | PackageType>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | PassStatus>('all');
-  const [paymentFilter, setPaymentFilter] = useState<'all' | PaymentStatus>('all');
-  const [serviceTypeFilter, setServiceTypeFilter] = useState<'all' | ServiceType>('all');
-  const [nowTs] = useState(() => new Date().getTime());
-
-  const [sortBy, setSortBy] = useState<SortKey | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-
-  // URL 동기화 훅
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const didInitFromURL = useRef(false);
 
   const DEFAULTS = DEFAULT_PACKAGE_LIST_FILTERS;
 
@@ -99,120 +81,89 @@ export default function PackageOrdersClient() {
   const isServiceTypeFilter = (value: string | null): value is 'all' | ServiceType => !!value && SERVICE_TYPE_VALUES.includes(value as 'all' | ServiceType);
   const isPackageTypeFilter = (value: string | null): value is 'all' | PackageType => !!value && PACKAGE_TYPE_VALUES.includes(value as 'all' | PackageType);
 
-  // state -> URLSearchParams (항상 같은 순서로 직렬화)
-  function buildParamsFromState() {
-    const params = new URLSearchParams();
-    if (searchTerm?.trim()) params.set('q', searchTerm.trim());
-    if (statusFilter !== 'all') params.set('status', statusFilter);
-    if (packageTypeFilter !== 'all') params.set('package', packageTypeFilter.replace('회권', ''));
-    if (paymentFilter !== 'all') params.set('payment', paymentFilter);
-    if (serviceTypeFilter !== 'all') params.set('service', serviceTypeFilter);
-    if (sortBy) params.set('sort', `${sortBy}:${sortDirection}`);
-    if (page !== DEFAULTS.page) params.set('page', String(page));
-    params.set('limit', String(DEFAULTS.limit));
-    return params;
-  }
+  const { state, patchState, setPage } = useAdminListQueryState<{
+    page: number;
+    searchTerm: string;
+    statusFilter: 'all' | PassStatus;
+    packageTypeFilter: 'all' | PackageType;
+    paymentFilter: 'all' | PaymentStatus;
+    serviceTypeFilter: 'all' | ServiceType;
+    sortBy: SortKey | null;
+    sortDirection: 'asc' | 'desc';
+  }>({
+    pathname: pathname || '/admin/packages',
+    searchParams,
+    replace: router.replace,
+    defaults: {
+      page: DEFAULTS.page,
+      searchTerm: DEFAULTS.q,
+      statusFilter: DEFAULTS.status,
+      packageTypeFilter: DEFAULTS.package,
+      paymentFilter: DEFAULTS.payment,
+      serviceTypeFilter: DEFAULTS.service,
+      sortBy: DEFAULTS.sortBy,
+      sortDirection: DEFAULTS.sortDirection,
+    },
+    parse: (sp, defaults) => {
+      const pkgRaw = sp.get('package');
+      const normalizedPkg = pkgRaw && ['10', '30', '50', '100'].includes(pkgRaw) ? `${pkgRaw}회권` : pkgRaw;
+      const sortParam = sp.get('sort');
+      let sortBy: SortKey | null = defaults.sortBy;
+      let sortDirection: 'asc' | 'desc' = defaults.sortDirection;
+      if (sortParam) {
+        const [rk, rd] = sortParam.split(':');
+        if (rk && ['customer', 'purchaseDate', 'expiryDate', 'remainingSessions', 'price', 'status', 'payment', 'package', 'progress'].includes(rk)) sortBy = rk as SortKey;
+        if (rd === 'asc' || rd === 'desc') sortDirection = rd;
+      }
 
-  // URLSearchParams -> state 값 파싱
-  function parseParamsToState(sp: URLSearchParams) {
-    const pageNum = Math.max(1, Number.parseInt(sp.get('page') || String(DEFAULTS.page), 10));
-    const q = (sp.get('q') || DEFAULTS.q).trim();
-    const statusParam = sp.get('status');
-    const paymentParam = sp.get('payment');
-    const serviceParam = sp.get('service');
+      return {
+        page: Math.max(1, Number.parseInt(sp.get('page') || String(defaults.page), 10) || defaults.page),
+        searchTerm: (sp.get('q') || defaults.searchTerm).trim(),
+        statusFilter: isPassStatusFilter(sp.get('status')) ? (sp.get('status') as 'all' | PassStatus) : defaults.statusFilter,
+        paymentFilter: isPaymentStatusFilter(sp.get('payment')) ? (sp.get('payment') as 'all' | PaymentStatus) : defaults.paymentFilter,
+        serviceTypeFilter: isServiceTypeFilter(sp.get('service')) ? (sp.get('service') as 'all' | ServiceType) : defaults.serviceTypeFilter,
+        packageTypeFilter: isPackageTypeFilter(normalizedPkg) ? normalizedPkg : defaults.packageTypeFilter,
+        sortBy,
+        sortDirection,
+      };
+    },
+    toQueryParams: (queryState) => ({
+      q: queryState.searchTerm.trim(),
+      status: queryState.statusFilter,
+      package: queryState.packageTypeFilter !== 'all' ? queryState.packageTypeFilter.replace('회권', '') : 'all',
+      payment: queryState.paymentFilter,
+      service: queryState.serviceTypeFilter,
+      sort: queryState.sortBy ? `${queryState.sortBy}:${queryState.sortDirection}` : undefined,
+      page: queryState.page === DEFAULTS.page ? undefined : queryState.page,
+      limit: DEFAULTS.limit,
+    }),
+    pageResetKeys: ['searchTerm', 'statusFilter', 'packageTypeFilter', 'paymentFilter', 'serviceTypeFilter', 'sortBy', 'sortDirection'],
+  });
 
-    const status = isPassStatusFilter(statusParam) ? statusParam : DEFAULTS.status;
-    const payment = isPaymentStatusFilter(paymentParam) ? paymentParam : DEFAULTS.payment;
-    const service = isServiceTypeFilter(serviceParam) ? serviceParam : DEFAULTS.service;
-    const pkgRaw = sp.get('package');
-    const normalizedPkg = pkgRaw && ['10', '30', '50', '100'].includes(pkgRaw) ? `${pkgRaw}회권` : pkgRaw;
-    const pkg: 'all' | PackageType = isPackageTypeFilter(normalizedPkg) ? normalizedPkg : DEFAULTS.package;
-
-    const sortParam = sp.get('sort');
-    let sBy: SortKey | null = DEFAULTS.sortBy;
-    let sDir: 'asc' | 'desc' = DEFAULTS.sortDirection;
-    if (sortParam) {
-      const [rk, rd] = sortParam.split(':');
-      if (rk && ['customer', 'purchaseDate', 'expiryDate', 'remainingSessions', 'price', 'status', 'payment', 'package', 'progress'].includes(rk)) sBy = rk as SortKey;
-      if (rd === 'asc' || rd === 'desc') sDir = rd;
-    }
-
-    return {
-      page: pageNum,
-      q,
-      status,
-      package: pkg,
-      payment,
-      service,
-      sortBy: sBy,
-      sortDirection: sDir,
-    };
-  }
-
-  // URL 변경(초기 진입/뒤로가기 등) 시 -> state로 반영
-  useEffect(() => {
-    const sp = new URLSearchParams(searchParams.toString());
-    const parsed = parseParamsToState(sp);
-
-    const needsUpdate =
-      parsed.q !== searchTerm ||
-      parsed.status !== statusFilter ||
-      parsed.package !== packageTypeFilter ||
-      parsed.payment !== paymentFilter ||
-      parsed.service !== serviceTypeFilter ||
-      parsed.sortBy !== sortBy ||
-      parsed.sortDirection !== sortDirection ||
-      parsed.page !== page;
-
-    if (needsUpdate) {
-      setSearchTerm(parsed.q);
-      setStatusFilter(parsed.status);
-      setPackageTypeFilter(parsed.package);
-      setPaymentFilter(parsed.payment);
-      setServiceTypeFilter(parsed.service);
-      setSortBy(parsed.sortBy);
-      setSortDirection(parsed.sortDirection);
-      setPage(parsed.page);
-    }
-    didInitFromURL.current = true;
-  }, [searchParams]);
+  const { page, searchTerm, statusFilter, packageTypeFilter, paymentFilter, serviceTypeFilter, sortBy, sortDirection } = state;
+  const [nowTs] = useState(() => new Date().getTime());
+  const debouncedSearch = useDebouncedValue(searchTerm, 300);
 
   // 한 페이지에 보여줄 항목 수
   const limit = 10;
 
-  // state가 바뀌면 URL을 갱신(동일하면 noop)
-  useEffect(() => {
-    if (!didInitFromURL.current) return;
-
-    const newParams = buildParamsFromState();
-    const newQuery = newParams.toString();
-    const currQuery = searchParams.toString();
-
-    if (newQuery !== currQuery) {
-      router.replace(`${pathname}?${newQuery}`, { scroll: false });
-    }
-  }, [page, searchTerm, statusFilter, packageTypeFilter, paymentFilter, serviceTypeFilter, sortBy, sortDirection, limit]);
-
-  // URL 동기화/표시용 쿼리
-  const qs = new URLSearchParams();
-  if (searchTerm) qs.set('q', searchTerm);
-  if (statusFilter !== 'all') qs.set('status', statusFilter);
-  if (packageTypeFilter !== 'all') qs.set('package', packageTypeFilter.replace('회권', ''));
-  if (paymentFilter !== 'all') qs.set('payment', paymentFilter);
-  if (serviceTypeFilter !== 'all') qs.set('service', serviceTypeFilter);
-  if (sortBy) qs.set('sort', `${sortBy}:${sortDirection}`);
-  qs.set('page', String(page));
-  qs.set('limit', String(limit));
-
-  // SWR 요청 전용 쿼리(디바운스만 q에 반영)
-  const swrQs = new URLSearchParams(qs);
-  if (debouncedSearch !== searchTerm) {
-    if (debouncedSearch) swrQs.set('q', debouncedSearch);
-    else swrQs.delete('q');
-  }
+  const queryString = useMemo(
+    () =>
+      buildQueryString({
+        q: debouncedSearch.trim(),
+        status: statusFilter,
+        package: packageTypeFilter !== 'all' ? packageTypeFilter.replace('회권', '') : 'all',
+        payment: paymentFilter,
+        service: serviceTypeFilter,
+        sort: sortBy ? `${sortBy}:${sortDirection}` : undefined,
+        page,
+        limit,
+      }),
+    [debouncedSearch, statusFilter, packageTypeFilter, paymentFilter, serviceTypeFilter, sortBy, sortDirection, page, limit]
+  );
 
   // SWR은 디바운스된 키를 사용
-  const { data, error, isValidating, mutate } = useSWR<PackagesResponse>(`/api/admin/package-orders?${swrQs.toString()}`, fetcher, {
+  const { data, error, isValidating, mutate } = useSWR<PackagesResponse>(`/api/admin/package-orders?${queryString}`, fetcher, {
     dedupingInterval: 1000,
     revalidateOnFocus: false,
   });
@@ -403,23 +354,23 @@ export default function PackageOrdersClient() {
 
   // 필터 리셋
   const resetFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('all');
-    setPackageTypeFilter('all');
-    setPaymentFilter('all');
-    setServiceTypeFilter('all');
-    setPage(1);
+    patchState({
+      searchTerm: '',
+      statusFilter: 'all',
+      packageTypeFilter: 'all',
+      paymentFilter: 'all',
+      serviceTypeFilter: 'all',
+      page: 1,
+    });
   };
 
   // 정렬 헤더 클릭 핸들러
   const handleSort = (key: SortKey) => {
     if (sortBy === key) {
-      setSortDirection((dir) => (dir === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortBy(key);
-      setSortDirection('asc');
+      patchState({ sortDirection: sortDirection === 'asc' ? 'desc' : 'asc' });
+      return;
     }
-    setPage(1);
+    patchState({ sortBy: key, sortDirection: 'asc' });
   };
 
   // 공통 스타일 상수
@@ -605,13 +556,10 @@ export default function PackageOrdersClient() {
                       placeholder="패키지 ID, 고객명, 이메일 검색..."
                       className="pl-8"
                       value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setPage(1);
-                      }}
+                      onChange={(e) => patchState({ searchTerm: e.target.value })}
                     />
                     {searchTerm && (
-                      <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => setSearchTerm('')}>
+                      <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3" onClick={() => patchState({ searchTerm: '' })}>
                         <X className="h-4 w-4" />
                       </Button>
                     )}
@@ -623,8 +571,7 @@ export default function PackageOrdersClient() {
                   <Select
                     value={statusFilter}
                     onValueChange={(v) => {
-                      if (isPassStatusFilter(v)) setStatusFilter(v);
-                      setPage(1);
+                      if (isPassStatusFilter(v)) patchState({ statusFilter: v });
                     }}
                   >
                     <SelectTrigger>
@@ -642,8 +589,7 @@ export default function PackageOrdersClient() {
                   <Select
                     value={packageTypeFilter}
                     onValueChange={(v) => {
-                      if (isPackageTypeFilter(v)) setPackageTypeFilter(v);
-                      setPage(1);
+                      if (isPackageTypeFilter(v)) patchState({ packageTypeFilter: v });
                     }}
                   >
                     <SelectTrigger>
@@ -661,8 +607,7 @@ export default function PackageOrdersClient() {
                   <Select
                     value={paymentFilter}
                     onValueChange={(v) => {
-                      if (isPaymentStatusFilter(v)) setPaymentFilter(v);
-                      setPage(1);
+                      if (isPaymentStatusFilter(v)) patchState({ paymentFilter: v });
                     }}
                   >
                     <SelectTrigger>
@@ -679,8 +624,7 @@ export default function PackageOrdersClient() {
                   <Select
                     value={serviceTypeFilter}
                     onValueChange={(v) => {
-                      if (isServiceTypeFilter(v)) setServiceTypeFilter(v);
-                      setPage(1);
+                      if (isServiceTypeFilter(v)) patchState({ serviceTypeFilter: v });
                     }}
                   >
                     <SelectTrigger>
