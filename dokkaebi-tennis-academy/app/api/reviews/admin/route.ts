@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { requireAdmin } from '@/lib/admin.guard';
 
 export async function GET(req: Request) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+
   try {
     const url = new URL(req.url);
     const productId = url.searchParams.get('productId');
@@ -14,22 +16,6 @@ export async function GET(req: Request) {
 
     if (!productId) {
       return NextResponse.json({ error: 'productId required' }, { status: 400 });
-    }
-
-    // 인증 + 관리자 권한 확인
-    const token = (await cookies()).get('accessToken')?.value;
-    // verifyAccessToken이 만료/파손 토큰에서 throw 되어도 500이 아니라 "관리자 아님" 처리
-    let payload: any = null;
-    try {
-      payload = token ? verifyAccessToken(token) : null;
-    } catch {
-      payload = null;
-    }
-
-    const isAdmin = !!payload && ((payload as any)?.role === 'admin' || (payload as any)?.role === 'ADMIN' || (payload as any)?.isAdmin === true || (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes('admin')));
-
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'forbidden' }, { status: 403 });
     }
 
     const client = await clientPromise;
@@ -77,7 +63,7 @@ export async function GET(req: Request) {
     return NextResponse.json(out, {
       headers: { 'Cache-Control': 'no-store', Vary: 'Cookie' },
     });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'server error' }, { status: 500 });
   }
 }

@@ -89,7 +89,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const db = (await clientPromise).db();
   const _id = new ObjectId(id);
   const mine = await db.collection('rental_orders').findOne({ _id });
-  if (!mine) return NextResponse.json({ message: 'FORBIDDEN' }, { status: 403 });
+  if (!mine) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
 
   // 저장
   await db.collection('rental_orders').updateOne(

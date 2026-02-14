@@ -7,7 +7,13 @@ import { ObjectId, Db } from 'mongodb';
 type GuardOk = { ok: true; db: Db; admin: { _id: ObjectId; email?: string; name?: string; role: string } };
 type GuardFail = { ok: false; res: NextResponse };
 
-export async function requireAdmin(req: Request): Promise<GuardOk | GuardFail> {
+/**
+ * 관리자 API 인증/인가 단일 진입점.
+ *
+ * - 401 Unauthorized: accessToken 누락/파손/만료 또는 sub 식별자 검증 실패
+ * - 403 Forbidden: 인증은 되었으나 관리자 계정이 아닌 경우
+ */
+export async function requireAdmin(_req: Request): Promise<GuardOk | GuardFail> {
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
   if (!at) return { ok: false, res: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }) };
@@ -25,10 +31,12 @@ export async function requireAdmin(req: Request): Promise<GuardOk | GuardFail> {
   if (!subStr || !ObjectId.isValid(subStr)) {
     return { ok: false, res: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }) };
   }
+
   const db = await getDb();
   const admin = await db.collection('users').findOne({ _id: new ObjectId(subStr) }, { projection: { _id: 1, email: 1, name: 1, role: 1 } });
   if (!admin || admin.role !== 'admin') {
     return { ok: false, res: NextResponse.json({ message: 'Forbidden' }, { status: 403 }) };
   }
+
   return { ok: true, db, admin: admin as any };
 }
