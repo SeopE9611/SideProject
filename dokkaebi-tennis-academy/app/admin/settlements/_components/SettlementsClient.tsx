@@ -12,10 +12,10 @@ import KpiCard from '@/app/admin/settlements/_components/KpiCard';
 import type { SettlementDiff, SettlementLiveResponse, SettlementSnapshot } from '@/types/admin/settlements';
 import { fetchWithCredentials } from './actions/settlementActions';
 import { useInitialYyyymmFromQuery } from './hooks/useInitialYyyymmFromQuery';
-import { confirmDeleteSnapshot, confirmDeleteSnapshots } from './dialogs/settlementDialogs';
 import { firstDayOfMonth_KST, fmtYMD_KST, monthEdges, prevMonthRange_KST, TZ } from './filters/settlementDateFilters';
 import { sortSettlementRows, type SortDirection, type SortField } from './table/settlementSort';
 import { makeCsvFilename } from '@/app/admin/settlements/_lib/settlementExport';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
 export default function SettlementsClient() {
   const router = useRouter();
@@ -70,6 +70,7 @@ export default function SettlementsClient() {
 
   // 삭제 로딩 상태
   const [deleting, setDeleting] = useState(false);
+  const [pendingDeleteAction, setPendingDeleteAction] = useState<null | { type: 'single' | 'bulk'; yyyymm?: string; count?: number }>(null);
 
   // 액션 드롭다운 열림 상태
   // const [actionMenuOpen, setActionMenuOpen] = useState<Record<string, boolean>>({}) // CHANGE: Remove actionMenuOpen state as it's not needed
@@ -193,10 +194,6 @@ export default function SettlementsClient() {
       return;
     }
 
-    if (!confirmDeleteSnapshots(selectedSnapshots.size)) {
-      return;
-    }
-
     try {
       setDeleting(true);
       const res = await fetch('/api/admin/settlements/bulk-delete', {
@@ -233,10 +230,6 @@ export default function SettlementsClient() {
 
   // 단일 항목 삭제
   const deleteSingle = async (yyyymm: string) => {
-    if (!confirmDeleteSnapshot(yyyymm)) {
-      return;
-    }
-
     try {
       setDeleting(true);
       const res = await fetch(`/api/admin/settlements/${yyyymm}`, { method: 'DELETE', credentials: 'include' });
@@ -553,7 +546,7 @@ export default function SettlementsClient() {
                     </button>
 
                     <button
-                      onClick={deleteSelected}
+                      onClick={() => setPendingDeleteAction({ type: 'bulk', count: selectedSnapshots.size })}
                       disabled={deleting || selectedSnapshots.size === 0}
                       className="px-4 py-3 rounded-xl border-2 border-rose-200 dark:border-rose-700 bg-white dark:bg-gray-900 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow text-rose-600 dark:text-rose-400"
                     >
@@ -802,7 +795,7 @@ export default function SettlementsClient() {
                                       className="text-rose-600 focus:text-rose-600"
                                       onSelect={async () => {
                                         setOpenMenuId(null);
-                                        await deleteSingle(String(row.yyyymm));
+                                        setPendingDeleteAction({ type: 'single', yyyymm: String(row.yyyymm) });
                                       }}
                                     >
                                       <Trash2 className="w-4 h-4 mr-2" />
@@ -1035,7 +1028,7 @@ export default function SettlementsClient() {
                               className="text-rose-600 focus:text-rose-600"
                               onSelect={async () => {
                                 setOpenMenuId(null);
-                                await deleteSingle(String(row.yyyymm));
+                                setPendingDeleteAction({ type: 'single', yyyymm: String(row.yyyymm) });
                               }}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
@@ -1357,6 +1350,40 @@ export default function SettlementsClient() {
           </div>
         )}
       </div>
+      <AdminConfirmDialog
+        open={pendingDeleteAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteAction(null);
+        }}
+        onCancel={() => setPendingDeleteAction(null)}
+        onConfirm={async () => {
+          const action = pendingDeleteAction;
+          if (!action) return;
+          setPendingDeleteAction(null);
+          if (action.type === 'bulk') {
+            await deleteSelected();
+            return;
+          }
+          if (action.yyyymm) {
+            await deleteSingle(action.yyyymm);
+          }
+        }}
+        severity="danger"
+        title={pendingDeleteAction?.type === 'bulk' ? '선택한 스냅샷을 삭제할까요?' : '스냅샷을 삭제할까요?'}
+        description={
+          pendingDeleteAction?.type === 'bulk'
+            ? `선택한 ${pendingDeleteAction?.count ?? 0}개의 스냅샷을 삭제합니다. 삭제 후에는 되돌릴 수 없습니다.`
+            : `${pendingDeleteAction?.yyyymm ?? '-'} 스냅샷을 삭제합니다. 삭제 후에는 되돌릴 수 없습니다.`
+        }
+        confirmText="삭제"
+        cancelText="취소"
+        eventKey={pendingDeleteAction?.type === 'bulk' ? 'admin-settlements-bulk-delete-confirm' : 'admin-settlements-delete-confirm'}
+        eventMeta={
+          pendingDeleteAction?.type === 'bulk'
+            ? { count: pendingDeleteAction?.count, yyyymms: Array.from(selectedSnapshots) }
+            : { yyyymm: pendingDeleteAction?.yyyymm }
+        }
+      />
     </div>
   );
 }

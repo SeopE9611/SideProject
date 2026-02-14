@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
 // 리뷰 데이터 타입 정의
 interface Review {
@@ -59,6 +60,7 @@ interface Props {
 export default function ReviewDetailClient({ reviewId }: Props) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   // 리뷰 ID로 데이터 조회 (실제에는 fetch / SWR 등으로 교체)
   const review = sampleReviews.find((r) => r.id === reviewId);
@@ -124,13 +126,11 @@ export default function ReviewDetailClient({ reviewId }: Props) {
 
   // 삭제 처리
   const handleDelete = () => {
-    if (confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
-      setIsDeleting(true);
-      // 실제 구현에서는 API 호출
-      setTimeout(() => {
-        router.push('/admin/reviews');
-      }, 1000);
-    }
+    setIsDeleting(true);
+    // 실제 구현에서는 API 호출
+    setTimeout(() => {
+      router.push('/admin/reviews');
+    }, 1000);
   };
 
   return (
@@ -241,7 +241,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
         </CardContent>
 
         <CardFooter className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} className="bg-red-600 hover:bg-red-700 text-white">
+          <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} disabled={isDeleting} className="bg-red-600 hover:bg-red-700 text-white">
             {isDeleting ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
@@ -256,6 +256,22 @@ export default function ReviewDetailClient({ reviewId }: Props) {
           </Button>
         </CardFooter>
       </Card>
+      <AdminConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        onCancel={() => setConfirmDeleteOpen(false)}
+        onConfirm={() => {
+          setConfirmDeleteOpen(false);
+          handleDelete();
+        }}
+        severity="danger"
+        title="리뷰를 삭제할까요?"
+        description="삭제 후에는 되돌릴 수 없습니다. 운영 기록 확인 후 진행해 주세요."
+        confirmText="삭제"
+        cancelText="취소"
+        eventKey="admin-review-detail-delete-confirm"
+        eventMeta={{ reviewId }}
+      />
     </div>
   );
 }

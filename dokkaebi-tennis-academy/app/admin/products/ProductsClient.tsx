@@ -18,6 +18,7 @@ import MaterialFilter from '@/app/admin/products/product-filters/MaterialFilter'
 import StockStatusFilter from '@/app/admin/products/product-filters/StockStatusFilter';
 import { cn } from '@/lib/utils';
 import ProductsTableSkeleton from '@/app/admin/products/ProductsTableSkeleton';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
 type Product = {
   _id: string;
@@ -100,6 +101,7 @@ export default function ProductsClient() {
 
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
+  const [pendingDeleteProductId, setPendingDeleteProductId] = useState<string | null>(null);
   const ROW_PX = 56; // 한 행 높이를 56px = h-14 로 고정
 
   // 허용되는 정렬 필드(서버 allowMap과 일치시켜야 함)
@@ -155,7 +157,6 @@ export default function ProductsClient() {
 
   // 삭제 핸들러
   const handleDelete = async (id: string) => {
-    if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return;
     try {
       const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) {
@@ -485,7 +486,7 @@ export default function ProductsClient() {
                                     <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(s._id)}>
+                                  <DropdownMenuItem className="text-red-600" onClick={() => setPendingDeleteProductId(s._id)}>
                                     삭제
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -528,6 +529,26 @@ export default function ProductsClient() {
           </CardContent>
         </Card>
       </div>
+      <AdminConfirmDialog
+        open={pendingDeleteProductId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteProductId(null);
+        }}
+        onCancel={() => setPendingDeleteProductId(null)}
+        onConfirm={async () => {
+          const productId = pendingDeleteProductId;
+          if (!productId) return;
+          setPendingDeleteProductId(null);
+          await handleDelete(productId);
+        }}
+        severity="danger"
+        title="상품을 삭제할까요?"
+        description="삭제 후에는 되돌릴 수 없습니다. 관련 운영 데이터 영향을 확인한 뒤 진행해 주세요."
+        confirmText="삭제"
+        cancelText="취소"
+        eventKey="admin-products-delete-confirm"
+        eventMeta={{ productId: pendingDeleteProductId }}
+      />
     </div>
   );
 }
