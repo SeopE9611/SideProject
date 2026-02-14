@@ -70,18 +70,6 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
     status: 'published',
   };
 
-  /**
-   * QnA "비밀글" 정책 정합성 맞추기
-   * - 상세(/api/boards/[id])에서는 비밀글을 작성자/관리자만 열람 가능(401/403).
-   * - 그런데 목록에서 비밀글을 노출하면 "눌렀더니 막힘" UX가 발생 → 불안정 체감.
-   * - 따라서 공개 QnA 목록에서는 비밀글(isSecret=true)을 제외한다.
-   *
-   * NOTE:
-   * - { isSecret: { $ne: true } } 는
-   *   - isSecret이 false이거나,
-   *   - 필드가 아예 없는 문서까지 포함한다.
-   */
-
   // 2) 카테고리 필터
   if (category) {
     filter.category = category;
