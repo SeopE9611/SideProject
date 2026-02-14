@@ -1,20 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { requireAdmin } from '@/lib/admin.guard';
 
-// 토큰 검증은 throw 가능 → 안전하게 null 처리
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
-
-// 숫자 쿼리 파싱 NaN 방지 + 범위 보정
 function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
@@ -29,16 +17,10 @@ function summarizeUA(ua: string) {
   return { os, browser, isMobile };
 }
 
-async function requireAdmin() {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(token);
-  return payload?.role === 'admin' ? payload : null;
-}
-
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
-    const admin = await requireAdmin();
-    if (!admin) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+    const guard = await requireAdmin(req);
+    if (!guard.ok) return guard.res;
 
     const { id } = await ctx.params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
@@ -54,13 +36,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
         if (e?.code !== 85) throw e;
       });
 
-    const rows = await db
-      .collection('user_sessions')
-      .find({ userId: new ObjectId(id) })
-      .sort({ at: -1 })
-      .limit(limit)
-      .project({ _id: 0, userId: 0 })
-      .toArray();
+    const rows = await db.collection('user_sessions').find({ userId: new ObjectId(id) }).sort({ at: -1 }).limit(limit).project({ _id: 0, userId: 0 }).toArray();
 
     const items = rows.map((r: any) => ({ ...r, ...summarizeUA(r.ua || '') }));
     return NextResponse.json({ items }, { headers: { 'Cache-Control': 'no-store' } });

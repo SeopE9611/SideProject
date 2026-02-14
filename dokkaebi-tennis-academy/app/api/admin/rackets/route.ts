@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { normalizeStringPattern, RACKET_BRANDS } from '@/lib/constants';
+import { requireAdmin } from '@/lib/admin.guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,13 +12,9 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
-async function requireAdmin() {
-  // const user = await getCurrentUser(); if (!user?.isAdmin) throw new Error('FORBIDDEN');
-  return true;
-}
-
 export async function GET(req: Request) {
-  await requireAdmin();
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
   const db = (await clientPromise).db();
   const { searchParams } = new URL(req.url);
   const brand = searchParams.get('brand')?.trim();
@@ -45,11 +42,12 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  await requireAdmin();
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
   const db = (await clientPromise).db();
   let body: any;
   try {
-   body = await req.json();
+    body = await req.json();
   } catch (e) {
     console.error('[POST /api/admin/rackets] invalid json', e);
     return NextResponse.json({ message: 'INVALID_JSON' }, { status: 400 });

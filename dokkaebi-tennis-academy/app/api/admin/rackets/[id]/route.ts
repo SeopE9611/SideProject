@@ -2,15 +2,13 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { normalizeStringPattern, RACKET_BRANDS } from '@/lib/constants';
-
-async function requireAdmin() {
-  // ex) const user = await getCurrentUser(); if (!user?.isAdmin) throw new Error('FORBIDDEN');
-  return true;
-}
+import { requireAdmin } from '@/lib/admin.guard';
 
 // GET - 단일 조회
-export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+
   const db = (await clientPromise).db();
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {
@@ -23,7 +21,9 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
 
 // PATCH - 수정
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+
   const db = (await clientPromise).db();
   let body: any = null;
   try {
@@ -46,9 +46,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ message: '대여 불가 사유가 필요합니다.' }, { status: 400 });
   }
 
-  // 서버측 최소 정규화 (폼에서 문자열로 온 숫자들을 숫자로 변환)
-  // - 빈 문자열/undefined/null => null
-  // - 숫자 변환 불가(NaN) => 아래에서 400으로 차단
   const numOrNull = (v: any) => (v == null || v === '' ? null : Number(v));
 
   const set: any = {
@@ -61,11 +58,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       weight: numOrNull(body.spec?.weight),
       balance: numOrNull(body.spec?.balance),
       headSize: numOrNull(body.spec?.headSize),
-      // 라켓 파인더 확장 스펙
       lengthIn: numOrNull(body.spec?.lengthIn),
       swingWeight: numOrNull(body.spec?.swingWeight),
       stiffnessRa: numOrNull(body.spec?.stiffnessRa),
-      // 패턴 표준화: 공백 제거 + 소문자 + × -> x
       pattern: normalizeStringPattern(body.spec?.pattern ?? ''),
       gripSize: String(body.spec?.gripSize ?? '').trim(),
     },
@@ -92,13 +87,11 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ message: '브랜드/모델은 필수입니다.' }, { status: 400 });
   }
 
-  // 브랜드 값 검증(상수 목록에 없는 값 차단)
   const brandOk = RACKET_BRANDS.some((b) => b.value === set.brand);
   if (!brandOk) {
     return NextResponse.json({ message: '브랜드 값이 유효하지 않습니다.' }, { status: 400 });
   }
 
-  // spec 숫자 필드 유효성: null 또는 유한한 숫자만 허용
   for (const k of ['weight', 'balance', 'headSize', 'lengthIn', 'swingWeight', 'stiffnessRa'] as const) {
     const v = set.spec?.[k];
     if (v !== null && v !== undefined && !Number.isFinite(v)) {
@@ -112,8 +105,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 }
 
 // DELETE 삭제
-export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+
   const db = (await clientPromise).db();
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {

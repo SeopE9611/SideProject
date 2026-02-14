@@ -1,24 +1,7 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
-
-// 토큰 검증은 throw 가능 → 안전하게 null 처리 (500 방지)
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
-
-async function requireAdmin() {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(token);
-  return payload?.role === 'admin' ? payload : null;
-}
+import { requireAdmin } from '@/lib/admin.guard';
 
 async function ensureIndex(db: any, col: string, keys: Record<string, 1 | -1>) {
   try {
@@ -29,10 +12,10 @@ async function ensureIndex(db: any, col: string, keys: Record<string, 1 | -1>) {
   }
 }
 
-export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
-    const payload = await requireAdmin();
-    if (!payload) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+    const guard = await requireAdmin(req);
+    if (!guard.ok) return guard.res;
 
     const { id } = await ctx.params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });

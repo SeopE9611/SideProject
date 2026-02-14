@@ -1,30 +1,11 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
-
-// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
+import { requireAdmin } from '@/lib/admin.guard';
 
 // GET 메서드 -> 관리자 주문 목록 조회 API
-export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-  //  관리자 권한이 없는 경우 (로그인 안 했거나 role이 admin이 아닌 경우)
-  if (!token) {
-    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-  }
-  const payload = safeVerifyAccessToken(token);
-  if (!payload || payload.role !== 'admin') {
-    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-  }
+export async function GET(req: Request) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   // MongoDB 연결 클라이언트 가져오기
   const client = await clientPromise;

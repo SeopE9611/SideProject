@@ -1,16 +1,6 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
-
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
+import { requireAdmin } from '@/lib/admin.guard';
 
 function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
@@ -19,11 +9,8 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
 }
 
 export async function GET(req: Request) {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(token);
-  if (!payload?.sub || payload.role !== 'admin') {
-    return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-  }
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   const url = new URL(req.url);
   const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });

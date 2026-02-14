@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { requireAdmin } from '@/lib/admin.guard';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -43,17 +42,8 @@ function parseShippedAt(input?: unknown): { ok: true; value: Date } | { ok: fals
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  // 로그인 검증
-  const at = (await cookies()).get('accessToken')?.value;
-  let payload: any = null;
-  try {
-    payload = at ? verifyAccessToken(at) : null;
-  } catch {
-    payload = null;
-  }
-  if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  const subStr = String(payload.sub);
-  if (!ObjectId.isValid(subStr)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   // 파라미터/바디 검증
   const { id } = await params;
@@ -98,8 +88,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   // 소유자 검증
   const db = (await clientPromise).db();
   const _id = new ObjectId(id);
-  const ownerId = new ObjectId(subStr);
-  const mine = await db.collection('rental_orders').findOne({ _id, userId: ownerId });
+  const mine = await db.collection('rental_orders').findOne({ _id });
   if (!mine) return NextResponse.json({ message: 'FORBIDDEN' }, { status: 403 });
 
   // 저장
