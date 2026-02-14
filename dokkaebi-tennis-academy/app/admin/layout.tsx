@@ -6,28 +6,61 @@ import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import AccessDenied from '@/components/system/AccessDenied';
 import { headers } from 'next/headers';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import { logInfo } from '@/lib/logger';
 
 export const metadata = {
   title: '관리자 페이지 - 도깨비 테니스 아카데미',
 };
 
 function canBypassAdminGuard(requestHeaders: Headers): boolean {
-  const isTestRuntime = process.env.NODE_ENV === 'test';
-  const isE2eBypassEnabled = process.env.E2E_ADMIN_BYPASS_ENABLED === '1';
+  const providedToken = requestHeaders.get('x-e2e-admin-bypass-token');
+  if (!providedToken) {
+    return false;
+  }
 
-  if (!isTestRuntime && !isE2eBypassEnabled) {
+  const isTestRuntime = process.env.NODE_ENV === 'test';
+  const isProductionEnvironment = process.env.VERCEL_ENV === 'production';
+  const bypassEnabled = process.env.E2E_ADMIN_BYPASS_ENABLED === '1';
+
+  if (!isTestRuntime || isProductionEnvironment || !bypassEnabled) {
+    logInfo({
+      msg: 'admin_guard_bypass_denied',
+      path: '/admin',
+      extra: {
+        reason: !isTestRuntime ? 'non_test_runtime' : isProductionEnvironment ? 'production_environment' : 'feature_disabled',
+        nodeEnv: process.env.NODE_ENV ?? null,
+        vercelEnv: process.env.VERCEL_ENV ?? null,
+      },
+    });
     return false;
   }
 
   const expectedToken = process.env.E2E_ADMIN_BYPASS_TOKEN;
   if (!expectedToken) {
+    logInfo({
+      msg: 'admin_guard_bypass_denied',
+      path: '/admin',
+      extra: {
+        reason: 'missing_expected_token',
+      },
+    });
     return false;
   }
 
-  const providedToken = requestHeaders.get('x-e2e-admin-bypass-token');
-  return providedToken === expectedToken;
+  const bypassAccepted = providedToken === expectedToken;
+
+  logInfo({
+    msg: bypassAccepted ? 'admin_guard_bypass_approved' : 'admin_guard_bypass_denied',
+    path: '/admin',
+    extra: {
+      reason: bypassAccepted ? 'token_matched' : 'token_mismatch',
+    },
+  });
+
+  return bypassAccepted;
 }
 
+/** 관리자 UI 권한 검사의 단일 진입점. (app/admin/**) */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const requestHeaders = await headers();
   const e2eBypass = canBypassAdminGuard(requestHeaders);
