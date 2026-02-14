@@ -3,15 +3,6 @@ import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 
-async function ensureIndex(db: any, col: string, keys: Record<string, 1 | -1>) {
-  try {
-    // 이름 옵션 지정하지 않음 + code 85(IndexOptionsConflict) 무시
-    await db.collection(col).createIndex(keys);
-  } catch (e: any) {
-    if (e?.code !== 85) throw e;
-  }
-}
-
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const guard = await requireAdmin(req);
@@ -22,10 +13,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
 
     const db = await getDb();
     const userIdObj = new ObjectId(id);
-
-    await ensureIndex(db, 'orders', { userId: 1, createdAt: -1 });
-    await ensureIndex(db, 'stringing_applications', { userId: 1, createdAt: -1 });
-    await ensureIndex(db, 'reviews', { userId: 1, createdAt: -1 });
 
     const orders = await db.collection('orders').countDocuments({ $or: [{ userId: userIdObj }, { userId: id }] });
 

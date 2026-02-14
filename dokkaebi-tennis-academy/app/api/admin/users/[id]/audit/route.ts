@@ -21,7 +21,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
 
     const db = await getDb();
-    await db.collection('user_audit_logs').createIndex({ userId: 1, at: -1 }, { name: 'audit_userId_at' });
 
     const userId = new ObjectId(id);
     const items = await db.collection('user_audit_logs').find({ userId }).sort({ at: -1 }).limit(limit).project({ _id: 0 }).toArray();
@@ -46,7 +45,6 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     if (!action) return NextResponse.json({ message: 'action required' }, { status: 400 });
 
     const db = await getDb();
-    await db.collection('user_audit_logs').createIndex({ userId: 1, at: -1 }, { name: 'audit_userId_at' });
 
     const userId = new ObjectId(id);
     await db.collection('user_audit_logs').insertOne({

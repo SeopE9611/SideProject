@@ -10,14 +10,6 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
-async function ensureIndex(db: any, col: string, keys: Record<string, 1 | -1>) {
-  try {
-    await db.collection(col).createIndex(keys);
-  } catch (e: any) {
-    if (e?.code !== 85) throw e;
-  }
-}
-
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const guard = await requireAdmin(req);
@@ -31,8 +23,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     const db = await getDb();
     const userIdObj = new ObjectId(id);
     const filter = { $or: [{ userId: userIdObj }, { userId: id }] };
-
-    await ensureIndex(db, 'reviews', { userId: 1, createdAt: -1 });
 
     const col = db.collection('reviews');
     const total = await col.countDocuments(filter);
