@@ -15,59 +15,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import useSWR from 'swr';
 import { parseISO, isValid, format } from 'date-fns';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import type { AdminPackageDetailDto, AdminPackageOperationHistoryDto, AdminPackagePassStatusDetail, AdminPackagePaymentStatus } from '@/types/admin/packages';
 
 import PackagePaymentStatusSelect from '@/app/features/packages/components/PackagePaymentStatusSelect';
 import PackagePassStatusSelect from '@/app/features/packages/components/PackagePassStatusSelect';
 import PackageCurrentStatusSelect from '@/app/features/packages/components/PackageCurrentStatusSelect';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
-interface PackageDetail {
-  id: string;
-  userId?: string;
-  customer: { name: string; email: string; phone: string };
-  packageType: '10회권' | '30회권' | '50회권' | '100회권';
-  totalSessions: number;
-  remainingSessions: number;
-  usedSessions: number;
-  price: number;
-  purchaseDate: string;
-  expiryDate: string;
-  passStatus: '활성' | '만료' | '일시정지' | '취소' | '대기';
-  paymentStatus: '결제완료' | '결제대기' | '결제취소';
-  serviceType: '방문' | '출장';
-  usageHistory: Array<{
-    id: string;
-    applicationId: string;
-    date: string;
-    sessionsUsed: number;
-    description: string;
-    adminNote?: string;
-  }>;
-  // 운영 이력(연장/횟수조절) – API에서 operationsHistory로 내려옴
-  operationsHistory: OperationsHistoryItem[];
-
-  // 하위호환: 기존 extensionHistory를 쓰는 다른 코드를 optional로 남겨둠
-  extensionHistory?: OperationsHistoryItem[];
-}
-
-type OperationsHistoryItem = {
-  id: string;
-  date: string;
-  extendedSessions?: number; // +N회 / -N회
-  extendedDays?: number; // +N일
-  reason?: string;
-  adminName?: string;
-  adminEmail?: string;
-  from?: string | null; // 이전 만료일(있으면 표시)
-  to?: string | null; // 이후 만료일(있으면 표시)
-  paymentStatus?: '결제대기' | '결제완료' | '결제취소' | '취소';
-  eventType?: 'extend_expiry' | 'adjust_sessions' | 'payment_status_change';
-};
+type PackageDetail = AdminPackageDetailDto;
+type OperationsHistoryItem = AdminPackageOperationHistoryDto;
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
 // 배지 색상(라이트/다크 모두 대비 높임)
-const passStatusColors: Record<PackageDetail['passStatus'], string> = {
+const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
   활성: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800',
   만료: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800',
   일시정지: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-800',
@@ -75,7 +36,7 @@ const passStatusColors: Record<PackageDetail['passStatus'], string> = {
   대기: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/40 dark:text-slate-200 dark:border-slate-700',
 };
 
-const payStatusColors: Record<NonNullable<PackageDetail['paymentStatus']>, string> = {
+const payStatusColors: Record<AdminPackagePaymentStatus, string> = {
   결제완료: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800',
   결제대기: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-800',
   결제취소: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800',
@@ -307,8 +268,8 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
       showSuccessToast('패키지가 연장되었습니다.');
       setShowExtensionForm(false);
       setExtensionData({ sessions: 0, days: 0, reason: '' });
-    } catch (e: any) {
-      showErrorToast(e?.message || '연장 중 오류가 발생했습니다.');
+    } catch (e: unknown) {
+      showErrorToast(e instanceof Error ? e.message : '연장 중 오류가 발생했습니다.');
     } finally {
       setIsSavingExtend(false);
     }
@@ -335,8 +296,8 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
       showSuccessToast('횟수가 조절되었습니다.');
       setEditingSessions(false);
       setSessionAdjustment({ amount: 0, reason: '' });
-    } catch (e: any) {
-      showErrorToast(e?.message || '횟수 조절 중 오류가 발생했습니다.');
+    } catch (e: unknown) {
+      showErrorToast(e instanceof Error ? e.message : '횟수 조절 중 오류가 발생했습니다.');
     } finally {
       setIsSavingAdjust(false);
     }
@@ -448,7 +409,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <CardContent className="p-6 space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40">
                   <span className="text-sm text-muted-foreground">현재 상태</span>
-                  <PackageCurrentStatusSelect orderId={packageId} passStatus={data.passStatus as any} paymentStatus={(data.paymentStatus ?? '결제대기') as any} onUpdated={() => mutate()} />
+                  <PackageCurrentStatusSelect orderId={packageId} passStatus={data.passStatus} paymentStatus={data.paymentStatus ?? '결제대기'} onUpdated={() => mutate()} />
                 </div>
 
                 <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40">

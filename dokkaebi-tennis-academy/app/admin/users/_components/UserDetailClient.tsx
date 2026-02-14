@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
+import { asRecord, safeArray, safeNumber } from '@/lib/admin/parsers';
 import { Section, SectionHeader, SectionBody } from '@/components/admin/Section';
 import { InfoItem } from '@/components/admin/InfoItem';
 import StatusBadge from '@/components/admin/StatusBadge';
@@ -62,15 +63,15 @@ const AUDIT_LABELS: Record<string, string> = {
 
 function humanizeAuditDetail(action: string, raw?: string) {
   if (!raw) return '';
-  let obj: any;
+  let obj: Record<string, unknown>;
   try {
-    obj = JSON.parse(raw);
+    obj = asRecord(JSON.parse(raw));
   } catch {
     return ''; // JSON 아니면 숨김
   }
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return '';
+  if (Object.keys(obj).length === 0) return '';
 
-  const entries = Object.entries(obj) as [string, any][];
+  const entries = Object.entries(obj);
 
   // isSuspended / isDeleted만 있는 경우는 제목(액션)으로 충분하니 생략
   if (entries.length === 1 && (entries[0][0] === 'isSuspended' || entries[0][0] === 'isDeleted')) {
@@ -96,17 +97,12 @@ const fetcher = (url: string) =>
   });
 
 // list 응답 파싱: Array | {items} | {data} | {results} | {rows}
-function asArray<T = any>(val: any): T[] {
-  if (Array.isArray(val)) return val;
-  if (val?.items) return val.items;
-  if (val?.data) return val.data;
-  if (val?.results) return val.results;
-  if (val?.rows) return val.rows;
-  return [];
-}
-function asTotal(val: any): number | undefined {
-  if (typeof val?.total === 'number') return val.total;
-  if (typeof val?.count === 'number') return val.count;
+function asTotal(val: unknown): number | undefined {
+  const record = asRecord(val);
+  const total = safeNumber(record.total, Number.NaN);
+  if (Number.isFinite(total)) return total;
+  const count = safeNumber(record.count, Number.NaN);
+  if (Number.isFinite(count)) return count;
   if (Array.isArray(val)) return val.length;
   return undefined;
 }
@@ -135,7 +131,9 @@ export default function UserDetailClient({ id }: { id: string }) {
   const { data, isLoading, mutate } = useSWR<UserDetail>(`/api/admin/users/${id}`, fetcher);
 
   // 다음 주소 API
-  type DaumWindow = typeof window & { daum?: any };
+  type DaumPostcodeData = { zonecode?: string; roadAddress?: string; jibunAddress?: string };
+  type DaumPostcodeApi = { Postcode: new (options: { oncomplete: (data: DaumPostcodeData) => void }) => { open: () => void } };
+  type DaumWindow = typeof window & { daum?: DaumPostcodeApi };
   const [daumReady, setDaumReady] = useState(false);
 
   useEffect(() => {
@@ -158,7 +156,7 @@ export default function UserDetailClient({ id }: { id: string }) {
     if (!daumReady) return;
     const w = window as DaumWindow;
     new w.daum!.Postcode({
-      oncomplete: (data: any) => {
+      oncomplete: (data: DaumPostcodeData) => {
         const postal = data.zonecode ?? '';
         const addr = data.roadAddress || data.jibunAddress || '';
         // 폼 상태 갱신(컨트롤드 값으로 바로 반영)
@@ -189,9 +187,9 @@ export default function UserDetailClient({ id }: { id: string }) {
   const { data: reviewsResp } = useSWR(`/api/admin/users/${id}/reviews?limit=5`, fetcher);
   const { data: auditResp } = useSWR(`/api/admin/users/${id}/audit?limit=5`, fetcher);
   const { data: sessionsResp, mutate: mutateSessions } = useUserSessions(id, 5);
-  const orders = asArray(ordersResp);
-  const apps = asArray(appsResp);
-  const reviews = asArray(reviewsResp);
+  const orders = safeArray(ordersResp);
+  const apps = safeArray(appsResp);
+  const reviews = safeArray(reviewsResp);
 
   // 세션 정리
   const [cleanupOpen, setCleanupOpen] = useState(false);
@@ -219,7 +217,7 @@ export default function UserDetailClient({ id }: { id: string }) {
   useUnsavedChangesGuard(hasDirty);
 
   const user = data;
-  const onChange = (k: keyof UserDetail, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
+  const onChange = (k: keyof UserDetail, v: UserDetail[keyof UserDetail]) => setForm((prev) => ({ ...prev, [k]: v }));
 
   const [pending, setPending] = useState(false);
 
@@ -228,7 +226,7 @@ export default function UserDetailClient({ id }: { id: string }) {
   }
 
   // 서버 PATCH
-  async function patchUser(patch: Record<string, any>, auditLabel?: string) {
+  async function patchUser(patch: Partial<UserDetail>, auditLabel?: string) {
     try {
       setPending(true);
       const res = await fetch(`/api/admin/users/${id}`, {
@@ -241,8 +239,8 @@ export default function UserDetailClient({ id }: { id: string }) {
       if (!res.ok) throw new Error(json?.message || '실패');
       showSuccessToast('저장되었습니다.');
       if (auditLabel) pushAudit(auditLabel, JSON.stringify(patch));
-    } catch (e: any) {
-      showErrorToast(e?.message || '처리 중 오류');
+    } catch (e: unknown) {
+      showErrorToast(e instanceof Error ? e.message : '처리 중 오류');
     } finally {
       setPending(false);
     }
@@ -330,8 +328,8 @@ export default function UserDetailClient({ id }: { id: string }) {
       setPwDialogOpen(true);
       pushAudit('비밀번호 초기화');
       showSuccessToast('임시 비밀번호가 생성되었습니다.');
-    } catch (e: any) {
-      showErrorToast(e?.message || '처리 중 오류');
+    } catch (e: unknown) {
+      showErrorToast(e instanceof Error ? e.message : '처리 중 오류');
     } finally {
       setPending(false);
     }
@@ -352,8 +350,8 @@ export default function UserDetailClient({ id }: { id: string }) {
       showSuccessToast(`세션 로그 ${json?.deleted ?? 0}건 정리 완료`);
       setCleanupOpen(false);
       await mutateSessions(); // 최신 세션 목록 새로고침
-    } catch (e: any) {
-      showErrorToast(e?.message || '처리 중 오류');
+    } catch (e: unknown) {
+      showErrorToast(e instanceof Error ? e.message : '처리 중 오류');
     } finally {
       setPending(false);
     }
@@ -519,7 +517,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                     <Badge variant="secondary" className={user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700'}>
                       {user.role === 'admin' ? '관리자' : '일반'}
                     </Badge>
-                    <StatusBadge status={statusKey(user) as any} />
+                    <StatusBadge status={statusKey(user)} />
                   </div>
 
                   <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -630,7 +628,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   </AlertDialogHeader>
 
                   <div className="mt-2 space-y-3">
-                    <RadioGroup value={cleanupDays} onValueChange={(v) => setCleanupDays(v as any)}>
+                    <RadioGroup value={cleanupDays} onValueChange={(v: '0' | '30' | '90' | '180') => setCleanupDays(v)}>
                       <div className="flex items-center gap-2">
                         <RadioGroupItem id="days30" value="30" />
                         <Label htmlFor="days30">30일 이전 로그 삭제</Label>

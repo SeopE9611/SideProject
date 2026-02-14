@@ -14,6 +14,7 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import { RACKET_BRANDS, racketBrandLabel, type RacketBrand } from '@/lib/constants';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { asRecord, safeNumber } from '@/lib/admin/parsers';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 type BrandState = RacketBrand | ''; // 폼 상태에서만 '' 허용
 
@@ -23,9 +24,9 @@ const MODEL_MAX = 80;
 const PRICE_MIN = 1; // "가격 필수" 라벨이므로 0원 저장은 기본적으로 막는 편이 안전
 const PATTERN_RE = /^\s*\d{1,2}\s*[xX×]\s*\d{1,2}\s*$/; // 예: 16x19, 18×20
 
-const isFiniteNumber = (v: any) => Number.isFinite(Number(v));
-const nonNegative = (v: any) => isFiniteNumber(v) && Number(v) >= 0;
-const positiveOrNull = (v: any) => (v == null || v === '' ? true : isFiniteNumber(v) && Number(v) >= 1);
+const isFiniteNumber = (v: unknown) => Number.isFinite(safeNumber(v, Number.NaN));
+const nonNegative = (v: unknown) => isFiniteNumber(v) && safeNumber(v) >= 0;
+const positiveOrNull = (v: unknown) => (v == null || v === '' ? true : isFiniteNumber(v) && safeNumber(v) >= 1);
 
 export type RacketForm = {
   brand: BrandState;
@@ -47,6 +48,25 @@ export type RacketForm = {
   searchKeywords?: string[];
 };
 
+
+type RacketCondition = RacketForm['condition'];
+type RacketStatus = RacketForm['status'];
+const RACKET_CONDITIONS: readonly RacketCondition[] = ['A', 'B', 'C'];
+const RACKET_STATUSES: readonly RacketStatus[] = ['available', 'rented', 'sold', 'inactive'];
+
+function toCondition(value: unknown): RacketCondition {
+  return RACKET_CONDITIONS.includes(value as RacketCondition) ? (value as RacketCondition) : 'B';
+}
+
+function toStatus(value: unknown): RacketStatus {
+  return RACKET_STATUSES.includes(value as RacketStatus) ? (value as RacketStatus) : 'available';
+}
+
+function toNullableNumber(value: unknown): number | null {
+  const n = safeNumber(value, Number.NaN);
+  return Number.isFinite(n) ? n : null;
+}
+
 type Props = {
   initial?: Partial<RacketForm>;
   submitLabel: string;
@@ -60,15 +80,15 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
     year: initial?.year ?? null,
     price: initial?.price ?? 0,
     quantity: initial?.quantity ?? 1,
-    condition: (initial?.condition as any) ?? 'B',
-    status: (initial?.status as any) ?? 'available',
+    condition: toCondition(initial?.condition),
+    status: toStatus(initial?.status),
     spec: {
       weight: initial?.spec?.weight ?? null,
       balance: initial?.spec?.balance ?? null,
       headSize: initial?.spec?.headSize ?? null,
-      lengthIn: (initial?.spec as any)?.lengthIn ?? null,
-      swingWeight: (initial?.spec as any)?.swingWeight ?? null,
-      stiffnessRa: (initial?.spec as any)?.stiffnessRa ?? null,
+      lengthIn: toNullableNumber(asRecord(initial?.spec).lengthIn),
+      swingWeight: toNullableNumber(asRecord(initial?.spec).swingWeight),
+      stiffnessRa: toNullableNumber(asRecord(initial?.spec).stiffnessRa),
       pattern: initial?.spec?.pattern ?? '',
       gripSize: initial?.spec?.gripSize ?? '',
     },
@@ -326,7 +346,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="condition">상태 등급</Label>
-                  <Select value={form.condition} onValueChange={(value) => setForm({ ...form, condition: value as any })}>
+                  <Select value={form.condition} onValueChange={(value: RacketCondition) => setForm({ ...form, condition: value })}>
                     <SelectTrigger id="condition">
                       <SelectValue />
                     </SelectTrigger>
@@ -339,7 +359,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="status">판매 상태</Label>
-                  <Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value as any })}>
+                  <Select value={form.status} onValueChange={(value: RacketStatus) => setForm({ ...form, status: value })}>
                     <SelectTrigger id="status">
                       <SelectValue />
                     </SelectTrigger>
