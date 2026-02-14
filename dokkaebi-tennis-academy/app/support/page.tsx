@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Bell, LifeBuoy, ArrowRight, Plus, Eye, HelpCircle, MessagesSquare } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MessageSquare, Bell, LifeBuoy, ArrowRight, Plus, Eye, HelpCircle, MessagesSquare, Lock } from 'lucide-react';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor, getNoticeCategoryColor, noticePinColor } from '@/lib/badge-style';
+import { useState } from 'react';
 
 // ---------------------- 공통 유틸 ----------------------
 
@@ -26,12 +28,14 @@ type QnaItem = {
   createdAt: string | Date;
   category?: string | null;
   authorName?: string | null;
+  authorId?: string | null;
+  isSecret?: boolean;
   answer?: any;
   viewCount?: number;
 };
 
 type BoardsMainRes = { ok?: boolean; notices?: NoticeItem[]; qna?: QnaItem[] };
-type MeRes = { role?: string };
+type MeRes = { id?: string; role?: string };
 
 async function fetcher<T>(url: string): Promise<T> {
   const res = await fetch(url, { credentials: 'include' });
@@ -168,7 +172,9 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
 
 // ---------------------- Q&A 카드 ----------------------
 
-function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: boolean; error?: any }) {
+function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaItem[]; viewerId?: string | null; isAdmin?: boolean; isLoading?: boolean; error?: any }) {
+  const [secretBlock, setSecretBlock] = useState<{ open: boolean; item?: QnaItem }>({ open: false });
+
   return (
     <Card className="border-0 bg-white/90 dark:bg-gray-900/80 shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-gradient-to-r from-teal-50 to-teal-100 dark:from-teal-950/40 dark:to-teal-900/40 border-b">
@@ -194,6 +200,33 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6">
+        <Dialog open={secretBlock.open} onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                비밀글 열람 안내
+              </DialogTitle>
+              <DialogDescription className="space-y-2">
+                <span className="block">
+                  이 글은 <b>비밀글</b>로 설정되어 있어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
+                </span>
+                <span className="block">관리자 답변이 달려도 공개되지 않습니다.</span>
+                {!viewerId ? <span className="block">작성자라면 로그인 후 확인해 주세요.</span> : <span className="block">현재 계정으로는 열람 권한이 없습니다.</span>}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSecretBlock({ open: false })}>
+                닫기
+              </Button>
+              {!viewerId && secretBlock.item?._id && (
+                <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
+                  <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <div className="space-y-4">
           {error ? (
             <ErrorBox message="Q&A 불러오기에 실패했습니다." />
@@ -202,41 +235,66 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
           ) : items.length === 0 ? (
             <div className="py-8 text-center text-sm text-gray-500">등록된 문의가 없습니다.</div>
           ) : (
-            items.map((qna) => (
-              <div key={qna._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    {/* 제목 줄 */}
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(qna.category ?? undefined)} shrink-0`} title={qna.category ?? undefined}>
-                          {qna.category ?? '일반문의'}
-                        </Badge>
+            items.map((qna) => {
+              const canOpenSecret = !qna.isSecret || !!isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
 
-                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex-1 min-w-0 truncate">
-                          {qna.title}
-                        </Link>
+              const RowInner = (
+                <div className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      {/* 제목 줄 */}
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-2 flex-wrap min-w-0">
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(qna.category ?? undefined)} shrink-0`} title={qna.category ?? undefined}>
+                            {qna.category ?? '일반문의'}
+                          </Badge>
+
+                          {qna.isSecret && (
+                            <Badge variant="secondary" className="text-xs inline-flex items-center gap-1">
+                              <Lock className="h-3 w-3" />
+                              비밀글
+                            </Badge>
+                          )}
+
+                          <span className="font-semibold text-gray-900 dark:text-white flex-1 min-w-0 truncate">{qna.title}</span>
+                        </div>
+
+                        {/* 답변완료/대기 뱃지는 그대로 유지 */}
+                        <div className="shrink-0">
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!qna.answer)}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
+                            {qna.answer ? '답변 완료' : '답변 대기'}
+                          </Badge>
+                        </div>
                       </div>
 
-                      <div className="shrink-0">
-                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!qna.answer)}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
-                          {qna.answer ? '답변 완료' : '답변 대기'}
-                        </Badge>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                        <span>{qna.authorName ?? '익명'}</span>
+                        <span>{fmt(qna.createdAt)}</span>
+                        <span className="flex items-center">
+                          <MessageSquare className="h-3 w-3 mr-1" />
+                          답변 {qna.answer ? 1 : 0}개
+                        </span>
                       </div>
-                    </div>
-
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                      <span>{qna.authorName ?? '익명'}</span>
-                      <span>{fmt(qna.createdAt)}</span>
-                      <span className="flex items-center">
-                        <MessageSquare className="h-3 w-3 mr-1" />
-                        답변 {qna.answer ? 1 : 0}개
-                      </span>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+              // 비밀글 + 권한 없음: 상세로 안 보내고 모달로 1차 차단
+              if (qna.isSecret && !canOpenSecret) {
+                return (
+                  <button key={qna._id} type="button" className="block w-full text-left" onClick={() => setSecretBlock({ open: true, item: qna })}>
+                    {RowInner}
+                  </button>
+                );
+              }
+
+              // 권한 있거나 일반글: 상세로 이동
+              return (
+                <Link key={qna._id} href={`/board/qna/${qna._id}`} className="block">
+                  {RowInner}
+                </Link>
+              );
+            })
           )}
         </div>
       </CardContent>
@@ -259,6 +317,7 @@ export default function SupportPage() {
     shouldRetryOnError: false,
   });
   const isAdmin = me?.role === 'admin';
+  const viewerId = me?.id ?? null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -277,7 +336,7 @@ export default function SupportPage() {
         {/* 카드 2열 레이아웃 */}
         <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-start">
           <NoticeCard items={notices} isAdmin={isAdmin} isLoading={isLoading} error={error} />
-          <QnaCard items={qnas} isLoading={isLoading} error={error} />
+          <QnaCard items={qnas} viewerId={viewerId} isAdmin={isAdmin} isLoading={isLoading} error={error} />
         </div>
       </div>
     </div>

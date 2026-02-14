@@ -59,7 +59,7 @@ async function main() {
   const typeDebtReport = execSync('node scripts/report-admin-any-count.mjs', { encoding: 'utf8' }).trim();
   console.log(`[TYPE_DEBT] ${typeDebtReport}`);
 
-  console.log('✅ Smoke test passed');
+  console.log('Smoke test passed');
 }
 
 main().catch((e) => {

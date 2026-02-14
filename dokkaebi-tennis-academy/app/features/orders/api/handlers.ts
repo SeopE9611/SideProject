@@ -443,11 +443,11 @@ export async function createOrder(req: Request): Promise<Response> {
         // - 라켓이 주문에 포함된 경우에만 강제 (보유 라켓 교체 서비스는 라켓 아이템이 없을 수 있음)
         // - 장착비(mountingFee)가 있는 상품을 "스트링(장착 대상)"으로 간주.
         if (shippingInfo?.withStringService) {
-          // ✅ 라켓/장착스트링 라인들
+          // 라켓/장착스트링 라인들
           const racketItems = itemsWithSnapshot.filter((it) => it.kind === 'racket');
           const serviceItems = itemsWithSnapshot.filter((it) => it.kind === 'product' && Number((it as any).mountingFee || 0) > 0);
 
-          // ✅ 총 수량(단체 주문은 quantity로만 증가)
+          // 총 수량(단체 주문은 quantity로만 증가)
           const racketQty = racketItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
           const serviceQty = serviceItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
 

@@ -16,6 +16,7 @@ export type BoardListItem = {
 
   // QnA 전용 메타
   authorName?: string | null;
+  authorId?: string | null;
   isSecret?: boolean;
   /**
    * answer는 목록 화면에서 '답변 완료/대기' 판별용으로만 사용.
@@ -68,6 +69,18 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
     type,
     status: 'published',
   };
+
+  /**
+   * QnA "비밀글" 정책 정합성 맞추기
+   * - 상세(/api/boards/[id])에서는 비밀글을 작성자/관리자만 열람 가능(401/403).
+   * - 그런데 목록에서 비밀글을 노출하면 "눌렀더니 막힘" UX가 발생 → 불안정 체감.
+   * - 따라서 공개 QnA 목록에서는 비밀글(isSecret=true)을 제외한다.
+   *
+   * NOTE:
+   * - { isSecret: { $ne: true } } 는
+   *   - isSecret이 false이거나,
+   *   - 필드가 아예 없는 문서까지 포함한다.
+   */
 
   // 2) 카테고리 필터
   if (category) {
@@ -130,6 +143,7 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
   // QnA 목록에서 필요한 필드만 추가로 내려준다.
   if (type === 'qna') {
     projection.authorName = 1;
+    projection.authorId = 1;
     projection.isSecret = 1;
     projection['answer.authorName'] = 1;
     projection['answer.createdAt'] = 1;
@@ -166,6 +180,7 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
       category: doc.category ?? null,
       // QnA 리스트 UI에서 필요한 필드(답변상태/비밀글/작성자)
       authorName: type === 'qna' ? (doc.authorName ?? null) : undefined,
+      authorId: type === 'qna' ? (doc.authorId ? String(doc.authorId) : null) : undefined,
       isSecret: type === 'qna' ? !!doc.isSecret : undefined,
       answer:
         type === 'qna' && doc.answer

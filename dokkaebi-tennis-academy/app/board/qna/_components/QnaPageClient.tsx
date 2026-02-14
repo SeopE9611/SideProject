@@ -11,6 +11,7 @@ import useSWR from 'swr';
 import { useEffect, useMemo, useState } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getQnaCategoryColor } from '@/lib/badge-style';
 import { usePathname } from 'next/navigation';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const CAT_LABELS: Record<string, string> = {
   product: '상품문의',
@@ -29,6 +30,7 @@ type QnaItem = {
   title: string;
   createdAt: string | Date;
   authorName?: string | null;
+  authorId?: string | null;
   category?: string | null; // '상품문의' | '일반문의'
   answer?: { authorName?: string; createdAt?: string | Date; updatedAt?: string | Date } | undefined;
   viewCount?: number;
@@ -71,6 +73,15 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
     }
 
     return data as BoardListRes;
+  }
+
+  type MeRes = { id: string; role?: string | null };
+  async function meFetcher(url: string): Promise<MeRes | null> {
+    const res = await fetch(url, { credentials: 'include' });
+    if (res.status === 401) return null;
+    const data = (await res.json().catch(() => null)) as unknown;
+    if (!res.ok) return null;
+    return data as MeRes;
   }
 
   const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
@@ -134,6 +145,18 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
   const [uiLoading, setUiLoading] = useState(false);
 
   const pathname = usePathname();
+
+  // 현재 사용자(비로그인= null) — 비밀글 클릭 차단 판단에 사용
+  const { data: me } = useSWR<MeRes | null>('/api/users/me', meFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: false,
+  });
+  const viewerId = me?.id ?? null;
+  const isAdmin = me?.role === 'admin';
+
+  // 비밀글 안내 모달 상태
+  const [secretBlock, setSecretBlock] = useState<{ open: boolean; item?: QnaItem }>({ open: false });
 
   type UrlState = {
     page: number;
@@ -217,7 +240,10 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
     revalidateOnReconnect: false,
 
     fallbackData,
-    revalidateOnMount: fallbackData ? false : true,
+
+    // page.tsx가 revalidate=30(SSR 캐시)라서, 작성 직후 목록 누락이 생길 수 있음
+    // fallbackData가 있어도 mount 시 1회 재검증해서 항상 최신 목록으로 맞춘다.
+    revalidateOnMount: true,
   });
 
   useEffect(() => {
@@ -324,7 +350,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               <div className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-teal-600" />
                 <span>Q&A 목록</span>
-                {isBusy && <div className="h-4 w-4 border-2 border-gray-300/70 border-t-gray-700 rounded-full animate-spin" />}
+                {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-gray-300/70 border-t-gray-700 rounded-full animate-spin" />}
               </div>
 
               <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
@@ -442,13 +468,47 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               </div>
             </div>
 
+            {/* 비밀글 1차 차단(안내 모달): 바깥 클릭 시 자동 닫힘(radix 기본) */}
+            <Dialog open={secretBlock.open} onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Lock className="h-4 w-4" />
+                    비밀글 열람 안내
+                  </DialogTitle>
+                  <DialogDescription className="space-y-2">
+                    <span className="block">
+                      이 글은 <b>비밀글</b>로 설정되어 있어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
+                    </span>
+
+                    <span className="block">관리자 답변이 달려도 공개되지 않습니다.</span>
+                    {!viewerId ? <span className="block">작성자라면 로그인 후 확인해 주세요.</span> : <span className="block">현재 계정으로는 열람 권한이 없습니다.</span>}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setSecretBlock({ open: false })}>
+                    닫기
+                  </Button>
+                  {!viewerId && secretBlock.item?._id && (
+                    <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
+                      <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
+                    </Button>
+                  )}
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <div className="space-y-4">
               {error && <div className="text-sm text-red-500">불러오기에 실패했습니다.</div>}
 
               {!isLoading &&
                 !error &&
-                items.map((qna) => (
-                  <Link key={qna._id} href={`/board/qna/${qna._id}`}>
+                items.map((qna) => {
+                  const canOpenSecret = !qna.isSecret || isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
+
+                  const displayTitle = qna.isSecret && !canOpenSecret ? '비밀글입니다' : qna.title;
+
+                  const CardInner = (
                     <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-gray-200 dark:border-gray-700">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between">
@@ -459,8 +519,9 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                               </Badge>
 
                               {qna.isSecret && (
-                                <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                                  <Lock className="h-3 w-3" /> 비밀글
+                                <Badge variant="secondary" className="text-xs inline-flex items-center gap-1">
+                                  <Lock className="h-3 w-3" />
+                                  비밀글
                                 </Badge>
                               )}
 
@@ -469,7 +530,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                               </Badge>
                             </div>
 
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors mb-3 flex-1 min-w-0 truncate">{qna.title}</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors mb-3 flex-1 min-w-0 truncate">{displayTitle}</h3>
 
                             <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-500">
                               <div className="flex items-center space-x-2">
@@ -495,8 +556,23 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                         </div>
                       </CardContent>
                     </Card>
-                  </Link>
-                ))}
+                  );
+
+                  // 비밀글 + 권한없음: 상세로 보내지 않고 모달로 1차 차단
+                  if (qna.isSecret && !canOpenSecret) {
+                    return (
+                      <button key={qna._id} type="button" className="block w-full text-left" onClick={() => setSecretBlock({ open: true, item: qna })}>
+                        {CardInner}
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <Link key={qna._id} href={`/board/qna/${qna._id}`}>
+                      {CardInner}
+                    </Link>
+                  );
+                })}
 
               {!isLoading && !error && items.length === 0 && <div className="text-sm text-gray-500">{keyword.trim() ? '검색 결과가 없습니다.' : '등록된 문의가 없습니다.'}</div>}
             </div>

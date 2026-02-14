@@ -144,7 +144,7 @@ export default function StringingSettingsPage() {
         setBookingWindowDays(next.bookingWindowDays);
         setExceptions(next.exceptions);
 
-        // ✅ baseline은 1회만 세팅(재렌더/재호출로 덮어쓰기 방지)
+        // baseline은 1회만 세팅(재렌더/재호출로 덮어쓰기 방지)
         setInitialSig((sig) => sig || settingsDirtySignature(next));
       } catch (err: any) {
         showErrorToast(err?.message || '설정을 불러오지 못했습니다.');
