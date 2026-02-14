@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import useSWR from 'swr';
 import { Search, Filter, MoreHorizontal, Copy, Mail, UserX, UserCheck, Trash2, ChevronLeft, ChevronRight, ChevronsRight, ChevronDown, ChevronsLeft, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,13 +17,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
 import UserPointsDialog from '@/app/admin/users/_components/UserPointsDialog';
-
-// ---------------------- fetcher ----------------------
-const fetcher = (url: string) =>
-  fetch(url, { credentials: 'include', cache: 'no-store' }).then((r) => {
-    if (!r.ok) throw new Error('불러오기 실패');
-    return r.json();
-  });
+import { useUserList } from '@/app/admin/users/_hooks/useUserList';
 
 // ---------------------- helpers ----------------------
 // 전체 주소 문자열
@@ -106,36 +99,16 @@ export default function UsersClient() {
   // 로그인 필터 상태: 전체 / 미로그인 / 최근 30,90일
   const [loginFilter, setLoginFilter] = useState<'all' | 'nologin' | 'recent30' | 'recent90'>('all');
 
-  const key = (() => {
-    const p = new URLSearchParams({ page: String(page), limit: String(limit) });
-    if (searchQuery.trim()) p.set('q', searchQuery.trim());
-    if (roleFilter !== 'all') p.set('role', roleFilter);
-    if (statusFilter !== 'all') p.set('status', statusFilter);
-    if (loginFilter !== 'all') p.set('login', loginFilter);
-    if (signupFilter !== 'all') p.set('signup', signupFilter);
-
-    if (sort) p.set('sort', sort);
-    return `/api/admin/users?${p.toString()}`;
-  })();
-
-  const { data, isLoading, mutate } = useSWR(key, fetcher);
-
-  const rows =
-    (data?.items as Array<{
-      id: string;
-      name: string;
-      email: string;
-      phone?: string;
-      address?: string;
-      addressDetail?: string;
-      postalCode?: string;
-      role: 'user' | 'admin';
-      isDeleted: boolean;
-      createdAt?: string;
-      lastLoginAt?: string;
-      isSuspended?: boolean;
-      socialProviders?: Array<'kakao' | 'naver'>;
-    }>) || [];
+  const { data, isLoading, mutate, rows, total } = useUserList({
+    page,
+    limit,
+    searchQuery,
+    roleFilter,
+    statusFilter,
+    loginFilter,
+    signupFilter,
+    sort,
+  });
 
   // 선택된 사용자 ID 목록 상태
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -159,7 +132,6 @@ export default function UsersClient() {
   const hasSelection = selectedUsers.length > 0;
   const canSoftDelete = useMemo(() => selectedRows.some((u) => !u.isDeleted), [selectedRows]);
 
-  const total = (data?.total as number) || 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const pageItems = buildPageItems(page, totalPages);
 
