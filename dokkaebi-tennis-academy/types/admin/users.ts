@@ -47,6 +47,36 @@ export interface AdminUsersListResponseDto {
   counters: AdminUsersCountersDto;
 }
 
+export interface AdminUserDetailDto {
+  id: string;
+  email: string;
+  name?: string;
+  phone?: string;
+  address?: string;
+  addressDetail?: string;
+  postalCode?: string;
+  role: 'user' | 'admin';
+  isDeleted: boolean;
+  isSuspended?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  lastLoginAt?: string;
+}
+
+export interface AdminUserAuditLogDto {
+  id?: string;
+  action: string;
+  detail?: string;
+  at: string;
+  by?: string;
+}
+
+export interface AdminUserKpiDto {
+  orders: number;
+  applications: number;
+  reviews: number;
+}
+
 export interface UserCleanupPreviewCandidateDto {
   _id: string;
   name?: string;

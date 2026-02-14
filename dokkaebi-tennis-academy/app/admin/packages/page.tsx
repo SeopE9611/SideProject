@@ -89,6 +89,16 @@ export default function PackageOrdersClient() {
 
   const DEFAULTS = DEFAULT_PACKAGE_LIST_FILTERS;
 
+  const PASS_STATUS_VALUES: ReadonlyArray<'all' | PassStatus> = ['all', '비활성', '활성', '만료', '취소'];
+  const PACKAGE_TYPE_VALUES: ReadonlyArray<'all' | PackageType> = ['all', '10회권', '30회권', '50회권', '100회권'];
+  const PAYMENT_STATUS_VALUES: ReadonlyArray<'all' | PaymentStatus> = ['all', '결제완료', '결제대기', '결제취소'];
+  const SERVICE_TYPE_VALUES: ReadonlyArray<'all' | ServiceType> = ['all', '방문', '출장'];
+
+  const isPassStatusFilter = (value: string | null): value is 'all' | PassStatus => !!value && PASS_STATUS_VALUES.includes(value as 'all' | PassStatus);
+  const isPaymentStatusFilter = (value: string | null): value is 'all' | PaymentStatus => !!value && PAYMENT_STATUS_VALUES.includes(value as 'all' | PaymentStatus);
+  const isServiceTypeFilter = (value: string | null): value is 'all' | ServiceType => !!value && SERVICE_TYPE_VALUES.includes(value as 'all' | ServiceType);
+  const isPackageTypeFilter = (value: string | null): value is 'all' | PackageType => !!value && PACKAGE_TYPE_VALUES.includes(value as 'all' | PackageType);
+
   // state -> URLSearchParams (항상 같은 순서로 직렬화)
   function buildParamsFromState() {
     const params = new URLSearchParams();
@@ -107,18 +117,23 @@ export default function PackageOrdersClient() {
   function parseParamsToState(sp: URLSearchParams) {
     const pageNum = Math.max(1, Number.parseInt(sp.get('page') || String(DEFAULTS.page), 10));
     const q = (sp.get('q') || DEFAULTS.q).trim();
-    const status = (sp.get('status') as PassStatus) || DEFAULTS.status;
-    const payment = (sp.get('payment') as PaymentStatus) || DEFAULTS.payment;
-    const service = (sp.get('service') as ServiceType) || DEFAULTS.service;
+    const statusParam = sp.get('status');
+    const paymentParam = sp.get('payment');
+    const serviceParam = sp.get('service');
+
+    const status = isPassStatusFilter(statusParam) ? statusParam : DEFAULTS.status;
+    const payment = isPaymentStatusFilter(paymentParam) ? paymentParam : DEFAULTS.payment;
+    const service = isServiceTypeFilter(serviceParam) ? serviceParam : DEFAULTS.service;
     const pkgRaw = sp.get('package');
-    const pkg: 'all' | PackageType = pkgRaw && ['10', '30', '50', '100'].includes(pkgRaw) ? ((pkgRaw + '회권') as PackageType) : DEFAULTS.package;
+    const normalizedPkg = pkgRaw && ['10', '30', '50', '100'].includes(pkgRaw) ? `${pkgRaw}회권` : pkgRaw;
+    const pkg: 'all' | PackageType = isPackageTypeFilter(normalizedPkg) ? normalizedPkg : DEFAULTS.package;
 
     const sortParam = sp.get('sort');
     let sBy: SortKey | null = DEFAULTS.sortBy;
     let sDir: 'asc' | 'desc' = DEFAULTS.sortDirection;
     if (sortParam) {
       const [rk, rd] = sortParam.split(':');
-      if (rk) sBy = rk as SortKey;
+      if (rk && ['customer', 'purchaseDate', 'expiryDate', 'remainingSessions', 'price', 'status', 'payment', 'package', 'progress'].includes(rk)) sBy = rk as SortKey;
       if (rd === 'asc' || rd === 'desc') sDir = rd;
     }
 
@@ -482,7 +497,7 @@ export default function PackageOrdersClient() {
   }
 
   // 연장 반영된 만료일
-  function getExpirySource(pkg: any): string | null {
+  function getExpirySource(pkg: PackageListItem): string | null {
     return pkg?.expiryDate ?? null;
   }
 
@@ -608,7 +623,7 @@ export default function PackageOrdersClient() {
                   <Select
                     value={statusFilter}
                     onValueChange={(v) => {
-                      setStatusFilter(v as 'all' | PassStatus);
+                      if (isPassStatusFilter(v)) setStatusFilter(v);
                       setPage(1);
                     }}
                   >
@@ -627,7 +642,7 @@ export default function PackageOrdersClient() {
                   <Select
                     value={packageTypeFilter}
                     onValueChange={(v) => {
-                      setPackageTypeFilter(v as 'all' | PackageType);
+                      if (isPackageTypeFilter(v)) setPackageTypeFilter(v);
                       setPage(1);
                     }}
                   >
@@ -646,7 +661,7 @@ export default function PackageOrdersClient() {
                   <Select
                     value={paymentFilter}
                     onValueChange={(v) => {
-                      setPaymentFilter(v as 'all' | PaymentStatus);
+                      if (isPaymentStatusFilter(v)) setPaymentFilter(v);
                       setPage(1);
                     }}
                   >
@@ -664,7 +679,7 @@ export default function PackageOrdersClient() {
                   <Select
                     value={serviceTypeFilter}
                     onValueChange={(v) => {
-                      setServiceTypeFilter(v as 'all' | ServiceType);
+                      if (isServiceTypeFilter(v)) setServiceTypeFilter(v);
                       setPage(1);
                     }}
                   >
@@ -952,7 +967,7 @@ export default function PackageOrdersClient() {
 
                               {/* 결제 배지 (xl 이상) */}
                               <TableCell className={cn(tdClasses, col.payment, 'whitespace-nowrap hidden xl:table-cell')}>
-                                <Badge className={cn('border', paymentStatusColors[pkg.paymentStatus as PaymentStatus] ?? paymentStatusColors['결제대기'], 'font-medium', badgeSizeCls)} aria-label={`결제상태 ${String(pkg.paymentStatus)}`}>
+                                <Badge className={cn('border', paymentStatusColors[pkg.paymentStatus === '결제완료' || pkg.paymentStatus === '결제대기' || pkg.paymentStatus === '결제취소' ? pkg.paymentStatus : '결제대기'], 'font-medium', badgeSizeCls)} aria-label={`결제상태 ${String(pkg.paymentStatus)}`}>
                                   {pkg.paymentStatus}
                                 </Badge>
                               </TableCell>

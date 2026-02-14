@@ -1,29 +1,12 @@
 import { adminFetcher } from '@/lib/admin/adminFetcher';
+import type { AdminPackageDetailDto, AdminPackageListItemDto, AdminPackageListResponseDto, AdminPackageMetricsDto, AdminPackagePassStatus, AdminPackagePaymentStatus, AdminPackageServiceType, AdminPackageType } from '@/types/admin/packages';
 
-export interface PackageOrder {
-  id: string;
-  userId?: string;
-  customer: {
-    name: string;
-    email: string;
-    phone: string;
-  };
-  packageType: '10회권' | '30회권' | '50회권' | '100회권';
-  totalSessions: number;
-  remainingSessions: number;
-  usedSessions: number;
-  price: number;
-  purchaseDate: string;
-  expiryDate: string;
-  status: '활성' | '만료' | '일시정지' | '취소';
-  paymentStatus: '결제완료' | '결제대기' | '결제취소';
-  serviceType: '방문' | '출장';
-}
+export type PackageOrder = AdminPackageDetailDto;
 
-export type PackageType = '10회권' | '30회권' | '50회권' | '100회권';
-export type ServiceType = '방문' | '출장';
-export type PassStatus = '비활성' | '활성' | '만료' | '취소';
-export type PaymentStatus = '결제완료' | '결제대기' | '결제취소';
+export type PackageType = AdminPackageType;
+export type ServiceType = AdminPackageServiceType;
+export type PassStatus = AdminPackagePassStatus;
+export type PaymentStatus = AdminPackagePaymentStatus;
 export type SortKey = 'customer' | 'purchaseDate' | 'expiryDate' | 'remainingSessions' | 'price' | 'status' | 'payment' | 'package' | 'progress';
 
 export const PASS_STATUS_LABELS: Record<PassStatus, string> = {
@@ -41,21 +24,7 @@ export const packageStatusColors: Record<PassStatus | '대기', string> = {
   대기: 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
-export interface PackageListItem {
-  id: string;
-  userId: string;
-  customer: { name?: string; email?: string; phone?: string };
-  packageType: PackageType;
-  totalSessions: number;
-  remainingSessions: number;
-  usedSessions: number;
-  price: number;
-  purchaseDate: string | null;
-  expiryDate: string | null;
-  passStatus: PassStatus | '대기';
-  paymentStatus: PaymentStatus | string;
-  serviceType: ServiceType;
-}
+export type PackageListItem = AdminPackageListItemDto;
 
 export interface Paginated<T> {
   items: T[];
@@ -64,16 +33,9 @@ export interface Paginated<T> {
   pageSize: number;
 }
 
-export interface PackageMetrics {
-  total: number;
-  active: number;
-  revenue: number;
-  expirySoon: number;
-}
+export type PackageMetrics = AdminPackageMetricsDto;
 
-export type PackagesResponse = Paginated<PackageListItem> & {
-  metrics?: PackageMetrics;
-};
+export type PackagesResponse = AdminPackageListResponseDto;
 
 export const badgeSizeCls = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
 

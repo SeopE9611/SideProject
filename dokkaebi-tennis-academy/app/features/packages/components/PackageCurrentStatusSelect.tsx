@@ -14,7 +14,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
  * - '취소'에서 복구 시: "상태 복구 사유(선택)" 모달  ← 요청사항 반영
  */
 type CurrentStatusUI = '활성' | '비활성' | '취소';
-type PassStatus = '활성' | '대기' | '만료' | '취소';
+type PassStatus = '활성' | '대기' | '일시정지' | '만료' | '취소';
 type PaymentStatus = '결제대기' | '결제완료' | '결제취소';
 
 type Props = {
@@ -41,7 +41,7 @@ export default function PackageCurrentStatusSelect({ orderId, passStatus, paymen
   // passStatus(활성/대기/만료/취소) → UI선택값(활성/비활성/취소)
   const initialUI: CurrentStatusUI | null = useMemo(() => {
     if (passStatus === '만료') return null; // 만료는 변경 불가
-    if (passStatus === '대기') return '비활성';
+    if (passStatus === '대기' || passStatus === '일시정지') return '비활성';
     if (passStatus === '활성') return '활성';
     if (passStatus === '취소') return '취소';
     return '비활성';
