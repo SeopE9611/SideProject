@@ -13,7 +13,6 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Copy,
   Mail,
@@ -46,6 +45,8 @@ import { InfoItem } from '@/components/admin/InfoItem';
 import StatusBadge from '@/components/admin/StatusBadge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useUserSessions } from '@/app/admin/users/_hooks/useUserSessions';
+import { UserActivityTabsSection } from '@/app/admin/users/_components/UserActivityTabsSection';
 
 // 변경이력 포맷터 유틸
 const AUDIT_LABELS: Record<string, string> = {
@@ -188,7 +189,7 @@ export default function UserDetailClient({ id }: { id: string }) {
   const { data: appsResp } = useSWR(`/api/admin/users/${id}/applications/stringing?limit=5`, fetcher);
   const { data: reviewsResp } = useSWR(`/api/admin/users/${id}/reviews?limit=5`, fetcher);
   const { data: auditResp } = useSWR(`/api/admin/users/${id}/audit?limit=5`, fetcher);
-  const { data: sessionsResp, mutate: mutateSessions } = useSWR<{ items: { at: string; ip: string; ua: string; os: string; browser: string; isMobile: boolean }[] }>(`/api/admin/users/${id}/sessions?limit=5`, fetcher);
+  const { data: sessionsResp, mutate: mutateSessions } = useUserSessions(id, 5);
   const orders = asArray(ordersResp);
   const apps = asArray(appsResp);
   const reviews = asArray(reviewsResp);
@@ -689,67 +690,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   aside={<ListTree className="h-4 w-4 text-muted-foreground" />}
                 />
                 <SectionBody>
-                  <Tabs defaultValue="orders">
-                    <TabsList className="mb-3">
-                      <TabsTrigger value="orders" className="gap-1">
-                        <Box className="h-3.5 w-3.5" />
-                        주문
-                      </TabsTrigger>
-                      <TabsTrigger value="apps" className="gap-1">
-                        <Wrench className="h-3.5 w-3.5" />
-                        신청
-                      </TabsTrigger>
-                      <TabsTrigger value="reviews" className="gap-1">
-                        <Star className="h-3.5 w-3.5" />
-                        리뷰
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="orders">
-                      <MiniList
-                        empty="최근 주문이 없습니다."
-                        items={orders}
-                        render={(o: any) => (
-                          <Row
-                            title={o?.title || o?.number || `주문 #${o?._id || o?.id || '-'}`}
-                            subtitle={o?.status || o?.computedStatus || '—'}
-                            right={o?.totalPrice ? `${o.totalPrice.toLocaleString()}원` : ''}
-                            href={o?._id || o?.id ? `/admin/orders/${o._id || o.id}` : undefined}
-                          />
-                        )}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="apps">
-                      <MiniList
-                        empty="최근 신청이 없습니다."
-                        items={apps}
-                        render={(a: any) => (
-                          <Row
-                            title={a?.racketType || a?.stringTypes?.join(', ') || `신청 #${a?._id || a?.id || '-'}`}
-                            subtitle={a?.status || a?.applicationStatus || '—'}
-                            right={a?.price ? `${a.price.toLocaleString()}원` : ''}
-                            href={a?._id || a?.id ? `/admin/applications/stringing/${a._id || a.id}` : undefined}
-                          />
-                        )}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="reviews">
-                      <MiniList
-                        empty="최근 리뷰가 없습니다."
-                        items={reviews}
-                        render={(r: any) => (
-                          <Row
-                            title={r?.title || `리뷰 #${r?._id || r?.id || '-'}`}
-                            subtitle={(r?.rating ? `★ ${r.rating}` : '') + (r?.isPublic === false ? ' · 비공개' : '')}
-                            right={r?.createdAt ? new Date(r.createdAt).toLocaleDateString() : ''}
-                            href={r?._id || r?.id ? `/admin/reviews/${r._id || r.id}` : undefined}
-                          />
-                        )}
-                      />
-                    </TabsContent>
-                  </Tabs>
+                  <UserActivityTabsSection orders={orders} apps={apps} reviews={reviews} MiniList={MiniList} Row={Row} />
                 </SectionBody>
               </Section>
 

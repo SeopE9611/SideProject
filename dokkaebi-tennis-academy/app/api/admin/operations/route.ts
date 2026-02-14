@@ -2,34 +2,11 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 import { toISO, normalizeOrderStatus, normalizePaymentStatus, normalizeRentalStatus, summarizeOrderItems, pickCustomerFromDoc, normalizeRentalAmountTotal } from '@/lib/admin-ops-normalize';
+import type { AdminOperationFlow as Flow, AdminOperationItem as OpItem, AdminOperationKind as Kind, SettlementAnchor } from '@/types/admin/operations';
 export const dynamic = 'force-dynamic';
 
-type Kind = 'order' | 'stringing_application' | 'rental';
+/** Responsibility: transport + orchestration only (쿼리/집계 호출 및 응답). */
 
-type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-
-type SettlementAnchor = 'order' | 'rental' | 'application';
-
-type OpItem = {
-  id: string;
-  kind: Kind;
-  createdAt: string | null;
-  customer: { name: string; email: string };
-  title: string; // 목록에서 한 줄로 보일 “요약”
-  statusLabel: string; // 화면 표시용(한글)
-  paymentLabel?: string; // 주문/신청서에서만 사용
-  amount: number; // 화면 표시용 “총액”
-  flow: Flow; // 7개 시나리오(운영자 언어) 판정 결과
-  flowLabel: string; // 화면 표시용(한글)
-  settlementAnchor: SettlementAnchor; // 정산 기준(앵커)
-  settlementLabel: string; // 화면 표시용(짧은 라벨)
-  href: string; // 상세 이동
-  // 연결(통합) 판정용
-  related?: { kind: Kind; id: string; href: string } | null;
-  isIntegrated: boolean; // 통합(연결) 여부
-  warnReasons?: string[]; // 서버가 판정한 “연결 무결성” 경고 사유(필요한 경우만 채움)
-  pendingReasons?: string[]; // '초안(draft) 작성대기' 등, 오류가 아닌 보류/대기 사유
-};
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
