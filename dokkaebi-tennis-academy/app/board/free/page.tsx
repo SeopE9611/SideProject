@@ -1,10 +1,22 @@
+import type { Metadata } from 'next';
 import FreeBoardClient from '@/app/board/free/_components/FreeBoardClient';
 import { FREE_BOARD_CONFIG } from '@/app/board/_components/board-config';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: '자유 게시판 | 도깨비 테니스',
-  description: '테니스 관련 질문, 정보 공유, 일상 이야기를 나누는 자유 게시판입니다.',
+  description: '테니스 질문, 연습 일지, 커뮤니티 이야기를 자유롭게 나누는 게시판입니다.',
   alternates: { canonical: '/board/free' },
+  openGraph: {
+    title: '자유 게시판 | 도깨비 테니스',
+    description: '테니스 질문, 연습 일지, 커뮤니티 이야기를 자유롭게 나누는 게시판입니다.',
+    url: '/board/free',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: '자유 게시판 | 도깨비 테니스',
+    description: '테니스 질문, 연습 일지, 커뮤니티 이야기를 자유롭게 나누는 게시판입니다.',
+  },
 };
 
 export default function FreeBoardPage() {
