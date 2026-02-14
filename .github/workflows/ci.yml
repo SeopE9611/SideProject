@@ -1,9 +1,10 @@
 name: CI
 
 on:
-  # Pull Request 이벤트 트리거를 제거하여
-  # 가상 병합 환경에서 발생하는 오류를 우회합니다.
-  # pull_request:
+  pull_request:
+    paths:
+      - 'dokkaebi-tennis-academy/**'
+      - '.github/workflows/ci.yml'
   push:
     branches: ['main', 'master']
 
@@ -46,6 +47,9 @@ jobs:
       - name: Install dependencies
         # frozen-lockfile을 사용하여 의존성을 안정적으로 설치합니다.
         run: pnpm install --frozen-lockfile
+
+      - name: Admin any debt gate
+        run: pnpm check:admin-any-gate
 
       - name: Lint
         # package.json에 설정된 명령어를 실행합니다.

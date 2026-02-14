@@ -247,24 +247,30 @@ export async function GET(req: Request) {
   const orderToApp = new Map<string, string>();
   const rentalToApp = new Map<string, string>();
   for (const a of rawApps) {
-    if (a?.orderId) orderToApp.set(String(a.orderId), String(a._id));
-    if (a?.rentalId) rentalToApp.set(String(a.rentalId), String(a._id));
+    const appId = getIdString(a?._id);
+    const orderId = getIdString(a?.orderId);
+    const rentalId = getIdString(a?.rentalId);
+    if (orderId && appId) orderToApp.set(orderId, appId);
+    if (rentalId && appId) rentalToApp.set(rentalId, appId);
   }
 
   // 경고용: orderId/rentalId 기준으로 신청서가 “여러 개” 붙는 경우까지 집계(기존 orderToApp/rentalToApp은 1개만 매핑)
   const orderToAppIds = new Map<string, string[]>();
   const rentalToAppIds = new Map<string, string[]>();
   for (const a of asObjectArray(rawApps)) {
-    if (a?.orderId) {
-      const key = String(a.orderId);
+    const orderId = getIdString(a?.orderId);
+    const rentalId = getIdString(a?.rentalId);
+    const appId = getIdString(a?._id);
+    if (orderId && appId) {
+      const key = orderId;
       const arr = orderToAppIds.get(key) ?? [];
-      arr.push(String(a._id));
+      arr.push(appId);
       orderToAppIds.set(key, arr);
     }
-    if (a?.rentalId) {
-      const key = String(a.rentalId);
+    if (rentalId && appId) {
+      const key = rentalId;
       const arr = rentalToAppIds.get(key) ?? [];
-      arr.push(String(a._id));
+      arr.push(appId);
       rentalToAppIds.set(key, arr);
     }
   }
