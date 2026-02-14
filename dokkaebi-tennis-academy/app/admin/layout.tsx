@@ -4,16 +4,34 @@ import { Home, ShoppingBag, Star, UserCog2Icon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import AccessDenied from '@/components/system/AccessDenied';
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 
 export const metadata = {
   title: '관리자 페이지 - 도깨비 테니스 아카데미',
 };
 
+function canBypassAdminGuard(requestHeaders: Headers): boolean {
+  const isTestRuntime = process.env.NODE_ENV === 'test';
+  const isE2eBypassEnabled = process.env.E2E_ADMIN_BYPASS_ENABLED === '1';
+
+  if (!isTestRuntime && !isE2eBypassEnabled) {
+    return false;
+  }
+
+  const expectedToken = process.env.E2E_ADMIN_BYPASS_TOKEN;
+  if (!expectedToken) {
+    return false;
+  }
+
+  const providedToken = requestHeaders.get('x-e2e-admin-bypass-token');
+  return providedToken === expectedToken;
+}
+
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const cookieStore = await cookies();
-  const e2eBypass = cookieStore.get('__e2e')?.value === '1';
+  const requestHeaders = await headers();
+  const e2eBypass = canBypassAdminGuard(requestHeaders);
+
   if (!e2eBypass) {
     const user = await getCurrentUser();
     if (!user || user.role !== 'admin') {

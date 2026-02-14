@@ -1,5 +1,6 @@
 describe('관리자 리뷰 - 다중 상태 일괄 변경', () => {
   beforeEach(() => {
+    expect(adminBypassToken, 'E2E_ADMIN_BYPASS_TOKEN').to.not.equal('');
     // 세션/백그라운드
     cy.intercept('GET', '/api/users/me', {
       statusCode: 200,
@@ -23,6 +24,8 @@ describe('관리자 리뷰 - 다중 상태 일괄 변경', () => {
     }).as('patch');
   });
 
+  const adminBypassToken = String(Cypress.env('E2E_ADMIN_BYPASS_TOKEN') || '');
+
   const selectRows = (indexes: number[]) => {
     // shadcn 버튼형 체크박스: click → data-state가 checked로 바뀌는지 확인
     indexes.forEach((i) => {
@@ -31,9 +34,11 @@ describe('관리자 리뷰 - 다중 상태 일괄 변경', () => {
   };
 
   it('두 행 선택 → 선택 비공개 클릭 → PATCH 2회 호출', () => {
-    cy.visit('/');
-    cy.setCookie('__e2e', '1'); // SSR 가드 우회
-    cy.visit('/admin/reviews');
+    cy.visit('/admin/reviews', {
+      headers: {
+        'x-e2e-admin-bypass-token': adminBypassToken,
+      },
+    });
 
     cy.wait('@me');
     cy.wait('@metrics');
@@ -50,9 +55,11 @@ describe('관리자 리뷰 - 다중 상태 일괄 변경', () => {
   });
 
   it('두 행 선택 → 선택 공개 클릭 → PATCH 2회 호출', () => {
-    cy.visit('/');
-    cy.setCookie('__e2e', '1');
-    cy.visit('/admin/reviews');
+    cy.visit('/admin/reviews', {
+      headers: {
+        'x-e2e-admin-bypass-token': adminBypassToken,
+      },
+    });
 
     cy.wait('@me');
     cy.wait('@metrics');

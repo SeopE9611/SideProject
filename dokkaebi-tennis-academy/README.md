@@ -58,6 +58,25 @@ npx cypress run --spec "cypress/e2e/login.interaction.cy.ts,cypress/e2e/api.prod
 ```
 
 
+
+### 관리자 페이지 E2E 우회(테스트 전용)
+
+관리자 경로(`/admin/*`)는 기본적으로 `layout.tsx`에서 관리자 권한을 단일 체크합니다. E2E에서만 우회가 필요하면 **반드시 테스트 전용 환경**에서 아래 조건을 맞춰 실행하세요.
+
+1. 서버 런타임이 테스트 모드(`NODE_ENV=test`)이거나, E2E 전용 플래그(`E2E_ADMIN_BYPASS_ENABLED=1`)가 켜져 있어야 합니다.
+2. 요청 헤더 `x-e2e-admin-bypass-token` 값이 서버 환경변수 `E2E_ADMIN_BYPASS_TOKEN`과 일치해야 합니다.
+
+예시:
+
+```bash
+E2E_ADMIN_BYPASS_TOKEN=e2e-secret NODE_ENV=test npm run dev
+# 또는
+E2E_ADMIN_BYPASS_ENABLED=1 E2E_ADMIN_BYPASS_TOKEN=e2e-secret npm run dev
+E2E_ADMIN_BYPASS_TOKEN=e2e-secret npm run cy:run
+```
+
+`__e2e` 같은 일반 브라우저 쿠키만으로는 관리자 가드가 우회되지 않습니다.
+
 ## 환경별 운영 가이드
 
 ### 로컬 개발(Local)
