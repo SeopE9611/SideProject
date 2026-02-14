@@ -421,7 +421,7 @@ export default function NoticeWritePage() {
       setExistingAttachments([]);
       if (fileInputRef.current) fileInputRef.current.value = '';
 
-      // 이동 전 캐시 최신화 + 서버컴포넌트 새로고침
+      // 이동 전 캐시 최신화: 상세 캐시를 먼저 맞춘 뒤 목록 캐시를 재검증
       const goId = editId || json.item?._id;
       if (goId) {
         if (json.item) {
@@ -429,6 +429,8 @@ export default function NoticeWritePage() {
         } else {
           await mutate(`/api/boards/${goId}`);
         }
+
+        await mutate((key) => typeof key === 'string' && key.startsWith('/api/boards?type=notice'));
         showSuccessToast(editId ? '공지사항이 수정되었습니다.' : '공지사항이 등록되었습니다.');
 
         router.replace(`/board/notice/${goId}`);
@@ -436,7 +438,10 @@ export default function NoticeWritePage() {
         return;
       }
 
-      window.location.href = '/board/notice';
+      await mutate((key) => typeof key === 'string' && key.startsWith('/api/boards?type=notice'));
+      showSuccessToast(editId ? '공지사항이 수정되었습니다.' : '공지사항이 등록되었습니다.');
+      router.push('/board/notice');
+      router.refresh();
     } catch (e: any) {
       showErrorToast(e?.message || '저장 중 오류가 발생했습니다.');
     } finally {
