@@ -22,7 +22,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     items: [
       { title: '운영함(통합)', href: '/admin/operations', icon: Inbox },
       { title: '대시보드', href: '/admin/dashboard', icon: LayoutDashboard },
-      { title: '알림 관리', href: '/admin/notifications', icon: Bell },
+      { title: '알림 발송함', href: '/admin/notifications/outbox', icon: Bell },
       { title: '주문·신청 관리', href: '/admin/orders', icon: PackageSearch, key: 'orders' },
       { title: '상품 관리', href: '/admin/products', icon: Boxes, key: 'products' },
       { title: '대여(라켓) 관리', href: '/admin/rentals', icon: ClipboardList },

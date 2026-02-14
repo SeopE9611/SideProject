@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 
-import { ArrowLeft, Copy, Loader2, RefreshCcw, Send } from 'lucide-react';
+import { ArrowLeft, Copy, Loader2, RefreshCcw, Send, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -171,11 +171,29 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
   return (
     <div className="mx-auto w-full max-w-5xl p-4 md:p-6 space-y-4">
+      <div className="space-y-2">
+        <nav className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground" aria-label="알림 상세 breadcrumb">
+          <Link href="/admin/notifications/outbox" className="font-medium">알림 발송함</Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <span>상세</span>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <span className="font-medium text-foreground">{id}</span>
+        </nav>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/admin/notifications/outbox">목록</Link>
+          </Button>
+          <Button variant="outline" size="sm" className="border-border/40" disabled>
+            상세
+          </Button>
+        </div>
+      </div>
+
       {/* 상단 헤더 */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" className="border-border/40">
-            <Link href="/admin/notifications" className="inline-flex items-center gap-2">
+            <Link href="/admin/notifications/outbox" className="inline-flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               목록으로
             </Link>
