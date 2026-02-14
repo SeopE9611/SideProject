@@ -21,6 +21,7 @@ import { FiltersSection } from '@/app/admin/users/_components/users-client/Filte
 import { TableSection } from '@/app/admin/users/_components/users-client/TableSection';
 import { BulkActionsSection } from '@/app/admin/users/_components/users-client/BulkActionsSection';
 import { DialogsSection } from '@/app/admin/users/_components/users-client/DialogsSection';
+import { UsersKpiCards } from '@/app/admin/users/_components/users-client/UsersKpiCards';
 import { useUserList } from '@/app/admin/users/_hooks/useUserList';
 import type { AdminErrorPayload, UserCleanupPreviewCandidateDto } from '@/types/admin/users';
 
@@ -143,7 +144,7 @@ export default function UsersClient() {
   // 로그인 필터 상태: 전체 / 미로그인 / 최근 30,90일
   const [loginFilter, setLoginFilter] = useState<'all' | 'nologin' | 'recent30' | 'recent90'>('all');
 
-  const { data, isLoading, mutate, rows, total } = useUserList({
+  const { data, error, isLoading, mutate, rows, total } = useUserList({
     page,
     limit,
     searchQuery,
@@ -179,25 +180,23 @@ export default function UsersClient() {
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const pageItems = buildPageItems(page, totalPages);
 
-  // KPI 카드 값 주입
-  useEffect(() => {
-    if (!data) return;
-    const q = (sel: string) => document.querySelector(sel);
-    const c = (data as UsersListPayload | undefined)?.counters;
+  const kpiValues = useMemo(() => {
+    const counters = (data as UsersListPayload | undefined)?.counters;
 
-    // data.counters가 있으면 그 값으로, 없으면 fallback(현 페이지 집계)
-    const active = c?.active ?? rows.filter((u) => !u.isDeleted && !u.isSuspended).length;
-    const deleted = c?.deleted ?? rows.filter((u) => u.isDeleted).length;
-    const admins = c?.admins ?? rows.filter((u) => u.role === 'admin').length;
-    const suspended = c?.suspended ?? rows.filter((u) => u.isSuspended && !u.isDeleted).length;
-    const totalVal = c?.total ?? total;
-
-    (q('#kpi-total') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(totalVal)));
-    (q('#kpi-active') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(active)));
-    (q('#kpi-deleted') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(deleted)));
-    (q('#kpi-admins') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(admins)));
-    (q('#kpi-suspended') as HTMLElement | null)?.replaceChildren(document.createTextNode(String(suspended)));
+    return {
+      active: counters?.active ?? rows.filter((u) => !u.isDeleted && !u.isSuspended).length,
+      deleted: counters?.deleted ?? rows.filter((u) => u.isDeleted).length,
+      admins: counters?.admins ?? rows.filter((u) => u.role === 'admin').length,
+      suspended: counters?.suspended ?? rows.filter((u) => u.isSuspended && !u.isDeleted).length,
+      total: counters?.total ?? total,
+    };
   }, [data, rows, total]);
+
+  const kpiStatus = useMemo<'loading' | 'error' | 'ready'>(() => {
+    if (isLoading && !data) return 'loading';
+    if (error) return 'error';
+    return 'ready';
+  }, [data, error, isLoading]);
 
   // 선택
   const isAllSelected = rows.length > 0 && selectedUsers.length === rows.length;
@@ -463,6 +462,8 @@ export default function UsersClient() {
 
   return (
     <AuthGuard>
+      <UsersKpiCards status={kpiStatus} values={kpiValues} />
+
       <FiltersSection>{/* 검색/필터 바 */}
       <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl p-4 sm:p-6 mb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
