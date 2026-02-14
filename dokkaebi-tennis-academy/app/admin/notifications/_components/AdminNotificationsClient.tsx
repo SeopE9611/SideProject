@@ -190,7 +190,9 @@ export default function AdminNotificationsClient() {
     [mutate]
   );
 
+  const isServerCountsSupported = Boolean(data?.counts);
   const stats = useMemo(() => {
+    if (data?.counts) return data.counts;
     if (!data?.items) return { queued: 0, failed: 0, sent: 0 };
     return {
       queued: data.items.filter((item) => item.status === 'queued').length,
@@ -219,12 +221,21 @@ export default function AdminNotificationsClient() {
         </div>
       </div>
 
+      <div className="flex items-center gap-2">
+        <Badge variant={isServerCountsSupported ? 'secondary' : 'outline'}>
+          {isServerCountsSupported ? '전체 결과 기준 집계' : '현재 페이지 기준'}
+        </Badge>
+        <span className="text-xs text-muted-foreground">
+          KPI 카드는 상태별 건수를 보여주며, 목록은 페이지당 {LIMIT}건씩 표시됩니다.
+        </span>
+      </div>
+
       <div className="grid gap-5 md:grid-cols-3">
         <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">대기 중</p>
+                <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 대기 상태인 알림 수">대기 중</p>
                 <p className="mt-2 text-3xl font-bold">{stats.queued}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
@@ -238,7 +249,7 @@ export default function AdminNotificationsClient() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">실패</p>
+                <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 실패 상태인 알림 수">실패</p>
                 <p className="mt-2 text-3xl font-bold">{stats.failed}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
@@ -252,7 +263,7 @@ export default function AdminNotificationsClient() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">발송 완료</p>
+                <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 발송 완료 상태인 알림 수">발송 완료</p>
                 <p className="mt-2 text-3xl font-bold">{stats.sent}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10">
@@ -271,7 +282,7 @@ export default function AdminNotificationsClient() {
             </div>
             <div>
               <CardTitle>알림 Outbox</CardTitle>
-              <CardDescription>알림 발송 작업 내역을 조회하고 관리합니다</CardDescription>
+              <CardDescription>알림 발송 작업 내역을 조회하고 관리합니다 (페이지당 최대 10건)</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -445,7 +456,7 @@ export default function AdminNotificationsClient() {
           {rows.length > 0 && (
             <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
               <div className="text-sm text-muted-foreground">
-                총 <span className="font-semibold text-foreground">{total}</span>건 · 페이지 <span className="font-semibold text-foreground">{page}</span> / {totalPages}
+                총 <span className="font-semibold text-foreground">{total}</span>건(현재 필터) · 페이지당 {LIMIT}건 · 페이지 <span className="font-semibold text-foreground">{page}</span> / {totalPages}
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="border-border/40 hover:border-border/60">
