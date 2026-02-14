@@ -74,7 +74,8 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
   const isActive = (href: string) => {
     const path = pathname || '';
 
-    // 대시보드 특별 처리: '/admin' 루트에서도 대시보드를 활성으로 보길 원할 수 있음
+    // 대시보드 특별 처리: '/admin'은 page.tsx에서 '/admin/dashboard'로 즉시 리다이렉트되지만,
+    // 라우팅 전환 중 일시적으로 '/admin' 경로가 보일 수 있어 동일하게 활성 처리
     if (href === '/admin/dashboard') {
       return path === '/admin' || path === '/admin/dashboard' || path.startsWith('/admin/dashboard/');
     }
