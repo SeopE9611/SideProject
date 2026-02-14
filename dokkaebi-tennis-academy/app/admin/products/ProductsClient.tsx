@@ -157,7 +157,7 @@ export default function ProductsClient() {
   const handleDelete = async (id: string) => {
     if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return;
     try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE', credentials: 'include' });
+      const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) {
         const err = await res.json();
         showErrorToast(err.message || '삭제 중 오류가 발생했습니다.');

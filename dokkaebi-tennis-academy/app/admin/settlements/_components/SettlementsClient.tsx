@@ -190,7 +190,7 @@ export default function SettlementsClient() {
   // ──────────────────────────────────────────────────────────
   const createSnapshot = async () => {
     try {
-      await fetch(`/api/settlements/${yyyymm}`, { method: 'POST' });
+      await fetch(`/api/admin/settlements/${yyyymm}`, { method: 'POST' });
       await mutate(); // 최신 데이터 보장
       showSuccessToast(`${yyyymm} 스냅샷 생성 완료`);
     } catch (e) {
@@ -200,7 +200,7 @@ export default function SettlementsClient() {
   };
 
   async function rebuildSnapshot(yyyymm: string) {
-    await fetch(`/api/settlements/${yyyymm}`, { method: 'POST' });
+    await fetch(`/api/admin/settlements/${yyyymm}`, { method: 'POST' });
   }
 
   async function fetchLive() {
@@ -286,7 +286,7 @@ export default function SettlementsClient() {
 
     try {
       setDeleting(true);
-      const res = await fetch('/api/settlements/bulk-delete', {
+      const res = await fetch('/api/admin/settlements/bulk-delete', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -326,7 +326,7 @@ export default function SettlementsClient() {
 
     try {
       setDeleting(true);
-      const res = await fetch(`/api/settlements/${yyyymm}`, { method: 'DELETE', credentials: 'include' });
+      const res = await fetch(`/api/admin/settlements/${yyyymm}`, { method: 'DELETE', credentials: 'include' });
       const json = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string; deleted?: number; message?: string };
 
       if (res.status === 401) {

@@ -309,7 +309,7 @@ export default function UsersClient() {
   const fetchCleanupPreview = async () => {
     setCleanupLoading(true);
     try {
-      const res = await fetch('/api/system/cleanup/preview', { credentials: 'include' });
+      const res = await fetch('/api/admin/system/cleanup/preview', { credentials: 'include' });
       const json = await res.json();
       setCleanupPreview(Array.isArray(json?.candidates) ? json.candidates : []);
     } catch {
@@ -322,7 +322,7 @@ export default function UsersClient() {
   const fetchPurgePreview = async () => {
     setPurgeLoading(true);
     try {
-      const res = await fetch('/api/system/purge/preview', { credentials: 'include' });
+      const res = await fetch('/api/admin/system/purge/preview', { credentials: 'include' });
       const json = await res.json();
       setPurgePreview(Array.isArray(json?.candidates) ? json.candidates : []);
     } catch {
@@ -336,7 +336,7 @@ export default function UsersClient() {
   const confirmCleanup = async () => {
     setCleanupSubmitting(true);
     try {
-      const res = await fetch('/api/system/cleanup', { method: 'DELETE', credentials: 'include' });
+      const res = await fetch('/api/admin/system/cleanup', { method: 'DELETE', credentials: 'include' });
       const json = await res.json();
       if (res.ok) {
         showSuccessToast(`삭제된 계정 수: ${json.deletedCount ?? 0}`);
@@ -356,7 +356,7 @@ export default function UsersClient() {
   const confirmPurge = async () => {
     setPurgeSubmitting(true);
     try {
-      const res = await fetch('/api/system/purge', { method: 'DELETE', credentials: 'include' });
+      const res = await fetch('/api/admin/system/purge', { method: 'DELETE', credentials: 'include' });
       const json = await res.json();
       if (res.ok) {
         showSuccessToast(`완전 삭제된 계정 수: ${json.deletedCount ?? 0}`);
@@ -377,7 +377,7 @@ export default function UsersClient() {
   // 7일 경과 탈퇴 회원 정리(soft-deleted → 완전삭제)
   const handleCleanup = async () => {
     try {
-      const previewRes = await fetch('/api/system/cleanup/preview', {
+      const previewRes = await fetch('/api/admin/system/cleanup/preview', {
         method: 'GET',
         credentials: 'include',
       });
@@ -392,7 +392,7 @@ export default function UsersClient() {
       const previewText = candidates.map((u) => `- ${u.name} (${u.email})`).join('\n');
       if (!window.confirm(`삭제 예정 회원 (${candidates.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
 
-      const res = await fetch('/api/system/cleanup', {
+      const res = await fetch('/api/admin/system/cleanup', {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -412,7 +412,7 @@ export default function UsersClient() {
   // 1년 경과 탈퇴 회원 완전 삭제
   const handlePurge = async () => {
     try {
-      const previewRes = await fetch('/api/system/purge/preview', {
+      const previewRes = await fetch('/api/admin/system/purge/preview', {
         method: 'GET',
         credentials: 'include',
       });
@@ -427,7 +427,7 @@ export default function UsersClient() {
       const previewText = candidates.map((u) => `- ${u.name} (${u.email})`).join('\n');
       if (!window.confirm(`삭제 예정 회원 (${candidates.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
 
-      const res = await fetch('/api/system/purge', {
+      const res = await fetch('/api/admin/system/purge', {
         method: 'DELETE',
         credentials: 'include',
       });

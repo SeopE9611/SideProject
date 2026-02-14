@@ -447,7 +447,7 @@ export default function NewStringPage() {
     setSubmitting(true);
     submitRef.current = true;
     try {
-      const res = await fetch('/api/products', {
+      const res = await fetch('/api/admin/products', {
         // API 겨로
         method: 'POST', // POST 요청
         headers: {
