@@ -73,6 +73,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
   const [field, setField] = useState<'all' | 'title' | 'content' | 'title_content'>(initialField);
 
   const [page, setPage] = useState(initialPage);
+  const [pageJump, setPageJump] = useState('');
   const limit = 20;
   // 목록 불러오기 (검색 파라미터 포함)
   const qs = new URLSearchParams({
@@ -123,6 +124,21 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
   const items: NoticeItem[] = data?.items ?? initialItems ?? [];
   const total: number = data?.total ?? initialTotal ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const pageStart = Math.max(1, Math.min(page - 1, totalPages - 2));
+  const pageEnd = Math.min(totalPages, pageStart + 2);
+  const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
+
+  const movePage = (nextPage: number) => {
+    setPage(Math.max(1, Math.min(totalPages, nextPage)));
+  };
+
+  const handlePageJump = (e: any) => {
+    e.preventDefault();
+    const parsed = Number.parseInt(pageJump, 10);
+    if (Number.isNaN(parsed)) return;
+    movePage(parsed);
+    setPageJump('');
+  };
 
   const pinnedCount = items.filter((n) => n.isPinned).length;
   const totalViews = items.reduce((sum, n) => sum + (n.viewCount ?? 0), 0);
@@ -279,35 +295,55 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
             </div>
 
             <div className="mt-8 sm:mt-10 flex items-center justify-center">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || isBusy}>
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
+                  <span className="sr-only">첫 페이지</span>
+                  «
+                </Button>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </Button>
-                {Array.from({ length: totalPages })
-                  .map((_, i) => i + 1)
-                  .slice(0, 3)
-                  .map((pageNumber) => (
-                    <Button
-                      key={pageNumber}
-                      variant="outline"
-                      size="sm"
-                      className={pageNumber === page ? 'h-10 w-10 sm:h-12 sm:w-12 bg-blue-600 text-white border-blue-600 text-sm sm:text-base' : 'h-10 w-10 sm:h-12 sm:w-12 bg-white dark:bg-gray-700 text-sm sm:text-base'}
-                      onClick={() => setPage(pageNumber)}
-                      disabled={isBusy}
-                    >
-                      {pageNumber}
-                    </Button>
-                  ))}
+                {visiblePages.map((pageNumber) => (
+                  <Button
+                    key={pageNumber}
+                    variant="outline"
+                    size="sm"
+                    className={pageNumber === page ? 'h-10 w-10 sm:h-12 sm:w-12 bg-blue-600 text-white border-blue-600 text-sm sm:text-base' : 'h-10 w-10 sm:h-12 sm:w-12 bg-white dark:bg-gray-700 text-sm sm:text-base'}
+                    onClick={() => movePage(pageNumber)}
+                    disabled={isBusy}
+                  >
+                    {pageNumber}
+                  </Button>
+                ))}
 
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages || isBusy}>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(page + 1)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">다음 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </Button>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700 h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
+                  <span className="sr-only">마지막 페이지</span>
+                  »
+                </Button>
+
+                <form onSubmit={handlePageJump} className="ml-1 flex items-center gap-1">
+                  <input
+                    type="number"
+                    min={1}
+                    max={totalPages}
+                    value={pageJump}
+                    onChange={(e) => setPageJump(e.target.value)}
+                    placeholder="페이지"
+                    className="h-10 w-20 sm:h-12 rounded-md border border-gray-300 bg-white px-2 text-xs sm:text-sm dark:border-gray-700 dark:bg-gray-900"
+                  />
+                  <Button type="submit" variant="outline" size="sm" className="h-10 sm:h-12 px-2 bg-white dark:bg-gray-700" disabled={isBusy}>
+                    이동
+                  </Button>
+                </form>
               </div>
             </div>
           </CardContent>

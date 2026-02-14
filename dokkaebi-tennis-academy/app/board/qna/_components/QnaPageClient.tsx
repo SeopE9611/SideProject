@@ -90,6 +90,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
   const [category, setCategory] = useState<string>(initialCategory);
   const [answerFilter, setAnswerFilter] = useState<'all' | 'waiting' | 'completed'>(initialAnswerFilter);
   const [page, setPage] = useState(initialPage);
+  const [pageJump, setPageJump] = useState('');
   const limit = 20;
 
   // 입력용/제출용도 초기값 동기화
@@ -258,6 +259,23 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
 
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const pageStart = Math.max(1, Math.min(page - 1, totalPages - 2));
+  const pageEnd = Math.min(totalPages, pageStart + 2);
+  const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
+  const movePage = (nextPage: number) => {
+    const safePage = Math.max(1, Math.min(totalPages, nextPage));
+    setUiLoading(true);
+    setPage(safePage);
+    pushUrl({ page: safePage, category, answerFilter, keyword, field });
+  };
+
+  const handlePageJump = (e: any) => {
+    e.preventDefault();
+    const parsed = Number.parseInt(pageJump, 10);
+    if (Number.isNaN(parsed)) return;
+    movePage(parsed);
+    setPageJump('');
+  };
   const answeredCount = serverItems.filter((q) => !!q.answer).length;
   const waitingCount = serverItems.filter((q) => !q.answer).length;
   const totalViews = serverItems.reduce((sum, q) => sum + (q.viewCount ?? 0), 0);
@@ -578,62 +596,56 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
             </div>
 
             <div className="mt-8 flex items-center justify-center">
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-white dark:bg-gray-700"
-                  onClick={() => {
-                    const nextPage = Math.max(1, page - 1);
-                    setUiLoading(true);
-                    setPage(nextPage);
-                    pushUrl({ page: nextPage, category, answerFilter, keyword, field });
-                  }}
-                  disabled={page <= 1 || isBusy}
-                >
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
+                  <span className="sr-only">첫 페이지</span>
+                  «
+                </Button>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </Button>
 
-                {Array.from({ length: totalPages })
-                  .map((_, i) => i + 1)
-                  .slice(0, 3)
-                  .map((pageNumber) => (
-                    <Button
-                      key={pageNumber}
-                      variant="outline"
-                      size="sm"
-                      className={pageNumber === page ? 'h-10 w-10 bg-teal-600 text-white border-teal-600' : 'h-10 w-10 bg-white dark:bg-gray-700'}
-                      onClick={() => {
-                        setUiLoading(true);
-                        setPage(pageNumber);
-                        pushUrl({ page: pageNumber, category, answerFilter, keyword, field });
-                      }}
-                      disabled={isBusy}
-                    >
-                      {pageNumber}
-                    </Button>
-                  ))}
+                {visiblePages.map((pageNumber) => (
+                  <Button
+                    key={pageNumber}
+                    variant="outline"
+                    size="sm"
+                    className={pageNumber === page ? 'h-10 w-10 bg-teal-600 text-white border-teal-600' : 'h-10 w-10 bg-white dark:bg-gray-700'}
+                    onClick={() => movePage(pageNumber)}
+                    disabled={isBusy}
+                  >
+                    {pageNumber}
+                  </Button>
+                ))}
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="bg-white dark:bg-gray-700"
-                  onClick={() => {
-                    const nextPage = Math.min(totalPages, page + 1);
-                    setUiLoading(true);
-                    setPage(nextPage);
-                    pushUrl({ page: nextPage, category, answerFilter, keyword, field });
-                  }}
-                  disabled={page >= totalPages || isBusy}
-                >
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(page + 1)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">다음 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </Button>
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
+                  <span className="sr-only">마지막 페이지</span>
+                  »
+                </Button>
+
+                <form onSubmit={handlePageJump} className="ml-1 flex items-center gap-1">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={totalPages}
+                    value={pageJump}
+                    onChange={(e) => setPageJump(e.target.value)}
+                    placeholder="페이지"
+                    className="h-10 w-20"
+                  />
+                  <Button type="submit" variant="outline" size="sm" className="h-10 px-2 bg-white dark:bg-gray-700" disabled={isBusy}>
+                    이동
+                  </Button>
+                </form>
               </div>
             </div>
           </CardContent>

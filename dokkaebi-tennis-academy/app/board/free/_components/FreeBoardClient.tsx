@@ -101,6 +101,7 @@ function ErrorBox({ message = '자유 게시판을 불러오는 중 오류가 �
 export default function FreeBoardClient() {
   // 페이지 상태
   const [page, setPage] = useState(1);
+  const [pageJump, setPageJump] = useState('');
 
   // 정렬 상태
   const [sort, setSort] = useState<'latest' | 'views' | 'likes'>('latest');
@@ -245,6 +246,21 @@ export default function FreeBoardClient() {
 
   // 전체 페이지 수 계산
   const totalPages = Math.max(1, Math.ceil(total / PAGE_LIMIT));
+  const pageStart = Math.max(1, Math.min(page - 1, totalPages - 2));
+  const pageEnd = Math.min(totalPages, pageStart + 2);
+  const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
+
+  const movePage = (nextPage: number) => {
+    setPage(Math.max(1, Math.min(totalPages, nextPage)));
+  };
+
+  const handlePageJump = (e: any) => {
+    e.preventDefault();
+    const parsed = Number.parseInt(pageJump, 10);
+    if (Number.isNaN(parsed)) return;
+    movePage(parsed);
+    setPageJump('');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -640,26 +656,27 @@ export default function FreeBoardClient() {
                     </form>
 
                     <div className="flex items-center justify-center">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(1)} disabled={page <= 1} type="button">
+                          <span className="sr-only">첫 페이지</span>
+                          «
+                        </Button>
                         {/* 이전 페이지 */}
-                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} type="button">
+                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(page - 1)} disabled={page <= 1} type="button">
                           <span className="sr-only">이전 페이지</span>
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                             <polyline points="15 18 9 12 15 6" />
                           </svg>
                         </Button>
 
-                        {/* 페이지 번호들: 최대 3개 정도만 노출 */}
-                        {Array.from({ length: totalPages })
-                          .map((_, i) => i + 1)
-                          .slice(0, 3)
-                          .map((pageNumber) => (
+                        {/* 페이지 번호들: 현재 페이지 중심 3개 노출 */}
+                        {visiblePages.map((pageNumber) => (
                             <Button
                               key={pageNumber}
                               variant="outline"
                               size="sm"
                               className={pageNumber === page ? 'h-10 w-10 bg-blue-600 text-white border-blue-600' : 'h-10 w-10 bg-white dark:bg-gray-700'}
-                              onClick={() => setPage(pageNumber)}
+                              onClick={() => movePage(pageNumber)}
                               type="button"
                             >
                               {pageNumber}
@@ -667,12 +684,31 @@ export default function FreeBoardClient() {
                           ))}
 
                         {/* 다음 페이지 */}
-                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} type="button">
+                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(page + 1)} disabled={page >= totalPages} type="button">
                           <span className="sr-only">다음 페이지</span>
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                             <polyline points="9 18 15 12 9 6" />
                           </svg>
                         </Button>
+                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(totalPages)} disabled={page >= totalPages} type="button">
+                          <span className="sr-only">마지막 페이지</span>
+                          »
+                        </Button>
+
+                        <form onSubmit={handlePageJump} className="ml-1 flex items-center gap-1">
+                          <input
+                            type="number"
+                            min={1}
+                            max={totalPages}
+                            value={pageJump}
+                            onChange={(e) => setPageJump(e.target.value)}
+                            placeholder="페이지"
+                            className="h-10 w-20 rounded-md border border-gray-300 bg-white px-2 text-xs dark:border-gray-700 dark:bg-gray-900"
+                          />
+                          <Button type="submit" variant="outline" size="sm" className="h-10 px-2 bg-white dark:bg-gray-700">
+                            이동
+                          </Button>
+                        </form>
                       </div>
                     </div>
                   </div>
