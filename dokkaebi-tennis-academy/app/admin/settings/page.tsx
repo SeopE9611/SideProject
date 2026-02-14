@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { Save, Send, Globe, User, Mail, CreditCard, Bell, Shield, Share2, Languages, Database } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -14,113 +13,139 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import {
+  defaultEmailSettings,
+  defaultPaymentSettings,
+  defaultSiteSettings,
+  defaultUserSettings,
+  emailSettingsSchema,
+  paymentSettingsSchema,
+  siteSettingsSchema,
+  type EmailSettings,
+  type PaymentSettings,
+  type SiteSettings,
+  type UserSettings,
+  userSettingsSchema,
+} from '@/lib/admin-settings';
 
-// 사이트 설정 스키마
-const siteSettingsSchema = z.object({
-  siteName: z.string().min(2, { message: '사이트 이름은 2자 이상이어야 합니다.' }),
-  siteDescription: z.string().min(10, { message: '사이트 설명은 10자 이상이어야 합니다.' }),
-  contactEmail: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
-  contactPhone: z.string().min(10, { message: '유효한 전화번호를 입력해주세요.' }),
-  address: z.string().min(5, { message: '주소는 5자 이상이어야 합니다.' }),
-  logoUrl: z.string().url({ message: '유효한 URL을 입력해주세요.' }).optional().or(z.literal('')),
-  faviconUrl: z.string().url({ message: '유효한 URL을 입력해주세요.' }).optional().or(z.literal('')),
-});
+type SettingsTab = 'site' | 'user' | 'email' | 'payment';
+type AuthErrorType = 'unauthorized' | 'forbidden' | null;
 
-// 사용자 설정 스키마
-const userSettingsSchema = z.object({
-  allowRegistration: z.boolean(),
-  requireEmailVerification: z.boolean(),
-  defaultUserRole: z.string(),
-  minimumPasswordLength: z.number().min(8).max(32),
-  allowSocialLogin: z.boolean(),
-  sessionTimeout: z.number().min(15).max(1440),
-});
+type TabErrorState = {
+  type: AuthErrorType;
+  message: string;
+};
 
-// 이메일 설정 스키마
-const emailSettingsSchema = z.object({
-  smtpHost: z.string().min(1, { message: 'SMTP 호스트를 입력해주세요.' }),
-  smtpPort: z.number().min(1).max(65535),
-  smtpUsername: z.string().min(1, { message: 'SMTP 사용자 이름을 입력해주세요.' }),
-  smtpPassword: z.string().min(1, { message: 'SMTP 비밀번호를 입력해주세요.' }),
-  smtpEncryption: z.string(),
-  senderName: z.string().min(1, { message: '발신자 이름을 입력해주세요.' }),
-  senderEmail: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
-});
-
-// 결제 설정 스키마
-const paymentSettingsSchema = z.object({
-  currency: z.string(),
-  taxRate: z.number().min(0).max(100),
-  enablePaypal: z.boolean(),
-  enableCreditCard: z.boolean(),
-  enableBankTransfer: z.boolean(),
-  paypalClientId: z.string().optional().or(z.literal('')),
-  paypalSecret: z.string().optional().or(z.literal('')),
-  stripePublishableKey: z.string().optional().or(z.literal('')),
-  stripeSecretKey: z.string().optional().or(z.literal('')),
-});
+const AUTH_ERROR_MESSAGES: Record<Exclude<AuthErrorType, null>, string> = {
+  unauthorized: '로그인이 만료되었습니다. 다시 로그인 후 시도해주세요.',
+  forbidden: '관리자 권한이 없어 이 설정을 변경할 수 없습니다.',
+};
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('site');
+  const [activeTab, setActiveTab] = useState<SettingsTab>('site');
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [tabErrors, setTabErrors] = useState<Record<SettingsTab, TabErrorState>>({
+    site: { type: null, message: '' },
+    user: { type: null, message: '' },
+    email: { type: null, message: '' },
+    payment: { type: null, message: '' },
+  });
+  const [emailMeta, setEmailMeta] = useState({ hasSmtpPassword: false });
+  const [paymentMeta, setPaymentMeta] = useState({ hasPaypalSecret: false, hasStripeSecretKey: false });
 
-  // 사이트 설정 폼
-  const siteForm = useForm<z.infer<typeof siteSettingsSchema>>({
+  const siteForm = useForm<SiteSettings>({
     resolver: zodResolver(siteSettingsSchema),
-    defaultValues: {
-      siteName: '도깨비 테니스 아카데미',
-      siteDescription: '최고의 테니스 교육과 시설을 제공하는 프리미엄 테니스 아카데미',
-      contactEmail: 'contact@dokkaebi-tennis.com',
-      contactPhone: '02-123-4567',
-      address: '서울특별시 강남구 테니스로 123',
-      logoUrl: 'https://example.com/logo.png',
-      faviconUrl: 'https://example.com/favicon.ico',
-    },
+    defaultValues: defaultSiteSettings,
   });
 
-  // 사용자 설정 폼
-  const userForm = useForm<z.infer<typeof userSettingsSchema>>({
+  const userForm = useForm<UserSettings>({
     resolver: zodResolver(userSettingsSchema),
-    defaultValues: {
-      allowRegistration: true,
-      requireEmailVerification: true,
-      defaultUserRole: 'member',
-      minimumPasswordLength: 8,
-      allowSocialLogin: true,
-      sessionTimeout: 120,
-    },
+    defaultValues: defaultUserSettings,
   });
 
-  // 이메일 설정 폼
-  const emailForm = useForm<z.infer<typeof emailSettingsSchema>>({
+  const emailForm = useForm<EmailSettings>({
     resolver: zodResolver(emailSettingsSchema),
-    defaultValues: {
-      smtpHost: 'smtp.example.com',
-      smtpPort: 587,
-      smtpUsername: 'noreply@dokkaebi-tennis.com',
-      smtpPassword: 'password',
-      smtpEncryption: 'tls',
-      senderName: '도깨비 테니스 아카데미',
-      senderEmail: 'noreply@dokkaebi-tennis.com',
-    },
+    defaultValues: defaultEmailSettings,
   });
 
-  // 결제 설정 폼
-  const paymentForm = useForm<z.infer<typeof paymentSettingsSchema>>({
+  const paymentForm = useForm<PaymentSettings>({
     resolver: zodResolver(paymentSettingsSchema),
-    defaultValues: {
-      currency: 'KRW',
-      taxRate: 10,
-      enablePaypal: true,
-      enableCreditCard: true,
-      enableBankTransfer: true,
-      paypalClientId: '',
-      paypalSecret: '',
-      stripePublishableKey: '',
-      stripeSecretKey: '',
-    },
+    defaultValues: defaultPaymentSettings,
   });
+
+  const parseTabError = async (res: Response) => {
+    const payload = await res.json().catch(() => ({}));
+    const message = payload?.message || '요청 처리에 실패했습니다.';
+
+    if (res.status === 401) return { type: 'unauthorized' as const, message: AUTH_ERROR_MESSAGES.unauthorized };
+    if (res.status === 403) return { type: 'forbidden' as const, message: AUTH_ERROR_MESSAGES.forbidden };
+    return { type: null, message };
+  };
+
+  const setTabError = (tab: SettingsTab, next: TabErrorState) => {
+    setTabErrors((prev) => ({ ...prev, [tab]: next }));
+  };
+
+  const clearTabError = (tab: SettingsTab) => {
+    setTabError(tab, { type: null, message: '' });
+  };
+
+  const loadTab = async (tab: SettingsTab, endpoint: string, onSuccess: (json: any) => void) => {
+    const res = await fetch(endpoint, { method: 'GET', credentials: 'include', cache: 'no-store' });
+    if (!res.ok) {
+      const nextError = await parseTabError(res);
+      setTabError(tab, nextError);
+      throw new Error(nextError.message);
+    }
+    clearTabError(tab);
+    const json = await res.json();
+    onSuccess(json);
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      setIsBootstrapping(true);
+      try {
+        await Promise.all([
+          loadTab('site', '/api/admin/settings/site', (json) => !cancelled && siteForm.reset(json.data ?? defaultSiteSettings)),
+          loadTab('user', '/api/admin/settings/user', (json) => !cancelled && userForm.reset(json.data ?? defaultUserSettings)),
+          loadTab('email', '/api/admin/settings/email', (json) => {
+            if (cancelled) return;
+            emailForm.reset(json.data ?? defaultEmailSettings);
+            setEmailMeta({ hasSmtpPassword: Boolean(json?.meta?.hasSmtpPassword) });
+          }),
+          loadTab('payment', '/api/admin/settings/payment', (json) => {
+            if (cancelled) return;
+            paymentForm.reset(json.data ?? defaultPaymentSettings);
+            setPaymentMeta({
+              hasPaypalSecret: Boolean(json?.meta?.hasPaypalSecret),
+              hasStripeSecretKey: Boolean(json?.meta?.hasStripeSecretKey),
+            });
+          }),
+        ]);
+      } catch {
+        showErrorToast('일부 설정을 불러오지 못했습니다. 권한 또는 서버 상태를 확인해주세요.');
+      } finally {
+        if (!cancelled) setIsBootstrapping(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const renderTabError = (tab: SettingsTab) => {
+    const state = tabErrors[tab];
+    if (!state?.message) return null;
+
+    const tone = state.type ? 'border-amber-300 bg-amber-50 text-amber-800' : 'border-red-300 bg-red-50 text-red-700';
+    return <div className={`mb-4 rounded-lg border px-4 py-3 text-sm font-medium ${tone}`}>{state.message}</div>;
+  };
 
   /**
    * -----------------------------
@@ -147,39 +172,88 @@ export default function SettingsPage() {
 
   // 탭 전환(내부 UI 이동) - 현재 탭이 dirty면 confirm
   const handleTabChange = (nextTab: string) => {
+    if (!['site', 'user', 'email', 'payment'].includes(nextTab)) return;
     if (nextTab === activeTab) return;
+
     const currentDirty = (dirtyByTab as Record<string, boolean>)[activeTab] ?? false;
     if (currentDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
-    setActiveTab(nextTab);
+
+    setActiveTab(nextTab as SettingsTab);
   };
 
-  // 폼 제출 핸들러
-  const onSubmitSiteSettings = (data: z.infer<typeof siteSettingsSchema>) => {
-    // console.log('사이트 설정 저장:', data);
-    showSuccessToast('사이트 설정이 저장되었습니다.');
-    siteForm.reset(data);
+  const saveTab = async (tab: SettingsTab, endpoint: string, payload: unknown) => {
+    const res = await fetch(endpoint, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const nextError = await parseTabError(res);
+      setTabError(tab, nextError);
+      throw new Error(nextError.message);
+    }
+
+    clearTabError(tab);
+    return res.json();
   };
 
-  const onSubmitUserSettings = (data: z.infer<typeof userSettingsSchema>) => {
-    // console.log('사용자 설정 저장:', data);
-    showSuccessToast('사용자 설정이 저장되었습니다.');
-    userForm.reset(data);
+  const onSubmitSiteSettings = async (data: SiteSettings) => {
+    try {
+      const json = await saveTab('site', '/api/admin/settings/site', data);
+      const nextData = json.data ?? data;
+      siteForm.reset(nextData);
+      showSuccessToast('사이트 설정이 저장되었습니다.');
+    } catch (error: any) {
+      showErrorToast(error?.message || '사이트 설정 저장에 실패했습니다.');
+    }
   };
 
-  const onSubmitEmailSettings = (data: z.infer<typeof emailSettingsSchema>) => {
-    // console.log('이메일 설정 저장:', data);
-    showSuccessToast('이메일 설정이 저장되었습니다.');
-    emailForm.reset(data);
+  const onSubmitUserSettings = async (data: UserSettings) => {
+    try {
+      const json = await saveTab('user', '/api/admin/settings/user', data);
+      const nextData = json.data ?? data;
+      userForm.reset(nextData);
+      showSuccessToast('사용자 설정이 저장되었습니다.');
+    } catch (error: any) {
+      showErrorToast(error?.message || '사용자 설정 저장에 실패했습니다.');
+    }
   };
 
-  const onSubmitPaymentSettings = (data: z.infer<typeof paymentSettingsSchema>) => {
-    // console.log('결제 설정 저장:', data);
-    showSuccessToast('결제 설정이 저장되었습니다.');
-    paymentForm.reset(data);
+  const onSubmitEmailSettings = async (data: EmailSettings) => {
+    try {
+      const json = await saveTab('email', '/api/admin/settings/email', data);
+      const nextData = json.data ?? data;
+      emailForm.reset(nextData);
+      setEmailMeta({ hasSmtpPassword: Boolean(json?.meta?.hasSmtpPassword) });
+      showSuccessToast('이메일 설정이 저장되었습니다.');
+    } catch (error: any) {
+      showErrorToast(error?.message || '이메일 설정 저장에 실패했습니다.');
+    }
+  };
+
+  const onSubmitPaymentSettings = async (data: PaymentSettings) => {
+    try {
+      const json = await saveTab('payment', '/api/admin/settings/payment', data);
+      const nextData = json.data ?? data;
+      paymentForm.reset(nextData);
+      setPaymentMeta({
+        hasPaypalSecret: Boolean(json?.meta?.hasPaypalSecret),
+        hasStripeSecretKey: Boolean(json?.meta?.hasStripeSecretKey),
+      });
+      showSuccessToast('결제 설정이 저장되었습니다.');
+    } catch (error: any) {
+      showErrorToast(error?.message || '결제 설정 저장에 실패했습니다.');
+    }
   };
 
   // 테스트 이메일 발송
   const sendTestEmail = () => {
+    if (!emailMeta.hasSmtpPassword && !emailForm.watch('smtpPassword')) {
+      showErrorToast('SMTP 비밀번호를 먼저 등록해주세요.');
+      return;
+    }
     showSuccessToast('테스트 이메일이 발송되었습니다.');
   };
 
@@ -199,6 +273,7 @@ export default function SettingsPage() {
 
           {/* 설정 탭 */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+            {isBootstrapping && <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">설정값을 불러오는 중입니다...</div>}
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-700/60 p-2">
               <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-1 bg-transparent h-auto p-0">
                 <TabsTrigger
@@ -274,6 +349,7 @@ export default function SettingsPage() {
                   <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">사이트 설정</CardTitle>
                   <CardDescription className="text-slate-600 dark:text-slate-400">웹사이트의 기본 정보와 외관을 설정합니다.</CardDescription>
                 </CardHeader>
+                {renderTabError('site')}
                 <form onSubmit={siteForm.handleSubmit(onSubmitSiteSettings)}>
                   <CardContent className="space-y-6 pt-6">
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -357,7 +433,7 @@ export default function SettingsPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="bg-slate-50/50 dark:bg-slate-700/50 border-t border-slate-100 dark:border-slate-700">
-                    <Button type="submit" className="ml-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200">
+                    <Button disabled={isBootstrapping || siteForm.formState.isSubmitting} type="submit" className="ml-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200">
                       <Save className="mr-2 h-4 w-4" />
                       설정 저장
                     </Button>
@@ -373,6 +449,7 @@ export default function SettingsPage() {
                   <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">사용자 설정</CardTitle>
                   <CardDescription className="text-slate-600 dark:text-slate-400">사용자 계정 및 인증 관련 설정을 관리합니다.</CardDescription>
                 </CardHeader>
+                {renderTabError('user')}
                 <form onSubmit={userForm.handleSubmit(onSubmitUserSettings)}>
                   <CardContent className="space-y-6 pt-6">
                     <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-slate-50 to-blue-50/30 border border-slate-200/60 dark:from-slate-700 dark:to-blue-700/30 dark:border-slate-600">
@@ -409,7 +486,7 @@ export default function SettingsPage() {
                       <Label htmlFor="defaultUserRole" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                         기본 사용자 역할
                       </Label>
-                      <Select value={userForm.watch('defaultUserRole')} onValueChange={(value) => userForm.setValue('defaultUserRole', value, { shouldDirty: true })}>
+                      <Select value={userForm.watch('defaultUserRole')} onValueChange={(value) => userForm.setValue('defaultUserRole', value as UserSettings['defaultUserRole'], { shouldDirty: true })}>
                         <SelectTrigger id="defaultUserRole" className="border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:bg-slate-700 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20">
                           <SelectValue placeholder="역할 선택" />
                         </SelectTrigger>
@@ -466,7 +543,7 @@ export default function SettingsPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="bg-slate-50/50 dark:bg-slate-700/50 border-t border-slate-100 dark:border-slate-700">
-                    <Button type="submit" className="ml-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200">
+                    <Button disabled={isBootstrapping || userForm.formState.isSubmitting} type="submit" className="ml-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200">
                       <Save className="mr-2 h-4 w-4" />
                       설정 저장
                     </Button>
@@ -482,6 +559,7 @@ export default function SettingsPage() {
                   <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">이메일 설정</CardTitle>
                   <CardDescription className="text-slate-600 dark:text-slate-400">이메일 발송을 위한 SMTP 설정을 관리합니다.</CardDescription>
                 </CardHeader>
+                {renderTabError('email')}
                 <form onSubmit={emailForm.handleSubmit(onSubmitEmailSettings)}>
                   <CardContent className="space-y-6 pt-6">
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -529,10 +607,12 @@ export default function SettingsPage() {
                         <Input
                           id="smtpPassword"
                           type="password"
+                          placeholder={emailMeta.hasSmtpPassword ? '기존 비밀번호 유지 중 (변경 시에만 입력)' : 'SMTP 비밀번호 입력'}
                           {...emailForm.register('smtpPassword')}
                           className="border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:bg-slate-700 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                         />
                         {emailForm.formState.errors.smtpPassword && <p className="text-sm text-red-600 font-medium">{emailForm.formState.errors.smtpPassword.message}</p>}
+                        {emailMeta.hasSmtpPassword && !emailForm.watch('smtpPassword') && <p className="text-xs text-slate-500">비워두면 기존 SMTP 비밀번호를 유지합니다.</p>}
                       </div>
                     </div>
 
@@ -540,7 +620,7 @@ export default function SettingsPage() {
                       <Label htmlFor="smtpEncryption" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                         SMTP 암호화
                       </Label>
-                      <Select value={emailForm.watch('smtpEncryption')} onValueChange={(value) => emailForm.setValue('smtpEncryption', value, { shouldDirty: true })}>
+                      <Select value={emailForm.watch('smtpEncryption')} onValueChange={(value) => emailForm.setValue('smtpEncryption', value as EmailSettings['smtpEncryption'], { shouldDirty: true })}>
                         <SelectTrigger id="smtpEncryption" className="border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:bg-slate-700 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20">
                           <SelectValue placeholder="암호화 방식 선택" />
                         </SelectTrigger>
@@ -588,7 +668,7 @@ export default function SettingsPage() {
                       <Send className="mr-2 h-4 w-4" />
                       테스트 이메일 발송
                     </Button>
-                    <Button type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200">
+                    <Button disabled={isBootstrapping || emailForm.formState.isSubmitting} type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200">
                       <Save className="mr-2 h-4 w-4" />
                       설정 저장
                     </Button>
@@ -604,6 +684,7 @@ export default function SettingsPage() {
                   <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">결제 설정</CardTitle>
                   <CardDescription className="text-slate-600 dark:text-slate-400">결제 방식 및 통화, 세금 설정을 관리합니다.</CardDescription>
                 </CardHeader>
+                {renderTabError('payment')}
                 <form onSubmit={paymentForm.handleSubmit(onSubmitPaymentSettings)}>
                   <CardContent className="space-y-6 pt-6">
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -612,7 +693,7 @@ export default function SettingsPage() {
                           통화
                         </Label>
 
-                        <Select value={paymentForm.watch('currency')} onValueChange={(value) => paymentForm.setValue('currency', value, { shouldDirty: true })}>
+                        <Select value={paymentForm.watch('currency')} onValueChange={(value) => paymentForm.setValue('currency', value as PaymentSettings['currency'], { shouldDirty: true })}>
                           <SelectTrigger id="currency" className="border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:bg-slate-700 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20">
                             <SelectValue placeholder="통화 선택" />
                           </SelectTrigger>
@@ -709,6 +790,7 @@ export default function SettingsPage() {
                             <Input
                               id="paypalSecret"
                               type="password"
+                              placeholder={paymentMeta.hasPaypalSecret ? '기존 시크릿 유지 중 (변경 시에만 입력)' : 'PayPal 시크릿 입력'}
                               {...paymentForm.register('paypalSecret')}
                               className="border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:bg-slate-700 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                             />
@@ -738,6 +820,7 @@ export default function SettingsPage() {
                             <Input
                               id="stripeSecretKey"
                               type="password"
+                              placeholder={paymentMeta.hasStripeSecretKey ? '기존 시크릿 유지 중 (변경 시에만 입력)' : 'Stripe 시크릿 키 입력'}
                               {...paymentForm.register('stripeSecretKey')}
                               className="border-slate-300 focus:border-blue-500 focus:ring-blue-500/20 dark:bg-slate-700 dark:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                             />
@@ -747,7 +830,7 @@ export default function SettingsPage() {
                     )}
                   </CardContent>
                   <CardFooter className="bg-slate-50/50 dark:bg-slate-700/50 border-t border-slate-100 dark:border-slate-700">
-                    <Button type="submit" className="ml-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200">
+                    <Button disabled={isBootstrapping || paymentForm.formState.isSubmitting} type="submit" className="ml-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200">
                       <Save className="mr-2 h-4 w-4" />
                       설정 저장
                     </Button>
