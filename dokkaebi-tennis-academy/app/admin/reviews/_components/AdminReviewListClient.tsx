@@ -18,22 +18,23 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Switch } from '@/components/ui/switch';
 import Image from 'next/image';
 import ReviewPhotoDialog from '@/app/reviews/_components/ReviewPhotoDialog';
-type Row = {
-  _id: string;
-  type: 'product' | 'service';
-  subject: string;
-  rating: number;
-  status: 'visible' | 'hidden';
-  content: string;
-  createdAt: string;
-  userEmail?: string;
-  userName?: string;
-  helpfulCount?: number;
-  photos?: string[];
-  isDeleted?: boolean;
-};
+import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from '@/types/admin/reviews';
 
-type Page = { items: Row[]; total: number };
+type Row = AdminReviewListItemDto;
+type Page = AdminReviewsListResponseDto;
+
+function mapApiToViewModel(page: Page | null): Page | null {
+  if (!page) return null;
+  return {
+    total: page.total,
+    items: page.items.map((item) => ({
+      ...item,
+      createdAt: new Date(item.createdAt).toISOString(),
+      photos: Array.isArray(item.photos) ? item.photos : [],
+      helpfulCount: Number(item.helpfulCount ?? 0),
+    })),
+  };
+}
 
 const LIMIT = 10;
 const fetcher = (url: string) =>
@@ -82,7 +83,8 @@ export default function AdminReviewListClient() {
     [qDebounced, status, type, showDeleted]
   );
 
-  const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite<Page>(getKey, fetcher, { revalidateFirstPage: true, revalidateOnFocus: false });
+  const { data: rawData, error, isValidating, size, setSize, mutate } = useSWRInfinite<Page>(getKey, fetcher, { revalidateFirstPage: true, revalidateOnFocus: false });
+  const data = useMemo(() => (rawData ? rawData.map((page) => mapApiToViewModel(page) as Page) : undefined), [rawData]);
   const rows = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
   const hasMore = useMemo(() => (data?.length ? data[data.length - 1].items.length === LIMIT : false), [data]);
 
@@ -90,13 +92,13 @@ export default function AdminReviewListClient() {
   const [detail, setDetail] = useState<Row | null>(null);
 
   // 상세 조회(단건) + 사진 뷰어 상태
-  const [fullDetail, setFullDetail] = useState<any | null>(null);
+  const [fullDetail, setFullDetail] = useState<Row | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [detailLoading, setDetailLoading] = useState(false);
 
   // fullDetail가 오기 전에도 detail.photos가 있으면 그걸 먼저 사용
-  const photos: string[] = useMemo(() => (fullDetail?.photos ?? detail?.photos ?? []) as string[], [fullDetail, detail]);
+  const photos: string[] = useMemo(() => fullDetail?.photos ?? detail?.photos ?? [], [fullDetail, detail]);
   // "보여줄 사진이 전혀 없을 때"만 스켈레톤 표시
   const loadingPhotos = !!detail && !fullDetail && photos.length === 0;
 
@@ -113,7 +115,7 @@ export default function AdminReviewListClient() {
         const res = await fetch(`/api/admin/reviews/${detail._id}`, { credentials: 'include' });
         if (!res.ok) return;
         const j = await res.json();
-        if (!aborted) setFullDetail(j);
+        if (!aborted) setFullDetail(j as Row);
       } finally {
         if (!aborted) setDetailLoading(false);
       }
@@ -160,9 +162,9 @@ export default function AdminReviewListClient() {
       const res = await fetch(`/api/admin/reviews/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) throw new Error('삭제 실패');
       showSuccessToast('삭제되었습니다.');
-    } catch (e: any) {
+    } catch (error: unknown) {
       await mutate(() => snapshot, false);
-      showErrorToast(e?.message || '삭제 중 오류');
+      showErrorToast(error instanceof Error ? error.message : '삭제 중 오류');
     }
   };
 
@@ -259,7 +261,8 @@ export default function AdminReviewListClient() {
   );
   function safeSplitDate(input?: string | number | Date) {
     try {
-      const d = new Date(input as any);
+      if (input == null) return { date: '-', time: '-' };
+      const d = new Date(input);
       if (Number.isNaN(d.getTime())) return { date: '-', time: '-' };
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, '0');

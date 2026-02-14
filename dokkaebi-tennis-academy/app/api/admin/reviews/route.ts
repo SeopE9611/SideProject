@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
 import { getDb } from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from '@/types/admin/reviews';
 
 function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
@@ -8,56 +11,55 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
+const querySchema = z.object({
+  page: z.coerce.number().int().min(1).max(10_000).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(10),
+  status: z.enum(['all', 'visible', 'hidden']).default('all'),
+  type: z.enum(['all', 'product', 'service']).default('all'),
+  q: z.string().trim().default(''),
+  withDeleted: z.enum(['0', '1', 'false', 'true']).optional(),
+});
+
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
   const url = new URL(req.url);
-  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
-  const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 50 });
-  const status = url.searchParams.get('status'); // visible|hidden
-  const type = url.searchParams.get('type'); // product|service
-  const q = (url.searchParams.get('q') || '').trim();
-  const withDeleted = url.searchParams.get('withDeleted'); // '1' | 'true'
+  const parsed = querySchema.parse({
+    page: parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 }),
+    limit: parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 50 }),
+    status: url.searchParams.get('status') ?? 'all',
+    type: url.searchParams.get('type') ?? 'all',
+    q: url.searchParams.get('q') ?? '',
+    withDeleted: url.searchParams.get('withDeleted') ?? undefined,
+  });
 
   const db = await getDb();
   const col = db.collection('reviews');
 
-  const match: any = { isDeleted: { $ne: true } };
-  // 관리자: withDeleted=1 이면 삭제 포함
-  if (withDeleted === '1' || withDeleted === 'true') {
+  const match: Record<string, unknown> = { isDeleted: { $ne: true } };
+  if (parsed.withDeleted === '1' || parsed.withDeleted === 'true') {
     delete match.isDeleted;
   }
-  if (status === 'visible' || status === 'hidden') match.status = status;
-  if (q) match.content = { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+  if (parsed.status !== 'all') match.status = parsed.status;
+  if (parsed.q) match.content = { $regex: parsed.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
 
-  // 타입 필터(명시적 type 없을 때 productId/서비스 단서로 유추)
-  if (type === 'product') {
+  if (parsed.type === 'product') {
     match.$or = [{ type: 'product' }, { productId: { $exists: true } }, { product_id: { $exists: true } }];
-  } else if (type === 'service') {
-    match.$or = [
-      { type: 'service' },
-      // productId가 없으면 service로 간주(서비스용 id가 따로 없어도 통과)
-      { $and: [{ productId: { $exists: false } }, { product_id: { $exists: false } }] },
-    ];
+  } else if (parsed.type === 'service') {
+    match.$or = [{ type: 'service' }, { $and: [{ productId: { $exists: false } }, { product_id: { $exists: false } }] }];
   }
 
-  const pipeline: any[] = [
+  const pipeline: Record<string, unknown>[] = [
     { $match: match },
     { $sort: { createdAt: -1 } },
-    { $skip: (page - 1) * limit },
-    { $limit: limit },
-
-    // 작성자/상품 조인
+    { $skip: (parsed.page - 1) * parsed.limit },
+    { $limit: parsed.limit },
     { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: '_user' } },
     { $lookup: { from: 'products', localField: 'productId', foreignField: '_id', as: '_product' } },
-
-    // 기초 필드
     {
       $addFields: {
-        hasProductId: {
-          $or: [{ $ne: [{ $ifNull: ['$productId', null] }, null] }, { $ne: [{ $ifNull: ['$product_id', null] }, null] }],
-        },
+        hasProductId: { $or: [{ $ne: [{ $ifNull: ['$productId', null] }, null] }, { $ne: [{ $ifNull: ['$product_id', null] }, null] }] },
         resolvedUserEmail: { $ifNull: ['$userEmail', { $arrayElemAt: ['$_user.email', 0] }] },
         resolvedUserName: { $ifNull: [{ $arrayElemAt: ['$_user.name', 0] }, ''] },
         contentStr: { $cond: [{ $eq: [{ $type: '$content' }, 'string'] }, '$content', ''] },
@@ -65,29 +67,19 @@ export async function GET(req: Request) {
         helpfulCount: { $ifNull: ['$helpfulCount', 0] },
       },
     },
-
-    // hasProductId를 이용해 type 확정
     {
       $addFields: {
-        resolvedType: {
-          $cond: [{ $in: ['$type', ['product', 'service']] }, '$type', { $cond: ['$hasProductId', 'product', 'service'] }],
-        },
+        resolvedType: { $cond: [{ $in: ['$type', ['product', 'service']] }, '$type', { $cond: ['$hasProductId', 'product', 'service'] }] },
       },
     },
-
-    // 제품명/리뷰 대상
     {
       $addFields: {
-        productNameResolved: {
-          $ifNull: [{ $arrayElemAt: ['$_product.nameKo', 0] }, { $ifNull: [{ $arrayElemAt: ['$_product.name', 0] }, { $ifNull: [{ $arrayElemAt: ['$_product.title', 0] }, '$productName'] }] }],
-        },
+        productNameResolved: { $ifNull: [{ $arrayElemAt: ['$_product.nameKo', 0] }, { $ifNull: [{ $arrayElemAt: ['$_product.name', 0] }, { $ifNull: [{ $arrayElemAt: ['$_product.title', 0] }, '$productName'] }] }] },
         subjectResolved: {
           $cond: [{ $or: [{ $eq: ['$resolvedType', 'product'] }, '$hasProductId'] }, { $ifNull: ['$subject', { $ifNull: ['$productNameResolved', '상품 리뷰'] }] }, { $ifNull: ['$subject', '서비스 리뷰'] }],
         },
       },
     },
-
-    // 최종 투영
     {
       $project: {
         _id: 1,
@@ -108,20 +100,21 @@ export async function GET(req: Request) {
 
   const [items, total] = await Promise.all([col.aggregate(pipeline).toArray(), col.countDocuments(match)]);
 
-  const shaped = items.map((d: any) => ({
+  const shaped: AdminReviewListItemDto[] = items.map((d) => ({
     _id: String(d._id),
-    type: d.type, // 'product' | 'service'
-    subject: d.subject, // 모달/리스트의 "리뷰 대상"
-    rating: d.rating,
-    status: d.status, // 'visible' | 'hidden'
-    content: d.content,
+    type: d.type === 'service' ? 'service' : 'product',
+    subject: typeof d.subject === 'string' ? d.subject : '',
+    rating: Number(d.rating ?? 0),
+    status: d.status === 'hidden' ? 'hidden' : 'visible',
+    content: typeof d.content === 'string' ? d.content : '',
     createdAt: new Date(d.createdAt).toISOString(),
-    userEmail: d.userEmail,
-    userName: d.userName,
-    helpfulCount: d.helpfulCount ?? 0,
-    photos: d.photosPreview ?? [],
+    userEmail: typeof d.userEmail === 'string' ? d.userEmail : undefined,
+    userName: typeof d.userName === 'string' ? d.userName : undefined,
+    helpfulCount: Number(d.helpfulCount ?? 0),
+    photos: Array.isArray(d.photosPreview) ? d.photosPreview.filter((p): p is string => typeof p === 'string') : [],
     isDeleted: !!d.isDeleted,
   }));
 
-  return NextResponse.json({ items: shaped, total });
+  const response: AdminReviewsListResponseDto = { items: shaped, total };
+  return NextResponse.json(response);
 }
