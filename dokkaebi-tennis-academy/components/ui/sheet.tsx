@@ -42,9 +42,9 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
     <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
       {children}
       <SheetPrimitive.Title className="sr-only">모바일 메뉴</SheetPrimitive.Title>
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-[#ffffff] transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-[#f1f5f9] dark:ring-offset-[#0f172a] dark:focus:ring-[#3b82f6] dark:data-[state=open]:bg-[#1e293b]">
+      <SheetPrimitive.Close aria-label="시트 닫기" className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-[#ffffff] transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-[#f1f5f9] dark:ring-offset-[#0f172a] dark:focus:ring-[#3b82f6] dark:data-[state=open]:bg-[#1e293b]">
         <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
+        <span className="sr-only">닫기</span>
       </SheetPrimitive.Close>
     </SheetPrimitive.Content>
   </SheetPortal>

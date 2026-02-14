@@ -1,11 +1,10 @@
 import type { ReactNode } from 'react';
-import Link from 'next/link';
-import { Home, ShoppingBag, Star, UserCog2Icon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { UserCog2Icon } from 'lucide-react';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import AccessDenied from '@/components/system/AccessDenied';
 import { headers } from 'next/headers';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import AdminMobileMenu from '@/components/admin/AdminMobileMenu';
 import { logInfo } from '@/lib/logger';
 
 export const metadata = {
@@ -101,12 +100,17 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </div>
       </div>
-      <div className="mx-auto flex w-full max-w-[1400px] flex-1 px-4 py-4 gap-4 lg:gap-6">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-1 gap-4 px-4 py-4 lg:gap-6">
         <div className="hidden md:block">
           <AdminSidebar />
         </div>
 
-        <main className="flex-1 min-w-0">{children}</main>
+        <main className="min-w-0 flex-1">
+          <div className="mb-3 md:hidden">
+            <AdminMobileMenu />
+          </div>
+          {children}
+        </main>
       </div>
     </div>
   );

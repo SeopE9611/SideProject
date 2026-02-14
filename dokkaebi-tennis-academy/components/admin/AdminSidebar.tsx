@@ -2,56 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState, type ComponentType } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, PackageSearch, Boxes, Users, CalendarClock, MessageCircle, Settings, ChevronLeft, ChevronRight, Package, Cog, ChartArea, ChartBar, ClipboardList, Bell, Inbox } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
-import { MdSportsTennis } from 'react-icons/md';
-const SECTIONS = [
-  {
-    label: '운영',
-    items: [
-      { title: '운영함(통합)', href: '/admin/operations', icon: Inbox },
-      { title: '대시보드', href: '/admin/dashboard', icon: LayoutDashboard },
-      { title: '알림 관리', href: '/admin/notifications', icon: Bell },
-      { title: '주문·신청 관리', href: '/admin/orders', icon: PackageSearch, key: 'orders' as const },
-      { title: '상품 관리', href: '/admin/products', icon: Boxes, key: 'products' as const },
-      { title: '대여(라켓) 관리', href: '/admin/rentals', icon: ClipboardList },
-      { title: '라켓 관리', href: '/admin/rackets', icon: MdSportsTennis, key: 'rackets' as const },
-      { title: '패키지 관리', href: '/admin/packages', icon: Package, key: 'packages' as const },
-      { title: '패키지 설정', href: '/admin/packages/settings', icon: Cog },
-      { title: '예약 · 영업일 설정', href: '/admin/scheduling', icon: CalendarClock },
-      { title: '정산 관리', href: '/admin/settlements', icon: ChartBar },
-    ],
-  },
-  {
-    label: '고객',
-    items: [
-      { title: '회원 관리', href: '/admin/users', icon: Users, key: 'users' as const },
-      { title: '리뷰 관리', href: '/admin/reviews', icon: MessageCircle, key: 'reviews' as const },
-    ],
-  },
-  {
-    label: '기타',
-    items: [
-      { title: '클래스 관리', href: '/admin/classes', icon: CalendarClock },
-      { title: '게시판 관리', href: '/admin/boards', icon: MessageCircle },
-      { title: '설정', href: '/admin/settings', icon: Settings },
-    ],
-  },
-];
-
-type SidebarBadgeKey = 'orders' | 'products' | 'reviews' | 'users' | 'packages' | 'rackets';
-type SidebarItem = {
-  title: string;
-  href: string;
-  icon: ComponentType<{ className?: string }>;
-  key?: SidebarBadgeKey;
-};
-type SidebarSection = { label: string; items: SidebarItem[] };
-const SIDEBAR_SECTIONS: SidebarSection[] = SECTIONS;
+import { SIDEBAR_SECTIONS, type SidebarBadgeKey } from '@/components/admin/sidebar-navigation';
+import { isAdminNavActive } from '@/lib/admin-nav';
 
 type BadgeCounts = Partial<Record<SidebarBadgeKey, number>>;
 type Props = { defaultCollapsed?: boolean; badgeCounts?: BadgeCounts };
@@ -68,38 +26,6 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
     localStorage.setItem('admin.sidebar.collapsed', collapsed ? '1' : '0');
   }, [collapsed]);
 
-  // 경로 활성화 판별 함수 (세그먼트 경계 기반)
-  // - 정확히 일치하거나, href 뒤에 '/'가 붙은 세그먼트로 시작할 때만 활성 처리
-  // - '/admin/packages'는 '/admin/packages/settings' 페이지에서는 활성으로 보지 않도록 예외 처리
-  const isActive = (href: string) => {
-    const path = pathname || '';
-
-    // 대시보드 특별 처리: '/admin'은 page.tsx에서 '/admin/dashboard'로 즉시 리다이렉트되지만,
-    // 라우팅 전환 중 일시적으로 '/admin' 경로가 보일 수 있어 동일하게 활성 처리
-    if (href === '/admin/dashboard') {
-      return path === '/admin' || path === '/admin/dashboard' || path.startsWith('/admin/dashboard/');
-    }
-
-    // 정확히 같으면 활성
-    if (path === href) return true;
-
-    // 세그먼트 경계 고려: href 다음은 '/' 로 이어질 때만 하위 경로로 인정
-    const withSlash = href.endsWith('/') ? href : href + '/';
-    const under = path.startsWith(withSlash);
-
-    // 특수 케이스: '/admin/packages'는 '/admin/packages/settings' 계열에서는 비활성 처리
-    if (href === '/admin/packages') {
-      if (/^\/admin\/packages\/settings(?:\/|$)/.test(path)) return false;
-      return under; // '/admin/packages/...' (예: 상세/목록 등)은 활성
-    }
-    // '/admin/settings'도 세부 페이지에선 비활성 처리
-    if (href === '/admin/settings') {
-      if (path.startsWith('/admin/settings/')) return false;
-      return under;
-    }
-
-    return under;
-  };
   return (
     <TooltipProvider delayDuration={10}>
       <aside
@@ -133,7 +59,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
               <ul className="mt-2 space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
-                  const active = isActive(item.href);
+                  const active = isAdminNavActive(pathname ?? '', item.href);
                   const count = item.key ? badgeCounts[item.key] : undefined;
 
                   const link = (
