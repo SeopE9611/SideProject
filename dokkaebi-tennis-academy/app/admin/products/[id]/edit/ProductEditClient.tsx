@@ -20,7 +20,6 @@ import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import AuthGuard from '@/components/auth/AuthGuard';
 import ProductEditDialogs from './dialogs/ProductEditDialogs';
 import useSWR from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -586,7 +585,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   if (isLoading) return <EditProductLoading />;
 
   return (
-    <AuthGuard>
+    <>
       <div className="min-h-screen bg-background">
         <div className="container py-8 px-6">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -1337,6 +1336,6 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         eventKey="admin-products-edit-delete"
         eventMeta={{ productId }}
       />
-    </AuthGuard>
+    </>
   );
 }

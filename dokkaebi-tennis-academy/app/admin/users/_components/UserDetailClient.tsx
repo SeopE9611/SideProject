@@ -37,7 +37,6 @@ import {
   Smartphone,
   MonitorSmartphone,
 } from 'lucide-react';
-import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { Section, SectionHeader, SectionBody } from '@/components/admin/Section';
@@ -295,15 +294,13 @@ export default function UserDetailClient({ id }: { id: string }) {
 
   if (isLoading || !user) {
     return (
-      <AuthGuard>
-        <div className="space-y-6">
-          <div className="h-10 w-64 rounded-xl bg-muted animate-pulse" />
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="h-60 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-muted/30 animate-pulse" />
-            <div className="h-60 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-muted/30 animate-pulse" />
-          </div>
+      <div className="space-y-6">
+        <div className="h-10 w-64 rounded-xl bg-muted animate-pulse" />
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="h-60 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-muted/30 animate-pulse" />
+          <div className="h-60 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-muted/30 animate-pulse" />
         </div>
-      </AuthGuard>
+      </div>
     );
   }
 
@@ -363,7 +360,6 @@ export default function UserDetailClient({ id }: { id: string }) {
   }
 
   return (
-    <AuthGuard>
       <div className="relative">
         {/* 컬러 워시 + 도트 패턴 */}
         <div
@@ -818,7 +814,6 @@ export default function UserDetailClient({ id }: { id: string }) {
           </AlertDialog>
         </TooltipProvider>
       </div>
-    </AuthGuard>
   );
 }
 

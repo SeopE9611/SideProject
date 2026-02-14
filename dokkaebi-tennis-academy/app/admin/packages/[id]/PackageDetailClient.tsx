@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import AuthGuard from '@/components/auth/AuthGuard';
 import { Skeleton } from '@/components/ui/skeleton';
 import useSWR from 'swr';
 import { parseISO, isValid, format } from 'date-fns';
@@ -344,8 +343,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   };
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
         <div className="container py-6">
           {/* 헤더 카드 */}
           <div className="rounded-2xl p-6 md:p-8 border shadow-lg mb-8 bg-white/80 border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
@@ -697,6 +695,5 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           )}
         </div>
       </div>
-    </AuthGuard>
   );
 }
