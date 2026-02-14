@@ -21,57 +21,16 @@ import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AuthGuard from '@/components/auth/AuthGuard';
-import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
+import ProductEditDialogs from './dialogs/ProductEditDialogs';
 import useSWR from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import type { HybridSpecUnit, ProductDetailResponse } from '@/types/admin/products';
-
-// 브랜드 목록
-const brands = [
-  { id: 'luxilon', name: '럭실론' },
-  { id: 'tecnifibre', name: '테크니화이버' },
-  { id: 'wilson', name: '윌슨' },
-  { id: 'babolat', name: '바볼랏' },
-  { id: 'head', name: '헤드' },
-  { id: 'yonex', name: '요넥스' },
-  { id: 'solinco', name: '솔린코' },
-  { id: 'dunlop', name: '던롭' },
-];
-
-// 게이지 옵션
-const gauges = [
-  { id: '15L', name: '1.35mm (15L)' },
-  { id: '16', name: '1.30mm (16)' },
-  { id: '16L', name: '1.28mm (16L)' },
-  { id: '17', name: '1.25mm (17)' },
-  { id: '17L', name: '1.20mm (17L)' },
-  { id: '18', name: '1.15mm (18)' },
-];
-
-// 재질 옵션
-const materials = [
-  { id: 'polyester', name: '폴리에스터' },
-  { id: 'multifilament', name: '멀티필라멘트' },
-  { id: 'natural_gut', name: '천연 거트' },
-  { id: 'synthetic_gut', name: '합성 거트' },
-  { id: 'hybrid', name: '하이브리드' },
-];
-
-// 색상 옵션
-const colors = [
-  { id: 'black', name: '블랙' },
-  { id: 'white', name: '화이트' },
-  { id: 'red', name: '레드' },
-  { id: 'blue', name: '블루' },
-  { id: 'yellow', name: '옐로우' },
-  { id: 'green', name: '그린' },
-  { id: 'orange', name: '오렌지' },
-  { id: 'silver', name: '실버' },
-  { id: 'gold', name: '골드' },
-  { id: 'transparent', name: '투명' },
-];
+import { brands, colors, gauges, materials } from './filters/productFormOptions';
+import { createSearchKeywords } from './hooks/useKeywordGenerator';
+import { fetchProductDetail } from './actions/productActions';
+import { parseSearchKeywordsInput } from './table/productTableUtils';
 
 export default function ProductEditClient({ productId }: { productId: string }) {
   // 기본 정보
@@ -125,26 +84,18 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   // 검색 키워드(쉼표 구분) 입력 상태
   const [searchKeywordsInput, setSearchKeywordsInput] = useState('');
   const handleGenerateKeywords = () => {
-    const base = `${basicInfo.name ?? ''} ${basicInfo.brand ?? ''}`.trim();
-    if (!base) {
+    const keywords = createSearchKeywords(basicInfo.name, basicInfo.brand);
+    if (!keywords) {
       showErrorToast(<>먼저 스트링명과 브랜드를 입력해 주세요.</>);
       return;
     }
-
-    const tokens = base
-      .split(/[\s,()/+]+/)
-      .map((t) => t.trim())
-      .filter((t) => t.length > 1);
-
-    const unique = Array.from(new Set(tokens.map((t) => t.toLowerCase())));
-    setSearchKeywordsInput(unique.join(', '));
+    setSearchKeywordsInput(keywords.join(', '));
   };
 
   // 재고 관리가 실제로 수정되었는지 추적할 플래그
   const [inventoryDirty, setInventoryDirty] = useState(false);
 
-  const fetcher = <T,>(url: string) => fetch(url).then((res) => res.json() as Promise<T>);
-  const { data, error, isLoading } = useSWR<ProductDetailResponse>(`/api/admin/products/${productId}`, fetcher);
+  const { data, error, isLoading } = useSWR<ProductDetailResponse>(`/api/admin/products/${productId}`, fetchProductDetail);
 
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState('');
@@ -1359,7 +1310,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
           </form>
         </div>
       </div>
-      <AdminConfirmDialog
+      <ProductEditDialogs
         open={leaveDialogOpen}
         onOpenChange={setLeaveDialogOpen}
         onConfirm={() => {
@@ -1371,7 +1322,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         confirmText="이동"
         eventKey="admin-products-edit-leave"
       />
-      <AdminConfirmDialog
+      <ProductEditDialogs
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={() => {
