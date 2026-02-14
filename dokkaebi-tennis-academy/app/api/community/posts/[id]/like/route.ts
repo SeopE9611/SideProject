@@ -1,6 +1,6 @@
 // app/api/community/posts/[id]/like/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
+import { MongoServerError, ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 
 import { getDb } from '@/lib/mongodb';
@@ -48,9 +48,6 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const postsCol = db.collection('community_posts');
   const likesCol = db.collection('community_likes');
 
-  // postId + userId 조합은 한 번만 들어가도록 인덱스 (이미 있으면 에러 무시)
-  likesCol.createIndex({ postId: 1, userId: 1 }, { unique: true }).catch(() => {});
-
   const _postId = new ObjectId(id);
   const _userId = new ObjectId(userId);
 
@@ -60,35 +57,72 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
   }
 
-  // 3) 먼저 좋아요 존재 여부 확인
-  const existed = await likesCol.findOne({ postId: _postId, userId: _userId });
+  let liked = false;
+  let likesCount = 0;
 
-  let liked: boolean;
-
-  if (existed) {
-    // 이미 좋아요 → 좋아요 취소
-    await likesCol.deleteOne({ _id: existed._id });
-    await postsCol.updateOne({ _id: _postId }, { $inc: { likes: -1 } });
-    liked = false;
-  } else {
-    // 아직 안 눌렀으면 새로 추가
+  try {
+    // 신규 좋아요 시도 (성공하면 liked=true 경로)
     await likesCol.insertOne({
       postId: _postId,
       userId: _userId,
       createdAt: new Date(),
     });
-    await postsCol.updateOne({ _id: _postId }, { $inc: { likes: 1 } });
+
     liked = true;
-  }
+    const incResult = await postsCol.findOneAndUpdate(
+      { _id: _postId },
+      [
+        {
+          $set: {
+            likes: { $add: [{ $ifNull: ['$likes', 0] }, 1] },
+          },
+        },
+      ],
+      { returnDocument: 'after', projection: { likes: 1 } },
+    );
 
-  // 4) 최종 likes 값을 다시 읽어와서 응답
-  const post = (await postsCol.findOne({ _id: _postId })) as any | null;
-  if (!post) {
-    // 정말 글이 없을 때만 not_found
-    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
-  }
+    if (!incResult) {
+      return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    }
 
-  const likesCount = post.likes ?? 0;
+    likesCount = Math.max(0, Number(incResult.likes ?? 0));
+  } catch (error) {
+    // 중복키면 이미 liked=true 상태였던 것으로 보고 취소(unlike) 경로로 처리
+    if (!(error instanceof MongoServerError) || error.code !== 11000) {
+      throw error;
+    }
+
+    liked = false;
+    const deleteResult = await likesCol.deleteOne({ postId: _postId, userId: _userId });
+
+    if (deleteResult.deletedCount > 0) {
+      const decResult = await postsCol.findOneAndUpdate(
+        { _id: _postId },
+        [
+          {
+            $set: {
+              likes: {
+                $max: [0, { $subtract: [{ $ifNull: ['$likes', 0] }, 1] }],
+              },
+            },
+          },
+        ],
+        { returnDocument: 'after', projection: { likes: 1 } },
+      );
+
+      if (!decResult) {
+        return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+      }
+
+      likesCount = Math.max(0, Number(decResult.likes ?? 0));
+    } else {
+      const post = await postsCol.findOne({ _id: _postId }, { projection: { likes: 1 } });
+      if (!post) {
+        return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+      }
+      likesCount = Math.max(0, Number(post.likes ?? 0));
+    }
+  }
 
   logInfo({
     msg: 'community:like:toggle',
