@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
-import { Loader2, RefreshCcw, Send, Search, Mail, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, RefreshCcw, Send, Search, Mail, Clock, AlertCircle, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import type { AdminOutboxDetailResponseDto, AdminOutboxListItemDto, AdminOutboxListResponseDto } from '@/types/admin/notifications';
 
@@ -202,8 +202,21 @@ export default function AdminNotificationsClient() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">알림 관리</h1>
+        <nav className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground" aria-label="알림 관리 breadcrumb">
+          <Link href="/admin/notifications/outbox" className="font-medium text-foreground">
+            알림 발송함
+          </Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <span>목록</span>
+        </nav>
+        <h1 className="text-3xl font-bold tracking-tight">알림 발송함</h1>
         <p className="text-sm text-muted-foreground">알림 발송 현황을 모니터링하고 실패한 알림을 재시도할 수 있습니다</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="secondary" size="sm">목록</Button>
+          <Button variant="outline" size="sm" className="border-border/40" disabled>
+            상세 (항목 선택)
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
