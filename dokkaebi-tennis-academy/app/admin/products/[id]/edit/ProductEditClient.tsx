@@ -21,6 +21,7 @@ import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AuthGuard from '@/components/auth/AuthGuard';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import useSWR from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
@@ -386,12 +387,14 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
   useUnsavedChangesGuard(isDirty && !submitting && !uploading && !deleting);
 
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   const confirmLeave = (e: React.MouseEvent<HTMLElement>) => {
     if (!isDirty || submitting || uploading || deleting) return;
-    if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    e.preventDefault();
+    e.stopPropagation();
+    setLeaveDialogOpen(true);
   };
 
   // 폼 제출 핸들러
@@ -599,12 +602,13 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   };
 
   // 삭제 핸들러
-  const handleDelete = async () => {
+  const handleDelete = () => {
     // 제출/삭제/업로드 중이면 삭제 금지
     if (uploading || submitting || submitRef.current || deleting || deleteRef.current) return;
+    setDeleteDialogOpen(true);
+  };
 
-    if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return;
-
+  const executeDelete = async () => {
     deleteRef.current = true;
     setDeleting(true);
     try {
@@ -1355,6 +1359,33 @@ export default function ProductEditClient({ productId }: { productId: string }) 
           </form>
         </div>
       </div>
+      <AdminConfirmDialog
+        open={leaveDialogOpen}
+        onOpenChange={setLeaveDialogOpen}
+        onConfirm={() => {
+          setLeaveDialogOpen(false);
+          router.push('/admin/products');
+        }}
+        title="작성 중인 변경사항이 있습니다"
+        description={UNSAVED_CHANGES_MESSAGE}
+        confirmText="이동"
+        eventKey="admin-products-edit-leave"
+      />
+      <AdminConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          setDeleteDialogOpen(false);
+          void executeDelete();
+        }}
+        title="상품 삭제 확인"
+        description={`영향 개수: 1개 상품
+이 작업은 되돌릴 수 없습니다. 정말 삭제하시겠습니까?`}
+        confirmText="삭제"
+        severity="danger"
+        eventKey="admin-products-edit-delete"
+        eventMeta={{ productId }}
+      />
     </AuthGuard>
   );
 }

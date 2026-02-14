@@ -24,6 +24,7 @@ import { Loader2 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import ImageUploader from '@/components/admin/ImageUploader';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 브랜드 목록
@@ -284,12 +285,13 @@ export default function NewStringPage() {
   const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
   useUnsavedChangesGuard(isDirty && !submitting && !uploading);
 
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+
   const confirmLeave = (e: React.MouseEvent<HTMLElement>) => {
     if (!isDirty || submitting || uploading) return;
-    if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    e.preventDefault();
+    e.stopPropagation();
+    setLeaveDialogOpen(true);
   };
 
   // 폼 제출 핸들러
@@ -1189,6 +1191,19 @@ export default function NewStringPage() {
           </form>
         </div>
       </div>
+      <AdminConfirmDialog
+        open={leaveDialogOpen}
+        onOpenChange={setLeaveDialogOpen}
+        onConfirm={() => {
+          setLeaveDialogOpen(false);
+          router.push('/admin/products');
+        }}
+        title="작성 중인 내용이 있습니다"
+        description={UNSAVED_CHANGES_MESSAGE}
+        confirmText="이동"
+        severity="default"
+        eventKey="admin-products-new-leave"
+      />
     </AuthGuard>
   );
 }

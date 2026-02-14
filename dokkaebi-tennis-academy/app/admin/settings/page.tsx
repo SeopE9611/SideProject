@@ -2,6 +2,7 @@
 
 import { Globe, User, Mail, CreditCard, Shield } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useAdminSettings } from './_hooks/useAdminSettings';
 import { SiteSettingsTab } from './_components/SiteSettingsTab';
@@ -25,7 +26,7 @@ export default function SettingsPage() {
             <h1 className="text-4xl font-bold">시스템 설정</h1>
           </div>
 
-          <Tabs value={vm.activeTab} onValueChange={vm.handleTabChange} className="space-y-4">
+          <Tabs value={vm.activeTab} onValueChange={vm.requestTabChange} className="space-y-4">
             {vm.isBootstrapping && <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">설정값을 불러오는 중입니다...</div>}
             <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto">
               <TabsTrigger value="site"><Globe className="h-4 w-4 mr-2" />사이트</TabsTrigger>
@@ -41,6 +42,19 @@ export default function SettingsPage() {
           </Tabs>
         </div>
       </div>
+      <AdminConfirmDialog
+        open={vm.pendingTab !== null}
+        onOpenChange={(open) => {
+          if (!open) vm.cancelTabChange();
+        }}
+        onConfirm={vm.confirmTabChange}
+        onCancel={vm.cancelTabChange}
+        title="저장하지 않은 변경사항이 있습니다"
+        description="현재 탭의 변경사항은 저장되지 않습니다."
+        confirmText="탭 이동"
+        eventKey="admin-settings-tab-change"
+        eventMeta={{ from: vm.activeTab, to: vm.pendingTab }}
+      />
     </div>
   );
 }
