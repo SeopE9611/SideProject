@@ -79,6 +79,10 @@ E2E_ADMIN_BYPASS_TOKEN=e2e-secret npm run cy:run
 
 ## 환경별 운영 가이드
 
+### 관리자 홈 URL
+- 관리자 진입 URL은 `/admin`입니다.
+- `/admin` 접근 시 서버에서 즉시 `/admin/dashboard`로 리다이렉트됩니다.
+
 ### 로컬 개발(Local)
 - `.env.local`에 최소 필수값(`MONGODB_URI`, JWT secret류)을 설정한 뒤 `npm run dev`로 실행합니다.
 - 코드 수정 후 기본 검증 순서: `lint -> typecheck -> build`.
