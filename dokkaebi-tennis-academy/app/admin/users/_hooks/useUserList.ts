@@ -1,5 +1,6 @@
 'use client';
 import useSWR from 'swr';
+import { buildQueryString } from '@/lib/admin/urlQuerySync';
 
 export type UserListFilters = {
   page: number;
@@ -34,15 +35,18 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include', cache: 'no
 });
 
 export function useUserList(filters: UserListFilters) {
-  const p = new URLSearchParams({ page: String(filters.page), limit: String(filters.limit) });
-  if (filters.searchQuery.trim()) p.set('q', filters.searchQuery.trim());
-  if (filters.roleFilter !== 'all') p.set('role', filters.roleFilter);
-  if (filters.statusFilter !== 'all') p.set('status', filters.statusFilter);
-  if (filters.loginFilter !== 'all') p.set('login', filters.loginFilter);
-  if (filters.signupFilter !== 'all') p.set('signup', filters.signupFilter);
-  if (filters.sort) p.set('sort', filters.sort);
+  const queryString = buildQueryString({
+    page: filters.page,
+    limit: filters.limit,
+    q: filters.searchQuery.trim(),
+    role: filters.roleFilter,
+    status: filters.statusFilter,
+    login: filters.loginFilter,
+    signup: filters.signupFilter,
+    sort: filters.sort,
+  });
 
-  const key = `/api/admin/users?${p.toString()}`;
+  const key = `/api/admin/users?${queryString}`;
   const swr = useSWR(key, fetcher);
 
   return {

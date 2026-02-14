@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
+import { buildQueryString } from '@/lib/admin/urlQuerySync';
+import { useAdminListQueryState } from '@/lib/admin/useAdminListQueryState';
 import { Loader2, RefreshCcw, Send, Search, Mail, Clock, AlertCircle, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import type { AdminOutboxDetailResponseDto, AdminOutboxListItemDto, AdminOutboxListResponseDto } from '@/types/admin/notifications';
@@ -80,49 +82,40 @@ function getStatusIcon(status: OutboxItem['status']) {
 export default function AdminNotificationsClient() {
   const router = useRouter();
   const sp = useSearchParams();
-  const spStr = sp.toString();
-
   const pathname = usePathname();
 
-  const initialStatus = (sp.get('status') || 'all') as Status;
-  const initialQ = sp.get('q') || '';
-  const initialPage = Math.max(1, parseInt(sp.get('page') || '1', 10) || 1);
+  const { state, patchState, setPage } = useAdminListQueryState<{ status: Status; qRaw: string; page: number }>({
+    pathname: pathname || '/admin/notifications/outbox',
+    searchParams: sp,
+    replace: router.replace,
+    defaults: { status: 'all', qRaw: '', page: 1 },
+    parse: (params, defaults) => {
+      const status = (params.get('status') || defaults.status) as Status;
+      return {
+        status: ['all', 'queued', 'failed', 'sent'].includes(status) ? status : defaults.status,
+        qRaw: params.get('q') || defaults.qRaw,
+        page: Math.max(1, Number.parseInt(params.get('page') || String(defaults.page), 10) || defaults.page),
+      };
+    },
+    toQueryParams: (queryState) => ({
+      status: queryState.status,
+      q: queryState.qRaw.trim(),
+      page: queryState.page === 1 ? undefined : queryState.page,
+    }),
+    pageResetKeys: ['status', 'qRaw'],
+  });
 
-  const [status, setStatus] = useState<Status>(['all', 'queued', 'failed', 'sent'].includes(initialStatus) ? initialStatus : 'all');
-  const [qRaw, setQRaw] = useState(initialQ);
+  const { status, qRaw, page } = state;
   const qDebounced = useDebounced(qRaw, 350);
-  const [page, setPage] = useState(initialPage);
-
-  useEffect(() => {
-    setPage(1);
-  }, [status, qRaw]);
-
-  useEffect(() => {
-    const basePath = pathname || '/admin/notifications/outbox';
-    const p = new URLSearchParams(sp.toString());
-    if (status === 'all') p.delete('status');
-    else p.set('status', status);
-
-    const q = qRaw.trim();
-    if (!q) p.delete('q');
-    else p.set('q', q);
-
-    if (page <= 1) p.delete('page');
-    else p.set('page', String(page));
-
-    const qs = p.toString();
-    const nextUrl = qs ? `${basePath}?${qs}` : basePath;
-
-    if (qs !== spStr) {
-      router.replace(nextUrl);
-    }
-  }, [status, qRaw, page, pathname, router, spStr]);
 
   const key = useMemo(() => {
-    const p = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
-    if (status !== 'all') p.set('status', status);
-    if (qDebounced.trim()) p.set('q', qDebounced.trim());
-    return `/api/admin/notifications/outbox?${p.toString()}`;
+    const queryString = buildQueryString({
+      page,
+      limit: LIMIT,
+      status,
+      q: qDebounced.trim(),
+    });
+    return `/api/admin/notifications/outbox?${queryString}`;
   }, [page, status, qDebounced]);
 
   const { data, error, isValidating, mutate } = useSWR<PageRes>(key, fetcher, { revalidateOnFocus: false });
@@ -288,7 +281,7 @@ export default function AdminNotificationsClient() {
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <Tabs value={status} onValueChange={(v) => setStatus(v as Status)} className="w-full lg:w-auto">
+            <Tabs value={status} onValueChange={(v) => patchState({ status: v as Status })} className="w-full lg:w-auto">
               <TabsList className="grid w-full grid-cols-4 lg:w-auto">
                 <TabsTrigger value="all" className="gap-2">
                   전체
@@ -328,7 +321,7 @@ export default function AdminNotificationsClient() {
             <div className="flex items-center gap-2">
               <div className="relative w-full lg:w-[320px]">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={qRaw} onChange={(e) => setQRaw(e.target.value)} placeholder="검색..." className="pl-9 border-border/40 bg-background/50 backdrop-blur focus-visible:border-primary/40" />
+                <Input value={qRaw} onChange={(e) => patchState({ qRaw: e.target.value })} placeholder="검색..." className="pl-9 border-border/40 bg-background/50 backdrop-blur focus-visible:border-primary/40" />
               </div>
               <Button variant="outline" onClick={() => mutate()} disabled={isValidating} className="border-border/40 hover:border-border/60">
                 {isValidating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
@@ -459,11 +452,11 @@ export default function AdminNotificationsClient() {
                 총 <span className="font-semibold text-foreground">{total}</span>건(현재 필터) · 페이지당 {LIMIT}건 · 페이지 <span className="font-semibold text-foreground">{page}</span> / {totalPages}
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="border-border/40 hover:border-border/60">
+                <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="border-border/40 hover:border-border/60">
                   이전
                 </Button>
                 <div className="flex h-9 items-center rounded-md border border-border/40 bg-background/50 px-3 text-sm font-medium">{page}</div>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="border-border/40 hover:border-border/60">
+                <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} className="border-border/40 hover:border-border/60">
                   다음
                 </Button>
               </div>

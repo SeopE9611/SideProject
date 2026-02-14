@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Search, Filter, MoreHorizontal, Copy, Mail, UserX, UserCheck, Trash2, ChevronLeft, ChevronRight, ChevronsRight, ChevronDown, ChevronsLeft, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -25,6 +26,7 @@ import { UsersKpiCards } from '@/app/admin/users/_components/users-client/UsersK
 import { useUserList } from '@/app/admin/users/_hooks/useUserList';
 import type { AdminErrorPayload, UserCleanupPreviewCandidateDto } from '@/types/admin/users';
 import { STATUS, badgeSm, buildPageItems, fullAddress, roleColors, shortAddress, splitDateTime, td, th, type UserStatusKey } from '@/app/admin/users/_lib/usersClientUtils';
+import { useAdminListQueryState } from '@/lib/admin/useAdminListQueryState';
 
 interface BulkActionResponse {
   message?: string;
@@ -67,20 +69,62 @@ const asPreviewCandidates = (value: unknown): UserCleanupPreviewCandidateDto[] =
 
 
 export default function UsersClient() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   // 서버 페이징 & 필터
-  const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
-  const [signupFilter, setSignupFilter] = useState<'all' | 'local' | 'kakao' | 'naver'>('all');
+  const { state, patchState, setPage } = useAdminListQueryState<{
+    page: number;
+    searchQuery: string;
+    roleFilter: 'all' | 'user' | 'admin';
+    statusFilter: 'all' | 'active' | 'deleted' | 'suspended';
+    loginFilter: 'all' | 'nologin' | 'recent30' | 'recent90';
+    signupFilter: 'all' | 'local' | 'kakao' | 'naver';
+    sort: 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc';
+  }>({
+    pathname: pathname || '/admin/users',
+    searchParams,
+    replace: router.replace,
+    defaults: {
+      page: 1,
+      searchQuery: '',
+      roleFilter: 'all',
+      statusFilter: 'all',
+      loginFilter: 'all',
+      signupFilter: 'all',
+      sort: 'created_desc',
+    },
+    parse: (params, defaults) => {
+      const role = params.get('role');
+      const status = params.get('status');
+      const login = params.get('login');
+      const signup = params.get('signup');
+      const sort = params.get('sort');
+      return {
+        page: Math.max(1, Number.parseInt(params.get('page') || String(defaults.page), 10) || defaults.page),
+        searchQuery: params.get('q') || defaults.searchQuery,
+        roleFilter: role === 'all' || role === 'user' || role === 'admin' ? role : defaults.roleFilter,
+        statusFilter: status === 'all' || status === 'active' || status === 'deleted' || status === 'suspended' ? status : defaults.statusFilter,
+        loginFilter: login === 'all' || login === 'nologin' || login === 'recent30' || login === 'recent90' ? login : defaults.loginFilter,
+        signupFilter: signup === 'all' || signup === 'local' || signup === 'kakao' || signup === 'naver' ? signup : defaults.signupFilter,
+        sort: sort === 'created_desc' || sort === 'created_asc' || sort === 'name_asc' || sort === 'name_desc' ? sort : defaults.sort,
+      };
+    },
+    toQueryParams: (queryState) => ({
+      page: queryState.page === 1 ? undefined : queryState.page,
+      q: queryState.searchQuery.trim(),
+      role: queryState.roleFilter,
+      status: queryState.statusFilter,
+      login: queryState.loginFilter,
+      signup: queryState.signupFilter,
+      sort: queryState.sort,
+    }),
+    pageResetKeys: ['searchQuery', 'roleFilter', 'statusFilter', 'loginFilter', 'signupFilter', 'sort'],
+  });
 
-  const [sort, setSort] = useState<'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'>('created_desc');
-
-  // 상태 필터 타입 보정 ('suspended' 포함)
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'deleted' | 'suspended'>('all');
-
-  // 로그인 필터 상태: 전체 / 미로그인 / 최근 30,90일
-  const [loginFilter, setLoginFilter] = useState<'all' | 'nologin' | 'recent30' | 'recent90'>('all');
+  const { page, searchQuery, roleFilter, signupFilter, sort, statusFilter, loginFilter } = state;
 
   const { data, error, isLoading, mutate, rows, total } = useUserList({
     page,
@@ -95,6 +139,10 @@ export default function UsersClient() {
 
   // 선택된 사용자 ID 목록 상태
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedUsers([]);
+  }, [searchQuery, roleFilter, statusFilter, loginFilter, signupFilter, sort]);
 
   // 포인트(적립금) 다이얼로그 상태
   const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
@@ -343,10 +391,7 @@ export default function UsersClient() {
             <Input
               placeholder="이름/이메일/전화 검색"
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => patchState({ searchQuery: e.target.value })}
               className="pl-9"
             />
           </div>
@@ -356,8 +401,7 @@ export default function UsersClient() {
             <Select
               value={statusFilter}
               onValueChange={(v) => {
-                if (v === 'all' || v === 'active' || v === 'deleted' || v === 'suspended') setStatusFilter(v);
-                setPage(1);
+                if (v === 'all' || v === 'active' || v === 'deleted' || v === 'suspended') patchState({ statusFilter: v });
               }}
             >
               <SelectTrigger className="w-[130px]">
@@ -378,8 +422,7 @@ export default function UsersClient() {
             <Select
               value={roleFilter}
               onValueChange={(v) => {
-                if (v === 'all' || v === 'user' || v === 'admin') setRoleFilter(v);
-                setPage(1);
+                if (v === 'all' || v === 'user' || v === 'admin') patchState({ roleFilter: v });
               }}
             >
               <SelectTrigger className="w-[110px]">
@@ -396,8 +439,7 @@ export default function UsersClient() {
             <Select
               value={signupFilter}
               onValueChange={(v) => {
-                setSignupFilter(v as 'all' | 'local' | 'kakao' | 'naver');
-                setPage(1);
+                patchState({ signupFilter: v as 'all' | 'local' | 'kakao' | 'naver' });
               }}
             >
               <SelectTrigger className="w-[140px]">
@@ -415,8 +457,7 @@ export default function UsersClient() {
             <Select
               value={loginFilter}
               onValueChange={(v) => {
-                setLoginFilter(v as 'all' | 'nologin' | 'recent30' | 'recent90');
-                setPage(1); // 페이지 첫 장으로
+                patchState({ loginFilter: v as 'all' | 'nologin' | 'recent30' | 'recent90' });
               }}
             >
               <SelectTrigger className="w-[150px]">
@@ -434,8 +475,7 @@ export default function UsersClient() {
             <Select
               value={sort}
               onValueChange={(v) => {
-                if (v === 'created_desc' || v === 'created_asc' || v === 'name_asc' || v === 'name_desc') setSort(v);
-                setPage(1);
+                if (v === 'created_desc' || v === 'created_asc' || v === 'name_asc' || v === 'name_desc') patchState({ sort: v });
               }}
             >
               <SelectTrigger className="w-[130px]">
