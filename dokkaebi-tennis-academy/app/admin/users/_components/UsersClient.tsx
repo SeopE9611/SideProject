@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -333,7 +332,7 @@ export default function UsersClient() {
 
 
   return (
-    <AuthGuard>
+    <>
       <UsersKpiCards status={kpiStatus} values={kpiValues} />
 
       <FiltersSection>{/* 검색/필터 바 */}
@@ -916,6 +915,6 @@ export default function UsersClient() {
         eventMeta={{ selectedCount: selectedUsers.length }}
       />
       <UserPointsDialog open={pointsDialogOpen} onOpenChange={setPointsDialogOpen} userId={pointsTarget?.id ?? null} userName={pointsTarget?.name} />
-    </AuthGuard>
+    </>
   );
 }

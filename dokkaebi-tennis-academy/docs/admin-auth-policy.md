@@ -3,7 +3,8 @@
 ## 1) 단일 가드 원칙
 
 - 관리자 UI(`app/admin/**`)의 권한 검사는 **`app/admin/layout.tsx`를 단일 진입점**으로 사용한다.
-- 따라서 `app/admin/**/page.tsx`에서는 `getCurrentUser`/`AccessDenied` 중복 권한 체크를 기본적으로 두지 않는다.
+- 따라서 `app/admin/**` 하위 컴포넌트/페이지에서 `AuthGuard`를 import하거나 중복 래핑하지 않는다.
+- 페이지 내부에서는 데이터 로딩 상태에 필요한 skeleton/fallback UI만 로컬에서 처리한다.
 - 예외적으로 페이지 단위 추가 검증이 필요할 때만 해당 페이지에 주석으로 근거를 남긴다.
 
 ## 2) 관리자 API 가드 원칙

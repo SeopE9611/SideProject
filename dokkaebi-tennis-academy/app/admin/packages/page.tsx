@@ -14,7 +14,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import AuthGuard from '@/components/auth/AuthGuard';
 import useSWR from 'swr';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { showSuccessToast } from '@/lib/toast';
@@ -254,8 +253,7 @@ export default function PackageOrdersClient() {
 
   if (error) {
     return (
-      <AuthGuard>
-        <div className="container py-6">
+      <div className="container py-6">
           <Card className="border-red-200 bg-red-50/60">
             <CardHeader>
               <CardTitle className="text-red-700">목록을 불러오지 못했습니다.</CardTitle>
@@ -268,7 +266,6 @@ export default function PackageOrdersClient() {
             </CardContent>
           </Card>
         </div>
-      </AuthGuard>
     );
   }
 
@@ -487,8 +484,7 @@ export default function PackageOrdersClient() {
   const isInitialLoading = isValidating && !data;
 
   return (
-    <AuthGuard>
-      <div
+    <div
         className="
           min-h-screen
           bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50
@@ -1018,6 +1014,5 @@ export default function PackageOrdersClient() {
           </Card>
         </div>
       </div>
-    </AuthGuard>
   );
 }

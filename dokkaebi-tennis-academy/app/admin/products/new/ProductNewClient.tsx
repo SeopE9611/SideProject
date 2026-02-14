@@ -21,7 +21,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
-import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import ImageUploader from '@/components/admin/ImageUploader';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
@@ -440,7 +439,7 @@ export default function NewStringPage() {
   };
 
   return (
-    <AuthGuard>
+    <>
       <div className="min-h-screen bg-background">
         <div className="container py-8 px-6">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -1160,6 +1159,6 @@ export default function NewStringPage() {
         severity="default"
         eventKey="admin-products-new-leave"
       />
-    </AuthGuard>
+    </>
   );
 }

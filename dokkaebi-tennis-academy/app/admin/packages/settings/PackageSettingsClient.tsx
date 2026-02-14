@@ -12,7 +12,6 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import AuthGuard from '@/components/auth/AuthGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { type PackageConfig, type GeneralSettings, DEFAULT_PACKAGE_CONFIGS, DEFAULT_GENERAL_SETTINGS } from '@/lib/package-settings';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -215,16 +214,11 @@ export default function PackageSettingsClient() {
   };
 
   if (isLoading) {
-    return (
-      <AuthGuard>
-        <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">패키지 설정을 불러오는 중입니다...</div>
-      </AuthGuard>
-    );
+    return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">패키지 설정을 불러오는 중입니다...</div>;
   }
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50">
         <div className="container py-6">
           {/* 헤더 */}
           <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 rounded-2xl p-8 border border-purple-100 shadow-lg mb-8">
@@ -549,6 +543,5 @@ export default function PackageSettingsClient() {
           </Tabs>
         </div>
       </div>
-    </AuthGuard>
   );
 }
