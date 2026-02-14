@@ -15,27 +15,7 @@ import { useInitialYyyymmFromQuery } from './hooks/useInitialYyyymmFromQuery';
 import { confirmDeleteSnapshot, confirmDeleteSnapshots } from './dialogs/settlementDialogs';
 import { firstDayOfMonth_KST, fmtYMD_KST, monthEdges, prevMonthRange_KST, TZ } from './filters/settlementDateFilters';
 import { sortSettlementRows, type SortDirection, type SortField } from './table/settlementSort';
-
-// ──────────────────────────────────────────────────────────────
-// 공통 유틸
-// ──────────────────────────────────────────────────────────────
-// 파일명 유틸: 금지문자 치환 + KST 타임스탬프 (YYYYMMDD_HHMMSS)
-function makeCsvFilename(base: string) {
-  const safe = base.replace(/[\\/:*?"<>|]/g, '_').slice(0, 120);
-  const fmt = new Intl.DateTimeFormat('ko-KR', {
-    timeZone: TZ,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
-  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
-  const ts = `${parts.year}${parts.month}${parts.day}_${parts.hour}${parts.minute}${parts.second}`;
-  return `${safe}_${ts}.csv`;
-}
+import { makeCsvFilename } from '@/app/admin/settlements/_lib/settlementExport';
 
 export default function SettlementsClient() {
   const router = useRouter();

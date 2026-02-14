@@ -27,7 +27,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import type { HybridSpecUnit, ProductDetailResponse } from '@/types/admin/products';
-import { brands, colors, gauges, materials } from './filters/productFormOptions';
+import { brands, colors, gauges, materials } from '@/app/admin/products/_lib/productFormOptions';
 import { createSearchKeywords } from './hooks/useKeywordGenerator';
 import { fetchProductDetail } from './actions/productActions';
 import { parseSearchKeywordsInput } from './table/productTableUtils';
