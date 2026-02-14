@@ -14,6 +14,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { sanitizeExceptionInput, validateBaseSettings, validateExceptionItem } from '@/lib/stringingSettingsValidation';
 
 type ExceptionItem = {
   date: string; // 'YYYY-MM-DD'
@@ -42,7 +43,6 @@ const DOC_ID: StringingSettings['_id'] = 'stringingSlots';
 
 /** 관리자 인증/권한 확인 (기존 프로젝트 유틸 그대로 사용) */
 /** 유효성 도우미 */
-const clampNum = (n: any, min: number, max: number) => Math.max(min, Math.min(max, Number(n)));
 const isHHMM = (s: any) => typeof s === 'string' && /^\d{2}:\d{2}$/.test(s);
 const isDate = (s: any) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
@@ -65,13 +65,18 @@ export async function PATCH(req: Request) {
 
   // 본문 파싱
   const body = (await req.json().catch(() => ({}))) as Partial<StringingSettings>;
+  const db = await getDb();
+  const current = await db.collection<StringingSettings>(COLLECTION).findOne({ _id: DOC_ID });
 
   // --- 필드별 정규화/검증 ---
   const update: Partial<StringingSettings> = {};
 
   // 동시 수용량: 1~10
-  if (typeof body.capacity === 'number' && Number.isFinite(body.capacity)) {
-    update.capacity = clampNum(body.capacity, 1, 10);
+  if (body.capacity !== undefined) {
+    if (typeof body.capacity !== 'number' || !Number.isFinite(body.capacity)) {
+      return NextResponse.json({ message: '동시 수용량은 숫자여야 합니다.' }, { status: 400 });
+    }
+    update.capacity = Math.trunc(body.capacity);
   }
 
   // 시작/종료: 'HH:mm'
@@ -79,8 +84,11 @@ export async function PATCH(req: Request) {
   if (isHHMM(body.end)) update.end = body.end!;
 
   // 간격: 5~240 분
-  if (typeof body.interval === 'number' && Number.isFinite(body.interval)) {
-    update.interval = clampNum(body.interval, 5, 240);
+  if (body.interval !== undefined) {
+    if (typeof body.interval !== 'number' || !Number.isFinite(body.interval)) {
+      return NextResponse.json({ message: '간격은 숫자여야 합니다.' }, { status: 400 });
+    }
+    update.interval = Math.trunc(body.interval);
   }
 
   // 영업 요일: 0~6 정수 배열
@@ -101,10 +109,11 @@ export async function PATCH(req: Request) {
         closed: e?.closed === true, // true면 휴무일
         start: isHHMM(e?.start) ? e.start : undefined,
         end: isHHMM(e?.end) ? e.end : undefined,
-        interval: typeof e?.interval === 'number' ? clampNum(e.interval, 5, 240) : undefined,
-        capacity: typeof e?.capacity === 'number' ? clampNum(e.capacity, 1, 10) : undefined,
+        interval: typeof e?.interval === 'number' && Number.isFinite(e.interval) ? Math.trunc(e.interval) : undefined,
+        capacity: typeof e?.capacity === 'number' && Number.isFinite(e.capacity) ? Math.trunc(e.capacity) : undefined,
       }))
-      .filter((e) => !!e.date) as ExceptionItem[];
+      .filter((e) => !!e.date)
+      .map((e) => sanitizeExceptionInput(e as ExceptionItem)) as ExceptionItem[];
   }
 
   // 예약 가능 기간(일): 1~180 허용
@@ -119,46 +128,31 @@ export async function PATCH(req: Request) {
     update.bookingWindowDays = Math.trunc(n);
   }
 
+  const mergedBase = {
+    capacity: update.capacity ?? Number(current?.capacity ?? 1),
+    start: update.start ?? String(current?.start ?? '10:00'),
+    end: update.end ?? String(current?.end ?? '19:00'),
+    interval: update.interval ?? Number(current?.interval ?? 30),
+    bookingWindowDays: update.bookingWindowDays ?? Number(current?.bookingWindowDays ?? 30),
+  };
+
+  const baseError = validateBaseSettings(mergedBase);
+  if (baseError) {
+    return NextResponse.json({ message: baseError }, { status: 400 });
+  }
+
+  if (Array.isArray(update.exceptions)) {
+    for (const ex of update.exceptions) {
+      const validationError = validateExceptionItem(ex);
+      if (validationError) {
+        return NextResponse.json({ message: validationError }, { status: 400 });
+      }
+    }
+  }
+
   // 공통 업데이트 타임스탬프
   update.updatedAt = new Date();
 
-  const db = await getDb();
-
-  // ===== 시간 역전/슬롯 0개 방지 =====
-  const toMin = (hhmm: string) => {
-    const [h, m] = hhmm.split(':').map(Number);
-    return h * 60 + m;
-  };
-  const atLeastOneSlot = (s?: string, e?: string, step?: number) => {
-    if (!s || !e || !step) return true; // 셋 다 있을 때만 검사
-    return toMin(e) - toMin(s) >= step;
-  };
-
-  // 기본(start/end/interval)
-  if (update.start && update.end) {
-    if (toMin(update.start) >= toMin(update.end)) {
-      return NextResponse.json({ message: '영업 시작 시각은 종료 시각보다 이른 시간이어야 합니다.' }, { status: 400 });
-    }
-  }
-  if (update.start && update.end && typeof update.interval === 'number') {
-    if (!atLeastOneSlot(update.start, update.end, update.interval)) {
-      return NextResponse.json({ message: '간격이 너무 큽니다. 최소 1개 이상의 슬롯이 생성되어야 합니다.' }, { status: 400 });
-    }
-  }
-
-  // 예외일(exceptions)도 동일 규칙(오버라이드 값 있을 때만)
-  if (Array.isArray(update.exceptions)) {
-    for (const ex of update.exceptions) {
-      if (ex.start && ex.end && toMin(ex.start) >= toMin(ex.end)) {
-        return NextResponse.json({ message: `[예외일 ${ex.date}] 시작/종료 시각이 올바르지 않습니다.` }, { status: 400 });
-      }
-      if (ex.start && ex.end && typeof ex.interval === 'number') {
-        if (!atLeastOneSlot(ex.start, ex.end, ex.interval)) {
-          return NextResponse.json({ message: `[예외일 ${ex.date}] 간격이 너무 큽니다. 슬롯이 1개 이상 생성되어야 합니다.` }, { status: 400 });
-        }
-      }
-    }
-  }
   // upsert: 문서가 없으면 생성, 있으면 업데이트
   await db.collection<StringingSettings>(COLLECTION).updateOne({ _id: DOC_ID }, { $setOnInsert: { _id: DOC_ID }, $set: update }, { upsert: true });
 

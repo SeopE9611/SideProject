@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { sanitizeExceptionInput, validateBaseSettings, validateExceptionItem } from '@/lib/stringingSettingsValidation';
 
 const BRAND = {
   bg: 'bg-emerald-600',
@@ -156,6 +157,21 @@ export default function StringingSettingsPage() {
 
   // 저장
   async function save() {
+    const baseValidationError = validateBaseSettings({ capacity, start, end, interval, bookingWindowDays });
+    if (baseValidationError) {
+      showErrorToast(baseValidationError);
+      return;
+    }
+
+    for (const ex of exceptions) {
+      const sanitized = sanitizeExceptionInput(ex);
+      const validationError = validateExceptionItem(sanitized);
+      if (validationError) {
+        showErrorToast(validationError);
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const payload: Partial<StringingSettings> = {
@@ -165,7 +181,7 @@ export default function StringingSettingsPage() {
         interval,
         businessDays,
         holidays,
-        exceptions,
+        exceptions: exceptions.map((ex) => sanitizeExceptionInput(ex)),
         bookingWindowDays,
       };
       const res = await fetch('/api/admin/settings/stringing', {
@@ -500,9 +516,17 @@ export default function StringingSettingsPage() {
                         showErrorToast('날짜는 필수입니다.');
                         return;
                       }
+
+                      const sanitized = sanitizeExceptionInput(exInput);
+                      const validationError = validateExceptionItem(sanitized);
+                      if (validationError) {
+                        showErrorToast(validationError);
+                        return;
+                      }
+
                       setExceptions((prev) => {
-                        const rest = prev.filter((x) => x.date !== exInput.date);
-                        return [...rest, { ...exInput }];
+                        const rest = prev.filter((x) => x.date !== sanitized.date);
+                        return [...rest, sanitized];
                       });
                       setExInput({ date: '' });
                       showSuccessToast('예외일이 추가/수정되었습니다.');
