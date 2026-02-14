@@ -6,6 +6,13 @@ import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+function withDeprecation(res: NextResponse) {
+  res.headers.set('Deprecation', 'true');
+  res.headers.set('Sunset', 'Wed, 31 Dec 2026 14:59:59 GMT');
+  res.headers.set('Link', '</api/admin/rentals/{id}/history>; rel="successor-version"');
+  return res;
+}
+
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -19,12 +26,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       payload = null;
     }
     if (!payload || payload.role !== 'admin') {
-      return NextResponse.json({ ok: false, message: 'UNAUTHORIZED' }, { status: 401 });
+      return withDeprecation(NextResponse.json({ ok: false, message: 'UNAUTHORIZED' }, { status: 401 }));
     }
 
     // (2) id(ObjectId) 유효성 (new ObjectId(id) throw → 500 방지)
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ ok: false, message: 'BAD_ID' }, { status: 400 });
+      return withDeprecation(NextResponse.json({ ok: false, message: 'BAD_ID' }, { status: 400 }));
     }
     const rentalId = new ObjectId(id);
 
@@ -45,9 +52,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const hasNext = page * pageSize < total;
     const hasPrev = page > 1;
 
-    return NextResponse.json({ ok: true, page, pageSize, total, hasNext, hasPrev, items });
+    return withDeprecation(NextResponse.json({ ok: true, page, pageSize, total, hasNext, hasPrev, items }));
   } catch (e) {
     console.error('history list error', e);
-    return NextResponse.json({ ok: false, message: 'SERVER_ERROR' }, { status: 500 });
+    return withDeprecation(NextResponse.json({ ok: false, message: 'SERVER_ERROR' }, { status: 500 }));
   }
 }

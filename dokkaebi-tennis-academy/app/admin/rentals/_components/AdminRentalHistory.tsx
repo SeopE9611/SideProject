@@ -142,7 +142,7 @@ export default function AdminRentalHistory({ id }: Props) {
     total: number;
     hasPrev: boolean;
     hasNext: boolean;
-  }>(`/api/rentals/${id}/history?page=${page}&pageSize=${pageSize}`, fetcher, {
+  }>(`/api/admin/rentals/${id}/history?page=${page}&pageSize=${pageSize}`, fetcher, {
     keepPreviousData: true,
   });
 

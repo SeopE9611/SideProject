@@ -25,7 +25,7 @@ export default function SettlementsClient() {
   // 상태
   // ──────────────────────────────────────────────────────────
   const [yyyymm, setYyyymm] = useState<string>(() => fmtYMD_KST().slice(0, 7).replace('-', '')); // KST 기준 초기 yyyymm
-  const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>('/api/settlements', fetchWithCredentials);
+  const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>('/api/admin/settlements', fetchWithCredentials);
 
   // URL 쿼리로 월을 지정하면(예: /admin/settlements?yyyymm=202601) 초기 선택 월을 그 값으로 맞춘다.
   // - 운영함 → 정산 "바로가기"에서 추천 월을 함께 전달할 때 월 착오를 줄이기 위함
@@ -122,7 +122,7 @@ export default function SettlementsClient() {
       return;
     }
     const q = new URLSearchParams({ from, to }).toString();
-    const res = await fetch(`/api/settlements/live?${q}`);
+    const res = await fetch(`/api/admin/settlements/live?${q}`);
     setLive((await res.json()) as SettlementLiveResponse);
   }
 
@@ -132,7 +132,7 @@ export default function SettlementsClient() {
     const { from, to } = monthEdges(key);
 
     // 같은 달의 실시간 집계 호출
-    const res = await fetch(`/api/settlements/live?from=${from}&to=${to}`);
+    const res = await fetch(`/api/admin/settlements/live?from=${from}&to=${to}`);
     const liveJson = await res.json();
 
     const paidOk = (row.totals?.paid || 0) === (liveJson.totals?.paid || 0);

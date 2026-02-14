@@ -502,7 +502,7 @@ export default function AdminRentalDetailClient() {
                 <div className="space-y-4">
                   {/*
                     금액 표시 정합성
-                    - 서버(/api/rentals)가 amount.stringPrice / amount.stringingFee를 저장하므로
+                    - 서버(/api/admin/rentals)가 amount.stringPrice / amount.stringingFee를 저장하므로
                       관리자 상세에서도 해당 금액 근거를 그대로 노출시킴.
                     - 대여만 한 케이스(스트링 미선택)는 UI가 지저분해지지 않도록 조건부 렌더링.
                   */}

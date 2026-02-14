@@ -51,6 +51,9 @@ jobs:
       - name: Admin any debt gate
         run: pnpm check:admin-any-gate
 
+      - name: Admin API boundary gate
+        run: pnpm check:admin-api-boundary
+
       - name: Lint
         # package.json에 설정된 명령어를 실행합니다.
         run: pnpm lint
