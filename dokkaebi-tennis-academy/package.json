@@ -11,7 +11,8 @@
     "lint": "eslint . --cache",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:next-page-props": "node scripts/check-next-page-props.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
