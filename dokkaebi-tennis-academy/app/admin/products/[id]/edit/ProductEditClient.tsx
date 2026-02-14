@@ -143,7 +143,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   const [inventoryDirty, setInventoryDirty] = useState(false);
 
   const fetcher = <T,>(url: string) => fetch(url).then((res) => res.json() as Promise<T>);
-  const { data, error, isLoading } = useSWR<ProductDetailResponse>(`/api/products/${productId}`, fetcher);
+  const { data, error, isLoading } = useSWR<ProductDetailResponse>(`/api/admin/products/${productId}`, fetcher);
 
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState('');
@@ -560,7 +560,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
       setSubmitting(true);
 
       try {
-        const res = await fetch(`/api/products/${productId}`, {
+        const res = await fetch(`/api/admin/products/${productId}`, {
           // API 겨로
           method: 'PUT', // POST 요청
           headers: {
@@ -608,7 +608,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     deleteRef.current = true;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/products/${productId}`, {
+      const res = await fetch(`/api/admin/products/${productId}`, {
         method: 'DELETE',
         credentials: 'include',
       });

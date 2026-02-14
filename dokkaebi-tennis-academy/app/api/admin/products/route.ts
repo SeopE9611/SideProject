@@ -1,16 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+
+type ProductCreatePayload = {
+  name?: unknown;
+  price?: unknown;
+  [key: string]: unknown;
+};
 
 export async function GET(req: Request) {
   try {
     const guard = await requireAdmin(req);
     if (!guard.ok) return guard.res;
 
-
     const { searchParams } = new URL(req.url);
 
-    // 페이지네이션/필터 파라미터
     const pageParam = parseInt(searchParams.get('page') || '1', 10);
     const pageSizeParam = parseInt(searchParams.get('pageSize') || '10', 10);
     const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
@@ -21,7 +25,6 @@ export async function GET(req: Request) {
     const material = searchParams.get('material') || 'all';
     const status = (searchParams.get('status') || 'all') as 'all' | 'active' | 'low_stock' | 'out_of_stock';
 
-    // 정렬 파라미터 파싱 ex) ?sort=price:asc
     const sortParam = (searchParams.get('sort') || '').trim();
     const allowMap: Record<string, string> = {
       name: 'name',
@@ -39,24 +42,20 @@ export async function GET(req: Request) {
       if (key) {
         const dir = dirRaw === 'asc' ? 1 : -1;
         sortDoc[key] = dir;
-        // 안정 정렬(동일값일 때 최신 우선)
         if (!('createdAt' in sortDoc)) sortDoc.createdAt = -1;
         sortDoc._id = -1;
       }
     }
     if (Object.keys(sortDoc).length === 0) {
-      // 기본 정렬(기존과 동일)
       sortDoc = { createdAt: -1, _id: -1 };
     }
 
     const db = await getDb();
     const products = db.collection('products');
 
-    // 리스트용 필터
     const filter: any = { isDeleted: { $ne: true } };
 
     if (q) {
-      // 정규식
       const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
       filter.$or = [{ name: regex }, { sku: regex }, { brand: regex }, { material: regex }];
     }
@@ -80,10 +79,8 @@ export async function GET(req: Request) {
       }
     }
 
-    // 총 개수(필터 적용)
     const total = await products.countDocuments(filter);
 
-    // 페이지 아이템(필터 적용 + 정렬 적용)
     const skip = (page - 1) * pageSize;
     const rawItems = await products
       .find(filter, { projection: { isDeleted: 0 } })
@@ -92,7 +89,6 @@ export async function GET(req: Request) {
       .limit(pageSize)
       .toArray();
 
-    // 각 아이템 computedStatus 계산
     const items = rawItems.map((doc: any) => {
       const stock = doc?.inventory?.stock ?? 0;
       const lowStock = doc?.inventory?.lowStock;
@@ -104,7 +100,6 @@ export async function GET(req: Request) {
       return { ...doc, computedStatus };
     });
 
-    // 전역 통계(필터 무시)
     const totalsAgg = await products
       .aggregate([
         { $match: { isDeleted: { $ne: true } } },
@@ -143,13 +138,42 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       items,
-      total, // 페이지네이션용: 필터가 적용된 총 개수
+      total,
       page,
       pageSize,
-      totalsByStatus, // 전역 통계(필터 무시)
+      totalsByStatus,
     });
   } catch (err) {
     console.error('[/api/admin/products] GET error', err);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+
+  try {
+    let body: ProductCreatePayload | null = null;
+    try {
+      body = (await req.json()) as ProductCreatePayload;
+    } catch (e) {
+      console.error('[admin/products] invalid json', e);
+      return NextResponse.json({ error: 'INVALID_JSON' }, { status: 400 });
+    }
+
+    const name = typeof body?.name === 'string' ? body.name.trim() : '';
+    const price = Number(body?.price);
+    if (!name || !Number.isFinite(price)) {
+      return NextResponse.json({ message: '상품명과 가격은 필수입니다.' }, { status: 400 });
+    }
+
+    const db = await getDb();
+    const result = await db.collection('products').insertOne({ ...body, name, price });
+
+    return NextResponse.json({ message: '상품 등록 완료', id: result.insertedId.toString() }, { status: 201 });
+  } catch (error) {
+    console.error('[admin/products] create error', error);
+    return NextResponse.json({ message: '서버 오류 발생' }, { status: 500 });
   }
 }
