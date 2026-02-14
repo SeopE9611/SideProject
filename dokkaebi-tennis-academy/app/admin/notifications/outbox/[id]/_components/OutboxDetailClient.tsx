@@ -13,36 +13,78 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import type { AdminOutboxDetailResponseDto } from '@/types/admin/notifications';
 
-type OutboxDetail = {
-  id?: string;
+type OutboxDetailViewModel = {
+  id: string;
   status?: string;
   eventType?: string;
-
-  // 최신 스키마 (notifications_outbox)
-  channels?: Array<{
-    channel?: string;
-    to?: string;
-    rendered?: { subject?: string; text?: string; html?: string };
-  }>;
-
-  // 과거/폴백 필드
-  channel?: string;
-  to?: string;
-  subject?: string;
-  rendered?: any;
-
-  payload?: any;
-  meta?: any;
-
-  error?: any;
-  retries?: number;
-
-  createdAt?: string | null;
-  updatedAt?: string | null;
-  sentAt?: string | null;
-  lastTriedAt?: string | null;
+  channels: Array<{ channel?: string; to?: string; rendered?: { subject?: string; text?: string; html?: string } }>;
+  payload: Record<string, unknown>;
+  meta: Record<string, unknown>;
+  error: string | null;
+  retries: number;
+  createdAt: string | null;
+  updatedAt: string | null;
+  sentAt: string | null;
+  lastTriedAt: string | null;
+  relatedOrderId: string | null;
+  relatedApplicationId: string | null;
 };
+
+
+function asRecord(v: unknown): Record<string, unknown> {
+  return typeof v === 'object' && v !== null ? (v as Record<string, unknown>) : {};
+}
+
+function getNestedString(root: Record<string, unknown>, path: string[]): string | null {
+  let current: unknown = root;
+  for (const key of path) {
+    const rec = asRecord(current);
+    current = rec[key];
+  }
+  return typeof current === 'string' && current ? current : null;
+}
+
+function mapApiToViewModel(data: AdminOutboxDetailResponseDto | undefined, id: string): OutboxDetailViewModel | null {
+  if (!data) return null;
+
+  const payload = asRecord(data.payload);
+  const meta = asRecord(data.meta);
+  const renderedRecord = asRecord(data.rendered);
+  const emailRendered = asRecord(renderedRecord.email);
+
+  const channels = Array.isArray(data.channels) && data.channels.length > 0
+    ? data.channels
+    : [
+        {
+          channel: data.channel ?? 'email',
+          to: data.to,
+          rendered: {
+            subject: typeof emailRendered.subject === 'string' ? emailRendered.subject : data.subject,
+            text: typeof emailRendered.text === 'string' ? emailRendered.text : undefined,
+            html: typeof emailRendered.html === 'string' ? emailRendered.html : undefined,
+          },
+        },
+      ];
+
+  return {
+    id: data.id ?? id,
+    status: data.status,
+    eventType: data.eventType,
+    channels,
+    payload,
+    meta,
+    error: typeof data.error === 'string' ? data.error : null,
+    retries: Number(data.retries ?? 0),
+    createdAt: data.createdAt ?? null,
+    updatedAt: data.updatedAt ?? null,
+    sentAt: data.sentAt ?? null,
+    lastTriedAt: data.lastTriedAt ?? null,
+    relatedOrderId: getNestedString(meta, ['orderId']) ?? getNestedString(payload, ['orderId']) ?? getNestedString(payload, ['data', 'orderId']),
+    relatedApplicationId: getNestedString(meta, ['applicationId']) ?? getNestedString(payload, ['applicationId']) ?? getNestedString(payload, ['data', 'applicationId']),
+  };
+}
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -77,37 +119,19 @@ function StatusBadge({ status }: { status?: string }) {
 }
 
 export default function OutboxDetailClient({ id }: { id: string }) {
-  const { data, error, isLoading, mutate } = useSWR<OutboxDetail>(id ? `/api/admin/notifications/outbox/${id}` : null, fetcher, { revalidateOnFocus: false });
+  const { data, error, isLoading, mutate } = useSWR<AdminOutboxDetailResponseDto>(id ? `/api/admin/notifications/outbox/${id}` : null, fetcher, { revalidateOnFocus: false });
 
   const [busy, setBusy] = useState<'retry' | 'force' | null>(null);
 
-  const channels = useMemo(() => {
-    if (!data) return [];
-    if (Array.isArray(data.channels) && data.channels.length > 0) return data.channels;
-
-    // 폴백: 과거 필드/단일 렌더 구조 대응
-    const rendered = (data.rendered?.email ?? data.rendered) as any;
-    return [
-      {
-        channel: data.channel ?? 'email',
-        to: data.to,
-        rendered: {
-          subject: rendered?.subject ?? data.subject,
-          text: rendered?.text,
-          html: rendered?.html,
-        },
-      },
-    ];
-  }, [data]);
-
+  const vm = useMemo(() => mapApiToViewModel(data, id), [data, id]);
+  const channels = vm?.channels ?? [];
   const first = channels[0];
   const firstHtml = first?.rendered?.html;
   const firstText = first?.rendered?.text;
   const firstSubject = first?.rendered?.subject;
 
-  const relatedOrderId = data?.meta?.orderId ?? data?.payload?.orderId ?? data?.payload?.data?.orderId ?? null;
-
-  const relatedApplicationId = data?.meta?.applicationId ?? data?.payload?.applicationId ?? data?.payload?.data?.applicationId ?? null;
+  const relatedOrderId = vm?.relatedOrderId ?? null;
+  const relatedApplicationId = vm?.relatedApplicationId ?? null;
 
   async function copy(text: string) {
     try {
@@ -158,8 +182,8 @@ export default function OutboxDetailClient({ id }: { id: string }) {
           </Button>
 
           <div className="flex items-center gap-2">
-            <StatusBadge status={data?.status} />
-            {data?.eventType && <Badge className="border border-border/40 bg-muted text-muted-foreground">{data.eventType}</Badge>}
+            <StatusBadge status={vm?.status} />
+            {vm?.eventType && <Badge className="border border-border/40 bg-muted text-muted-foreground">{vm.eventType}</Badge>}
           </div>
         </div>
 
@@ -169,12 +193,12 @@ export default function OutboxDetailClient({ id }: { id: string }) {
             ID 복사
           </Button>
 
-          <Button className="gap-2" disabled={busy !== null || !data || data.status !== 'failed'} onClick={doRetry}>
+          <Button className="gap-2" disabled={busy !== null || !vm || vm.status !== 'failed'} onClick={doRetry}>
             {busy === 'retry' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
             재시도
           </Button>
 
-          <Button className="gap-2" disabled={busy !== null || !data || data.status !== 'queued'} onClick={doForce}>
+          <Button className="gap-2" disabled={busy !== null || !vm || vm.status !== 'queued'} onClick={doForce}>
             {busy === 'force' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             강제 발송
           </Button>
@@ -195,53 +219,53 @@ export default function OutboxDetailClient({ id }: { id: string }) {
             </div>
           )}
 
-          {error && <div className="text-sm text-red-600">상세 로드 실패: {String(error.message || error)}</div>}
+          {error && <div className="text-sm text-red-600">상세 로드 실패: {error instanceof Error ? error.message : String(error)}</div>}
 
-          {data && (
+          {vm && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">상태</span>
-                <StatusBadge status={data.status} />
+                <StatusBadge status={vm.status} />
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">이벤트</span>
-                <span className="font-medium">{data.eventType ?? '-'}</span>
+                <span className="font-medium">{vm.eventType ?? '-'}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">생성</span>
-                <span className="font-medium">{safeFmt(data.createdAt)}</span>
+                <span className="font-medium">{safeFmt(vm.createdAt)}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">업데이트</span>
-                <span className="font-medium">{safeFmt(data.updatedAt)}</span>
+                <span className="font-medium">{safeFmt(vm.updatedAt)}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">마지막 시도</span>
-                <span className="font-medium">{safeFmt(data.lastTriedAt)}</span>
+                <span className="font-medium">{safeFmt(vm.lastTriedAt)}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">발송 완료</span>
-                <span className="font-medium">{safeFmt(data.sentAt)}</span>
+                <span className="font-medium">{safeFmt(vm.sentAt)}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">재시도 횟수</span>
-                <span className="font-medium">{typeof data.retries === 'number' ? data.retries : '-'}</span>
+                <span className="font-medium">{vm.retries}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">수신자(첫 채널)</span>
-                <span className="font-medium">{first?.to ?? data.to ?? '-'}</span>
+                <span className="font-medium">{first?.to ?? '-'}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3 md:col-span-2">
                 <span className="text-muted-foreground">제목(첫 채널)</span>
-                <span className="font-medium truncate">{firstSubject ?? data.subject ?? '-'}</span>
+                <span className="font-medium truncate">{firstSubject ?? '-'}</span>
               </div>
             </div>
           )}
@@ -270,13 +294,13 @@ export default function OutboxDetailClient({ id }: { id: string }) {
       )}
 
       {/* 실패 원인 */}
-      {data?.error && (
+      {vm?.error && (
         <Card className="border-red-200">
           <CardHeader>
             <CardTitle className="text-base text-red-700">실패 원인</CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
-            <pre className="whitespace-pre-wrap break-words rounded-md bg-red-50 p-3 border border-red-100">{typeof data.error === 'string' ? data.error : JSON.stringify(data.error, null, 2)}</pre>
+            <pre className="whitespace-pre-wrap break-words rounded-md bg-red-50 p-3 border border-red-100">{vm.error}</pre>
           </CardContent>
         </Card>
       )}

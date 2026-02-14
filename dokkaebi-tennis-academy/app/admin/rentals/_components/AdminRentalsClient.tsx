@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Package, Search, Truck, X } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -22,35 +22,32 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { racketBrandLabel } from '@/lib/constants';
 import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
+import type { AdminRentalListItemDto, AdminRentalPaymentFilter, AdminRentalsListResponseDto, AdminRentalShippingFilter } from '@/types/admin/rentals';
 
-type RentalRow = {
-  id: string;
-  brand: string;
-  model: string;
-  status: 'pending' | 'paid' | 'out' | 'returned' | 'canceled';
-  days: number;
-  amount: {
-    fee: number;
-    deposit: number;
-    stringPrice?: number; // 스트링 상품 금액
-    stringingFee?: number; //  교체 서비스비(장착비)
-    total: number;
-  };
-  dueAt?: string;
-  depositRefundedAt?: string;
-  customer?: {
-    name: string;
-    email: string;
-  };
-  createdAt?: string;
-  cancelRequest?: {
-    status?: 'requested' | 'approved' | 'rejected';
-  } | null;
+type RentalRow = AdminRentalListItemDto & { id: string; createdAt: string; dueAt: string | null; depositRefundedAt: string | null };
 
-  // 대여 기반 교체서비스 연결(목록용)
-  stringingApplicationId?: string | null;
-  withStringService?: boolean;
-};
+const PAY_FILTERS: AdminRentalPaymentFilter[] = ['all', 'unpaid', 'paid'];
+const SHIP_FILTERS: AdminRentalShippingFilter[] = ['all', 'none', 'outbound-set', 'return-set', 'both-set'];
+
+function toIsoOrNull(value: string | Date | null | undefined): string | null {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function mapApiToViewModel(response?: AdminRentalsListResponseDto): { items: RentalRow[]; total: number } {
+  if (!response) return { items: [], total: 0 };
+  return {
+    total: response.total,
+    items: response.items.map((item) => ({
+      ...item,
+      id: item.id ?? '',
+      createdAt: toIsoOrNull(item.createdAt) ?? new Date(0).toISOString(),
+      dueAt: toIsoOrNull(item.dueAt),
+      depositRefundedAt: toIsoOrNull(item.depositRefundedAt),
+    })),
+  };
+}
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
@@ -130,8 +127,10 @@ export default function AdminRentalsClient() {
   const [to, setTo] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [payFilter, setPayFilter] = useState<'all' | 'unpaid' | 'paid'>((searchParams.get('pay') as any) ?? 'all');
-  const [shipFilter, setShipFilter] = useState<'all' | 'none' | 'outbound-set' | 'return-set' | 'both-set'>((searchParams.get('ship') as any) ?? 'all');
+  const initialPay = searchParams.get('pay');
+  const [payFilter, setPayFilter] = useState<AdminRentalPaymentFilter>(initialPay && PAY_FILTERS.includes(initialPay as AdminRentalPaymentFilter) ? (initialPay as AdminRentalPaymentFilter) : 'all');
+  const initialShip = searchParams.get('ship');
+  const [shipFilter, setShipFilter] = useState<AdminRentalShippingFilter>(initialShip && SHIP_FILTERS.includes(initialShip as AdminRentalShippingFilter) ? (initialShip as AdminRentalShippingFilter) : 'all');
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<'customer' | 'date' | 'total' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -144,8 +143,8 @@ export default function AdminRentalsClient() {
     // 검색/상태/결제/배송
     const queryText = get('q');
     const statusParam = get('status');
-    const payParam = get('pay') as 'all' | 'unpaid' | 'paid' | '';
-    const shipParam = get('ship') as 'all' | 'none' | 'outbound-set' | 'return-set' | 'both-set' | '';
+    const payParam = get('pay');
+    const shipParam = get('ship');
 
     // 기간/페이지/정렬
     const fromParam = get('from');
@@ -156,8 +155,8 @@ export default function AdminRentalsClient() {
 
     if (queryText) setSearchTerm(queryText);
     if (statusParam) setStatus(statusParam);
-    if (payParam) setPayFilter(payParam as any);
-    if (shipParam) setShipFilter(shipParam as any);
+    if (payParam && PAY_FILTERS.includes(payParam as AdminRentalPaymentFilter)) setPayFilter(payParam as AdminRentalPaymentFilter);
+    if (shipParam && SHIP_FILTERS.includes(shipParam as AdminRentalShippingFilter)) setShipFilter(shipParam as AdminRentalShippingFilter);
     if (fromParam) setFrom(fromParam);
     if (toParam) setTo(toParam);
     if (!Number.isNaN(pageParam) && pageParam > 0) setPage(pageParam);
@@ -250,9 +249,10 @@ export default function AdminRentalsClient() {
     return () => clearTimeout(timer);
   }, [searchTerm, status, payFilter, shipFilter, from, to, page, sortBy, sortDirection]);
 
-  const { data, isLoading, mutate } = useSWR<{ items: RentalRow[]; total: number }>(key, fetcher);
+  const { data: apiData, isLoading, mutate } = useSWR<AdminRentalsListResponseDto>(key, fetcher);
+  const data = useMemo(() => mapApiToViewModel(apiData), [apiData]);
 
-  const filteredRentals = (data?.items ?? []).filter((rental) => {
+  const filteredRentals = data.items.filter((rental) => {
     const searchMatch =
       rental.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rental.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -262,7 +262,7 @@ export default function AdminRentalsClient() {
     return searchMatch;
   });
 
-  const viewItems = (data?.items ?? []).filter((r) => {
+  const viewItems = data.items.filter((r) => {
     const pay = derivePaymentStatus(r);
     const ship = deriveShippingStatus(r);
     const okPay = payFilter === 'all' ? true : payFilter === pay;
@@ -389,7 +389,7 @@ export default function AdminRentalsClient() {
   const thClasses = 'px-4 py-2 text-center align-middle border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-700 dark:text-gray-300';
   const tdClasses = 'px-3 py-4 align-middle text-center';
 
-  function PaymentBadge({ item }: { item: any }) {
+  function PaymentBadge({ item }: { item: RentalRow }) {
     const s = derivePaymentStatus(item);
     return s === 'paid' ? (
       <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[11px]">결제확정</span>
@@ -398,7 +398,7 @@ export default function AdminRentalsClient() {
     );
   }
 
-  function ShippingBadge({ item }: { item: any }) {
+  function ShippingBadge({ item }: { item: RentalRow }) {
     const s = deriveShippingStatus(item);
 
     if (s === 'both-set') {
@@ -489,7 +489,7 @@ export default function AdminRentalsClient() {
                 value={payFilter}
                 onValueChange={(v) => {
                   setPage(1);
-                  setPayFilter(v as any);
+                  if (PAY_FILTERS.includes(v as AdminRentalPaymentFilter)) setPayFilter(v as AdminRentalPaymentFilter);
                 }}
               >
                 <SelectTrigger>
@@ -508,7 +508,7 @@ export default function AdminRentalsClient() {
                 value={shipFilter}
                 onValueChange={(v) => {
                   setPage(1);
-                  setShipFilter(v as any);
+                  if (SHIP_FILTERS.includes(v as AdminRentalShippingFilter)) setShipFilter(v as AdminRentalShippingFilter);
                 }}
               >
                 <SelectTrigger>
@@ -648,7 +648,7 @@ export default function AdminRentalsClient() {
                 </TableRow>
               ) : (
                 sortedRentals.map((r, idx) => {
-                  const rid = r.id ?? (r as any)._id ?? '';
+                  const rid = r.id;
                   const kind = getKindBadge();
                   const svc = getServiceBadge(r);
                   const link = getLinkBadge(r);

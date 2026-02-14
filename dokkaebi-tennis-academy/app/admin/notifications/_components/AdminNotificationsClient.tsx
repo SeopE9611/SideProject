@@ -15,27 +15,22 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { Loader2, RefreshCcw, Send, Search, Mail, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import type { AdminOutboxDetailResponseDto, AdminOutboxListItemDto, AdminOutboxListResponseDto } from '@/types/admin/notifications';
 
 type Status = 'all' | 'queued' | 'failed' | 'sent';
 
-type OutboxItem = {
-  id: string;
-  eventType: string;
-  status: 'queued' | 'failed' | 'sent';
-  channels: Array<'email' | 'slack' | 'sms'>;
-  to: string | null;
-  subject: string | null;
-  createdAt: string;
-  sentAt?: string | null;
-  retries: number;
-  error: string | null;
-  applicationId?: string | null;
-  orderId?: string | null;
-};
+type OutboxItem = AdminOutboxListItemDto;
+type PageRes = AdminOutboxListResponseDto;
+type OutboxDetail = AdminOutboxDetailResponseDto;
 
-type PageRes = { items: OutboxItem[]; total: number };
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
 
-type OutboxDetail = any;
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+}
 
 const LIMIT = 10;
 const fetcher = (url: string) =>
@@ -148,8 +143,8 @@ export default function AdminNotificationsClient() {
       setDetailLoading(true);
       const j = await fetcher(`/api/admin/notifications/outbox/${id}`);
       setDetail(j);
-    } catch (e: any) {
-      showErrorToast(e?.message || '상세 불러오기 실패');
+    } catch (error: unknown) {
+      showErrorToast(getErrorMessage(error, '상세 불러오기 실패'));
     } finally {
       setDetailLoading(false);
     }
@@ -168,8 +163,8 @@ export default function AdminNotificationsClient() {
         }
         showSuccessToast('재시도 요청을 처리했습니다.');
         await mutate();
-      } catch (e: any) {
-        showErrorToast(e?.message || '재시도 실패');
+      } catch (error: unknown) {
+        showErrorToast(getErrorMessage(error, '재시도 실패'));
       }
     },
     [mutate]
@@ -188,8 +183,8 @@ export default function AdminNotificationsClient() {
         }
         showSuccessToast('강제 발송을 시도했습니다.');
         await mutate();
-      } catch (e: any) {
-        showErrorToast(e?.message || '강제 발송 실패');
+      } catch (error: unknown) {
+        showErrorToast(getErrorMessage(error, '강제 발송 실패'));
       }
     },
     [mutate]
@@ -320,7 +315,7 @@ export default function AdminNotificationsClient() {
           {error ? (
             <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-950/10 dark:text-red-400">
               <AlertCircle className="h-4 w-4" />
-              {String((error as any)?.message || error)}
+              {getErrorMessage(error, '조회 실패')}
             </div>
           ) : null}
 
@@ -472,15 +467,19 @@ export default function AdminNotificationsClient() {
               <pre className="text-xs text-slate-100">
                 {JSON.stringify(
                   (() => {
-                    const html = detail?.rendered?.email?.html;
+                    const rendered = asRecord(detail.rendered);
+                    const email = asRecord(rendered.email);
+                    const html = email['html'];
                     if (typeof html === 'string' && html.length > 4000) {
                       return {
                         ...detail,
                         rendered: {
-                          ...detail.rendered,
+                          ...rendered,
                           email: {
-                            ...detail.rendered.email,
-                            html: html.slice(0, 4000) + `\n\n... (truncated ${html.length - 4000} chars)`,
+                            ...email,
+                            html: html.slice(0, 4000) + `
+
+... (truncated ${html.length - 4000} chars)`,
                           },
                         },
                       };
