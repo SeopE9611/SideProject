@@ -15,6 +15,7 @@ import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHisto
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
 import { racketBrandLabel } from '@/lib/constants';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
@@ -98,6 +99,7 @@ export default function AdminRentalDetailClient() {
   const { data, isLoading, mutate } = useSWR(id ? `/api/admin/rentals/${id}` : null, fetcher);
 
   const [busyAction, setBusyAction] = useState<null | 'approveCancel' | 'rejectCancel' | 'out' | 'return' | 'refundMark' | 'refundClear'>(null);
+  const [pendingAction, setPendingAction] = useState<null | 'out' | 'return' | 'refundMark' | 'refundClear'>(null);
 
   const isBusy = busyAction !== null;
   const safeJson = async (r: Response) => {
@@ -133,9 +135,6 @@ export default function AdminRentalDetailClient() {
   };
 
   const onToggleRefund = async (mark: boolean) => {
-    const ok = confirm(mark ? '보증금 환불 처리할까요?' : '보증금 환불 처리 해제할까요?');
-    if (!ok) return;
-
     const res = await fetch(`/api/admin/rentals/${id}/deposit/refund`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -152,8 +151,6 @@ export default function AdminRentalDetailClient() {
   };
 
   const onOut = async () => {
-    if (!confirm('대여를 시작(out) 처리하시겠어요?')) return;
-
     const res = await fetch(`/api/admin/rentals/${id}/out`, { method: 'POST' });
     const json = await safeJson(res);
     if (!res.ok) {
@@ -165,8 +162,6 @@ export default function AdminRentalDetailClient() {
   };
 
   const onReturn = async () => {
-    if (!confirm('반납 처리하시겠어요?')) return;
-
     const res = await fetch(`/api/admin/rentals/${id}/return`, { method: 'POST' });
     const json = await safeJson(res);
     if (!res.ok) {
@@ -221,6 +216,62 @@ export default function AdminRentalDetailClient() {
   };
 
   const fmtDateOnly = (v?: string | Date | null) => (v ? new Date(v).toLocaleDateString('ko-KR') : '-');
+
+  const pendingDialogConfig =
+    pendingAction === 'out'
+      ? {
+          title: '대여 시작 처리할까요?',
+          description: '대여 상태가 대여중(out)으로 변경됩니다.',
+          confirmText: '대여 시작',
+          eventKey: 'admin-rental-detail-out-confirm',
+          eventMeta: { rentalId: id, currentStatus: data?.status },
+        }
+      : pendingAction === 'return'
+        ? {
+            title: '반납 처리할까요?',
+            description: '대여 상태가 반납완료(returned)로 변경됩니다.',
+            confirmText: '반납 처리',
+            eventKey: 'admin-rental-detail-return-confirm',
+            eventMeta: { rentalId: id, currentStatus: data?.status },
+          }
+        : pendingAction === 'refundMark'
+          ? {
+              title: '보증금 환불 처리할까요?',
+              description: '이 작업은 보증금 환불 완료 상태로 기록됩니다.',
+              confirmText: '환불 처리',
+              eventKey: 'admin-rental-detail-refund-mark-confirm',
+              eventMeta: { rentalId: id, currentStatus: data?.status },
+            }
+          : pendingAction === 'refundClear'
+            ? {
+                title: '보증금 환불 처리를 해제할까요?',
+                description: '이 작업은 환불 완료 기록을 해제합니다.',
+                confirmText: '환불 해제',
+                eventKey: 'admin-rental-detail-refund-clear-confirm',
+                eventMeta: { rentalId: id, currentStatus: data?.status },
+              }
+            : null;
+
+  const handleConfirmPendingAction = async () => {
+    if (!pendingAction || isBusy) return;
+
+    const actionToRun = pendingAction;
+    setPendingAction(null);
+    setBusyAction(actionToRun);
+    try {
+      if (actionToRun === 'out') {
+        await onOut();
+        return;
+      }
+      if (actionToRun === 'return') {
+        await onReturn();
+        return;
+      }
+      await onToggleRefund(actionToRun === 'refundMark');
+    } finally {
+      setBusyAction(null);
+    }
+  };
 
   if (!id) return <div className="p-4">유효하지 않은 ID</div>;
   if (isLoading || !data) return <div className="p-4">불러오는 중…</div>;
@@ -400,14 +451,9 @@ export default function AdminRentalDetailClient() {
                   size="sm"
                   className="h-9 bg-sky-600 hover:bg-sky-700"
                   disabled={isBusy || data.status !== 'paid'}
-                  onClick={async () => {
+                  onClick={() => {
                     if (isBusy) return;
-                    setBusyAction('out');
-                    try {
-                      await onOut();
-                    } finally {
-                      setBusyAction(null);
-                    }
+                    setPendingAction('out');
                   }}
                 >
                   {busyAction === 'out' ? '대여 시작 처리중…' : '대여 시작(out)'}
@@ -418,14 +464,9 @@ export default function AdminRentalDetailClient() {
                   size="sm"
                   className="h-9 bg-emerald-600 hover:bg-emerald-700"
                   disabled={isBusy || !['paid', 'out'].includes(data.status)}
-                  onClick={async () => {
+                  onClick={() => {
                     if (isBusy) return;
-                    setBusyAction('return');
-                    try {
-                      await onReturn();
-                    } finally {
-                      setBusyAction(null);
-                    }
+                    setPendingAction('return');
                   }}
                 >
                   {busyAction === 'return' ? '반납 처리중…' : '반납 처리(return)'}
@@ -438,14 +479,9 @@ export default function AdminRentalDetailClient() {
                       size="sm"
                       variant="outline"
                       disabled={isBusy}
-                      onClick={async () => {
+                      onClick={() => {
                         if (isBusy) return;
-                        setBusyAction('refundClear');
-                        try {
-                          await onToggleRefund(false);
-                        } finally {
-                          setBusyAction(null);
-                        }
+                        setPendingAction('refundClear');
                       }}
                     >
                       {busyAction === 'refundClear' ? '환불 해제 중…' : '환불 해제'}
@@ -455,14 +491,9 @@ export default function AdminRentalDetailClient() {
                       size="sm"
                       variant="outline"
                       disabled={isBusy}
-                      onClick={async () => {
+                      onClick={() => {
                         if (isBusy) return;
-                        setBusyAction('refundMark');
-                        try {
-                          await onToggleRefund(true);
-                        } finally {
-                          setBusyAction(null);
-                        }
+                        setPendingAction('refundMark');
                       }}
                     >
                       {busyAction === 'refundMark' ? '환불 처리 중…' : '환불 처리'}
@@ -471,6 +502,23 @@ export default function AdminRentalDetailClient() {
               </div>
             </CardFooter>
           </Card>
+          {pendingDialogConfig && (
+            <AdminConfirmDialog
+              open={pendingAction !== null}
+              onOpenChange={(open) => {
+                if (!open) setPendingAction(null);
+              }}
+              onCancel={() => setPendingAction(null)}
+              onConfirm={handleConfirmPendingAction}
+              severity="danger"
+              title={pendingDialogConfig.title}
+              description={pendingDialogConfig.description}
+              confirmText={pendingDialogConfig.confirmText}
+              cancelText="취소"
+              eventKey={pendingDialogConfig.eventKey}
+              eventMeta={pendingDialogConfig.eventMeta}
+            />
+          )}
           <Card className="mt-8 border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
               <CardTitle>고객 정보</CardTitle>

@@ -22,6 +22,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { racketBrandLabel } from '@/lib/constants';
 import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import type { AdminRentalListItemDto, AdminRentalPaymentFilter, AdminRentalsListResponseDto, AdminRentalShippingFilter } from '@/types/admin/rentals';
 
 type RentalRow = AdminRentalListItemDto & { id: string; createdAt: string; dueAt: string | null; depositRefundedAt: string | null };
@@ -121,6 +122,7 @@ export default function AdminRentalsClient() {
   const pathname = usePathname();
 
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<null | { type: 'return' | 'refundMark' | 'refundClear'; rentalId: string }>(null);
   const [status, setStatus] = useState<string>('');
   const [brand, setBrand] = useState<string>('');
   const [from, setFrom] = useState<string>('');
@@ -331,7 +333,6 @@ export default function AdminRentalsClient() {
       showErrorToast('유효하지 않은 대여 ID입니다.');
       return;
     }
-    if (!confirm('반납 처리하시겠어요?')) return;
     const res = await fetch(`/api/admin/rentals/${encodeURIComponent(safe)}/return`, { method: 'POST' });
 
     if (res.ok) {
@@ -807,20 +808,20 @@ export default function AdminRentalsClient() {
                                 </Link>
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuSeparator />
-                            {(r.status === 'paid' || r.status === 'out') && (
-                              <DropdownMenuItem onClick={() => onReturn(rid)} disabled={busyId === rid}>
+                          <DropdownMenuSeparator />
+                          {(r.status === 'paid' || r.status === 'out') && (
+                              <DropdownMenuItem onClick={() => setPendingAction({ type: 'return', rentalId: rid })} disabled={busyId === rid}>
                                 <Package className="mr-2 h-4 w-4" /> 반납 처리
                               </DropdownMenuItem>
                             )}
                             {r.status === 'returned' && (
                               <>
                                 {r.depositRefundedAt ? (
-                                  <DropdownMenuItem onClick={() => markRefund(rid, false)} disabled={busyId === rid}>
+                                  <DropdownMenuItem onClick={() => setPendingAction({ type: 'refundClear', rentalId: rid })} disabled={busyId === rid}>
                                     <Truck className="mr-2 h-4 w-4" /> 환불 해제
                                   </DropdownMenuItem>
                                 ) : (
-                                  <DropdownMenuItem onClick={() => markRefund(rid, true)} disabled={busyId === rid}>
+                                  <DropdownMenuItem onClick={() => setPendingAction({ type: 'refundMark', rentalId: rid })} disabled={busyId === rid}>
                                     <Truck className="mr-2 h-4 w-4" /> 환불 처리
                                   </DropdownMenuItem>
                                 )}
@@ -859,6 +860,42 @@ export default function AdminRentalsClient() {
           )}
         </CardContent>
       </Card>
+      <AdminConfirmDialog
+        open={pendingAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingAction(null);
+        }}
+        onCancel={() => setPendingAction(null)}
+        onConfirm={async () => {
+          const action = pendingAction;
+          if (!action) return;
+          setPendingAction(null);
+          if (action.type === 'return') {
+            await onReturn(action.rentalId);
+            return;
+          }
+          await markRefund(action.rentalId, action.type === 'refundMark');
+        }}
+        severity="danger"
+        title={pendingAction?.type === 'return' ? '반납 처리할까요?' : pendingAction?.type === 'refundMark' ? '보증금 환불 처리할까요?' : '보증금 환불 처리를 해제할까요?'}
+        description={
+          pendingAction?.type === 'return'
+            ? '선택한 대여 건의 상태가 반납완료(returned)로 변경됩니다.'
+            : pendingAction?.type === 'refundMark'
+              ? '선택한 대여 건을 보증금 환불 완료 상태로 기록합니다.'
+              : '선택한 대여 건의 보증금 환불 완료 기록을 해제합니다.'
+        }
+        confirmText={pendingAction?.type === 'return' ? '반납 처리' : pendingAction?.type === 'refundMark' ? '환불 처리' : '환불 해제'}
+        cancelText="취소"
+        eventKey={
+          pendingAction?.type === 'return'
+            ? 'admin-rentals-return-confirm'
+            : pendingAction?.type === 'refundMark'
+              ? 'admin-rentals-refund-mark-confirm'
+              : 'admin-rentals-refund-clear-confirm'
+        }
+        eventMeta={{ rentalId: pendingAction?.rentalId }}
+      />
     </div>
   );
 }

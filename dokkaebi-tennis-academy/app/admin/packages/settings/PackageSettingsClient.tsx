@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { type PackageConfig, type GeneralSettings, DEFAULT_PACKAGE_CONFIGS, DEFAULT_GENERAL_SETTINGS } from '@/lib/package-settings';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
 export default function PackageSettingsClient() {
   // 서버에서 가져온 패키지 설정
@@ -49,6 +50,7 @@ export default function PackageSettingsClient() {
   };
 
   const [editingPackage, setEditingPackage] = useState<string | null>(null);
+  const [pendingDeletePackageId, setPendingDeletePackageId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -188,10 +190,8 @@ export default function PackageSettingsClient() {
 
   // 패키지 삭제
   const deletePackage = (id: string) => {
-    if (confirm('정말로 이 패키지를 삭제하시겠습니까?')) {
-      setPackageConfigs((prev) => prev.filter((pkg) => pkg.id !== id));
-      showSuccessToast('패키지가 삭제되었습니다.');
-    }
+    setPackageConfigs((prev) => prev.filter((pkg) => pkg.id !== id));
+    showSuccessToast('패키지가 삭제되었습니다.');
   };
 
   // 특징 추가
@@ -218,7 +218,8 @@ export default function PackageSettingsClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50">
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50">
         <div className="container py-6">
           {/* 헤더 */}
           <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 rounded-2xl p-8 border border-purple-100 shadow-lg mb-8">
@@ -287,7 +288,7 @@ export default function PackageSettingsClient() {
                               <Button variant="ghost" size="sm" onClick={() => setEditingPackage(editingPackage === pkg.id ? null : pkg.id)}>
                                 <Edit3 className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => deletePackage(pkg.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                              <Button variant="ghost" size="sm" onClick={() => setPendingDeletePackageId(pkg.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -543,5 +544,26 @@ export default function PackageSettingsClient() {
           </Tabs>
         </div>
       </div>
+      <AdminConfirmDialog
+        open={pendingDeletePackageId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeletePackageId(null);
+        }}
+        onCancel={() => setPendingDeletePackageId(null)}
+        onConfirm={() => {
+          const packageId = pendingDeletePackageId;
+          if (!packageId) return;
+          setPendingDeletePackageId(null);
+          deletePackage(packageId);
+        }}
+        severity="danger"
+        title="패키지를 삭제할까요?"
+        description="삭제 후에는 되돌릴 수 없습니다. 운영 중인 패키지인지 확인한 뒤 진행해 주세요."
+        confirmText="삭제"
+        cancelText="취소"
+        eventKey="admin-package-settings-delete-confirm"
+        eventMeta={{ packageId: pendingDeletePackageId }}
+      />
+    </>
   );
 }
