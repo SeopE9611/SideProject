@@ -17,45 +17,6 @@ export default async function AdminUsersPage() {
           </div>
         </div>
 
-        {/* KPI 카드 4종 (값은 UsersClient가 주입) */}
-        {/* KPI 카드 5종 */}
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5 mb-6">
-          <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl p-5">
-            <p className="text-sm text-muted-foreground">전체 회원</p>
-            <p className="mt-1 text-3xl font-bold text-foreground" id="kpi-total">
-              -
-            </p>
-          </div>
-
-          <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl p-5">
-            <p className="text-sm text-muted-foreground">활성 회원</p>
-            <p className="mt-1 text-3xl font-bold text-emerald-600 dark:text-emerald-400" id="kpi-active">
-              -
-            </p>
-          </div>
-
-          <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl p-5">
-            <p className="text-sm text-muted-foreground">비활성 회원</p>
-            <p className="mt-1 text-3xl font-bold text-amber-600 dark:text-amber-400" id="kpi-suspended">
-              -
-            </p>
-          </div>
-
-          <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl p-5">
-            <p className="text-sm text-muted-foreground">삭제됨(탈퇴)</p>
-            <p className="mt-1 text-3xl font-bold text-red-600 dark:text-red-400" id="kpi-deleted">
-              -
-            </p>
-          </div>
-
-          <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl p-5">
-            <p className="text-sm text-muted-foreground">관리자 수</p>
-            <p className="mt-1 text-3xl font-bold text-purple-600 dark:text-purple-400" id="kpi-admins">
-              -
-            </p>
-          </div>
-        </div>
-
         {/* 목록 */}
         <UsersClient />
       </div>
