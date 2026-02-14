@@ -1,4 +1,5 @@
 import FreeBoardClient from '@/app/board/market/_components/FreeBoardClient';
+import { MARKET_BOARD_CONFIG } from '@/app/board/_components/board-config';
 
 export const metadata = {
   title: '중고 거래 게시판 | 도깨비 테니스',
@@ -9,5 +10,5 @@ export const metadata = {
 export default function FreeBoardPage() {
   // 서버 컴포넌트: metadata + 레이아웃 래퍼 역할
   // 실제 데이터 로딩/상호작용은 FreeBoardClient에서 처리
-  return <FreeBoardClient />;
+  return <FreeBoardClient config={MARKET_BOARD_CONFIG} />;
 }

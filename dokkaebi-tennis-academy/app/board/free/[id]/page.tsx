@@ -1,4 +1,5 @@
 import FreeBoardDetailClient from '@/app/board/free/[id]/_components/FreeBoardDetailClient';
+import { FREE_BOARD_CONFIG } from '@/app/board/_components/board-config';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -12,5 +13,5 @@ export const metadata = {
 export default async function FreeBoardDetailPage({ params }: Props) {
   const { id } = await params;
 
-  return <FreeBoardDetailClient id={id} />;
+  return <FreeBoardDetailClient id={id} config={FREE_BOARD_CONFIG} />;
 }
