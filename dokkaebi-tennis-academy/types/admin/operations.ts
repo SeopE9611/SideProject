@@ -25,3 +25,21 @@ export type AdminOperationItem = {
   warnReasons?: string[];
   pendingReasons?: string[];
 };
+
+
+export type AdminOperationsKindFilter = AdminOperationKind | 'all';
+
+export interface AdminOperationsListRequestDto {
+  page: number;
+  pageSize: number;
+  kind: AdminOperationsKindFilter;
+  q: string;
+  warn: boolean;
+  flow: AdminOperationFlow | null;
+  integrated: boolean | null;
+}
+
+export interface AdminOperationsListResponseDto {
+  items: AdminOperationItem[];
+  total: number;
+}

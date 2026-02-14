@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import type { Filter, SortDirection } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import type { AdminUsersListRequestDto, AdminUsersListResponseDto, UserLoginFilter, UserSignupFilter } from '@/types/admin/users';
+
+type UserQueryDoc = Record<string, unknown>;
+
+function asRecord(value: unknown): UserQueryDoc {
+  return typeof value === 'object' && value !== null ? (value as UserQueryDoc) : {};
+}
+
+function toIso(value: unknown): string | null {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string') return value;
+  return null;
+}
 
 // 숫자 쿼리 파싱 NaN 방지 + 범위 보정 (skip/limit 런타임 에러 예방)
 function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
@@ -23,7 +36,7 @@ export async function GET(req: Request) {
   const role = url.searchParams.get('role'); // 'user' | 'admin'
   const status = url.searchParams.get('status') || 'all'; // 'all' | 'active' | 'deleted' | 'suspended'
   const sortKey = url.searchParams.get('sort') || 'created_desc'; // 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'
-  const signup = (url.searchParams.get('signup') || 'all') as 'all' | 'local' | 'kakao' | 'naver';
+  const signup = (url.searchParams.get('signup') || 'all') as UserSignupFilter;
 
   await db
     .collection('users')
@@ -31,52 +44,64 @@ export async function GET(req: Request) {
     .catch(() => {});
   const col = db.collection('users');
 
-  const login = (url.searchParams.get('login') || 'all') as 'all' | 'nologin' | 'recent30' | 'recent90';
+  const login = (url.searchParams.get('login') || 'all') as UserLoginFilter;
+
+  const requestDto: AdminUsersListRequestDto = {
+    page,
+    limit,
+    q,
+    role: role === 'user' || role === 'admin' ? role : 'all',
+    status: status === 'active' || status === 'deleted' || status === 'suspended' ? status : 'all',
+    sort: sortKey === 'created_asc' || sortKey === 'name_asc' || sortKey === 'name_desc' ? sortKey : 'created_desc',
+    signup,
+    login,
+  };
+  const { q: queryText, role: roleFilter, status: statusFilter, sort: sortFilter, signup: signupFilter, login: loginFilter } = requestDto;
 
   // --- 필터 ---
-  const and: Filter<any>[] = [];
+  const and: Filter<UserQueryDoc>[] = [];
 
   // 검색어(q): 이름/이메일/휴대폰 부분 일치
-  if (q) {
-    const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  if (queryText) {
+    const regex = new RegExp(queryText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     and.push({ $or: [{ name: regex }, { email: regex }, { phone: regex }] });
   }
 
   // 역할 필터
-  if (role === 'user' || role === 'admin') {
-    and.push({ role });
+  if (roleFilter === 'user' || roleFilter === 'admin') {
+    and.push({ role: roleFilter });
   }
 
   // 상태 필터
-  if (status === 'active') {
+  if (statusFilter === 'active') {
     and.push({ isDeleted: { $ne: true } });
     and.push({ isSuspended: { $ne: true } });
   }
-  if (status === 'deleted') and.push({ isDeleted: true });
-  if (status === 'suspended') and.push({ isSuspended: true });
+  if (statusFilter === 'deleted') and.push({ isDeleted: true });
+  if (statusFilter === 'suspended') and.push({ isSuspended: true });
 
   // 로그인 필터
-  if (login === 'nologin') {
+  if (loginFilter === 'nologin') {
     // lastLoginAt 기록이 없거나(null)인 사용자만
     and.push({ $or: [{ lastLoginAt: { $exists: false } }, { lastLoginAt: null }] });
-  } else if (login === 'recent30' || login === 'recent90') {
+  } else if (loginFilter === 'recent30' || loginFilter === 'recent90') {
     // 최근 N일 이내 로그인
-    const days = login === 'recent30' ? 30 : 90;
+    const days = loginFilter === 'recent30' ? 30 : 90;
     const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     and.push({ lastLoginAt: { $gte: cutoff } });
   }
 
   // oauth 가 하나라도 있는 유저 (sns 계정 가입자) 필터
   // 가입유형 필터: local / kakao / naver
-  if (signup === 'kakao') {
+  if (signupFilter === 'kakao') {
     and.push({ 'oauth.kakao.id': { $exists: true, $ne: null } });
   }
 
-  if (signup === 'naver') {
+  if (signupFilter === 'naver') {
     and.push({ 'oauth.naver.id': { $exists: true, $ne: null } });
   }
 
-  if (signup === 'local') {
+  if (signupFilter === 'local') {
     // "둘 다 없음" = 일반 가입자
     and.push({
       $and: [{ $or: [{ 'oauth.kakao.id': { $exists: false } }, { 'oauth.kakao.id': null }] }, { $or: [{ 'oauth.naver.id': { $exists: false } }, { 'oauth.naver.id': null }] }],
@@ -84,12 +109,12 @@ export async function GET(req: Request) {
   }
 
   // 최종 필터
-  const filter: Filter<any> = and.length ? { $and: and } : {};
+  const filter: Filter<UserQueryDoc> = and.length ? { $and: and } : {};
 
   // --- 정렬 ---
   type SortDoc = Record<string, SortDirection>;
   let sort: SortDoc;
-  switch (sortKey) {
+  switch (sortFilter) {
     case 'created_asc':
       sort = { createdAt: 1, name: 1 };
       break;
@@ -142,27 +167,31 @@ export async function GET(req: Request) {
     col.countDocuments({ isDeleted: { $ne: true }, isSuspended: true }),
   ]);
 
-  return NextResponse.json({
-    items: items.map((u: any) => {
+  const responseDto: AdminUsersListResponseDto = {
+    items: items.map((u) => {
+      const doc = asRecord(u);
+      const oauth = asRecord(doc.oauth);
+      const kakao = asRecord(oauth.kakao);
+      const naver = asRecord(oauth.naver);
       const socialProviders: Array<'kakao' | 'naver'> = [];
-      if (u?.oauth?.kakao?.id) socialProviders.push('kakao');
-      if (u?.oauth?.naver?.id) socialProviders.push('naver');
+      if (kakao.id) socialProviders.push('kakao');
+      if (naver.id) socialProviders.push('naver');
 
       return {
-        id: u._id.toString(),
-        name: u.name ?? '',
-        email: u.email ?? '',
-        phone: u.phone ?? '',
-        address: u.address ?? '',
-        addressDetail: u.addressDetail ?? '',
-        postalCode: u.postalCode ?? '',
-        pointsBalance: typeof u.pointsBalance === 'number' && Number.isFinite(u.pointsBalance) ? u.pointsBalance : 0,
-        role: u.role ?? 'user',
-        isDeleted: !!u.isDeleted,
-        isSuspended: !!u.isSuspended,
-        createdAt: u.createdAt ?? null,
-        updatedAt: u.updatedAt ?? null,
-        lastLoginAt: u.lastLoginAt ?? null,
+        id: String(doc._id ?? ''),
+        name: typeof doc.name === 'string' ? doc.name : '',
+        email: typeof doc.email === 'string' ? doc.email : '',
+        phone: typeof doc.phone === 'string' ? doc.phone : '',
+        address: typeof doc.address === 'string' ? doc.address : '',
+        addressDetail: typeof doc.addressDetail === 'string' ? doc.addressDetail : '',
+        postalCode: typeof doc.postalCode === 'string' ? doc.postalCode : '',
+        pointsBalance: typeof doc.pointsBalance === 'number' && Number.isFinite(doc.pointsBalance) ? doc.pointsBalance : 0,
+        role: doc.role === 'admin' ? 'admin' : 'user',
+        isDeleted: Boolean(doc.isDeleted),
+        isSuspended: Boolean(doc.isSuspended),
+        createdAt: toIso(doc.createdAt),
+        updatedAt: toIso(doc.updatedAt),
+        lastLoginAt: toIso(doc.lastLoginAt),
 
         socialProviders,
       };
@@ -175,5 +204,6 @@ export async function GET(req: Request) {
       admins: adminTotal,
       suspended: suspendedTotal,
     },
-  });
+  };
+  return NextResponse.json(responseDto);
 }

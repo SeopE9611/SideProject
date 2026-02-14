@@ -18,6 +18,46 @@ import { Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
 import UserPointsDialog from '@/app/admin/users/_components/UserPointsDialog';
 import { useUserList } from '@/app/admin/users/_hooks/useUserList';
+import type { AdminErrorPayload, UserCleanupPreviewCandidateDto } from '@/types/admin/users';
+
+interface BulkActionResponse {
+  message?: string;
+  modifiedCount?: number;
+  skipped?: {
+    already?: string[];
+    incompatible?: string[];
+  };
+}
+
+interface AdminDeleteResponse {
+  deletedCount?: number;
+  message?: string;
+}
+
+interface UsersListCounters {
+  active?: number;
+  deleted?: number;
+  admins?: number;
+  suspended?: number;
+  total?: number;
+}
+
+interface UsersListPayload {
+  counters?: UsersListCounters;
+}
+
+const asErrorPayload = (value: unknown): AdminErrorPayload => ({
+  message: typeof value === 'object' && value !== null && 'message' in value && typeof (value as { message?: unknown }).message === 'string' ? (value as { message: string }).message : '처리 중 오류',
+});
+
+const asPreviewCandidates = (value: unknown): UserCleanupPreviewCandidateDto[] =>
+  Array.isArray(value)
+    ? value.map((item) => ({
+      _id: typeof item === 'object' && item && '_id' in item ? String((item as { _id?: unknown })._id ?? '') : '',
+      name: typeof item === 'object' && item && 'name' in item && typeof (item as { name?: unknown }).name === 'string' ? (item as { name: string }).name : undefined,
+      email: typeof item === 'object' && item && 'email' in item && typeof (item as { email?: unknown }).email === 'string' ? (item as { email: string }).email : undefined,
+    }))
+    : [];
 
 // ---------------------- helpers ----------------------
 // 전체 주소 문자열
@@ -139,7 +179,7 @@ export default function UsersClient() {
   useEffect(() => {
     if (!data) return;
     const q = (sel: string) => document.querySelector(sel);
-    const c = (data as any).counters;
+    const c = (data as UsersListPayload | undefined)?.counters;
 
     // data.counters가 있으면 그 값으로, 없으면 fallback(현 페이지 집계)
     const active = c?.active ?? rows.filter((u) => !u.isDeleted && !u.isSuspended).length;
@@ -206,7 +246,7 @@ export default function UsersClient() {
         credentials: 'include',
         body: JSON.stringify({ op: suspend ? 'suspend' : 'unsuspend', ids: selectedUsers }),
       });
-      const json = await res.json();
+      const json = (await res.json()) as BulkActionResponse;
 
       if (!res.ok) throw new Error(json.message || '실패');
 
@@ -232,8 +272,8 @@ export default function UsersClient() {
 
       setSelectedUsers([]);
       mutate?.();
-    } catch (e: any) {
-      showErrorToast(e.message || '처리 중 오류');
+    } catch (e: unknown) {
+      showErrorToast(asErrorPayload(e).message);
     }
   };
 
@@ -247,7 +287,7 @@ export default function UsersClient() {
         credentials: 'include',
         body: JSON.stringify({ op: 'softDelete', ids: selectedUsers }),
       });
-      const json = await res.json();
+      const json = (await res.json()) as BulkActionResponse;
       if (!res.ok) throw new Error(json.message || '실패');
 
       const modified = Number(json.modifiedCount || 0);
@@ -259,20 +299,20 @@ export default function UsersClient() {
 
       setSelectedUsers([]);
       mutate?.();
-    } catch (e: any) {
-      showErrorToast(e.message || '처리 중 오류');
+    } catch (e: unknown) {
+      showErrorToast(asErrorPayload(e).message);
     }
   };
   // --- Cleanup(7일) 모달 상태 ---
   const [cleanupOpen, setCleanupOpen] = useState(false);
-  const [cleanupPreview, setCleanupPreview] = useState<any[]>([]);
+  const [cleanupPreview, setCleanupPreview] = useState<UserCleanupPreviewCandidateDto[]>([]);
   const [cleanupLoading, setCleanupLoading] = useState(false);
   const [cleanupSubmitting, setCleanupSubmitting] = useState(false);
   const [cleanupAck, setCleanupAck] = useState(false);
 
   // --- Purge(1년) 모달 상태 ---
   const [purgeOpen, setPurgeOpen] = useState(false);
-  const [purgePreview, setPurgePreview] = useState<any[]>([]);
+  const [purgePreview, setPurgePreview] = useState<UserCleanupPreviewCandidateDto[]>([]);
   const [purgeLoading, setPurgeLoading] = useState(false);
   const [purgeSubmitting, setPurgeSubmitting] = useState(false);
   const [purgeAck, setPurgeAck] = useState(false);
@@ -282,8 +322,8 @@ export default function UsersClient() {
     setCleanupLoading(true);
     try {
       const res = await fetch('/api/admin/system/cleanup/preview', { credentials: 'include' });
-      const json = await res.json();
-      setCleanupPreview(Array.isArray(json?.candidates) ? json.candidates : []);
+      const json = (await res.json()) as { candidates?: unknown };
+      setCleanupPreview(asPreviewCandidates(json?.candidates));
     } catch {
       setCleanupPreview([]);
     } finally {
@@ -295,8 +335,8 @@ export default function UsersClient() {
     setPurgeLoading(true);
     try {
       const res = await fetch('/api/admin/system/purge/preview', { credentials: 'include' });
-      const json = await res.json();
-      setPurgePreview(Array.isArray(json?.candidates) ? json.candidates : []);
+      const json = (await res.json()) as { candidates?: unknown };
+      setPurgePreview(asPreviewCandidates(json?.candidates));
     } catch {
       setPurgePreview([]);
     } finally {
@@ -309,7 +349,7 @@ export default function UsersClient() {
     setCleanupSubmitting(true);
     try {
       const res = await fetch('/api/admin/system/cleanup', { method: 'DELETE', credentials: 'include' });
-      const json = await res.json();
+      const json = (await res.json()) as AdminDeleteResponse;
       if (res.ok) {
         showSuccessToast(`삭제된 계정 수: ${json.deletedCount ?? 0}`);
         setCleanupOpen(false);
@@ -329,7 +369,7 @@ export default function UsersClient() {
     setPurgeSubmitting(true);
     try {
       const res = await fetch('/api/admin/system/purge', { method: 'DELETE', credentials: 'include' });
-      const json = await res.json();
+      const json = (await res.json()) as AdminDeleteResponse;
       if (res.ok) {
         showSuccessToast(`완전 삭제된 계정 수: ${json.deletedCount ?? 0}`);
         setPurgeOpen(false);
@@ -353,8 +393,8 @@ export default function UsersClient() {
         method: 'GET',
         credentials: 'include',
       });
-      const previewJson = await previewRes.json();
-      const candidates: any[] = Array.isArray(previewJson?.candidates) ? previewJson.candidates : [];
+      const previewJson = (await previewRes.json()) as { candidates?: unknown };
+      const candidates = asPreviewCandidates(previewJson?.candidates);
 
       if (candidates.length === 0) {
         showInfoToast('삭제 예정인 탈퇴 회원이 없습니다.');
@@ -388,8 +428,8 @@ export default function UsersClient() {
         method: 'GET',
         credentials: 'include',
       });
-      const previewJson = await previewRes.json();
-      const candidates: any[] = Array.isArray(previewJson?.candidates) ? previewJson.candidates : [];
+      const previewJson = (await previewRes.json()) as { candidates?: unknown };
+      const candidates = asPreviewCandidates(previewJson?.candidates);
 
       if (candidates.length === 0) {
         showInfoToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
@@ -440,7 +480,7 @@ export default function UsersClient() {
             <Select
               value={statusFilter}
               onValueChange={(v) => {
-                setStatusFilter(v as any);
+                if (v === 'all' || v === 'active' || v === 'deleted' || v === 'suspended') setStatusFilter(v);
                 setPage(1);
               }}
             >
@@ -462,7 +502,7 @@ export default function UsersClient() {
             <Select
               value={roleFilter}
               onValueChange={(v) => {
-                setRoleFilter(v as any);
+                if (v === 'all' || v === 'user' || v === 'admin') setRoleFilter(v);
                 setPage(1);
               }}
             >
@@ -518,7 +558,7 @@ export default function UsersClient() {
             <Select
               value={sort}
               onValueChange={(v) => {
-                setSort(v as any);
+                if (v === 'created_desc' || v === 'created_asc' || v === 'name_asc' || v === 'name_desc') setSort(v);
                 setPage(1);
               }}
             >
@@ -885,7 +925,7 @@ export default function UsersClient() {
                     <div className="text-sm text-muted-foreground">삭제 예정인 탈퇴 회원이 없습니다.</div>
                   ) : (
                     <ul className="text-sm space-y-1">
-                      {cleanupPreview.map((u: any) => (
+                      {cleanupPreview.map((u) => (
                         <li key={String(u._id)} className="flex items-center justify-between gap-2">
                           <span className="truncate">{u.name || u.email || u._id}</span>
                           <span className="text-xs text-muted-foreground">{u.email}</span>
@@ -943,7 +983,7 @@ export default function UsersClient() {
                     <div className="text-sm text-muted-foreground">완전 삭제 대상 계정이 없습니다.</div>
                   ) : (
                     <ul className="text-sm space-y-1">
-                      {purgePreview.map((u: any) => (
+                      {purgePreview.map((u) => (
                         <li key={String(u._id)} className="flex items-center justify-between gap-2">
                           <span className="truncate">{u.name || u.email || u._id}</span>
                           <span className="text-xs text-muted-foreground">{u.email}</span>

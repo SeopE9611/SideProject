@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import { cn } from '@/lib/utils';
 import { LayoutDashboard, PackageSearch, Boxes, Users, CalendarClock, MessageCircle, Settings, ChevronLeft, ChevronRight, Package, Cog, ChartArea, ChartBar, ClipboardList, Bell, Inbox } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -43,7 +43,17 @@ const SECTIONS = [
   },
 ];
 
-type BadgeCounts = Partial<{ orders: number; products: number; reviews: number; users: number; packages: number; rackets: number }>;
+type SidebarBadgeKey = 'orders' | 'products' | 'reviews' | 'users' | 'packages' | 'rackets';
+type SidebarItem = {
+  title: string;
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  key?: SidebarBadgeKey;
+};
+type SidebarSection = { label: string; items: SidebarItem[] };
+const SIDEBAR_SECTIONS: SidebarSection[] = SECTIONS;
+
+type BadgeCounts = Partial<Record<SidebarBadgeKey, number>>;
 type Props = { defaultCollapsed?: boolean; badgeCounts?: BadgeCounts };
 
 export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {} }: Props) {
@@ -116,14 +126,14 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
         <Separator />
 
         <nav className="mt-2 h-[calc(100%-2.75rem)] overflow-y-auto px-2 pb-8">
-          {SECTIONS.map((section) => (
+          {SIDEBAR_SECTIONS.map((section) => (
             <div key={section.label} className="mt-3">
               <div className={cn('px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400', collapsed && 'px-0 text-center')}>{section.label}</div>
               <ul className="mt-2 space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
-                  const count = (item as any).key ? ((badgeCounts as any)[(item as any).key] as number | undefined) : undefined;
+                  const count = item.key ? badgeCounts[item.key] : undefined;
 
                   const link = (
                     <Link
