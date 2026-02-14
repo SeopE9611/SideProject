@@ -6,17 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import AccessDenied from '@/components/system/AccessDenied';
 
 export default async function BoardPostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const postId = Number.parseInt(id);
-  const user = await getCurrentUser();
-
-  if (!user || user.role !== 'admin') {
-    return <AccessDenied />;
-  }
 
   // 샘플 게시물 데이터
   const post = {

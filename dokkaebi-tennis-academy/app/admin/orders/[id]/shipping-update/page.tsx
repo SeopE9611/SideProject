@@ -1,8 +1,6 @@
 import ShippingFormClient from './ShippingFormClient';
 import { headers } from 'next/headers';
 import Link from 'next/link';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import AccessDenied from '@/components/system/AccessDenied';
 import { Truck } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
@@ -11,11 +9,6 @@ type StringingApplicationLite = { id?: string; status?: string; createdAt?: stri
 
 export default async function ShippingUpdatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = await getCurrentUser();
-
-  if (!user || user.role !== 'admin') {
-    return <AccessDenied />;
-  }
   const headersList = await headers();
   const host = headersList.get('host');
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
