@@ -18,108 +18,8 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import useSWR from 'swr';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { showSuccessToast } from '@/lib/toast';
-
-// 패키지 주문 타입 정의
-interface PackageOrder {
-  id: string;
-  userId?: string;
-  customer: {
-    name: string;
-    email: string;
-    phone: string;
-  };
-  packageType: '10회권' | '30회권' | '50회권' | '100회권';
-  totalSessions: number;
-  remainingSessions: number;
-  usedSessions: number;
-  price: number;
-  purchaseDate: string;
-  expiryDate: string;
-  status: '활성' | '만료' | '일시정지' | '취소';
-  paymentStatus: '결제완료' | '결제대기' | '결제취소';
-  serviceType: '방문' | '출장';
-}
-
-// 타입 선언
-type PackageType = '10회권' | '30회권' | '50회권' | '100회권';
-type ServiceType = '방문' | '출장';
-
-// 패스(또는 주문) 상태 라벨
-type PassStatus = '비활성' | '활성' | '만료' | '취소';
-type PaymentStatus = '결제완료' | '결제대기' | '결제취소';
-
-// 2) 라벨 맵
-const PASS_STATUS_LABELS: Record<PassStatus, string> = {
-  비활성: '비활성',
-  활성: '활성',
-  만료: '만료',
-  취소: '취소',
-};
-
-// 3) 상태 뱃지 색 (원하는 톤으로)
-const packageStatusColors: Record<PassStatus | '대기', string> = {
-  비활성: 'bg-amber-100 text-amber-800 border-amber-200',
-  활성: 'bg-green-100 text-green-800 border-green-200',
-  만료: 'bg-gray-100 text-gray-800 border-gray-200',
-  취소: 'bg-red-100 text-red-800 border-red-200',
-  대기: 'bg-slate-100 text-slate-700 border-slate-200',
-};
-interface PackageListItem {
-  id: string;
-  userId: string;
-  customer: { name?: string; email?: string; phone?: string };
-  packageType: PackageType;
-  totalSessions: number;
-  remainingSessions: number;
-  usedSessions: number;
-  price: number;
-  purchaseDate: string | null;
-  expiryDate: string | null;
-  passStatus: PassStatus | '대기';
-  paymentStatus: PaymentStatus | string;
-  serviceType: ServiceType;
-}
-
-interface Paginated<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-//  KPI
-interface PackageMetrics {
-  total: number;
-  active: number;
-  revenue: number;
-  expirySoon: number;
-}
-
-// 이 페이지에서만 쓸 응답 타입: 기존 Paginated에 metrics만
-type PackagesResponse = Paginated<PackageListItem> & {
-  metrics?: PackageMetrics;
-};
-
-//  모든 뱃지(패키지/상태/결제) 공통 사이즈
-const badgeSizeCls = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
-
-// 결제 상태별 색상
-const paymentStatusColors: Record<PaymentStatus, string> = {
-  결제완료: 'bg-blue-100 text-blue-800 border-blue-200',
-  결제대기: 'bg-orange-100 text-orange-800 border-orange-200',
-  결제취소: 'bg-red-100 text-red-800 border-red-200',
-};
-
-// 패키지 타입별 색상
-const packageTypeColors: Record<PackageType, string> = {
-  '10회권': 'bg-purple-100 text-purple-800 border-purple-200',
-  '30회권': 'bg-blue-100 text-blue-800 border-blue-200',
-  '50회권': 'bg-green-100 text-green-800 border-green-200',
-  '100회권': 'bg-orange-100 text-orange-800 border-orange-200',
-};
-
-/** 데이터를 받아오는 fetcher 함수 */
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
+import { useDebouncedValue } from '@/app/admin/packages/_hooks/useDebouncedValue';
+import { DEFAULT_PACKAGE_LIST_FILTERS, PASS_STATUS_LABELS, badgeSizeCls, fetcher, packageStatusColors, packageTypeColors, paymentStatusColors, type PackageListItem, type PackageMetrics, type PackageOrder, type PackageType, type PackagesResponse, type PassStatus, type PaymentStatus, type ServiceType, type SortKey } from '@/app/admin/packages/_lib/packagesPageConfig';
 
 export default function PackageOrdersClient() {
   // 현재 페이지 번호 상태
@@ -128,16 +28,6 @@ export default function PackageOrdersClient() {
   // 검색어 상태
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 검색 디바운스 훅
-  function useDebouncedValue<T>(value: T, delay = 300) {
-    const [debounced, setDebounced] = useState(value);
-    useEffect(() => {
-      const id = setTimeout(() => setDebounced(value), delay);
-      return () => clearTimeout(id);
-    }, [value, delay]);
-    return debounced;
-  }
-
   const debouncedSearch = useDebouncedValue(searchTerm, 300);
 
   // 필터 상태들
@@ -145,9 +35,8 @@ export default function PackageOrdersClient() {
   const [statusFilter, setStatusFilter] = useState<'all' | PassStatus>('all');
   const [paymentFilter, setPaymentFilter] = useState<'all' | PaymentStatus>('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState<'all' | ServiceType>('all');
+  const [nowTs] = useState(() => new Date().getTime());
 
-  // 정렬 상태
-  type SortKey = 'customer' | 'purchaseDate' | 'expiryDate' | 'remainingSessions' | 'price' | 'status' | 'payment' | 'package' | 'progress';
   const [sortBy, setSortBy] = useState<SortKey | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -157,18 +46,7 @@ export default function PackageOrdersClient() {
   const searchParams = useSearchParams();
   const didInitFromURL = useRef(false);
 
-  // 기본값(디폴트 상태)
-  const DEFAULTS = {
-    page: 1 as number,
-    limit: 10 as number,
-    status: 'all' as 'all' | PassStatus,
-    package: 'all' as 'all' | PackageType,
-    payment: 'all' as 'all' | PaymentStatus,
-    service: 'all' as 'all' | ServiceType,
-    sortBy: null as SortKey | null,
-    sortDirection: 'asc' as 'asc' | 'desc',
-    q: '' as string,
-  };
+  const DEFAULTS = DEFAULT_PACKAGE_LIST_FILTERS;
 
   // state -> URLSearchParams (항상 같은 순서로 직렬화)
   function buildParamsFromState() {
@@ -468,7 +346,7 @@ export default function PackageOrdersClient() {
     const endOfDay = new Date(d);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const diffMs = endOfDay.getTime() - Date.now();
+    const diffMs = endOfDay.getTime() - nowTs;
     return Math.ceil(diffMs / 86400000);
   }
 
@@ -550,7 +428,7 @@ export default function PackageOrdersClient() {
     if (d) {
       const eod = new Date(d);
       eod.setHours(23, 59, 59, 999);
-      expired = eod.getTime() < Date.now();
+      expired = eod.getTime() < nowTs;
     }
 
     if (expired) return { label: '만료', tone: 'muted' as const };
