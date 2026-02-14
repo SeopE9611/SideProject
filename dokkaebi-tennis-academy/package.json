@@ -14,7 +14,9 @@
     "typecheck": "tsc --noEmit",
     "check:next-page-props": "node scripts/check-next-page-props.mjs",
     "db:ensure-admin-user-indexes": "node scripts/db/ensure-admin-user-indexes.mjs",
-    "report:type-debt": "node scripts/report-admin-any-count.mjs"
+    "report:type-debt": "node scripts/report-admin-any-count.mjs",
+    "check:admin-any-gate": "node scripts/check-admin-any-gate.mjs",
+    "report:admin-any": "node scripts/report-admin-any-count.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

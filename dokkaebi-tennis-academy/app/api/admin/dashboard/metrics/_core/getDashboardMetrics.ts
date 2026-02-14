@@ -88,6 +88,26 @@ function mergeSeries(ymds: string[], ...maps: Array<Record<string, number>>) {
   }));
 }
 
+type UnknownDoc = Record<string, unknown>;
+
+function asDoc(value: unknown): UnknownDoc | null {
+  return typeof value === 'object' && value !== null ? (value as UnknownDoc) : null;
+}
+
+function asDocArray(value: unknown): UnknownDoc[] {
+  return Array.isArray(value) ? value.map((item) => asDoc(item)).filter((item): item is UnknownDoc => item !== null) : [];
+}
+
+function toIsoSafe(value: unknown) {
+  return value instanceof Date ? value.toISOString() : typeof value === 'string' ? value : new Date().toISOString();
+}
+
+function toTimeMs(value: unknown) {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'string' || typeof value === 'number') return new Date(value).getTime();
+  return Number.NaN;
+}
+
 // ----------------------------- 상태값 정규화(집계용) -----------------------------
 // DB에 한글/영문 상태가 섞여 있어도 KPI/운영큐 집계가 누락되지 않도록, $in 매칭 기준을 통일
 const PAYMENT_PAID_VALUES = ['결제완료', 'paid', 'confirmed'];
@@ -1244,7 +1264,7 @@ export async function getDashboardMetrics(db: Db) {
   const pointsIssued7d = Number(pointsIssued7dRows?.[0]?.v || 0);
   const pointsSpent7d = Number(pointsSpent7dRows?.[0]?.v || 0);
 
-  const reviewsAgg = (reviewsAggRows as Array<any>)?.[0];
+  const reviewsAgg = asDocArray(reviewsAggRows)[0];
   const totalReviews = Number(reviewsAgg?.total || 0);
   const avgReview = Number(reviewsAgg?.avg || 0);
   const fiveReviews = Number(reviewsAgg?.five || 0);
@@ -1272,39 +1292,46 @@ export async function getDashboardMetrics(db: Db) {
     return { date, orders, applications, packages, total };
   });
 
-  const dailyRevenue = dailyRevenueBySource.map((d : any) => ({ date: d.date, value: d.total }));
+  const dailyRevenue = dailyRevenueBySource.map((d) => ({ date: d.date, value: d.total }));
 
-  const toIso = (v: any) => (v instanceof Date ? v.toISOString() : typeof v === 'string' ? v : new Date().toISOString());
+  const toIso = (v: unknown) => toIsoSafe(v);
 
-  const pickName = (doc: any) => String(doc?.shippingInfo?.name || doc?.shippingInfo?.receiverName || doc?.guest?.name || '고객');
+  const pickName = (doc: UnknownDoc) => String((doc.shippingInfo as UnknownDoc | undefined)?.name || (doc.shippingInfo as UnknownDoc | undefined)?.receiverName || (doc.guest as UnknownDoc | undefined)?.name || '고객');
 
-  const pickOutboxTo = (doc: any) => (doc?.rendered?.email?.to as string) || (doc?.rendered?.sms?.to as string) || null;
+  const pickOutboxTo = (doc: UnknownDoc) => {
+    const rendered = asDoc(doc.rendered);
+    const email = asDoc(rendered?.email);
+    const sms = asDoc(rendered?.sms);
+    return (typeof email?.to === 'string' ? email.to : null) || (typeof sms?.to === 'string' ? sms.to : null);
+  };
 
-  const calcAgeDays = (createdAt: any) => {
-    const t = createdAt instanceof Date ? createdAt.getTime() : new Date(createdAt).getTime();
+  const calcAgeDays = (createdAt: unknown) => {
+    const t = toTimeMs(createdAt);
     return Math.max(0, Math.floor((now.getTime() - t) / (24 * 60 * 60 * 1000)));
   };
 
-  const toIsoAny = (v: any) => (v instanceof Date ? v.toISOString() : typeof v === 'string' ? v : new Date().toISOString());
-  const pickRentalName = (doc: any) => {
+  const toIsoAny = (v: unknown) => toIsoSafe(v);
+  const pickRentalName = (doc: UnknownDoc) => {
+    const guest = asDoc(doc.guest);
+    const shipping = asDoc(doc.shipping);
     // 대여는 shippingInfo가 없을 수 있으므로, 라켓(브랜드/모델) + 고객 식별자를 함께 보여줍니다.
     const racket = [doc?.brand, doc?.model].filter(Boolean).join(' ');
     const who = String(
-      doc?.guest?.name || // 비회원/게스트 이름(있으면)
-        doc?.shipping?.name || //  대여 문서에 있는 수령인/신청자 이름
+      guest?.name || // 비회원/게스트 이름(있으면)
+        shipping?.name || //  대여 문서에 있는 수령인/신청자 이름
         doc?.userEmail || // 저장돼 있으면 이메일
         (doc?.userId ? `회원#${String(doc.userId).slice(-6)}` : '') ||
         '고객',
     );
     return racket ? `${racket} · ${who}` : who;
   };
-  const calcOverdueDays = (dueAt: any) => {
-    const t = dueAt instanceof Date ? dueAt.getTime() : new Date(dueAt).getTime();
+  const calcOverdueDays = (dueAt: unknown) => {
+    const t = toTimeMs(dueAt);
     return Number.isFinite(t) ? Math.max(0, Math.floor((now.getTime() - t) / (24 * 60 * 60 * 1000))) : 0;
   };
 
-  const calcDueInHours = (dueAt: any) => {
-    const t = dueAt instanceof Date ? dueAt.getTime() : new Date(dueAt).getTime();
+  const calcDueInHours = (dueAt: unknown) => {
+    const t = toTimeMs(dueAt);
     // ceil: 1분 남아도 "1시간"처럼 보이게(운영자가 놓치지 않도록)
     return Number.isFinite(t) ? Math.max(0, Math.ceil((t - now.getTime()) / (60 * 60 * 1000))) : 0;
   };
@@ -1444,11 +1471,11 @@ export async function getDashboardMetrics(db: Db) {
   }));
 
   // expiresAt → daysLeft 계산 (운영 시 “n일 남음”이 가장 직관적)
-  const calcDaysLeft = (expiresAt: any) => {
-    const t = expiresAt instanceof Date ? expiresAt.getTime() : new Date(expiresAt).getTime();
+  const calcDaysLeft = (expiresAt: unknown) => {
+    const t = toTimeMs(expiresAt);
     return Number.isFinite(t) ? Math.max(0, Math.ceil((t - now.getTime()) / (24 * 60 * 60 * 1000))) : 0;
   };
-  const pickPassName = (doc: any) => {
+  const pickPassName = (doc: UnknownDoc) => {
     const who = String(doc?.userName || doc?.userEmail || (doc?.userId ? `회원#${String(doc.userId).slice(-6)}` : '') || '고객');
     const size = Number(doc?.packageSize || 0);
     const label = size > 0 ? `${size}회권` : '패스';
@@ -1487,7 +1514,7 @@ export async function getDashboardMetrics(db: Db) {
   // dist 라벨 merge:
   // - DB에 결제상태가 'paid'/'pending' 또는 '결제완료'/'결제대기'처럼 섞여 있어도
   //   대시보드 분포에서는 한 라벨로 합쳐 보이게 합니다.
-  function normalizePaymentStatusLabel(v: any) {
+  function normalizePaymentStatusLabel(v: unknown) {
     const raw = String(v ?? '').trim();
     const lower = raw.toLowerCase();
 
@@ -1498,7 +1525,7 @@ export async function getDashboardMetrics(db: Db) {
     return raw || '기타';
   }
 
-  const mergeDistByLabel = (rows: any[], normalize: (v: any) => string) => {
+  const mergeDistByLabel = (rows: UnknownDoc[], normalize: (v: unknown) => string) => {
     const acc = new Map<string, number>();
     for (const r of rows ?? []) {
       const label = normalize(r?._id);
@@ -1510,7 +1537,7 @@ export async function getDashboardMetrics(db: Db) {
       .sort((a, b) => b.count - a.count);
   };
 
-  const orderPaymentStatusDist = mergeDistByLabel(orderPayStatusDistRows as any[], normalizePaymentStatusLabel);
+  const orderPaymentStatusDist = mergeDistByLabel(asDocArray(orderPayStatusDistRows), normalizePaymentStatusLabel);
 
   // 정산 스냅샷 누락 방지:
   // - 운영자가 월말/월초에 정산 페이지를 놓치면 "스냅샷이 없는 달"이 생기기 쉬움
