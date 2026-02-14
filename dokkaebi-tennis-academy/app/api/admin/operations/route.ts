@@ -29,12 +29,12 @@ const KIND_PRIORITY: Record<Kind, number> = {
 type UnknownDoc = Record<string, unknown>;
 type UnknownArray = UnknownDoc[];
 
-function asObject(value: unknown): UnknownDoc | null {
+function asDoc(value: unknown): UnknownDoc | null {
   return typeof value === 'object' && value !== null ? (value as UnknownDoc) : null;
 }
 
-function asObjectArray(value: unknown): UnknownArray {
-  return Array.isArray(value) ? value.filter((item): item is UnknownDoc => asObject(item) !== null) : [];
+function asDocArray(value: unknown): UnknownArray {
+  return Array.isArray(value) ? value.filter((item): item is UnknownDoc => asDoc(item) !== null) : [];
 }
 
 function getString(value: unknown): string | null {
@@ -46,14 +46,14 @@ function getString(value: unknown): string | null {
 function getIdString(value: unknown): string | null {
   const asString = getString(value);
   if (asString) return asString;
-  const obj = asObject(value);
+  const obj = asDoc(value);
   if (!obj) return null;
   if (typeof obj.toString === 'function') return obj.toString();
   return null;
 }
 
 function hasRacketItems(items: unknown) {
-  return asObjectArray(items).some((it) => it.kind === 'racket' || it.kind === 'used_racket');
+  return asDocArray(items).some((it) => it.kind === 'racket' || it.kind === 'used_racket');
 }
 
 function flowLabelOf(flow: Flow) {
@@ -204,6 +204,13 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
+function toOperationsListResponseDto(items: OpItem[], total: number): AdminOperationsListResponseDto {
+  return {
+    items: items.map((item) => ({ ...item, createdAt: item.createdAt ?? null })),
+    total,
+  };
+}
+
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -257,7 +264,7 @@ export async function GET(req: Request) {
   // 경고용: orderId/rentalId 기준으로 신청서가 “여러 개” 붙는 경우까지 집계(기존 orderToApp/rentalToApp은 1개만 매핑)
   const orderToAppIds = new Map<string, string[]>();
   const rentalToAppIds = new Map<string, string[]>();
-  for (const a of asObjectArray(rawApps)) {
+  for (const a of asDocArray(rawApps)) {
     const orderId = getIdString(a?.orderId);
     const rentalId = getIdString(a?.rentalId);
     const appId = getIdString(a?._id);
@@ -365,7 +372,7 @@ export async function GET(req: Request) {
 
     // rawApps에 없는 신청서만 추가 + 매핑 보강
     const existingAppIds = new Set(rawApps.map((a) => String(a?._id)));
-    for (const a of asObjectArray(extraLinkedApps)) {
+    for (const a of asDocArray(extraLinkedApps)) {
       const aid = String(a?._id);
       if (!aid) continue;
 
@@ -421,7 +428,7 @@ export async function GET(req: Request) {
   }
 
   // 3) 연결 무결성(양방향 링크) 경고 사유 계산
-  const appById = new Map<string, UnknownDoc>(asObjectArray(rawApps).map((a) => [String(a._id), a]));
+  const appById = new Map<string, UnknownDoc>(asDocArray(rawApps).map((a) => [String(a._id), a]));
   const warnByKey = new Map<string, string[]>();
   const pushWarn = (kind: Kind, id: string, reason: string) => {
     const key = `${kind}:${id}`;
@@ -461,7 +468,7 @@ export async function GET(req: Request) {
           .find({ _id: { $in: objectIds }, status: 'draft' })
           .project({ _id: 1, status: 1, orderId: 1, rentalId: 1, createdAt: 1 })
           .toArray();
-        for (const d of asObjectArray(rawDrafts)) {
+        for (const d of asDocArray(rawDrafts)) {
           draftById.set(String(d._id), d);
         }
       }
@@ -554,7 +561,7 @@ export async function GET(req: Request) {
   }
 
   // 신청서 기준: 존재성 + 역방향 링크
-  for (const a of asObjectArray(rawApps)) {
+  for (const a of asDocArray(rawApps)) {
     const aid = String(a._id);
 
     const oid = a?.orderId ? String(a.orderId) : null;
@@ -615,7 +622,7 @@ export async function GET(req: Request) {
     };
   });
 
-  const appItems: OpItem[] = asObjectArray(rawApps).map((a) => {
+  const appItems: OpItem[] = asDocArray(rawApps).map((a) => {
     const id = String(a._id);
     const cust = pickCustomerFromDoc(a);
     const linkedOrderId = a?.orderId ? String(a.orderId) : null;
@@ -766,9 +773,6 @@ export async function GET(req: Request) {
   const start = (requestedPage - 1) * requestedPageSize;
   const items = merged.slice(start, start + requestedPageSize);
 
-  const responseDto: AdminOperationsListResponseDto = {
-    items: items.map((item) => ({ ...item, createdAt: item.createdAt ?? null })),
-    total,
-  };
+  const responseDto = toOperationsListResponseDto(items, total);
   return NextResponse.json(responseDto);
 }

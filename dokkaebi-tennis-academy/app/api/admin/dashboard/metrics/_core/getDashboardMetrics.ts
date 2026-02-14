@@ -1,4 +1,5 @@
 import type { Db } from 'mongodb';
+import type { AdminDashboardMetricsResponseDto } from '@/types/admin/dashboard';
 /** Responsibility: query collection + aggregation transform + DTO mapping (legacy core). */
 
 /**
@@ -96,6 +97,17 @@ function asDoc(value: unknown): UnknownDoc | null {
 
 function asDocArray(value: unknown): UnknownDoc[] {
   return Array.isArray(value) ? value.map((item) => asDoc(item)).filter((item): item is UnknownDoc => item !== null) : [];
+}
+
+function getString(value: unknown): string | null {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return null;
+}
+
+function getNumber(value: unknown, fallback = 0): number {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 function toIsoSafe(value: unknown) {
@@ -363,7 +375,7 @@ export async function getDashboardMetrics(db: Db) {
   // 판매 상위(최근 7일, 결제완료 주문 기준)
   const topProducts7dP = ordersCol
     .aggregate<{
-      _id: any;
+      _id: unknown;
       name: string;
       brand: string;
       qty: number;
@@ -455,7 +467,7 @@ export async function getDashboardMetrics(db: Db) {
 
   // Top 리스트는 user.name 까지 같이 보여주면 나나 재민이가 바로 알아볼 수 있어서 P0에서도 lookup 포함
   const passExpiringSoonListP = passesCol
-    .aggregate<any>([
+    .aggregate<UnknownDoc>([
       {
         $match: {
           status: 'active',
@@ -1338,7 +1350,7 @@ export async function getDashboardMetrics(db: Db) {
 
   // 목록 변환/통합
   const cancelRequests = [
-    ...(orderCancelRequestsList as any[]).map((d : any) => ({
+    ...asDocArray(orderCancelRequestsList).map((d) => ({
       kind: 'order' as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
@@ -1348,7 +1360,7 @@ export async function getDashboardMetrics(db: Db) {
       paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       href: `/admin/orders/${String(d?._id)}`,
     })),
-    ...(appCancelRequestsList as any[]).map((d : any) => ({
+    ...asDocArray(appCancelRequestsList).map((d) => ({
       kind: 'application' as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
@@ -1358,12 +1370,12 @@ export async function getDashboardMetrics(db: Db) {
       paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       href: `/admin/applications/stringing/${String(d?._id)}`,
     })),
-    ...(rentalCancelRequestsList as any[]).map((d : any) => ({
+    ...asDocArray(rentalCancelRequestsList).map((d) => ({
       kind: 'rental' as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
-      name: String(d?.guest?.name || '고객'),
-      amount: Number(d?.amount?.total || Number(d?.fee || 0) + Number(d?.deposit || 0)),
+      name: String(asDoc(d.guest)?.name || '고객'),
+      amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
       status: String(d?.status || ''),
       href: `/admin/rentals/${String(d?._id)}`,
     })),
@@ -1372,7 +1384,7 @@ export async function getDashboardMetrics(db: Db) {
     .slice(0, 10);
 
   const shippingPendingList = [
-    ...(shippingPendingOrdersList as any[]).map((d : any) => ({
+    ...asDocArray(shippingPendingOrdersList).map((d) => ({
       kind: 'order' as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
@@ -1382,7 +1394,7 @@ export async function getDashboardMetrics(db: Db) {
       paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       href: `/admin/orders/${String(d?._id)}/shipping-update`,
     })),
-    ...(shippingPendingAppsList as any[]).map((d : any) => ({
+    ...asDocArray(shippingPendingAppsList).map((d) => ({
       kind: 'application' as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
@@ -1408,7 +1420,7 @@ export async function getDashboardMetrics(db: Db) {
 
   // 결제 대기(24h+) Top 리스트 (오래된 순)
   const paymentPending24hList = [
-    ...(paymentPending24hOrdersList as any[]).map((d : any) => ({
+    ...asDocArray(paymentPending24hOrdersList).map((d) => ({
       kind: 'order' as const,
       id: String(d._id),
       createdAt: toIsoAny(d.createdAt),
@@ -1418,7 +1430,7 @@ export async function getDashboardMetrics(db: Db) {
       href: `/admin/orders/${String(d._id)}`,
       hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
     })),
-    ...(paymentPending24hAppsList as any[]).map((d : any) => ({
+    ...asDocArray(paymentPending24hAppsList).map((d) => ({
       kind: 'application' as const,
       id: String(d._id),
       createdAt: toIsoAny(d.createdAt),
@@ -1428,22 +1440,22 @@ export async function getDashboardMetrics(db: Db) {
       href: `/admin/applications/stringing/${String(d._id)}`,
       hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
     })),
-    ...(paymentPending24hPackagesList as any[]).map((d : any) => ({
+    ...asDocArray(paymentPending24hPackagesList).map((d) => ({
       kind: 'package' as const,
       id: String(d._id),
       createdAt: toIsoAny(d.createdAt),
-      name: String(d?.userSnapshot?.name ?? ''),
+      name: String(asDoc(d.userSnapshot)?.name ?? ''),
       amount: Number(d.totalPrice ?? 0),
       status: String(d.status ?? ''),
       href: `/admin/packages/${String(d._id)}`,
       hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
     })),
-    ...(paymentPending24hRentalsList as any[]).map((d : any) => ({
+    ...asDocArray(paymentPending24hRentalsList).map((d) => ({
       kind: 'rental' as const,
       id: String(d._id),
       createdAt: toIsoAny(d.createdAt),
       name: pickRentalName(d),
-      amount: Number(d?.amount?.total ?? 0),
+      amount: getNumber(asDoc(d.amount)?.total),
       status: String(d.status ?? ''),
       href: `/admin/rentals/${String(d._id)}`,
       hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
@@ -1452,20 +1464,20 @@ export async function getDashboardMetrics(db: Db) {
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .slice(0, 10);
 
-  const rentalOverdueList = (overdueRentalsList as any[]).map((d : any) => ({
+  const rentalOverdueList = asDocArray(overdueRentalsList).map((d) => ({
     id: String(d?._id),
     dueAt: toIsoAny(d?.dueAt),
     name: pickRentalName(d),
-    amount: Number(d?.amount?.total || Number(d?.fee || 0) + Number(d?.deposit || 0)),
+    amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
     overdueDays: calcOverdueDays(d?.dueAt),
     href: `/admin/rentals/${String(d?._id)}`,
   }));
 
-  const rentalDueSoonList = (dueSoonRentalsList as any[]).map((d : any) => ({
+  const rentalDueSoonList = asDocArray(dueSoonRentalsList).map((d) => ({
     id: String(d?._id),
     dueAt: toIsoAny(d?.dueAt),
     name: pickRentalName(d),
-    amount: Number(d?.amount?.total || Number(d?.fee || 0) + Number(d?.deposit || 0)),
+    amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
     dueInHours: calcDueInHours(d?.dueAt),
     href: `/admin/rentals/${String(d?._id)}`,
   }));
@@ -1481,7 +1493,7 @@ export async function getDashboardMetrics(db: Db) {
     const label = size > 0 ? `${size}회권` : '패스';
     return `${who} · ${label}`;
   };
-  const passExpiringSoonList = (passExpiringSoonListRaw as any[]).map((d : any) => ({
+  const passExpiringSoonList = asDocArray(passExpiringSoonListRaw).map((d) => ({
     id: String(d?._id),
     expiresAt: toIsoAny(d?.expiresAt),
     name: pickPassName(d),
@@ -1490,7 +1502,7 @@ export async function getDashboardMetrics(db: Db) {
     href: d?.orderId ? `/admin/packages/${String(d.orderId)}` : '/admin/packages',
   }));
 
-  const stringingAging = (stringingAgingList as any[]).map((d : any) => ({
+  const stringingAging = asDocArray(stringingAgingList).map((d) => ({
     id: String(d?._id),
     createdAt: toIso(d?.createdAt),
     name: pickName(d),
@@ -1501,7 +1513,7 @@ export async function getDashboardMetrics(db: Db) {
     href: `/admin/applications/stringing/${String(d?._id)}`,
   }));
 
-  const outboxBacklog = (outboxBacklogList as any[]).map((d : any) => ({
+  const outboxBacklog = asDocArray(outboxBacklogList).map((d) => ({
     id: String(d?._id),
     createdAt: toIso(d?.createdAt),
     status: (d?.status || 'queued') as 'queued' | 'failed' | 'sent',
@@ -1551,7 +1563,7 @@ export async function getDashboardMetrics(db: Db) {
     db.collection('settlements').findOne({}, { sort: { yyyymm: -1 }, projection: { yyyymm: 1, lastGeneratedAt: 1, lastGeneratedBy: 1 } }),
   ]);
 
-  const resp: DashboardMetrics = {
+  const resp: AdminDashboardMetricsResponseDto = {
     generatedAt: now.toISOString(),
 
     series: {
@@ -1644,36 +1656,36 @@ export async function getDashboardMetrics(db: Db) {
     },
 
     dist: {
-      orderStatus: orderStatusDistRows.map((r : any) => ({ label: String(r._id), count: Number(r.count || 0) })),
+      orderStatus: asDocArray(orderStatusDistRows).map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
       orderPaymentStatus: orderPaymentStatusDist,
-      applicationStatus: appStatusDistRows.map((r : any) => ({ label: String(r._id), count: Number(r.count || 0) })),
+      applicationStatus: asDocArray(appStatusDistRows).map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
     },
 
     inventoryList: {
-      lowStock: (lowStockListDocs as Array<any>).map((d : any) => ({
+      lowStock: asDocArray(lowStockListDocs).map((d) => ({
         id: String(d?._id),
         name: String(d?.name || ''),
         brand: String(d?.brand || ''),
-        stock: Number(d?.inventory?.stock || 0),
-        lowStock: d?.inventory?.lowStock === null || d?.inventory?.lowStock === undefined ? null : Number(d?.inventory?.lowStock),
+        stock: getNumber(asDoc(d.inventory)?.stock),
+        lowStock: (() => { const lowStock = asDoc(d.inventory)?.lowStock; return lowStock === null || lowStock === undefined ? null : getNumber(lowStock); })(),
       })),
-      outOfStock: (outOfStockListDocs as Array<any>).map((d : any) => ({
+      outOfStock: asDocArray(outOfStockListDocs).map((d) => ({
         id: String(d?._id),
         name: String(d?.name || ''),
         brand: String(d?.brand || ''),
-        stock: Number(d?.inventory?.stock || 0),
+        stock: getNumber(asDoc(d.inventory)?.stock),
       })),
     },
 
     top: {
-      products7d: (topProducts7dRows as Array<any>).map((r : any) => ({
+      products7d: asDocArray(topProducts7dRows).map((r) => ({
         productId: String(r?._id),
         name: String(r?.name || ''),
         brand: String(r?.brand || ''),
         qty: Number(r?.qty || 0),
         revenue: Number(r?.revenue || 0),
       })),
-      brands7d: (topBrands7dRows as Array<any>).map((r : any) => ({
+      brands7d: asDocArray(topBrands7dRows).map((r) => ({
         brand: String(r?._id || ''),
         qty: Number(r?.qty || 0),
         revenue: Number(r?.revenue || 0),
@@ -1690,11 +1702,11 @@ export async function getDashboardMetrics(db: Db) {
       rentalDueSoon: rentalDueSoonList,
       passExpiringSoon: passExpiringSoonList,
       stringingAging,
-      outboxBacklog: outboxBacklogList.map((d : any) => ({
+      outboxBacklog: asDocArray(outboxBacklogList).map((d) => ({
         id: String(d._id),
         href: `/admin/notifications/outbox/${String(d._id)}`,
         createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : typeof d?.createdAt === 'string' ? d.createdAt : new Date().toISOString(),
-        status: (d?.status as any) || 'queued',
+        status: (getString(d?.status) ?? 'queued') as 'queued' | 'failed' | 'sent',
         eventType: String(d?.eventType || ''),
         to: pickOutboxTo(d),
         retries: Number(d?.retries || 0),
@@ -1718,30 +1730,30 @@ export async function getDashboardMetrics(db: Db) {
     },
 
     recent: {
-      orders: (recentOrders as Array<any>).map((d : any) => ({
+      orders: asDocArray(recentOrders).map((d) => ({
         id: String(d?._id),
         createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
-        name: String(d?.shippingInfo?.name || d?.shippingInfo?.receiverName || '고객'),
+        name: String(asDoc(d.shippingInfo)?.name || asDoc(d.shippingInfo)?.receiverName || '고객'),
         totalPrice: Number(d?.totalPrice || 0),
         status: String(d?.status || '대기중'),
         paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus || '결제대기'),
       })),
-      applications: (recentApps as Array<any>).map((d : any) => ({
+      applications: asDocArray(recentApps).map((d) => ({
         id: String(d?._id),
         createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
-        name: String(d?.shippingInfo?.name || d?.shippingInfo?.receiverName || '고객'),
+        name: String(asDoc(d.shippingInfo)?.name || asDoc(d.shippingInfo)?.receiverName || '고객'),
         totalPrice: Number(d?.totalPrice || 0),
         status: String(d?.status || '접수완료'),
         paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus || '결제대기'),
       })),
-      rentals: (recentRentals as Array<any>).map((d : any) => ({
+      rentals: asDocArray(recentRentals).map((d) => ({
         id: String(d?._id),
         createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
         name: String(d?.userEmail || '고객'),
-        total: Number(d?.amount?.total || 0),
+        total: getNumber(asDoc(d.amount)?.total),
         status: String(d?.status || 'pending'),
       })),
-      reports: (recentReports as Array<any>).map((d : any) => ({
+      reports: asDocArray(recentReports).map((d) => ({
         id: String(d?._id),
         createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
         kind: d?.commentId ? 'comment' : 'post',
