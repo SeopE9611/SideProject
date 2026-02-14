@@ -1,3 +1,5 @@
+import { adminFetcher } from '@/lib/admin/adminFetcher';
+
 export interface PackageOrder {
   id: string;
   userId?: string;
@@ -88,7 +90,7 @@ export const packageTypeColors: Record<PackageType, string> = {
   '100회권': 'bg-orange-100 text-orange-800 border-orange-200',
 };
 
-export const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
+export const fetcher = adminFetcher;
 
 export const DEFAULT_PACKAGE_LIST_FILTERS = {
   page: 1 as number,

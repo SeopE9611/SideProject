@@ -17,6 +17,7 @@ import BrandFilter from '@/app/admin/products/product-filters/BrandFilter';
 import MaterialFilter from '@/app/admin/products/product-filters/MaterialFilter';
 import StockStatusFilter from '@/app/admin/products/product-filters/StockStatusFilter';
 import { cn } from '@/lib/utils';
+import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import ProductsTableSkeleton from '@/app/admin/products/ProductsTableSkeleton';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
@@ -79,8 +80,6 @@ const MATERIAL_LABEL: Record<string, string> = Object.fromEntries(MATERIAL_OPTIO
 const brandLabel = (id?: string) => (id ? BRAND_LABEL[id] ?? id : '');
 const materialLabel = (id?: string) => (id ? MATERIAL_LABEL[id] ?? id : '');
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
-
 // 입력 디바운스
 function useDebounce<T>(value: T, delay = 250): T {
   const [debounced, setDebounced] = useState(value);
@@ -138,12 +137,13 @@ export default function ProductsClient() {
     totalsByStatus: Record<'active' | 'low_stock' | 'out_of_stock', number>; // 전역 통계(필터 무시)
   };
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<ApiRes>(`/api/admin/products?${qs}`, fetcher, {
+  const { data, error, isLoading, isValidating, mutate } = useSWR<ApiRes>(`/api/admin/products?${qs}`, adminFetcher, {
     revalidateOnFocus: false,
     keepPreviousData: true, // SWR v2 전환 중 깜빡임 줄어듬
   });
 
   const items = data?.items ?? [];
+  const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -208,6 +208,10 @@ export default function ProductsClient() {
     setPage(1);
   };
 
+  useEffect(() => {
+    if (commonErrorMessage) showErrorToast(commonErrorMessage);
+  }, [commonErrorMessage]);
+
   const resetFilters = () => {
     setBrandFilter('all');
     setMaterialFilter('all');
@@ -219,7 +223,7 @@ export default function ProductsClient() {
   return (
     <div className={['min-h-screen', 'bg-gradient-to-b from-slate-50 via-white to-slate-50', 'dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'].join(' ')}>
       <div className="container py-8 px-6">
-        {error && <div className="text-center text-red-500">상품 로드 중 오류가 발생했습니다.</div>}
+        {commonErrorMessage && <div className="text-center text-red-500">{commonErrorMessage}</div>}
         <div className="mb-2">
           <div className="flex items-center space-x-3 mb-4">
             <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">

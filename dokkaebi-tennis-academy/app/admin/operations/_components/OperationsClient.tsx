@@ -23,8 +23,8 @@ import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils'
 import { copyToClipboard } from './actions/operationsActions';
 import { initOperationsStateFromQuery, useSyncOperationsQuery } from './hooks/useOperationsQueryState';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
+import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 // 운영함 상단에서 "정산 관리"로 바로 이동할 때 사용할 기본 YYYYMM(지난달, KST 기준)
@@ -212,10 +212,11 @@ export default function OperationsClient() {
   });
   const key = `/api/admin/operations?${queryString}`;
 
-  const { data, isLoading } = useSWR<{ items: OpItem[]; total: number }>(key, fetcher);
+  const { data, isLoading, error } = useSWR<{ items: OpItem[]; total: number }>(key, adminFetcher);
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / effectivePageSize));
+  const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
 
   // 리스트를 "그룹(묶음)" 단위로 변환
   const groups = useMemo(() => buildGroups(items), [items]);
@@ -303,6 +304,7 @@ export default function OperationsClient() {
 
   return (
     <div className="container py-6">
+        {commonErrorMessage && <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
       <div className="mx-auto max-w-7xl mb-5">
         <h1 className="text-4xl font-semibold tracking-tight">운영함 (통합)</h1>
