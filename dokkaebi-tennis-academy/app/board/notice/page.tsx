@@ -1,8 +1,24 @@
-// 상단 import 추가
-import { getBaseUrl } from '@/lib/getBaseUrl';
+import type { Metadata } from 'next';
 import NoticeListClient from './_components/NoticeListClient';
 import { getBoardList } from '@/lib/boards.queries';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
+
+export const metadata: Metadata = {
+  title: '공지사항 | 도깨비 테니스',
+  description: '도깨비 테니스의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
+  alternates: { canonical: '/board/notice' },
+  openGraph: {
+    title: '공지사항 | 도깨비 테니스',
+    description: '도깨비 테니스의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
+    url: '/board/notice',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: '공지사항 | 도깨비 테니스',
+    description: '도깨비 테니스의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
+  },
+};
 
 // ISR(30s): 페이지 단위 캐시
 export const revalidate = 30;
@@ -78,4 +94,4 @@ export default async function Page({
       initialField={field}
     />
   );
- }
+}
