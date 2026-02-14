@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { showErrorToast, showSuccessToast, showInfoToast } from '@/lib/toast';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FileDown, RefreshCw, CheckCircle2, AlertTriangle, Loader2, Calendar, TrendingUp, Package, DollarSign, TrendingDown, Activity, Trash2, ArrowUpDown, ArrowUp, ArrowDown, BarChartBig as ChartBar, MoreHorizontal } from 'lucide-react';
@@ -10,69 +10,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { formatKRWCard, formatKRWFull } from '@/lib/money';
 import KpiCard from '@/app/admin/settlements/_components/KpiCard';
 import type { SettlementDiff, SettlementLiveResponse, SettlementSnapshot } from '@/types/admin/settlements';
+import { fetchWithCredentials } from './actions/settlementActions';
+import { useInitialYyyymmFromQuery } from './hooks/useInitialYyyymmFromQuery';
+import { confirmDeleteSnapshot, confirmDeleteSnapshots } from './dialogs/settlementDialogs';
+import { firstDayOfMonth_KST, fmtYMD_KST, monthEdges, prevMonthRange_KST, TZ } from './filters/settlementDateFilters';
+import { sortSettlementRows, type SortDirection, type SortField } from './table/settlementSort';
 
 // ──────────────────────────────────────────────────────────────
 // 공통 유틸
 // ──────────────────────────────────────────────────────────────
-const fetcher = <T,>(url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json() as Promise<T>);
-
-// KST(Asia/Seoul) 기준 YYYY-MM-DD 문자열 포맷터
-const TZ = 'Asia/Seoul';
-function fmtYMD_KST(date = new Date()) {
-  // 'en-CA'는 2025-10-12 형식을 보장
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: TZ,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date);
-}
-
-// 이번 달 1일(KST) 문자열
-function firstDayOfMonth_KST(base = new Date()) {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: TZ,
-    year: 'numeric',
-    month: '2-digit',
-  })
-    .formatToParts(base)
-    .reduce<Record<string, string>>((acc, p) => ((acc[p.type] = p.value), acc), {});
-  return `${parts.year}-${parts.month}-01`;
-}
-
-// 지난 달 [from, to] (KST) 문자열 범위
-function prevMonthRange_KST(base = new Date()) {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: TZ,
-    year: 'numeric',
-    month: '2-digit',
-  })
-    .formatToParts(base)
-    .reduce<Record<string, string>>((acc, p) => ((acc[p.type] = p.value), acc), {});
-  let y = Number(parts.year);
-  let m = Number(parts.month); // 1~12
-  m -= 1;
-  if (m === 0) {
-    m = 12;
-    y -= 1;
-  }
-  const mm = String(m).padStart(2, '0');
-  // KST는 DST가 없어 월말 계산에 로컬 Date 사용해도 안전
-  const lastDay = new Date(y, m, 0).getDate(); // m은 1~12
-  return { from: `${y}-${mm}-01`, to: `${y}-${mm}-${String(lastDay).padStart(2, '0')}` };
-}
-
-// yyyymm → 같은 달의 from/to(YYYY-MM-DD)
-function monthEdges(yyyymm: string) {
-  const y = Number(yyyymm.slice(0, 4));
-  const m = Number(yyyymm.slice(4, 6)) - 1; // 0-based
-  const start = new Date(y, m, 1);
-  const end = new Date(y, m + 1, 0);
-  const from = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-01`;
-  const to = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
-  return { from, to };
-}
-
 // 파일명 유틸: 금지문자 치환 + KST 타임스탬프 (YYYYMMDD_HHMMSS)
 function makeCsvFilename(base: string) {
   const safe = base.replace(/[\\/:*?"<>|]/g, '_').slice(0, 120);
@@ -91,32 +37,19 @@ function makeCsvFilename(base: string) {
   return `${safe}_${ts}.csv`;
 }
 
-// 정렬 타입 정의
-type SortField = 'paid' | 'refund' | 'net' | 'orders' | 'applications' | 'packages';
-type SortDirection = 'asc' | 'desc' | null;
-
 export default function SettlementsClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const didInitFromQuery = useRef(false);
 
   // ──────────────────────────────────────────────────────────
   // 상태
   // ──────────────────────────────────────────────────────────
   const [yyyymm, setYyyymm] = useState<string>(() => fmtYMD_KST().slice(0, 7).replace('-', '')); // KST 기준 초기 yyyymm
-  const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>('/api/settlements', fetcher);
+  const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>('/api/settlements', fetchWithCredentials);
 
   // URL 쿼리로 월을 지정하면(예: /admin/settlements?yyyymm=202601) 초기 선택 월을 그 값으로 맞춘다.
   // - 운영함 → 정산 "바로가기"에서 추천 월을 함께 전달할 때 월 착오를 줄이기 위함
-  useEffect(() => {
-    if (didInitFromQuery.current) return;
-    didInitFromQuery.current = true;
-
-    const q = searchParams.get('yyyymm');
-    if (q && /^\d{6}$/.test(q)) {
-      setYyyymm(q);
-    }
-  }, [searchParams]);
+  useInitialYyyymmFromQuery(searchParams, setYyyymm);
   const [tab, setTab] = useState<'snapshot' | 'live'>('snapshot');
 
   // 실시간 탭의 조회 기간 (KST)
@@ -280,7 +213,7 @@ export default function SettlementsClient() {
       return;
     }
 
-    if (!confirm(`선택한 ${selectedSnapshots.size}개의 스냅샷을 삭제하시겠습니까?`)) {
+    if (!confirmDeleteSnapshots(selectedSnapshots.size)) {
       return;
     }
 
@@ -320,7 +253,7 @@ export default function SettlementsClient() {
 
   // 단일 항목 삭제
   const deleteSingle = async (yyyymm: string) => {
-    if (!confirm(`${yyyymm} 스냅샷을 삭제하시겠습니까?`)) {
+    if (!confirmDeleteSnapshot(yyyymm)) {
       return;
     }
 
@@ -369,45 +302,7 @@ export default function SettlementsClient() {
   };
 
   // 정렬된 데이터
-  const sortedData = () => {
-    if (!data || !sortField || !sortDirection) return data;
-
-    const sorted = [...data].sort((a, b) => {
-      let aVal = 0;
-      let bVal = 0;
-
-      switch (sortField) {
-        case 'paid':
-          aVal = a.totals?.paid || 0;
-          bVal = b.totals?.paid || 0;
-          break;
-        case 'refund':
-          aVal = a.totals?.refund || 0;
-          bVal = b.totals?.refund || 0;
-          break;
-        case 'net':
-          aVal = a.totals?.net || 0;
-          bVal = b.totals?.net || 0;
-          break;
-        case 'orders':
-          aVal = a.breakdown?.orders || 0;
-          bVal = b.breakdown?.orders || 0;
-          break;
-        case 'applications':
-          aVal = a.breakdown?.applications || 0;
-          bVal = b.breakdown?.applications || 0;
-          break;
-        case 'packages':
-          aVal = a.breakdown?.packages || 0;
-          bVal = b.breakdown?.packages || 0;
-          break;
-      }
-
-      return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-    });
-
-    return sorted;
-  };
+  const sortedData = () => sortSettlementRows(data, sortField, sortDirection);
 
   // 정렬 아이콘 렌더링
   const renderSortIcon = (field: SortField) => {

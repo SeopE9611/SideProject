@@ -15,113 +15,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { shortenId } from '@/lib/shorten';
-import { showSuccessToast } from '@/lib/toast';
 import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
-import { opsKindBadgeClass, opsKindLabel, opsStatusBadgeClass, type OpsKind } from '@/lib/admin-ops-taxonomy';
+import { opsKindBadgeClass, opsKindLabel, opsStatusBadgeClass } from '@/lib/admin-ops-taxonomy';
 import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
-
-type Kind = OpsKind;
-
-type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-
-type SettlementAnchor = 'order' | 'rental' | 'application';
-
-type OpItem = {
-  id: string;
-  kind: Kind;
-  createdAt: string | null;
-  customer: { name: string; email: string };
-  title: string;
-  statusLabel: string;
-  paymentLabel?: string;
-  amount: number;
-  flow: Flow;
-  flowLabel: string;
-  settlementAnchor: SettlementAnchor;
-  settlementLabel: string;
-  href: string;
-  related?: { kind: Kind; id: string; href: string } | null;
-  isIntegrated: boolean;
-
-  /**
-   * 서버에서 내려주는 운영 경고 사유.
-   * - 예: 연결된 문서가 DB에 없어서 통합/연결이 깨진 상태
-   * - 예: 연결 키(orderId/rentalId 등) 불일치
-   */
-  warnReasons?: string[];
-
-  /**
-   * draft(초안) 등 '오류는 아니지만 아직 작성/제출이 끝나지 않은' 상태를 표시할 때 사용.
-   * 예: 스트링 구매 후 신청서 페이지에서 이탈 → stringing_application이 draft로만 존재
-   */
-  pendingReasons?: string[];
-};
+import { prevMonthYyyymmKST, flowBadgeClass, settlementBadgeClass, type Kind, type Flow } from './filters/operationsFilters';
+import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils';
+import { copyToClipboard } from './actions/operationsActions';
+import { initOperationsStateFromQuery, useSyncOperationsQuery } from './hooks/useOperationsQueryState';
+import { buildQueryString } from '@/lib/admin/urlQuerySync';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 // 운영함 상단에서 "정산 관리"로 바로 이동할 때 사용할 기본 YYYYMM(지난달, KST 기준)
-function prevMonthYyyymmKST() {
-  // KST 기준 현재 연/월 파츠 추출
-  const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit' });
-  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
-  const y = Number(parts.year);
-  const m = Number(parts.month); // 1~12
-
-  // 지난달 계산
-  const py = m === 1 ? y - 1 : y;
-  const pm = m === 1 ? 12 : m - 1;
-  return `${py}${String(pm).padStart(2, '0')}`;
-}
-
-function flowBadgeClass(flow?: Flow) {
-  // 운영자 인지 부하를 줄이기 위해 "카테고리" 단위로만 색상을 분리
-  // (세부 Flow별 색상은 추후 원하면 확장)
-  if (!flow) return 'bg-slate-500/10 text-slate-700';
-  if (flow === 3) return 'bg-slate-500/10 text-slate-700'; // 교체 신청(단독)
-  if (flow === 6 || flow === 7) return 'bg-violet-500/10 text-violet-700'; // 대여 계열
-  if (flow === 4 || flow === 5) return 'bg-orange-500/10 text-orange-700'; // 라켓 구매 계열
-  return 'bg-sky-500/10 text-sky-700'; // 1/2: 스트링 구매 계열
-}
-
-function settlementBadgeClass() {
-  return 'bg-slate-500/10 text-slate-600';
-}
-
-function formatKST(iso?: string | null) {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '-';
-  // 가독성: yy. mm. dd. hh:mm
-  const yy = String(d.getFullYear()).slice(-2);
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${yy}. ${mm}. ${dd}. ${hh}:${mi}`;
-}
-
 // 그룹 createdAt(ISO) → KST 기준 yyyymm(예: 202601)
-function yyyymmKST(iso?: string | null) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Seoul',
-    year: 'numeric',
-    month: '2-digit',
-  }).formatToParts(d);
-
-  const map = parts.reduce<Record<string, string>>((acc, p) => {
-    if (p.type !== 'literal') acc[p.type] = p.value;
-    return acc;
-  }, {});
-
-  if (!map.year || !map.month) return null;
-  return `${map.year}${map.month}`;
-}
-
 // 그룹(묶음) 만들기 유틸
 // - 연결된 건을 "한 묶음"으로 묶어서 운영자가 한눈에 인지하게 하는 목적
 // - 그룹 키는 "앵커(주문/대여)" 기준으로 통일
@@ -282,19 +189,8 @@ export default function OperationsClient() {
 
   // 1) 최초 1회: URL → 상태 주입(새로고침 대응)
   useEffect(() => {
-    const k = (sp.get('kind') as any) ?? 'all';
-    const f = (sp.get('flow') as any) ?? 'all';
-    const i = (sp.get('integrated') as any) ?? 'all';
-    const query = sp.get('q') ?? '';
-    const warn = sp.get('warn');
-    const p = Number(sp.get('page') ?? 1);
-    if (k === 'all' || k === 'order' || k === 'stringing_application' || k === 'rental') setKind(k);
-    if (f === 'all' || f === '1' || f === '2' || f === '3' || f === '4' || f === '5' || f === '6' || f === '7') setFlow(f);
-    if (i === 'all' || i === '1' || i === '0') setIntegrated(i);
-    if (query) setQ(query);
-    if (warn === '1') setOnlyWarn(true);
-    if (!Number.isNaN(p) && p > 0) setPage(p);
-  }, []);
+    initOperationsStateFromQuery(sp, { setQ, setKind, setFlow, setIntegrated, setOnlyWarn, setPage });
+  }, [sp]);
 
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
   useEffect(() => {
@@ -302,34 +198,19 @@ export default function OperationsClient() {
   }, [q, kind, flow, integrated, page, onlyWarn]);
 
   // 2) 상태 → URL 동기화(디바운스)
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const url = new URL(window.location.href);
-      const setParam = (key: string, value?: string | number | null) => {
-        if (value === undefined || value === null || value === '' || value === 'all') url.searchParams.delete(key);
-        else url.searchParams.set(key, String(value));
-      };
-      setParam('q', q);
-      setParam('kind', kind);
-      setParam('flow', flow);
-      setParam('integrated', integrated);
-      setParam('page', page === 1 ? undefined : page);
-      setParam('warn', onlyWarn ? '1' : undefined);
-      router.replace(pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''));
-    }, 200);
-    return () => clearTimeout(t);
-  }, [q, kind, flow, integrated, page, onlyWarn, pathname, router]);
+  useSyncOperationsQuery({ q, kind, flow, integrated, onlyWarn, page }, pathname, router.replace);
 
   // 3) API 키 구성
-  const qs = new URLSearchParams();
-  if (q.trim()) qs.set('q', q.trim());
-  if (kind !== 'all') qs.set('kind', kind);
-  if (flow !== 'all') qs.set('flow', flow);
-  if (integrated !== 'all') qs.set('integrated', integrated);
-  qs.set('page', String(page));
-  qs.set('pageSize', String(effectivePageSize));
-  if (onlyWarn) qs.set('warn', '1');
-  const key = `/api/admin/operations?${qs.toString()}`;
+  const queryString = buildQueryString({
+    q: q.trim() || undefined,
+    kind,
+    flow,
+    integrated,
+    page,
+    pageSize: effectivePageSize,
+    warn: onlyWarn ? '1' : undefined,
+  });
+  const key = `/api/admin/operations?${queryString}`;
 
   const { data, isLoading } = useSWR<{ items: OpItem[]; total: number }>(key, fetcher);
   const items = data?.items ?? [];
@@ -391,10 +272,6 @@ export default function OperationsClient() {
     }));
   }
 
-  async function copy(text: string) {
-    await navigator.clipboard.writeText(text);
-    showSuccessToast('복사 완료');
-  }
 
   function renderLinkedDocs(docs: Array<{ kind: Kind; id: string; href: string }>) {
     if (!docs || docs.length === 0) {
@@ -413,7 +290,7 @@ export default function OperationsClient() {
               <span className="font-mono">{shortenId(d.id)}</span>
             </Link>
 
-            <Button type="button" size="sm" variant="outline" className="h-7 w-7 p-0 bg-transparent" onClick={() => copy(d.id)} aria-label="연결 문서 ID 복사">
+            <Button type="button" size="sm" variant="outline" className="h-7 w-7 p-0 bg-transparent" onClick={() => copyToClipboard(d.id)} aria-label="연결 문서 ID 복사">
               <Copy className="h-4 w-4" />
             </Button>
           </div>
@@ -951,7 +828,7 @@ export default function OperationsClient() {
 
                           <TableCell className={cn(tdClasses, 'text-right')}>
                             <div className="flex justify-end gap-1.5">
-                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copy(g.anchor.id)} title="ID 복사">
+                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copyToClipboard(g.anchor.id)} title="ID 복사">
                                 <Copy className="h-3.5 w-3.5" />
                               </Button>
                               <Button asChild size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" title="상세 보기">
@@ -1039,7 +916,7 @@ export default function OperationsClient() {
 
                               <TableCell className={cn(tdClasses, 'text-right')}>
                                 <div className="flex justify-end gap-1.5">
-                                  <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copy(it.id)} title="ID 복사">
+                                  <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copyToClipboard(it.id)} title="ID 복사">
                                     <Copy className="h-3.5 w-3.5" />
                                   </Button>
                                   <Button asChild size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" title="상세 보기">
