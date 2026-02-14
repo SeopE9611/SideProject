@@ -23,7 +23,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     const userIdObj = new ObjectId(id);
     const filter = { $or: [{ userId: userIdObj }, { userId: id }] };
 
-    await db.collection('orders').createIndex({ userId: 1, createdAt: -1 }, { name: 'orders_userId_createdAt' });
 
     const col = db.collection('orders');
     const total = await col.countDocuments(filter);

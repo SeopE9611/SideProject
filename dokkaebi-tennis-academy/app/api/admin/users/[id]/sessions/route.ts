@@ -29,12 +29,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 5, min: 1, max: 20 });
 
     const db = await getDb();
-    await db
-      .collection('user_sessions')
-      .createIndex({ userId: 1, at: -1 })
-      .catch((e: any) => {
-        if (e?.code !== 85) throw e;
-      });
 
     const rows = await db.collection('user_sessions').find({ userId: new ObjectId(id) }).sort({ at: -1 }).limit(limit).project({ _id: 0, userId: 0 }).toArray();
 
