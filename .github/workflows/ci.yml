@@ -52,6 +52,9 @@ jobs:
         run: pnpm lint
         continue-on-error: true
 
+      - name: Guard Next.js PageProps typing
+        run: pnpm check:next-page-props
+
       - name: Typecheck
         run: pnpm exec tsc -p tsconfig.json
 
