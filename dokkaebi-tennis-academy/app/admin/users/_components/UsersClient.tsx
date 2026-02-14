@@ -17,6 +17,10 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
 import UserPointsDialog from '@/app/admin/users/_components/UserPointsDialog';
+import { FiltersSection } from '@/app/admin/users/_components/users-client/FiltersSection';
+import { TableSection } from '@/app/admin/users/_components/users-client/TableSection';
+import { BulkActionsSection } from '@/app/admin/users/_components/users-client/BulkActionsSection';
+import { DialogsSection } from '@/app/admin/users/_components/users-client/DialogsSection';
 import { useUserList } from '@/app/admin/users/_hooks/useUserList';
 import type { AdminErrorPayload, UserCleanupPreviewCandidateDto } from '@/types/admin/users';
 
@@ -459,7 +463,7 @@ export default function UsersClient() {
 
   return (
     <AuthGuard>
-      {/* 검색/필터 바 */}
+      <FiltersSection>{/* 검색/필터 바 */}
       <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl p-4 sm:p-6 mb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full max-w-md">
@@ -576,6 +580,9 @@ export default function UsersClient() {
         </div>
       </div>
 
+      </FiltersSection>
+
+      <BulkActionsSection>
       {/* 선택 액션바 */}
       {selectedUsers.length > 0 && (
         <div className="mb-3 rounded-md bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 p-4">
@@ -671,7 +678,9 @@ export default function UsersClient() {
         </div>
       )}
 
-      {/* 한눈에 보기: 칼럼 병합 + 고정폭 + dense */}
+      </BulkActionsSection>
+
+      <TableSection>
       <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl max-w-[1120px] mx-auto">
         <div className="flex items-center justify-between px-4 sm:px-5 pt-4">
           <h2 className="text-lg font-semibold text-foreground">회원 목록</h2>
@@ -888,6 +897,9 @@ export default function UsersClient() {
         </div>
       </div>
 
+      </TableSection>
+
+      <DialogsSection>
       <div className="mt-6">
         <Card className="border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10">
           <CardHeader className="pb-2">
@@ -1013,6 +1025,7 @@ export default function UsersClient() {
           </CardContent>
         </Card>
       </div>
+      </DialogsSection>
       <UserPointsDialog open={pointsDialogOpen} onOpenChange={setPointsDialogOpen} userId={pointsTarget?.id ?? null} userName={pointsTarget?.name} />
     </AuthGuard>
   );

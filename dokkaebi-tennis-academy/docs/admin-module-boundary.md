@@ -17,3 +17,8 @@
 4. `_core/response-mapper.ts`는 DB 접근 코드를 포함하지 않는다.
 
 > lint rule 미적용 상태이므로, 위 규칙을 PR 리뷰 체크리스트로 강제한다.
+
+## 파일 크기(LOC) 팀 규칙
+- 목표: 단일 파일은 **권장 300~400 LOC 이내**로 유지한다.
+- 400 LOC를 초과하면 우선적으로 다음 단위로 분리한다: `query / aggregation / mapping`, `hooks / components`, `filters / table / dialogs`.
+- 예외가 필요한 경우 PR 본문에 사유와 추후 분리 계획을 명시한다.
