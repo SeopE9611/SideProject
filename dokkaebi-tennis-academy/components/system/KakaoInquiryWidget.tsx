@@ -222,10 +222,7 @@ export default function KakaoInquiryWidget() {
   if (shouldHide) return null;
 
   return (
-    <div
-      className="fixed bottom-5 right-[calc(1.25rem+var(--removed-body-scroll-bar-size,0px))] z-[70] bp-sm:bottom-4 bp-sm:right-[calc(1rem+var(--removed-body-scroll-bar-size,0px))]"
-      style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
-    >
+    <div className="fixed bottom-5 right-5 z-[70] bp-sm:bottom-4 bp-sm:right-4" style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}>
       <div className="flex flex-col items-end gap-3">
         {/* ---------------- 버그 제보 ---------------- */}
         {canShowBug ? (
