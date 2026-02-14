@@ -30,7 +30,7 @@ import {
   userSettingsSchema,
 } from '@/lib/admin-settings';
 
-type SettingsTab = 'site' | 'user' | 'email' | 'payment';
+import type { SettingsTab, SettingsApiResponse } from '@/types/admin/settings';
 type AuthErrorType = 'unauthorized' | 'forbidden' | null;
 
 type TabErrorState = {
@@ -92,7 +92,7 @@ export default function SettingsPage() {
     setTabError(tab, { type: null, message: '' });
   };
 
-  const loadTab = async (tab: SettingsTab, endpoint: string, onSuccess: (json: any) => void) => {
+  const loadTab = async <T,>(tab: SettingsTab, endpoint: string, onSuccess: (json: SettingsApiResponse<T>) => void) => {
     const res = await fetch(endpoint, { method: 'GET', credentials: 'include', cache: 'no-store' });
     if (!res.ok) {
       const nextError = await parseTabError(res);
@@ -100,7 +100,7 @@ export default function SettingsPage() {
       throw new Error(nextError.message);
     }
     clearTabError(tab);
-    const json = await res.json();
+    const json = (await res.json()) as SettingsApiResponse<T>;
     onSuccess(json);
   };
 
@@ -205,8 +205,8 @@ export default function SettingsPage() {
       const nextData = json.data ?? data;
       siteForm.reset(nextData);
       showSuccessToast('사이트 설정이 저장되었습니다.');
-    } catch (error: any) {
-      showErrorToast(error?.message || '사이트 설정 저장에 실패했습니다.');
+    } catch (error: unknown) {
+      showErrorToast(error instanceof Error ? error.message : '사이트 설정 저장에 실패했습니다.');
     }
   };
 
@@ -216,8 +216,8 @@ export default function SettingsPage() {
       const nextData = json.data ?? data;
       userForm.reset(nextData);
       showSuccessToast('사용자 설정이 저장되었습니다.');
-    } catch (error: any) {
-      showErrorToast(error?.message || '사용자 설정 저장에 실패했습니다.');
+    } catch (error: unknown) {
+      showErrorToast(error instanceof Error ? error.message : '사용자 설정 저장에 실패했습니다.');
     }
   };
 
@@ -228,8 +228,8 @@ export default function SettingsPage() {
       emailForm.reset(nextData);
       setEmailMeta({ hasSmtpPassword: Boolean(json?.meta?.hasSmtpPassword) });
       showSuccessToast('이메일 설정이 저장되었습니다.');
-    } catch (error: any) {
-      showErrorToast(error?.message || '이메일 설정 저장에 실패했습니다.');
+    } catch (error: unknown) {
+      showErrorToast(error instanceof Error ? error.message : '이메일 설정 저장에 실패했습니다.');
     }
   };
 
@@ -243,8 +243,8 @@ export default function SettingsPage() {
         hasStripeSecretKey: Boolean(json?.meta?.hasStripeSecretKey),
       });
       showSuccessToast('결제 설정이 저장되었습니다.');
-    } catch (error: any) {
-      showErrorToast(error?.message || '결제 설정 저장에 실패했습니다.');
+    } catch (error: unknown) {
+      showErrorToast(error instanceof Error ? error.message : '결제 설정 저장에 실패했습니다.');
     }
   };
 

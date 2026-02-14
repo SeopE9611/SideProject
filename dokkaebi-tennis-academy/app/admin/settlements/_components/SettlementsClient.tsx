@@ -9,11 +9,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatKRWCard, formatKRWFull } from '@/lib/money';
 import KpiCard from '@/app/admin/settlements/_components/KpiCard';
+import type { SettlementDiff, SettlementLiveResponse, SettlementSnapshot } from '@/types/admin/settlements';
 
 // ──────────────────────────────────────────────────────────────
 // 공통 유틸
 // ──────────────────────────────────────────────────────────────
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
+const fetcher = <T,>(url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json() as Promise<T>);
 
 // KST(Asia/Seoul) 기준 YYYY-MM-DD 문자열 포맷터
 const TZ = 'Asia/Seoul';
@@ -103,7 +104,7 @@ export default function SettlementsClient() {
   // 상태
   // ──────────────────────────────────────────────────────────
   const [yyyymm, setYyyymm] = useState<string>(() => fmtYMD_KST().slice(0, 7).replace('-', '')); // KST 기준 초기 yyyymm
-  const { data, mutate, isLoading } = useSWR('/api/settlements', fetcher);
+  const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>('/api/settlements', fetcher);
 
   // URL 쿼리로 월을 지정하면(예: /admin/settlements?yyyymm=202601) 초기 선택 월을 그 값으로 맞춘다.
   // - 운영함 → 정산 "바로가기"에서 추천 월을 함께 전달할 때 월 착오를 줄이기 위함
@@ -128,21 +129,13 @@ export default function SettlementsClient() {
     return new Date(from) > new Date(to);
   }, [from, to]);
 
-  const [live, setLive] = useState<any | null>(null);
+  const [live, setLive] = useState<SettlementLiveResponse | null>(null);
 
   // 버튼 로딩/락
   const [doing, setDoing] = useState<{ create?: boolean; rebuild?: string; live?: boolean }>({});
 
   // 검증 결과: yyyymm → { live, snap }
-  const [diffMap, setDiffMap] = useState<
-    Record<
-      string,
-      {
-        live: { paid: number; refund: number; net: number; orders: number; applications: number; packages: number };
-        snap: { paid: number; refund: number; net: number; orders: number; applications: number; packages: number };
-      }
-    >
-  >({});
+  const [diffMap, setDiffMap] = useState<Record<string, SettlementDiff>>({});
 
   // 팝오버 열림 상태: yyyymm → boolean
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
@@ -170,7 +163,7 @@ export default function SettlementsClient() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   // 캐시 키(세션 캐시): yyyymm + 스냅샷 버전(최초/최종 생성시간)
-  function getCacheKey(row: any) {
+  function getCacheKey(row: SettlementSnapshot) {
     const ver = row.lastGeneratedAt || row.createdAt || '';
     return `settle:${row.yyyymm}:${new Date(ver).getTime()}`;
   }
@@ -217,11 +210,11 @@ export default function SettlementsClient() {
     }
     const q = new URLSearchParams({ from, to }).toString();
     const res = await fetch(`/api/settlements/live?${q}`);
-    setLive(await res.json());
+    setLive((await res.json()) as SettlementLiveResponse);
   }
 
   // 스냅샷 vs 실시간 비교(한 행)
-  async function checkStalenessOfRow(row: any) {
+  async function checkStalenessOfRow(row: SettlementSnapshot) {
     const key = String(row.yyyymm);
     const { from, to } = monthEdges(key);
 
@@ -240,7 +233,7 @@ export default function SettlementsClient() {
   }
 
   // 전체 검증
-  async function validateAll(rows: any[]) {
+  async function validateAll(rows: SettlementSnapshot[]) {
     setBulkChecking(true);
     try {
       for (const row of rows) {
@@ -265,7 +258,7 @@ export default function SettlementsClient() {
     if (selectedSnapshots.size === (data ?? []).length) {
       setSelectedSnapshots(new Set());
     } else {
-      setSelectedSnapshots(new Set((data ?? []).map((row: any) => String(row.yyyymm))));
+      setSelectedSnapshots(new Set((data ?? []).map((row) => String(row.yyyymm))));
     }
   };
 
@@ -299,7 +292,7 @@ export default function SettlementsClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ yyyymms: Array.from(selectedSnapshots) }),
       });
-      const json = await res.json().catch(() => ({}) as any);
+      const json = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string; deleted?: number; message?: string };
 
       if (res.status === 401) {
         showErrorToast('로그인이 필요합니다. 관리자 계정으로 다시 로그인해 주세요.');
@@ -311,7 +304,7 @@ export default function SettlementsClient() {
       }
 
       if (json.success) {
-        showSuccessToast(json.message);
+        showSuccessToast(json.message ?? '삭제가 완료되었습니다.');
         setSelectedSnapshots(new Set());
         await mutate();
       } else {
@@ -334,7 +327,7 @@ export default function SettlementsClient() {
     try {
       setDeleting(true);
       const res = await fetch(`/api/settlements/${yyyymm}`, { method: 'DELETE', credentials: 'include' });
-      const json = await res.json().catch(() => ({}) as any);
+      const json = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string; deleted?: number; message?: string };
 
       if (res.status === 401) {
         showErrorToast('로그인이 필요합니다. 관리자 계정으로 다시 로그인해 주세요.');
@@ -345,7 +338,7 @@ export default function SettlementsClient() {
         return;
       }
       if (json.success) {
-        showSuccessToast(json.message);
+        showSuccessToast(json.message ?? '삭제가 완료되었습니다.');
         await mutate();
       } else {
         showErrorToast(json.message || '삭제 실패');
@@ -379,7 +372,7 @@ export default function SettlementsClient() {
   const sortedData = () => {
     if (!data || !sortField || !sortDirection) return data;
 
-    const sorted = [...data].sort((a: any, b: any) => {
+    const sorted = [...data].sort((a, b) => {
       let aVal = 0;
       let bVal = 0;
 
@@ -436,7 +429,7 @@ export default function SettlementsClient() {
       const key = String(row.yyyymm);
       const cached = sessionStorage.getItem(getCacheKey(row));
       if (cached === 'ok' || cached === 'stale') {
-        nextStatus[key] = cached as any;
+        nextStatus[key] = cached as 'ok' | 'stale';
         nextStale[key] = cached === 'stale';
       }
     }
@@ -448,7 +441,7 @@ export default function SettlementsClient() {
   const downloadCSV = () => {
     const rows = sortedData() ?? [];
     const header = ['월(YYYYMM)', '매출', '환불', '순익', '주문수', '신청수', '패키지수'];
-    const csvRows = rows.map((r: any) => [
+    const csvRows = rows.map((r) => [
       `'${String(r.yyyymm)}`, // yyyymm 자동서식 방지
       r.totals?.paid || 0,
       r.totals?.refund || 0,
@@ -459,7 +452,7 @@ export default function SettlementsClient() {
     ]);
 
     // 파일명: 목록 최소~최대 yyyymm
-    const yyyymms = rows.map((r: any) => String(r.yyyymm)).filter(Boolean);
+    const yyyymms = rows.map((r) => String(r.yyyymm)).filter(Boolean);
     const minYm = yyyymms.length ? yyyymms[yyyymms.length - 1] : 'YYYYMM';
     const maxYm = yyyymms.length ? yyyymms[0] : 'YYYYMM';
 
@@ -493,10 +486,10 @@ export default function SettlementsClient() {
     return { ok: true as const };
   }
 
-  const totalRevenue = (data ?? []).reduce((sum: number, row: any) => sum + (row.totals?.paid || 0), 0);
-  const totalRefunds = (data ?? []).reduce((sum: number, row: any) => sum + (row.totals?.refund || 0), 0);
-  const totalNet = (data ?? []).reduce((sum: number, row: any) => sum + (row.totals?.net || 0), 0);
-  const totalRentalDeposit = (data ?? []).reduce((sum: number, row: any) => sum + (row.totals?.rentalDeposit || 0), 0);
+  const totalRevenue = (data ?? []).reduce((sum: number, row) => sum + (row.totals?.paid || 0), 0);
+  const totalRefunds = (data ?? []).reduce((sum: number, row) => sum + (row.totals?.refund || 0), 0);
+  const totalNet = (data ?? []).reduce((sum: number, row) => sum + (row.totals?.net || 0), 0);
+  const totalRentalDeposit = (data ?? []).reduce((sum: number, row) => sum + (row.totals?.rentalDeposit || 0), 0);
   const totalSettlements = (data ?? []).length;
 
   // ──────────────────────────────────────────────────────────
@@ -784,7 +777,7 @@ export default function SettlementsClient() {
                     </div>
                   ) : (
                     <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                      {(sortedData() ?? []).map((row: any, idx: number) => (
+                      {(sortedData() ?? []).map((row, idx: number) => (
                         <div key={row.yyyymm}>
                           <div
                             className="grid gap-3 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200"
@@ -1068,7 +1061,7 @@ export default function SettlementsClient() {
                     <p className="text-xs text-gray-600 dark:text-gray-400">위에서 월을 선택하여 스냅샷을 생성하세요</p>
                   </div>
                 ) : (
-                  (sortedData() ?? []).map((row: any) => (
+                  (sortedData() ?? []).map((row) => (
                     <div key={row.yyyymm} className="rounded-xl border border-emerald-100 dark:border-emerald-900/30 bg-white dark:bg-gray-900 p-4 shadow-sm">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
