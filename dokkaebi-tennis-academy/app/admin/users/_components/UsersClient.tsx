@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import UserPointsDialog from '@/app/admin/users/_components/UserPointsDialog';
 import { FiltersSection } from '@/app/admin/users/_components/users-client/FiltersSection';
 import { TableSection } from '@/app/admin/users/_components/users-client/TableSection';
@@ -282,7 +283,6 @@ export default function UsersClient() {
 
   // 삭제(소프트 삭제)
   const bulkSoftDelete = async () => {
-    if (!window.confirm(`선택된 ${selectedUsers.length}명을 삭제(탈퇴) 처리할까요?`)) return;
     try {
       const res = await fetch('/api/admin/users/bulk', {
         method: 'POST',
@@ -306,6 +306,8 @@ export default function UsersClient() {
       showErrorToast(asErrorPayload(e).message);
     }
   };
+  const [softDeleteDialogOpen, setSoftDeleteDialogOpen] = useState(false);
+
   // --- Cleanup(7일) 모달 상태 ---
   const [cleanupOpen, setCleanupOpen] = useState(false);
   const [cleanupPreview, setCleanupPreview] = useState<UserCleanupPreviewCandidateDto[]>([]);
@@ -349,6 +351,7 @@ export default function UsersClient() {
 
   // --- 실행(DELETE) ---
   const confirmCleanup = async () => {
+    console.info('[admin-confirm-dialog]', { event: 'confirm', eventKey: 'admin-users-cleanup', count: cleanupPreview.length });
     setCleanupSubmitting(true);
     try {
       const res = await fetch('/api/admin/system/cleanup', { method: 'DELETE', credentials: 'include' });
@@ -369,6 +372,7 @@ export default function UsersClient() {
   };
 
   const confirmPurge = async () => {
+    console.info('[admin-confirm-dialog]', { event: 'confirm', eventKey: 'admin-users-purge', count: purgePreview.length });
     setPurgeSubmitting(true);
     try {
       const res = await fetch('/api/admin/system/purge', { method: 'DELETE', credentials: 'include' });
@@ -388,77 +392,7 @@ export default function UsersClient() {
     }
   };
 
-  // ▽ 미사용 handleCleanup/handlePurge (AlertDialog 플로우로 대체)
-  // 7일 경과 탈퇴 회원 정리(soft-deleted → 완전삭제)
-  const handleCleanup = async () => {
-    try {
-      const previewRes = await fetch('/api/admin/system/cleanup/preview', {
-        method: 'GET',
-        credentials: 'include',
-      });
-      const previewJson = (await previewRes.json()) as { candidates?: unknown };
-      const candidates = asPreviewCandidates(previewJson?.candidates);
 
-      if (candidates.length === 0) {
-        showInfoToast('삭제 예정인 탈퇴 회원이 없습니다.');
-        return;
-      }
-
-      const previewText = candidates.map((u) => `- ${u.name} (${u.email})`).join('\n');
-      if (!window.confirm(`삭제 예정 회원 (${candidates.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
-
-      const res = await fetch('/api/admin/system/cleanup', {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      const json = await res.json();
-
-      if (res.ok) {
-        showSuccessToast(`삭제된 계정 수: ${json.deletedCount}`);
-        mutate?.();
-      } else {
-        showErrorToast(`실패: ${json.message || '요청 실패'}`);
-      }
-    } catch (e) {
-      showErrorToast('실패: 예기치 못한 오류');
-    }
-  };
-
-  // 1년 경과 탈퇴 회원 완전 삭제
-  const handlePurge = async () => {
-    try {
-      const previewRes = await fetch('/api/admin/system/purge/preview', {
-        method: 'GET',
-        credentials: 'include',
-      });
-      const previewJson = (await previewRes.json()) as { candidates?: unknown };
-      const candidates = asPreviewCandidates(previewJson?.candidates);
-
-      if (candidates.length === 0) {
-        showInfoToast('탈퇴한지 1년 이상이 된 계정이 없습니다.');
-        return;
-      }
-
-      const previewText = candidates.map((u) => `- ${u.name} (${u.email})`).join('\n');
-      if (!window.confirm(`삭제 예정 회원 (${candidates.length}명):\n\n${previewText}\n\n정말 삭제하시겠습니까?`)) return;
-
-      const res = await fetch('/api/admin/system/purge', {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      const json = await res.json();
-
-      if (res.ok) {
-        showSuccessToast(`완전 삭제된 계정 수: ${json.deletedCount}`);
-        mutate?.();
-      } else {
-        showErrorToast(`실패: ${json.message || '요청 실패'}`);
-      }
-    } catch (e) {
-      showErrorToast('실패: 예기치 못한 오류');
-    }
-  };
-  // △ 미사용 handleCleanup/handlePurge (AlertDialog 플로우로 대체)
 
   return (
     <AuthGuard>
@@ -645,7 +579,7 @@ export default function UsersClient() {
                 </>
               )}
 
-              <Button variant="destructive" size="sm" onClick={bulkSoftDelete} disabled={!canSoftDelete} title={!canSoftDelete ? '선택 항목이 이미 삭제 상태입니다' : undefined}>
+              <Button variant="destructive" size="sm" onClick={() => setSoftDeleteDialogOpen(true)} disabled={!canSoftDelete} title={!canSoftDelete ? '선택 항목이 이미 삭제 상태입니다' : undefined}>
                 <Trash2 className="mr-2 h-3.5 w-3.5" />
                 삭제
               </Button>
@@ -913,6 +847,7 @@ export default function UsersClient() {
               open={cleanupOpen}
               onOpenChange={(o) => {
                 setCleanupOpen(o);
+                console.info('[admin-confirm-dialog]', { event: o ? 'open' : 'cancel', eventKey: 'admin-users-cleanup' });
                 if (o) {
                   setCleanupAck(false);
                   fetchCleanupPreview();
@@ -925,7 +860,7 @@ export default function UsersClient() {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>탈퇴 회원 자동 삭제</AlertDialogTitle>
-                  <AlertDialogDescription>탈퇴 후 7일이 지난 계정을 영구 삭제합니다. 아래 목록을 확인하고 동의 후 실행하세요.</AlertDialogDescription>
+                  <AlertDialogDescription>{`영향 개수: ${cleanupPreview.length}개 계정\n탈퇴 후 7일이 지난 계정을 영구 삭제합니다. 이 작업은 되돌릴 수 없습니다.`}</AlertDialogDescription>
                 </AlertDialogHeader>
 
                 {/* 미리보기 리스트 */}
@@ -971,6 +906,7 @@ export default function UsersClient() {
               open={purgeOpen}
               onOpenChange={(o) => {
                 setPurgeOpen(o);
+                console.info('[admin-confirm-dialog]', { event: o ? 'open' : 'cancel', eventKey: 'admin-users-purge' });
                 if (o) {
                   setPurgeAck(false);
                   fetchPurgePreview();
@@ -983,7 +919,7 @@ export default function UsersClient() {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>탈퇴 1년 경과 계정 완전 삭제</AlertDialogTitle>
-                  <AlertDialogDescription>개인정보 최소 보관 정책에 따라, 탈퇴 후 1년이 지난 계정을 완전 삭제합니다.</AlertDialogDescription>
+                  <AlertDialogDescription>{`영향 개수: ${purgePreview.length}개 계정\n탈퇴 1년 경과 계정을 완전 삭제합니다. 이 작업은 되돌릴 수 없습니다.`}</AlertDialogDescription>
                 </AlertDialogHeader>
 
                 {/* 미리보기 리스트 */}
@@ -1027,6 +963,20 @@ export default function UsersClient() {
         </Card>
       </div>
       </DialogsSection>
+      <AdminConfirmDialog
+        open={softDeleteDialogOpen}
+        onOpenChange={setSoftDeleteDialogOpen}
+        onConfirm={() => {
+          setSoftDeleteDialogOpen(false);
+          void bulkSoftDelete();
+        }}
+        title="회원 삭제(탈퇴) 처리 확인"
+        description={`영향 개수: ${selectedUsers.length}명\n선택한 회원을 삭제(탈퇴) 상태로 변경합니다. 이 작업은 되돌릴 수 없습니다.`}
+        confirmText="삭제(탈퇴) 처리"
+        severity="danger"
+        eventKey="admin-users-soft-delete"
+        eventMeta={{ selectedCount: selectedUsers.length }}
+      />
       <UserPointsDialog open={pointsDialogOpen} onOpenChange={setPointsDialogOpen} userId={pointsTarget?.id ?? null} userName={pointsTarget?.name} />
     </AuthGuard>
   );

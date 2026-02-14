@@ -41,6 +41,7 @@ export function useAdminSettings() {
   });
   const [emailMeta, setEmailMeta] = useState({ hasSmtpPassword: false });
   const [paymentMeta, setPaymentMeta] = useState({ hasPaypalSecret: false, hasStripeSecretKey: false });
+  const [pendingTab, setPendingTab] = useState<SettingsTab | null>(null);
 
   const siteForm = useForm<SiteSettings>({ resolver: zodResolver(siteSettingsSchema), defaultValues: defaultSiteSettings });
   const userForm = useForm<UserSettings>({ resolver: zodResolver(userSettingsSchema), defaultValues: defaultUserSettings });
@@ -173,16 +174,32 @@ export function useAdminSettings() {
     showSuccessToast('테스트 이메일이 발송되었습니다.');
   };
 
-  const handleTabChange = (nextTab: string) => {
+  const requestTabChange = (nextTab: string) => {
     if (!['site', 'user', 'email', 'payment'].includes(nextTab) || nextTab === activeTab) return;
     const currentDirty = (dirtyByTab as Record<string, boolean>)[activeTab] ?? false;
-    if (currentDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
+    if (currentDirty) {
+      setPendingTab(nextTab as SettingsTab);
+      return;
+    }
     setActiveTab(nextTab as SettingsTab);
+  };
+
+  const confirmTabChange = () => {
+    if (!pendingTab) return;
+    setActiveTab(pendingTab);
+    setPendingTab(null);
+  };
+
+  const cancelTabChange = () => {
+    setPendingTab(null);
   };
 
   return {
     activeTab,
-    handleTabChange,
+    pendingTab,
+    requestTabChange,
+    confirmTabChange,
+    cancelTabChange,
     isBootstrapping,
     tabErrors,
     isDirtyAny,
