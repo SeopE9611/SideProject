@@ -6,6 +6,9 @@ import AccessDenied from '@/components/system/AccessDenied';
 import { Truck } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
+type StringingApplicationLite = { id?: string; status?: string; createdAt?: string };
+
+
 export default async function ShippingUpdatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await getCurrentUser();
@@ -71,12 +74,13 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
   // "상품 주문 + 교체서비스 신청서"로 연결된 케이스는
   // 배송/운송장 관리를 신청서에서만 하도록 단일화한다.
   // 주문 배송등록 URL로 들어오면 신청서 배송등록으로 강제 이동(관리자 혼란 방지)
-  const apps = Array.isArray(order?.stringingApplications) ? order.stringingApplications : [];
+  const apps: StringingApplicationLite[] = Array.isArray(order?.stringingApplications) ? order.stringingApplications : [];
+
+  const appsWithId = apps.filter((a: StringingApplicationLite): a is Required<Pick<StringingApplicationLite, 'id'>> & StringingApplicationLite => Boolean(a?.id));
+  const sortByCreatedAtDesc = (a: StringingApplicationLite, b: StringingApplicationLite) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
 
   const appIdFromList =
-    apps.filter((a: any) => a?.id && a?.status && a.status !== 'draft' && a.status !== '취소').sort((a: any, b: any) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0]?.id ??
-    apps.filter((a: any) => a?.id).sort((a: any, b: any) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0]?.id ??
-    null;
+    appsWithId.filter((a) => a.status && a.status !== 'draft' && a.status !== '취소').sort(sortByCreatedAtDesc)[0]?.id ?? appsWithId.sort(sortByCreatedAtDesc)[0]?.id ?? null;
 
   const appId = order?.stringingApplicationId ?? appIdFromList;
 

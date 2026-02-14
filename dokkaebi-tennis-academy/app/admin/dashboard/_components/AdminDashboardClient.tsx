@@ -9,179 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { DashboardMetrics } from '@/types/admin/dashboard';
+import { formatAdminKRW, formatAdminNumber, formatIsoToKstShort } from '@/lib/admin/formatters';
+import { labelOrderStatus, labelPaymentStatus, labelStringingStatus } from '@/lib/admin/status-labels';
 
 // ----------------------------- 타입 -----------------------------
-
-type DashboardMetrics = {
-  generatedAt: string;
-  series: {
-    days: number;
-    fromYmd: string;
-    toYmd: string;
-    dailyRevenue: Array<{ date: string; value: number }>;
-    dailyRevenueBySource: Array<{ date: string; orders: number; applications: number; packages: number; total: number }>;
-    dailyOrders: Array<{ date: string; value: number }>;
-    dailyApplications: Array<{ date: string; value: number }>;
-    dailySignups: Array<{ date: string; value: number }>;
-    dailyReviews: Array<{ date: string; value: number }>;
-  };
-  kpi: {
-    users: {
-      total: number;
-      delta7d: number;
-      active7d: number;
-      byProvider: { local: number; kakao: number; naver: number };
-    };
-    orders: { total: number; delta7d: number; paid7d: number; revenue7d: number; aov7d: number };
-    applications: { total: number; delta7d: number; paid7d: number; revenue7d: number };
-    rentals: { total: number; delta7d: number; paid7d: number; revenue7d: number };
-    packages: { total: number; delta7d: number; paid7d: number; revenue7d: number };
-    reviews: {
-      total: number;
-      delta7d: number;
-      avg: number;
-      five: number;
-      byType: { product: number; service: number };
-      byRating: { one: number; two: number; three: number; four: number; five: number };
-    };
-    points: { issued7d: number; spent7d: number };
-    community: { posts7d: number; comments7d: number; pendingReports: number };
-    inventory: { lowStockProducts: number; outOfStockProducts: number; inactiveRackets: number };
-    queue: {
-      cancelRequests: number;
-      shippingPending: number;
-      paymentPending24h: number;
-      rentalOverdue: number;
-      rentalDueSoon: number;
-      passExpiringSoon: number;
-      outboxQueued: number;
-      outboxFailed: number;
-      stringingAging3d: number;
-    };
-  };
-
-  dist: {
-    orderStatus: Array<{ label: string; count: number }>;
-    orderPaymentStatus: Array<{ label: string; count: number }>;
-    applicationStatus: Array<{ label: string; count: number }>;
-  };
-  inventoryList: {
-    lowStock: Array<{ id: string; name: string; brand: string; stock: number; lowStock: number | null }>;
-    outOfStock: Array<{ id: string; name: string; brand: string; stock: number }>;
-  };
-  top: {
-    products7d: Array<{ productId: string; name: string; brand: string; qty: number; revenue: number }>;
-    brands7d: Array<{ brand: string; qty: number; revenue: number }>;
-  };
-  recent: {
-    orders: Array<{
-      id: string;
-      createdAt: string;
-      name: string;
-      totalPrice: number;
-      status: string;
-      paymentStatus: string;
-    }>;
-    applications: Array<{
-      id: string;
-      createdAt: string;
-      name: string;
-      totalPrice: number;
-      status: string;
-      paymentStatus: string;
-    }>;
-    rentals: Array<{ id: string; createdAt: string; name: string; total: number; status: string }>;
-    reports: Array<{ id: string; createdAt: string; kind: 'post' | 'comment'; reason: string }>;
-  };
-  queueDetails: {
-    cancelRequests: Array<{
-      kind: 'order' | 'application' | 'rental';
-      id: string;
-      createdAt: string;
-      name: string;
-      amount: number;
-      status: string;
-      paymentStatus?: string;
-      href: string;
-    }>;
-    shippingPending: Array<{
-      kind: 'order' | 'application';
-      id: string;
-      createdAt: string;
-      name: string;
-      amount: number;
-      status: string;
-      paymentStatus: string;
-      href: string;
-    }>;
-    // 결제 대기(24h) "리스트" (Top 카드 상세 렌더링용)
-    paymentPending24h: Array<{
-      kind: 'order' | 'application' | 'rental' | 'package';
-      id: string;
-      createdAt: string;
-      name: string;
-      amount: number;
-      status: string;
-      href: string;
-      hoursAgo: number;
-    }>;
-    rentalOverdue: Array<{
-      id: string;
-      dueAt: string;
-      name: string;
-      amount: number;
-      overdueDays: number;
-      href: string;
-    }>;
-    rentalDueSoon: Array<{
-      id: string;
-      dueAt: string;
-      name: string;
-      amount: number;
-      dueInHours: number;
-      href: string;
-    }>;
-    passExpiringSoon: Array<{
-      id: string;
-      expiresAt: string;
-      name: string;
-      remainingCount: number;
-      daysLeft: number;
-      href: string;
-    }>;
-    stringingAging: Array<{
-      id: string;
-      createdAt: string;
-      name: string;
-      status: string;
-      paymentStatus: string;
-      totalPrice: number;
-      ageDays: number;
-      href: string;
-    }>;
-    outboxBacklog: Array<{
-      id: string;
-      href: string;
-      createdAt: string;
-      status: 'queued' | 'failed' | 'sent';
-      eventType: string;
-      to: string | null;
-      retries: number;
-      error: string | null;
-    }>;
-  };
-  settlements: {
-    currentYyyymm: string;
-    prevYyyymm: string;
-    hasCurrentSnapshot: boolean;
-    hasPrevSnapshot: boolean;
-    latest: null | {
-      yyyymm: string;
-      lastGeneratedAt: string | null;
-      lastGeneratedBy: string | null;
-    };
-  };
-};
 
 // ----------------------------- 유틸 -----------------------------
 
@@ -194,74 +26,8 @@ const fetcher = async (url: string) => {
   return (await res.json()) as DashboardMetrics;
 };
 
-function formatNumber(n: number) {
-  return new Intl.NumberFormat('ko-KR').format(Number(n || 0));
-}
-
-function formatKRW(n: number) {
-  return `${formatNumber(n)}원`;
-}
-
-function formatIsoToKstShort(iso: string) {
-  // 서버에서 ISO로 내려오므로, 브라우저 로컬(한국)에서는 자연스럽게 KST로 표시됨
-  // (해외에서 접속해도 '일자' 정도만 읽히면 괜찮도록 "YYYY-MM-DD HH:mm" 형태로만)
-  const ms = Date.parse(iso);
-  if (!Number.isFinite(ms)) return '-';
-  const d = new Date(ms);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mm = String(d.getMinutes()).padStart(2, '0');
-  return `${y}-${m}-${day} ${hh}:${mm}`;
-}
-
 // ----------------------------- 상태 라벨(표시용) -----------------------------
 // DB 값은 그대로 두고, 화면에서만 "pending" 같은 레거시 영문 상태를 한글로 정리
-function labelPaymentStatus(raw?: string) {
-  const v = String(raw ?? '').trim();
-  if (!v) return '결제대기';
-  const lower = v.toLowerCase();
-
-  if (v === '결제대기' || v === '대기중' || lower === 'pending' || lower === 'payment_pending' || lower === 'unpaid') return '결제대기';
-  if (v === '결제완료' || lower === 'paid' || lower === 'payment_complete' || lower === 'payment_completed') return '결제완료';
-  if (v === '취소' || lower === 'canceled' || lower === 'cancelled') return '취소';
-  if (v === '환불' || lower === 'refunded' || lower === 'refund') return '환불';
-  return v;
-}
-
-function labelOrderStatus(raw?: string) {
-  const v = String(raw ?? '').trim();
-  if (!v) return '대기중';
-  const lower = v.toLowerCase();
-
-  // 이미 한글이면 그대로
-  if (['대기중', '배송준비중', '배송중', '배송완료', '취소', '환불'].includes(v)) return v;
-
-  // 레거시 영문 → 한글
-  if (lower === 'pending') return '대기중';
-  if (lower === 'processing' || lower === 'preparing') return '배송준비중';
-  if (lower === 'shipped' || lower === 'shipping') return '배송중';
-  if (lower === 'delivered' || lower === 'completed') return '배송완료';
-  if (lower === 'canceled' || lower === 'cancelled') return '취소';
-  if (lower === 'refunded' || lower === 'refund') return '환불';
-  return v;
-}
-
-function labelStringingStatus(raw?: string) {
-  const v = String(raw ?? '').trim();
-  if (!v) return '접수완료';
-  const lower = v.toLowerCase();
-
-  if (['접수완료', '검토중', '완료', '교체완료', '취소'].includes(v)) return v;
-  // 레거시 영문이 섞인 경우 최소 대응
-  if (lower === 'pending') return '접수완료';
-  if (lower === 'reviewing' || lower === 'in_review' || lower === 'processing') return '검토중';
-  if (lower === 'completed') return '완료';
-  if (lower === 'canceled' || lower === 'cancelled') return '취소';
-  return v;
-}
-
 // ----------------------------- 그래프(가벼운 SVG) -----------------------------
 
 function SparkLine({ data, height = 56 }: { data: Array<{ date: string; value: number }>; height?: number }) {
@@ -499,27 +265,27 @@ export default function AdminDashboardClient() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
             title="총 매출"
-            value={formatKRW(periodRevenue)}
-            sub={`최근 7일: ${formatKRW(weekRevenue)}`}
+            value={formatAdminKRW(periodRevenue)}
+            sub={`최근 7일: ${formatAdminKRW(weekRevenue)}`}
             icon={<TrendingUp className="h-5 w-5" />}
-            trend={`평균 ${formatKRW(data.kpi.orders.aov7d)}`}
+            trend={`평균 ${formatAdminKRW(data.kpi.orders.aov7d)}`}
             spark={<SparkLine data={data.series.dailyRevenue.slice(-30)} />}
           />
           <KpiCard
             title="주문"
-            value={`${formatNumber(data.kpi.orders.delta7d)}건`}
-            sub={`결제완료 ${formatNumber(data.kpi.orders.paid7d)}건`}
+            value={`${formatAdminNumber(data.kpi.orders.delta7d)}건`}
+            sub={`결제완료 ${formatAdminNumber(data.kpi.orders.paid7d)}건`}
             icon={<ShoppingCart className="h-5 w-5" />}
             spark={<SparkLine data={data.series.dailyOrders.slice(-30)} />}
           />
           <KpiCard
             title="교체 서비스"
-            value={`${formatNumber(data.kpi.applications.delta7d)}건`}
-            sub={`결제완료 ${formatNumber(data.kpi.applications.paid7d)}건`}
+            value={`${formatAdminNumber(data.kpi.applications.delta7d)}건`}
+            sub={`결제완료 ${formatAdminNumber(data.kpi.applications.paid7d)}건`}
             icon={<Wrench className="h-5 w-5" />}
             spark={<SparkLine data={data.series.dailyApplications.slice(-30)} />}
           />
-          <KpiCard title="신규 회원" value={`${formatNumber(data.kpi.users.delta7d)}명`} sub={`활성 ${formatNumber(data.kpi.users.active7d)}명`} icon={<Users className="h-5 w-5" />} spark={<SparkLine data={data.series.dailySignups.slice(-30)} />} />
+          <KpiCard title="신규 회원" value={`${formatAdminNumber(data.kpi.users.delta7d)}명`} sub={`활성 ${formatAdminNumber(data.kpi.users.active7d)}명`} icon={<Users className="h-5 w-5" />} spark={<SparkLine data={data.series.dailySignups.slice(-30)} />} />
         </div>
       </section>
 
@@ -541,19 +307,19 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">취소 요청</span>
-                <Badge variant={data.kpi.queue.cancelRequests > 0 ? 'destructive' : 'secondary'}>{formatNumber(data.kpi.queue.cancelRequests)}</Badge>
+                <Badge variant={data.kpi.queue.cancelRequests > 0 ? 'destructive' : 'secondary'}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">결제 대기 24h+</span>
-                <Badge variant={data.kpi.queue.paymentPending24h > 0 ? 'destructive' : 'secondary'}>{formatNumber(data.kpi.queue.paymentPending24h)}</Badge>
+                <Badge variant={data.kpi.queue.paymentPending24h > 0 ? 'destructive' : 'secondary'}>{formatAdminNumber(data.kpi.queue.paymentPending24h)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">대여 연체</span>
-                <Badge variant={data.kpi.queue.rentalOverdue > 0 ? 'destructive' : 'secondary'}>{formatNumber(data.kpi.queue.rentalOverdue)}</Badge>
+                <Badge variant={data.kpi.queue.rentalOverdue > 0 ? 'destructive' : 'secondary'}>{formatAdminNumber(data.kpi.queue.rentalOverdue)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">교체 3일+</span>
-                <Badge variant={data.kpi.queue.stringingAging3d > 0 ? 'destructive' : 'secondary'}>{formatNumber(data.kpi.queue.stringingAging3d)}</Badge>
+                <Badge variant={data.kpi.queue.stringingAging3d > 0 ? 'destructive' : 'secondary'}>{formatAdminNumber(data.kpi.queue.stringingAging3d)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">지난달 정산 스냅샷</span>
@@ -574,11 +340,11 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">송장 등록 대기</span>
-                <Badge variant={data.kpi.queue.shippingPending > 0 ? 'default' : 'outline'}>{formatNumber(data.kpi.queue.shippingPending)}</Badge>
+                <Badge variant={data.kpi.queue.shippingPending > 0 ? 'default' : 'outline'}>{formatAdminNumber(data.kpi.queue.shippingPending)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">반납 임박 48h</span>
-                <Badge variant={data.kpi.queue.rentalDueSoon > 0 ? 'default' : 'outline'}>{formatNumber(data.kpi.queue.rentalDueSoon)}</Badge>
+                <Badge variant={data.kpi.queue.rentalDueSoon > 0 ? 'default' : 'outline'}>{formatAdminNumber(data.kpi.queue.rentalDueSoon)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                 <Link href="/admin/orders?preset=shippingPending">관리하기</Link>
@@ -598,11 +364,11 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">재고 부족</span>
-                <Badge variant={data.kpi.inventory.lowStockProducts > 0 ? 'destructive' : 'outline'}>{formatNumber(data.kpi.inventory.lowStockProducts)}</Badge>
+                <Badge variant={data.kpi.inventory.lowStockProducts > 0 ? 'destructive' : 'outline'}>{formatAdminNumber(data.kpi.inventory.lowStockProducts)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">품절</span>
-                <Badge variant={data.kpi.inventory.outOfStockProducts > 0 ? 'destructive' : 'outline'}>{formatNumber(data.kpi.inventory.outOfStockProducts)}</Badge>
+                <Badge variant={data.kpi.inventory.outOfStockProducts > 0 ? 'destructive' : 'outline'}>{formatAdminNumber(data.kpi.inventory.outOfStockProducts)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                 <Link href="/admin/products?status=low_stock">재고 관리</Link>
@@ -622,11 +388,11 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">알림 큐</span>
-                <Badge variant={data.kpi.queue.outboxQueued > 0 ? 'default' : 'outline'}>{formatNumber(data.kpi.queue.outboxQueued)}</Badge>
+                <Badge variant={data.kpi.queue.outboxQueued > 0 ? 'default' : 'outline'}>{formatAdminNumber(data.kpi.queue.outboxQueued)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
                 <span className="text-sm">알림 실패</span>
-                <Badge variant={data.kpi.queue.outboxFailed > 0 ? 'destructive' : 'outline'}>{formatNumber(data.kpi.queue.outboxFailed)}</Badge>
+                <Badge variant={data.kpi.queue.outboxFailed > 0 ? 'destructive' : 'outline'}>{formatAdminNumber(data.kpi.queue.outboxFailed)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                 <Link href="/admin/notifications">알림 관리</Link>
@@ -662,7 +428,7 @@ export default function AdminDashboardClient() {
                 <div className="h-3 w-3 rounded-sm bg-violet-500/70" />
                 <span className="text-xs font-medium">패키지</span>
               </div>
-              <div className="ml-auto text-sm font-semibold">총 {formatKRW(last14Revenue.reduce((s, d) => s + Number(d.value || 0), 0))}</div>
+              <div className="ml-auto text-sm font-semibold">총 {formatAdminKRW(last14Revenue.reduce((s, d) => s + Number(d.value || 0), 0))}</div>
             </div>
           </CardContent>
         </Card>
@@ -689,9 +455,9 @@ export default function AdminDashboardClient() {
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1">
                         <Badge variant="secondary" className="text-xs">
-                          {formatNumber(p.qty)}개
+                          {formatAdminNumber(p.qty)}개
                         </Badge>
-                        <span className="text-xs font-semibold">{formatKRW(p.revenue)}</span>
+                        <span className="text-xs font-semibold">{formatAdminKRW(p.revenue)}</span>
                       </div>
                     </div>
                   ))}
@@ -731,9 +497,9 @@ export default function AdminDashboardClient() {
                         </div>
                         <div className="flex shrink-0 flex-col items-end gap-1">
                           <Badge variant="secondary" className="text-xs">
-                            {formatNumber(b.qty)}개
+                            {formatAdminNumber(b.qty)}개
                           </Badge>
-                          <span className="text-xs font-semibold">{formatKRW(b.revenue)}</span>
+                          <span className="text-xs font-semibold">{formatAdminKRW(b.revenue)}</span>
                         </div>
                       </div>
                     );
@@ -778,7 +544,7 @@ export default function AdminDashboardClient() {
                         </div>
                       </div>
                       <Badge variant="destructive" className="shrink-0">
-                        {formatKRW(it.amount)}
+                        {formatAdminKRW(it.amount)}
                       </Badge>
                     </div>
                   ))}
@@ -813,7 +579,7 @@ export default function AdminDashboardClient() {
                           <span className="text-xs text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
                         </div>
                       </div>
-                      <Badge className="shrink-0">{formatKRW(it.amount)}</Badge>
+                      <Badge className="shrink-0">{formatAdminKRW(it.amount)}</Badge>
                     </div>
                   ))}
                   <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
@@ -884,7 +650,7 @@ export default function AdminDashboardClient() {
                         </div>
                       </div>
                       <Badge variant="secondary" className="shrink-0">
-                        {formatKRW(it.totalPrice)}
+                        {formatAdminKRW(it.totalPrice)}
                       </Badge>
                     </div>
                   ))}
@@ -987,11 +753,11 @@ export default function AdminDashboardClient() {
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">리뷰 7일</span>
-                <Badge variant="outline">{formatNumber(data.kpi.reviews.delta7d)}</Badge>
+                <Badge variant="outline">{formatAdminNumber(data.kpi.reviews.delta7d)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">5점 리뷰</span>
-                <Badge variant="outline">{formatNumber(data.kpi.reviews.five)}</Badge>
+                <Badge variant="outline">{formatAdminNumber(data.kpi.reviews.five)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                 <Link href="/admin/reviews">리뷰 관리</Link>
@@ -1011,11 +777,11 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">지급</span>
-                <Badge variant="secondary">{formatNumber(data.kpi.points.issued7d)}P</Badge>
+                <Badge variant="secondary">{formatAdminNumber(data.kpi.points.issued7d)}P</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">사용</span>
-                <Badge variant="outline">{formatNumber(data.kpi.points.spent7d)}P</Badge>
+                <Badge variant="outline">{formatAdminNumber(data.kpi.points.spent7d)}P</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="mt-4 w-full bg-transparent">
                 <Link href="/admin/users">회원 관리</Link>
@@ -1035,15 +801,15 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">게시글 7일</span>
-                <Badge variant="outline">{formatNumber(data.kpi.community.posts7d)}</Badge>
+                <Badge variant="outline">{formatAdminNumber(data.kpi.community.posts7d)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">댓글 7일</span>
-                <Badge variant="outline">{formatNumber(data.kpi.community.comments7d)}</Badge>
+                <Badge variant="outline">{formatAdminNumber(data.kpi.community.comments7d)}</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">미처리 신고</span>
-                <Badge variant={data.kpi.community.pendingReports > 0 ? 'destructive' : 'secondary'}>{formatNumber(data.kpi.community.pendingReports)}</Badge>
+                <Badge variant={data.kpi.community.pendingReports > 0 ? 'destructive' : 'secondary'}>{formatAdminNumber(data.kpi.community.pendingReports)}</Badge>
               </div>
               <Button size="sm" variant="outline" asChild className="w-full bg-transparent">
                 <Link href="/admin/boards?tab=reports">신고 관리</Link>
@@ -1078,8 +844,8 @@ export default function AdminDashboardClient() {
                         <p className="truncate text-xs text-muted-foreground">{p.brand || '-'}</p>
                       </div>
                       <div className="shrink-0 text-right">
-                        <Badge variant="destructive">{formatNumber(p.stock)}개</Badge>
-                        <p className="mt-1 text-xs text-muted-foreground">기준: {p.lowStock === null ? '-' : formatNumber(p.lowStock)}</p>
+                        <Badge variant="destructive">{formatAdminNumber(p.stock)}개</Badge>
+                        <p className="mt-1 text-xs text-muted-foreground">기준: {p.lowStock === null ? '-' : formatAdminNumber(p.lowStock)}</p>
                       </div>
                     </div>
                   ))}
@@ -1109,7 +875,7 @@ export default function AdminDashboardClient() {
                         </Link>
                         <p className="truncate text-xs text-muted-foreground">{p.brand || '-'}</p>
                       </div>
-                      <Badge variant="destructive">{formatNumber(p.stock)}개</Badge>
+                      <Badge variant="destructive">{formatAdminNumber(p.stock)}개</Badge>
                     </div>
                   ))}
                   <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
@@ -1149,7 +915,7 @@ export default function AdminDashboardClient() {
                         </Badge>
                       </div>
                     </div>
-                    <div className="shrink-0 text-sm font-semibold">{formatKRW(o.totalPrice)}</div>
+                    <div className="shrink-0 text-sm font-semibold">{formatAdminKRW(o.totalPrice)}</div>
                   </Link>
                 ))}
                 <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
@@ -1180,7 +946,7 @@ export default function AdminDashboardClient() {
                         </Badge>
                       </div>
                     </div>
-                    <div className="shrink-0 text-sm font-semibold">{formatKRW(a.totalPrice)}</div>
+                    <div className="shrink-0 text-sm font-semibold">{formatAdminKRW(a.totalPrice)}</div>
                   </Link>
                 ))}
                 <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
@@ -1206,7 +972,7 @@ export default function AdminDashboardClient() {
             <BarChart data={last14Reviews} />
             <div className="mt-4 flex flex-wrap items-center gap-4 rounded-lg bg-muted/30 px-4 py-3 text-sm">
               <span className="font-medium">
-                최근 14일: <span className="text-primary">{formatNumber(last14Reviews.reduce((s, d) => s + Number(d.value || 0), 0))}건</span>
+                최근 14일: <span className="text-primary">{formatAdminNumber(last14Reviews.reduce((s, d) => s + Number(d.value || 0), 0))}건</span>
               </span>
               <span className="font-medium">
                 전체 평균: <span className="text-primary">{(Math.round((data.kpi.reviews.avg || 0) * 10) / 10).toFixed(1)}점</span>
@@ -1232,7 +998,7 @@ export default function AdminDashboardClient() {
                 {data.dist.orderStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
                     <span className="truncate">{labelOrderStatus(d.label)}</span>
-                    <Badge variant="outline">{formatNumber(d.count)}</Badge>
+                    <Badge variant="outline">{formatAdminNumber(d.count)}</Badge>
                   </div>
                 ))}
               </div>
@@ -1249,7 +1015,7 @@ export default function AdminDashboardClient() {
                 {data.dist.orderPaymentStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
                     <span className="truncate">{labelPaymentStatus(d.label)}</span>
-                    <Badge variant="outline">{formatNumber(d.count)}</Badge>
+                    <Badge variant="outline">{formatAdminNumber(d.count)}</Badge>
                   </div>
                 ))}
               </div>
@@ -1266,7 +1032,7 @@ export default function AdminDashboardClient() {
                 {data.dist.applicationStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
                     <span className="truncate">{labelStringingStatus(d.label)}</span>
-                    <Badge variant="outline">{formatNumber(d.count)}</Badge>
+                    <Badge variant="outline">{formatAdminNumber(d.count)}</Badge>
                   </div>
                 ))}
               </div>

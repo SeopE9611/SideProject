@@ -25,6 +25,7 @@ import useSWR from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import type { HybridSpecUnit, ProductDetailResponse } from '@/types/admin/products';
 
 // 브랜드 목록
 const brands = [
@@ -141,8 +142,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   // 재고 관리가 실제로 수정되었는지 추적할 플래그
   const [inventoryDirty, setInventoryDirty] = useState(false);
 
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
-  const { data, error, isLoading } = useSWR<{ product: any }>(`/api/products/${productId}`, fetcher);
+  const fetcher = <T,>(url: string) => fetch(url).then((res) => res.json() as Promise<T>);
+  const { data, error, isLoading } = useSWR<ProductDetailResponse>(`/api/products/${productId}`, fetcher);
 
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState('');
@@ -503,7 +504,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         }
       }
       // specifications 영문 키로 미리 구성
-      const specifications: any = {
+      const specifications: { material: string; gauge: string; color: string; length: string; hybrid?: { main: HybridSpecUnit; cross: HybridSpecUnit } } = {
         material: basicInfo.material,
         gauge: basicInfo.gauge,
         color: basicInfo.color,
