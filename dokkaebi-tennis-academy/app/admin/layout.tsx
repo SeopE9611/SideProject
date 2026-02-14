@@ -12,7 +12,10 @@ export const metadata = {
 };
 
 function canBypassAdminGuard(requestHeaders: Headers): boolean {
-  if (process.env.NODE_ENV !== 'test') {
+  const isTestRuntime = process.env.NODE_ENV === 'test';
+  const isE2eBypassEnabled = process.env.E2E_ADMIN_BYPASS_ENABLED === '1';
+
+  if (!isTestRuntime && !isE2eBypassEnabled) {
     return false;
   }
 
