@@ -8,7 +8,7 @@ export default function CleanupCreatedButton({ hours = 2 }: { hours?: number }) 
   const run = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/rentals/cleanup-created?hours=${hours}`, { method: 'POST' });
+      const res = await fetch(`/api/admin/rentals/cleanup-created?hours=${hours}`, { method: 'POST' });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.message || '데이터 정리 실패');
       alert(`데이터 정리 완료: ${json.deleted}건 삭제 (기준: ${json.hours}시간 경과)`);

@@ -332,7 +332,7 @@ export default function AdminRentalsClient() {
       return;
     }
     if (!confirm('반납 처리하시겠어요?')) return;
-    const res = await fetch(`/api/rentals/${encodeURIComponent(safe)}/return`, { method: 'POST' });
+    const res = await fetch(`/api/admin/rentals/${encodeURIComponent(safe)}/return`, { method: 'POST' });
 
     if (res.ok) {
       mutate();

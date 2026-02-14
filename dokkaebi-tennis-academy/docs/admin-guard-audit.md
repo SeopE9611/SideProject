@@ -39,3 +39,31 @@
 - [ ] 관리자 전용 API(`상품 생성/수정/삭제`, `시스템 cleanup/purge`, `정산 삭제`)가 `app/api/admin/**`에서 제공되는가.
 - [ ] 기존 비관리자 경로(`app/api/products`, `app/api/system`, `app/api/settlements`)는 점진 이관용 프록시만 유지하고 있는가.
 - [ ] `app/api/admin/**/route.ts`에서 수동 쿠키/토큰 파싱 대신 `requireAdmin(req)`를 호출하는가.
+
+
+## `app/admin/**` fetch 전수 스캔 (비 `/api/admin/**`)
+
+전수 스캔 명령:
+- `rg -n "/api/(?!admin)" app/admin -P`
+
+현황:
+- `app/admin/rackets/_components/AdminRacketsClient.tsx` → ``/api/rentals/active-count/:id`` (조회성)
+- `app/admin/rackets/[id]/edit/_components/AdminRacketEditClient.tsx` → ``/api/rentals/active-count/:id`` (조회성)
+- `app/admin/settlements/_components/SettlementsClient.tsx` → ``/api/settlements``, ``/api/settlements/live`` (정산 조회)
+- `app/admin/rentals/_components/AdminRentalHistory.tsx` → ``/api/rentals/:id/history`` (이력 조회)
+- `app/admin/rentals/[id]/shipping-update/shipping-form.tsx` → ``/api/rentals/:id`` (프리필 조회)
+- `app/admin/orders/[id]/shipping-update/page.tsx` → ``/api/orders/:id``, ``/api/applications/stringing/:id`` (서버 컴포넌트 조회)
+- `app/admin/applications/stringing/[id]/shipping-update/ShippingFormClient.tsx` → ``/api/applications/stringing/:id`` (조회)
+
+## 이번 이관에서 `/api/admin/**`로 전환한 관리자 전용 행위
+- 패키지 연장/횟수조절: `/api/admin/package-orders/:id/extend`, `/api/admin/package-orders/:id/adjust-sessions`
+- 리뷰 단건 관리: `/api/admin/reviews/:id` (GET/PATCH/DELETE)
+- 대여 처리: `/api/admin/rentals/:id/out`, `/return`, `/cancel-approve`, `/cancel-reject`
+- 대여 생성정리: `/api/admin/rentals/cleanup-created`
+- 주문 배송수정: `/api/admin/orders/:id/shipping`
+- 스트링잉 배송수정: `/api/admin/applications/stringing/:id/shipping`
+
+## 강제 항목
+- [x] 관리자 UI는 `/api/admin/**`만 호출하도록 신규 코드에서 강제.
+- [x] 관리자 권한 진입점은 `requireAdmin(req)` 단일 정책으로 통일.
+- [x] 비-admin 경로는 단계적 정리(Deprecation/307/410) 대상 목록으로 관리.

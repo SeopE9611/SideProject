@@ -154,7 +154,7 @@ export default function AdminRentalDetailClient() {
   const onOut = async () => {
     if (!confirm('대여를 시작(out) 처리하시겠어요?')) return;
 
-    const res = await fetch(`/api/rentals/${id}/out`, { method: 'POST' });
+    const res = await fetch(`/api/admin/rentals/${id}/out`, { method: 'POST' });
     const json = await safeJson(res);
     if (!res.ok) {
       showErrorToast(json?.message || '처리 실패');
@@ -167,7 +167,7 @@ export default function AdminRentalDetailClient() {
   const onReturn = async () => {
     if (!confirm('반납 처리하시겠어요?')) return;
 
-    const res = await fetch(`/api/rentals/${id}/return`, { method: 'POST' });
+    const res = await fetch(`/api/admin/rentals/${id}/return`, { method: 'POST' });
     const json = await safeJson(res);
     if (!res.ok) {
       showErrorToast(json?.message || '처리 실패');
@@ -179,7 +179,7 @@ export default function AdminRentalDetailClient() {
 
   // 대여 취소 요청 승인
   const onApproveCancel = async () => {
-    const res = await fetch(`/api/rentals/${id}/cancel-approve`, {
+    const res = await fetch(`/api/admin/rentals/${id}/cancel-approve`, {
       method: 'POST',
       credentials: 'include',
     });
@@ -194,7 +194,7 @@ export default function AdminRentalDetailClient() {
 
   // 대여 취소 요청 거절
   const onRejectCancel = async () => {
-    const res = await fetch(`/api/rentals/${id}/cancel-reject`, {
+    const res = await fetch(`/api/admin/rentals/${id}/cancel-reject`, {
       method: 'POST',
       credentials: 'include',
     });

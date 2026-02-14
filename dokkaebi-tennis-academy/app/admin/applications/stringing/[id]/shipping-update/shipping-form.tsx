@@ -114,7 +114,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`/api/applications/stringing/${applicationId}/shipping`, {
+      const res = await fetch(`/api/admin/applications/stringing/${applicationId}/shipping`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
