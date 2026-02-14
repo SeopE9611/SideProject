@@ -35,10 +35,10 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   const isDirty = Boolean(initialSig) && currentSig !== initialSig;
   useUnsavedChangesGuard(guardOn && isDirty);
 
-  // 프리필(수정용): GET /api/rentals/[id] 읽어서 shipping.outbound 있으면 기본값 세팅
+  // 프리필(수정용): GET /api/admin/rentals/[id] 읽어서 shipping.outbound 있으면 기본값 세팅
   useEffect(() => {
     (async () => {
-      const res = await fetch(`/api/rentals/${rentalId}`, { credentials: 'include' });
+      const res = await fetch(`/api/admin/rentals/${rentalId}`, { credentials: 'include' });
       const json = await res.json().catch(() => ({}));
       const out = json?.shipping?.outbound;
       const next = {

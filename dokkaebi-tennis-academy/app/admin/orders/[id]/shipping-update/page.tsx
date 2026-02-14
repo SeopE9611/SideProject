@@ -14,7 +14,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
   const cookie = headersList.get('cookie') ?? '';
 
-  const res = await fetch(`${baseUrl}/api/orders/${id}`, {
+  const res = await fetch(`${baseUrl}/api/admin/orders/${id}`, {
     cache: 'no-store',
     headers: { cookie },
   });
@@ -23,7 +23,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
   // - 예: /admin/orders/{applicationId}/shipping-update 로 직접 접근했을 때
   // - 이 경우 주문 조회는 404가 나므로, 신청서 조회가 성공하면 신청서 배송 페이지로 즉시 이동
   if (!res.ok) {
-    const appRes = await fetch(`${baseUrl}/api/applications/stringing/${id}`, {
+    const appRes = await fetch(`${baseUrl}/api/admin/applications/stringing/${id}`, {
       cache: 'no-store',
       headers: { cookie },
     });

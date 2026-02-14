@@ -16,7 +16,8 @@
     "db:ensure-admin-user-indexes": "node scripts/db/ensure-admin-user-indexes.mjs",
     "report:type-debt": "node scripts/report-admin-any-count.mjs",
     "check:admin-any-gate": "node scripts/check-admin-any-gate.mjs",
-    "report:admin-any": "node scripts/report-admin-any-count.mjs"
+    "report:admin-any": "node scripts/report-admin-any-count.mjs",
+    "check:admin-api-boundary": "node scripts/check-admin-api-boundary.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

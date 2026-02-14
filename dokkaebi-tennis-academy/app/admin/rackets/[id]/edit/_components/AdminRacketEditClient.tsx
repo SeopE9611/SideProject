@@ -14,7 +14,7 @@ import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
 function StockChip({ id, total }: { id: string; total: number }) {
-  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/rentals/active-count/${id}`, (u) => fetch(u, { credentials: 'include' }).then((r) => r.json()), { dedupingInterval: 5000 });
+  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, (u) => fetch(u, { credentials: 'include' }).then((r) => r.json()), { dedupingInterval: 5000 });
   const qty = Math.max(1, total ?? 1);
   const avail = Math.max(0, Number(data?.available ?? 0));
   const soldOut = avail <= 0;

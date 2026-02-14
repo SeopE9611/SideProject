@@ -29,7 +29,7 @@ export interface Props {
 }
 
 export default function ShippingFormClient({ applicationId, onSuccess }: Props) {
-  const { data, error, isLoading } = useSWR<Application>(`/api/applications/stringing/${applicationId}`, fetcher);
+  const { data, error, isLoading } = useSWR<Application>(`/api/admin/applications/stringing/${applicationId}`, fetcher);
 
   const shippingInfo = data?.shippingInfo ?? {};
   const invoice = shippingInfo.invoice ?? {};
