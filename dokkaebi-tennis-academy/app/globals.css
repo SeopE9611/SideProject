@@ -2,13 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* html:has(body[data-scroll-locked]) {
-  overflow: hidden;
-} */
-
-body[data-scroll-locked] .app-header {
-  padding-right: var(--removed-body-scroll-bar-size, 0px);
+/* 데스크탑에서 스크롤바 유무와 관계없이 '항상 같은 폭'을 유지 (레이아웃 shift 제거) */
+html {
+  scrollbar-gutter: stable;
 }
+
+/* 구형 브라우저/특정 환경 안전장치: 항상 스크롤바 레인을 잡아둠 */
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
+}
+
+/* 스크롤 잠금은 html에서만 수행 (body overflow는 건드리지 않음 → sticky 안정) */
+html[data-scroll-locked] {
+  overflow: hidden;
+}
+
+/* Radix 주입(style tag)보다 specificity를 높여 무조건 이기게 만든다 */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+  overflow: visible !important; /* sticky 기준 흔들림 방지 */
+  position: static !important; /* Radix가 relative를 주입하는 케이스도 차단 */
+}
+
 /* 다크 모드용 CSS 변수 정의 */
 .dark body {
   --background: 222.2 47.4% 11.2%; /* bg-gray-950 */
@@ -36,8 +54,6 @@ body[data-scroll-locked] .app-header {
 
 /* 라이트 모드용 CSS 변수 정의 */
 :root {
-  /* ScrollLockCompensator가 설정하는 값(기본 0) */
-  /* --scrollbar-compensation: 0px; */
   --background: 0 0% 100%; /* bg-white */
   --foreground: 222.2 84% 4.9%; /* text-gray-900 */
   --muted: 210 40% 96.1%;

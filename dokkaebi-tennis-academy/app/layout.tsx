@@ -17,9 +17,8 @@ import SessionWatcher from '@/components/system/SessionWatcher';
 import ClaimsAutoLinker from '@/components/system/ClaimsAutoLinker';
 import AppShell from '@/components/layout/AppShell';
 import KakaoInquiryWidget from '@/components/system/KakaoInquiryWidget';
-import ScrollLockCompensator from '@/components/system/ScrollLockCompensator';
-import ScrollLockKeepScrollbar from '@/components/system/ScrollLockKeepScrollbar';
 import 'spoqa-han-sans/css/SpoqaHanSansNeo.css';
+import RootScrollLockBridge from '@/components/system/RootScrollLockBridge';
 
 export const metadata: Metadata = {
   title: '도깨비 테니스 아카데미',
@@ -62,8 +61,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <TokenRefresher />
         <SessionWatcher />
         <ClaimsAutoLinker />
-        <ScrollLockCompensator />
-        <ScrollLockKeepScrollbar />
+        <RootScrollLockBridge />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Header />
