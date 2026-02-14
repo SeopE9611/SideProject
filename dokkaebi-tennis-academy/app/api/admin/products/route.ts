@@ -1,26 +1,12 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
 import { getDb } from '@/lib/mongodb';
-
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
+import { requireAdmin } from '@/lib/admin.guard';
 
 export async function GET(req: Request) {
   try {
-    // 인증
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
-    const user = safeVerifyAccessToken(token);
-    if (!user || user.role !== 'admin') {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
+    const guard = await requireAdmin(req);
+    if (!guard.ok) return guard.res;
+
 
     const { searchParams } = new URL(req.url);
 

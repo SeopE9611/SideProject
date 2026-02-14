@@ -1,26 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { requireAdmin } from '@/lib/admin.guard';
 import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
-
-// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
-
-async function requireAdmin() {
-  const jar = await cookies();
-  const at = jar.get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(at);
-  if (!payload || payload.role !== 'admin') return null;
-  return payload;
-}
 
 /**
  * body: { action?: 'mark' | 'clear' }  // 기본: 'mark'
@@ -29,8 +10,8 @@ async function requireAdmin() {
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자 권한 체크
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, message: '잘못된 ID' }, { status: 400 });

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { DEFAULT_GENERAL_SETTINGS, type GeneralSettings, type PackageConfig } from '@/lib/package-settings';
 import { loadPackageSettings, savePackageSettings } from '@/app/features/packages/api/db';
+import { requireAdmin } from '@/lib/admin.guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,13 +10,9 @@ function toNumberSafe(v: unknown, fallback: number) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-async function requireAdmin() {
-  // 현재 다른 admin 라우터와 동일하게 일단 통과만 시킴
-  return true;
-}
-
-export async function GET() {
-  await requireAdmin();
+export async function GET(req: Request) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   try {
     const { packageConfigs, generalSettings } = await loadPackageSettings();
@@ -27,7 +24,8 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  await requireAdmin();
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   // 잘못된 JSON은 500이 아니라 400으로 정리
   let body: any;

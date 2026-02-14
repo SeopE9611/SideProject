@@ -1,19 +1,9 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { requireAdmin } from '@/lib/admin.guard';
 
 // 토큰 검증은 throw 가능 → 안전하게 null 처리(500 방지)
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
-
 // 숫자 쿼리 파싱 NaN 방지 + 범위 보정
 function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
@@ -21,16 +11,10 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
-async function requireAdmin() {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(token);
-  return payload?.role === 'admin' ? payload : null;
-}
-
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
-    const payload = await requireAdmin();
-    if (!payload) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+    const guard = await requireAdmin(req);
+    if (!guard.ok) return guard.res;
 
     const url = new URL(req.url);
     const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 5, min: 1, max: 50 });

@@ -1,37 +1,14 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { requireAdmin } from '@/lib/admin.guard';
 import { ensureReviewIndexes, dedupActiveReviews, rebuildProductRatingSummary } from '@/lib/reviews.maintenance';
 
 type MaintAction = 'createIndexes' | 'dedup' | 'rebuildSummary' | 'all' | undefined;
 
-// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
-
 // 공통: 관리자 토큰 체크
-async function requireAdmin() {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(token);
-  if (!payload?.sub || payload.role !== 'admin') {
-    return null;
-  }
-  return payload;
-}
-
 export async function POST(req: Request) {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(token);
-  if (!payload?.sub || payload.role !== 'admin') {
-    return NextResponse.json({ message: 'forbidden' }, { status: 403 });
-  }
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   const db = await getDb();
   const locks = db.collection('admin_locks');
@@ -86,9 +63,9 @@ export async function POST(req: Request) {
  * GET  /api/admin/reviews/maintenance
  * 현재 락 상태 조회 (운영자 확인용)
  */
-export async function GET() {
-  const me = await requireAdmin();
-  if (!me) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+export async function GET(req: Request) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   const db = await getDb();
   const locks = db.collection('admin_locks');
@@ -106,9 +83,9 @@ export async function GET() {
  * DELETE /api/admin/reviews/maintenance
  * 강제 해제 (stuck시 관리자 수동 풀기)
  */
-export async function DELETE() {
-  const me = await requireAdmin();
-  if (!me) return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+export async function DELETE(req: Request) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   const db = await getDb();
   const locks = db.collection('admin_locks');

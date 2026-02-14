@@ -13,18 +13,7 @@
 
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
-
-// verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
+import { requireAdmin } from '@/lib/admin.guard';
 
 type ExceptionItem = {
   date: string; // 'YYYY-MM-DD'
@@ -52,24 +41,15 @@ const COLLECTION = 'settings';
 const DOC_ID: StringingSettings['_id'] = 'stringingSlots';
 
 /** 관리자 인증/권한 확인 (기존 프로젝트 유틸 그대로 사용) */
-async function requireAdmin() {
-  const jar = await cookies();
-  const at = jar.get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(at);
-  // role이 'admin'인 경우만 허용
-  if (!payload || payload.role !== 'admin') return null;
-  return payload;
-}
-
 /** 유효성 도우미 */
 const clampNum = (n: any, min: number, max: number) => Math.max(min, Math.min(max, Number(n)));
 const isHHMM = (s: any) => typeof s === 'string' && /^\d{2}:\d{2}$/.test(s);
 const isDate = (s: any) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
-export async function GET() {
+export async function GET(req: Request) {
   // 관리자 권한 체크
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   const db = await getDb();
   const doc = await db.collection<StringingSettings>(COLLECTION).findOne({ _id: DOC_ID }, { projection: { updatedAt: 0 } }); // 필요 시 projection 조절
@@ -80,8 +60,8 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   // 관리자 권한 체크
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   // 본문 파싱
   const body = (await req.json().catch(() => ({}))) as Partial<StringingSettings>;
