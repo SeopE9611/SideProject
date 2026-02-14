@@ -93,6 +93,12 @@ const createSchema = z.object({
     .optional(),
 });
 
+const MAX_SEARCH_QUERY_LENGTH = 100;
+
+function escapeRegex(input: string): string {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function parseListQuery(req: NextRequest): {
   typeParam: CommunityBoardType | null;
   brand: string | null;
@@ -100,6 +106,8 @@ function parseListQuery(req: NextRequest): {
   page: number;
   limit: number;
   q: string;
+  escapedQ: string;
+  isQueryTooLong: boolean;
   authorId: string | null;
   searchType: 'title' | 'author' | 'title_content';
   category: (typeof COMMUNITY_CATEGORIES)[number] | null;
@@ -126,6 +134,8 @@ function parseListQuery(req: NextRequest): {
 
   // 검색어 (기존 q 그대로 사용)
   const q = (url.searchParams.get('q') || '').toString().trim();
+  const isQueryTooLong = q.length > MAX_SEARCH_QUERY_LENGTH;
+  const escapedQ = escapeRegex(q);
 
   // 특정 유저 글만 보기 (작성자 ID 필터)
   const authorId = url.searchParams.get('authorId');
@@ -145,6 +155,8 @@ function parseListQuery(req: NextRequest): {
     page,
     limit,
     q,
+    escapedQ,
+    isQueryTooLong,
     authorId,
     searchType,
     category,
@@ -158,7 +170,18 @@ export async function GET(req: NextRequest) {
   const db = await getDb();
   const col = db.collection('community_posts');
 
-  const { typeParam, brand, sort, page, limit, q, authorId, searchType, category } = parseListQuery(req);
+  const { typeParam, brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorId, searchType, category } = parseListQuery(req);
+
+  if (isQueryTooLong) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'query_too_long',
+        message: `검색어는 최대 ${MAX_SEARCH_QUERY_LENGTH}자까지 입력할 수 있습니다.`,
+      },
+      { status: 400 },
+    );
+  }
 
   const filter: any = { status: 'public' as const };
 
@@ -176,7 +199,7 @@ export async function GET(req: NextRequest) {
 
   // 검색어 필터 (searchType 에 따라 분기)
   if (q) {
-    const regex = { $regex: q, $options: 'i' as const };
+    const regex = { $regex: escapedQ, $options: 'i' as const };
 
     if (searchType === 'title') {
       // 제목만 검색
