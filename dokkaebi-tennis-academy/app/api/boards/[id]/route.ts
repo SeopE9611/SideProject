@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { logError, logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { API_VERSION } from '@/lib/board.repository';
 import { baseCookie } from '@/lib/cookieOptions';
 import { createHash } from 'crypto';
 
@@ -211,7 +212,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const post = await BoardRepo.findOneById(db, id);
   if (!post) {
     logInfo({ msg: 'boards:get:not_found', status: 404, docId: id, durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'not_found' }, { status: 404 });
   }
   // 권한 확인 + (비로그인 디듀프용) 쿠키 접근
   const cookieStore = await cookies();
@@ -225,7 +226,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     // 로그인 자체가 없으면 -> 401 (로그인 유도 UX)
     if (!payload) {
       logInfo({ msg: 'boards:get:unauthorized_secret', status: 401, docId: id, durationMs: stop(), ...meta });
-      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
     }
     // 로그인은 했지만 작성자/관리자가 아니면 -> 403
     if (!isAdmin && !isOwner) {
@@ -237,12 +238,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         durationMs: stop(),
         ...meta,
       });
-      return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
     }
   }
 
   logInfo({ msg: 'boards:get:ok', status: 200, docId: id, durationMs: stop(), ...meta });
-  const response = NextResponse.json({ ok: true, item: post }, { headers: { 'Cache-Control': 'no-store' } });
+  const response = NextResponse.json({ ok: true, version: API_VERSION, item: post }, { headers: { 'Cache-Control': 'no-store' } });
 
   return response;
 }
@@ -257,17 +258,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const payload = safeVerifyAccessToken(token);
   if (!payload) {
     logInfo({ msg: 'boards:patch:unauthorized', status: 401, docId: id, durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401 });
   }
 
   const post = await BoardRepo.findOneById(db, id);
   if (!post) {
     logInfo({ msg: 'boards:patch:not_found', status: 404, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'not_found' }, { status: 404 });
   }
   if (!canEdit(payload, post)) {
     logInfo({ msg: 'boards:patch:forbidden', status: 403, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403 });
   }
 
   let bodyRaw: unknown;
@@ -275,7 +276,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     bodyRaw = await req.json();
   } catch {
     logInfo({ msg: 'boards:patch:invalid_json', status: 400, docId: id, durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, message: 'Invalid JSON body' }, { status: 400 });
+    return NextResponse.json({ ok: false, version: API_VERSION, message: 'Invalid JSON body' }, { status: 400 });
   }
 
   const parsed = updateSchema.safeParse(bodyRaw);
@@ -401,7 +402,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   //    - 아니면 => 404(기존 로직 유지)
   if (!r.matchedCount) {
     logInfo({ msg: 'boards:patch:not_found_on_update', status: 404, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'not_found' }, { status: 404 });
   }
 
   // console.log('[PATCH boards: update matchedCount]', r.matchedCount);
@@ -418,7 +419,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // 5) 갱신된 문서를 다시 읽어와서 반환(+선택: 최신 updatedAt 헤더 제공)
   const updated = await BoardRepo.findOneById(db, String(post._id));
-  return NextResponse.json({ ok: true, item: updated }, updated?.updatedAt ? { headers: { 'x-updated-at': new Date(updated.updatedAt).toISOString() } } : undefined);
+  return NextResponse.json({ ok: true, version: API_VERSION, item: updated }, updated?.updatedAt ? { headers: { 'x-updated-at': new Date(updated.updatedAt).toISOString() } } : undefined);
   // === 낙관적 락(updatedAt 매칭) + 재조회 반환 끝 ===
 }
 // ===================================================================
@@ -433,17 +434,17 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const payload = safeVerifyAccessToken(token);
   if (!payload) {
     logInfo({ msg: 'boards:delete:unauthorized', status: 401, docId: id, durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401 });
   }
 
   const post = await BoardRepo.findOneById(db, id);
   if (!post) {
     logInfo({ msg: 'boards:delete:not_found', status: 404, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'not_found' }, { status: 404 });
   }
   const isAdmin = payload.role === 'admin';
   const isOwner = String(payload.sub) === String(post.authorId);
-  if (!isAdmin && !isOwner) return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
+  if (!isAdmin && !isOwner) return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403 });
 
   // 첨부가 있으면 스토리지에서 먼저 삭제
   if (Array.isArray(post.attachments) && post.attachments.length > 0) {
@@ -457,5 +458,5 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   await BoardRepo.deleteOneById(db, id);
 
   logInfo({ msg: 'boards:delete:ok', status: 200, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, version: API_VERSION });
 }

@@ -8,6 +8,7 @@ import { ObjectId } from 'mongodb';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { getBoardList } from '@/lib/boards.queries';
+import { API_VERSION } from '@/lib/board.repository';
 
 /**
  * 숫자 쿼리 파라미터 파싱(Phase 0 - 500 방지)
@@ -131,7 +132,7 @@ const productRefSchema = z
   })
   .optional();
 
-const typeSchema = z.enum(['notice', 'qna'] as const);
+const typeSchema = z.enum(['notice', 'qna', 'free', 'market', 'gear'] as const);
 
 // category는 "코드 or 라벨" QnA + Notice 모두 허용
 const categorySchema = z
@@ -140,6 +141,7 @@ const categorySchema = z
     z.enum(QNA_CATEGORY_LABELS as unknown as [string, ...string[]]),
     z.enum(NOTICE_CATEGORY_CODES as unknown as [string, ...string[]]),
     z.enum(NOTICE_CATEGORY_LABELS as unknown as [string, ...string[]]),
+    z.enum(['general', 'info', 'qna', 'tip', 'etc', 'racket', 'string', 'equipment', 'shoes', 'bag', 'apparel', 'grip', 'accessory', 'ball', 'other'] as [string, ...string[]]),
   ])
   .optional();
 
@@ -188,6 +190,7 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
 
   const typeParam = url.searchParams.get('type');
+  const kindParam = url.searchParams.get('kind');
   const rawCategory = url.searchParams.get('category'); // string | null
   const productId = url.searchParams.get('productId');
   const answerRaw = url.searchParams.get('answer') || '';
@@ -207,6 +210,41 @@ export async function GET(req: NextRequest) {
 
   // type 유효성 가드: 기본은 notice, 'qna'면 qna로
   const type: BoardType = typeParam === 'qna' ? 'qna' : 'notice';
+
+  const communityKind = kindParam && ['free', 'market', 'gear'].includes(kindParam) ? kindParam : null;
+
+  if (communityKind) {
+    const db = await getDb();
+    const col = db.collection('community_posts');
+    const filter: Record<string, any> = { status: 'public', type: communityKind };
+    if (q && q.trim()) {
+      const esc = (v: string) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(esc(q.trim()), 'i');
+      filter.$or = [{ title: { $regex: re } }, { content: { $regex: re } }];
+    }
+    const total = await col.countDocuments(filter);
+    const docs = await col.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).toArray();
+    const items = docs.map((d: any) => ({
+      id: String(d._id),
+      type: d.type,
+      title: d.title,
+      content: d.content,
+      category: d.category ?? 'general',
+      userId: d.userId ? String(d.userId) : null,
+      nickname: d.nickname ?? '회원',
+      status: d.status ?? 'public',
+      views: d.views ?? 0,
+      likes: d.likes ?? 0,
+      commentsCount: d.commentsCount ?? 0,
+      createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
+      updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : undefined,
+      attachments: d.attachments ?? [],
+      images: d.images ?? [],
+      brand: d.brand ?? null,
+      postNo: d.postNo,
+    }));
+    return NextResponse.json({ ok: true, version: API_VERSION, items, total, page, limit });
+  }
 
   // 타입별 카테고리 정규화
   let category: string | null = null;
@@ -249,7 +287,7 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json(
-    { ok: true, items, total, page, limit },
+    { ok: true, version: API_VERSION, items, total, page, limit },
     {
       headers: {
         // 브라우저 캐시는 짧게(or 없음), CDN은 30초, 그리고 SWR 60초
@@ -279,7 +317,7 @@ export async function POST(req: NextRequest) {
   }
   if (!payload || !payload?.sub) {
     logInfo({ msg: 'boards:post:unauthorized', status: 401, durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401 });
   }
   // 입력 검증
   let bodyRaw: unknown;
@@ -287,14 +325,38 @@ export async function POST(req: NextRequest) {
     bodyRaw = await req.json();
   } catch {
     // 잘못된 JSON/빈 body 등에서 req.json()이 throw → 400으로 정리
-    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'invalid_json' }, { status: 400 });
   }
   const parsed = createSchema.safeParse(bodyRaw);
   if (!parsed.success) {
     logInfo({ msg: 'boards:post:validation_failed', status: 400, durationMs: stop(), extra: { issues: parsed.error.issues }, ...meta });
-    return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: parsed.error.flatten() }, { status: 400 });
   }
   const body = parsed.data;
+
+  if (body.type === 'free' || body.type === 'market' || body.type === 'gear') {
+    const db = await getDb();
+    const now = new Date();
+    const doc = {
+      type: body.type,
+      title: body.title,
+      content: body.content,
+      category: body.category ?? 'general',
+      brand: null,
+      images: [],
+      attachments: body.attachments ?? [],
+      userId: new ObjectId(String(payload.sub)),
+      nickname: payload?.name ?? payload?.nickname ?? payload?.email?.split('@')?.[0] ?? '회원',
+      status: 'public',
+      views: 0,
+      likes: 0,
+      commentsCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const r = await db.collection('community_posts').insertOne(doc as any);
+    return NextResponse.json({ ok: true, version: API_VERSION, id: r.insertedId.toString() }, { status: 201 });
+  }
 
   // 표시명 결정: users.name -> users.nickname -> payload.name -> payload.nickname -> email local-part
   const db = await getDb();
@@ -323,7 +385,7 @@ export async function POST(req: NextRequest) {
   if (body?.type === 'notice') {
     const admin = await mustAdmin();
     if (!admin) {
-      return NextResponse.json({ ok: false, message: 'forbidden' }, { status: 403 });
+      return NextResponse.json({ ok: false, version: API_VERSION, message: 'forbidden' }, { status: 403 });
     }
   }
 
@@ -336,7 +398,7 @@ export async function POST(req: NextRequest) {
   const safeContent = await sanitizeHtml(String(body.content ?? ''));
 
   const doc: BoardPost = {
-    type: body.type,
+    type: body.type as BoardType,
     title: body.title,
     // content: body.content,
     content: safeContent,
@@ -354,5 +416,5 @@ export async function POST(req: NextRequest) {
 
   const r = await db.collection('board_posts').insertOne(doc as any);
   logInfo({ msg: 'boards:post:created', status: 200, durationMs: stop(), extra: { id: r.insertedId.toString() }, ...meta });
-  return NextResponse.json({ ok: true, id: r.insertedId.toString() });
+  return NextResponse.json({ ok: true, version: API_VERSION, id: r.insertedId.toString() });
 }

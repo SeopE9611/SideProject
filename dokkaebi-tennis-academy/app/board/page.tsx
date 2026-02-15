@@ -639,9 +639,9 @@ export default function BoardPage() {
 
   const reviews = Array.isArray(rData?.items) ? (rData.items as ReviewItem[]) : [];
   // 자유/중고/사용기 최신글 5개
-  const { data: fData, error: fError, isLoading: fLoading } = useSWR('/api/community/posts?type=free&sort=latest&limit=5&page=1', fetcher);
-  const { data: mData, error: mError, isLoading: mLoading } = useSWR('/api/community/posts?type=market&sort=latest&limit=5&page=1', fetcher);
-  const { data: gData, error: gError, isLoading: gLoading } = useSWR('/api/community/posts?type=gear&sort=latest&limit=5&page=1', fetcher);
+  const { data: fData, error: fError, isLoading: fLoading } = useSWR('/api/boards?kind=free&sort=latest&limit=5&page=1', fetcher);
+  const { data: mData, error: mError, isLoading: mLoading } = useSWR('/api/boards?kind=market&sort=latest&limit=5&page=1', fetcher);
+  const { data: gData, error: gError, isLoading: gLoading } = useSWR('/api/boards?kind=gear&sort=latest&limit=5&page=1', fetcher);
 
   const freePosts = Array.isArray(fData?.items) ? (fData.items as CommunityListItem[]) : [];
   const marketPosts = Array.isArray(mData?.items) ? (mData.items as CommunityListItem[]) : [];

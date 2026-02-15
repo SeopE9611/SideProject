@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
+import { API_VERSION } from '@/lib/board.repository';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,5 +123,5 @@ export async function GET() {
     return { ...rest, title };
   });
 
-  return NextResponse.json({ ok: true, notices, qna }, { headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json({ ok: true, version: API_VERSION, notices, qna }, { headers: { 'Cache-Control': 'no-store' } });
 }
