@@ -29,3 +29,14 @@
 - `/api/**`(비 admin 네임스페이스) 호출이 필요한 경우는 읽기 전용 공용 조회 API로 한정하고, 예외 사유를 PR 본문에 명시한다.
 - 관리자 전용 행위(승인/반려/수정/삭제/정산/발송 재시도)는 `app/api/admin/**`로만 제공한다.
 - 전환 단계에서는 기존 비-admin 경로에 `Deprecation` 응답 헤더 또는 307/410 응답 정책을 적용해 누락 클라이언트를 조기 탐지한다.
+
+## 관리자 API 클라이언트 사용 규약
+- 조회 요청은 **SWR + `adminFetcher`** 조합을 기본으로 사용한다.
+  - 개별 화면에서 커스텀 fetcher를 만들지 않고 `adminFetcher`를 재사용한다.
+  - `cache: 'no-store'`가 필요한 경우 `adminFetcher(url, { cache: 'no-store' })`로 옵션만 덮어쓴다.
+- 변경 요청(POST/PATCH/DELETE)은 **`adminMutator`**를 사용한다.
+  - 컴포넌트에서 직접 `fetch('/api/admin/**')` 후 `res.ok`/`res.json()`을 반복하지 않는다.
+  - 에러 메시지는 `AdminFetchError` + `getAdminErrorMessage` 표준 매핑을 따른다.
+- 사용자 피드백(toast)은 공통 helper(`runAdminActionWithToast`)를 우선 사용한다.
+  - 성공 시 성공 toast, 실패 시 표준 에러 메시지 toast를 동일 규칙으로 노출한다.
+  - 예외적으로 도메인별 상세 에러코드 분기가 필요하면 helper 호출 후 추가 분기한다.

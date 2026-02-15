@@ -9,6 +9,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { fallbackReason, parsePointRefKey, pointTxStatusLabel, pointTxTypeLabel, safeLocalDateTime } from '@/lib/points.display';
 import { Badge } from '@/components/ui/badge';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
 
 type Props = {
   open: boolean;
@@ -27,7 +28,11 @@ type TxItem = {
   refKey: string | null;
 };
 
-const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then((r) => r.json());
+type UserPointHistoryResponse = {
+  balance?: number;
+  items?: TxItem[];
+  total?: number;
+};
 
 function safeDateLabel(iso: string) {
   return safeLocalDateTime(iso);
@@ -47,7 +52,7 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
     return `/api/admin/users/${userId}/points/history?page=${page}&limit=${limit}`;
   }, [userId, page]);
 
-  const { data, mutate, isLoading } = useSWR(historyUrl, fetcher);
+  const { data, mutate, isLoading } = useSWR<UserPointHistoryResponse>(historyUrl, (url: string) => adminFetcher<UserPointHistoryResponse>(url, { cache: 'no-store' }));
 
   const balance = typeof data?.balance === 'number' ? data.balance : 0;
   const items: TxItem[] = Array.isArray(data?.items) ? data.items : [];
@@ -91,7 +96,7 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
     if (!userId) return;
     setSubmitting(true);
     try {
-      const res = await fetch('/api/admin/points/adjust', {
+      const json = await adminMutator<{ ok?: boolean; error?: string }>('/api/admin/points/adjust', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -101,8 +106,8 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
           refKey: refKey.trim() || undefined,
         }),
       });
-      const json = await res.json();
-      if (!res.ok || !json?.ok) {
+
+      if (!json?.ok) {
         const code = json?.error || 'INTERNAL_ERROR';
 
         // 케이스별 메시지
@@ -127,6 +132,8 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
       setAmount('');
       setReason('');
       setRefKey('');
+    } catch {
+      showErrorToast('포인트 반영에 실패했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setSubmitting(false);
     }
