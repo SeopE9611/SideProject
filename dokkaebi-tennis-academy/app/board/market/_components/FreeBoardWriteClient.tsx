@@ -346,7 +346,7 @@ export default function FreeBoardWriteClient() {
         payload.attachments = attachments;
       }
 
-      const res = await fetch('/api/community/posts', {
+      const res = await fetch('/api/boards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

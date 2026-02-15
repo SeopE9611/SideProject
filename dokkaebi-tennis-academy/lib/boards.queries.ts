@@ -1,4 +1,5 @@
 import { getDb } from '@/lib/mongodb';
+import { findList } from '@/lib/board.repository';
 import type { BoardType } from '@/lib/types/board';
 import type { Sort } from 'mongodb';
 
@@ -62,8 +63,6 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
   const { type, page, limit, q = '', field = 'all', category, productId, answer } = params;
 
   const db = await getDb();
-  const col = db.collection('board_posts');
-
   // 1) 기본 필터: 게시판 타입 + 게시 상태
   const filter: Record<string, any> = {
     type,
@@ -110,7 +109,6 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
   }
 
   // 5) total (페이지네이션용 전체 개수)
-  const total = await col.countDocuments(filter);
 
   // 6) 정렬 조건
   const sort: Sort =
@@ -137,12 +135,7 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
     projection['answer.createdAt'] = 1;
     projection['answer.updatedAt'] = 1;
   }
-  const rawItems = await col
-    .find(filter, { projection })
-    .sort(sort)
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .toArray();
+  const { total, items: rawItems } = await findList(db, 'board_posts', filter, projection, sort, page, limit);
 
   // 8) 첨부 메타 계산 (이미지 / 파일 개수)
   const items: BoardListItem[] = rawItems.map((doc: any) => {

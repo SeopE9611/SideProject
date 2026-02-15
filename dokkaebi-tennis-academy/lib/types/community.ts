@@ -1,3 +1,5 @@
+import type { BoardAttachment, BoardPostBase } from '@/lib/types/board-domain';
+
 /** 커뮤니티 글 노출 상태 */
 export type CommunityStatus = 'public' | 'hidden' | 'deleted';
 
@@ -14,17 +16,13 @@ export const COMMUNITY_CATEGORIES = ['general', 'info', 'qna', 'tip', 'etc', 'ra
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
 
 // 파일 메타 타입
-export type CommunityAttachment = {
-  name: string; // 원본 파일명
-  url: string; // Supabase에 업로드된 파일 URL
-  size?: number; // 파일 크기
-};
+export type CommunityAttachment = BoardAttachment;
 /**
  * API 응답/프론트에서 사용하는 커뮤니티 게시글 타입
  * - DB에서는 community_posts 컬렉션에 저장
  * - createdAt/updatedAt 는 ISO 문자열로 내려줌
  */
-export interface CommunityPost {
+export interface CommunityPost extends Omit<BoardPostBase, 'kind' | '_id' | 'createdAt' | 'updatedAt' | 'attachments' | 'authorId' | 'viewCount'> {
   /** MongoDB _id 문자열 */
   id: string;
 

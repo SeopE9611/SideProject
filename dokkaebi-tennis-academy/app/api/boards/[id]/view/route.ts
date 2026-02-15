@@ -6,6 +6,7 @@ import { createHash } from 'crypto';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { API_VERSION } from '@/lib/board.repository';
 
 /** 토큰이 깨져도 500이 아니라 "비로그인"으로 처리 */
 function safeVerifyAccessToken(token?: string) {
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       durationMs: stop(),
       ...meta,
     });
-    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'not_found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
   }
 
   // 권한 확인 (비밀글이면 view도 권한 필요)
@@ -137,7 +138,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         durationMs: stop(),
         ...meta,
       });
-      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
     }
     if (!isAdmin && !isOwner) {
       logInfo({
@@ -148,14 +149,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         durationMs: stop(),
         ...meta,
       });
-      return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
     }
   }
 
   // published만 카운트
   const current = typeof post.viewCount === 'number' ? post.viewCount : 0;
   if (post.status !== 'published') {
-    return NextResponse.json({ ok: true, firstView: false, viewCount: current }, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ ok: true, version: API_VERSION, firstView: false, viewCount: current }, { headers: { 'Cache-Control': 'no-store' } });
   }
 
   // viewerKey 결정
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   }
 
   if (!viewerKey) {
-    return NextResponse.json({ ok: true, firstView: false, viewCount: current }, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ ok: true, version: API_VERSION, firstView: false, viewCount: current }, { headers: { 'Cache-Control': 'no-store' } });
   }
 
   const acquired = await BoardRepo.tryAcquireViewSlot(db, id, viewerKey);
@@ -188,5 +189,5 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     ...meta,
   });
 
-  return NextResponse.json({ ok: true, firstView: acquired, viewCount }, { headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json({ ok: true, version: API_VERSION, firstView: acquired, viewCount }, { headers: { 'Cache-Control': 'no-store' } });
 }

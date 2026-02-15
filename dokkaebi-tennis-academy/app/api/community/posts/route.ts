@@ -7,6 +7,7 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES, CommunityBoardType, CommunityPost } from '@/lib/types/community';
+import { API_VERSION } from '@/lib/board.repository';
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
@@ -278,7 +279,7 @@ export async function GET(req: NextRequest) {
   // });
 
   return NextResponse.json(
-    { ok: true, items, total, page, limit },
+    { ok: true, version: API_VERSION, items, total, page, limit },
     {
       headers: {
         // 목록은 짧게 캐시 (필요 시 조정 가능)
@@ -309,13 +310,13 @@ export async function POST(req: NextRequest) {
     //   durationMs: stop(),
     //   ...meta,
     // });
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401 });
   }
 
   // 작성자 ID (추후 getAuthPayload 로직이 바뀌더라도 500으로 터지지 않도록 한 번 더 방어)
   const subStr = payload?.sub ? String(payload.sub) : '';
   if (!subStr || !ObjectId.isValid(subStr)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401 });
   }
   const userId = new ObjectId(subStr);
 
@@ -324,7 +325,7 @@ export async function POST(req: NextRequest) {
   try {
     bodyRaw = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'invalid_json' }, { status: 400 });
   }
 
   const parsed = createSchema.safeParse(bodyRaw);
@@ -336,7 +337,7 @@ export async function POST(req: NextRequest) {
       extra: { issues: parsed.error.issues },
       ...meta,
     });
-    return NextResponse.json({ ok: false, error: 'validation_error', details: parsed.error.issues }, { status: 400 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: 'validation_error', details: parsed.error.issues }, { status: 400 });
   }
 
   const body = parsed.data;
@@ -433,5 +434,5 @@ export async function POST(req: NextRequest) {
   //   ...meta,
   // });
 
-  return NextResponse.json({ ok: true, id: r.insertedId.toString() }, { status: 201 });
+  return NextResponse.json({ ok: true, version: API_VERSION, id: r.insertedId.toString() }, { status: 201, headers: { 'x-api-legacy': 'community/posts' } });
 }

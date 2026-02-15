@@ -21,6 +21,7 @@ import type { BoardTypeConfig } from '@/app/board/_components/board-config';
 // API 응답 타입
 type ListResponse = {
   ok: boolean;
+  version?: string;
   items: CommunityPost[];
   total: number;
   page: number;
@@ -177,6 +178,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   const PAGE_LIMIT = 10;
 
   const qs = new URLSearchParams({
+    kind: config.boardType,
     type: config.boardType,
     page: String(page),
     limit: String(PAGE_LIMIT),
@@ -231,7 +233,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     setPage(1);
   };
 
-  const { data, error, isLoading } = useSWR<ListResponse>(`/api/community/posts?${qs.toString()}`, fetcher);
+  const { data, error, isLoading } = useSWR<ListResponse>(`/api/boards?${qs.toString()}`, fetcher);
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
