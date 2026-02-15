@@ -12,6 +12,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getQnaCategoryColor } from '@/lib/badge-style';
 import { usePathname } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
+import ErrorBox from '@/app/board/_components/ErrorBox';
 
 const CAT_LABELS: Record<string, string> = {
   product: '상품문의',
@@ -59,21 +61,6 @@ type Props = {
 };
 
 export default function QnaPageClient({ initialItems, initialTotal, initialPage = 1, initialCategory = 'all', initialAnswerFilter = 'all', initialKeyword = '', initialField = 'all' }: Props) {
-  async function fetcher(url: string): Promise<BoardListRes> {
-    const res = await fetch(url, { credentials: 'include' });
-    const data = (await res.json().catch(() => null)) as unknown;
-
-    if (!res.ok) {
-      const msg = typeof data === 'object' && data !== null && 'error' in data && typeof (data as { error?: unknown }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
-      throw new Error(msg);
-    }
-
-    if (!data || typeof data !== 'object' || (data as { ok?: unknown }).ok !== true) {
-      throw new Error('invalid_response');
-    }
-
-    return data as BoardListRes;
-  }
 
   type MeRes = { id: string; role?: string | null };
   async function meFetcher(url: string): Promise<MeRes | null> {
@@ -235,7 +222,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(key, fetcher, {
+  const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(key, (url) => boardFetcher<BoardListRes>(url), {
     keepPreviousData: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -250,6 +237,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
   useEffect(() => {
     if (uiLoading && !isValidating) setUiLoading(false);
   }, [uiLoading, isValidating]);
+
+  const listError = parseApiError(error, 'Q&A 목록을 불러오지 못했습니다.');
 
   const isInitialLoading = isLoading && !data && !error;
   const isBusy = uiLoading || isInitialLoading;
@@ -517,7 +506,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
             </Dialog>
 
             <div className="space-y-4">
-              {error && <div className="text-sm text-red-500">불러오기에 실패했습니다.</div>}
+              {error && <ErrorBox message={listError.message} status={listError.status} fallbackMessage="Q&A 목록을 불러오지 못했습니다." />}
 
               {!isLoading &&
                 !error &&

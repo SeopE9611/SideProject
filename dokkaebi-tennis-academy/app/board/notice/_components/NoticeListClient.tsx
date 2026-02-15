@@ -9,6 +9,8 @@ import { Bell, Search, Eye, Pin, ArrowLeft, Plus } from 'lucide-react';
 import useSWR from 'swr';
 import { useState } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, noticePinColor, getNoticeCategoryColor, attachImageColor, attachFileColor } from '@/lib/badge-style';
+import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
+import ErrorBox from '@/app/board/_components/ErrorBox';
 
 type Props = {
   initialItems: any[];
@@ -47,21 +49,6 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
     limit: number;
   };
 
-  async function fetcher(url: string): Promise<BoardListRes> {
-    const res = await fetch(url, { credentials: 'include' });
-    const data = (await res.json().catch(() => null)) as any;
-
-    if (!res.ok) {
-      const message = typeof data === 'object' && data !== null && 'error' in data && typeof (data as { error?: unknown }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
-      throw new Error(message);
-    }
-
-    // 서버가 200으로 내려도 ok:false면 여기서 차단 (스키마 안정성)
-    if (!data || data.ok !== true) {
-      throw new Error('invalid_response');
-    }
-    return data as BoardListRes;
-  }
   const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
@@ -111,13 +98,14 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
           limit,
         }
       : undefined;
-  const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(key, fetcher, {
+  const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(key, (url) => boardFetcher<BoardListRes>(url), {
     fallbackData,
     keepPreviousData: true, // 키 변경 시 이전 data 유지 → 깜빡임 제거
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     revalidateOnMount: fallbackData ? false : true,
   });
+  const listError = parseApiError(error, '공지 목록을 불러오지 못했습니다.');
   // 초기(SSR fallback)에서의 revalidate는 "로딩 UI"로 취급하지 않기
   const isBusy = key !== initialKey && (isLoading || isValidating);
 
@@ -236,7 +224,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
           </CardHeader>
           <CardContent className="p-5 sm:p-6 md:p-8">
             <div className="space-y-4 sm:space-y-5">
-              {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-200">공지 목록을 불러오지 못했습니다. (네트워크/권한을 확인해주세요)</div>}
+              {error && <ErrorBox message={listError.message} status={listError.status} fallbackMessage="공지 목록을 불러오지 못했습니다." />}
               {!isBusy && !error && items.length === 0 && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-gray-500">검색 결과가 없습니다.</div>}
               {items.map((notice) => (
                 <Link key={notice._id} href={`/board/notice/${notice._id}`}>

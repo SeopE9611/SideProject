@@ -17,6 +17,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { showErrorToast } from '@/lib/toast';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 import type { BoardTypeConfig } from '@/app/board/_components/board-config';
+import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
+import ErrorBox from '@/app/board/_components/ErrorBox';
 
 // API 응답 타입
 type ListResponse = {
@@ -27,8 +29,6 @@ type ListResponse = {
   page: number;
   limit: number;
 };
-
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
 const fmtDateTime = (v: string | Date) =>
   new Date(v).toLocaleString('ko-KR', {
@@ -61,10 +61,6 @@ function ListSkeleton() {
   );
 }
 
-// 에러 박스
-function ErrorBox({ message }: { message: string }) {
-  return <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/60">{message}</div>;
-}
 export default function BoardListClient({ config }: { config: BoardTypeConfig }) {
   // 페이지 상태
   const [page, setPage] = useState(1);
@@ -233,7 +229,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     setPage(1);
   };
 
-  const { data, error, isLoading } = useSWR<ListResponse>(`/api/boards?${qs.toString()}`, fetcher);
+  const { data, error, isLoading } = useSWR<ListResponse>(`/api/boards?${qs.toString()}`, (url) => boardFetcher<ListResponse>(url));
+  const listError = parseApiError(error, config.errorMessage);
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -417,7 +414,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
             {/* 로딩/에러/빈 상태 처리 */}
             {isLoading && <ListSkeleton />}
-            {error && !isLoading && <ErrorBox message={config.errorMessage} />}
+            {error && !isLoading && <ErrorBox message={listError.message} status={listError.status} fallbackMessage={config.errorMessage} />}
 
             {!isLoading && !error && items.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-3 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
