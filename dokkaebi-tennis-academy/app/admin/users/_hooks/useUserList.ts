@@ -1,6 +1,7 @@
 'use client';
 import useSWR from 'swr';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
+import { adminFetcher } from '@/lib/admin/adminFetcher';
 
 export type UserListFilters = {
   page: number;
@@ -29,10 +30,10 @@ export type UserListItem = {
   socialProviders?: Array<'kakao' | 'naver'>;
 };
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include', cache: 'no-store' }).then((r) => {
-  if (!r.ok) throw new Error('불러오기 실패');
-  return r.json();
-});
+type UserListResponse = {
+  items?: UserListItem[];
+  total?: number;
+};
 
 export function useUserList(filters: UserListFilters) {
   const queryString = buildQueryString({
@@ -47,7 +48,7 @@ export function useUserList(filters: UserListFilters) {
   });
 
   const key = `/api/admin/users?${queryString}`;
-  const swr = useSWR(key, fetcher);
+  const swr = useSWR<UserListResponse>(key, (url: string) => adminFetcher<UserListResponse>(url, { cache: 'no-store' }));
 
   return {
     ...swr,

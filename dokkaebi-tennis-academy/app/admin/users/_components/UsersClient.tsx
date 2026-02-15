@@ -24,9 +24,11 @@ import { BulkActionsSection } from '@/app/admin/users/_components/users-client/B
 import { DialogsSection } from '@/app/admin/users/_components/users-client/DialogsSection';
 import { UsersKpiCards } from '@/app/admin/users/_components/users-client/UsersKpiCards';
 import { useUserList } from '@/app/admin/users/_hooks/useUserList';
-import type { AdminErrorPayload, UserCleanupPreviewCandidateDto } from '@/types/admin/users';
+import type { UserCleanupPreviewCandidateDto } from '@/types/admin/users';
 import { STATUS, badgeSm, buildPageItems, fullAddress, roleColors, shortAddress, splitDateTime, td, th, type UserStatusKey } from '@/app/admin/users/_lib/usersClientUtils';
 import { useAdminListQueryState } from '@/lib/admin/useAdminListQueryState';
+import { adminFetcher, adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 
 interface BulkActionResponse {
   message?: string;
@@ -53,10 +55,6 @@ interface UsersListCounters {
 interface UsersListPayload {
   counters?: UsersListCounters;
 }
-
-const asErrorPayload = (value: unknown): AdminErrorPayload => ({
-  message: typeof value === 'object' && value !== null && 'message' in value && typeof (value as { message?: unknown }).message === 'string' ? (value as { message: string }).message : '처리 중 오류',
-});
 
 const asPreviewCandidates = (value: unknown): UserCleanupPreviewCandidateDto[] =>
   Array.isArray(value)
@@ -229,15 +227,11 @@ export default function UsersClient() {
   //  비활성화/해제
   const bulkSuspend = async (suspend: boolean) => {
     try {
-      const res = await fetch('/api/admin/users/bulk', {
+      const json = await adminMutator<BulkActionResponse>('/api/admin/users/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ op: suspend ? 'suspend' : 'unsuspend', ids: selectedUsers }),
       });
-      const json = (await res.json()) as BulkActionResponse;
-
-      if (!res.ok) throw new Error(json.message || '실패');
 
       const modified = Number(json.modifiedCount || 0);
       const alreadyCnt = Array.isArray(json?.skipped?.already) ? json.skipped.already.length : 0;
@@ -262,21 +256,18 @@ export default function UsersClient() {
       setSelectedUsers([]);
       mutate?.();
     } catch (e: unknown) {
-      showErrorToast(asErrorPayload(e).message);
+      showErrorToast(getAdminErrorMessage(e));
     }
   };
 
   // 삭제(소프트 삭제)
   const bulkSoftDelete = async () => {
     try {
-      const res = await fetch('/api/admin/users/bulk', {
+      const json = await adminMutator<BulkActionResponse>('/api/admin/users/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ op: 'softDelete', ids: selectedUsers }),
       });
-      const json = (await res.json()) as BulkActionResponse;
-      if (!res.ok) throw new Error(json.message || '실패');
 
       const modified = Number(json.modifiedCount || 0);
       const alreadyCnt = Array.isArray(json?.skipped?.already) ? json.skipped.already.length : 0;
@@ -288,7 +279,7 @@ export default function UsersClient() {
       setSelectedUsers([]);
       mutate?.();
     } catch (e: unknown) {
-      showErrorToast(asErrorPayload(e).message);
+      showErrorToast(getAdminErrorMessage(e));
     }
   };
   const [softDeleteDialogOpen, setSoftDeleteDialogOpen] = useState(false);
@@ -311,8 +302,7 @@ export default function UsersClient() {
   const fetchCleanupPreview = async () => {
     setCleanupLoading(true);
     try {
-      const res = await fetch('/api/admin/system/cleanup/preview', { credentials: 'include' });
-      const json = (await res.json()) as { candidates?: unknown };
+      const json = await adminFetcher<{ candidates?: unknown }>('/api/admin/system/cleanup/preview');
       setCleanupPreview(asPreviewCandidates(json?.candidates));
     } catch {
       setCleanupPreview([]);
@@ -324,8 +314,7 @@ export default function UsersClient() {
   const fetchPurgePreview = async () => {
     setPurgeLoading(true);
     try {
-      const res = await fetch('/api/admin/system/purge/preview', { credentials: 'include' });
-      const json = (await res.json()) as { candidates?: unknown };
+      const json = await adminFetcher<{ candidates?: unknown }>('/api/admin/system/purge/preview');
       setPurgePreview(asPreviewCandidates(json?.candidates));
     } catch {
       setPurgePreview([]);
@@ -339,18 +328,16 @@ export default function UsersClient() {
     console.info('[admin-confirm-dialog]', { event: 'confirm', eventKey: 'admin-users-cleanup', count: cleanupPreview.length });
     setCleanupSubmitting(true);
     try {
-      const res = await fetch('/api/admin/system/cleanup', { method: 'DELETE', credentials: 'include' });
-      const json = (await res.json()) as AdminDeleteResponse;
-      if (res.ok) {
+      const json = await runAdminActionWithToast<AdminDeleteResponse>({
+        action: () => adminMutator('/api/admin/system/cleanup', { method: 'DELETE' }),
+        fallbackErrorMessage: '삭제 실패',
+      });
+      if (json) {
         showSuccessToast(`삭제된 계정 수: ${json.deletedCount ?? 0}`);
         setCleanupOpen(false);
         setCleanupAck(false);
         mutate?.();
-      } else {
-        showErrorToast(json?.message || '삭제 실패');
       }
-    } catch {
-      showErrorToast('네트워크 오류');
     } finally {
       setCleanupSubmitting(false);
     }
@@ -360,18 +347,16 @@ export default function UsersClient() {
     console.info('[admin-confirm-dialog]', { event: 'confirm', eventKey: 'admin-users-purge', count: purgePreview.length });
     setPurgeSubmitting(true);
     try {
-      const res = await fetch('/api/admin/system/purge', { method: 'DELETE', credentials: 'include' });
-      const json = (await res.json()) as AdminDeleteResponse;
-      if (res.ok) {
+      const json = await runAdminActionWithToast<AdminDeleteResponse>({
+        action: () => adminMutator('/api/admin/system/purge', { method: 'DELETE' }),
+        fallbackErrorMessage: '완전 삭제 실패',
+      });
+      if (json) {
         showSuccessToast(`완전 삭제된 계정 수: ${json.deletedCount ?? 0}`);
         setPurgeOpen(false);
         setPurgeAck(false);
         mutate?.();
-      } else {
-        showErrorToast(json?.message || '완전 삭제 실패');
       }
-    } catch {
-      showErrorToast('네트워크 오류');
     } finally {
       setPurgeSubmitting(false);
     }

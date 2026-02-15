@@ -13,6 +13,7 @@ const ADMIN_HTTP_ERROR_MESSAGES: Record<number, string> = {
 };
 
 const ADMIN_UNKNOWN_ERROR_MESSAGE = '요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+export type AdminMutationMethod = 'POST' | 'PATCH' | 'DELETE';
 
 export class AdminFetchError extends Error {
   status: number;
@@ -63,9 +64,7 @@ function safeParseResponseBody(rawText: string): unknown {
   }
 }
 
-export async function adminFetcher<T>(url: string): Promise<T> {
-  const response = await fetch(url, { credentials: 'include' });
-
+async function readResponsePayload(response: Response): Promise<unknown> {
   let bodyText = '';
   try {
     bodyText = await response.text();
@@ -73,13 +72,32 @@ export async function adminFetcher<T>(url: string): Promise<T> {
     bodyText = '';
   }
 
-  const payload = safeParseResponseBody(bodyText);
+  return safeParseResponseBody(bodyText);
+}
 
-  if (!response.ok) {
-    const message = pickPayloadMessage(payload) ?? getMessageByStatus(response.status);
-    throw new AdminFetchError(message, response.status, payload);
-  }
+function throwIfHttpError(response: Response, payload: unknown) {
+  if (response.ok) return;
 
+  const message = pickPayloadMessage(payload) ?? getMessageByStatus(response.status);
+  throw new AdminFetchError(message, response.status, payload);
+}
+
+export async function adminFetcher<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    credentials: 'include',
+    ...init,
+  });
+  const payload = await readResponsePayload(response);
+  throwIfHttpError(response, payload);
   return payload as T;
 }
 
+export async function adminMutator<T>(url: string, options: Omit<RequestInit, 'method'> & { method: AdminMutationMethod }): Promise<T> {
+  const response = await fetch(url, {
+    credentials: 'include',
+    ...options,
+  });
+  const payload = await readResponsePayload(response);
+  throwIfHttpError(response, payload);
+  return payload as T;
+}
