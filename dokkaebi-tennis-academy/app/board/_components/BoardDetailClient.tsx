@@ -21,6 +21,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 import type { BoardTypeConfig } from '@/app/board/_components/board-config';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
+import ErrorBox from '@/app/board/_components/ErrorBox';
 
 // 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
@@ -77,17 +79,6 @@ type CommentsResponse =
 
 const COMMENT_LIMIT = 10; // 댓글 1페이지당 10개
 
-// 제네릭 없이 공용으로 쓰는 fetcher
-const fetcher = async (url: string) => {
-  const res = await fetch(url, { credentials: 'include' });
-  const data = await res.json();
-  if (!res.ok) {
-    // SWR의 error 에 그대로 전달
-    throw data;
-  }
-  return data;
-};
-
 const fmtDateTime = (v: string | Date) =>
   new Date(v).toLocaleString('ko-KR', {
     year: 'numeric',
@@ -125,11 +116,6 @@ function DetailSkeleton() {
     </Card>
   );
 }
-
-function ErrorBox({ message }: { message: string }) {
-  return <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/60">{message}</div>;
-}
-
 export default function BoardDetailClient({ id, config }: Props & { config: BoardTypeConfig }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -226,13 +212,14 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   // 조회수 중복 방지 TTL (24시간)
   const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
 
-  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=${config.boardType}`, fetcher, {
+  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=${config.boardType}`, (url) => boardFetcher<DetailResponse>(url), {
     revalidateOnMount: true,
     revalidateIfStale: true,
     dedupingInterval: 0,
   });
 
   const item = data && data.ok ? data.item : null;
+  const detailError = parseApiError(error, '글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
 
   // 목록에서 프로필 오픈하면 상세에서 쿼리 감지하여 모달 자동 오픈
   useEffect(() => {
@@ -380,7 +367,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
   // 댓글 목록 SWR (게시글이 로드된 후에만 요청)
   const commentsKey = item ? `/api/community/posts/${item.id}/comments?page=${commentPage}&limit=${COMMENT_LIMIT}` : null;
-  const { data: commentsData, isLoading: isCommentsLoading, mutate: mutateComments } = useSWR<CommentsResponse>(commentsKey, fetcher);
+  const { data: commentsData, isLoading: isCommentsLoading, mutate: mutateComments } = useSWR<CommentsResponse>(commentsKey, (url) => boardFetcher<CommentsResponse>(url));
   const comments = commentsData && commentsData.ok ? commentsData.items : [];
 
   // 전체 댓글 수(루트 + 대댓글) → 상단 뱃지 표시용
@@ -468,20 +455,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       setIsCommentSubmitting(true);
       setCommentError(null);
 
-      const res = await fetch(`/api/community/posts/${item.id}/comments`, {
+      await boardFetcher(`/api/community/posts/${item.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ content: commentContent.trim() }),
       });
-
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok || !json?.ok) {
-        const msg = json?.details?.[0]?.message ?? json?.error ?? '댓글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-        setCommentError(msg);
-        return;
-      }
 
       // 입력창 초기화
       setCommentContent('');
@@ -490,7 +468,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       await mutateComments();
     } catch (err) {
       console.error(err);
-      setCommentError('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      setCommentError(parseApiError(err, '댓글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.').message);
     } finally {
       setIsCommentSubmitting(false);
     }
@@ -516,20 +494,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       setIsReplySubmitting(true);
       setReplyError(null);
 
-      const res = await fetch(`/api/community/posts/${item.id}/comments`, {
+      await boardFetcher(`/api/community/posts/${item.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ content: trimmed, parentId }),
       });
-
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok || !json?.ok) {
-        const msg = json?.details?.[0]?.message ?? json?.error ?? '답글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-        setReplyError(msg);
-        return;
-      }
 
       // 입력값/상태 초기화 (해당 parentId만 제거)
       setReplyDrafts((prev) => {
@@ -543,7 +512,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       await mutateComments();
     } catch (err) {
       console.error(err);
-      setReplyError('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      setReplyError(parseApiError(err, '답글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.').message);
     } finally {
       setIsReplySubmitting(false);
     }
@@ -596,20 +565,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       setIsCommentSubmitting(true);
       setCommentError(null);
 
-      const res = await fetch(`/api/community/comments/${commentId}`, {
+      await boardFetcher(`/api/community/comments/${commentId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ content: trimmed }),
       });
-
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok || !json?.ok) {
-        const msg = json?.details?.[0]?.message ?? json?.error ?? '댓글 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-        setCommentError(msg);
-        return;
-      }
 
       // 수정 모드 종료 + draft 정리
       setEditDrafts((prev) => {
@@ -623,7 +583,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       await mutateComments();
     } catch (err) {
       console.error(err);
-      setCommentError('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      setCommentError(parseApiError(err, '댓글 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.').message);
     } finally {
       setIsCommentSubmitting(false);
     }
@@ -639,24 +599,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       setIsCommentSubmitting(true);
       setCommentError(null);
 
-      const res = await fetch(`/api/community/comments/${commentId}`, {
+      await boardFetcher(`/api/community/comments/${commentId}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
-
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok || !json?.ok) {
-        const msg = json?.error ?? '댓글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-        setCommentError(msg);
-        return;
-      }
 
       // 댓글 목록만 재검증하면 충분
       await mutateComments();
     } catch (err) {
       console.error(err);
-      setCommentError('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      setCommentError(parseApiError(err, '댓글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.').message);
     } finally {
       setIsCommentSubmitting(false);
     }
@@ -673,25 +624,16 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
     try {
       setIsDeleting(true);
 
-      const res = await fetch(`/api/community/posts/${item.id}`, {
+      await boardFetcher(`/api/community/posts/${item.id}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        const msg = data?.error === 'forbidden' ? '본인이 작성한 글만 삭제할 수 있습니다.' : data?.error === 'unauthorized' ? '로그인이 필요합니다.' : '글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-
-        alert(msg);
-        return;
-      }
-
       // 삭제 성공 - 목록으로 이동
-      router.push('${config.routePrefix}');
+      router.push(config.routePrefix);
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      alert(parseApiError(err, '글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.').message);
     } finally {
       setIsDeleting(false);
     }
@@ -743,7 +685,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       );
     } catch (err) {
       console.error(err);
-      alert('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      alert(parseApiError(err, '추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.').message);
     } finally {
       setIsLiking(false);
     }
@@ -1071,47 +1013,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 setReplyError('답글 내용을 입력해 주세요.');
                 return;
               }
-              (async () => {
-                if (!item || !user) return;
-
-                try {
-                  setIsReplySubmitting(true);
-                  setReplyError(null);
-
-                  const res = await fetch(`/api/community/posts/${item.id}/comments`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ content: content.trim(), parentId: comment.id }),
-                  });
-
-                  const json = await res.json().catch(() => null);
-
-                  if (!res.ok || !json?.ok) {
-                    const msg = json?.details?.[0]?.message ?? json?.error ?? '답글 작성에 실패했습니다.';
-                    setReplyError(msg);
-                    return;
-                  }
-
-                  if (replyInputRef.current) {
-                    replyInputRef.current.value = '';
-                  }
-                  setReplyDrafts((prev) => {
-                    const next = { ...prev };
-                    delete next[comment.id];
-                    return next;
-                  });
-                  setReplyingToId(null);
-                  setReplyError(null);
-
-                  await mutateComments();
-                } catch (err) {
-                  console.error(err);
-                  setReplyError('알 수 없는 오류가 발생했습니다.');
-                } finally {
-                  setIsReplySubmitting(false);
-                }
-              })();
+              void handleSubmitReply(comment.id);
             }}
           >
             <Textarea
@@ -1195,7 +1097,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               className="gap-1 bg-transparent"
               onClick={() => {
                 if (!confirmLeaveIfDirty()) return;
-                router.push('${config.routePrefix}');
+                router.push(config.routePrefix);
               }}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -1216,7 +1118,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
         {!isLoading && error && (
           <Card className="border-0 bg-white/90 shadow-xl backdrop-blur-sm dark:bg-gray-900/80">
             <CardContent className="p-6 space-y-4">
-              <ErrorBox message={isNotFound ? '해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.' : '글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'} />
+              <ErrorBox
+                message={isNotFound ? '해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.' : detailError.message}
+                status={detailError.status}
+                fallbackMessage="글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+              />
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
                   <Link href={config.routePrefix}>목록으로</Link>
