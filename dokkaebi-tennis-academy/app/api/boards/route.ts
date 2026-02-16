@@ -10,6 +10,7 @@ import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { getBoardList } from '@/lib/boards.queries';
 import { API_VERSION } from '@/lib/board.repository';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
+import { maskSecretTitle, resolveBoardViewerContext } from '@/lib/board-secret-policy';
 
 /**
  * 숫자 쿼리 파라미터 파싱(Phase 0 - 500 방지)
@@ -312,6 +313,28 @@ export async function GET(req: NextRequest) {
     answer,
   });
 
+  const accessToken = (await cookies()).get('accessToken')?.value;
+  const viewer = await resolveBoardViewerContext({
+    accessToken,
+    verifyToken: verifyAccessToken,
+    fetchUserRoleById: async (userId: string) => {
+      if (!ObjectId.isValid(userId)) return null;
+      const db = await getDb();
+      const user = await db.collection('users').findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
+      return typeof user?.role === 'string' ? user.role : null;
+    },
+  });
+
+  const maskedItems =
+    type === 'qna'
+      ? items.map((item) =>
+          maskSecretTitle(item, {
+            viewerId: viewer.viewerId,
+            isAdmin: viewer.isAdmin,
+          }),
+        )
+      : items;
+
   logInfo({
     msg: 'boards:list:ok',
     status: 200,
@@ -321,7 +344,7 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json(
-    { ok: true, version: API_VERSION, items, total, page, limit },
+    { ok: true, version: API_VERSION, items: maskedItems, total, page, limit },
     {
       headers: {
         // 브라우저 캐시는 짧게(or 없음), CDN은 30초, 그리고 SWR 60초

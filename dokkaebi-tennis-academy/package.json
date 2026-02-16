@@ -17,7 +17,8 @@
     "report:type-debt": "node scripts/report-admin-any-count.mjs",
     "check:admin-any-gate": "node scripts/check-admin-any-gate.mjs",
     "report:admin-any": "node scripts/report-admin-any-count.mjs",
-    "check:admin-api-boundary": "node scripts/check-admin-api-boundary.mjs"
+    "check:admin-api-boundary": "node scripts/check-admin-api-boundary.mjs",
+    "test:board-secret-policy": "node --test tests/board-secret-policy.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
