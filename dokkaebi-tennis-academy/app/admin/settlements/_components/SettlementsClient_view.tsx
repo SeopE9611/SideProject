@@ -18,6 +18,13 @@ import { firstDayOfMonth_KST, fmtYMD_KST, monthEdges, prevMonthRange_KST, TZ } f
 import { sortSettlementRows, type SortDirection, type SortField } from './table/settlementSort';
 import { makeCsvFilename } from '@/app/admin/settlements/_lib/settlementExport';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
+import {
+  buildAllSettlementSelection,
+  getSettlementCacheKey,
+  isSettlementMatched,
+  toggleYyyymmSelection,
+  validateYyyymmClient,
+} from './utils/settlementClientTransforms';
 
 export default function SettlementsClient() {
   const router = useRouter();
@@ -78,12 +85,6 @@ export default function SettlementsClient() {
   // const [actionMenuOpen, setActionMenuOpen] = useState<Record<string, boolean>>({}) // CHANGE: Remove actionMenuOpen state as it's not needed
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  // 캐시 키(세션 캐시): yyyymm + 스냅샷 버전(최초/최종 생성시간)
-  function getCacheKey(row: SettlementSnapshot) {
-    const ver = row.lastGeneratedAt || row.createdAt || '';
-    return `settle:${row.yyyymm}:${new Date(ver).getTime()}`;
-  }
-
   // 축약(기본) ↔ 원단위 토글 상태
   const [compact, setCompact] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
@@ -97,9 +98,7 @@ export default function SettlementsClient() {
   }, [compact]);
 
   // 공용 표시 함수
-  function displayKRW(n: number) {
-    return compact ? formatKRWCard(n) : formatKRWFull(n);
-  }
+  const displayKRW = (n: number) => (compact ? formatKRWCard(n) : formatKRWFull(n));
 
   // ──────────────────────────────────────────────────────────
   // 서버 액션
@@ -138,14 +137,7 @@ export default function SettlementsClient() {
     const res = await fetch(`/api/admin/settlements/live?from=${from}&to=${to}`);
     const liveJson = await res.json();
 
-    const paidOk = (row.totals?.paid || 0) === (liveJson.totals?.paid || 0);
-    const refundOk = (row.totals?.refund || 0) === (liveJson.totals?.refund || 0);
-    const netOk = (row.totals?.net || 0) === (liveJson.totals?.net || 0);
-    const ordOk = (row.breakdown?.orders || 0) === (liveJson.breakdown?.orders || 0);
-    const appOk = (row.breakdown?.applications || 0) === (liveJson.breakdown?.applications || 0);
-    const pkgOk = (row.breakdown?.packages || 0) === (liveJson.breakdown?.packages || 0);
-
-    return { ok: paidOk && refundOk && netOk && ordOk && appOk && pkgOk, live: liveJson };
+    return { ok: isSettlementMatched(row, liveJson as SettlementLiveResponse), live: liveJson };
   }
 
   // 전체 검증
@@ -158,7 +150,7 @@ export default function SettlementsClient() {
         const { ok } = await checkStalenessOfRow(row);
         setStatusMap((prev) => ({ ...prev, [key]: ok ? 'ok' : 'stale' }));
         setStaleMap((prev) => ({ ...prev, [key]: !ok }));
-        sessionStorage.setItem(getCacheKey(row), ok ? 'ok' : 'stale');
+        sessionStorage.setItem(getSettlementCacheKey(row), ok ? 'ok' : 'stale');
       }
       showSuccessToast('전체 검증 완료');
     } catch (e) {
@@ -173,20 +165,14 @@ export default function SettlementsClient() {
   const toggleSelectAll = () => {
     if (selectedSnapshots.size === (data ?? []).length) {
       setSelectedSnapshots(new Set());
-    } else {
-      setSelectedSnapshots(new Set((data ?? []).map((row) => String(row.yyyymm))));
+      return;
     }
+    setSelectedSnapshots(buildAllSettlementSelection(data ?? []));
   };
 
   // 개별 선택/해제 토글
   const toggleSelect = (yyyymm: string) => {
-    const newSet = new Set(selectedSnapshots);
-    if (newSet.has(yyyymm)) {
-      newSet.delete(yyyymm);
-    } else {
-      newSet.add(yyyymm);
-    }
-    setSelectedSnapshots(newSet);
+    setSelectedSnapshots((prev) => toggleYyyymmSelection(prev, yyyymm));
   };
 
   // 선택된 항목 삭제
@@ -297,7 +283,7 @@ export default function SettlementsClient() {
     const nextStale: Record<string, boolean> = {};
     for (const row of data) {
       const key = String(row.yyyymm);
-      const cached = sessionStorage.getItem(getCacheKey(row));
+      const cached = sessionStorage.getItem(getSettlementCacheKey(row));
       if (cached === 'ok' || cached === 'stale') {
         nextStatus[key] = cached as 'ok' | 'stale';
         nextStale[key] = cached === 'stale';
@@ -339,22 +325,6 @@ export default function SettlementsClient() {
     a.click();
     URL.revokeObjectURL(url);
   };
-
-  // KST 현재 YYYYMM
-  function nowYyyymm_KST() {
-    const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit' });
-    const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
-    return `${parts.year}${parts.month}`;
-  }
-
-  // YYYYMM 클라이언트 검증: 6자리·월범위·미래금지
-  function validateYyyymmClient(ym: string) {
-    if (!/^\d{6}$/.test(ym)) return { ok: false, reason: 'YYYYMM 6자리로 입력하세요.' };
-    const mm = Number(ym.slice(4, 6));
-    if (mm < 1 || mm > 12) return { ok: false, reason: '월은 01~12만 가능합니다.' };
-    if (Number(ym) > Number(nowYyyymm_KST())) return { ok: false, reason: '미래 월은 생성할 수 없습니다.' };
-    return { ok: true as const };
-  }
 
   const totalRevenue = (data ?? []).reduce((sum: number, row) => sum + (row.totals?.paid || 0), 0);
   const totalRefunds = (data ?? []).reduce((sum: number, row) => sum + (row.totals?.refund || 0), 0);
