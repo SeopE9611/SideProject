@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { showSuccessToast, showErrorToast } from '@/lib/toast';
+import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { Wrench, Loader2, Database, ListChecks, RefreshCw, ShieldCheck, Lock, Unlock, Info } from 'lucide-react';
 
 type Action = 'createIndexes' | 'dedup' | 'rebuildSummary' | 'all';
@@ -19,75 +22,38 @@ export default function AdminReviewMaintenancePanel() {
   const [lastResult, setLastResult] = useState<any>(null);
   const [lastRunAt, setLastRunAt] = useState<string | null>(null);
 
-  const [lockStatus, setLockStatus] = useState<LockStatus>({ locked: false });
-  const pollTimer = useRef<number | null>(null);
-
-  async function fetchLockStatus(silent = false) {
-    try {
-      const res = await fetch('/api/admin/reviews/maintenance', {
-        method: 'GET',
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('상태 조회 실패');
-      const json = await res.json();
-      const status: LockStatus = {
-        locked: !!json?.locked,
-        lockedUntil: json?.lockedUntil,
-        lockedBy: json?.lockedBy ?? null,
+  const {
+    data: lockStatus = { locked: false },
+    mutate: mutateLockStatus,
+  } = useSWR<LockStatus>(
+    '/api/admin/reviews/maintenance',
+    async (url: string) => {
+      const payload = await adminFetcher<{ locked?: boolean; lockedUntil?: string; lockedBy?: string | null }>(url, { method: 'GET' });
+      return {
+        locked: !!payload?.locked,
+        lockedUntil: payload?.lockedUntil,
+        lockedBy: payload?.lockedBy ?? null,
       };
-      setLockStatus(status);
-      if (!silent && status.locked) {
-        // 잠금 중 안내(중복 노이즈 방지)
-        // no-op
-      }
-      return status;
-    } catch {
-      // GET 미구현인 환경에서도 패널이 동작하도록 조용히 무시
-      return { locked: false } as LockStatus;
-    }
-  }
-
-  // 실행 중에는 1.5s 간격으로 잠금 해제 감시
-  useEffect(() => {
-    if (loading) {
-      if (pollTimer.current) window.clearInterval(pollTimer.current);
-      pollTimer.current = window.setInterval(() => fetchLockStatus(true), 1500);
-    } else if (pollTimer.current) {
-      window.clearInterval(pollTimer.current);
-      pollTimer.current = null;
-    }
-    return () => {
-      if (pollTimer.current) window.clearInterval(pollTimer.current);
-    };
-  }, [loading]);
-
-  useEffect(() => {
-    fetchLockStatus(true);
-  }, []);
+    },
+    {
+      fallbackData: { locked: false },
+      refreshInterval: loading ? 1500 : 0,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    },
+  );
 
   async function run(action: Action) {
     setLoading(action);
     setLastResult(null);
     try {
-      const res = await fetch('/api/admin/reviews/maintenance', {
+      const json = await adminMutator<{ ok?: boolean; error?: string; result?: unknown }>('/api/admin/reviews/maintenance', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
       });
 
-      if (res.status === 403) {
-        showErrorToast('관리자만 실행할 수 있습니다.');
-        return;
-      }
-      if (res.status === 423) {
-        setLockStatus({ locked: true });
-        showErrorToast('다른 유지보수 작업이 실행 중입니다.');
-        return;
-      }
-
-      const json = await res.json();
-      if (!res.ok || !json?.ok) throw new Error(json?.error || '실행 실패');
+      if (!json?.ok) throw new Error(json?.error || '실행 실패');
 
       setLastResult(json.result);
       setLastRunAt(new Date().toLocaleString('ko-KR'));
@@ -97,22 +63,18 @@ export default function AdminReviewMaintenancePanel() {
     } finally {
       setLoading(null);
       // 실행이 끝났으니 최신 잠금 상태 반영
-      fetchLockStatus(true);
+      mutateLockStatus();
     }
   }
 
   async function forceUnlock() {
     try {
-      const res = await fetch('/api/admin/reviews/maintenance', {
-        method: 'DELETE',
-        credentials: 'include',
+      const result = await runAdminActionWithToast({
+        action: () => adminMutator('/api/admin/reviews/maintenance', { method: 'DELETE' }),
+        successMessage: '잠금을 해제했습니다.',
+        fallbackErrorMessage: '강제 해제 중 오류',
       });
-      if (!res.ok) {
-        // DELETE 미구현인 경우도 대비
-        throw new Error('강제 해제 실패(서버 미구현 또는 권한 없음)');
-      }
-      setLockStatus({ locked: false });
-      showSuccessToast('잠금을 해제했습니다.');
+      if (result) mutateLockStatus({ locked: false }, false);
     } catch (e: any) {
       showErrorToast(e?.message || '강제 해제 중 오류');
     }
@@ -178,7 +140,7 @@ export default function AdminReviewMaintenancePanel() {
             <div className="text-muted-foreground">아직 실행 내역이 없습니다.</div>
           )}
           {!loading && (
-            <Button size="sm" variant="ghost" onClick={() => fetchLockStatus()} className="h-7 px-2 text-xs">
+            <Button size="sm" variant="ghost" onClick={() => mutateLockStatus()} className="h-7 px-2 text-xs">
               새로고침
             </Button>
           )}

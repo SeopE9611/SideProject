@@ -9,6 +9,25 @@ const ALLOWED_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'
 const API_PATTERN = /['"`]\/api\/(?!admin\b)/g;
 const MUTATION_EXPORT_PATTERN = /export\s+async\s+function\s+(POST|PATCH|PUT|DELETE)\s*\(/g;
 
+const ADMIN_DIRECT_FETCH_ALLOWLIST = new Set([
+  'app/admin/applications/stringing/[id]/shipping-update/shipping-form.tsx',
+  'app/admin/boards/BoardsClient.tsx',
+  'app/admin/notifications/_components/AdminNotificationsClient.tsx',
+  'app/admin/orders/[id]/shipping-update/page.tsx',
+  'app/admin/orders/[id]/shipping-update/shipping-form.tsx',
+  'app/admin/packages/[id]/PackageDetailClient.tsx',
+  'app/admin/products/ProductsClient.tsx',
+  'app/admin/products/[id]/edit/ProductEditClient_view.tsx',
+  'app/admin/rackets/[id]/edit/_components/AdminRacketEditClient.tsx',
+  'app/admin/rentals/[id]/_components/AdminRentalDetailClient.tsx',
+  'app/admin/rentals/[id]/shipping-update/shipping-form.tsx',
+  'app/admin/rentals/_components/AdminRentalsClient.tsx',
+  'app/admin/rentals/_components/CleanupCreatedButton.tsx',
+  'app/admin/reviews/_components/AdminReviewListClient.tsx',
+  'app/admin/settlements/_components/SettlementsClient_view.tsx',
+  'app/admin/users/_components/UserDetailClient.tsx',
+]);
+
 /**
  * 관리자 변경성 엔드포인트가 비-admin 네임스페이스에 남아있더라도
  * 전환 단계에서는 307/410 정책 래퍼만 허용한다.
@@ -68,6 +87,31 @@ function findViolations(filePath) {
       file: path.relative(ROOT, filePath),
       line: i + 1,
       text: line.trim(),
+    });
+  }
+
+  return violations;
+}
+
+
+function findAdminDirectFetchViolations(filePath) {
+  const relativePath = path.relative(ROOT, filePath).replace(/\\/g, '/');
+  if (ADMIN_DIRECT_FETCH_ALLOWLIST.has(relativePath)) return [];
+
+  const source = fs.readFileSync(filePath, 'utf8');
+  const lines = source.split(/\r?\n/);
+  const violations = [];
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const normalized = line.replace(/\s+/g, ' ');
+    if (!normalized.includes('fetch(') || !normalized.includes('/api/admin')) continue;
+
+    violations.push({
+      file: relativePath,
+      line: i + 1,
+      text: line.trim(),
+      reason: 'app/admin 에서는 직접 fetch("/api/admin/**") 대신 adminFetcher/adminMutator를 사용해야 합니다.',
     });
   }
 
@@ -148,10 +192,11 @@ try {
 
   const files = walk(TARGET_DIR);
   const allViolations = files.flatMap(findViolations);
+  const adminDirectFetchViolations = files.flatMap(findAdminDirectFetchViolations);
   const legacyMutationViolations = findLegacyMutationViolations();
   const legacyWrapperBoundaryViolations = findLegacyWrapperBoundaryViolations();
 
-  if (allViolations.length === 0 && legacyMutationViolations.length === 0 && legacyWrapperBoundaryViolations.length === 0) {
+  if (allViolations.length === 0 && adminDirectFetchViolations.length === 0 && legacyMutationViolations.length === 0 && legacyWrapperBoundaryViolations.length === 0) {
     console.log('✅ app/admin 비-admin API 호출이 없고, 관리자 변경성 비-admin 경로 잔존도 없습니다.');
     process.exit(0);
   }
@@ -160,6 +205,13 @@ try {
     console.error('❌ app/admin 내 비-admin API 호출이 감지되었습니다.');
   }
   for (const v of allViolations) {
+    console.error(`${v.file}:${v.line}: ${v.text}`);
+  }
+
+  if (adminDirectFetchViolations.length > 0) {
+    console.error('❌ app/admin 내 직접 /api/admin fetch 호출이 감지되었습니다.');
+  }
+  for (const v of adminDirectFetchViolations) {
     console.error(`${v.file}:${v.line}: ${v.text}`);
   }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import useSWR from 'swr';
 import { CalendarDays, Clock, Users, Settings2, Plus, Trash2, Pencil, Save, Info } from 'lucide-react';
 
 // shadcn/ui
@@ -14,6 +15,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
+import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { sanitizeExceptionInput, validateBaseSettings, validateExceptionItem } from '@/lib/stringingSettingsValidation';
 
@@ -92,11 +95,15 @@ export default function StringingSettingsPage() {
   const [exInput, setExInput] = useState<ExceptionItem>({ date: '' });
 
   // 상태
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // 서버/초기 로드 완료 후 baseline(초기값)으로 삼을 시그니처
   const [initialSig, setInitialSig] = useState('');
+
+  const { data: serverSettings, error, isLoading: loading } = useSWR<StringingSettings | null>('/api/admin/settings/stringing', (url: string) =>
+    adminFetcher<StringingSettings | null>(url, { cache: 'no-store' }),
+  );
+
 
   // 현재 상태 시그니처
   const currentSig = useMemo(
@@ -119,41 +126,34 @@ export default function StringingSettingsPage() {
 
   // 초기 로드
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/admin/settings/stringing', { credentials: 'include', cache: 'no-store' });
-        if (!res.ok) throw new Error('권한 또는 네트워크 오류');
-        const data: StringingSettings | null = await res.json();
-        // baseline을 “로드된 값”으로 잡기 위해, 로컬 next 값을 만든 뒤 state + initialSig를 같이 세팅
-        const next = {
-          capacity: Number(data?.capacity ?? 1),
-          start: String(data?.start ?? '10:00'),
-          end: String(data?.end ?? '19:00'),
-          interval: Number(data?.interval ?? 30),
-          businessDays: Array.isArray(data?.businessDays) ? data!.businessDays! : [1, 2, 3, 4, 5],
-          holidays: Array.isArray(data?.holidays) ? data!.holidays! : [],
-          bookingWindowDays: Number((data as any)?.bookingWindowDays ?? 30),
-          exceptions: Array.isArray(data?.exceptions) ? data!.exceptions! : [],
-        };
+    if (!serverSettings) return;
 
-        setCapacity(next.capacity);
-        setStart(next.start);
-        setEnd(next.end);
-        setInterval(next.interval);
-        setBusinessDays(next.businessDays);
-        setHolidays(next.holidays);
-        setBookingWindowDays(next.bookingWindowDays);
-        setExceptions(next.exceptions);
+    const next = {
+      capacity: Number(serverSettings.capacity ?? 1),
+      start: String(serverSettings.start ?? '10:00'),
+      end: String(serverSettings.end ?? '19:00'),
+      interval: Number(serverSettings.interval ?? 30),
+      businessDays: Array.isArray(serverSettings.businessDays) ? serverSettings.businessDays : [1, 2, 3, 4, 5],
+      holidays: Array.isArray(serverSettings.holidays) ? serverSettings.holidays : [],
+      bookingWindowDays: Number(serverSettings.bookingWindowDays ?? 30),
+      exceptions: Array.isArray(serverSettings.exceptions) ? serverSettings.exceptions : [],
+    };
 
-        // baseline은 1회만 세팅(재렌더/재호출로 덮어쓰기 방지)
-        setInitialSig((sig) => sig || settingsDirtySignature(next));
-      } catch (err: any) {
-        showErrorToast(err?.message || '설정을 불러오지 못했습니다.');
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    setCapacity(next.capacity);
+    setStart(next.start);
+    setEnd(next.end);
+    setInterval(next.interval);
+    setBusinessDays(next.businessDays);
+    setHolidays(next.holidays);
+    setBookingWindowDays(next.bookingWindowDays);
+    setExceptions(next.exceptions);
+    setInitialSig((sig) => sig || settingsDirtySignature(next));
+  }, [serverSettings]);
+
+  useEffect(() => {
+    if (!error) return;
+    showErrorToast('설정을 불러오지 못했습니다.');
+  }, [error]);
 
   // 저장
   async function save() {
@@ -173,34 +173,30 @@ export default function StringingSettingsPage() {
     }
 
     setSaving(true);
-    try {
-      const payload: Partial<StringingSettings> = {
-        capacity,
-        start,
-        end,
-        interval,
-        businessDays,
-        holidays,
-        exceptions: exceptions.map((ex) => sanitizeExceptionInput(ex)),
-        bookingWindowDays,
-      };
-      const res = await fetch('/api/admin/settings/stringing', {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.message || '저장 실패');
-      }
-      showSuccessToast('저장되었습니다. 새 예약/제출부터 즉시 반영됩니다.');
-      setInitialSig(currentSig);
-    } catch (err: any) {
-      showErrorToast(err?.message || '저장 실패');
-    } finally {
-      setSaving(false);
-    }
+    const payload: Partial<StringingSettings> = {
+      capacity,
+      start,
+      end,
+      interval,
+      businessDays,
+      holidays,
+      exceptions: exceptions.map((ex) => sanitizeExceptionInput(ex)),
+      bookingWindowDays,
+    };
+
+    const result = await runAdminActionWithToast({
+      action: () =>
+        adminMutator('/api/admin/settings/stringing', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }),
+      successMessage: '저장되었습니다. 새 예약/제출부터 즉시 반영됩니다.',
+      fallbackErrorMessage: '저장 실패',
+    });
+
+    if (result) setInitialSig(currentSig);
+    setSaving(false);
   }
 
   function resetToDefaults() {
