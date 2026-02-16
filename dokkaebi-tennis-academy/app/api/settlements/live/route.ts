@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin.guard';
 import { orderPaidAmount, applicationPaidAmount, refundsAmount, isStandaloneStringingApplication, buildPaidMatch, buildRentalPaidMatch, rentalPaidAmount, rentalDepositAmount } from '@/app/api/settlements/_lib/settlementPolicy';
+import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
+import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
 
 function withDeprecation(res: NextResponse) {
   res.headers.set('Deprecation', 'true');
@@ -15,6 +17,9 @@ export async function GET(req: Request) {
     // 1) 관리자 인증 (정산 데이터는 매출/운영 정보이므로 반드시 관리자만 조회)
     const g = await requireAdmin(req);
     if (!g.ok) return withDeprecation(g.res);
+    const limited = await enforceAdminRateLimit(req, g.db, String(g.admin._id), ADMIN_EXPENSIVE_ENDPOINT_POLICIES.settlementsRead);
+    if (limited) return withDeprecation(limited);
+
     const db = g.db;
 
     const url = new URL(req.url);
