@@ -13,6 +13,7 @@ type AuditBase = {
   targetId?: ObjectId | string; // 대상 리소스
   message?: string; // 자유서술
   diff?: any; // 변경 전/후 스냅샷 일부(옵션)
+  requestId?: string | null;
 };
 
 export async function appendAudit(db: Db, entry: AuditBase, req?: Request) {
@@ -24,6 +25,7 @@ export async function appendAudit(db: Db, entry: AuditBase, req?: Request) {
     targetId: entry.targetId ? toId(entry.targetId) : null,
     message: entry.message ?? null,
     diff: entry.diff ?? null,
+    requestId: entry.requestId ?? null,
     ip,
     ua,
     createdAt: new Date(),

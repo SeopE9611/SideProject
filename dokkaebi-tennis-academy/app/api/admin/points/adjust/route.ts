@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { deductPoints, getPointsBalance, grantPoints } from '@/lib/points.service';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 
 /**
  * body: { userId: string, amount: number, reason?: string, refKey?: string }
@@ -66,6 +67,24 @@ export async function POST(req: Request) {
 
     // 3) 조정 후 잔액 반환
     const balance = await getPointsBalance(db, targetUserId);
+
+    // 4) 감사로그 기록(실패 분리: appendAdminAudit 내부에서 실패 시 재시도 큐로 전환)
+    await appendAdminAudit(
+      db,
+      {
+        type: 'admin.points.adjust',
+        actorId: guard.admin._id,
+        targetId: targetUserId,
+        message: amount > 0 ? '관리자 포인트 지급' : '관리자 포인트 차감',
+        diff: {
+          delta: amount,
+          balance,
+          reason: reason || null,
+          refKey: refKey || null,
+        },
+      },
+      req,
+    );
 
     return NextResponse.json({ ok: true, userId, delta: amount, balance }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
   } catch (err: any) {

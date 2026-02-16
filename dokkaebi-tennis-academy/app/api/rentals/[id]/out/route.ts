@@ -5,10 +5,11 @@ import { canTransitIdempotent } from '@/app/features/rentals/utils/status';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { writeRentalHistory } from '@/app/features/rentals/utils/history';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자만 허용
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
@@ -67,6 +68,18 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   if (u.matchedCount === 0) {
     return NextResponse.json({ ok: false, code: 'INVALID_STATE' }, { status: 409 });
   }
+
+  await appendAdminAudit(
+    db,
+    {
+      type: 'admin.rentals.status.out',
+      actorId: payload?.sub,
+      targetId: _id,
+      message: '대여 상태를 paid → out 으로 전환',
+      diff: { from: 'paid', to: 'out', outAt, dueAt },
+    },
+    req,
+  );
 
   await writeRentalHistory(db, id, {
     action: 'out',
