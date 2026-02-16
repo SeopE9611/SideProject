@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 
 // 공통: 인증 페이로드
 async function getAuthPayload() {
@@ -30,7 +31,7 @@ async function getAuthPayload() {
 // PATCH 바디 스키마
 const updateCommentSchema = z.object({
   // 공백만 입력되는 케이스 방지
-  content: z.string().trim().min(1, '댓글 내용을 입력해 주세요.').max(1000, '댓글은 1000자 이내로 입력해 주세요.'),
+  content: z.string().max(1000, '댓글은 1000자 이내로 입력해 주세요.'),
 });
 
 // --------------------------- PATCH: 댓글 수정 ---------------------------
@@ -77,13 +78,28 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     return NextResponse.json({ ok: false, error: 'validation_error', details: parsed.error.issues }, { status: 400 });
   }
 
-  const { content } = parsed.data;
+  const sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(parsed.data.content));
+  const contentLengthValidation = validateSanitizedLength(sanitizedContent, { min: 1, max: 1000 });
+
+  if (contentLengthValidation === 'too_short') {
+    return NextResponse.json(
+      { ok: false, error: 'validation_error', details: [{ path: ['content'], message: '댓글 내용을 입력해 주세요.' }] },
+      { status: 400 },
+    );
+  }
+
+  if (contentLengthValidation === 'too_long') {
+    return NextResponse.json(
+      { ok: false, error: 'validation_error', details: [{ path: ['content'], message: '댓글은 1000자 이내로 입력해 주세요.' }] },
+      { status: 400 },
+    );
+  }
 
   await commentsCol.updateOne(
     { _id: commentObjectId },
     {
       $set: {
-        content,
+        content: sanitizedContent,
         updatedAt: new Date(),
       },
     },

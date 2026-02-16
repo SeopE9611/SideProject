@@ -9,6 +9,7 @@ import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES, CommunityPost } from '@/lib/types/community';
 import { API_VERSION } from '@/lib/board.repository';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
+import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
@@ -71,7 +72,7 @@ const createSchema = z.object({
 
   title: z.string().min(1, '제목을 입력해 주세요.').max(200, '제목은 200자 이내로 입력해 주세요.'),
 
-  content: z.string().min(1, '내용을 입력해 주세요.'),
+  content: z.string().max(5000, '내용은 5000자 이내로 입력해 주세요.'),
 
   // 브랜드 게시판/중고거래 게시판에서만 의미 있음 (그 외 게시판은 null/undefined)
   brand: z.string().max(100, '브랜드명은 100자 이내로 입력해 주세요.').optional().nullable(),
@@ -250,6 +251,32 @@ export async function POST(req: NextRequest) {
   }
 
   const body = parsed.data;
+  const sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(body.content));
+  const contentLengthValidation = validateSanitizedLength(sanitizedContent, { min: 1, max: 5000 });
+
+  if (contentLengthValidation === 'too_short') {
+    return NextResponse.json(
+      {
+        ok: false,
+        version: API_VERSION,
+        error: 'validation_error',
+        details: [{ path: ['content'], message: '내용을 입력해 주세요.' }],
+      },
+      { status: 400 },
+    );
+  }
+
+  if (contentLengthValidation === 'too_long') {
+    return NextResponse.json(
+      {
+        ok: false,
+        version: API_VERSION,
+        error: 'validation_error',
+        details: [{ path: ['content'], message: '내용은 5000자 이내로 입력해 주세요.' }],
+      },
+      { status: 400 },
+    );
+  }
 
   const db = await getDb();
   const col = db.collection('community_posts');
@@ -304,7 +331,7 @@ export async function POST(req: NextRequest) {
   const doc = {
     type: body.type,
     title: body.title,
-    content: body.content,
+    content: sanitizedContent,
 
     // 브랜드 게시판/중고거래 게시판이 아닐 때는 항상 null
     brand: body.type === 'brand' || body.type === 'market' ? (body.brand ?? null) : null,

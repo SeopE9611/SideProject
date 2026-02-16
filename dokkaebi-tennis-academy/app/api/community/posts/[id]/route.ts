@@ -8,6 +8,7 @@ import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import type { CommunityBoardType, CommunityPost } from '@/lib/types/community';
 import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from '@/lib/types/community';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 
 // ---------------------------------------------------------------------------
 // GET: 게시글 상세
@@ -176,7 +177,7 @@ async function getAuthUserId() {
 const patchBodySchema = z
   .object({
     title: z.string().min(1).max(100).optional(),
-    content: z.string().min(1).max(5000).optional(),
+    content: z.string().max(5000).optional(),
     category: z.enum(COMMUNITY_CATEGORIES).optional(),
     images: z.array(z.string()).max(20).optional(), // supabase URL 문자열 배열
 
@@ -245,6 +246,34 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   const body = parsed.data;
 
+  let sanitizedContent: string | undefined;
+  if (body.content !== undefined) {
+    sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(body.content));
+    const contentLengthValidation = validateSanitizedLength(sanitizedContent, { min: 1, max: 5000 });
+
+    if (contentLengthValidation === 'too_short') {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'validation_error',
+          details: [{ path: ['content'], message: '내용을 입력해 주세요.' }],
+        },
+        { status: 400 },
+      );
+    }
+
+    if (contentLengthValidation === 'too_long') {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'validation_error',
+          details: [{ path: ['content'], message: '내용은 5000자 이내로 입력해 주세요.' }],
+        },
+        { status: 400 },
+      );
+    }
+  }
+
   // market 게시판: 라켓/스트링은 brand 필수, 일반장비는 brand 제거(null)
   if (doc.type === 'market') {
     const nextCategory = body.category !== undefined ? (body.category as any) : (doc.category ?? null);
@@ -267,7 +296,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   const update: any = {};
   if (body.title !== undefined) update.title = body.title.trim();
-  if (body.content !== undefined) update.content = body.content.trim();
+  if (sanitizedContent !== undefined) update.content = sanitizedContent;
   if (body.category !== undefined) update.category = body.category;
 
   // brand 업데이트(중고거래 게시판만)

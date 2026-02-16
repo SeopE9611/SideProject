@@ -7,6 +7,7 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import type { CommunityComment } from '@/lib/types/community';
+import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
@@ -65,7 +66,7 @@ async function resolveDisplayName(payload: any | null): Promise<string> {
 
 // 댓글 작성 요청 바디 스키마
 const createCommentSchema = z.object({
-  content: z.string().min(1, '댓글 내용을 입력해 주세요.').max(1000, '댓글은 1000자 이내로 입력해 주세요.'),
+  content: z.string().max(1000, '댓글은 1000자 이내로 입력해 주세요.'),
   // 대댓글용 부모 댓글 ID (루트 댓글이면 생략/undefined)
   parentId: z.string().optional(),
 });
@@ -228,6 +229,23 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   }
 
   const body = parsed.data;
+  const sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(body.content));
+  const contentLengthValidation = validateSanitizedLength(sanitizedContent, { min: 1, max: 1000 });
+
+  if (contentLengthValidation === 'too_short') {
+    return NextResponse.json(
+      { ok: false, error: 'validation_error', details: [{ path: ['content'], message: '댓글 내용을 입력해 주세요.' }] },
+      { status: 400 },
+    );
+  }
+
+  if (contentLengthValidation === 'too_long') {
+    return NextResponse.json(
+      { ok: false, error: 'validation_error', details: [{ path: ['content'], message: '댓글은 1000자 이내로 입력해 주세요.' }] },
+      { status: 400 },
+    );
+  }
+
   const db = await getDb();
   const commentsCol = db.collection('community_comments');
   const postsCol = db.collection('community_posts');
@@ -268,7 +286,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     parentId: parentObjectId, // 루트 댓글이면 null, 대댓글이면 부모 댓글 ObjectId
     userId,
     nickname: displayName,
-    content: body.content,
+    content: sanitizedContent,
     status: 'public' as const,
     createdAt: now,
     updatedAt: now,

@@ -80,3 +80,24 @@ export async function sanitizeHtml(dirty: string): Promise<string> {
 
   return cleaned;
 }
+
+type SanitizedLengthValidationOptions = {
+  min: number;
+  max: number;
+};
+
+export function normalizeSanitizedContent(content: string): string {
+  return content.trim();
+}
+
+export function validateSanitizedLength(content: string, options: SanitizedLengthValidationOptions): 'too_short' | 'too_long' | null {
+  if (content.length < options.min) {
+    return 'too_short';
+  }
+
+  if (content.length > options.max) {
+    return 'too_long';
+  }
+
+  return null;
+}
