@@ -7,6 +7,34 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 
+function toEmailLocalPart(email?: string | null) {
+  if (!email) return null;
+  const [local] = String(email).split('@');
+  return local?.trim() ? local.trim() : null;
+}
+
+async function resolveReporterNickname(db: Awaited<ReturnType<typeof getDb>>, payload: any) {
+  const reporterUserId = String(payload?.sub ?? '');
+
+  if (ObjectId.isValid(reporterUserId)) {
+    const user = (await db.collection('users').findOne(
+      { _id: new ObjectId(reporterUserId) },
+      {
+        projection: {
+          nickname: 1,
+          name: 1,
+          email: 1,
+        },
+      },
+    )) as { nickname?: string; name?: string; email?: string } | null;
+
+    const userLabel = user?.nickname?.trim() || user?.name?.trim() || toEmailLocalPart(user?.email);
+    if (userLabel) return userLabel;
+  }
+
+  return payload?.nickname?.trim() || payload?.name?.trim() || toEmailLocalPart(payload?.email) || '회원';
+}
+
 // 1) 인증 페이로드 유틸
 async function getAuthPayload() {
   const jar = await cookies();
@@ -92,6 +120,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   const reporterUserId = String(payload.sub);
   const reporterEmail = payload.email ? String(payload.email) : undefined;
+  const reporterNickname = await resolveReporterNickname(db, payload);
 
   // 자기 댓글은 신고 불가
   if (comment.userId && String(comment.userId) === reporterUserId) {
@@ -121,6 +150,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     reason,
     reporterUserId: reporterUserId ?? null,
     reporterEmail: reporterEmail ?? null,
+    reporterNickname,
     status: 'pending' as const,
     createdAt: now,
     resolvedAt: null,
