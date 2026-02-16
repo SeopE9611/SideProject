@@ -23,7 +23,7 @@ export const MARKET_BRANDS_BY_CATEGORY = {
   ],
 } as const;
 
-const BRAND_LABEL_MAP: Record<string, string> = Object.fromEntries([...MARKET_BRANDS_BY_CATEGORY.racket.map((o) => [o.value, o.label] as const), ...MARKET_BRANDS_BY_CATEGORY.string.map((o) => [o.value, o.label] as const)]);
+export const MARKET_BRAND_LABEL_MAP: Record<string, string> = Object.fromEntries([...MARKET_BRANDS_BY_CATEGORY.racket.map((o) => [o.value, o.label] as const), ...MARKET_BRANDS_BY_CATEGORY.string.map((o) => [o.value, o.label] as const)]);
 
 export function getMarketBrandOptions(category: MarketCategory | 'all' | null | undefined) {
   if (category === 'racket') return MARKET_BRANDS_BY_CATEGORY.racket;
@@ -33,7 +33,7 @@ export function getMarketBrandOptions(category: MarketCategory | 'all' | null | 
 
 export function getMarketBrandLabel(brand?: string | null) {
   if (!brand) return '';
-  return BRAND_LABEL_MAP[brand] ?? brand;
+  return MARKET_BRAND_LABEL_MAP[brand] ?? brand;
 }
 
 export function isValidMarketBrandForCategory(category: MarketCategory, brand: string) {
