@@ -9,6 +9,7 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { getBoardList } from '@/lib/boards.queries';
 import { API_VERSION } from '@/lib/board.repository';
+import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 
 /**
  * 숫자 쿼리 파라미터 파싱(Phase 0 - 500 방지)
@@ -199,7 +200,6 @@ export async function GET(req: NextRequest) {
   const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
   const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 50 });
 
-  // 키워드 검색 파라미터
   const q = url.searchParams.get('q') || url.searchParams.get('keyword') || url.searchParams.get('query') || '';
 
   const fieldRaw = url.searchParams.get('field') || 'all';
@@ -216,14 +216,48 @@ export async function GET(req: NextRequest) {
   if (communityKind) {
     const db = await getDb();
     const col = db.collection('community_posts');
-    const filter: Record<string, any> = { status: 'public', type: communityKind };
-    if (q && q.trim()) {
-      const esc = (v: string) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(esc(q.trim()), 'i');
-      filter.$or = [{ title: { $regex: re } }, { content: { $regex: re } }];
+    const { brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorObjectId, searchType, category } = parseCommunityListQuery(req, {
+      queryKeys: ['q', 'keyword', 'query'],
+    });
+
+    if (isQueryTooLong) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'query_too_long',
+          message: `검색어는 최대 ${MAX_COMMUNITY_SEARCH_QUERY_LENGTH}자까지 입력할 수 있습니다.`,
+        },
+        { status: 400 },
+      );
     }
+
+    const filter: Record<string, any> = { status: 'public', type: communityKind };
+
+    if (brand) {
+      filter.brand = brand;
+    }
+
+    if (category) {
+      filter.category = category;
+    }
+
+    if (q) {
+      const regex = { $regex: escapedQ, $options: 'i' as const };
+      if (searchType === 'title') {
+        filter.title = regex;
+      } else if (searchType === 'author') {
+        filter.nickname = regex;
+      } else {
+        filter.$or = [{ title: regex }, { content: regex }];
+      }
+    }
+
+    if (authorObjectId) {
+      filter.userId = authorObjectId;
+    }
+
     const total = await col.countDocuments(filter);
-    const docs = await col.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).toArray();
+    const docs = await col.find(filter).sort(getCommunitySortOption(sort)).skip((page - 1) * limit).limit(limit).toArray();
     const items = docs.map((d: any) => ({
       id: String(d._id),
       type: d.type,

@@ -29,3 +29,18 @@
   2. 마이그레이션 기간 동안 점진 이관 가능
   3. `lib/board.repository.ts`로 조회/식별 공통화 가능
 
+## BoardListClient ↔ 서버 쿼리 계약 (Community)
+
+| 쿼리 키 | BoardListClient 전송 조건 | `/api/boards` (`kind=free\|market\|gear`) 허용/동작 | `/api/community/posts` 허용/동작 |
+|---|---|---|---|
+| `kind` | 항상 전송 (`config.boardType`) | 필수 분기 키. `free/market/gear`일 때 community 조회 경로 사용 | 사용 안 함 |
+| `type` | 항상 전송 (`config.boardType`) | community 분기에서는 무시(호환용) | 게시판 타입 필터로 사용 (`free/market/gear`) |
+| `page` | 항상 전송 (기본 1) | 1 이상 정수로 보정, 기본 1 | 1 이상 정수로 보정, 기본 1 |
+| `limit` | 항상 전송 (고정 10) | 1~50으로 clamp, 기본 10 | 1~50으로 clamp, 기본 10 |
+| `sort` | 항상 전송 (`latest/views/likes`, 기본 latest) | `latest/views/likes/hot` 허용, 그 외 `latest` | `latest/views/likes/hot` 허용, 그 외 `latest` |
+| `q` | 검색어가 있을 때만 전송 | 검색어 필터 적용 (`searchType`과 결합), 최대 100자 | 검색어 필터 적용 (`searchType`과 결합), 최대 100자 |
+| `searchType` | 검색어가 있을 때 전송 (`title/author/title_content`) | `title/author/title_content` 허용, 기본 `title_content` | `title/author/title_content` 허용, 기본 `title_content` |
+| `authorId` | 작성자 게시글 보기 화면에서 전송 | ObjectId 유효 시 작성자 필터 적용 | ObjectId 유효 시 작성자 필터 적용 |
+| `category` | 카테고리 선택 시 전송 (`all`은 미전송) | Community 카테고리 값만 필터 적용 | Community 카테고리 값만 필터 적용 |
+| `brand` | 브랜드 카테고리 + 브랜드 선택 시 전송 | brand exact match 필터 적용 | brand exact match 필터 적용 |
+| `keyword`, `query` | BoardListClient는 미전송(레거시 호환) | `q`가 없을 때 대체 검색어 alias로 허용 | 미허용 |
