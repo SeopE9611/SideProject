@@ -10,6 +10,7 @@ import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES, CommunityPost } from '@/li
 import { API_VERSION } from '@/lib/board.repository';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
+import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
@@ -95,6 +96,38 @@ const createSchema = z.object({
     )
     .optional(),
 });
+
+function findFirstInvalidAssetUrl(input: { images?: string[]; attachments?: Array<{ url: string }> }) {
+  // 1) 이미지 URL 배열 검증: 프론트 업로더가 보내는 순서를 유지한 채 첫 실패 지점을 반환
+  if (Array.isArray(input.images)) {
+    for (let i = 0; i < input.images.length; i += 1) {
+      const validation = validateBoardAssetUrl(input.images[i]);
+      if (!validation.ok) {
+        return {
+          path: ['images', i],
+          reason: validation.reason,
+          value: input.images[i],
+        };
+      }
+    }
+  }
+
+  // 2) 첨부 URL 배열 검증: attachments[n].url 단위로 동일 정책 적용
+  if (Array.isArray(input.attachments)) {
+    for (let i = 0; i < input.attachments.length; i += 1) {
+      const validation = validateBoardAssetUrl(input.attachments[i]?.url);
+      if (!validation.ok) {
+        return {
+          path: ['attachments', i, 'url'],
+          reason: validation.reason,
+          value: input.attachments[i]?.url,
+        };
+      }
+    }
+  }
+
+  return null;
+}
 
 // 커뮤니티 게시글 리스트 조회
 export async function GET(req: NextRequest) {
@@ -251,6 +284,23 @@ export async function POST(req: NextRequest) {
   }
 
   const body = parsed.data;
+
+  // 정책 결정: community API는 비허용 URL을 자동 제거하지 않고 요청 자체를 거부한다.
+  // - 이유: 클라이언트가 어떤 URL이 차단됐는지 즉시 인지하고 수정할 수 있어야 함
+  const invalidAsset = findFirstInvalidAssetUrl(body);
+  if (invalidAsset) {
+    return NextResponse.json(
+      {
+        ok: false,
+        version: API_VERSION,
+        error: 'invalid_attachment_url',
+        message: '허용되지 않은 첨부 URL입니다. HTTPS + 허용 호스트/경로 정책을 확인해 주세요.',
+        details: [{ path: invalidAsset.path, message: `허용되지 않은 URL(${invalidAsset.reason})`, value: invalidAsset.value }],
+      },
+      { status: 400 },
+    );
+  }
+
   const sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(body.content));
   const contentLengthValidation = validateSanitizedLength(sanitizedContent, { min: 1, max: 5000 });
 
