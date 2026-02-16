@@ -5,6 +5,10 @@ import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { deductPoints, getPointsBalance, grantPoints } from '@/lib/points.service';
 import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 
+type AdminRef = {
+  adminId: ObjectId;
+};
+
 /**
  * body: { userId: string, amount: number, reason?: string, refKey?: string }
  *
@@ -37,9 +41,10 @@ export async function POST(req: Request) {
   const targetUserId = new ObjectId(userId);
   const amount = Math.trunc(amountRaw);
 
-  // 관리자 id를 ref에 남기고 싶으면 guard.user가 있는 경우만 사용
-  const adminIdStr = (guard as any)?.user?.id;
-  const adminId = ObjectId.isValid(adminIdStr) ? new ObjectId(adminIdStr) : undefined;
+  // requireAdmin이 보장하는 관리자 식별자(guard.admin._id)를 원장 ref에 고정 기록.
+  // - any 캐스팅 + user 필드 우회 참조를 제거해 런타임 누락 가능성을 차단
+  // - ref.adminId 타입을 ObjectId로 강제해 지급/차감 파라미터의 타입 안정성을 유지
+  const adminRef: AdminRef = { adminId: guard.admin._id };
 
   try {
     // 2) 지급/차감 분기 (원장 + users.pointsBalance 캐시 동시 갱신)
@@ -50,7 +55,7 @@ export async function POST(req: Request) {
         type: 'admin_adjust',
         ...(refKey ? { refKey } : {}),
         ...(reason ? { reason } : {}),
-        ...(adminId ? { ref: { adminId } } : {}),
+        ref: adminRef,
       });
     } else {
       await deductPoints(db, {
@@ -59,7 +64,7 @@ export async function POST(req: Request) {
         type: 'admin_adjust',
         ...(refKey ? { refKey } : {}),
         ...(reason ? { reason } : {}),
-        ...(adminId ? { ref: { adminId } } : {}),
+        ref: adminRef,
         // 기본 정책: 마이너스 잔액 금지 (필요하면 true로 열어도 됨)
         allowNegativeBalance: false,
       });

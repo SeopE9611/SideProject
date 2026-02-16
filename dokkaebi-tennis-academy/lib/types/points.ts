@@ -35,4 +35,5 @@ export type PointTransactionListItem = {
   reason: string | null;
   createdAt: string; // ISO string
   refKey: string | null;
+  adminId: string | null;
 };

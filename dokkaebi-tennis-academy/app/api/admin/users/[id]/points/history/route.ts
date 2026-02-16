@@ -27,6 +27,8 @@ function mapTx(d: any): PointTransactionListItem {
     reason: d?.reason ? String(d.reason) : null,
     createdAt,
     refKey: d?.refKey ? String(d.refKey) : null,
+    // 관리자 조정 건(admin_adjust) 식별자. 일반 사용자 이벤트는 null로 응답
+    adminId: d?.ref?.adminId ? String(d.ref.adminId) : null,
   };
 }
 
