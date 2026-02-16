@@ -1,15 +1,25 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import { API_VERSION } from '@/lib/board.repository';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { ObjectId } from 'mongodb';
+import { maskSecretTitle, resolveBoardViewerContext } from '@/lib/board-secret-policy';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const me = await getCurrentUser();
-  const viewerId = me?.id ?? null;
-  const isAdmin = me?.role === 'admin';
   const db = await getDb();
+  const accessToken = (await cookies()).get('accessToken')?.value;
+  const viewer = await resolveBoardViewerContext({
+    accessToken,
+    verifyToken: verifyAccessToken,
+    fetchUserRoleById: async (userId) => {
+      if (!ObjectId.isValid(userId)) return null;
+      const user = await db.collection('users').findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
+      return typeof user?.role === 'string' ? user.role : null;
+    },
+  });
   const col = db.collection('board_posts');
 
   // 공지 5개 (고정 우선)
@@ -74,7 +84,6 @@ export async function GET() {
           authorId: {
             $convert: { input: '$authorId', to: 'string', onError: null, onNull: null },
           },
-          titleRaw: '$title',
         },
       },
 
@@ -113,15 +122,12 @@ export async function GET() {
     .toArray();
 
   // “작성자/관리자만 원문 제목”, 그 외는 마스킹
-  const qna = (qnaRaw as any[]).map((it) => {
-    const isSecret = Boolean(it?.isSecret);
-    const authorId = it?.authorId ?? null;
-    const canSeeTitle = !isSecret || isAdmin || (viewerId && authorId && String(viewerId) === String(authorId));
-
-    const title = canSeeTitle ? (it?.titleRaw ?? it?.title ?? '비밀글입니다') : '비밀글입니다';
-    const { titleRaw, ...rest } = it; // titleRaw는 응답에서 제거(유출 방지)
-    return { ...rest, title };
-  });
+  const qna = (qnaRaw as any[]).map((it) =>
+    maskSecretTitle(it, {
+      viewerId: viewer.viewerId,
+      isAdmin: viewer.isAdmin,
+    }),
+  );
 
   return NextResponse.json({ ok: true, version: API_VERSION, notices, qna }, { headers: { 'Cache-Control': 'no-store' } });
 }

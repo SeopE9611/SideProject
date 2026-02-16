@@ -10,6 +10,7 @@ import { logError, logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { API_VERSION } from '@/lib/board.repository';
 import { baseCookie } from '@/lib/cookieOptions';
 import { createHash } from 'crypto';
+import { resolveBoardViewerContext } from '@/lib/board-secret-policy';
 
 // supabase 상수/핼퍼
 const STORAGE_BUCKET = 'tennis-images';
@@ -217,9 +218,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   // 권한 확인 + (비로그인 디듀프용) 쿠키 접근
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(token);
-  const isAdmin = payload?.role === 'admin';
-  const isOwner = payload?.sub && String(payload.sub) === String(post.authorId);
+  const viewer = await resolveBoardViewerContext({
+    accessToken: token,
+    verifyToken: verifyAccessToken,
+    fetchUserRoleById: async (userId) => {
+      if (!ObjectId.isValid(userId)) return null;
+      const user = await db.collection('users').findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
+      return typeof user?.role === 'string' ? user.role : null;
+    },
+  });
+  const payload = viewer.payload;
+  const isAdmin = viewer.isAdmin;
+  const isOwner = viewer.viewerId && String(viewer.viewerId) === String(post.authorId);
 
   // 비밀글: 권한 없으면 401/403로 명확하게 반환
   if (post.isSecret) {
@@ -234,7 +244,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         msg: 'boards:get:forbidden_secret',
         status: 403,
         docId: id,
-        userId: String(payload.sub ?? ''),
+        userId: String(viewer.viewerId ?? ''),
         durationMs: stop(),
         ...meta,
       });
