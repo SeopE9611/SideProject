@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { deductPoints, getPointsBalance, grantPoints } from '@/lib/points.service';
 
 /**
@@ -12,6 +13,8 @@ import { deductPoints, getPointsBalance, grantPoints } from '@/lib/points.servic
 export async function POST(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
   const { db } = guard;
 
   const body = await req.json().catch(() => ({}) as any);

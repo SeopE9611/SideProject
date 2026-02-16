@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { getDb } from '@/lib/mongodb';
 import { EmailSettings, SETTINGS_COLLECTION, defaultEmailSettings, emailSettingsSchema } from '@/lib/admin-settings';
 
@@ -27,6 +28,8 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
   const payload = (await req.json().catch(() => null)) as Partial<EmailSettings> | null;
   const parsed = emailSettingsSchema.safeParse(payload);

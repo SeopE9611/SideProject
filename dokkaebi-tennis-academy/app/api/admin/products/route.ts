@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 type ProductCreatePayload = {
   name?: unknown;
@@ -152,6 +153,8 @@ export async function GET(req: Request) {
 export async function POST(req: NextRequest) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
   try {
     let body: ProductCreatePayload | null = null;

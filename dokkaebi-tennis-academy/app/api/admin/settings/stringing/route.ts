@@ -14,6 +14,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { sanitizeExceptionInput, validateBaseSettings, validateExceptionItem } from '@/lib/stringingSettingsValidation';
 
 type ExceptionItem = {
@@ -62,6 +63,8 @@ export async function PATCH(req: Request) {
   // 관리자 권한 체크
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
   // 본문 파싱
   const body = (await req.json().catch(() => ({}))) as Partial<StringingSettings>;

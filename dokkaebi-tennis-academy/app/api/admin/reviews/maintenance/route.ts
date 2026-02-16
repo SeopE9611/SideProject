@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { ensureReviewIndexes, dedupActiveReviews, rebuildProductRatingSummary } from '@/lib/reviews.maintenance';
 
 type MaintAction = 'createIndexes' | 'dedup' | 'rebuildSummary' | 'all' | undefined;
@@ -9,6 +10,8 @@ type MaintAction = 'createIndexes' | 'dedup' | 'rebuildSummary' | 'all' | undefi
 export async function POST(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
   const db = await getDb();
   const locks = db.collection('admin_locks');
@@ -86,6 +89,8 @@ export async function GET(req: Request) {
 export async function DELETE(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
   const db = await getDb();
   const locks = db.collection('admin_locks');

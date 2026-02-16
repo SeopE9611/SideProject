@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
@@ -36,6 +37,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   try {
     const guard = await requireAdmin(req);
     if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
     const { id } = await ctx.params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });

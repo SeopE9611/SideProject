@@ -15,6 +15,9 @@ const ADMIN_HTTP_ERROR_MESSAGES: Record<number, string> = {
 const ADMIN_UNKNOWN_ERROR_MESSAGE = '요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
 export type AdminMutationMethod = 'POST' | 'PATCH' | 'DELETE';
 
+const CSRF_COOKIE_CANDIDATES = ['adminCsrfToken', 'csrfToken'];
+const CSRF_HEADER_KEY = 'x-admin-csrf-token';
+
 export class AdminFetchError extends Error {
   status: number;
   payload: unknown;
@@ -82,10 +85,40 @@ function throwIfHttpError(response: Response, payload: unknown) {
   throw new AdminFetchError(message, response.status, payload);
 }
 
+function readCookieToken(cookieName: string): string {
+  if (typeof document === 'undefined') return '';
+
+  const encodedPrefix = `${encodeURIComponent(cookieName)}=`;
+  const pairs = document.cookie ? document.cookie.split('; ') : [];
+  for (const pair of pairs) {
+    if (!pair.startsWith(encodedPrefix)) continue;
+    return decodeURIComponent(pair.slice(encodedPrefix.length));
+  }
+  return '';
+}
+
+function readAdminCsrfToken(): string {
+  for (const cookieName of CSRF_COOKIE_CANDIDATES) {
+    const token = readCookieToken(cookieName);
+    if (token) return token;
+  }
+  return '';
+}
+
+function withAdminCsrfHeader(initHeaders?: HeadersInit): Headers {
+  const headers = new Headers(initHeaders);
+  const csrfToken = readAdminCsrfToken();
+  if (csrfToken) {
+    headers.set(CSRF_HEADER_KEY, csrfToken);
+  }
+  return headers;
+}
+
 export async function adminFetcher<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     credentials: 'include',
     ...init,
+    headers: withAdminCsrfHeader(init?.headers),
   });
   const payload = await readResponsePayload(response);
   throwIfHttpError(response, payload);
@@ -96,6 +129,7 @@ export async function adminMutator<T>(url: string, options: Omit<RequestInit, 'm
   const response = await fetch(url, {
     credentials: 'include',
     ...options,
+    headers: withAdminCsrfHeader(options.headers),
   });
   const payload = await readResponsePayload(response);
   throwIfHttpError(response, payload);

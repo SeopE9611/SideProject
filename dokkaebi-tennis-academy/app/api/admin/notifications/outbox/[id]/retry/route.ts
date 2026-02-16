@@ -2,12 +2,15 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { dispatchOutbox } from '@/app/features/notifications/core/dispatch';
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   // --- 관리자 인증 (공용 가드) ---
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
   const { db } = guard;
 
   const { id } = await ctx.params;

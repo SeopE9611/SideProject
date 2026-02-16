@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 type ProxyMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 export async function proxyToLegacyAdminRoute(req: Request, legacyPath: string, method: ProxyMethod) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+
+  if (method !== 'GET') {
+    const csrf = verifyAdminCsrf(req);
+    if (!csrf.ok) return csrf.res;
+  }
 
   const sourceUrl = new URL(req.url);
   const targetUrl = new URL(legacyPath, sourceUrl.origin);
