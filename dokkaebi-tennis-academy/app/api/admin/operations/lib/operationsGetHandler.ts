@@ -204,6 +204,24 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
+function parseKind(v: string | null): Kind | 'all' {
+  if (v === 'order' || v === 'rental' || v === 'stringing_application') return v;
+  return 'all';
+}
+
+function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
+  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
+  const pageSize = parseIntParam(url.searchParams.get('pageSize'), { defaultValue: DEFAULT_PAGE_SIZE, min: 1, max: MAX_PAGE_SIZE });
+  const kind = parseKind(url.searchParams.get('kind'));
+  const q = String(url.searchParams.get('q') ?? '')
+    .trim()
+    .toLowerCase();
+  const warn = url.searchParams.get('warn') === '1';
+  const flow = parseFlow(url.searchParams.get('flow'));
+  const integrated = parseIntegrated(url.searchParams.get('integrated'));
+  return { page, pageSize, kind, q, warn, flow, integrated };
+}
+
 function toOperationsListResponseDto(items: OpItem[], total: number): AdminOperationsListResponseDto {
   return {
     items: items.map((item) => ({ ...item, createdAt: item.createdAt ?? null })),
@@ -221,16 +239,8 @@ export async function handleAdminOperationsGet(req: Request) {
   if (limited) return limited;
 
   const url = new URL(req.url);
-  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
-  const pageSize = parseIntParam(url.searchParams.get('pageSize'), { defaultValue: DEFAULT_PAGE_SIZE, min: 1, max: MAX_PAGE_SIZE });
-  const kind = (url.searchParams.get('kind') as Kind | 'all' | null) ?? 'all';
-  const q = String(url.searchParams.get('q') ?? '')
-    .trim()
-    .toLowerCase();
-  const warn = url.searchParams.get('warn') === '1';
-  const flow = parseFlow(url.searchParams.get('flow'));
-  const integrated = parseIntegrated(url.searchParams.get('integrated'));
-  const requestDto: AdminOperationsListRequestDto = { page, pageSize, kind, q, warn, flow, integrated };
+  const requestDto = parseOperationsListRequest(url);
+  const { page, pageSize, kind, q, warn, flow, integrated } = requestDto;
 
   // 1) 신청서 먼저 조회해서 “연결 매핑(orderId/rentalId)”을 만든다.
   const rawApps = await db

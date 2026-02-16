@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
 
-const TARGETS = ['app/admin', 'app/api/admin', 'components/admin'];
+const TARGETS = ['app/admin', 'app/api/admin', 'components/admin', 'lib/admin.guard.ts'];
 const CRITICAL_KEYWORDS = /(payment|settlement|정산|status|상태|refund|cancel|취소|shipping|배송|deposit|operations?)/i;
 
 function run(command) {

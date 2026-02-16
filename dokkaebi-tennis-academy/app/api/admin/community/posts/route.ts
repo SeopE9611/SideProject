@@ -47,15 +47,15 @@ export async function GET(req: NextRequest) {
   const dir: SortDirection = searchParams.get('dir')?.toLowerCase() === 'asc' ? 1 : -1;
 
   const filter: Filter<PostDoc> = {};
-  if (type !== 'all') filter.type = type as any;
-  if (status !== 'all') filter.status = status as any;
+  if (type !== 'all') filter.type = type;
+  if (status === 'public' || status === 'hidden') filter.status = status;
 
   if (q) {
     const r = new RegExp(escapeRegExp(q), 'i');
-    filter.$or = [{ title: r }, { nickname: r }, { content: r }] as any;
+    filter.$or = [{ title: r }, { nickname: r }, { content: r }];
   }
 
-  const sortMap: Record<string, any> = {
+  const sortMap: Record<string, Record<string, SortDirection>> = {
     createdAt: { createdAt: dir },
     views: { views: dir, viewCount: dir },
     likes: { likes: dir, likeCount: dir },
