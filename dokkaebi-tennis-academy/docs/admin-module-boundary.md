@@ -6,6 +6,10 @@
 - `app/api/admin/dashboard/metrics/_core/aggregate-transformer.ts`: **aggregation transform only**.
 - `app/api/admin/dashboard/metrics/_core/response-mapper.ts`: **mapping only**.
 - `app/api/admin/operations/route.ts`: **transport + orchestration only**.
+- `app/api/admin/package-orders/route.ts`: **패키지 주문 목록 관리자 조회 API**.
+- `app/api/admin/package-orders/[id]/route.ts`: **패키지 주문 단건 조회/상태 변경 관리자 API**.
+- `app/api/admin/package-orders/[id]/extend/route.ts`: **패키지 만료 연장 관리자 API**.
+- `app/api/admin/package-orders/[id]/adjust-sessions/route.ts`: **패키지 횟수 조정 관리자 API**.
 - `types/admin/operations.ts`: **domain type definition only**.
 - `app/admin/users/_hooks/*`: **data fetching only**.
 - `app/admin/users/_components/*`: **UI only**.
@@ -23,12 +27,32 @@
 - 400 LOC를 초과하면 우선적으로 다음 단위로 분리한다: `query / aggregation / mapping`, `hooks / components`, `filters / table / dialogs`.
 - 예외가 필요한 경우 PR 본문에 사유와 추후 분리 계획을 명시한다.
 
-
 ## 강제 규칙: 관리자 UI API 경계
 - 관리자 UI(`app/admin/**`)는 **반드시 `/api/admin/**`만 호출**한다.
 - `/api/**`(비 admin 네임스페이스) 호출이 필요한 경우는 읽기 전용 공용 조회 API로 한정하고, 예외 사유를 PR 본문에 명시한다.
-- 관리자 전용 행위(승인/반려/수정/삭제/정산/발송 재시도)는 `app/api/admin/**`로만 제공한다.
+- 관리자 전용 행위(승인/반려/수정/삭제/정산/발송 재시도/패키지 변경)는 `app/api/admin/**`로만 제공한다.
 - 전환 단계에서는 기존 비-admin 경로에 `Deprecation` 응답 헤더 또는 307/410 응답 정책을 적용해 누락 클라이언트를 조기 탐지한다.
+
+## 허용 경로 목록 (실 구현 기준)
+
+### 관리자 변경성 엔드포인트 (정식)
+- `PATCH /api/admin/package-orders/:id`
+- `POST /api/admin/package-orders/:id/extend`
+- `POST /api/admin/package-orders/:id/adjust-sessions`
+- `POST /api/admin/products`
+- `PUT /api/admin/products/:id`
+- `DELETE /api/admin/products/:id`
+- `DELETE /api/admin/system/cleanup`
+- `DELETE /api/admin/system/purge`
+- `DELETE /api/admin/settlements/:yyyymm`
+- `POST /api/admin/settlements/bulk-delete`
+
+### 레거시 비-admin 허용 범위 (이관 정책 래퍼 전용)
+- `GET /api/package-orders` → 307
+- `GET /api/package-orders/:id` → 307
+- `PATCH /api/package-orders/:id` → 307
+- `POST /api/package-orders/:id/extend` → 307
+- `POST /api/package-orders/:id/adjust-sessions` → 307
 
 ## 관리자 API 클라이언트 사용 규약
 - 조회 요청은 **SWR + `adminFetcher`** 조합을 기본으로 사용한다.
