@@ -26,6 +26,7 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { brands, colors, gauges, materials } from '@/app/admin/products/_lib/productFormOptions';
+import { adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 
 export default function NewStringPage() {
   // 기본 정보
@@ -404,7 +405,7 @@ export default function NewStringPage() {
     setSubmitting(true);
     submitRef.current = true;
     try {
-      const res = await fetch('/api/admin/products', {
+      const data = await adminMutator<{ id: string }>('/api/admin/products', {
         // API 겨로
         method: 'POST', // POST 요청
         headers: {
@@ -412,17 +413,7 @@ export default function NewStringPage() {
           'Content-Type': 'application/json', // JSON 형식
         },
         body: JSON.stringify(product), // JSON 문자열로 변환
-        credentials: 'include',
       });
-
-      if (!res.ok) {
-        // 에러 발생시
-        const errorData = await res.json(); // 에러 메시지
-        showErrorToast(errorData.message || '알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요');
-        return;
-      }
-
-      const data = await res.json(); // 성공적으로 등록된 데이터
 
       showSuccessToast('상품이 등록되었습니다.');
 
@@ -430,8 +421,7 @@ export default function NewStringPage() {
       router.push(`/products/${data.id}`); // 등록된 상품 상세 페이지로 즉시 이동
     } catch (error) {
       // 상품 등록 중 에러 발생시
-      // console.log('상품 등록 에러', error);
-      showErrorToast('서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.');
+      showErrorToast(getAdminErrorMessage(error) || '서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.');
     } finally {
       setSubmitting(false);
       submitRef.current = false;

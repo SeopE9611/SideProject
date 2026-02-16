@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import useSWR from 'swr';
 import Link from 'next/link';
 import { ArrowLeft, Save, Package, Settings, Plus, Trash2, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,11 +12,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { type PackageConfig, type GeneralSettings, DEFAULT_PACKAGE_CONFIGS, DEFAULT_GENERAL_SETTINGS } from '@/lib/package-settings';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
+import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
+
+type PackageSettingsResponse = {
+  packageConfigs?: PackageConfig[];
+  generalSettings?: Partial<GeneralSettings>;
+};
 
 export default function PackageSettingsClient() {
   // 서버에서 가져온 패키지 설정
@@ -24,8 +31,7 @@ export default function PackageSettingsClient() {
   // 서버에서 가져온 일반 설정
   const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(DEFAULT_GENERAL_SETTINGS);
 
-  // 초기 로딩 상태 (GET /api/admin/packages/settings)
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isHydratedFromServer, setIsHydratedFromServer] = useState<boolean>(false);
 
   // 저장 중 여부 (PUT /api/admin/packages/settings)
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -33,12 +39,12 @@ export default function PackageSettingsClient() {
    const baselineRef = useRef<string | null>(null);
   const snapshot = useMemo(() => JSON.stringify({ packageConfigs, generalSettings }), [packageConfigs, generalSettings]);
 
- useEffect(() => {
+  useEffect(() => {
     // 최초 로드 완료 시 baseline 확정
-    if (!isLoading && baselineRef.current === null) baselineRef.current = snapshot;
-  }, [isLoading, snapshot]);
+    if (isHydratedFromServer && baselineRef.current === null) baselineRef.current = snapshot;
+  }, [isHydratedFromServer, snapshot]);
 
-  const isDirty = !isLoading && baselineRef.current !== null && baselineRef.current !== snapshot;
+  const isDirty = isHydratedFromServer && baselineRef.current !== null && baselineRef.current !== snapshot;
   useUnsavedChangesGuard(isDirty && !isSaving);
 
   const confirmLeave = (e: React.MouseEvent) => {
@@ -49,120 +55,81 @@ export default function PackageSettingsClient() {
     }
   };
 
+  const { data, isLoading, error } = useSWR<PackageSettingsResponse>('/api/admin/packages/settings', adminFetcher, {
+    revalidateOnFocus: false,
+  });
+
   const [editingPackage, setEditingPackage] = useState<string | null>(null);
   const [pendingDeletePackageId, setPendingDeletePackageId] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    if (!data || isHydratedFromServer) return;
 
-    const fetchSettings = async () => {
-      try {
-        setIsLoading(true);
-
-        const res = await fetch('/api/admin/packages/settings', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (!res.ok) {
-          console.error('패키지 설정 조회 실패', await res.text());
-          showErrorToast('패키지 설정 조회에 실패했습니다.');
-          return;
-        }
-
-        const data = await res.json();
-
-        if (!mounted) return;
-
-        const serverPackages: PackageConfig[] = Array.isArray(data.packageConfigs) ? data.packageConfigs : DEFAULT_PACKAGE_CONFIGS;
-
-        const serverGeneral: GeneralSettings = {
-          ...DEFAULT_GENERAL_SETTINGS,
-          ...(data.generalSettings ?? {}),
-        };
-
-        setPackageConfigs(serverPackages);
-        setGeneralSettings(serverGeneral);
-      } catch (error) {
-        console.error('패키지 설정 조회 중 오류', error);
-        showErrorToast('패키지 설정 조회 중 오류가 발생했습니다.');
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
+    const serverPackages: PackageConfig[] = Array.isArray(data.packageConfigs) ? data.packageConfigs : DEFAULT_PACKAGE_CONFIGS;
+    const serverGeneral: GeneralSettings = {
+      ...DEFAULT_GENERAL_SETTINGS,
+      ...(data.generalSettings ?? {}),
     };
 
-    fetchSettings();
+    setPackageConfigs(serverPackages);
+    setGeneralSettings(serverGeneral);
+    setIsHydratedFromServer(true);
+  }, [data, isHydratedFromServer]);
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  useEffect(() => {
+    if (!error) return;
+    showErrorToast('패키지 설정 조회 중 오류가 발생했습니다.');
+  }, [error]);
 
   // 금액 포맷터
   const formatCurrency = (amount: number) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
 
   // 패키지 설정 저장 (패키지 탭에서 호출)
   const handleSavePackages = async () => {
-    try {
-      setIsSaving(true);
+    setIsSaving(true);
 
-      const body = {
-        packageConfigs,
-        generalSettings,
-      };
+    const body = {
+      packageConfigs,
+      generalSettings,
+    };
 
-      const res = await fetch('/api/admin/packages/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+    const result = await runAdminActionWithToast({
+      action: () =>
+        adminMutator('/api/admin/packages/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+      successMessage: '패키지 설정이 저장되었습니다.',
+      fallbackErrorMessage: '패키지 설정 저장에 실패했습니다.',
+    });
 
-      if (!res.ok) {
-        console.error('패키지 설정 저장 실패', await res.text());
-        showErrorToast('패키지 설정 저장에 실패했습니다.');
-        return;
-      }
-
-      showSuccessToast('패키지 설정이 저장되었습니다.');
-    } catch (error) {
-      console.error('패키지 설정 저장 중 오류', error);
-      showErrorToast('저장 중 오류가 발생했습니다.');
-    } finally {
-      setIsSaving(false);
-    }
+    if (result) baselineRef.current = snapshot;
+    setIsSaving(false);
   };
 
   // 일반 설정 저장 (일반 설정 탭에서 호출)
   const handleSaveGeneralSettings = async () => {
-    try {
-      setIsSaving(true);
+    setIsSaving(true);
 
-      const body = {
-        packageConfigs,
-        generalSettings,
-      };
+    const body = {
+      packageConfigs,
+      generalSettings,
+    };
 
-      const res = await fetch('/api/admin/packages/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+    const result = await runAdminActionWithToast({
+      action: () =>
+        adminMutator('/api/admin/packages/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+      successMessage: '일반 설정이 저장되었습니다.',
+      fallbackErrorMessage: '일반 설정 저장에 실패했습니다.',
+    });
 
-      if (!res.ok) {
-        console.error('일반 설정 저장 실패', await res.text());
-        showErrorToast('일반 설정 저장에 실패했습니다.');
-        return;
-      }
-
-      showSuccessToast('일반 설정이 저장되었습니다.');
-    } catch (error) {
-      console.error('일반 설정 저장 중 오류', error);
-      showErrorToast('저장 중 오류가 발생했습니다.');
-    } finally {
-      setIsSaving(false);
-    }
+    if (result) baselineRef.current = snapshot;
+    setIsSaving(false);
   };
 
   // 패키지 업데이트

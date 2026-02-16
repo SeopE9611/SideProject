@@ -13,7 +13,7 @@ const ADMIN_HTTP_ERROR_MESSAGES: Record<number, string> = {
 };
 
 const ADMIN_UNKNOWN_ERROR_MESSAGE = '요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
-export type AdminMutationMethod = 'POST' | 'PATCH' | 'DELETE';
+export type AdminMutationMethod = 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 const CSRF_COOKIE_CANDIDATES = ['adminCsrfToken', 'csrfToken'];
 const CSRF_HEADER_KEY = 'x-admin-csrf-token';
