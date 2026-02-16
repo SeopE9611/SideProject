@@ -13,6 +13,7 @@ import { createHash } from 'crypto';
 import { resolveBoardViewerContext } from '@/lib/board-secret-policy';
 import { classifyBoardPatchFailure } from '@/lib/boards-patch-conflict';
 import { requireAdmin } from '@/lib/admin.guard';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 
 // supabase 상수/핼퍼
 const STORAGE_BUCKET = 'tennis-images';
@@ -447,6 +448,28 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // 5) 갱신된 문서를 다시 읽어와서 반환(+선택: 최신 updatedAt 헤더 제공)
   const updated = await BoardRepo.findOneById(db, String(post._id));
+
+  // 관리자 액션 감사 로그(상태 변경 중심)
+  if (parsed.data.status && parsed.data.status !== post.status) {
+    await appendAdminAudit(
+      db,
+      {
+        type: 'admin_board_status_change',
+        actorId: payload.sub,
+        targetId: String(post._id),
+        message: `게시물 상태 변경: ${String(post.status ?? 'unknown')} -> ${parsed.data.status}`,
+        diff: {
+          postId: String(post._id),
+          postType: String(post.type ?? ''),
+          title: String(post.title ?? ''),
+          beforeStatus: String(post.status ?? ''),
+          afterStatus: parsed.data.status,
+        },
+      },
+      req,
+    );
+  }
+
   return NextResponse.json({ ok: true, version: API_VERSION, item: updated }, updated?.updatedAt ? { headers: { 'x-updated-at': new Date(updated.updatedAt).toISOString() } } : undefined);
   // === 낙관적 락(updatedAt 매칭) + 재조회 반환 끝 ===
 }
@@ -486,6 +509,23 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
 
   await BoardRepo.deleteOneById(db, id);
+
+  await appendAdminAudit(
+    db,
+    {
+      type: 'admin_board_delete',
+      actorId: payload.sub,
+      targetId: String(post._id),
+      message: '게시물 삭제',
+      diff: {
+        postId: String(post._id),
+        postType: String(post.type ?? ''),
+        status: String(post.status ?? ''),
+        title: String(post.title ?? ''),
+      },
+    },
+    req,
+  );
 
   logInfo({ msg: 'boards:delete:ok', status: 200, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
   return NextResponse.json({ ok: true, version: API_VERSION });
