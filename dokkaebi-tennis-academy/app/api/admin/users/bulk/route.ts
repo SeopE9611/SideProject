@@ -1,10 +1,46 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { z } from 'zod';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
+import { adminValidationError, zodIssuesToDetails } from '@/lib/admin/adminApiError';
 
-type Op = 'suspend' | 'unsuspend' | 'softDelete' | 'restore';
+
+const MAX_BULK_IDS = 200;
+
+const bulkBodySchema = z
+  .object({
+    op: z.enum(['suspend', 'unsuspend', 'softDelete', 'restore']),
+    ids: z.array(z.string()).max(MAX_BULK_IDS, `ids는 최대 ${MAX_BULK_IDS}개까지 요청할 수 있습니다.`),
+  })
+  .strict();
+
+function normalizeIds(rawIds: string[]) {
+  const deduped: string[] = [];
+  const seen = new Set<string>();
+  const invalidObjectIds: { index: number; value: string; reason: string }[] = [];
+
+  for (let index = 0; index < rawIds.length; index += 1) {
+    const normalized = rawIds[index].trim();
+    if (!normalized) continue;
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+
+    if (!ObjectId.isValid(normalized)) {
+      invalidObjectIds.push({
+        index,
+        value: normalized,
+        reason: 'ObjectId 형식이 아닙니다.',
+      });
+      continue;
+    }
+
+    deduped.push(normalized);
+  }
+
+  return { deduped, invalidObjectIds };
+}
 
 export async function POST(req: Request) {
   const guard = await requireAdmin(req);
@@ -13,17 +49,36 @@ export async function POST(req: Request) {
   if (!csrf.ok) return csrf.res;
 
   // 2) 입력 파싱
-  const body = await req.json().catch(() => ({}));
-  const { op, ids } = body as { op?: Op; ids?: string[] };
-  if (!op || !Array.isArray(ids) || ids.length === 0) {
-    return NextResponse.json({ message: 'op and ids are required' }, { status: 400 });
+  const body = await req.json().catch(() => null);
+  const parsedBody = bulkBodySchema.safeParse(body);
+  if (!parsedBody.success) {
+    return adminValidationError('요청 본문이 올바르지 않습니다.', parsedBody.error.flatten().fieldErrors, zodIssuesToDetails(parsedBody.error.issues));
   }
 
-  // 3) ObjectId 유효성 검사
-  const _ids = ids.filter(ObjectId.isValid).map((id) => new ObjectId(id));
-  if (_ids.length === 0) {
-    return NextResponse.json({ message: 'no valid ids' }, { status: 400 });
+  const { op, ids } = parsedBody.data;
+
+  // 3) ids 정규화(빈값 제거/중복 제거/ObjectId 상세 검증)
+  const { deduped, invalidObjectIds } = normalizeIds(ids);
+
+  if (invalidObjectIds.length > 0) {
+    return adminValidationError(
+      'ids에 유효하지 않은 ObjectId가 포함되어 있습니다.',
+      {
+        ids: invalidObjectIds.map((item) => `index ${item.index}: ${item.value} (${item.reason})`),
+      },
+      invalidObjectIds.map((item) => ({
+        code: 'INVALID_OBJECT_ID',
+        message: item.reason,
+        path: `ids.${item.index}`,
+      })),
+    );
   }
+
+  if (deduped.length === 0) {
+    return adminValidationError('ids에 처리 가능한 값이 없습니다.', { ids: ['빈 문자열을 제외한 유효한 ID를 1개 이상 전달해주세요.'] });
+  }
+
+  const _ids = deduped.map((id) => new ObjectId(id));
 
   const db = await getDb();
   const col = db.collection('users');
@@ -71,7 +126,7 @@ export async function POST(req: Request) {
         break;
       }
       default:
-        return NextResponse.json({ message: 'invalid op' }, { status: 400 });
+        return adminValidationError('지원하지 않는 작업입니다.', { op: ['허용된 op 값이 아닙니다.'] });
     }
   }
 
