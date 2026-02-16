@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin.guard';
 import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
+import { buildDangerousActionToken, createDangerousActionHash, getDangerousActionReconfirmText } from '@/lib/admin/adminDangerousAction';
 
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
@@ -24,7 +25,18 @@ export async function GET(req: Request) {
       .project({ hashedPassword: 0, password: 0 })
       .toArray();
 
-    return NextResponse.json({ candidates: users });
+    const candidateIds = users.map((user) => String(user?._id ?? '')).filter(Boolean);
+    const previewHash = createDangerousActionHash('admin.system.cleanup', candidateIds);
+    const confirmationToken = buildDangerousActionToken('admin.system.cleanup', String(guard.admin._id), previewHash);
+
+    return NextResponse.json({
+      dryRun: true,
+      candidates: users,
+      previewHash,
+      requestHash: previewHash,
+      confirmationToken,
+      reconfirmText: getDangerousActionReconfirmText('admin.system.cleanup'),
+    });
   } catch (error) {
     console.error('[ADMIN_SYSTEM_CLEANUP_PREVIEW]', error);
     return NextResponse.json({ error: '서버 오류' }, { status: 500 });

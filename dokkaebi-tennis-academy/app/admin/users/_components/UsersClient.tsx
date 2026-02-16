@@ -42,6 +42,15 @@ interface BulkActionResponse {
 interface AdminDeleteResponse {
   deletedCount?: number;
   message?: string;
+  previewHash?: string;
+}
+
+interface SystemActionPreviewResponse {
+  candidates?: unknown;
+  previewHash?: string;
+  requestHash?: string;
+  confirmationToken?: string;
+  reconfirmText?: string;
 }
 
 interface UsersListCounters {
@@ -290,6 +299,11 @@ export default function UsersClient() {
   const [cleanupLoading, setCleanupLoading] = useState(false);
   const [cleanupSubmitting, setCleanupSubmitting] = useState(false);
   const [cleanupAck, setCleanupAck] = useState(false);
+  const [cleanupPreviewHash, setCleanupPreviewHash] = useState('');
+  const [cleanupRequestHash, setCleanupRequestHash] = useState('');
+  const [cleanupConfirmationToken, setCleanupConfirmationToken] = useState('');
+  const [cleanupExpectedText, setCleanupExpectedText] = useState('');
+  const [cleanupConfirmText, setCleanupConfirmText] = useState('');
 
   // --- Purge(1년) 모달 상태 ---
   const [purgeOpen, setPurgeOpen] = useState(false);
@@ -297,15 +311,28 @@ export default function UsersClient() {
   const [purgeLoading, setPurgeLoading] = useState(false);
   const [purgeSubmitting, setPurgeSubmitting] = useState(false);
   const [purgeAck, setPurgeAck] = useState(false);
+  const [purgePreviewHash, setPurgePreviewHash] = useState('');
+  const [purgeRequestHash, setPurgeRequestHash] = useState('');
+  const [purgeConfirmationToken, setPurgeConfirmationToken] = useState('');
+  const [purgeExpectedText, setPurgeExpectedText] = useState('');
+  const [purgeConfirmText, setPurgeConfirmText] = useState('');
 
   // --- 미리보기 요청 ---
   const fetchCleanupPreview = async () => {
     setCleanupLoading(true);
     try {
-      const json = await adminFetcher<{ candidates?: unknown }>('/api/admin/system/cleanup/preview');
+      const json = await adminFetcher<SystemActionPreviewResponse>('/api/admin/system/cleanup/preview');
       setCleanupPreview(asPreviewCandidates(json?.candidates));
+      setCleanupPreviewHash(typeof json?.previewHash === 'string' ? json.previewHash : '');
+      setCleanupRequestHash(typeof json?.requestHash === 'string' ? json.requestHash : '');
+      setCleanupConfirmationToken(typeof json?.confirmationToken === 'string' ? json.confirmationToken : '');
+      setCleanupExpectedText(typeof json?.reconfirmText === 'string' ? json.reconfirmText : '');
     } catch {
       setCleanupPreview([]);
+      setCleanupPreviewHash('');
+      setCleanupRequestHash('');
+      setCleanupConfirmationToken('');
+      setCleanupExpectedText('');
     } finally {
       setCleanupLoading(false);
     }
@@ -314,28 +341,66 @@ export default function UsersClient() {
   const fetchPurgePreview = async () => {
     setPurgeLoading(true);
     try {
-      const json = await adminFetcher<{ candidates?: unknown }>('/api/admin/system/purge/preview');
+      const json = await adminFetcher<SystemActionPreviewResponse>('/api/admin/system/purge/preview');
       setPurgePreview(asPreviewCandidates(json?.candidates));
+      setPurgePreviewHash(typeof json?.previewHash === 'string' ? json.previewHash : '');
+      setPurgeRequestHash(typeof json?.requestHash === 'string' ? json.requestHash : '');
+      setPurgeConfirmationToken(typeof json?.confirmationToken === 'string' ? json.confirmationToken : '');
+      setPurgeExpectedText(typeof json?.reconfirmText === 'string' ? json.reconfirmText : '');
     } catch {
       setPurgePreview([]);
+      setPurgePreviewHash('');
+      setPurgeRequestHash('');
+      setPurgeConfirmationToken('');
+      setPurgeExpectedText('');
     } finally {
       setPurgeLoading(false);
     }
   };
 
-  // --- 실행(DELETE) ---
+  // --- 실행(DELETE): dry-run 선검증 -> execute 확정 실행 ---
   const confirmCleanup = async () => {
     console.info('[admin-confirm-dialog]', { event: 'confirm', eventKey: 'admin-users-cleanup', count: cleanupPreview.length });
     setCleanupSubmitting(true);
     try {
+      const dryRun = await runAdminActionWithToast<AdminDeleteResponse>({
+        action: () =>
+          adminMutator('/api/admin/system/cleanup', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: 'dry-run' }),
+          }),
+        fallbackErrorMessage: '삭제 대상 검증 실패',
+      });
+
+      if (!dryRun) return;
+
+      if (!dryRun.previewHash || dryRun.previewHash !== cleanupPreviewHash || cleanupRequestHash !== cleanupPreviewHash) {
+        showErrorToast('미리보기 대상이 변경되었습니다. 목록을 새로고침한 뒤 다시 시도해 주세요.');
+        await fetchCleanupPreview();
+        return;
+      }
+
       const json = await runAdminActionWithToast<AdminDeleteResponse>({
-        action: () => adminMutator('/api/admin/system/cleanup', { method: 'DELETE' }),
+        action: () =>
+          adminMutator('/api/admin/system/cleanup', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              mode: 'execute',
+              previewHash: cleanupPreviewHash,
+              requestHash: cleanupRequestHash,
+              confirmationToken: cleanupConfirmationToken,
+              confirmationText: cleanupConfirmText,
+            }),
+          }),
         fallbackErrorMessage: '삭제 실패',
       });
       if (json) {
         showSuccessToast(`삭제된 계정 수: ${json.deletedCount ?? 0}`);
         setCleanupOpen(false);
         setCleanupAck(false);
+        setCleanupConfirmText('');
         mutate?.();
       }
     } finally {
@@ -347,14 +412,44 @@ export default function UsersClient() {
     console.info('[admin-confirm-dialog]', { event: 'confirm', eventKey: 'admin-users-purge', count: purgePreview.length });
     setPurgeSubmitting(true);
     try {
+      const dryRun = await runAdminActionWithToast<AdminDeleteResponse>({
+        action: () =>
+          adminMutator('/api/admin/system/purge', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: 'dry-run' }),
+          }),
+        fallbackErrorMessage: '완전 삭제 대상 검증 실패',
+      });
+
+      if (!dryRun) return;
+
+      if (!dryRun.previewHash || dryRun.previewHash !== purgePreviewHash || purgeRequestHash !== purgePreviewHash) {
+        showErrorToast('미리보기 대상이 변경되었습니다. 목록을 새로고침한 뒤 다시 시도해 주세요.');
+        await fetchPurgePreview();
+        return;
+      }
+
       const json = await runAdminActionWithToast<AdminDeleteResponse>({
-        action: () => adminMutator('/api/admin/system/purge', { method: 'DELETE' }),
+        action: () =>
+          adminMutator('/api/admin/system/purge', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              mode: 'execute',
+              previewHash: purgePreviewHash,
+              requestHash: purgeRequestHash,
+              confirmationToken: purgeConfirmationToken,
+              confirmationText: purgeConfirmText,
+            }),
+          }),
         fallbackErrorMessage: '완전 삭제 실패',
       });
       if (json) {
         showSuccessToast(`완전 삭제된 계정 수: ${json.deletedCount ?? 0}`);
         setPurgeOpen(false);
         setPurgeAck(false);
+        setPurgeConfirmText('');
         mutate?.();
       }
     } finally {
@@ -812,6 +907,7 @@ export default function UsersClient() {
                 console.info('[admin-confirm-dialog]', { event: o ? 'open' : 'cancel', eventKey: 'admin-users-cleanup' });
                 if (o) {
                   setCleanupAck(false);
+                  setCleanupConfirmText('');
                   fetchCleanupPreview();
                 }
               }}
@@ -853,9 +949,25 @@ export default function UsersClient() {
                   </label>
                 </div>
 
+                <div className="mt-3 space-y-1">
+                  <label htmlFor="cleanup-reconfirm" className="text-xs text-muted-foreground">
+                    재확인 문구 입력: <span className="font-mono">{cleanupExpectedText || '-'}</span>
+                  </label>
+                  <Input
+                    id="cleanup-reconfirm"
+                    value={cleanupConfirmText}
+                    onChange={(e) => setCleanupConfirmText(e.target.value)}
+                    placeholder={cleanupExpectedText || '재확인 문구'}
+                    autoComplete="off"
+                  />
+                </div>
+
                 <AlertDialogFooter>
                   <AlertDialogCancel disabled={cleanupSubmitting}>취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={confirmCleanup} disabled={cleanupSubmitting || cleanupLoading || !cleanupAck || cleanupPreview.length === 0}>
+                  <AlertDialogAction
+                    onClick={confirmCleanup}
+                    disabled={cleanupSubmitting || cleanupLoading || !cleanupAck || cleanupPreview.length === 0 || !cleanupPreviewHash || !cleanupRequestHash || cleanupConfirmText.trim() !== cleanupExpectedText}
+                  >
                     {cleanupSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     영구 삭제 실행
                   </AlertDialogAction>
@@ -871,6 +983,7 @@ export default function UsersClient() {
                 console.info('[admin-confirm-dialog]', { event: o ? 'open' : 'cancel', eventKey: 'admin-users-purge' });
                 if (o) {
                   setPurgeAck(false);
+                  setPurgeConfirmText('');
                   fetchPurgePreview();
                 }
               }}
@@ -881,7 +994,7 @@ export default function UsersClient() {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>탈퇴 1년 경과 계정 완전 삭제</AlertDialogTitle>
-                  <AlertDialogDescription>{`영향 개수: ${purgePreview.length}개 계정\n탈퇴 1년 경과 계정을 완전 삭제합니다. 이 작업은 되돌릴 수 없습니다.`}</AlertDialogDescription>
+                  <AlertDialogDescription>{`영향 개수: ${purgePreview.length}개 계정\n탈퇴 1년 경과 계정을 완전 삭제합니다. 이 작업은 되돌릴 수 없습니다.\n실행 전 재확인 문구("${purgeExpectedText || '-'}")를 정확히 입력해야 합니다.`}</AlertDialogDescription>
                 </AlertDialogHeader>
 
                 {/* 미리보기 리스트 */}
@@ -912,9 +1025,25 @@ export default function UsersClient() {
                   </label>
                 </div>
 
+                <div className="mt-3 space-y-1">
+                  <label htmlFor="purge-reconfirm" className="text-xs text-muted-foreground">
+                    재확인 문구 입력: <span className="font-mono">{purgeExpectedText || '-'}</span>
+                  </label>
+                  <Input
+                    id="purge-reconfirm"
+                    value={purgeConfirmText}
+                    onChange={(e) => setPurgeConfirmText(e.target.value)}
+                    placeholder={purgeExpectedText || '재확인 문구'}
+                    autoComplete="off"
+                  />
+                </div>
+
                 <AlertDialogFooter>
                   <AlertDialogCancel disabled={purgeSubmitting}>취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={confirmPurge} disabled={purgeSubmitting || purgeLoading || !purgeAck || purgePreview.length === 0}>
+                  <AlertDialogAction
+                    onClick={confirmPurge}
+                    disabled={purgeSubmitting || purgeLoading || !purgeAck || purgePreview.length === 0 || !purgePreviewHash || !purgeRequestHash || purgeConfirmText.trim() !== purgeExpectedText}
+                  >
                     {purgeSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     완전 삭제 실행
                   </AlertDialogAction>
