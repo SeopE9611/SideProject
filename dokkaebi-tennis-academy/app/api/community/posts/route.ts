@@ -6,8 +6,9 @@ import { z } from 'zod';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES, CommunityBoardType, CommunityPost } from '@/lib/types/community';
+import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES, CommunityPost } from '@/lib/types/community';
 import { API_VERSION } from '@/lib/board.repository';
+import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
@@ -94,76 +95,6 @@ const createSchema = z.object({
     .optional(),
 });
 
-const MAX_SEARCH_QUERY_LENGTH = 100;
-
-function escapeRegex(input: string): string {
-  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function parseListQuery(req: NextRequest): {
-  typeParam: CommunityBoardType | null;
-  brand: string | null;
-  sort: 'latest' | 'views' | 'likes' | 'hot';
-  page: number;
-  limit: number;
-  q: string;
-  escapedQ: string;
-  isQueryTooLong: boolean;
-  authorId: string | null;
-  searchType: 'title' | 'author' | 'title_content';
-  category: (typeof COMMUNITY_CATEGORIES)[number] | null;
-} {
-  const url = new URL(req.url);
-
-  // 게시판 타입 필터 (자게/브랜드/중고/사용기)
-  const rawType = url.searchParams.get('type');
-  const typeParam = rawType && (COMMUNITY_BOARD_TYPES as readonly string[]).includes(rawType) ? (rawType as CommunityBoardType) : null;
-
-  // 태그(브랜드) 필터
-  const brand = url.searchParams.get('brand'); // string | null
-
-  // 정렬: 최신 / 조회수 / 추천순 / hot
-  const rawSort = url.searchParams.get('sort');
-  const sortParam: 'latest' | 'views' | 'likes' | 'hot' = rawSort === 'latest' || rawSort === 'views' || rawSort === 'likes' || rawSort === 'hot' ? rawSort : 'latest';
-
-  // 페이지 / 페이지당 개수
-  // Number(...)는 NaN일 때 Math.max가 NaN을 반환할 수 있어 방어 필요
-  const pageRaw = parseInt(url.searchParams.get('page') || '1', 10);
-  const limitRaw = parseInt(url.searchParams.get('limit') || '10', 10);
-  const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
-  const limit = Number.isFinite(limitRaw) ? Math.min(50, Math.max(1, limitRaw)) : 10;
-
-  // 검색어 (기존 q 그대로 사용)
-  const q = (url.searchParams.get('q') || '').toString().trim();
-  const isQueryTooLong = q.length > MAX_SEARCH_QUERY_LENGTH;
-  const escapedQ = escapeRegex(q);
-
-  // 특정 유저 글만 보기 (작성자 ID 필터)
-  const authorId = url.searchParams.get('authorId');
-
-  // 검색 타입: 제목 / 글쓴이 / 제목+내용
-  const rawSearchType = url.searchParams.get('searchType');
-  const searchType: 'title' | 'author' | 'title_content' = rawSearchType === 'title' || rawSearchType === 'author' || rawSearchType === 'title_content' ? rawSearchType : 'title_content'; // 기본값: 제목+내용
-
-  // 카테고리 필터 (자유/정보/질문/노하우/기타)
-  const rawCategory = url.searchParams.get('category');
-  const category = rawCategory && (COMMUNITY_CATEGORIES as readonly string[]).includes(rawCategory) ? (rawCategory as (typeof COMMUNITY_CATEGORIES)[number]) : null;
-
-  return {
-    typeParam,
-    brand,
-    sort: sortParam,
-    page,
-    limit,
-    q,
-    escapedQ,
-    isQueryTooLong,
-    authorId,
-    searchType,
-    category,
-  };
-}
-
 // 커뮤니티 게시글 리스트 조회
 export async function GET(req: NextRequest) {
   const stop = startTimer();
@@ -171,14 +102,14 @@ export async function GET(req: NextRequest) {
   const db = await getDb();
   const col = db.collection('community_posts');
 
-  const { typeParam, brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorId, searchType, category } = parseListQuery(req);
+  const { typeParam, brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorObjectId, searchType, category } = parseCommunityListQuery(req);
 
   if (isQueryTooLong) {
     return NextResponse.json(
       {
         ok: false,
         error: 'query_too_long',
-        message: `검색어는 최대 ${MAX_SEARCH_QUERY_LENGTH}자까지 입력할 수 있습니다.`,
+        message: `검색어는 최대 ${MAX_COMMUNITY_SEARCH_QUERY_LENGTH}자까지 입력할 수 있습니다.`,
       },
       { status: 400 },
     );
@@ -213,32 +144,10 @@ export async function GET(req: NextRequest) {
       filter.$or = [{ title: regex }, { content: regex }];
     }
   }
-  // 정렬 기준
-  let sortOption: any;
-  switch (sort) {
-    case 'views':
-      sortOption = { views: -1, createdAt: -1 };
-      break;
-    case 'likes':
-      sortOption = { likes: -1, createdAt: -1 };
-      break;
-    case 'hot':
-      // 간단한 "인기" 정의: 조회수 > 좋아요 > 댓글 > 최신순
-      sortOption = {
-        views: -1,
-        likes: -1,
-        commentsCount: -1,
-        createdAt: -1,
-      };
-      break;
-    case 'latest':
-    default:
-      sortOption = { createdAt: -1 };
-      break;
-  }
+  const sortOption = getCommunitySortOption(sort);
 
-  if (authorId && ObjectId.isValid(authorId)) {
-    filter.userId = new ObjectId(authorId); // “이 작성자의 글” 필터
+  if (authorObjectId) {
+    filter.userId = authorObjectId; // “이 작성자의 글” 필터
   }
 
   const skip = (page - 1) * limit;
@@ -404,7 +313,7 @@ export async function POST(req: NextRequest) {
     category: body.category ?? 'general',
 
     // 첨부 이미지 URL 배열 (없으면 빈 배열)
-    images: body.images && body.images.length > 0 ? body.images : [],
+    images: Array.isArray(body.images) && body.images.length > 0 ? body.images : [],
 
     // 첨부 파일
     attachments: body.attachments ?? [],
