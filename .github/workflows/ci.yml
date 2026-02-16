@@ -40,36 +40,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          # 캐시 설정을 활성화하여 속도를 유지합니다.
           cache: pnpm
           cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
 
       - name: Install dependencies
-        # frozen-lockfile을 사용하여 의존성을 안정적으로 설치합니다.
         run: pnpm install --frozen-lockfile
 
-      - name: Admin any report gate
-        run: pnpm report:admin-any
-
-      - name: Admin any debt gate
-        run: pnpm check:admin-any-gate
-
-      - name: Admin API boundary gate
-        run: pnpm check:admin-api-boundary
-
+      # pipeline 고정: lint -> typecheck -> build -> contract/e2e(smoke + admin critical)
       - name: Lint
-        # package.json에 설정된 명령어를 실행합니다.
         run: pnpm lint
-        continue-on-error: true
-
-      - name: Guard Next.js PageProps typing
-        run: pnpm check:next-page-props
 
       - name: Typecheck
-        run: pnpm exec tsc -p tsconfig.json
+        run: pnpm typecheck
 
       - name: Build
         run: pnpm build
+
+      - name: Contract tests
+        run: pnpm test:contract
+
       - name: Start server (prod)
         run: |
           pnpm start &
@@ -90,8 +79,11 @@ jobs:
             exit 1
           fi
 
-      - name: Smoke test
-        run: pnpm smoke
+      - name: E2E smoke
+        run: pnpm test:e2e:smoke
+
+      - name: E2E admin critical
+        run: pnpm test:e2e:admin-critical
 
       - name: Stop server
         if: always()
