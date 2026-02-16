@@ -2,6 +2,9 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin.guard';
 import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
+import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
+import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
+import { acquireAdminExecutionLock, releaseAdminExecutionLock } from '@/lib/admin/adminExecutionLock';
 
 export async function POST(req: Request) {
   const origin = req.headers.get('origin') || '';
@@ -10,13 +13,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'forbidden' }, { status: 403 });
   }
 
+  let lockOwner: string | null = null;
+  let lockDb: import('mongodb').Db | null = null;
+
   try {
-    // 관리자 인증(정산 스냅샷 삭제는 민감 작업이므로 관리자만 허용)
     const g = await requireAdmin(req);
     if (!g.ok) return g.res;
-    const db = g.db;
 
-    // Body 파싱 (깨진 JSON 대비)
+    const limited = await enforceAdminRateLimit(req, g.db, String(g.admin._id), ADMIN_EXPENSIVE_ENDPOINT_POLICIES.settlementsMutation);
+    if (limited) return limited;
+
+    const db = g.db;
+    lockDb = db;
+    lockOwner = String(g.admin._id);
+
+    // 대량 삭제는 단일 실행 락으로 겹침 실행을 차단한다.
+    const lock = await acquireAdminExecutionLock({
+      db,
+      lockKey: 'admin.settlements.bulk-delete',
+      owner: lockOwner,
+      ttlMs: 2 * 60 * 1000,
+      meta: { route: '/api/settlements/bulk-delete' },
+    });
+    if (!lock.ok) {
+      return NextResponse.json({ ok: false, error: { code: 'execution_locked', message: '정산 스냅샷 일괄 삭제가 이미 실행 중입니다.' } }, { status: 409 });
+    }
+
     const body = await req.json().catch(() => null);
     const raw = body?.yyyymms;
 
@@ -24,7 +46,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: '삭제할 항목을 선택하세요.' }, { status: 400 });
     }
 
-    // 문자열로 정규화 + YYYYMM만 허용 + 중복 제거
     const yyyymms = Array.from(new Set(raw.map((v: unknown) => String(v ?? '').trim()).filter((v: string) => /^\d{6}$/.test(v))));
     if (yyyymms.length === 0) {
       return NextResponse.json({ success: false, message: '유효한 YYYYMM이 없습니다.' }, { status: 400 });
@@ -51,5 +72,9 @@ export async function POST(req: Request) {
   } catch (e) {
     console.error('[settlements/bulk-delete]', e);
     return NextResponse.json({ message: 'internal_error' }, { status: 500 });
+  } finally {
+    if (lockDb && lockOwner) {
+      await releaseAdminExecutionLock(lockDb, 'admin.settlements.bulk-delete', lockOwner);
+    }
   }
 }

@@ -3,6 +3,8 @@ import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 import { toISO, normalizeOrderStatus, normalizePaymentStatus, normalizeRentalStatus, summarizeOrderItems, pickCustomerFromDoc, normalizeRentalAmountTotal } from '@/lib/admin-ops-normalize';
 import type { AdminOperationFlow as Flow, AdminOperationItem as OpItem, AdminOperationKind as Kind, SettlementAnchor, AdminOperationsListRequestDto, AdminOperationsListResponseDto } from '@/types/admin/operations';
+import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
+import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
 
@@ -213,6 +215,10 @@ export async function handleAdminOperationsGet(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const { db } = guard;
+
+  // 운영 흐름 목록은 대량 merge/sort 조회를 수행하므로 고비용 API로 레이트리밋을 건다.
+  const limited = await enforceAdminRateLimit(req, db, String(guard.admin._id), ADMIN_EXPENSIVE_ENDPOINT_POLICIES.adminOperationsList);
+  if (limited) return limited;
 
   const url = new URL(req.url);
   const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });

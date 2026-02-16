@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { orderPaidAmount, applicationPaidAmount, refundsAmount, isStandaloneStringingApplication, buildPaidMatch, buildRentalPaidMatch, rentalPaidAmount, rentalDepositAmount } from '@/app/api/settlements/_lib/settlementPolicy';
 import { requireAdmin } from '@/lib/admin.guard';
 import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
+import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
+import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
+import { acquireAdminExecutionLock, releaseAdminExecutionLock } from '@/lib/admin/adminExecutionLock';
+
 // 월 시작/끝(KST) → UTC 경계로 변환
 function kstMonthRangeToUtc(yyyymm: string) {
   const y = Number(yyyymm.slice(0, 4));
@@ -26,12 +30,20 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
     return NextResponse.json({ message: 'forbidden' }, { status: 403 });
   }
 
+  let lockKey: string | null = null;
+  let lockOwner: string | null = null;
+  let lockDb: import('mongodb').Db | null = null;
+
   try {
     // 관리자 인증 + DB 획득(정산 스냅샷 생성은 민감 작업)
     const g = await requireAdmin(_req);
     if (!g.ok) return g.res;
-    const db = g.db;
 
+    const limited = await enforceAdminRateLimit(_req, g.db, String(g.admin._id), ADMIN_EXPENSIVE_ENDPOINT_POLICIES.settlementsMutation);
+    if (limited) return limited;
+
+    const db = g.db;
+    lockDb = db;
     const { yyyymm } = await ctx.params;
 
     const createdBy = g.admin.email ?? String(g.admin._id);
@@ -52,22 +64,33 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
       return NextResponse.json({ message: '미래 월 스냅샷은 생성할 수 없습니다.' }, { status: 400 });
     }
 
+    // 장시간 집계 작업은 월 단위 단일 실행 락을 걸어 동시 생성 경쟁을 차단한다.
+    lockOwner = String(g.admin._id);
+    lockKey = `admin.settlements.generate:${yyyymm}`;
+    const lock = await acquireAdminExecutionLock({
+      db,
+      lockKey,
+      owner: lockOwner,
+      ttlMs: 3 * 60 * 1000,
+      meta: { yyyymm, route: '/api/settlements/[yyyymm]' },
+    });
+    if (!lock.ok) {
+      return NextResponse.json({ ok: false, error: { code: 'execution_locked', message: '해당 월 정산 생성 작업이 이미 실행 중입니다.' } }, { status: 409 });
+    }
+
     const { start, end } = kstMonthRangeToUtc(yyyymm);
     const paidMatch = buildPaidMatch(['paymentStatus', 'paymentInfo.status']);
 
-    // 1) 저장값 우선 필드 투영 (orders)
     const orders = await db
       .collection('orders')
       .find({ $and: [{ createdAt: { $gte: start, $lt: end } }, paidMatch] }, { projection: { paymentStatus: 1, paymentInfo: 1, paidAmount: 1, totalPrice: 1, refunds: 1 } })
       .toArray();
 
-    // 2) 저장값 우선 필드 투영 (stringing_applications)
     const apps = await db
       .collection('stringing_applications')
       .find({ $and: [{ createdAt: { $gte: start, $lt: end } }, paidMatch] }, { projection: { paymentStatus: 1, paymentInfo: 1, totalPrice: 1, serviceAmount: 1, orderId: 1, rentalId: 1, refunds: 1 } })
       .toArray();
 
-    // 3) 패키지 주문 조회 (결제완료만, createdAt 기준)
     const packages = await db
       .collection('packageOrders')
       .find(
@@ -78,7 +101,6 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
       )
       .toArray();
 
-    // 대여 조회
     const rentals = await db
       .collection('rental_orders')
       .find(
@@ -89,7 +111,6 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
       )
       .toArray();
 
-    // 연결된 신청서는 중복 정산 방지(주문/대여 쪽이 결제 앵커)
     const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
 
     const paidOrders = orders.reduce((s: number, o: any) => s + orderPaidAmount(o), 0);
@@ -110,16 +131,13 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
       yyyymm,
       totals: { paid, refund, net, rentalDeposit },
       breakdown: { orders: orders.length, applications: standaloneApps.length, packages: packages.length, rentals: rentals.length },
-
-      // 아래 두 필드는 최초 1회만 기록
       createdAt: new Date(),
       createdBy,
-      // 아래 두 필드는 매번 갱신
       lastGeneratedAt: new Date(),
       lastGeneratedBy: createdBy,
     };
 
-    // 멱등
+    // upsert 기반 멱등 저장: 같은 월 재호출 시에도 문서가 한 건으로 유지된다.
     await db.collection('settlements').updateOne(
       { yyyymm },
       {
@@ -154,6 +172,10 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
   } catch (e) {
     console.error('[settlements/:yyyymm]', e);
     return NextResponse.json({ message: 'internal_error' }, { status: 500 });
+  } finally {
+    if (lockDb && lockKey && lockOwner) {
+      await releaseAdminExecutionLock(lockDb, lockKey, lockOwner);
+    }
   }
 }
 
@@ -166,9 +188,12 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ yyyymm: str
   }
 
   try {
-    // 관리자 인증
     const g = await requireAdmin(_req);
     if (!g.ok) return g.res;
+
+    const limited = await enforceAdminRateLimit(_req, g.db, String(g.admin._id), ADMIN_EXPENSIVE_ENDPOINT_POLICIES.settlementsMutation);
+    if (limited) return limited;
+
     const db = g.db;
     const { yyyymm } = await ctx.params;
 
