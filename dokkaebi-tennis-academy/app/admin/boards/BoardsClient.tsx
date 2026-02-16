@@ -37,6 +37,7 @@ type ReportItem = {
   reason: string;
   status: 'pending' | 'resolved' | 'rejected';
   reporterNickname: string;
+  reporterDisplay?: string;
   createdAt: string;
   resolvedAt: string | null;
   post: { id: string | null; title: string; postNo: number | null; status: string } | null;
@@ -497,7 +498,7 @@ export default function BoardsClient() {
 
                                   <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2">
                                     <span>
-                                      신고자: <span className="font-medium">{r.reporterNickname || '-'}</span>
+                                      신고자: <span className="font-medium">{r.reporterDisplay || r.reporterNickname || '-'}</span>
                                     </span>
                                     <span>{fmt(r.createdAt)}</span>
                                   </div>
