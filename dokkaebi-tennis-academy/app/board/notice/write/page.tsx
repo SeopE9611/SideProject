@@ -104,6 +104,8 @@ export default function NoticeWritePage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [conflictError, setConflictError] = useState<string | null>(null);
+  const [clientSeenDate, setClientSeenDate] = useState<string | null>(null);
   const [existingAttachments, setExistingAttachments] = useState<Array<{ url: string; name?: string; size?: number }>>([]);
 
   // (작성 모드) 최초 기본값 스냅샷 세팅
@@ -169,6 +171,7 @@ export default function NoticeWritePage() {
     category?: string | null;
     isPinned?: boolean;
     attachments?: any[];
+    updatedAt?: string | Date;
   };
   type NoticeDetailRes = { item: NoticeDetail };
 
@@ -201,6 +204,7 @@ export default function NoticeWritePage() {
     setIsPinned(!!p.isPinned);
     setCategory(NOTICE_CODE_BY_LABEL[p.category as string] ?? 'general');
     setCategory(code);
+    setClientSeenDate(p.updatedAt ? new Date(p.updatedAt).toISOString() : null);
 
     if (Array.isArray(p.attachments)) {
       setExistingAttachments(p.attachments.map((a: any) => ({ url: String(a.url), name: a.name, size: a.size })));
@@ -391,6 +395,7 @@ export default function NoticeWritePage() {
         category: NOTICE_LABEL_BY_CODE[category] ?? '일반', // 코드 -> 라벨 변환
         attachments,
         ...(removedPaths.length > 0 ? { removedPaths } : {}), // 새 업로드 파일을 올리고 -> 응답을 attachments로 병합해서 서버로 보냄
+        ...(editId && clientSeenDate ? { clientSeenDate } : {}),
       };
 
       const url = editId ? `/api/boards/${editId}` : '/api/boards';
@@ -398,7 +403,10 @@ export default function NoticeWritePage() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(editId && clientSeenDate ? { 'If-Unmodified-Since': clientSeenDate } : {}),
+        },
         credentials: 'include',
         body: JSON.stringify(payload),
       });
@@ -412,9 +420,19 @@ export default function NoticeWritePage() {
       }
       // 응답 파싱 후 성공 검사 통과
       if (!res.ok || !json?.ok) {
+        if (res.status === 409 && json?.error === 'conflict') {
+          const conflictMsg = '다른 사용자 수정 발생: 최신 글을 다시 불러온 뒤 변경 내용을 반영해 주세요.';
+          setConflictError(conflictMsg);
+          showErrorToast(conflictMsg);
+          return;
+        }
+
         const msg = typeof json.error === 'string' ? json.error : JSON.stringify(json.error);
         throw new Error(msg || (editId ? '수정 실패(권한 확인 필요)' : '저장 실패(권한 확인 필요)'));
       }
+      const latestUpdatedAt = res.headers.get('x-updated-at') || json?.item?.updatedAt || null;
+      if (latestUpdatedAt) setClientSeenDate(new Date(latestUpdatedAt).toISOString());
+
       // 편집 상태 리셋
       setSelectedFiles([]);
       setRemovedPaths([]);
@@ -472,6 +490,27 @@ export default function NoticeWritePage() {
           </div>
           {editId && detailError && (
             <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-200">공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)</div>
+          )}
+          {editId && conflictError && (
+            <div className="flex flex-col gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">
+              <p>{conflictError}</p>
+              <div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    if (!editId) return;
+                    await mutate(`/api/boards/${editId}`);
+                    router.refresh();
+                    showSuccessToast('최신 공지 내용을 다시 불러왔습니다.');
+                    setConflictError(null);
+                  }}
+                >
+                  다시 불러오기
+                </Button>
+              </div>
+            </div>
           )}
           <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50 border-b">

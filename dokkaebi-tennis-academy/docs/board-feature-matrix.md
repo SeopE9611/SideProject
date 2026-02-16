@@ -44,3 +44,18 @@
 | `category` | 카테고리 선택 시 전송 (`all`은 미전송) | Community 카테고리 값만 필터 적용 | Community 카테고리 값만 필터 적용 |
 | `brand` | 브랜드 카테고리 + 브랜드 선택 시 전송 | brand exact match 필터 적용 | brand exact match 필터 적용 |
 | `keyword`, `query` | BoardListClient는 미전송(레거시 호환) | `q`가 없을 때 대체 검색어 alias로 허용 | 미허용 |
+
+
+## Boards `PATCH /api/boards/[id]` 충돌 처리 계약
+
+낙관적 동시성 제어를 위해 편집 클라이언트는 마지막으로 조회한 `updatedAt`을 `clientSeenDate`(또는 `If-Unmodified-Since`)로 전달한다.
+
+| 조건 | 상태 코드 | `error` | 의미 |
+|---|---:|---|---|
+| 대상 문서 미존재(삭제 포함) | `404` | `not_found` | 실제로 수정할 문서가 없음 |
+| `clientSeenDate` 전달 + 문서는 존재하지만 `updatedAt` 불일치 | `409` | `conflict` | 다른 사용자가 먼저 수정함 |
+| `clientSeenDate` 미전달 + 업데이트 매칭 실패 | `404` | `not_found` | 레거시 동작 유지 |
+
+클라이언트 UX 기준:
+- `409 conflict` 수신 시: “다른 사용자 수정 발생” 안내 + “다시 불러오기” 액션 제공.
+- `404 not_found` 수신 시: 삭제/이동된 문서로 간주하고 목록 또는 상세 fallback 처리.

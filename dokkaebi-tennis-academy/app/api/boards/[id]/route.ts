@@ -11,6 +11,7 @@ import { API_VERSION } from '@/lib/board.repository';
 import { baseCookie } from '@/lib/cookieOptions';
 import { createHash } from 'crypto';
 import { resolveBoardViewerContext } from '@/lib/board-secret-policy';
+import { classifyBoardPatchFailure } from '@/lib/boards-patch-conflict';
 
 // supabase 상수/핼퍼
 const STORAGE_BUCKET = 'tennis-images';
@@ -370,14 +371,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // === 낙관적 락(updatedAt 매칭) + 재조회 반환 시작 ===
 
-  // 0) 클라이언트가 마지막으로 본 updatedAt(선택) 추출: 헤더 우선, 없으면 바디 필드
+  // 0) 클라이언트가 마지막으로 본 updatedAt(선택) 추출
+  //    - 헤더: If-Unmodified-Since
+  //    - 바디: clientSeenDate (권장), ifUnmodifiedSince (하위 호환)
   const ifUnmodifiedSinceHeader = req.headers.get('if-unmodified-since');
-  const ifUnmodifiedSinceBody = (parsed.data as any)?.ifUnmodifiedSince; // 필요 시 바디로도 허용
-  const ifUnmodifiedSince = (ifUnmodifiedSinceBody ?? ifUnmodifiedSinceHeader) || null;
+  const clientSeenDateBody = (bodyRaw as any)?.clientSeenDate;
+  const ifUnmodifiedSinceBody = (bodyRaw as any)?.ifUnmodifiedSince;
+  const clientSeenAtRaw = clientSeenDateBody ?? ifUnmodifiedSinceBody ?? ifUnmodifiedSinceHeader ?? null;
 
   let clientSeenDate: Date | null = null;
-  if (typeof ifUnmodifiedSince === 'string') {
-    const d = new Date(ifUnmodifiedSince);
+  if (typeof clientSeenAtRaw === 'string') {
+    const d = new Date(clientSeenAtRaw);
     if (!Number.isNaN(d.getTime())) clientSeenDate = d;
   }
 
@@ -407,10 +411,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
 
-  // 4) 여전히 실패면:
-  //    - 클라가 기준시각을 보냈으면 => 409(CONFLICT)
-  //    - 아니면 => 404(기존 로직 유지)
+  // 4) 여전히 실패면: 실제 삭제(not_found)와 동시 수정(conflict) 분기
   if (!r.matchedCount) {
+    const postStillExists = !!(await BoardRepo.findOneById(db, String(post._id)));
+    const failure = classifyBoardPatchFailure({
+      hasClientSeenDate: !!clientSeenDate,
+      postStillExists,
+    });
+
+    if (failure === 'conflict') {
+      logInfo({ msg: 'boards:patch:conflict', status: 409, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
+      return NextResponse.json({ ok: false, version: API_VERSION, error: 'conflict' }, { status: 409 });
+    }
+
     logInfo({ msg: 'boards:patch:not_found_on_update', status: 404, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
     return NextResponse.json({ ok: false, version: API_VERSION, error: 'not_found' }, { status: 404 });
   }
