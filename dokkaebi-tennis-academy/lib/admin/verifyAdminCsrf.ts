@@ -7,6 +7,10 @@ const DEFAULT_DEV_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000'];
 const CSRF_COOKIE_CANDIDATES = ['adminCsrfToken', 'csrfToken'];
 const CSRF_HEADER_CANDIDATES = ['x-admin-csrf-token', 'x-csrf-token'];
 
+function forbiddenResponse(): NextResponse {
+  return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+}
+
 function buildOriginAllowlist(): Set<string> {
   const allowlist = new Set<string>();
 
@@ -64,11 +68,17 @@ function readCsrfTokenFromHeader(req: Request): string {
 
 export function verifyAdminCsrf(req: Request): CsrfOk | CsrfFail {
   const originAllowlist = buildOriginAllowlist();
-  const requestOrigin = req.headers.get('origin')?.trim() ?? '';
+  const requestOriginRaw = req.headers.get('origin')?.trim() ?? '';
+  let requestOrigin = '';
+  try {
+    requestOrigin = requestOriginRaw ? new URL(requestOriginRaw).origin : '';
+  } catch {
+    requestOrigin = '';
+  }
 
   // 관리자 변경 API는 허용된 Origin에서만 실행
   if (!requestOrigin || !originAllowlist.has(requestOrigin)) {
-    return { ok: false, res: NextResponse.json({ message: 'Forbidden' }, { status: 403 }) };
+    return { ok: false, res: forbiddenResponse() };
   }
 
   // 더블 서브밋 쿠키 방식: Header 토큰과 Cookie 토큰이 동일해야 통과
@@ -76,7 +86,7 @@ export function verifyAdminCsrf(req: Request): CsrfOk | CsrfFail {
   const cookieToken = readCsrfTokenFromCookie(req);
 
   if (!headerToken || !cookieToken || headerToken !== cookieToken) {
-    return { ok: false, res: NextResponse.json({ message: 'Forbidden' }, { status: 403 }) };
+    return { ok: false, res: forbiddenResponse() };
   }
 
   return { ok: true };

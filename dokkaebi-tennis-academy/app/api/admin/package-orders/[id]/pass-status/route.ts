@@ -6,6 +6,8 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import jwt from 'jsonwebtoken';
 import type { PackageOrder } from '@/lib/types/package-order';
 import type { ServicePass } from '@/lib/types/pass';
+import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 
 function safeVerifyAccessToken(token?: string | null) {
@@ -31,6 +33,14 @@ type PassHistoryItem = {
 // POST /api/admin/package-orders/:id/pass-status
 // body: { status: 'active' | 'paused' | 'cancelled', reason?: string }
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  // 관리자 인증/인가 표준 가드
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+
+  // Origin allowlist + double-submit 토큰 기반 CSRF 검증
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
+
   try {
   const { id } = await params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ error: 'invalid id' }, { status: 400 });
