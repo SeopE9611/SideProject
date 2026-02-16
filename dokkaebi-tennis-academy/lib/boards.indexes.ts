@@ -24,6 +24,12 @@ async function ensureIndex(db: Db, collectionName: string, keys: Keys, options: 
 }
 
 export async function ensureBoardIndexes(db: Db) {
+  // 커뮤니티 조회수 디듀프 TTL (30분~24시간 범위로 안전하게 제한)
+  const communityViewDedupeTtlRaw = Number(process.env.COMMUNITY_VIEW_DEDUPE_TTL_SECONDS ?? 60 * 30);
+  const communityViewDedupeTtl = Number.isFinite(communityViewDedupeTtlRaw)
+    ? Math.max(60 * 30, Math.min(60 * 60 * 24, Math.floor(communityViewDedupeTtlRaw)))
+    : 60 * 30;
+
   // 기본 조회 패턴: 타입/상태별 최신
   await ensureIndex(db, 'board_posts', { type: 1, status: 1, createdAt: -1 }, { name: 'idx_board_type_status_created' });
   // 공지 상단 고정 + 최신
@@ -45,4 +51,26 @@ export async function ensureBoardIndexes(db: Db) {
 
   // 커뮤니티 좋아요 중복 방지 (postId + userId 1회)
   await ensureIndex(db, 'community_likes', { postId: 1, userId: 1 }, { name: 'community_likes_post_user_unique', unique: true });
+
+  // 커뮤니티 조회수 중복 방지 (postId + viewerKey 1회, TTL 이후 재집계 허용)
+  await ensureIndex(db, 'community_post_view_dedupe', { postId: 1, viewerKey: 1 }, { name: 'community_post_view_dedupe_unique', unique: true });
+  await ensureIndex(db, 'community_post_view_dedupe', { expireAt: 1 }, { name: 'community_post_view_dedupe_expire_at_ttl', expireAfterSeconds: 0 });
+
+  // 기존 createdAt 기반 TTL 인덱스와 달리 expireAt 절대시각을 사용하면 TTL 변경을 즉시 반영하기 쉽다.
+  await db.collection('community_post_view_dedupe').updateMany(
+    { expireAt: { $exists: false } },
+    [
+      {
+        $set: {
+          expireAt: {
+            $dateAdd: {
+              startDate: '$createdAt',
+              unit: 'second',
+              amount: communityViewDedupeTtl,
+            },
+          },
+        },
+      },
+    ],
+  );
 }
