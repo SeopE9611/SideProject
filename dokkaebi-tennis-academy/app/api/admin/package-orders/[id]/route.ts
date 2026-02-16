@@ -7,6 +7,8 @@ import { issuePassesForPaidPackageOrder } from '@/lib/passes.service';
 import type { PackageOrder } from '@/lib/types/package-order';
 import jwt from 'jsonwebtoken';
 import { ServicePass } from '@/lib/types/pass';
+import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 //* 테스트 데이터 */
 // 원하는 만료일로 직접 설정
@@ -33,6 +35,14 @@ function safeVerifyAccessToken(token?: string | null) {
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  // 관리자 인증/인가 표준 가드
+  const guard = await requireAdmin(request);
+  if (!guard.ok) return guard.res;
+
+  // Origin allowlist + double-submit 토큰 기반 CSRF 검증
+  const csrf = verifyAdminCsrf(request);
+  if (!csrf.ok) return csrf.res;
+
   try {
   const { id } = await params;
     if (!ObjectId.isValid(String(id))) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
