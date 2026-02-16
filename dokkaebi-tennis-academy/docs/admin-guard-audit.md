@@ -6,10 +6,11 @@
 
 - 관리자 전용 패키지 주문 API의 실제 구현은 `app/api/admin/package-orders/**`로 수렴.
 - 기존 비-admin 경로(`app/api/package-orders/**`)는 **307 Temporary Redirect + Deprecation 헤더** 정책으로 유지.
-- `scripts/check-admin-api-boundary.mjs`에서 아래 3개 레거시 변경성 경로가 구현 로직으로 잔존하지 않는지 검사.
+- `scripts/check-admin-api-boundary.mjs`에서 아래 4개 레거시 변경성 경로가 구현 로직으로 잔존하지 않는지 검사.
   - `app/api/package-orders/[id]/route.ts`
   - `app/api/package-orders/[id]/extend/route.ts`
   - `app/api/package-orders/[id]/adjust-sessions/route.ts`
+  - `app/api/package-orders/[id]/pass-status/route.ts`
 
 ## 관리자 전용 작업 API 호출 경로 목록 (`app/admin/**` fetch 기준)
 
@@ -27,16 +28,18 @@
 - 패키지 주문 상태 변경: `PATCH /api/admin/package-orders/:id`
 - 패키지 만료 연장: `POST /api/admin/package-orders/:id/extend`
 - 패키지 잔여 횟수 조정: `POST /api/admin/package-orders/:id/adjust-sessions`
+- 패스 상태 변경: `POST /api/admin/package-orders/:id/pass-status`
 
 ## Legacy 비-admin 경로 정책 (적용)
 
 - 정책: **307 Temporary Redirect** (메서드/바디 보존)
 - 대상:
-  - `GET /api/package-orders` → `/api/admin/package-orders`
-  - `GET /api/package-orders/:id` → `/api/admin/package-orders/:id`
-  - `PATCH /api/package-orders/:id` → `/api/admin/package-orders/:id`
-  - `POST /api/package-orders/:id/extend` → `/api/admin/package-orders/:id/extend`
-  - `POST /api/package-orders/:id/adjust-sessions` → `/api/admin/package-orders/:id/adjust-sessions`
+  - `GET /api/package-orders` → `/api/admin/package-orders` (`app/api/package-orders/route.ts`)
+  - `GET /api/package-orders/:id` → `/api/admin/package-orders/:id` (`app/api/package-orders/[id]/route.ts`)
+  - `PATCH /api/package-orders/:id` → `/api/admin/package-orders/:id` (`app/api/package-orders/[id]/route.ts`)
+  - `POST /api/package-orders/:id/extend` → `/api/admin/package-orders/:id/extend` (`app/api/package-orders/[id]/extend/route.ts`)
+  - `POST /api/package-orders/:id/adjust-sessions` → `/api/admin/package-orders/:id/adjust-sessions` (`app/api/package-orders/[id]/adjust-sessions/route.ts`)
+  - `POST /api/package-orders/:id/pass-status` → `/api/admin/package-orders/:id/pass-status` (`app/api/package-orders/[id]/pass-status/route.ts`)
 - 공통 헤더: `Deprecation: true`, `Sunset`, `Link: rel="successor-version"`
 
 ## 관리자 기능 네임스페이스 외부 잔존 점검 체크리스트

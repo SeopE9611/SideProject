@@ -30,7 +30,7 @@ export default function PackagePassStatusSelect({ orderId, currentKo, onUpdated,
     setSaving(true);
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/package-orders/${orderId}/pass-status`, {
+        const res = await fetch(`/api/admin/package-orders/${orderId}/pass-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',

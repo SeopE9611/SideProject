@@ -4,6 +4,7 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const TARGET_DIR = path.join(ROOT, 'app', 'admin');
+const LEGACY_API_DIR = path.join(ROOT, 'app', 'api', 'package-orders');
 const ALLOWED_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']);
 const API_PATTERN = /['"`]\/api\/(?!admin\b)/g;
 const MUTATION_EXPORT_PATTERN = /export\s+async\s+function\s+(POST|PATCH|PUT|DELETE)\s*\(/g;
@@ -16,7 +17,16 @@ const LEGACY_ADMIN_MUTATION_ROUTES = [
   'app/api/package-orders/[id]/route.ts',
   'app/api/package-orders/[id]/extend/route.ts',
   'app/api/package-orders/[id]/adjust-sessions/route.ts',
+  'app/api/package-orders/[id]/pass-status/route.ts',
 ];
+
+const LEGACY_ALLOWED_WRAPPERS = new Map([
+  ['app/api/package-orders/route.ts', new Set(['GET'])],
+  ['app/api/package-orders/[id]/route.ts', new Set(['GET', 'PATCH'])],
+  ['app/api/package-orders/[id]/extend/route.ts', new Set(['POST'])],
+  ['app/api/package-orders/[id]/adjust-sessions/route.ts', new Set(['POST'])],
+  ['app/api/package-orders/[id]/pass-status/route.ts', new Set(['POST'])],
+]);
 
 function isDeprecationWrapper(source) {
   return source.includes('NextResponse.redirect(') && (source.includes('307') || source.includes('410'));
@@ -87,6 +97,49 @@ function findLegacyMutationViolations() {
   return violations;
 }
 
+function findLegacyWrapperBoundaryViolations() {
+  if (!fs.existsSync(LEGACY_API_DIR)) return [];
+
+  const files = walk(LEGACY_API_DIR);
+  const violations = [];
+
+  for (const fullPath of files) {
+    const relativePath = path.relative(ROOT, fullPath).replace(/\\/g, '/');
+    const source = fs.readFileSync(fullPath, 'utf8');
+    const exportedHandlers = [...source.matchAll(/export\s+async\s+function\s+([A-Z]+)\s*\(/g)].map((m) => m[1]);
+    const hasEndpointHandler = exportedHandlers.length > 0;
+
+    if (!hasEndpointHandler) continue;
+
+    const allowedHandlers = LEGACY_ALLOWED_WRAPPERS.get(relativePath);
+    if (!allowedHandlers) {
+      violations.push({
+        file: relativePath,
+        reason: '허용 목록에 없는 legacy 비-admin API 라우트입니다. 신규 구현 대신 307/410 이관 정책 문서화를 먼저 수행하세요.',
+      });
+      continue;
+    }
+
+    if (!isDeprecationWrapper(source)) {
+      violations.push({
+        file: relativePath,
+        reason: 'legacy 비-admin 라우트는 307/410 이관 정책 래퍼여야 합니다.',
+      });
+      continue;
+    }
+
+    for (const method of exportedHandlers) {
+      if (allowedHandlers.has(method)) continue;
+      violations.push({
+        file: relativePath,
+        reason: `허용되지 않은 HTTP 메서드(${method})가 선언되어 있습니다. 허용 메서드: ${[...allowedHandlers].join(', ')}`,
+      });
+    }
+  }
+
+  return violations;
+}
+
 try {
   if (!fs.existsSync(TARGET_DIR)) {
     console.log('✅ app/admin 디렉터리가 없어 검사할 항목이 없습니다.');
@@ -96,8 +149,9 @@ try {
   const files = walk(TARGET_DIR);
   const allViolations = files.flatMap(findViolations);
   const legacyMutationViolations = findLegacyMutationViolations();
+  const legacyWrapperBoundaryViolations = findLegacyWrapperBoundaryViolations();
 
-  if (allViolations.length === 0 && legacyMutationViolations.length === 0) {
+  if (allViolations.length === 0 && legacyMutationViolations.length === 0 && legacyWrapperBoundaryViolations.length === 0) {
     console.log('✅ app/admin 비-admin API 호출이 없고, 관리자 변경성 비-admin 경로 잔존도 없습니다.');
     process.exit(0);
   }
@@ -113,6 +167,13 @@ try {
     console.error('❌ 관리자 변경성 엔드포인트의 비-admin 경로 잔존이 감지되었습니다.');
   }
   for (const v of legacyMutationViolations) {
+    console.error(`${v.file}: ${v.reason}`);
+  }
+
+  if (legacyWrapperBoundaryViolations.length > 0) {
+    console.error('❌ legacy 비-admin API 경계 정책 위반이 감지되었습니다.');
+  }
+  for (const v of legacyWrapperBoundaryViolations) {
     console.error(`${v.file}: ${v.reason}`);
   }
 

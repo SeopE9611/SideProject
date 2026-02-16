@@ -10,6 +10,7 @@
 - `app/api/admin/package-orders/[id]/route.ts`: **패키지 주문 단건 조회/상태 변경 관리자 API**.
 - `app/api/admin/package-orders/[id]/extend/route.ts`: **패키지 만료 연장 관리자 API**.
 - `app/api/admin/package-orders/[id]/adjust-sessions/route.ts`: **패키지 횟수 조정 관리자 API**.
+- `app/api/admin/package-orders/[id]/pass-status/route.ts`: **패스 상태 변경 관리자 API**.
 - `types/admin/operations.ts`: **domain type definition only**.
 - `app/admin/users/_hooks/*`: **data fetching only**.
 - `app/admin/users/_components/*`: **UI only**.
@@ -39,6 +40,7 @@
 - `PATCH /api/admin/package-orders/:id`
 - `POST /api/admin/package-orders/:id/extend`
 - `POST /api/admin/package-orders/:id/adjust-sessions`
+- `POST /api/admin/package-orders/:id/pass-status`
 - `POST /api/admin/products`
 - `PUT /api/admin/products/:id`
 - `DELETE /api/admin/products/:id`
@@ -48,11 +50,13 @@
 - `POST /api/admin/settlements/bulk-delete`
 
 ### 레거시 비-admin 허용 범위 (이관 정책 래퍼 전용)
-- `GET /api/package-orders` → 307
-- `GET /api/package-orders/:id` → 307
-- `PATCH /api/package-orders/:id` → 307
-- `POST /api/package-orders/:id/extend` → 307
-- `POST /api/package-orders/:id/adjust-sessions` → 307
+- `GET /api/package-orders` → 307 (`app/api/package-orders/route.ts`)
+- `GET /api/package-orders/:id` → 307 (`app/api/package-orders/[id]/route.ts`)
+- `PATCH /api/package-orders/:id` → 307 (`app/api/package-orders/[id]/route.ts`)
+- `POST /api/package-orders/:id/extend` → 307 (`app/api/package-orders/[id]/extend/route.ts`)
+- `POST /api/package-orders/:id/adjust-sessions` → 307 (`app/api/package-orders/[id]/adjust-sessions/route.ts`)
+- `POST /api/package-orders/:id/pass-status` → 307 (`app/api/package-orders/[id]/pass-status/route.ts`)
+- 위 경로는 `scripts/check-admin-api-boundary.mjs`의 legacy 래퍼 허용 목록과 반드시 동일해야 한다.
 
 ## 관리자 API 클라이언트 사용 규약
 - 조회 요청은 **SWR + `adminFetcher`** 조합을 기본으로 사용한다.
