@@ -10,6 +10,8 @@ type PostDoc = {
   nickname?: string;
   status?: string; // 'public' | 'hidden'
   createdAt?: Date;
+  views?: number;
+  likes?: number;
   viewCount?: number;
   likeCount?: number;
   commentsCount?: number;
@@ -55,8 +57,8 @@ export async function GET(req: NextRequest) {
 
   const sortMap: Record<string, any> = {
     createdAt: { createdAt: dir },
-    views: { viewCount: dir },
-    likes: { likeCount: dir },
+    views: { views: dir, viewCount: dir },
+    likes: { likes: dir, likeCount: dir },
     comments: { commentsCount: dir },
   };
   const sortSpec = sortMap[sortKey] ?? { createdAt: -1 };
@@ -74,6 +76,8 @@ export async function GET(req: NextRequest) {
           nickname: 1,
           status: 1,
           createdAt: 1,
+          views: 1,
+          likes: 1,
           viewCount: 1,
           likeCount: 1,
           commentsCount: 1,
@@ -87,18 +91,26 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    items: items.map((d) => ({
-      id: String(d._id),
-      type: d.type,
-      postNo: d.postNo ?? null,
-      title: d.title,
-      nickname: d.nickname ?? '',
-      status: d.status ?? 'public',
-      createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
-      viewCount: d.viewCount ?? 0,
-      likeCount: d.likeCount ?? 0,
-      commentsCount: d.commentsCount ?? 0,
-    })),
+    items: items.map((d) => {
+      const views = d.views ?? d.viewCount ?? 0;
+      const likes = d.likes ?? d.likeCount ?? 0;
+
+      return {
+        id: String(d._id),
+        type: d.type,
+        postNo: d.postNo ?? null,
+        title: d.title,
+        nickname: d.nickname ?? '',
+        status: d.status ?? 'public',
+        createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
+        views,
+        likes,
+        // TODO(community-admin-api): 하위 호환 alias. 클라이언트 전환 완료 이후 제거.
+        viewCount: views,
+        likeCount: likes,
+        commentsCount: d.commentsCount ?? 0,
+      };
+    }),
     total,
     page,
     limit,

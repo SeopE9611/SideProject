@@ -23,8 +23,10 @@ type PostItem = {
   nickname: string;
   status: 'public' | 'hidden';
   createdAt: string;
-  viewCount: number;
-  likeCount: number;
+  views: number;
+  likes: number;
+  viewCount?: number;
+  likeCount?: number;
   commentsCount: number;
 };
 
@@ -113,7 +115,16 @@ export default function BoardsClient() {
 
   const { data: reportsData, error: reportsErr, isLoading: reportsLoading, mutate: mutateReports } = useSWR(tab === 'reports' ? reportsUrl : null, fetcher);
 
-  const posts: PostItem[] = postsData?.items ?? [];
+  const posts: PostItem[] = (postsData?.items ?? []).map((item: any) => {
+    const views = Number(item?.views ?? item?.viewCount ?? 0);
+    const likes = Number(item?.likes ?? item?.likeCount ?? 0);
+
+    return {
+      ...item,
+      views: Number.isFinite(views) ? views : 0,
+      likes: Number.isFinite(likes) ? likes : 0,
+    } as PostItem;
+  });
   const postsTotal: number = postsData?.total ?? 0;
   const postsTotalPages = Math.max(1, Math.ceil(postsTotal / LIMIT));
 
@@ -325,11 +336,11 @@ export default function BoardsClient() {
                               <div className="flex items-center gap-4 text-sm">
                                 <div className="flex items-center gap-1.5">
                                   <BarChart3 className="h-4 w-4 text-blue-500" />
-                                  <span className="font-medium">{p.viewCount}</span>
+                                  <span className="font-medium">{p.views}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                   <ThumbsUp className="h-4 w-4 text-emerald-500" />
-                                  <span className="font-medium">{p.likeCount}</span>
+                                  <span className="font-medium">{p.likes}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                   <MessageSquare className="h-4 w-4 text-violet-500" />
