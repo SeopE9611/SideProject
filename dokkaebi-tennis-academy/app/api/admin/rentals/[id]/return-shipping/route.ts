@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -44,6 +45,8 @@ function parseShippedAt(input?: unknown): { ok: true; value: Date } | { ok: fals
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
   // 파라미터/바디 검증
   const { id } = await params;

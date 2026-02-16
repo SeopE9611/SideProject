@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { ObjectId } from 'mongodb';
 
 /**
@@ -12,6 +13,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   // 관리자 권한 체크
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
   const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, message: '잘못된 ID' }, { status: 400 });

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { normalizeStringPattern, RACKET_BRANDS } from '@/lib/constants';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +45,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
   const db = (await clientPromise).db();
   let body: any;
   try {

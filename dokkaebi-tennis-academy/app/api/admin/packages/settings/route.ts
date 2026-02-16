@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { DEFAULT_GENERAL_SETTINGS, type GeneralSettings, type PackageConfig } from '@/lib/package-settings';
 import { loadPackageSettings, savePackageSettings } from '@/app/features/packages/api/db';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,8 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
   // 잘못된 JSON은 500이 아니라 400으로 정리
   let body: any;

@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { appendAudit } from '@/lib/audit';
 
 // 임시 비밀번호 생성 (영문대/소 + 숫자 조합, 반드시 각 그룹 1자 이상 포함)
@@ -27,6 +28,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     // 공용 가드 사용
     const guard = await requireAdmin(req);
     if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
     const { db, admin } = guard;
     const { id } = await ctx.params;
     if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });

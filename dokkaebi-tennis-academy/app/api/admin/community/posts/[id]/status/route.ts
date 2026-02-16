@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 const ALLOWED = new Set(['public', 'hidden']);
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
   const { db } = guard;
 
   const { id } = await context.params;

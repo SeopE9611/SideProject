@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin.guard';
+import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 export async function DELETE(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
 
   try {
     const db = guard.db;
