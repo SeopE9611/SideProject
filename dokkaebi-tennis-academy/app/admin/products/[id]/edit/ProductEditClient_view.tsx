@@ -32,6 +32,15 @@ import { brands, colors, gauges, materials } from '@/app/admin/products/_lib/pro
 import { createSearchKeywords } from './hooks/useKeywordGenerator';
 import { fetchProductDetail } from './actions/productActions';
 import { parseSearchKeywordsInput } from './table/productTableUtils';
+import {
+  MAX_PRODUCT_IMAGE_COUNT,
+  buildProductEditInitialSnapshot,
+  buildProductEditSnapshot,
+  normalizeHybridState,
+  removeImageByIndex,
+  reorderMainImage,
+  sanitizeUploadFileName,
+} from './utils/productEditTransforms';
 
 export default function ProductEditClient({ productId }: { productId: string }) {
   // 기본 정보
@@ -136,24 +145,9 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     // 검색 키워드 초기값
     setSearchKeywordsInput(Array.isArray(p.searchKeywords) ? p.searchKeywords.join(', ') : '');
 
-    // 하이브리드 스펙 있으면 state에 주입
-    const h = p?.specifications?.hybrid;
-    if (h) {
-      setHybridMain({
-        brand: h.main?.brand ?? '',
-        name: h.main?.name ?? '',
-        gauge: h.main?.gauge ?? '',
-        color: h.main?.color ?? '',
-        role: 'mains',
-      });
-      setHybridCross({
-        brand: h.cross?.brand ?? '',
-        name: h.cross?.name ?? '',
-        gauge: h.cross?.gauge ?? '',
-        color: h.cross?.color ?? '',
-        role: 'cross',
-      });
-    }
+    const hybridState = normalizeHybridState(p);
+    setHybridMain(hybridState.hybridMain);
+    setHybridCross(hybridState.hybridCross);
     setFeatures(p.features);
     setTags(p.tags);
     setInventory({
@@ -170,72 +164,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     setAdditionalFeatures(p.additionalFeatures);
     setImages(p.images);
     setMainImageIndex(0);
-     if (baselineRef.current === null) {
-      baselineRef.current = JSON.stringify({
-        basicInfo: {
-          name: p.name,
-          sku: p.sku,
-          shortDescription: p.shortDescription,
-          description: p.description,
-          brand: p.brand,
-          material: p.material,
-          gauge: p.gauge,
-          color: p.color,
-          length: p.length,
-          price: p.price,
-          mountingFee: p.mountingFee,
-        },
-        features: p.features,
-        tags: p.tags,
-        inventory: {
-          stock: p.inventory.stock,
-          lowStock: p.inventory.lowStock,
-          status: p.inventory.status,
-          manageStock: p.inventory.manageStock,
-          allowBackorder: p.inventory.allowBackorder,
-          isFeatured: p.inventory.isFeatured,
-          isNew: p.inventory.isNew,
-          isSale: p.inventory.isSale,
-          salePrice: p.inventory.salePrice,
-        },
-        searchKeywordsInput: Array.isArray(p.searchKeywords) ? p.searchKeywords.join(', ') : '',
-        additionalFeatures: p.additionalFeatures,
-        images: p.images,
-        hybridMain: p?.specifications?.hybrid
-          ? {
-              brand: p.specifications.hybrid.main?.brand ?? '',
-              name: p.specifications.hybrid.main?.name ?? '',
-              gauge: p.specifications.hybrid.main?.gauge ?? '',
-              color: p.specifications.hybrid.main?.color ?? '',
-              role: 'mains',
-            }
-          : { brand: '', name: '', gauge: '', color: '', role: 'mains' },
-        hybridCross: p?.specifications?.hybrid
-          ? {
-              brand: p.specifications.hybrid.cross?.brand ?? '',
-              name: p.specifications.hybrid.cross?.name ?? '',
-              gauge: p.specifications.hybrid.cross?.gauge ?? '',
-              color: p.specifications.hybrid.cross?.color ?? '',
-              role: 'cross',
-            }
-          : { brand: '', name: '', gauge: '', color: '', role: 'cross' },
-      });
+    if (baselineRef.current === null) {
+      baselineRef.current = buildProductEditInitialSnapshot(p);
     }
   }, [data]);
 
-  // 이미지 추가 핸들러
-  const sanitizeFileName = (file: File) => {
-    const timestamp = Date.now();
-    const extension = file.name.split('.').pop();
-    const base = file.name
-      .replace(/\.[^/.]+$/, '') // 확장자 제거
-      .replace(/[^a-zA-Z0-9_-]/g, ''); // 특수문자 제거
-
-    return `${timestamp}-${base}.${extension}`;
-  };
-
-  const MAX_IMAGE_COUNT = 4; // 최대 업로드 가능한 이미지 수 제한
-  const isMaxReached = images.length >= MAX_IMAGE_COUNT; // 최대 이미지 수 도달 여부
+  const isMaxReached = images.length >= MAX_PRODUCT_IMAGE_COUNT; // 최대 이미지 수 도달 여부
 
   // 이미지 업로드 핸들러
   const handleAddImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,18 +177,18 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     if (!files || files.length === 0) return;
 
     const totalSelected = files.length;
-    const availableSlots = MAX_IMAGE_COUNT - images.length;
+    const availableSlots = MAX_PRODUCT_IMAGE_COUNT - images.length;
 
     if (totalSelected > availableSlots) {
       e.target.value = '';
-      showErrorToast(`최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
+      showErrorToast(`최대 ${MAX_PRODUCT_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
     }
 
     const filesToUpload = Array.from(files).slice(0, availableSlots);
     setUploading(true);
 
     for (const file of filesToUpload) {
-      const fileName = sanitizeFileName(file);
+      const fileName = sanitizeUploadFileName(file.name);
       const { error } = await supabase.storage.from('tennis-images').upload(fileName, file);
       if (error) {
         // 업로드 실패 시에도 다음 파일은 계속 시도(일괄 업로드 UX)
@@ -303,26 +237,19 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
   // 대표이미지 설정 핸들러
   const handleSetMainImage = (index: number) => {
-    if (index === 0) return; // 이미 대표면 무시
-
-    const selected = images[index];
-    const remaining = images.filter((_, i) => i !== index);
-
-    setImages([selected, ...remaining]);
+    setImages((prev) => reorderMainImage(prev, index));
   };
 
   // 이미지 삭제 핸들러
   const handleRemoveImage = (index: number) => {
-    const newImages = [...images];
-    newImages.splice(index, 1);
-    setImages(newImages);
+    setImages((prev) => removeImageByIndex(prev, index));
   };
 
   const router = useRouter(); // 페이지 이동을 위한 라우터
 
-   const snapshot = useMemo(
+  const snapshot = useMemo(
     () =>
-      JSON.stringify({
+      buildProductEditSnapshot({
         basicInfo,
         features,
         tags,
