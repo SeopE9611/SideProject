@@ -7,6 +7,10 @@ const report = JSON.parse(execSync('node scripts/report-admin-any-count.mjs', { 
 const STRICT_P0_FILES = [
   'app/api/admin/dashboard/metrics/_core/getDashboardMetrics.ts',
   'app/api/admin/operations/route.ts',
+  'app/api/admin/operations/lib/operationsGetHandler.ts',
+  'app/api/admin/products/route.ts',
+  'app/api/admin/products/[id]/route.ts',
+  'lib/admin.guard.ts',
 ];
 
 const errors = [];

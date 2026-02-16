@@ -48,6 +48,9 @@ jobs:
         # frozen-lockfile을 사용하여 의존성을 안정적으로 설치합니다.
         run: pnpm install --frozen-lockfile
 
+      - name: Admin any report gate
+        run: pnpm report:admin-any
+
       - name: Admin any debt gate
         run: pnpm check:admin-any-gate
 

@@ -61,19 +61,16 @@
 
 ---
 
-## 5) 주간 목표 및 완료 기준
+## 5) 주간 KPI 및 완료 기준
 
-### 주간 목표 (권장)
-- **주차별 `any` 총량 -20%** (기준: 직전 주 스냅샷)
-- P0는 총량보다 강하게 관리: **매주 최소 -30%**
-
-### 수치 예시 (현 기준 191건)
-- 1주차 목표: 191 → 153 이하
-- 2주차 목표: 153 → 122 이하
-- 3주차 목표: 122 → 97 이하
-- 4주차 목표: 97 → 77 이하
+### 주간 KPI (고정)
+- **P0(any) 0건 유지**: `app/api/admin/operations/lib/operationsGetHandler.ts`, `app/api/admin/products/*.ts`, `lib/admin.guard.ts`는 항상 0건.
+- **전체 any 순증 0건 유지**: 주간 스냅샷 대비 전체 `any`가 절대 증가하지 않아야 함.
+- **측정 명령 고정**
+  - `pnpm report:admin-any` 결과를 주간 리포트 원본으로 사용.
+  - `pnpm check:admin-any-gate`를 PR/merge 필수 게이트로 사용.
 
 ### 완료 기준 (Definition of Done)
-1. **핵심 API(P0) `any` 0건**
-2. 신규 PR에서 `any` 순증 0건 유지 (게이트 통과)
-3. 진입점 파싱 규칙(`unknown + parser`) 위반 0건
+1. **핵심 API(P0) `any` 0건 유지**
+2. **신규 PR에서 전체 `any` 순증 0건 유지 (게이트 통과)**
+3. **진입점 파싱 규칙(`unknown + parser`) 위반 0건**
