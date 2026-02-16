@@ -12,6 +12,7 @@ import { baseCookie } from '@/lib/cookieOptions';
 import { createHash } from 'crypto';
 import { resolveBoardViewerContext } from '@/lib/board-secret-policy';
 import { classifyBoardPatchFailure } from '@/lib/boards-patch-conflict';
+import { requireAdmin } from '@/lib/admin.guard';
 
 // supabase 상수/핼퍼
 const STORAGE_BUCKET = 'tennis-images';
@@ -77,12 +78,6 @@ function isLikelySameOriginRequest(req: NextRequest) {
   return false;
 }
 
-async function mustAdmin() {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(token);
-  return payload?.role === 'admin' ? payload : null;
-}
-
 // QnA 카테고리 라벨/코드
 const QNA_CATEGORY_LABELS = ['상품문의', '주문/결제', '배송', '환불/교환', '서비스', '아카데미', '회원', '일반문의'] as const;
 const QNA_CATEGORY_CODES = ['product', 'order', 'delivery', 'refund', 'service', 'academy', 'member', 'general'] as const;
@@ -128,9 +123,8 @@ const updateSchema = z.object({
     .optional(),
 });
 
-function canEdit(payload: any, post: any) {
-  const isAdmin = payload?.role === 'admin';
-  const isOwner = String(payload?.sub || '') === String(post.authorId || '');
+function canEdit({ viewerId, isAdmin }: { viewerId?: string | null; isAdmin: boolean }, post: any) {
+  const isOwner = String(viewerId || '') === String(post.authorId || '');
   return isAdmin || isOwner;
 }
 
@@ -237,7 +231,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     // 로그인 자체가 없으면 -> 401 (로그인 유도 UX)
     if (!payload) {
       logInfo({ msg: 'boards:get:unauthorized_secret', status: 401, docId: id, durationMs: stop(), ...meta });
-      return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ ok: false, version: API_VERSION, error: { code: 'unauthorized', message: 'Unauthorized' } }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
     }
     // 로그인은 했지만 작성자/관리자가 아니면 -> 403
     if (!isAdmin && !isOwner) {
@@ -249,7 +243,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         durationMs: stop(),
         ...meta,
       });
-      return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ ok: false, version: API_VERSION, error: { code: 'forbidden', message: 'Forbidden' } }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
     }
   }
 
@@ -269,7 +263,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const payload = safeVerifyAccessToken(token);
   if (!payload) {
     logInfo({ msg: 'boards:patch:unauthorized', status: 401, docId: id, durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: { code: 'unauthorized', message: 'Unauthorized' } }, { status: 401 });
   }
 
   const post = await BoardRepo.findOneById(db, id);
@@ -277,9 +271,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     logInfo({ msg: 'boards:patch:not_found', status: 404, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
     return NextResponse.json({ ok: false, version: API_VERSION, error: 'not_found' }, { status: 404 });
   }
-  if (!canEdit(payload, post)) {
+  const isOwner = String(payload?.sub || '') === String(post.authorId || '');
+  let isAdmin = false;
+  if (!isOwner) {
+    const guard = await requireAdmin(req);
+    if (!guard.ok) {
+      logInfo({ msg: 'boards:patch:forbidden', status: guard.res.status, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
+      return guard.res;
+    }
+    isAdmin = true;
+  }
+
+  if (!canEdit({ viewerId: String(payload?.sub || ''), isAdmin }, post)) {
     logInfo({ msg: 'boards:patch:forbidden', status: 403, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: { code: 'forbidden', message: 'Forbidden' } }, { status: 403 });
   }
 
   let bodyRaw: unknown;
@@ -457,7 +462,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const payload = safeVerifyAccessToken(token);
   if (!payload) {
     logInfo({ msg: 'boards:delete:unauthorized', status: 401, docId: id, durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ ok: false, version: API_VERSION, error: { code: 'unauthorized', message: 'Unauthorized' } }, { status: 401 });
   }
 
   const post = await BoardRepo.findOneById(db, id);
@@ -465,9 +470,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     logInfo({ msg: 'boards:delete:not_found', status: 404, docId: id, userId: String(payload.sub), durationMs: stop(), ...meta });
     return NextResponse.json({ ok: false, version: API_VERSION, error: 'not_found' }, { status: 404 });
   }
-  const isAdmin = payload.role === 'admin';
   const isOwner = String(payload.sub) === String(post.authorId);
-  if (!isAdmin && !isOwner) return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403 });
+  if (!isOwner) {
+    const guard = await requireAdmin(req);
+    if (!guard.ok) return guard.res;
+  }
 
   // 첨부가 있으면 스토리지에서 먼저 삭제
   if (Array.isArray(post.attachments) && post.attachments.length > 0) {

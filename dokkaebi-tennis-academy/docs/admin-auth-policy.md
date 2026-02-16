@@ -11,7 +11,8 @@
 
 - 관리자 API(`app/api/admin/**/route.ts`)는 각 핸들러 시작부에서 `lib/admin.guard.ts`의 `requireAdmin(req)`를 호출한다.
 - `role`, `sub` 등 관리자 식별 필드는 라우트에서 직접 해석하지 않고 `requireAdmin` 내부에서만 검증한다.
-- 라우트의 비즈니스 권한 오류도 관리자 권한 거부 케이스와 동일하게 `Forbidden(403)` 포맷(`{ message: 'Forbidden' }`)을 사용한다.
+- 관리자 판별은 JWT claim(`role`) 단독 신뢰를 금지하고, `requireAdmin`에서 `users.role`을 재조회해 DB role 기준으로 최종 확정한다.
+- 관리자 API의 인증/인가 실패 응답은 프론트 분기 단순화를 위해 `401/403` 모두 `{ ok: false, error: { code, message } }` 포맷으로 통일한다.
 
 ## 3) E2E 우회 정책 (레이아웃 가드 예외)
 

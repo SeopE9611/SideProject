@@ -1,34 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
 import { z } from 'zod';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { API_VERSION } from '@/lib/board.repository';
+import { requireAdmin } from '@/lib/admin.guard';
 
 const answerSchema = z.object({ content: z.string().trim().min(1).max(20000) });
 
-function safeVerifyAccessToken(token?: string) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
-
-async function mustAdmin() {
-  const token = (await cookies()).get('accessToken')?.value;
-  const payload = safeVerifyAccessToken(token);
-  if (!payload || payload.role !== 'admin') return null;
-  return payload;
-}
-
 // POST
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const admin = await mustAdmin();
-  if (!admin) return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403 });
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, version: API_VERSION, error: 'bad_id' }, { status: 400 });
@@ -54,7 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     { _id: postId },
     {
       $set: {
-        answer: { content: clean, authorId: String(admin.sub), authorName: (admin as any).name, createdAt: now },
+        answer: { content: clean, authorId: String(guard.admin._id), authorName: guard.admin.name, createdAt: now },
         updatedAt: now,
       },
     },
@@ -64,8 +47,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
 // PATCH
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const admin = await mustAdmin();
-  if (!admin) return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403 });
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
 
   const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, version: API_VERSION, error: 'bad_id' }, { status: 400 });
@@ -91,8 +74,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const admin = await mustAdmin();
-  if (!admin) return NextResponse.json({ ok: false, version: API_VERSION, error: 'forbidden' }, { status: 403 });
+  const guard = await requireAdmin(_req);
+  if (!guard.ok) return guard.res;
   const db = await getDb();
   const { id } = await params;
   if (!ObjectId.isValid(id)) return NextResponse.json({ ok: false, version: API_VERSION, error: 'bad_id' }, { status: 400 });
