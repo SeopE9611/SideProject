@@ -1,4 +1,4 @@
-import { MARKET_BRANDS_BY_CATEGORY, getMarketBrandLabel } from '@/app/board/market/_components/market.constants';
+import { MARKET_BRANDS_BY_CATEGORY, MARKET_BRAND_LABEL_MAP } from '@/app/board/market/_components/market.constants';
 
 export type BoardType = 'free' | 'market' | 'gear';
 
@@ -16,7 +16,7 @@ export type BoardTypeConfig = {
   categoryMap: Record<string, CategoryConfig>;
   defaultCategoryBadgeClass: string;
   brandOptionsByCategory?: Record<string, ReadonlyArray<{ value: string; label: string }>>;
-  getBrandLabel?: (brand?: string | null) => string;
+  brandLabelMap?: Record<string, string>;
 };
 
 const defaultCategoryBadgeClass = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-gray-100 text-gray-500 dark:bg-gray-800/60 dark:text-gray-300';
@@ -70,7 +70,7 @@ export const MARKET_BOARD_CONFIG: BoardTypeConfig = {
   ]),
   defaultCategoryBadgeClass,
   brandOptionsByCategory: MARKET_BRANDS_BY_CATEGORY,
-  getBrandLabel: getMarketBrandLabel,
+  brandLabelMap: MARKET_BRAND_LABEL_MAP,
 };
 
 export const GEAR_BOARD_CONFIG: BoardTypeConfig = {

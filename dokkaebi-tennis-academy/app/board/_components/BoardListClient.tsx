@@ -229,7 +229,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     setPage(1);
   };
 
-  const { data, error, isLoading } = useSWR<ListResponse>(`/api/boards?${qs.toString()}`, (url) => boardFetcher<ListResponse>(url));
+  const { data, error, isLoading } = useSWR<ListResponse>(`/api/boards?${qs.toString()}`, (url: string) => boardFetcher<ListResponse>(url));
   const listError = parseApiError(error, config.errorMessage);
 
   const items = data?.items ?? [];
@@ -455,7 +455,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         <div className="flex flex-col items-center justify-center gap-1">
                           <span className={config.categoryMap[post.category ?? '']?.badgeClass ?? config.defaultCategoryBadgeClass}>{config.categoryMap[post.category ?? '']?.label ?? '분류 없음'}</span>
 
-                          {config.brandOptionsByCategory?.[post.category ?? ''] && post.brand ? <span className="text-[11px] text-gray-500 dark:text-gray-400">{config.getBrandLabel ? config.getBrandLabel(post.brand) : post.brand}</span> : null}
+                          {config.brandOptionsByCategory?.[post.category ?? ''] && post.brand ? <span className="text-[11px] text-gray-500 dark:text-gray-400">{config.brandLabelMap?.[post.brand] ?? post.brand}</span> : null}
                         </div>
 
                         {/* 제목  */}

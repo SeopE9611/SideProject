@@ -212,7 +212,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   // 조회수 중복 방지 TTL (24시간)
   const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
 
-  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=${config.boardType}`, (url) => boardFetcher<DetailResponse>(url), {
+  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=${config.boardType}`, (url: string) => boardFetcher<DetailResponse>(url), {
     revalidateOnMount: true,
     revalidateIfStale: true,
     dedupingInterval: 0,
@@ -367,7 +367,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
   // 댓글 목록 SWR (게시글이 로드된 후에만 요청)
   const commentsKey = item ? `/api/community/posts/${item.id}/comments?page=${commentPage}&limit=${COMMENT_LIMIT}` : null;
-  const { data: commentsData, isLoading: isCommentsLoading, mutate: mutateComments } = useSWR<CommentsResponse>(commentsKey, (url) => boardFetcher<CommentsResponse>(url));
+  const { data: commentsData, isLoading: isCommentsLoading, mutate: mutateComments } = useSWR<CommentsResponse>(commentsKey, (url: string) => boardFetcher<CommentsResponse>(url));
   const comments = commentsData && commentsData.ok ? commentsData.items : [];
 
   // 전체 댓글 수(루트 + 대댓글) → 상단 뱃지 표시용
@@ -1147,7 +1147,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     <span className="mr-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-200">{config.categoryMap[item.category ?? '']?.label ?? '분류 없음'}</span>
 
                     {config.brandOptionsByCategory?.[item.category ?? ''] && item.brand ? (
-                      <span className="mr-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200">{config.getBrandLabel ? config.getBrandLabel(item.brand) : item.brand}</span>
+                      <span className="mr-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-200">{config.brandLabelMap?.[item.brand] ?? item.brand}</span>
                     ) : null}
 
                     {item.title}
