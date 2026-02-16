@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { orderPaidAmount, applicationPaidAmount, refundsAmount, isStandaloneStringingApplication, buildPaidMatch, buildRentalPaidMatch, rentalPaidAmount, rentalDepositAmount } from '@/app/api/settlements/_lib/settlementPolicy';
 import { requireAdmin } from '@/lib/admin.guard';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 // 월 시작/끝(KST) → UTC 경계로 변환
 function kstMonthRangeToUtc(yyyymm: string) {
   const y = Number(yyyymm.slice(0, 4));
@@ -132,6 +133,23 @@ export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: strin
       },
       { upsert: true },
     );
+
+    await appendAdminAudit(
+      db,
+      {
+        type: 'admin.settlements.generate',
+        actorId: g.admin._id,
+        targetId: yyyymm,
+        message: '정산 스냅샷 생성/갱신',
+        diff: {
+          yyyymm,
+          totals: snapshot.totals,
+          breakdown: snapshot.breakdown,
+        },
+      },
+      _req,
+    );
+
     return NextResponse.json({ success: true, snapshot });
   } catch (e) {
     console.error('[settlements/:yyyymm]', e);
@@ -163,6 +181,18 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ yyyymm: str
     if (result.deletedCount === 0) {
       return NextResponse.json({ success: false, message: '해당 스냅샷을 찾을 수 없습니다.' }, { status: 404 });
     }
+
+    await appendAdminAudit(
+      db,
+      {
+        type: 'admin.settlements.delete',
+        actorId: g.admin._id,
+        targetId: yyyymm,
+        message: '정산 스냅샷 삭제',
+        diff: { yyyymm, deletedCount: result.deletedCount },
+      },
+      _req,
+    );
 
     return NextResponse.json({ success: true, message: `${yyyymm} 스냅샷이 삭제되었습니다.` });
   } catch (e) {

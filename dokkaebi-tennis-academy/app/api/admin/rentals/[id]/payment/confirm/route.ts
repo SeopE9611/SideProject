@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { ObjectId } from 'mongodb';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,9 +25,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (current === 'paid') return NextResponse.json({ ok: true, id });
 
   // pending 상태에서만 전이 허용
-  const u = await db.collection('rental_orders').updateOne({ _id, status: 'pending' }, { $set: { status: 'paid', paidAt: new Date(), updatedAt: new Date() } });
+  const paidAt = new Date();
+  const u = await db.collection('rental_orders').updateOne({ _id, status: 'pending' }, { $set: { status: 'paid', paidAt, updatedAt: new Date() } });
   if (!u.matchedCount) {
     return NextResponse.json({ ok: false, message: `INVALID_STATE(${current})` }, { status: 409 });
   }
+
+  await appendAdminAudit(
+    db,
+    {
+      type: 'admin.rentals.status.paid',
+      actorId: guard.admin._id,
+      targetId: _id,
+      message: '대여 상태를 pending → paid 로 전환',
+      diff: { from: 'pending', to: 'paid', paidAt },
+    },
+    req,
+  );
   return NextResponse.json({ ok: true, id });
 }

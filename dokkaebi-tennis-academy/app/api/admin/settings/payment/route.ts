@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { getDb } from '@/lib/mongodb';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 import { PaymentSettings, SETTINGS_COLLECTION, defaultPaymentSettings, paymentSettingsSchema } from '@/lib/admin-settings';
 
 const DOC_ID = 'adminPaymentSettings';
@@ -54,6 +55,22 @@ export async function PATCH(req: Request) {
     { _id: DOC_ID },
     { $set: { value: toSave, updatedAt: new Date() }, $setOnInsert: { _id: DOC_ID } },
     { upsert: true },
+  );
+
+  await appendAdminAudit(
+    db,
+    {
+      type: 'admin.settings.payment.patch',
+      actorId: guard.admin._id,
+      targetId: DOC_ID,
+      message: '결제 설정 수정',
+      diff: {
+        changedKeys: Object.keys(parsed.data),
+        hasPaypalSecret: Boolean(toSave.paypalSecret),
+        hasStripeSecretKey: Boolean(toSave.stripeSecretKey),
+      },
+    },
+    req,
   );
 
   return NextResponse.json(

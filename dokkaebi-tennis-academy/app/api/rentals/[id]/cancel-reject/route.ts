@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import jwt from 'jsonwebtoken';
 import { writeRentalHistory } from '@/app/features/rentals/utils/history';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 
 
 function safeVerifyAccessToken(token?: string | null) {
@@ -108,6 +109,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         },
       },
     });
+
+    await appendAdminAudit(
+      db,
+      {
+        type: 'admin.rentals.status.cancel-rejected',
+        actorId: user.sub,
+        targetId: _id,
+        message: '대여 취소 요청 거절 처리',
+        diff: {
+          from: currentStatus,
+          to: currentStatus,
+          cancelRequestStatus: 'rejected',
+        },
+      },
+      req,
+    );
 
     return NextResponse.json({ ok: true });
   } catch (error) {

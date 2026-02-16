@@ -13,6 +13,7 @@
 
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { sanitizeExceptionInput, validateBaseSettings, validateExceptionItem } from '@/lib/stringingSettingsValidation';
@@ -158,6 +159,20 @@ export async function PATCH(req: Request) {
 
   // upsert: 문서가 없으면 생성, 있으면 업데이트
   await db.collection<StringingSettings>(COLLECTION).updateOne({ _id: DOC_ID }, { $setOnInsert: { _id: DOC_ID }, $set: update }, { upsert: true });
+
+  await appendAdminAudit(
+    db,
+    {
+      type: 'admin.settings.stringing.patch',
+      actorId: guard.admin._id,
+      targetId: DOC_ID,
+      message: '스트링 슬롯 설정 수정',
+      diff: {
+        changedKeys: Object.keys(update).filter((key) => key !== 'updatedAt'),
+      },
+    },
+    req,
+  );
 
   const doc = await db.collection<StringingSettings>(COLLECTION).findOne({ _id: DOC_ID });
   return NextResponse.json(doc, { status: 200, headers: { 'Cache-Control': 'no-store' } });

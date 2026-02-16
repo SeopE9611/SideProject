@@ -1,6 +1,7 @@
 // 스냅샷 일괄 삭제 API
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin.guard';
+import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
 
 export async function POST(req: Request) {
   const origin = req.headers.get('origin') || '';
@@ -30,6 +31,17 @@ export async function POST(req: Request) {
     }
 
     const result = await db.collection('settlements').deleteMany({ yyyymm: { $in: yyyymms } });
+
+    await appendAdminAudit(
+      db,
+      {
+        type: 'admin.settlements.bulk-delete',
+        actorId: g.admin._id,
+        message: '정산 스냅샷 일괄 삭제',
+        diff: { yyyymms, deletedCount: result.deletedCount },
+      },
+      req,
+    );
 
     return NextResponse.json({
       success: true,
