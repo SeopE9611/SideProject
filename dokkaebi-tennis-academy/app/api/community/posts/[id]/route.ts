@@ -9,6 +9,7 @@ import type { CommunityBoardType, CommunityPost } from '@/lib/types/community';
 import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from '@/lib/types/community';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
+import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 
 // ---------------------------------------------------------------------------
 // GET: 게시글 상세
@@ -196,6 +197,38 @@ const patchBodySchema = z
   })
   .refine((val) => val.title !== undefined || val.content !== undefined || val.category !== undefined || val.images !== undefined || val.attachments !== undefined || val.brand !== undefined, { message: '수정할 필드가 없습니다.' });
 
+function findFirstInvalidAssetUrl(input: { images?: string[]; attachments?: Array<{ url: string }> }) {
+  // 1) 이미지 URL 배열 검증: 첫 실패 인덱스를 반환해 클라이언트 보정 포인트를 명확히 제공
+  if (Array.isArray(input.images)) {
+    for (let i = 0; i < input.images.length; i += 1) {
+      const validation = validateBoardAssetUrl(input.images[i]);
+      if (!validation.ok) {
+        return {
+          path: ['images', i],
+          reason: validation.reason,
+          value: input.images[i],
+        };
+      }
+    }
+  }
+
+  // 2) 첨부 URL 배열 검증: attachments[n].url 단위로 정책 강제
+  if (Array.isArray(input.attachments)) {
+    for (let i = 0; i < input.attachments.length; i += 1) {
+      const validation = validateBoardAssetUrl(input.attachments[i]?.url);
+      if (!validation.ok) {
+        return {
+          path: ['attachments', i, 'url'],
+          reason: validation.reason,
+          value: input.attachments[i]?.url,
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
@@ -245,6 +278,21 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   }
 
   const body = parsed.data;
+
+  // 정책 결정: community PATCH 역시 비허용 URL 발견 시 요청을 거부한다.
+  // - 부분 저장/자동 필터 제거를 하지 않아 데이터 일관성을 유지
+  const invalidAsset = findFirstInvalidAssetUrl(body);
+  if (invalidAsset) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'invalid_attachment_url',
+        message: '허용되지 않은 첨부 URL입니다. HTTPS + 허용 호스트/경로 정책을 확인해 주세요.',
+        details: [{ path: invalidAsset.path, message: `허용되지 않은 URL(${invalidAsset.reason})`, value: invalidAsset.value }],
+      },
+      { status: 400 },
+    );
+  }
 
   let sanitizedContent: string | undefined;
   if (body.content !== undefined) {

@@ -11,6 +11,7 @@ import { getBoardList } from '@/lib/boards.queries';
 import { API_VERSION } from '@/lib/board.repository';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 import { maskSecretTitle, resolveBoardViewerContext } from '@/lib/board-secret-policy';
+import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 
 /**
  * 숫자 쿼리 파라미터 파싱(Phase 0 - 500 방지)
@@ -169,20 +170,9 @@ const createSchema = z.object({
     .optional(),
 });
 
-/** ---- Supabase 퍼블릭 URL만 허용 ---- */
-const ALLOWED_HOSTS = new Set<string>(['cwzpxxahtayoyqqskmnt.supabase.co']);
-const ALLOWED_PATH_PREFIXES = ['/storage/v1/object/public/tennis-images/'];
 const isAllowedHttpUrl = (v: unknown): v is string => {
-  if (typeof v !== 'string') return false;
-  try {
-    const { protocol, hostname, pathname } = new URL(v);
-    const okProto = protocol === 'https:' || protocol === 'http:';
-    const okHost = ALLOWED_HOSTS.has(hostname);
-    const okPath = ALLOWED_PATH_PREFIXES.some((p) => pathname.startsWith(p));
-    return okProto && okHost && okPath;
-  } catch {
-    return false;
-  }
+  const validation = validateBoardAssetUrl(v);
+  return validation.ok;
 };
 
 /* ---------------------------------- GET ---------------------------------- */
