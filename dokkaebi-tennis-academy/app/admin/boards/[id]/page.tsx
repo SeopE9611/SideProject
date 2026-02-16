@@ -156,6 +156,12 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                 </div>
               </CardHeader>
               <CardContent className="p-6">
+                {/*
+                  sanitize 신뢰 경계(trust boundary):
+                  - 관리자 페이지는 저장된 community 본문을 그대로 렌더링한다.
+                  - 이 값은 API 쓰기 경계(app/api/community/**)에서 lib/sanitize.ts로 정제된 뒤 저장된 값이라는 전제를 가진다.
+                  - 따라서 렌더링 시 재-sanitize는 하지 않고, 회귀 테스트에서 해당 경계를 고정한다.
+                */}
                 <div className="prose prose-blue dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
               </CardContent>
             </Card>
