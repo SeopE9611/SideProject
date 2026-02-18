@@ -161,7 +161,7 @@ export default function ServicesPage() {
     <div className="flex flex-col">
       {/* Hero 섹션 */}
       <section className="relative min-h-[90vh] bp-md:min-h-[100vh] bp-lg:min-h-[110vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent via-primary to-primary">
+        <div className="absolute inset-0 bg-muted">
           <div className="absolute inset-0 opacity-20">
             <svg className="w-full h-full text-primary-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -176,7 +176,7 @@ export default function ServicesPage() {
               <rect width="100%" height="100%" fill="url(#courtLines)" />
             </svg>
           </div>
-          <div className="absolute inset-0 bg-foreground/20"></div>
+          <div className="absolute inset-0 bg-background/40"></div>
         </div>
 
         {/* 장식 요소 */}
@@ -187,7 +187,7 @@ export default function ServicesPage() {
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto">
             <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur-sm dark:bg-card/95 overflow-hidden">
-              <div className="bg-gradient-to-r from-accent to-primary p-8 text-center text-primary-foreground">
+              <div className="bg-primary p-8 text-center text-primary-foreground">
                 <h2 className="text-4xl font-bold mb-4">예약 안내</h2>
                 <p className="text-xl text-primary-foreground/90">
                   스트링 장착 서비스는 예약제로 운영됩니다.
@@ -199,24 +199,24 @@ export default function ServicesPage() {
               <CardContent className="p-5 bp-md:p-8">
                 <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 bp-md:gap-8 mb-6 bp-md:mb-8">
                   <div className="text-center p-6 border border-border dark:border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto mb-4">
+                    <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto mb-4">
                       <PhoneCall className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">전화 예약</h3>
                     <p className="text-muted-foreground dark:text-muted-foreground mb-4">가장 빠른 예약은 전화로 문의해 주세요.</p>
-                    <div className="text-2xl bp-md:text-3xl font-bold text-accent mb-2">0507-1392-3493</div>
+                    <div className="text-2xl bp-md:text-3xl font-bold text-foreground mb-2">0507-1392-3493</div>
                     <p className="text-sm text-muted-foreground">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
                   </div>
 
                   <div className="text-center p-6 border border-border dark:border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto mb-4">
+                    <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto mb-4">
                       <Calendar className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">온라인 신청</h3>
                     <p className="text-muted-foreground dark:text-muted-foreground mb-6">
                       스트링 교체 신청서를 통해 예약 요청을 남겨주세요. <br />
                     </p>
-                    <Button className="w-full bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90" asChild>
+                    <Button className="w-full bg-primary hover:bg-primary/90" asChild>
                       <Link href="/services/apply">
                         <Calendar className="w-4 h-4 mr-2" />
                         교체 신청하러 가기
@@ -227,7 +227,7 @@ export default function ServicesPage() {
 
                 <Separator className="my-8" />
 
-                <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 rounded-xl p-6">
+                <div className="bg-primary/10 rounded-xl p-6">
                   <h3 className="text-xl font-bold mb-4 text-center">
                     <CheckCircle className="w-5 h-5 inline mr-2 text-accent" />
                     알아두세요
@@ -258,13 +258,13 @@ export default function ServicesPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                  <Button variant="outline" className="border-border text-accent hover:bg-primary hover:text-primary-foreground bg-transparent" asChild>
+                  <Button variant="outline" className="border-border text-foreground hover:bg-primary hover:text-primary-foreground bg-transparent" asChild>
                     <Link href="/board/qna">
                       <HelpCircle className="mr-2 h-4 w-4" />
                       자주 묻는 질문
                     </Link>
                   </Button>
-                  <Button className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90" asChild>
+                  <Button className="bg-primary hover:bg-primary/90" asChild>
                     <Link href="/products">
                       <ArrowRight className="mr-2 h-4 w-4" />
                       테니스 스트링 쇼핑하기
@@ -307,7 +307,7 @@ export default function ServicesPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 text-primary-foreground border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
                 <Link href="#booking">
                   <Calendar className="w-5 h-5 mr-2" />
                   지금 예약하기
@@ -332,14 +332,14 @@ export default function ServicesPage() {
       </section>
 
       {/* 서비스 소개 섹션 */}
-      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-b from-muted/50 to-background dark:from-background dark:to-card" id="string-types">
+      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40" id="string-types">
         <div className="container">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground">
               <Star className="w-4 h-4 mr-2" />
               프리미엄 스트링 컬렉션
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">스트링 종류 안내</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 종류 안내</h2>
             <p className="text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               플레이 스타일과 경기력 향상을 위한 다양한 특성의 스트링을 제공합니다.
               <br />
@@ -349,11 +349,11 @@ export default function ServicesPage() {
 
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-8">
             {stringTypes.map((type) => (
-              <Card key={type.id} className="group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-gradient-to-br from-background to-muted/50 dark:from-card dark:to-muted">
-                <div className="h-2 bg-gradient-to-r from-accent to-primary"></div>
+              <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card">
+                <div className="h-2 bg-primary/20"></div>
 
                 <CardHeader className="text-center pb-4">
-                  <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-primary-foreground shadow-lg group-hover:scale-110 transition-transform duration-300">{type.icon}</div>
+                  <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-lg group-hover:scale-110 transition-transform duration-300">{type.icon}</div>
                   <CardTitle className="text-2xl font-bold mb-2">{type.title}</CardTitle>
                   <CardDescription className="text-base">{type.description}</CardDescription>
                 </CardHeader>
@@ -367,7 +367,7 @@ export default function ServicesPage() {
                         <div key={key} className="flex items-center justify-between">
                           <span className="text-sm capitalize">{key === 'power' ? '파워' : key === 'control' ? '컨트롤' : key === 'spin' ? '스핀' : '내구성'}</span>
                           <div className="flex-1 mx-3 bg-muted dark:bg-muted rounded-full h-2">
-                            <div className="h-2 rounded-full bg-gradient-to-r from-accent to-primary transition-all duration-1000 ease-out" style={{ width: `${value}%` }}></div>
+                            <div className="h-2 rounded-full bg-primary transition-all duration-1000 ease-out" style={{ width: `${value}%` }}></div>
                           </div>
                           <span className="text-sm font-medium">{value}%</span>
                         </div>
@@ -384,7 +384,7 @@ export default function ServicesPage() {
                     <ul className="space-y-2">
                       {type.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start text-sm">
-                          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-accent to-primary mt-2 mr-3 flex-shrink-0"></div>
+                          <div className="w-2 h-2 rounded-full bg-primary mt-2 mr-3 flex-shrink-0"></div>
                           <span>{feature}</span>
                         </li>
                       ))}
@@ -408,7 +408,7 @@ export default function ServicesPage() {
                   </div>
 
                   {/* 대표 제품 */}
-                  <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 rounded-xl p-4">
+                  <div className="bg-primary/10 rounded-xl p-4">
                     <h4 className="font-semibold mb-3">대표 제품</h4>
                     <div className="flex flex-wrap gap-2">
                       {type.examples.map((example, idx) => (
@@ -426,7 +426,7 @@ export default function ServicesPage() {
       </section>
 
       {/* 가격 안내 섹션 */}
-      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-br from-accent via-primary to-primary relative overflow-hidden" id="pricing">
+      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-primary/10 relative overflow-hidden" id="pricing">
         <div className="absolute inset-0 opacity-10">
           <svg className="w-full h-full text-primary-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -460,15 +460,15 @@ export default function ServicesPage() {
               <Card
                 key={item.service}
                 className={`relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${
-                  item.popular ? 'bg-gradient-to-br from-accent to-primary text-primary-foreground scale-105' : 'bg-card/95 backdrop-blur-sm dark:bg-card/95'
+                  item.popular ? 'bg-primary text-primary-foreground scale-105' : 'bg-card/95 backdrop-blur-sm dark:bg-card/95'
                 }`}
               >
                 {item.popular && <div className="absolute top-0 right-0 bg-destructive/100 text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
 
                 <CardHeader className="text-center pb-4">
-                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? 'bg-card/20' : 'bg-gradient-to-br from-accent to-primary text-primary-foreground'}`}>{item.icon}</div>
+                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? 'bg-card/20' : 'bg-primary text-primary-foreground'}`}>{item.icon}</div>
                   <CardTitle className={`text-lg font-bold ${item.popular ? 'text-primary-foreground' : ''}`}>{item.service}</CardTitle>
-                  <div className={`text-3xl font-bold ${item.popular ? 'text-primary-foreground' : 'text-accent'}`}>{item.price.toLocaleString()}원</div>
+                  <div className={`text-3xl font-bold ${item.popular ? 'text-primary-foreground' : 'text-foreground'}`}>{item.price.toLocaleString()}원</div>
                   <div className={`text-sm ${item.popular ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>소요시간: {item.duration}</div>
                 </CardHeader>
 
@@ -512,16 +512,16 @@ export default function ServicesPage() {
 
           {/* 추가 서비스 */}
           <div className="bg-card/95 backdrop-blur-sm dark:bg-card/95 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">추가 서비스</h3>
+            <h3 className="text-2xl font-bold mb-6 text-center text-foreground">추가 서비스</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {additionalServices.map((service) => (
                 <div key={service.title} className="border border-border dark:border-border rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gradient-to-br from-accent to-primary rounded-lg flex items-center justify-center text-primary-foreground mr-3">{service.icon}</div>
+                      <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground mr-3">{service.icon}</div>
                       <h4 className="font-bold">{service.title}</h4>
                     </div>
-                    {service.free ? <Badge className="bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground">무료</Badge> : <span className="font-bold text-accent">{(service.price ?? 0).toLocaleString()}원</span>}
+                    {service.free ? <Badge className="bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground">무료</Badge> : <span className="font-bold text-foreground">{(service.price ?? 0).toLocaleString()}원</span>}
                   </div>
                   <p className="text-sm text-muted-foreground dark:text-muted-foreground">{service.description}</p>
                 </div>
@@ -532,14 +532,14 @@ export default function ServicesPage() {
       </section>
 
       {/* 장착 과정 섹션 */}
-      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-b from-background to-muted/50 dark:from-card dark:to-muted">
+      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background">
         <div className="container">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground">
               <Shield className="w-4 h-4 mr-2" />
               전문적인 프로세스
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">스트링 장착 과정</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 장착 과정</h2>
             <p className="text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               도깨비 테니스 아카데미는 세심한 과정을 통해
               <br />
@@ -550,13 +550,13 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-8">
             {processSteps.map((step) => (
               <div key={step.step} className="relative group">
-                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-accent to-primary transform translate-x-4 z-0"></div>}
+                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/40 transform translate-x-4 z-0"></div>}
 
                 <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-card dark:bg-card">
                   <CardContent className="p-5 bp-md:p-8">
                     <div className="relative mb-6">
-                      <div className="w-20 h-20 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold shadow-lg">{step.step}</div>
+                      <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold shadow-lg">{step.step}</div>
                     </div>
                     <h3 className="text-xl font-bold mb-4">{step.title}</h3>
                     <p className="text-muted-foreground dark:text-muted-foreground leading-relaxed">{step.description}</p>
@@ -569,16 +569,16 @@ export default function ServicesPage() {
       </section>
 
       {/* 예약 안내 섹션 */}
-      {/* <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-br from-accent via-primary to-primary relative overflow-hidden" id="booking">
+      {/* <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-primary/10 relative overflow-hidden" id="booking">
         <div className="absolute top-10 left-10 w-32 h-32 bg-card/10 rounded-full blur-xl animate-pulse"></div>
         <div className="absolute bottom-10 right-10 w-24 h-24 bg-primary/20 rounded-full blur-lg  "></div>
       </section> */}
 
       {/* 고객 후기 섹션 */}
-      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-b from-muted/50 to-background dark:from-background dark:to-card">
+      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40">
         <div className="container">
           <div className="text-center mb-10">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">고객 후기</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">고객 후기</h2>
             <p className="text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto leading-relaxed">도깨비 테니스 스트링 서비스를 경험한 후기를 확인해보세요</p>
           </div>
 
@@ -607,7 +607,7 @@ export default function ServicesPage() {
           </div> */}
 
           <div className="text-center">
-            <Button size="lg" className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
+            <Button size="lg" className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
               {/* <Link href="/reviews/write?service=stringing"> */}
               <Link href="/reviews">
                 <Star className="w-5 h-5 mr-2" />
