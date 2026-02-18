@@ -12,7 +12,7 @@ test('community PATCH는 If-Unmodified-Since / clientSeenDate 조건을 해석�
   assert.match(routeSource, /ifUnmodifiedSinceBody/);
 });
 
-test('community PATCH 매칭 실패 시 conflict\(409\)와 not_found\(404\)를 분기한다', () => {
+test('community PATCH 매칭 실패 시 conflict(409)와 not_found(404)를 분기한다', () => {
   assert.match(routeSource, /if \(failure === 'conflict'\)/);
   assert.match(routeSource, /error:\s*'conflict'/);
   assert.match(routeSource, /status:\s*409/);
