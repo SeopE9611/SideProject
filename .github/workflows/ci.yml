@@ -219,6 +219,7 @@ jobs:
   # 7) admin-critical e2e (권한/CSRF 런타임 위반을 분리된 job으로 식별)
   test-e2e-admin-critical:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: test-contract
     defaults:
       run:
@@ -242,7 +243,18 @@ jobs:
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WORKDIR }}/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}-${{ hashFiles('dokkaebi-tennis-academy/**/*.ts', 'dokkaebi-tennis-academy/**/*.tsx', 'dokkaebi-tennis-academy/**/*.js', 'dokkaebi-tennis-academy/**/*.jsx', 'dokkaebi-tennis-academy/**/*.mjs', 'dokkaebi-tennis-academy/**/*.cjs') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-
+
       - name: Build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm build
 
       - name: Start server (prod)
@@ -280,6 +292,7 @@ jobs:
   # 8) notice conflict retry e2e (409 충돌 + 재시도 UX 검증)
   test-e2e-notice-conflict-retry:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: test-e2e-admin-critical
     defaults:
       run:
@@ -317,7 +330,18 @@ jobs:
       - name: Verify Cypress binary
         run: pnpm exec cypress verify
 
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WORKDIR }}/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}-${{ hashFiles('dokkaebi-tennis-academy/**/*.ts', 'dokkaebi-tennis-academy/**/*.tsx', 'dokkaebi-tennis-academy/**/*.js', 'dokkaebi-tennis-academy/**/*.jsx', 'dokkaebi-tennis-academy/**/*.mjs', 'dokkaebi-tennis-academy/**/*.cjs') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-
+
       - name: Build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm build
 
       - name: Start server (prod)
