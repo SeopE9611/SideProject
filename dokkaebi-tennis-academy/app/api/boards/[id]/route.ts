@@ -305,6 +305,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // 클라이언트가 보낸 removedPaths(옵션) 분리
   const removedPaths: string[] = Array.isArray((bodyRaw as any).removedPaths) ? (bodyRaw as any).removedPaths.filter((p: any) => typeof p === 'string' && p) : [];
 
+  const auditContextRaw = (bodyRaw as any)?.auditContext;
+  const auditSource = typeof auditContextRaw?.source === 'string' ? auditContextRaw.source.trim().slice(0, 120) : 'boards_patch_api';
+  const auditAction = typeof auditContextRaw?.action === 'string' ? auditContextRaw.action.trim().slice(0, 120) : 'patch';
+
   // attachments: storagePath가 없으면 public URL을 파싱해 보완
   let normalizedAttachments = parsed.data.attachments;
   if (Array.isArray(normalizedAttachments)) {
@@ -464,6 +468,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           title: String(post.title ?? ''),
           beforeStatus: String(post.status ?? ''),
           afterStatus: parsed.data.status,
+          source: auditSource,
+          action: auditAction,
         },
       },
       req,
@@ -510,6 +516,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   await BoardRepo.deleteOneById(db, id);
 
+  const deleteAuditSource = req.headers.get('x-admin-audit-source')?.trim().slice(0, 120) || 'boards_delete_api';
+  const deleteAuditAction = req.headers.get('x-admin-audit-action')?.trim().slice(0, 120) || 'delete';
+
   await appendAdminAudit(
     db,
     {
@@ -522,6 +531,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         postType: String(post.type ?? ''),
         status: String(post.status ?? ''),
         title: String(post.title ?? ''),
+        source: deleteAuditSource,
+        action: deleteAuditAction,
       },
     },
     req,
