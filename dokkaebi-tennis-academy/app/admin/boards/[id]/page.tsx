@@ -26,13 +26,21 @@ type BoardPostDetail = {
 };
 
 /**
- * 관리자 상세 페이지 파라미터 정책
- * - board 문서는 Mongo ObjectId(24자리 hex 문자열) 기준으로 식별한다.
- * - 숫자형 파싱 정책(Number.parseInt) 제거.
+ * 관리자 상세 페이지 식별자 정책
+ * - 게시물 식별자는 DB 저장 스키마(ObjectId | string)와 동일하게 문자열로 취급한다.
+ * - 숫자 파싱(Number.parseInt)이나 ObjectId 정규식 강제 검증을 하지 않는다.
+ * - URL 인코딩된 ID를 허용하기 위해 decodeURIComponent를 적용한다.
  */
-function parseBoardObjectId(id: string) {
-  const normalized = String(id ?? '').trim();
-  return /^[a-fA-F0-9]{24}$/.test(normalized) ? normalized : null;
+function normalizeBoardIdentifier(id: string) {
+  const raw = String(id ?? '').trim();
+  if (!raw) return null;
+
+  try {
+    const decoded = decodeURIComponent(raw).trim();
+    return decoded || null;
+  } catch {
+    return raw;
+  }
 }
 
 function getStatusColor(status: string) {
@@ -107,9 +115,9 @@ function formatDate(dateValue?: string | Date) {
 
 export default async function BoardPostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const objectId = parseBoardObjectId(id);
+  const boardId = normalizeBoardIdentifier(id);
 
-  if (!objectId) {
+  if (!boardId) {
     notFound();
   }
 
@@ -118,7 +126,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
   const cookie = headersList.get('cookie') ?? '';
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
 
-  const res = await fetch(`${baseUrl}/api/boards/${objectId}`, {
+  const res = await fetch(`${baseUrl}/api/boards/${encodeURIComponent(boardId)}`, {
     cache: 'no-store',
     headers: { cookie },
   });
@@ -144,7 +152,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
     notFound();
   }
 
-  const postId = String(post._id ?? objectId);
+  const postId = String(post._id ?? boardId);
   const postStatus = String(post.status ?? 'hidden');
 
   /**

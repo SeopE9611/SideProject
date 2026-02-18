@@ -25,7 +25,13 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: nextStatus }),
+        body: JSON.stringify({
+          status: nextStatus,
+          auditContext: {
+            source: 'admin_board_detail_page',
+            action: 'status_change_button',
+          },
+        }),
       });
 
       const payload = await res.json().catch(() => null);
@@ -53,6 +59,10 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
       const res = await fetch(`/api/boards/${encodeURIComponent(postId)}`, {
         method: 'DELETE',
         credentials: 'include',
+        headers: {
+          'x-admin-audit-source': 'admin_board_detail_page',
+          'x-admin-audit-action': 'delete_button',
+        },
       });
 
       const payload = await res.json().catch(() => null);
