@@ -1,7 +1,7 @@
 describe('Boards/Community 리스트 쿼리 계약', () => {
-  const kind = 'free';
+  const defaultKind = 'free';
 
-  const queryCases: Array<{ name: string; params: Record<string, string> }> = [
+  const queryCases: Array<{ name: string; params: Record<string, string>; kind?: string }> = [
     {
       name: '기본 latest 조회',
       params: { page: '1', limit: '10' },
@@ -33,12 +33,19 @@ describe('Boards/Community 리스트 쿼리 계약', () => {
         brand: 'Babolat',
       },
     },
+    {
+      name: '브랜드 게시판 타입 경계값(brand) 조회',
+      kind: 'brand',
+      params: { page: '1', limit: '10', type: 'brand', category: 'racket' },
+    },
   ];
 
-  queryCases.forEach(({ name, params }) => {
+  queryCases.forEach(({ name, params, kind }) => {
     it(`${name}: /api/boards 와 /api/community/posts 응답 계약이 일치한다`, () => {
-      const boardParams = new URLSearchParams({ kind, type: kind, ...params });
-      const communityParams = new URLSearchParams({ type: kind, ...params });
+      const resolvedKind = kind ?? defaultKind;
+      const resolvedType = params.type ?? resolvedKind;
+      const boardParams = new URLSearchParams({ kind: resolvedKind, type: resolvedType, ...params });
+      const communityParams = new URLSearchParams({ type: resolvedType, ...params });
 
       cy.request({
         method: 'GET',
