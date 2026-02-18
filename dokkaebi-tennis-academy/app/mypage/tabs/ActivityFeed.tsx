@@ -93,16 +93,16 @@ const formatDayHeader = (dayKey: string) => dayKey.replace(/-/g, '.');
 
 // 대여 상태는 프로젝트마다 다를 수 있어서 “넓게” 커버(한글/영문 혼합 대응)
 const rentalStatusColors: Record<string, string> = {
-  pending: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
-  paid: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-  out: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-  returned: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-  canceled: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+  pending: 'bg-muted text-muted-foreground border border-border',
+  paid: 'bg-primary/15 text-accent border border-border',
+  out: 'bg-secondary text-secondary-foreground border border-border',
+  returned: 'bg-primary/15 text-accent border border-border',
+  canceled: 'bg-destructive/15 text-destructive border border-border',
 
-  대기중: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
-  대여중: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-  반납완료: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-  취소: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+  대기중: 'bg-muted text-muted-foreground border border-border',
+  대여중: 'bg-secondary text-secondary-foreground border border-border',
+  반납완료: 'bg-primary/15 text-accent border border-border',
+  취소: 'bg-destructive/15 text-destructive border border-border',
 };
 
 function kindLabel(kind: ActivityKind) {
@@ -122,7 +122,7 @@ function statusBadgeClass(g: ActivityGroup) {
 
   if (kind === 'order') {
     const s = g.order?.status ?? '';
-    return orderStatusColors[s] ?? 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/20';
+    return orderStatusColors[s] ?? 'bg-muted text-muted-foreground border border-border';
   }
 
   if (kind === 'application') {
@@ -131,14 +131,14 @@ function statusBadgeClass(g: ActivityGroup) {
   }
 
   const s = g.rental?.status ?? '';
-  return rentalStatusColors[s] ?? 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/20';
+  return rentalStatusColors[s] ?? 'bg-muted text-muted-foreground border border-border';
 }
 
 function paymentBadgeClass(g: ActivityGroup) {
   if (g.kind !== 'order') return null;
   const p = g.order?.paymentStatus ?? '';
   if (!p) return null;
-  return paymentStatusColors[p] ?? 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/20';
+  return paymentStatusColors[p] ?? 'bg-muted text-muted-foreground border border-border';
 }
 
 function groupTitle(g: ActivityGroup) {
@@ -169,7 +169,7 @@ function groupAmount(g: ActivityGroup) {
 }
 
 /**
- *   완료/진행중 판단 (UI 필터용)
+ *  완료/진행중 판단 (UI 필터용)
  * - 정확한 비즈니스 로직이 아니라 “사용자 체감” 기준으로 넓게 잡음
  */
 function isDone(g: ActivityGroup) {
@@ -186,7 +186,7 @@ function isDone(g: ActivityGroup) {
 }
 
 /**
- *   액션 필요 판단
+ *  액션 필요 판단
  * - 신청서(또는 연결 신청서)가 있고, 운송장 미등록이면 액션 필요로 표시
  */
 function needsAction(g: ActivityGroup) {
@@ -215,7 +215,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
   if (typeof amount === 'number') {
     pills.push({
       text: `${amount.toLocaleString()}원`,
-      className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+      className: 'bg-muted text-foreground ',
     });
   }
 
@@ -225,7 +225,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (cnt > 0) {
       pills.push({
         text: `${cnt}개 항목`,
-        className: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400',
+        className: 'bg-blue-50 text-accent dark:bg-blue-950/50 ',
       });
     }
   }
@@ -250,7 +250,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (needs) {
       pills.push({
         text: linked.hasTracking ? '운송장 등록' : '운송장 대기',
-        className: linked.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 dark:text-green-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400',
+        className: linked.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 ' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 ',
       });
     }
   }
@@ -265,7 +265,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
       if (needs) {
         pills.push({
           text: app.hasTracking ? '운송장 등록' : '운송장 대기',
-          className: app.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 dark:text-green-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400',
+          className: app.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 ' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 ',
         });
       }
     }
@@ -290,7 +290,7 @@ function useDebouncedValue<T>(value: T, delayMs: number) {
 function compactPills(pills: MetaPill[], max = 3): MetaPill[] {
   if (pills.length <= max) return pills;
   const rest = pills.length - (max - 1);
-  return [...pills.slice(0, max - 1), { text: `+${rest}`, className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }];
+  return [...pills.slice(0, max - 1), { text: `+${rest}`, className: 'bg-muted text-muted-foreground ' }];
 }
 
 export default function ActivityFeed() {
@@ -312,9 +312,9 @@ export default function ActivityFeed() {
   // 필터(전체/진행중/완료) + 액션 필요만 보기
   const [filter, setFilter] = useState<'all' | 'active' | 'done'>('all');
   const [actionOnly, setActionOnly] = useState(false);
-  //   종류 필터(주문/대여/신청)
+  //  종류 필터(주문/대여/신청)
   const [kindFilter, setKindFilter] = useState<'all' | ActivityKind>('all');
-  //   검색어(상품명/라켓명/신청유형 등)
+  //  검색어(상품명/라켓명/신청유형 등)
   const [q, setQ] = useState('');
 
   const getKey = (pageIndex: number, prev: ActivityResponse | null) => {
@@ -490,7 +490,7 @@ export default function ActivityFeed() {
     return { map, keys };
   }, [visible]);
 
-  //   핀 섹션(최근 로딩된 데이터 기준)
+  //  핀 섹션(최근 로딩된 데이터 기준)
   // - actionTop: “운송장 미등록” 같은 액션 필요
   // - activeTop: 진행 중(단, actionTop은 중복 노출 방지)
   const actionTop = useMemo(() => flat.filter(needsAction).slice(0, 3), [flat]);
@@ -500,14 +500,14 @@ export default function ActivityFeed() {
   if (error) {
     return (
       <div className="rounded-2xl bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 p-8 bp-sm:p-12 text-center fade-in">
-        <AlertCircle className="h-12 w-12 bp-sm:h-16 bp-sm:w-16 text-red-500 dark:text-red-400 mx-auto mb-4" />
-        <p className="text-base bp-sm:text-lg font-medium text-red-600 dark:text-red-400">전체 활동을 불러오는 중 오류가 발생했습니다.</p>
+        <AlertCircle className="h-12 w-12 bp-sm:h-16 bp-sm:w-16 text-red-500 mx-auto mb-4" />
+        <p className="text-base bp-sm:text-lg font-medium text-red-600 ">전체 활동을 불러오는 중 오류가 발생했습니다.</p>
         <p className="text-sm text-red-500 dark:text-red-500 mt-2">잠시 후 다시 시도해주세요.</p>
       </div>
     );
   }
 
-  //   카드에서 이동 링크/CTA를 일관되게 만들기 위한 헬퍼
+  //  카드에서 이동 링크/CTA를 일관되게 만들기 위한 헬퍼
   const linksOf = (g: ActivityGroup) => {
     const detailHref = g.kind === 'order' ? `/mypage?tab=orders&orderId=${g.order?.id}` : g.kind === 'rental' ? `/mypage?tab=rentals&rentalId=${g.rental?.id}` : `/mypage?tab=applications&applicationId=${g.application?.id}`;
 
@@ -530,54 +530,54 @@ export default function ActivityFeed() {
   return (
     <div className="space-y-5 bp-sm:space-y-6 bp-lg:space-y-8 fade-in">
       <div className="grid grid-cols-2 bp-md:grid-cols-4 gap-3 bp-sm:gap-4">
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 p-4 bp-sm:p-6 border border-slate-200/50 dark:border-slate-700/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-slate-200 dark:bg-slate-700 p-2">
-              <Activity className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-slate-600 dark:text-slate-300" />
+            <div className="rounded-lg bg-border  p-2">
+              <Activity className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-muted-foreground " />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-slate-600 dark:text-slate-400">전체</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-muted-foreground ">전체</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-slate-900 dark:text-slate-100">{counts.all}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-foreground ">{counts.all}</div>
         </div>
 
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 p-4 bp-sm:p-6 border border-blue-200/50 dark:border-blue-800/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg bg-blue-200 dark:bg-blue-800 p-2">
-              <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-blue-600 dark:text-blue-300" />
+              <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-accent " />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-blue-600 dark:text-blue-400">진행중</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-accent ">진행중</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-blue-900 dark:text-blue-100">{counts.active}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-accent ">{counts.active}</div>
         </div>
 
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/30 dark:to-emerald-900/30 p-4 bp-sm:p-6 border border-green-200/50 dark:border-green-800/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/30 dark:to-emerald-900/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg bg-green-200 dark:bg-green-800 p-2">
               <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-green-600 dark:text-green-300" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-green-600 dark:text-green-400">완료</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-green-600 ">완료</span>
           </div>
           <div className="text-2xl bp-sm:text-3xl font-bold text-green-900 dark:text-green-100">{counts.done}</div>
         </div>
 
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950/30 dark:to-orange-900/30 p-4 bp-sm:p-6 border border-amber-200/50 dark:border-amber-800/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-amber-50 to-orange-100   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg bg-amber-200 dark:bg-amber-800 p-2">
-              <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-amber-600 dark:text-amber-300" />
+              <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-amber-600 " />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-amber-600 dark:text-amber-400">액션 필요</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-amber-600 ">액션 필요</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-amber-900 dark:text-amber-100">{counts.action}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-amber-900 ">{counts.action}</div>
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="flex flex-col bp-sm:flex-row gap-3 bp-sm:gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="상품명, 상태, 종류로 검색..." className="pl-10 h-11 bp-sm:h-12 rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="상품명, 상태, 종류로 검색..." className="pl-10 h-11 bp-sm:h-12 rounded-xl border-border bg-card " />
             {q.trim() && (
-              <Button size="sm" variant="ghost" onClick={() => setQ('')} className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-700">
+              <Button size="sm" variant="ghost" onClick={() => setQ('')} className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted dark:hover:bg-secondary">
                 <X className="h-4 w-4" />
               </Button>
             )}
@@ -586,8 +586,8 @@ export default function ActivityFeed() {
 
         <div className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">상태:</span>
+            <Filter className="h-4 w-4 text-muted-foreground " />
+            <span className="text-sm font-medium text-foreground ">상태:</span>
           </div>
           <Button size="sm" variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')} className="rounded-lg h-9">
             전체
@@ -598,8 +598,8 @@ export default function ActivityFeed() {
           <Button size="sm" variant={filter === 'done' ? 'default' : 'outline'} onClick={() => setFilter('done')} className="rounded-lg h-9">
             완료
           </Button>
-          <div className="h-4 w-px bg-slate-300 dark:bg-slate-600 mx-1" />
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">종류:</span>
+          <div className="h-4 w-px bg-border dark:bg-slate-600 mx-1" />
+          <span className="text-sm font-medium text-foreground ">종류:</span>
           <Button size="sm" variant={kindFilter === 'all' ? 'default' : 'outline'} onClick={() => setKindFilter('all')} className="rounded-lg h-9">
             전체
           </Button>
@@ -612,7 +612,7 @@ export default function ActivityFeed() {
           <Button size="sm" variant={kindFilter === 'rental' ? 'default' : 'outline'} onClick={() => setKindFilter('rental')} className="rounded-lg h-9">
             대여
           </Button>
-          <div className="h-4 w-px bg-slate-300 dark:bg-slate-600 mx-1" />
+          <div className="h-4 w-px bg-border dark:bg-slate-600 mx-1" />
           <Button size="sm" variant={actionOnly ? 'default' : 'outline'} onClick={() => setActionOnly((v) => !v)} className="rounded-lg h-9">
             액션 필요만
           </Button>
@@ -635,15 +635,15 @@ export default function ActivityFeed() {
       {(actionTop.length > 0 || activeTop.length > 0) && (
         <div className="grid grid-cols-1 gap-4 bp-lg:grid-cols-2 min-w-0">
           {actionTop.length > 0 && (
-            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-amber-950/20 p-5 bp-sm:p-6 border border-amber-200/50 dark:border-amber-800/30 slide-up">
+            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-destructive/10 to-muted dark:from-amber-950/20 dark:via-orange-950/20 dark:to-amber-950/20 p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg bg-amber-200 dark:bg-amber-800 p-2">
-                    <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-300" />
+                    <AlertCircle className="h-5 w-5 text-amber-600 " />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base bp-sm:text-lg font-bold text-amber-900 dark:text-amber-100 truncate">해야 할 일</h3>
-                    <p className="text-xs text-amber-600 dark:text-amber-400 truncate">{actionTop.length}건의 액션 필요</p>
+                    <h3 className="text-base bp-sm:text-lg font-bold text-amber-900 truncate">해야 할 일</h3>
+                    <p className="text-xs text-amber-600 truncate">{actionTop.length}건의 액션 필요</p>
                   </div>
                 </div>
                 <Button
@@ -653,7 +653,7 @@ export default function ActivityFeed() {
                     setFilter('all');
                     setActionOnly(true);
                   }}
-                  className="w-full bp-sm:w-auto rounded-lg border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                  className="w-full bp-sm:w-auto rounded-lg border-border hover:bg-muted hover:bg-muted"
                 >
                   전체 보기
                 </Button>
@@ -673,10 +673,10 @@ export default function ActivityFeed() {
                   const canShowShipping = Boolean(app?.needsInboundTracking ?? true);
 
                   return (
-                    <div key={`action:${g.key}`} className="rounded-xl bg-white dark:bg-slate-800/50 p-4 border border-amber-200/50 dark:border-amber-800/30 activity-card-hover">
+                    <div key={`action:${g.key}`} className="rounded-xl bg-card  p-4 border border-border/50 activity-card-hover">
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <div className="rounded-lg bg-slate-100 dark:bg-slate-700 p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
+                          <div className="rounded-lg bg-muted  p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
@@ -687,9 +687,9 @@ export default function ActivityFeed() {
                                   교체 {app.status}
                                 </Badge>
                               )}
-                              <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</span>
+                              <span className="text-xs text-muted-foreground ">{formatDate(date)}</span>
                             </div>
-                            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm bp-sm:text-base truncate">{title}</h4>
+                            <h4 className="font-semibold text-foreground  text-sm bp-sm:text-base truncate">{title}</h4>
                           </div>
                         </div>
                       </div>
@@ -761,15 +761,15 @@ export default function ActivityFeed() {
           )}
 
           {activeTop.length > 0 && (
-            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-blue-950/20 p-5 bp-sm:p-6 border border-blue-200/50 dark:border-blue-800/30 slide-up">
+            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-secondary to-muted dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-blue-950/20 p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg bg-blue-200 dark:bg-blue-800 p-2">
-                    <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+                    <TrendingUp className="h-5 w-5 text-accent " />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base bp-sm:text-lg font-bold text-blue-900 dark:text-blue-100 truncate">진행중</h3>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 truncate">{activeTop.length}건의 활동</p>
+                    <h3 className="text-base bp-sm:text-lg font-bold text-accent truncate">진행중</h3>
+                    <p className="text-xs text-accent truncate">{activeTop.length}건의 활동</p>
                   </div>
                 </div>
                 <Button
@@ -779,7 +779,7 @@ export default function ActivityFeed() {
                     setFilter('active');
                     setActionOnly(false);
                   }}
-                  className="w-full bp-sm:w-auto rounded-lg border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                  className="w-full bp-sm:w-auto rounded-lg border-border hover:bg-secondary hover:bg-secondary"
                 >
                   전체 보기
                 </Button>
@@ -794,9 +794,9 @@ export default function ActivityFeed() {
                   const app = g.application;
 
                   return (
-                    <div key={`active:${g.key}`} className="rounded-xl bg-white dark:bg-slate-800/50 p-4 border border-blue-200/50 dark:border-blue-800/30 activity-card-hover">
+                    <div key={`active:${g.key}`} className="rounded-xl bg-card  p-4 border border-border/50 activity-card-hover">
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="rounded-lg bg-slate-100 dark:bg-slate-700 p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
+                        <div className="rounded-lg bg-muted  p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
@@ -807,9 +807,9 @@ export default function ActivityFeed() {
                                 교체 {app.status}
                               </Badge>
                             )}
-                            <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</span>
+                            <span className="text-xs text-muted-foreground ">{formatDate(date)}</span>
                           </div>
-                          <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm bp-sm:text-base truncate">{title}</h4>
+                          <h4 className="font-semibold text-foreground  text-sm bp-sm:text-base truncate">{title}</h4>
                         </div>
                       </div>
 
@@ -845,10 +845,10 @@ export default function ActivityFeed() {
 
       <div className="space-y-4">
         {visible.length === 0 ? (
-          <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/30 p-12 bp-sm:p-16 text-center">
-            <Package className="h-16 w-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-            <h3 className="text-lg bp-sm:text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">표시할 활동이 없습니다</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">필터를 조정하거나 검색어를 변경해보세요.</p>
+          <div className="rounded-2xl bg-muted  p-12 bp-sm:p-16 text-center">
+            <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg bp-sm:text-xl font-semibold text-foreground  mb-2">표시할 활동이 없습니다</h3>
+            <p className="text-sm text-muted-foreground ">필터를 조정하거나 검색어를 변경해보세요.</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -858,12 +858,12 @@ export default function ActivityFeed() {
               return (
                 <div key={dayKey} className="space-y-4 slide-up" style={{ animationDelay: `${dayIndex * 50}ms` }}>
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
-                    <div className="rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2 border border-slate-200 dark:border-slate-700">
-                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formatDayHeader(dayKey)}</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 ml-2">{dayItems.length}건</span>
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200  to-transparent" />
+                    <div className="rounded-full bg-muted px-4 py-2 border border-border ">
+                      <span className="text-sm font-semibold text-foreground ">{formatDayHeader(dayKey)}</span>
+                      <span className="text-xs text-muted-foreground ml-2">{dayItems.length}건</span>
                     </div>
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200  to-transparent" />
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 bp-sm:gap-4 min-w-0">
@@ -888,11 +888,7 @@ export default function ActivityFeed() {
                       );
 
                       return (
-                        <div
-                          key={g.key}
-                          className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-4 bp-sm:p-6 activity-card-hover"
-                          style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}
-                        >
+                        <div key={g.key} className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-card  border border-border p-4 bp-sm:p-6 activity-card-hover" style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}>
                           <div className="flex flex-col bp-sm:flex-row bp-sm:items-start gap-4">
                             <div className={cn('hidden bp-sm:flex', 'rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 p-3 bp-sm:p-4 shrink-0', 'w-fit self-start')}>{kindIcon(g.kind)}</div>
 
@@ -900,7 +896,7 @@ export default function ActivityFeed() {
                               <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-2 bp-sm:gap-4">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                    <span className="inline-flex bp-sm:hidden rounded-lg bg-slate-100 dark:bg-slate-700 p-2 shrink-0">{kindIcon(g.kind)}</span>
+                                    <span className="inline-flex bp-sm:hidden rounded-lg bg-muted  p-2 shrink-0">{kindIcon(g.kind)}</span>
 
                                     <Badge variant="outline" className={cn('text-xs rounded-md font-medium', statusBadgeClass(g))}>
                                       {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
@@ -911,17 +907,17 @@ export default function ActivityFeed() {
                                       </Badge>
                                     )}
 
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</span>
+                                    <span className="text-xs text-muted-foreground ">{formatDate(date)}</span>
 
                                     {hasAction && (
-                                      <Badge variant="outline" className="text-xs rounded-md bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800">
+                                      <Badge variant="outline" className="text-xs rounded-md bg-amber-50 text-amber-600 border-border  ">
                                         액션 필요
                                       </Badge>
                                     )}
                                   </div>
 
-                                  <h3 className="text-base bp-sm:text-lg font-bold text-slate-900 dark:text-slate-100 mb-1 truncate">{title}</h3>
-                                  <p className="text-sm text-slate-600 dark:text-slate-400">{kindLabel(g.kind)}</p>
+                                  <h3 className="text-base bp-sm:text-lg font-bold text-foreground  mb-1 truncate">{title}</h3>
+                                  <p className="text-sm text-muted-foreground ">{kindLabel(g.kind)}</p>
                                 </div>
 
                                 {g.kind === 'order' && g.order?.paymentStatus && (
@@ -1056,7 +1052,7 @@ export default function ActivityFeed() {
 
       {total > 0 && flat.length > 0 && (
         <div className="text-center pt-4">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-muted-foreground ">
             전체 {total}건 중 {flat.length}건 로딩됨
           </p>
         </div>
