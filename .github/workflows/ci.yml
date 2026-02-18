@@ -15,18 +15,40 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CI: true
+  NEXT_TELEMETRY_DISABLED: 1
+  WORKDIR: dokkaebi-tennis-academy
+
 jobs:
-  build:
+  # PR 변경 파일 중 관리자 경로(app/admin, app/api/admin, lib/admin) 포함 여부를 계산한다.
+  # 이 결과는 마지막 required gate(job: admin-path-required-gate)에서
+  # "관리자 경로 변경 PR에서는 필수 상태체크" 정책을 강제하는 데 사용한다.
+  detect-admin-path-changes:
     runs-on: ubuntu-latest
+    outputs:
+      admin_changed: ${{ steps.filter.outputs.admin }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    env:
-      CI: true
-      NEXT_TELEMETRY_DISABLED: 1
+      - name: Detect admin path changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            admin:
+              - 'dokkaebi-tennis-academy/app/admin/**'
+              - 'dokkaebi-tennis-academy/app/api/admin/**'
+              - 'dokkaebi-tennis-academy/lib/admin/**'
 
+  # 1) Install -> lint
+  lint:
+    runs-on: ubuntu-latest
+    needs: detect-admin-path-changes
     defaults:
       run:
-        working-directory: dokkaebi-tennis-academy
-
+        working-directory: ${{ env.WORKDIR }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,21 +65,185 @@ jobs:
           cache: pnpm
           cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
 
-      - name: Install dependencies
+      - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
 
-      # pipeline 고정: lint -> typecheck -> build -> contract/e2e(smoke + admin critical)
       - name: Lint
         run: pnpm lint
+
+  # 2) typecheck (타입 규칙 위반 식별용)
+  typecheck:
+    runs-on: ubuntu-latest
+    needs: lint
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
 
       - name: Typecheck
         run: pnpm typecheck
 
+  # 3) build
+  build:
+    runs-on: ubuntu-latest
+    needs: typecheck
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
       - name: Build
         run: pnpm build
 
-      - name: Contract tests
+  # 4) admin any gate (타입 안전성 규칙 위반을 분리된 job으로 식별)
+  check-admin-any-gate:
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Check admin any gate (타입 규칙)
+        run: pnpm check:admin-any-gate
+
+  # 5) admin API boundary gate (경계 규칙 위반을 분리된 job으로 식별)
+  check-admin-api-boundary:
+    runs-on: ubuntu-latest
+    needs: check-admin-any-gate
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Check admin API boundary (경계 규칙)
+        run: pnpm check:admin-api-boundary
+
+  # 6) contract tests (권한/CSRF 계약 위반을 분리된 job으로 식별)
+  test-contract:
+    runs-on: ubuntu-latest
+    needs: check-admin-api-boundary
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Test contract (권한/CSRF 계약)
         run: pnpm test:contract
+
+  # 7) admin-critical e2e (권한/CSRF 런타임 위반을 분리된 job으로 식별)
+  test-e2e-admin-critical:
+    runs-on: ubuntu-latest
+    needs: test-contract
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: dokkaebi-tennis-academy/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
 
       - name: Start server (prod)
         run: |
@@ -79,10 +265,7 @@ jobs:
             exit 1
           fi
 
-      - name: E2E smoke
-        run: pnpm test:e2e:smoke
-
-      - name: E2E admin critical
+      - name: Test e2e admin critical (권한/CSRF 런타임)
         run: pnpm test:e2e:admin-critical
 
       - name: Stop server
@@ -90,3 +273,60 @@ jobs:
         run: |
           kill $(cat server.pid) || true
           pkill -f "next start" || true
+
+  # branch protection에는 이 job(admin-path-required-gate)을 Required status check로 등록한다.
+  # admin 경로가 변경된 PR이면 선행 핵심 검증이 모두 통과해야 하고,
+  # admin 변경이 없으면 정책상 not-applicable로 성공 처리한다.
+  admin-path-required-gate:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - detect-admin-path-changes
+      - lint
+      - typecheck
+      - build
+      - check-admin-any-gate
+      - check-admin-api-boundary
+      - test-contract
+      - test-e2e-admin-critical
+    steps:
+      - name: Enforce required checks for admin path PRs
+        env:
+          ADMIN_CHANGED: ${{ needs.detect-admin-path-changes.outputs.admin_changed }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TYPECHECK_RESULT: ${{ needs.typecheck.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          ANY_GATE_RESULT: ${{ needs.check-admin-any-gate.result }}
+          BOUNDARY_RESULT: ${{ needs.check-admin-api-boundary.result }}
+          CONTRACT_RESULT: ${{ needs.test-contract.result }}
+          E2E_RESULT: ${{ needs.test-e2e-admin-critical.result }}
+        run: |
+          echo "admin_changed=${ADMIN_CHANGED}"
+
+          if [ "${ADMIN_CHANGED}" != "true" ]; then
+            echo "관리자 경로 변경이 없어 admin 필수 상태체크는 not-applicable 입니다."
+            exit 0
+          fi
+
+          failures=""
+          for item in \
+            "lint=${LINT_RESULT}" \
+            "typecheck=${TYPECHECK_RESULT}" \
+            "build=${BUILD_RESULT}" \
+            "check_admin_any_gate=${ANY_GATE_RESULT}" \
+            "check_admin_api_boundary=${BOUNDARY_RESULT}" \
+            "test_contract=${CONTRACT_RESULT}" \
+            "test_e2e_admin_critical=${E2E_RESULT}"; do
+            name="${item%%=*}"
+            result="${item#*=}"
+            if [ "${result}" != "success" ]; then
+              failures="${failures}\n- ${name} => ${result}"
+            fi
+          done
+
+          if [ -n "${failures}" ]; then
+            echo "관리자 경로 변경 PR 필수 상태체크 실패:${failures}"
+            exit 1
+          fi
+
+          echo "관리자 경로 변경 PR 필수 상태체크를 모두 통과했습니다."
