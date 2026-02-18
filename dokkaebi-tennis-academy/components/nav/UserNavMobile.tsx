@@ -49,8 +49,8 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
         <div className="flex flex-col items-center gap-1">
           <p className="text-xs text-muted-foreground">소셜 로그인</p>
           <div className="flex flex-wrap justify-center gap-1">
-            {hasKakao && <Badge className="bg-[#FEE500] text-[#191919] hover:bg-[#FDD835]">카카오</Badge>}
-            {hasNaver && <Badge className="bg-[#03C75A] text-white hover:bg-[#02B350]">네이버</Badge>}
+            {hasKakao && <Badge className="bg-primary text-primary-foreground hover:bg-primary/90">카카오</Badge>}
+            {hasNaver && <Badge className="bg-accent text-accent-foreground hover:bg-accent/90">네이버</Badge>}
           </div>
         </div>
       )}
@@ -72,7 +72,7 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
           router.push('/messages');
         }}
       >
-        쪽지함{unreadCount > 0 && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-1.5 py-[2px]">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+        쪽지함{unreadCount > 0 && <span className="shrink-0 rounded-full bg-destructive text-destructive-foreground text-[10px] leading-none px-1.5 py-[2px]">{unreadCount > 99 ? '99+' : unreadCount}</span>}
       </Button>
       <Button
         variant="outline"

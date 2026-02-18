@@ -81,8 +81,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
             shrink-0 whitespace-nowrap
             text-[11px] font-semibold
             px-1.5 py-[2px] rounded
-            bg-blue-100 text-blue-700
-            dark:bg-blue-900/30 dark:text-blue-300
+            bg-accent/15 text-accent
           "
               >
                 관리자
@@ -96,10 +95,10 @@ export function UserNav({ unreadCount }: UserNavProps) {
           <>
             <div className="px-2 py-2">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-slate-500 dark:text-slate-400">소셜 로그인</span>
+                <span className="text-xs text-muted-foreground">소셜 로그인</span>
                 <div className="flex gap-1">
-                  {hasKakao && <Badge className="pointer-events-none h-5 px-2 text-[11px] bg-[#FEE500] text-[#191919] hover:bg-[#FEE500]">카카오</Badge>}
-                  {hasNaver && <Badge className="pointer-events-none h-5 px-2 text-[11px] bg-[#03C75A] text-white hover:bg-[#03C75A]">네이버</Badge>}
+                  {hasKakao && <Badge className="pointer-events-none h-5 px-2 text-[11px] bg-primary text-primary-foreground hover:bg-primary/90">카카오</Badge>}
+                  {hasNaver && <Badge className="pointer-events-none h-5 px-2 text-[11px] bg-accent text-accent-foreground hover:bg-accent/90">네이버</Badge>}
                 </div>
               </div>
             </div>
@@ -112,7 +111,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/messages')}>
           <Mail className="mr-2 h-4 w-4" />
-          쪽지함 {resolvedUnread > 0 && <span className="shrink-0 rounded-full bg-red-500 text-white text-[10px] leading-none px-1.5 py-[2px]">{resolvedUnread > 99 ? '99+' : resolvedUnread}</span>}
+          쪽지함 {resolvedUnread > 0 && <span className="shrink-0 rounded-full bg-destructive text-destructive-foreground text-[10px] leading-none px-1.5 py-[2px]">{resolvedUnread > 99 ? '99+' : resolvedUnread}</span>}
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem onClick={() => router.push('/admin/dashboard')}>
