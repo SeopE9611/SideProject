@@ -60,9 +60,11 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 상태 플래그
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [conflictOpen, setConflictOpen] = useState(false);
+  const [clientSeenDate, setClientSeenDate] = useState<string | null>(null);
 
   // 기존 글 불러오기
-  const { data, error, isLoading } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=market`, fetcher);
+  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=market`, fetcher);
 
   type Baseline = {
     title: string;
@@ -118,6 +120,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       setImages(nextImages);
       setCategory(nextCategory);
       setBrand(nextBrand);
+      setClientSeenDate(item.updatedAt ?? null);
 
       // 최초 1회만 baseline 저장 (초기 로드 값 기준으로 dirty 판단)
       if (!baselineRef.current) {
@@ -275,6 +278,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         images,
         category,
         brand: isMarketBrandCategory(category) ? brand : null,
+        ...(clientSeenDate ? { clientSeenDate } : {}),
       };
 
       // 새 파일을 업로드한 경우에만 attachments를 보냄
@@ -285,12 +289,21 @@ export default function FreeBoardEditClient({ id }: Props) {
 
       const res = await fetch(`/api/community/posts/${id}?type=market`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(clientSeenDate ? { 'If-Unmodified-Since': clientSeenDate } : {}),
+        },
         credentials: 'include',
         body: JSON.stringify(payload),
       });
 
       const json = await res.json();
+
+      if (res.status === 409 && json?.error === 'conflict') {
+        setConflictOpen(true);
+        setErrorMsg('다른 사용자가 먼저 글을 수정했습니다. 최신 글을 다시 불러온 뒤 변경 사항을 병합해 주세요.');
+        return;
+      }
 
       if (!res.ok || !json?.ok) {
         const detail = json?.details?.[0]?.message ?? json?.error ?? '글 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.';
@@ -561,6 +574,30 @@ export default function FreeBoardEditClient({ id }: Props) {
 
               {/* 에러 메시지 */}
               {errorMsg && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">{errorMsg}</div>}
+
+              {conflictOpen && (
+                <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
+                  <p className="font-semibold">동시 수정 충돌이 감지되었습니다.</p>
+                  <p className="mt-1">최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서 필요한 부분만 반영해 주세요.</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        await mutate();
+                        setConflictOpen(false);
+                        setErrorMsg(null);
+                      }}
+                    >
+                      최신 글 다시 불러오기
+                    </Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setConflictOpen(false)}>
+                      병합 안내만 닫기
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* 하단 버튼 */}
               <div className="flex justify-end gap-2">
