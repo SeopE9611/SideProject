@@ -48,6 +48,7 @@
 - `DELETE /api/admin/system/purge`
 - `DELETE /api/admin/settlements/:yyyymm`
 - `POST /api/admin/settlements/bulk-delete`
+- `POST /api/admin/rentals/cleanup-created` *(기능 플래그 `ADMIN_RENTALS_CLEANUP_CREATED_ENABLED` 활성 시에만 실행 가능)*
 
 ### 레거시 비-admin 허용 범위 (이관 정책 래퍼 전용)
 - `GET /api/package-orders` → 307 (`app/api/package-orders/route.ts`)
@@ -68,3 +69,20 @@
 - 사용자 피드백(toast)은 공통 helper(`runAdminActionWithToast`)를 우선 사용한다.
   - 성공 시 성공 toast, 실패 시 표준 에러 메시지 toast를 동일 규칙으로 노출한다.
   - 예외적으로 도메인별 상세 에러코드 분기가 필요하면 helper 호출 후 추가 분기한다.
+
+## 운영 플래그: created 상태 대여 정리 API
+
+### 기본 상태
+- `POST /api/admin/rentals/cleanup-created`는 **기본 비활성(default off)** 으로 운영한다.
+- 비활성 상태 응답은 `403` + 도메인 메시지 `정리 기능이 비활성화되었습니다`를 반환한다.
+- 관리자 UI 버튼은 플래그가 꺼져 있으면 클릭 불가(disabled)이며, `현재 비활성` 배지를 노출한다.
+
+### 활성화/비활성화 절차
+1. 서버 런타임 환경변수 `ADMIN_RENTALS_CLEANUP_CREATED_ENABLED=true`를 설정한다.
+2. 필요 시 클라이언트 표시 동기화를 위해 `NEXT_PUBLIC_ADMIN_RENTALS_CLEANUP_CREATED_ENABLED=true`를 함께 설정한다.
+3. 배포 후 관리자 화면에서 버튼 활성 상태를 확인하고, API 호출 성공 시 감사 로그(`admin.rentals.cleanup-created`)가 기록되는지 점검한다.
+4. 작업 종료 후 즉시 `ADMIN_RENTALS_CLEANUP_CREATED_ENABLED=false`로 되돌려 재비활성화한다.
+
+### 실행 정책
+- 쿼리 파라미터 `hours`를 기준으로 `created` 상태 + `createdAt < now - hours` 대상을 정리한다.
+- `hours` 허용 범위는 1~168(최대 7일)이며, 범위를 벗어난 값은 서버에서 자동 보정(clamp)한다.
