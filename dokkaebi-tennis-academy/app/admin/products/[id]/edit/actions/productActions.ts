@@ -1,1 +1,3 @@
-export const fetchProductDetail = <T,>(url: string) => fetch(url).then((res) => res.json() as Promise<T>);
+import { adminFetcher } from '@/lib/admin/adminFetcher';
+
+export const fetchProductDetail = <T,>(url: string) => adminFetcher<T>(url, { cache: 'no-store' });

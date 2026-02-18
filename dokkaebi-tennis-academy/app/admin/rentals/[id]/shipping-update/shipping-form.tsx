@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2 } from 'lucide-react';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 
 // dirty 비교용 시그니처(운송장 번호는 공백/하이픈 제거한 값 기준으로 비교)
 const shippingSig = (v: { courier: string; tracking: string; date: string }) =>
@@ -38,8 +40,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   // 프리필(수정용): GET /api/admin/rentals/[id] 읽어서 shipping.outbound 있으면 기본값 세팅
   useEffect(() => {
     (async () => {
-      const res = await fetch(`/api/admin/rentals/${rentalId}`, { credentials: 'include' });
-      const json = await res.json().catch(() => ({}));
+      const json = await adminFetcher<any>(`/api/admin/rentals/${rentalId}`, { cache: 'no-store' });
       const out = json?.shipping?.outbound;
       const next = {
         courier: out?.courier || '',
@@ -59,15 +60,18 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
     if (!courier) return showErrorToast('택배사를 선택해주세요');
     if (!tracking) return showErrorToast('운송장 번호를 입력해주세요');
     setBusy(true);
-    const res = await fetch(`/api/admin/rentals/${rentalId}/shipping/outbound`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ courier, trackingNumber: tracking.replaceAll('-', '').replaceAll(' ', ''), shippedAt: date }),
+    const result = await runAdminActionWithToast({
+      action: () =>
+        adminMutator(`/api/admin/rentals/${rentalId}/shipping/outbound`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courier, trackingNumber: tracking.replaceAll('-', '').replaceAll(' ', ''), shippedAt: date }),
+        }),
+      successMessage: '출고 운송장을 저장했습니다',
+      fallbackErrorMessage: '등록 실패',
     });
     setBusy(false);
-    if (!res.ok) return showErrorToast('등록 실패');
-    showSuccessToast('출고 운송장을 저장했습니다');
+    if (!result) return;
 
     /**
      * 저장 성공 후 뒤로가기 UX

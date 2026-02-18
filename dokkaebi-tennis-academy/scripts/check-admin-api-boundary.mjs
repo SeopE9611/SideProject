@@ -10,22 +10,23 @@ const API_PATTERN = /['"`]\/api\/(?!admin\b)/g;
 const MUTATION_EXPORT_PATTERN = /export\s+async\s+function\s+(POST|PATCH|PUT|DELETE)\s*\(/g;
 
 const ADMIN_DIRECT_FETCH_ALLOWLIST = new Set([
+  // TODO(ADMIN-API-BOUNDARY): 2026-03-31까지 마이그레이션 완료 후 제거
+  // expiry: 2026-03-31
   'app/admin/applications/stringing/[id]/shipping-update/shipping-form.tsx',
+  // expiry: 2026-03-31
   'app/admin/boards/BoardsClient.tsx',
+  // expiry: 2026-03-31
   'app/admin/notifications/_components/AdminNotificationsClient.tsx',
+  // expiry: 2026-03-31
   'app/admin/orders/[id]/shipping-update/page.tsx',
+  // expiry: 2026-03-31
   'app/admin/orders/[id]/shipping-update/shipping-form.tsx',
+  // expiry: 2026-03-31
   'app/admin/packages/[id]/PackageDetailClient.tsx',
-  'app/admin/products/ProductsClient.tsx',
-  'app/admin/products/[id]/edit/ProductEditClient_view.tsx',
+  // expiry: 2026-03-31
   'app/admin/rackets/[id]/edit/_components/AdminRacketEditClient.tsx',
-  'app/admin/rentals/[id]/_components/AdminRentalDetailClient.tsx',
-  'app/admin/rentals/[id]/shipping-update/shipping-form.tsx',
-  'app/admin/rentals/_components/AdminRentalsClient.tsx',
-  'app/admin/rentals/_components/CleanupCreatedButton.tsx',
+  // expiry: 2026-03-31
   'app/admin/reviews/_components/AdminReviewListClient.tsx',
-  'app/admin/settlements/_components/SettlementsClient_view.tsx',
-  'app/admin/users/_components/UserDetailClient.tsx',
 ]);
 
 /**

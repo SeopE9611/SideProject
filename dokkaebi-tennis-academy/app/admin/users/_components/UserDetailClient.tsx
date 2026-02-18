@@ -47,6 +47,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useUserSessions } from '@/app/admin/users/_hooks/useUserSessions';
 import { UserActivityTabsSection } from '@/app/admin/users/_components/UserActivityTabsSection';
+import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 
 // 변경이력 포맷터 유틸
 const AUDIT_LABELS: Record<string, string> = {
@@ -90,11 +92,7 @@ function humanizeAuditDetail(action: string, raw?: string) {
   return parts.join(' · ');
 }
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: 'include', cache: 'no-store' }).then((r) => {
-    if (!r.ok) throw new Error('불러오기 실패');
-    return r.json();
-  });
+const fetcher = <T,>(url: string) => adminFetcher<T>(url, { cache: 'no-store' });
 
 // list 응답 파싱: Array | {items} | {data} | {results} | {rows}
 function asTotal(val: unknown): number | undefined {
@@ -182,10 +180,10 @@ export default function UserDetailClient({ id }: { id: string }) {
   const { data: kpi } = useSWR<{ orders: number; applications: number; reviews: number }>(`/api/admin/users/${id}/kpi`, fetcher);
 
   // 최근 항목
-  const { data: ordersResp } = useSWR(`/api/admin/users/${id}/orders?limit=5`, fetcher);
-  const { data: appsResp } = useSWR(`/api/admin/users/${id}/applications/stringing?limit=5`, fetcher);
-  const { data: reviewsResp } = useSWR(`/api/admin/users/${id}/reviews?limit=5`, fetcher);
-  const { data: auditResp } = useSWR(`/api/admin/users/${id}/audit?limit=5`, fetcher);
+  const { data: ordersResp } = useSWR<unknown>(`/api/admin/users/${id}/orders?limit=5`, fetcher);
+  const { data: appsResp } = useSWR<unknown>(`/api/admin/users/${id}/applications/stringing?limit=5`, fetcher);
+  const { data: reviewsResp } = useSWR<unknown>(`/api/admin/users/${id}/reviews?limit=5`, fetcher);
+  const { data: auditResp } = useSWR<{ items?: AuditLog[] } | AuditLog[] | null>(`/api/admin/users/${id}/audit?limit=5`, fetcher);
   const { data: sessionsResp, mutate: mutateSessions } = useUserSessions(id, 5);
   const orders = safeArray(ordersResp);
   const apps = safeArray(appsResp);
@@ -206,7 +204,7 @@ export default function UserDetailClient({ id }: { id: string }) {
   );
 
   const [localAudit, setLocalAudit] = useState<AuditLog[]>([]);
-  const audit: AuditLog[] = (auditResp?.items ?? auditResp ?? []) as AuditLog[];
+  const audit: AuditLog[] = Array.isArray(auditResp) ? auditResp : (auditResp?.items ?? []);
   const auditMerged = [...(audit || []), ...localAudit].sort((a, b) => +new Date(b.at) - +new Date(a.at)).slice(0, 5);
 
   // 폼 로컬 상태 (미저장 변경 탐지)
@@ -229,18 +227,18 @@ export default function UserDetailClient({ id }: { id: string }) {
   async function patchUser(patch: Partial<UserDetail>, auditLabel?: string) {
     try {
       setPending(true);
-      const res = await fetch(`/api/admin/users/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(patch),
+      const result = await runAdminActionWithToast({
+        action: () =>
+          adminMutator(`/api/admin/users/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(patch),
+          }),
+        successMessage: '저장되었습니다.',
+        fallbackErrorMessage: '처리 중 오류',
       });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.message || '실패');
-      showSuccessToast('저장되었습니다.');
+      if (!result) return;
       if (auditLabel) pushAudit(auditLabel, JSON.stringify(patch));
-    } catch (e: unknown) {
-      showErrorToast(e instanceof Error ? e.message : '처리 중 오류');
     } finally {
       setPending(false);
     }
@@ -248,21 +246,20 @@ export default function UserDetailClient({ id }: { id: string }) {
 
   // 폼 저장
   const save = async () => {
-    try {
-      const res = await fetch(`/api/admin/users/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error();
-      await mutate();
-      pushAudit('프로필 수정', JSON.stringify(form));
-      setForm({});
-      showSuccessToast('저장되었습니다.');
-    } catch {
-      showErrorToast('저장에 실패했습니다.');
-    }
+    const result = await runAdminActionWithToast({
+      action: () =>
+        adminMutator(`/api/admin/users/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        }),
+      successMessage: '저장되었습니다.',
+      fallbackErrorMessage: '저장에 실패했습니다.',
+    });
+    if (!result) return;
+    await mutate();
+    pushAudit('프로필 수정', JSON.stringify(form));
+    setForm({});
   };
 
   // 소프트 삭제
@@ -317,19 +314,16 @@ export default function UserDetailClient({ id }: { id: string }) {
   async function resetPassword() {
     try {
       setPending(true);
-      const res = await fetch(`/api/admin/users/${id}/password/reset`, {
-        method: 'POST',
-        credentials: 'include',
+      const json = await runAdminActionWithToast<{ tempPassword?: string }>({
+        action: () => adminMutator(`/api/admin/users/${id}/password/reset`, { method: 'POST' }),
+        successMessage: '임시 비밀번호가 생성되었습니다.',
+        fallbackErrorMessage: '초기화 실패',
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.message || '초기화 실패');
+      if (!json) return;
 
       setTmpPw(json?.tempPassword || null); // 한 번만 보여줄 PW
       setPwDialogOpen(true);
       pushAudit('비밀번호 초기화');
-      showSuccessToast('임시 비밀번호가 생성되었습니다.');
-    } catch (e: unknown) {
-      showErrorToast(e instanceof Error ? e.message : '처리 중 오류');
     } finally {
       setPending(false);
     }
@@ -339,19 +333,19 @@ export default function UserDetailClient({ id }: { id: string }) {
   async function cleanupSessions() {
     try {
       setPending(true);
-      const res = await fetch(`/api/admin/users/${id}/sessions/cleanup`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ olderThanDays: Number(cleanupDays) }),
+      const json = await runAdminActionWithToast<{ deleted?: number }>({
+        action: () =>
+          adminMutator(`/api/admin/users/${id}/sessions/cleanup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ olderThanDays: Number(cleanupDays) }),
+          }),
+        fallbackErrorMessage: '정리에 실패했습니다.',
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.message || '정리에 실패했습니다.');
+      if (!json) return;
       showSuccessToast(`세션 로그 ${json?.deleted ?? 0}건 정리 완료`);
       setCleanupOpen(false);
       await mutateSessions(); // 최신 세션 목록 새로고침
-    } catch (e: unknown) {
-      showErrorToast(e instanceof Error ? e.message : '처리 중 오류');
     } finally {
       setPending(false);
     }

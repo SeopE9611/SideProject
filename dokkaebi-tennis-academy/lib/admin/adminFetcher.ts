@@ -29,6 +29,14 @@ export class AdminFetchError extends Error {
   }
 }
 
+type AdminResultPayload = {
+  ok?: unknown;
+  success?: unknown;
+  message?: unknown;
+  error?: unknown;
+  detail?: unknown;
+};
+
 function pickPayloadMessage(payload: unknown): string | null {
   if (!payload || typeof payload !== 'object') return null;
 
@@ -53,6 +61,20 @@ export function getAdminErrorMessage(error: unknown): string {
   if (error instanceof AdminFetchError) return error.message;
   if (error instanceof Error && error.message) return error.message;
   return ADMIN_UNKNOWN_ERROR_MESSAGE;
+}
+
+export function ensureAdminMutationSucceeded(payload: unknown, fallbackMessage = ADMIN_UNKNOWN_ERROR_MESSAGE): void {
+  if (!payload || typeof payload !== 'object') return;
+
+  const result = payload as AdminResultPayload;
+  const hasResultFlag = 'ok' in result || 'success' in result;
+  if (!hasResultFlag) return;
+
+  const isSuccessful = result.ok === true || result.success === true;
+  if (isSuccessful) return;
+
+  const message = pickPayloadMessage(payload) ?? fallbackMessage;
+  throw new AdminFetchError(message, 200, payload);
 }
 
 function safeParseResponseBody(rawText: string): unknown {

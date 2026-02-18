@@ -24,7 +24,8 @@ import { racketBrandLabel } from '@/lib/constants';
 import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import type { AdminRentalListItemDto, AdminRentalPaymentFilter, AdminRentalsListResponseDto, AdminRentalShippingFilter } from '@/types/admin/rentals';
-import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { adminFetcher, adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 
 type RentalRow = AdminRentalListItemDto & { id: string; createdAt: string; dueAt: string | null; depositRefundedAt: string | null };
 
@@ -315,20 +316,22 @@ export default function AdminRentalsClient() {
   const markRefund = async (id: string, mark: boolean) => {
     if (busyId) return;
     setBusyId(id);
-    const res = await fetch(`/api/admin/rentals/${encodeURIComponent(id)}/deposit/refund`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ action: mark ? 'mark' : 'clear' }),
+
+    const result = await runAdminActionWithToast<{ ok?: boolean; message?: string }>({
+      action: async () => {
+        const json = await adminMutator<{ ok?: boolean; message?: string }>(`/api/admin/rentals/${encodeURIComponent(id)}/deposit/refund`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: mark ? 'mark' : 'clear' }),
+        });
+        ensureAdminMutationSucceeded(json, '처리 실패');
+        return json;
+      },
+      successMessage: mark ? '환불 처리 완료' : '환불 해제 완료',
+      fallbackErrorMessage: '처리 실패',
     });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || !json?.ok) {
-      showErrorToast(json?.message || '처리 실패');
-      setBusyId(null);
-      return;
-    }
-    await mutate();
-    showSuccessToast(mark ? '환불 처리 완료' : '환불 해제 완료');
+
+    if (result) await mutate();
     setBusyId(null);
   };
 
@@ -338,12 +341,14 @@ export default function AdminRentalsClient() {
       showErrorToast('유효하지 않은 대여 ID입니다.');
       return;
     }
-    const res = await fetch(`/api/admin/rentals/${encodeURIComponent(safe)}/return`, { method: 'POST' });
 
-    if (res.ok) {
-      mutate();
-      showSuccessToast('반납 처리 완료');
-    } else showErrorToast('반납 처리 실패');
+    const result = await runAdminActionWithToast({
+      action: () => adminMutator(`/api/admin/rentals/${encodeURIComponent(safe)}/return`, { method: 'POST' }),
+      successMessage: '반납 처리 완료',
+      fallbackErrorMessage: '반납 처리 실패',
+    });
+
+    if (result) mutate();
   };
 
   const resetFilters = () => {
