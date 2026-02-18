@@ -28,5 +28,35 @@ export interface CommunityReportDocument {
   createdAt: Date;
   resolvedAt: Date | null;
   updatedAt?: Date;
+  resolvedByAdminId?: string;
+  resolutionAction?: 'resolve' | 'reject' | 'resolve_hide_target';
+  moderationAudit?: {
+    actor: {
+      adminId: string;
+      email: string | null;
+      name: string | null;
+      role: string;
+    };
+    reportId: string;
+    action: 'resolve' | 'reject' | 'resolve_hide_target';
+    nextStatus: CommunityReportStatus;
+    target: {
+      type: CommunityReportTargetType;
+      postId: string;
+      commentId?: string;
+      beforeStatus?: string;
+      afterStatus?: string;
+      outcome: 'updated' | 'already_processed' | 'not_found';
+      commentsCountAdjusted?: boolean;
+    };
+    transaction: {
+      attempted: boolean;
+      used: boolean;
+    };
+    request: {
+      at: Date;
+      userAgent: string | null;
+      ip: string | null;
+    };
+  };
 }
-

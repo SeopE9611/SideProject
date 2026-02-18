@@ -80,12 +80,39 @@ test('신고 중복 제한 계약: 댓글 신고도 동일 사용자의 5분 내
 // -----------------------------------------------------------------------------
 // 4) 관리자 상태 변경 반영 계약
 // -----------------------------------------------------------------------------
-test('관리자 상태 변경 계약: 신고 상태 변경 API는 target 숨김/삭제 후 report 상태를 resolved/rejected로 반영한다', () => {
+test('관리자 상태 변경 계약: resolve_hide_target은 대상 업데이트 결과를 검사하고 실패 시 report 상태를 보존한다', () => {
   assert.match(adminReportStatusRoute, /resolve_hide_target/);
-  assert.match(adminReportStatusRoute, /postsCol\.updateOne\(\{ _id: report\.postId \}, \{ \$set: \{ status: 'hidden'/);
-  assert.match(adminReportStatusRoute, /commentsCol\.updateOne\(\{ _id: report\.commentId \}, \{ \$set: \{ status: 'deleted'/);
-  assert.match(adminReportStatusRoute, /const nextStatus = action === 'reject' \? 'rejected' : 'resolved';/);
-  assert.match(adminReportStatusRoute, /reportsCol\.updateOne\(\{ _id: new ObjectId\(id\) \}, \{ \$set: \{ status: nextStatus/);
+  assert.match(adminReportStatusRoute, /if \(!hideTargetResult\.ok\)/);
+  assert.match(adminReportStatusRoute, /reportStatusPreserved: true/);
+  assert.match(adminReportStatusRoute, /\{ status: hideTargetResult\.status \}/);
+  assert.match(adminReportStatusRoute, /error: 'target_not_found' \| 'target_already_processed' \| 'target_update_failed'/);
+});
+
+test('관리자 상태 변경 계약: 댓글 삭제 시 commentsCount 하한\(0\)을 보장하는 파이프라인 감소를 사용한다', () => {
+  assert.match(adminReportStatusRoute, /\$max: \[0, \{ \$subtract: \[\{ \$ifNull: \['\$commentsCount', 0\] \}, 1\] \}\]/);
+  assert.match(adminReportStatusRoute, /commentsCount 감소는 0 미만으로 내려가지 않도록/);
+});
+
+test('관리자 상태 변경 계약: 트랜잭션 가능 환경에서는 세션 트랜잭션으로 target\+report 변경을 원자적으로 처리한다', () => {
+  assert.match(adminReportStatusRoute, /supportsTransactions\(db\)/);
+  assert.match(adminReportStatusRoute, /const session = db\.client\.startSession\(\);/);
+  assert.match(adminReportStatusRoute, /await session\.withTransaction\(async \(\) => \{/);
+  assert.match(adminReportStatusRoute, /throw new TransactionBusinessError/);
+});
+
+test('관리자 상태 변경 계약: 감사 로그에 처리 관리자/행동/대상/요청 메타를 확장 저장한다', () => {
+  assert.match(adminReportStatusRoute, /resolvedByAdminId: admin\._id\.toString\(\)/);
+  assert.match(adminReportStatusRoute, /resolutionAction: action/);
+  assert.match(adminReportStatusRoute, /moderationAudit: \{/);
+  assert.match(adminReportStatusRoute, /actor: \{/);
+  assert.match(adminReportStatusRoute, /target: \{/);
+  assert.match(adminReportStatusRoute, /request: \{/);
+});
+
+test('관리자 상태 변경 계약: 대상 없음/이미 삭제됨\(중복 처리\)/업데이트 실패를 각각 409 또는 422로 구분한다', () => {
+  assert.match(adminReportStatusRoute, /status: 409,\s*error: 'target_not_found'/);
+  assert.match(adminReportStatusRoute, /status: 409,\s*error: 'target_already_processed'/);
+  assert.match(adminReportStatusRoute, /status: 422,\s*error: 'target_update_failed'/);
 });
 
 test('관리자 상태 반영 조회 계약: 신고 목록 API는 신고/게시글/댓글의 최신 status 필드를 응답으로 노출한다', () => {
