@@ -2,6 +2,7 @@ import type { ObjectId } from 'mongodb';
 
 export type CommunityReportTargetType = 'post' | 'comment';
 export type CommunityReportStatus = 'pending' | 'resolved' | 'rejected';
+export type CommunityReportModerationTargetOutcome = 'updated' | 'no_target_change';
 
 /**
  * 관리자 신고 목록 검색에서 사용하는 필드.
@@ -46,7 +47,7 @@ export interface CommunityReportDocument {
       commentId?: string;
       beforeStatus?: string;
       afterStatus?: string;
-      outcome: 'updated' | 'already_processed' | 'not_found';
+      outcome: CommunityReportModerationTargetOutcome;
       commentsCountAdjusted?: boolean;
     };
     transaction: {
