@@ -88,12 +88,12 @@ test('관리자 상태 변경 계약: resolve_hide_target은 대상 업데이트
   assert.match(adminReportStatusRoute, /error: 'target_not_found' \| 'target_already_processed' \| 'target_update_failed'/);
 });
 
-test('관리자 상태 변경 계약: 댓글 삭제 시 commentsCount 하한\(0\)을 보장하는 파이프라인 감소를 사용한다', () => {
+test('관리자 상태 변경 계약: 댓글 삭제 시 commentsCount 하한(0)을 보장하는 파이프라인 감소를 사용한다', () => {
   assert.match(adminReportStatusRoute, /\$max: \[0, \{ \$subtract: \[\{ \$ifNull: \['\$commentsCount', 0\] \}, 1\] \}\]/);
   assert.match(adminReportStatusRoute, /commentsCount 감소는 0 미만으로 내려가지 않도록/);
 });
 
-test('관리자 상태 변경 계약: 트랜잭션 가능 환경에서는 세션 트랜잭션으로 target\+report 변경을 원자적으로 처리한다', () => {
+test('관리자 상태 변경 계약: 트랜잭션 가능 환경에서는 세션 트랜잭션으로 target+report 변경을 원자적으로 처리한다', () => {
   assert.match(adminReportStatusRoute, /supportsTransactions\(db\)/);
   assert.match(adminReportStatusRoute, /const session = db\.client\.startSession\(\);/);
   assert.match(adminReportStatusRoute, /await session\.withTransaction\(async \(\) => \{/);
@@ -109,7 +109,7 @@ test('관리자 상태 변경 계약: 감사 로그에 처리 관리자/행동/�
   assert.match(adminReportStatusRoute, /request: \{/);
 });
 
-test('관리자 상태 변경 계약: 대상 없음/이미 삭제됨\(중복 처리\)/업데이트 실패를 각각 409 또는 422로 구분한다', () => {
+test('관리자 상태 변경 계약: 대상 없음/이미 삭제됨(중복 처리)/업데이트 실패를 각각 409 또는 422로 구분한다', () => {
   assert.match(adminReportStatusRoute, /status: 409,\s*error: 'target_not_found'/);
   assert.match(adminReportStatusRoute, /status: 409,\s*error: 'target_already_processed'/);
   assert.match(adminReportStatusRoute, /status: 422,\s*error: 'target_update_failed'/);

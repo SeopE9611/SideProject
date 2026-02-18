@@ -36,14 +36,13 @@ class TransactionBusinessError extends Error {
   }
 }
 
-function supportsTransactions(db: Db) {
-  const topology = db.client.topology?.description;
-  if (!topology) return false;
-
-  return [...topology.servers.values()].some((server) => {
-    const type = server.type;
-    return type === 'RSPrimary' || type === 'RSSecondary' || type === 'Mongos';
-  });
+async function supportsTransactions(db: Db) {
+  try {
+    const hello = (await db.admin().command({ hello: 1 })) as { setName?: string; msg?: string };
+    return Boolean(hello.setName) || hello.msg === 'isdbgrid';
+  } catch {
+    return false;
+  }
 }
 
 async function resolveHideTarget(
@@ -224,7 +223,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
   if (!report) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const nextStatus = action === 'reject' ? 'rejected' : 'resolved';
-  const transactionSupported = supportsTransactions(db);
+  const transactionSupported = await supportsTransactions(db);
   const requestAt = new Date();
   const userAgent = req.headers.get('user-agent');
   const forwardedFor = req.headers.get('x-forwarded-for');
