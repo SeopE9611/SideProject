@@ -257,7 +257,7 @@ export default function CartPageClient() {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+    <div className="min-h-full bg-gradient-to-br from-background via-background to-background dark:from-background dark:via-background dark:to-background">
       {/* 장착 대상 스트링 정리 확인 다이얼로그 */}
       <AlertDialog
         open={cleanupDialogOpen}
@@ -273,18 +273,18 @@ export default function CartPageClient() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-semibold">장착 대상 스트링 정리</AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-2 text-sm text-muted-foreground">
                 <p>
                   장착 대상 스트링은 <span className="font-medium">1종만</span> 가능합니다.
                 </p>
                 <p>
-                  남길 스트링(선택): <span className="font-medium text-gray-900">{keepStringLabel}</span>
+                  남길 스트링(선택): <span className="font-medium text-foreground">{keepStringLabel}</span>
                 </p>
                 <p>
-                  삭제될 스트링(정리 대상): <span className="font-medium text-gray-900">{removeCount}개</span>
-                  {removePreview ? <span className="text-gray-500"> ({removePreview})</span> : null}
+                  삭제될 스트링(정리 대상): <span className="font-medium text-foreground">{removeCount}개</span>
+                  {removePreview ? <span className="text-muted-foreground"> ({removePreview})</span> : null}
                 </p>
-                <p className="text-gray-500">
+                <p className="text-muted-foreground">
                   “정리하기”를 누르면 <b>선택한 스트링 1종만 유지</b>되고, 나머지 스트링은 장바구니에서 삭제됩니다. (취소 시 변경 없음)
                 </p>
               </div>
@@ -297,8 +297,8 @@ export default function CartPageClient() {
         </AlertDialogContent>
       </AlertDialog>
       {/* 헤더 */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
-        <div className="absolute inset-0 bg-black/10" />
+      <div className="relative overflow-hidden bg-gradient-to-r from-primary via-primary to-primary text-primary-foreground">
+        <div className="absolute inset-0 bg-foreground/10" />
         <div className="absolute inset-0 opacity-20">
           <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
             <defs>
@@ -314,19 +314,19 @@ export default function CartPageClient() {
         </div>
         <SiteContainer variant="wide" className="relative py-10 bp-sm:py-12 bp-md:py-14">
           <div className="mb-4 flex items-center gap-4">
-            <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-sm shadow-lg">
+            <div className="rounded-2xl bg-card/20 p-3 backdrop-blur-sm shadow-lg">
               <ShoppingBag className="h-8 w-8" />
             </div>
             <div>
               <h1 className="mb-2 text-2xl bp-sm:text-3xl bp-md:text-4xl font-black">장바구니</h1>
-              <p className="text-blue-100">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
+              <p className="text-accent">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
             </div>
           </div>
 
           {cartItems.length > 0 && (
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-blue-300" />
+                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
                 <span>총 {cartItems.length}개 상품</span>
               </div>
               <div className="flex items-center gap-2">
@@ -343,27 +343,27 @@ export default function CartPageClient() {
           <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-3">
             {/* 목록 */}
             <div className="bp-lg:col-span-2 space-y-5">
-              <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl">
-                <CardHeader className="rounded-t-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+              <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl">
+                <CardHeader className="rounded-t-lg bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <CardTitle className="flex items-center gap-3">
-                        <span className="rounded-2xl bg-gradient-to-r from-blue-100 to-indigo-100 p-2 shadow-lg dark:from-blue-900 dark:to-indigo-900">
-                          <ShoppingBag className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <span className="rounded-2xl bg-gradient-to-r from-muted to-muted p-2 shadow-lg dark:from-background dark:to-background">
+                          <ShoppingBag className="h-5 w-5 text-accent dark:text-accent" />
                         </span>
                         선택한 상품 ({cartItems.length}개)
                       </CardTitle>
-                      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">상품명을 눌러 상세로 이동할 수 있어요.</p>
+                      <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">상품명을 눌러 상세로 이동할 수 있어요.</p>
                     </div>
 
                     {/* 전체선택 / 선택n개 / 선택삭제 */}
                     <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
-                      <Button variant="ghost" size="sm" onClick={toggleAll} className="hover:bg-white/60 dark:hover:bg-slate-800/60">
+                      <Button variant="ghost" size="sm" onClick={toggleAll} className="hover:bg-card/60 dark:hover:bg-card/60">
                         {selectedIds.length === cartItems.length ? '전체 해제' : '전체 선택'}
                       </Button>
-                      <div className="hidden bp-sm:block h-4 w-px bg-black/10 dark:bg-white/10" />
-                      <span className="text-slate-500 dark:text-slate-400">선택 {selectedIds.length}개</span>
-                      <Button variant="ghost" size="sm" onClick={removeSelected} className="text-red-600 hover:bg-red-50/70 dark:hover:bg-red-900/20">
+                      <div className="hidden bp-sm:block h-4 w-px bg-foreground/10 dark:bg-card/10" />
+                      <span className="text-muted-foreground dark:text-muted-foreground">선택 {selectedIds.length}개</span>
+                      <Button variant="ghost" size="sm" onClick={removeSelected} className="text-destructive hover:bg-destructive/15 dark:hover:bg-destructive/15">
                         선택 삭제
                       </Button>
                     </div>
@@ -398,7 +398,7 @@ export default function CartPageClient() {
                     const highlightCleanupTarget = needsCompositionCleanup && isMountableString;
 
                     return (
-                      <div key={item.id} className={`rounded-xl bg-white p-3 bp-sm:p-4 shadow-sm transition hover:shadow-md dark:bg-slate-800 ${highlightCleanupTarget ? 'ring-2 ring-orange-300 bg-orange-50/40 dark:bg-orange-950/20' : ''}`}>
+                      <div key={item.id} className={`rounded-xl bg-card p-3 bp-sm:p-4 shadow-sm transition hover:shadow-md dark:bg-card ${highlightCleanupTarget ? 'ring-2 ring-ring bg-muted/40 dark:bg-muted' : ''}`}>
                         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
                           {/* 상단(모바일): 체크+썸네일+이름 */}
                           <div className="flex items-center gap-3 min-w-0">
@@ -407,25 +407,25 @@ export default function CartPageClient() {
                               <Image src={item.image || '/placeholder.svg?height=72&width=72'} alt={item.name} width={72} height={72} loading="lazy" className="aspect-square rounded-lg object-cover" />
                             </Link>
                             <div className="min-w-0 flex-1">
-                              <Link href={itemHref} className="block line-clamp-2 bp-sm:line-clamp-1 font-medium text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400">
+                              <Link href={itemHref} className="block line-clamp-2 bp-sm:line-clamp-1 font-medium text-foreground transition-colors hover:text-accent dark:text-foreground dark:hover:text-accent">
                                 {item.name}
                               </Link>
-                              <div className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-                                개당 <span className="tabular-nums font-medium text-slate-700 dark:text-slate-200">{formatKRW(item.price)}원</span>
+                              <div className="mt-0.5 text-sm text-muted-foreground dark:text-muted-foreground">
+                                개당 <span className="tabular-nums font-medium text-foreground dark:text-foreground">{formatKRW(item.price)}원</span>
                               </div>
                               {highlightCleanupTarget && (
                                 <>
-                                  <span className="mt-1 inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-orange-700 ring-1 ring-inset ring-orange-200 dark:bg-orange-900/30 dark:text-orange-200 dark:ring-orange-700/50">
+                                  <span className="mt-1 inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-foreground ring-1 ring-inset ring-ring dark:bg-muted dark:text-foreground dark:ring-ring">
                                     장착 대상 스트링(정리 필요)
                                   </span>
-                                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-snug text-orange-700/90 dark:text-orange-200/90">
+                                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-snug text-foreground/90 dark:text-foreground">
                                     <span className="inline-flex items-center gap-1.5">
                                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                                       장착 대상 스트링은 <b>1종만</b> 남겨주세요. (나머지는 삭제)
                                     </span>
                                     <button
                                       type="button"
-                                      className="font-semibold underline underline-offset-2 text-orange-700 hover:text-orange-800 dark:text-orange-200 dark:hover:text-orange-100"
+                                      className="font-semibold underline underline-offset-2 text-foreground hover:text-foreground dark:text-foreground dark:hover:text-foreground"
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -446,23 +446,23 @@ export default function CartPageClient() {
                             {lockStepper ? (
                               <div className="order-1 flex flex-col items-center">
                                 {/* 숫자만 표시(± 없음) */}
-                                <div className="flex h-8 items-center rounded-full bg-slate-100 px-3 dark:bg-slate-700">
+                                <div className="flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
                                   <span className="tabular-nums w-8 select-none text-center font-medium">{item.quantity}</span>
                                 </div>
 
                                 {/* 번들 변경 링크: 라켓/스트링 양쪽에 보여줘도 UX가 덜 헷갈림 */}
                                 {bundleEditHref && (
-                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
+                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-accent hover:underline dark:text-accent">
                                     번들 수량/스트링 변경
                                   </Link>
                                 )}
 
-                                {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>현재 가용 수량: {maxStock}개</span>}
+                                {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-destructive' : 'text-muted-foreground dark:text-muted-foreground'}`}>현재 가용 수량: {maxStock}개</span>}
                               </div>
                             ) : (
                               /* 수량 스테퍼 (pill, 비활성 표시) */
                               <div className="order-1 flex flex-col items-center">
-                                <div className="flex items-center rounded-full bg-slate-100 px-1 dark:bg-slate-700">
+                                <div className="flex items-center rounded-full bg-muted px-1 dark:bg-muted">
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -504,18 +504,18 @@ export default function CartPageClient() {
                                 </div>
 
                                 {lockStepper && bundleEditHref ? (
-                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
+                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-accent hover:underline dark:text-accent">
                                     번들 수량/스트링 변경
                                   </Link>
                                 ) : (
-                                  Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>현재 가용 수량: {maxStock}개</span>
+                                  Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-destructive' : 'text-muted-foreground dark:text-muted-foreground'}`}>현재 가용 수량: {maxStock}개</span>
                                 )}
                               </div>
                             )}
 
                             <div className="order-2 ml-auto bp-sm:ml-0 text-right">
-                              <div className="text-xs text-slate-500 dark:text-slate-400">합계</div>
-                              <div className="tabular-nums text-lg font-semibold text-slate-900 dark:text-slate-100">{formatKRW(item.price * item.quantity)}원</div>
+                              <div className="text-xs text-muted-foreground dark:text-muted-foreground">합계</div>
+                              <div className="tabular-nums text-lg font-semibold text-foreground dark:text-foreground">{formatKRW(item.price * item.quantity)}원</div>
                             </div>
 
                             {/* 삭제 버튼 (컨펌) */}
@@ -540,7 +540,7 @@ export default function CartPageClient() {
                                   removeItem(item.id);
                                 }
                               }}
-                              className="order-3 text-slate-400 hover:text-red-600"
+                              className="order-3 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -551,9 +551,9 @@ export default function CartPageClient() {
                   })}
                 </CardContent>
 
-                <CardFooter className="rounded-b-lg bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <CardFooter className="rounded-b-lg bg-gradient-to-r from-muted/50 to-muted/50 dark:from-background dark:to-background">
                   <div className="flex w-full flex-col justify-between gap-4 bp-sm:flex-row">
-                    <Button variant="outline" className="group border-0 shadow-sm hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
+                    <Button variant="outline" className="group border-0 shadow-sm hover:bg-muted dark:hover:bg-primary" asChild>
                       <Link href="/products" className="flex items-center gap-2">
                         <ArrowRight className="h-4 w-4 -rotate-180 transition-transform group-hover:-translate-x-1" />
                         쇼핑 계속하기
@@ -561,7 +561,7 @@ export default function CartPageClient() {
                     </Button>
                     <Button
                       variant="destructive"
-                      className="bg-gradient-to-r from-red-500 to-pink-500 shadow-lg hover:from-red-600 hover:to-pink-600"
+                      className="bg-gradient-to-r from-background to-background shadow-lg hover:from-primary hover:to-primary"
                       onClick={() => {
                         if (confirm('장바구니의 모든 상품을 비울까요?')) clearCart();
                       }}
@@ -579,10 +579,10 @@ export default function CartPageClient() {
             {/* 요약 */}
             <div className="bp-lg:col-span-1">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
-                <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-4 bp-sm:p-6 text-white">
+                <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl overflow-hidden">
+                  <div className="bg-gradient-to-r from-primary via-primary to-primary p-4 bp-sm:p-6 text-primary-foreground">
                     <CardTitle className="flex items-center gap-3 text-xl">
-                      <div className="rounded-2xl bg-white/20 p-2 shadow-lg">
+                      <div className="rounded-2xl bg-card/20 p-2 shadow-lg">
                         <Package className="h-5 w-5" />
                       </div>
                       주문 요약
@@ -591,26 +591,26 @@ export default function CartPageClient() {
                   <CardContent className="space-y-5 bp-sm:space-y-6 p-4 bp-sm:p-6">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">상품 금액</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">상품 금액</span>
                         <span className="tabular-nums text-lg font-semibold">{formatKRW(subtotal)}원</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">배송비</span>
-                        <span className={shippingFee === 0 ? 'font-semibold text-blue-600 dark:text-blue-400' : 'font-semibold'}>{shippingFee > 0 ? `${formatKRW(shippingFee)}원` : '무료'}</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">배송비</span>
+                        <span className={shippingFee === 0 ? 'font-semibold text-accent dark:text-accent' : 'font-semibold'}>{shippingFee > 0 ? `${formatKRW(shippingFee)}원` : '무료'}</span>
                       </div>
                       <Separator className="opacity-40" />
                       <div className="flex items-center justify-between text-xl font-bold">
                         <span>총 결제 금액</span>
-                        <span className="tabular-nums text-blue-600 dark:text-blue-400">{formatKRW(total)}원</span>
+                        <span className="tabular-nums text-accent dark:text-accent">{formatKRW(total)}원</span>
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
-                      <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 mb-2">
+                    <div className="bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background p-4 rounded-xl border border-border dark:border-border">
+                      <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
                         <Star className="h-4 w-4" />
                         <span className="font-semibold">배송 혜택</span>
                       </div>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                      <p className="text-sm text-accent dark:text-accent">
                         30,000원 이상 구매 시 무료배송
                         {subtotal < 30000 && <span className="block mt-1 font-semibold">{(30000 - subtotal).toLocaleString()}원 더 구매하면 무료배송!</span>}
                       </p>
@@ -620,7 +620,7 @@ export default function CartPageClient() {
                     {blockServiceCheckout ? (
                       <>
                         {blockServiceCheckoutByQty && (
-                          <div className="w-full rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/40 dark:text-orange-200">
+                          <div className="w-full rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
                             라켓 수량(<span className="font-semibold">{totalRacketQty}개</span>)과 장착 스트링 수량(
                             <span className="font-semibold">{totalMountableStringQty}개</span>)이 다릅니다.
                             <br />
@@ -633,7 +633,7 @@ export default function CartPageClient() {
                         {bundleEditHref ? (
                           <Button
                             asChild
-                            className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl flex items-center justify-center gap-3"
+                            className="h-14 w-full transform bg-gradient-to-r from-primary to-primary text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-primary/90 hover:to-primary/90 hover:shadow-2xl flex items-center justify-center gap-3"
                           >
                             <Link href={bundleEditHref}>
                               <ShoppingBag className="h-5 w-5" />
@@ -643,7 +643,7 @@ export default function CartPageClient() {
                           </Button>
                         ) : (
                           <Button
-                            className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl flex items-center justify-center gap-3"
+                            className="h-14 w-full transform bg-gradient-to-r from-primary to-primary text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-primary/90 hover:to-primary/90 hover:shadow-2xl flex items-center justify-center gap-3"
                             size="lg"
                             onClick={() => showErrorToast(serviceBlockToastMessage)}
                           >
@@ -654,12 +654,12 @@ export default function CartPageClient() {
                         )}
                       </>
                     ) : loading ? (
-                      <Button className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold opacity-70" size="lg" disabled>
+                      <Button className="h-14 w-full transform bg-gradient-to-r from-primary to-primary font-semibold opacity-70" size="lg" disabled>
                         <Loader2 className="h-5 w-5 animate-spin" />
                         로그인 확인 중...
                       </Button>
                     ) : (
-                      <Button className="h-14 w-full transform bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl" size="lg" asChild>
+                      <Button className="h-14 w-full transform bg-gradient-to-r from-primary to-primary font-semibold hover:-translate-y-0.5 hover:from-primary/90 hover:to-primary/90 hover:shadow-2xl" size="lg" asChild>
                         <Link href={checkoutHref} className="flex items-center gap-3">
                           <ShoppingBag className="h-5 w-5" />
                           {user ? '주문하기' : '로그인 후 주문하기'}
@@ -674,15 +674,15 @@ export default function CartPageClient() {
           </div>
         ) : (
           <div className="mx-auto max-w-2xl">
-            <Card className="backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border-0 shadow-2xl text-center overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-100 to-indigo-100 p-12 dark:from-blue-900/30 dark:to-indigo-900/30">
-                <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 shadow-xl">
-                  <PackageOpen className="h-12 w-12 text-white" />
+            <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl text-center overflow-hidden">
+              <div className="bg-gradient-to-r from-muted to-muted p-12 dark:from-background dark:to-background">
+                <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-primary to-primary shadow-xl">
+                  <PackageOpen className="h-12 w-12 text-primary-foreground" />
                 </div>
-                <h2 className="mb-4 text-3xl font-bold text-slate-800 dark:text-slate-200">장바구니가 비어있습니다</h2>
-                <p className="mb-8 text-lg text-slate-600 dark:text-slate-400">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
+                <h2 className="mb-4 text-3xl font-bold text-foreground dark:text-foreground">장바구니가 비어있습니다</h2>
+                <p className="mb-8 text-lg text-muted-foreground dark:text-muted-foreground">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
                 <Button
-                  className="transform bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-semibold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
+                  className="transform bg-gradient-to-r from-primary to-primary px-8 py-3 font-semibold text-primary-foreground shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-primary/90 hover:to-primary/90 hover:shadow-2xl"
                   size="lg"
                   asChild
                 >
@@ -704,37 +704,37 @@ export default function CartPageClient() {
       {/* 모바일 하단 결제 바 */}
       {cartItems.length > 0 && (
         <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-40 bp-md:hidden">
-          <div className="rounded-t-2xl bg-white/95 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-slate-800/95">
+          <div className="rounded-t-2xl bg-card/95 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-card/95">
             <SiteContainer variant="full" className="max-w-screen-sm py-3">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-slate-300">총 결제 금액</span>
-                <span className="tabular-nums text-lg font-bold text-blue-600 dark:text-blue-400">{formatKRW(total)}원</span>
+                <span className="text-sm text-muted-foreground dark:text-muted-foreground">총 결제 금액</span>
+                <span className="tabular-nums text-lg font-bold text-accent dark:text-accent">{formatKRW(total)}원</span>
               </div>
               {blockServiceCheckout ? (
                 <div className="space-y-2">
                   {blockServiceCheckoutByQty && (
-                    <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/40 dark:text-orange-200">
+                    <div className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
                       라켓 수량(<span className="font-semibold">{totalRacketQty}개</span>)과 장착 스트링 수량(
                       <span className="font-semibold">{totalMountableStringQty}개</span>)이 다릅니다. 수량을 맞춘 뒤 주문해 주세요.
                     </div>
                   )}
                   {bundleEditHref ? (
-                    <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
+                    <Button asChild className="h-12 w-full bg-gradient-to-r from-primary to-primary font-semibold hover:from-primary/90 hover:to-primary/90">
                       <Link href={bundleEditHref}>번들 수량/스트링 변경</Link>
                     </Button>
                   ) : (
-                    <Button className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700" onClick={() => showErrorToast(serviceBlockToastMessage)}>
+                    <Button className="h-12 w-full bg-gradient-to-r from-primary to-primary font-semibold hover:from-primary/90 hover:to-primary/90" onClick={() => showErrorToast(serviceBlockToastMessage)}>
                       {blockServiceCheckoutByComposition ? '구성 정리 후 주문하기' : '수량 맞춘 뒤 주문하기'}
                     </Button>
                   )}
                 </div>
               ) : loading ? (
-                <Button className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold opacity-70" disabled>
+                <Button className="h-12 w-full bg-gradient-to-r from-primary to-primary font-semibold opacity-70" disabled>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   로그인 확인 중...
                 </Button>
               ) : (
-                <Button asChild className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 font-semibold hover:from-blue-700 hover:to-indigo-700">
+                <Button asChild className="h-12 w-full bg-gradient-to-r from-primary to-primary font-semibold hover:from-primary/90 hover:to-primary/90">
                   <Link href={checkoutHref}>{user ? '주문하기' : '로그인 후 주문하기'}</Link>
                 </Button>
               )}

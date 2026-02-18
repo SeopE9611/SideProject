@@ -445,10 +445,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  };
 
  return (
- <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+ <div className="min-h-full bg-gradient-to-br from-background via-background to-background dark:from-background dark:via-background dark:to-background">
  {/* Hero Section */}
- <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white dark:from-blue-700 dark:via-purple-700 dark:to-teal-700">
- <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
+ <div className="relative overflow-hidden bg-gradient-to-r from-primary via-background to-primary text-primary-foreground dark:from-background dark:via-background dark:to-teal-700">
+ <div className="absolute inset-0 bg-foreground/10 dark:bg-foreground/10"></div>
  <SiteContainer variant="wide" className="relative py-16">
  <div className="flex items-center gap-4 mb-4">
  <div className="p-3 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full">
@@ -466,8 +466,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-3">
  <div className="bp-lg:col-span-2 space-y-6">
  {/* 대여 상품 정보 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-6">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
+ <div className="bg-gradient-to-r from-primary/10 via-background to-primary/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <Package className="h-5 w-5 text-accent" />
  대여 상품
@@ -475,22 +475,22 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <CardDescription className="mt-2">선택하신 라켓 정보입니다.</CardDescription>
  </div>
  <CardContent className="p-6">
- <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-slate-200/50 dark:border-slate-600/50">
+ <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-background to-background/30 dark:from-background dark:to-background rounded-lg border border-border dark:border-border">
  <div className="relative">
  {initial.racket?.image ? (
- <Image src={initial.racket.image || '/placeholder.svg'} alt="racket" width={80} height={80} className="rounded-lg border-2 border-white shadow-lg object-cover" />
+ <Image src={initial.racket.image || '/placeholder.svg'} alt="racket" width={80} height={80} className="rounded-lg border-2 border-border shadow-lg object-cover" />
  ) : (
- <div className="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 rounded-lg flex items-center justify-center">
- <Package className="h-8 w-8 text-slate-400" />
+ <div className="w-20 h-20 bg-gradient-to-br from-background to-background dark:from-background dark:to-background rounded-lg flex items-center justify-center">
+ <Package className="h-8 w-8 text-muted-foreground" />
  </div>
  )}
  </div>
  <div className="flex-1">
- <div className="text-sm text-slate-500 dark:text-slate-400">중고 라켓</div>
- <h3 className="font-semibold text-slate-800 dark:text-slate-200">{initial.racket ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}` : ''}</h3>
+ <div className="text-sm text-muted-foreground dark:text-muted-foreground">중고 라켓</div>
+ <h3 className="font-semibold text-foreground dark:text-foreground">{initial.racket ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}` : ''}</h3>
  <div className="flex items-center gap-2 mt-1">
- <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-accent dark:text-accent">상태 {initial.racket?.condition}</span>
- <span className="text-xs text-slate-500 dark:text-slate-400">대여 기간 {initial.period}일</span>
+ <span className="text-xs px-2 py-0.5 rounded-full bg-muted dark:bg-primary text-accent dark:text-accent">상태 {initial.racket?.condition}</span>
+ <span className="text-xs text-muted-foreground dark:text-muted-foreground">대여 기간 {initial.period}일</span>
  </div>
  </div>
  </div>
@@ -498,10 +498,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </Card>
 
  {/* 라켓 수령 방식 및 스트링 교체 옵션 */}
- <Card className="bg-card dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-red-500/10 p-6">
+ <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+ <div className="bg-gradient-to-r from-primary/10 via-background to-background p-6">
  <CardTitle className="flex items-center gap-3">
- <Truck className="h-5 w-5 text-purple-600" />
+ <Truck className="h-5 w-5 text-accent" />
  라켓 수령 방식
  </CardTitle>
  <CardDescription className="mt-2">라켓을 어떻게 수령하실지 선택해주세요.</CardDescription>
@@ -509,31 +509,31 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
  <CardContent className="p-6 space-y-4">
  <RadioGroup value={deliveryMethod} onValueChange={(value) => setDeliveryMethod(value as any)} className="space-y-3">
- <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+ <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-muted to-background dark:from-background dark:to-background rounded-lg border border-border dark:border-border">
  <RadioGroupItem value="택배수령" id="rentals-delivery-courier" />
  <Label htmlFor="rentals-delivery-courier" className="flex-1 cursor-pointer font-medium">
  택배 수령 (자택 또는 지정 장소로 배송)
- <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">결제 완료 후 택배 발송으로 진행됩니다.</div>
+ <div className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">결제 완료 후 택배 발송으로 진행됩니다.</div>
  </Label>
  <Truck className="h-5 w-5 text-accent" />
  </div>
 
- <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+ <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-muted to-background dark:from-background dark:to-background rounded-lg border border-border dark:border-border">
  <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
  <Label htmlFor="rentals-delivery-visit" className="flex-1 cursor-pointer font-medium">
  오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
- <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">스트링 교체 신청 시 신청서에서 "방문 시간" 선택 흐름으로 이어집니다.</div>
+ <div className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">스트링 교체 신청 시 신청서에서 "방문 시간" 선택 흐름으로 이어집니다.</div>
  </Label>
- <Building2 className="h-5 w-5 text-purple-600" />
+ <Building2 className="h-5 w-5 text-accent" />
  </div>
  </RadioGroup>
 
  {/* 구매 체크아웃과 동일하게: 수령 방식 카드 안에서 "스트링 교체 옵션"을 같이 묶어 표시 */}
- <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+ <div className="bg-gradient-to-r from-yellow-400 to-background dark:from-yellow-400 dark:to-background p-4 rounded-lg border border-yellow-400 dark:border-yellow-400">
  <div className="flex items-start justify-between gap-3">
  <div className="space-y-1">
- <p className="font-medium text-orange-700 dark:text-orange-400">스트링 교체 서비스 (선택)</p>
- <p className="text-sm text-orange-600 dark:text-orange-400">
+ <p className="font-medium text-foreground dark:text-foreground">스트링 교체 서비스 (선택)</p>
+ <p className="text-sm text-foreground dark:text-foreground">
  {deliveryMethod === '방문수령' ? '방문 수령을 선택하면 매장 방문 접수로 교체가 진행됩니다. (신청서에서 방문 시간 선택)' : '택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 교체가 진행됩니다.'}
  </p>
  </div>
@@ -543,19 +543,19 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </Button>
  </div>
 
- <div className="mt-3 rounded-lg border border-slate-200/60 dark:border-slate-600/60 p-4 bg-card/70 dark:bg-slate-800/40">
+ <div className="mt-3 rounded-lg border border-border dark:border-border p-4 bg-card/70 dark:bg-card/40">
  {selectedString ? (
  <div className="space-y-1">
- <div className="text-xs text-slate-500 dark:text-slate-400">선택된 스트링</div>
- <div className="font-semibold text-slate-800 dark:text-slate-200">{selectedString.name}</div>
- <div className="text-sm text-slate-600 dark:text-slate-300">
+ <div className="text-xs text-muted-foreground dark:text-muted-foreground">선택된 스트링</div>
+ <div className="font-semibold text-foreground dark:text-foreground">{selectedString.name}</div>
+ <div className="text-sm text-muted-foreground dark:text-muted-foreground">
  {selectedString.price.toLocaleString()}원 + 교체 {selectedString.mountingFee.toLocaleString()}원
  </div>
 
- <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">* 대여 결제 완료 후, 스트링 교체 신청서(/services/apply) 초안이 자동 생성되어 이어집니다.</div>
+ <div className="mt-2 text-xs text-muted-foreground dark:text-muted-foreground">* 대여 결제 완료 후, 스트링 교체 신청서(/services/apply) 초안이 자동 생성되어 이어집니다.</div>
  </div>
  ) : (
- <div className="text-sm text-slate-600 dark:text-slate-300">
+ <div className="text-sm text-muted-foreground dark:text-muted-foreground">
  현재는 <b>교체 서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러 교체 서비스를 함께 진행할 수 있습니다.
  </div>
  )}
@@ -565,10 +565,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </Card>
 
  {/* 배송 정보 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 p-6">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
+ <div className="bg-gradient-to-r from-background via-background to-primary/10 p-6">
  <CardTitle className="flex items-center gap-3">
- <MapPin className="h-5 w-5 text-green-600" />
+ <MapPin className="h-5 w-5 text-foreground" />
  배송 정보
  </CardTitle>
  <CardDescription className="mt-2">라켓을 받으실 배송지 정보를 입력해주세요.</CardDescription>
@@ -581,14 +581,14 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <UserIcon className="h-4 w-4 text-accent" />
  수령인 이름
  </Label>
- <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="수령인 이름을 입력하세요" className="border-2 focus:border-blue-500 transition-colors" />
+ <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="수령인 이름을 입력하세요" className="border-2 focus:border-border transition-colors" />
  </div>
  <div className="space-y-2">
  <Label htmlFor="email" className="flex items-center gap-2">
- <Mail className="h-4 w-4 text-purple-600" />
+ <Mail className="h-4 w-4 text-accent" />
  이메일
  </Label>
- <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="예: user@example.com" className="border-2 focus:border-blue-500 transition-colors" />
+ <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="예: user@example.com" className="border-2 focus:border-border transition-colors" />
  </div>
  <div className="space-y-2 bp-sm:col-span-2">
  <Label htmlFor="phone" className="flex items-center gap-2">
@@ -601,39 +601,39 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="space-y-4">
  <div className="flex items-center justify-between">
  <Label htmlFor="postal" className="flex items-center gap-2">
- <Home className="h-4 w-4 text-orange-600" />
+ <Home className="h-4 w-4 text-foreground" />
  우편번호
  </Label>
- <Button variant="outline" size="sm" onClick={openPostcode} className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 hover:from-blue-600 hover:to-purple-600">
+ <Button variant="outline" size="sm" onClick={openPostcode} className="bg-gradient-to-r from-primary to-primary text-primary-foreground border-0 hover:from-primary/90 hover:to-primary/90">
  우편번호 찾기
  </Button>
  </div>
- <Input id="postal" readOnly value={postalCode} placeholder="우편번호" className="bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2" />
+ <Input id="postal" readOnly value={postalCode} placeholder="우편번호" className="bg-muted dark:bg-muted cursor-not-allowed max-w-[200px] border-2" />
  </div>
  <div className="space-y-2">
  <Label htmlFor="address-main">기본 주소</Label>
- <Input id="address-main" readOnly value={address} placeholder="기본 주소" className="bg-slate-100 dark:bg-slate-700 cursor-not-allowed border-2" />
+ <Input id="address-main" readOnly value={address} placeholder="기본 주소" className="bg-muted dark:bg-muted cursor-not-allowed border-2" />
  </div>
 
  <div className="space-y-2">
  <Label htmlFor="address-detail">상세 주소</Label>
- <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="동/호수 등" className="border-2 focus:border-blue-500 transition-colors" />
+ <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="동/호수 등" className="border-2 focus:border-border transition-colors" />
  </div>
  <div className="space-y-2">
  <Label htmlFor="request" className="flex items-center gap-2">
- <MessageSquare className="h-4 w-4 text-green-600" />
+ <MessageSquare className="h-4 w-4 text-foreground" />
  배송 요청사항
  </Label>
- <Textarea id="request" value={deliveryRequest} onChange={(e) => setRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-green-500 transition-colors" />
+ <Textarea id="request" value={deliveryRequest} onChange={(e) => setRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
  </div>
  </div>
  </CardContent>
  </Card>
  {/* 결제 정보 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 p-6">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
+ <div className="bg-gradient-to-r from-background via-teal-500/10 to-background p-6">
  <CardTitle className="flex items-center gap-3">
- <CreditCard className="h-5 w-5 text-emerald-600" />
+ <CreditCard className="h-5 w-5 text-foreground" />
  결제 정보
  </CardTitle>
  <CardDescription className="mt-2">결제 방법을 선택하고 필요한 정보를 입력해주세요.</CardDescription>
@@ -643,19 +643,19 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="space-y-3">
  <Label>결제 방법</Label>
  <RadioGroup defaultValue="bank-transfer" className="space-y-3">
- <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+ <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-background to-background dark:from-background dark:to-background rounded-lg border-2 border-border dark:border-border">
  <RadioGroupItem value="bank-transfer" id="bank-transfer" />
  <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
  무통장입금
  </Label>
- <Building2 className="h-5 w-5 text-green-600" />
+ <Building2 className="h-5 w-5 text-foreground" />
  </div>
  </RadioGroup>
  </div>
  <div className="space-y-3">
  <Label htmlFor="bank-account">입금 계좌 선택</Label>
  <Select value={selectedBank} onValueChange={(v) => setSelectedBank(v as any)}>
- <SelectTrigger id="bank-account" className="border-2 focus:border-emerald-500">
+ <SelectTrigger id="bank-account" className="border-2 focus:border-border">
  <SelectValue placeholder="입금 계좌를 선택하세요" />
  </SelectTrigger>
  <SelectContent>
@@ -674,10 +674,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
  <div className="space-y-2">
  <Label htmlFor="depositor-name">입금자명</Label>
- <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className="border-2 focus:border-emerald-500 transition-colors" />
+ <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className="border-2 focus:border-border transition-colors" />
  </div>
 
- <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+ <div className="bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background p-4 rounded-lg border border-border dark:border-border">
  <div className="flex items-center gap-2 mb-3">
  <Shield className="h-5 w-5 text-accent" />
  <p className="font-semibold text-accent dark:text-accent">무통장입금 안내</p>
@@ -700,10 +700,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </div>
  </CardContent>
  </Card>
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 p-6">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
+ <div className="bg-gradient-to-r from-background via-background to-background p-6">
  <CardTitle className="flex items-center gap-3">
- <Undo2 className="h-5 w-5 text-amber-600" />
+ <Undo2 className="h-5 w-5 text-foreground" />
  보증금 환급 계좌
  </CardTitle>
  <CardDescription className="mt-2">반납 완료 후 보증금을 환급해 드릴 계좌 정보를 입력해주세요.</CardDescription>
@@ -713,7 +713,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="space-y-2">
  <Label htmlFor="refund-bank">환급 은행</Label>
  <Select value={refundBank} onValueChange={(v) => setRefundBank(v as any)}>
- <SelectTrigger id="refund-bank" className="border-2 focus:border-amber-500">
+ <SelectTrigger id="refund-bank" className="border-2 focus:border-border">
  <SelectValue placeholder="환급 받을 은행을 선택하세요" />
  </SelectTrigger>
  <SelectContent>
@@ -726,31 +726,31 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  {/* 계좌번호 */}
  <div className="space-y-2">
  <Label htmlFor="refund-account">환급 계좌번호</Label>
- <Input id="refund-account" value={refundAccount} onChange={(e) => setRefundAccount(e.target.value)} placeholder="예: 110-123-456789" className="border-2 focus:border-amber-500" />
+ <Input id="refund-account" value={refundAccount} onChange={(e) => setRefundAccount(e.target.value)} placeholder="예: 110-123-456789" className="border-2 focus:border-border" />
  </div>
  {/* 예금주 */}
  <div className="space-y-2">
  <Label htmlFor="refund-holder">예금주</Label>
- <Input id="refund-holder" value={refundHolder} onChange={(e) => setRefundHolder(e.target.value)} placeholder="예: 홍길동" className="border-2 focus:border-amber-500" />
+ <Input id="refund-holder" value={refundHolder} onChange={(e) => setRefundHolder(e.target.value)} placeholder="예: 홍길동" className="border-2 focus:border-border" />
  </div>
  {/* 안내 */}
- <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4">
- <p className="text-sm text-slate-700 dark:text-slate-300">반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.</p>
+ <div className="bg-muted dark:bg-muted rounded-lg p-4">
+ <p className="text-sm text-foreground dark:text-muted-foreground">반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.</p>
  </div>
  </CardContent>
  </Card>
 
  {/* 주문자 동의 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-red-500/10 via-pink-500/10 to-rose-500/10 p-6">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
+ <div className="bg-gradient-to-r from-background via-background to-background p-6">
  <CardTitle className="flex items-center gap-3">
- <Shield className="h-5 w-5 text-red-600" />
+ <Shield className="h-5 w-5 text-destructive" />
  주문자 동의
  </CardTitle>
  </div>
  <CardContent className="p-6">
  <div className="space-y-4">
- <div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-4 rounded-lg">
+ <div className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background p-4 rounded-lg">
  <div className="flex items-center space-x-2">
  <Checkbox
  id="agree-all"
@@ -763,7 +763,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  setAgreeRefund(newValue);
  }}
  />
- <label htmlFor="agree-all" className="font-semibold text-lg text-slate-800 dark:text-slate-200">
+ <label htmlFor="agree-all" className="font-semibold text-lg text-foreground dark:text-foreground">
  전체 동의
  </label>
  </div>
@@ -785,7 +785,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  setState: setAgreeRefund,
  },
  ].map((item, index) => (
- <div key={item.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg">
+ <div key={item.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-background to-background/30 dark:from-background dark:to-background rounded-lg">
  <div className="flex items-center space-x-2">
  <Checkbox
  id={item.id}
@@ -797,7 +797,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
  }}
  />
- <label htmlFor={item.id} className="text-sm font-medium text-slate-700 dark:text-slate-300">
+ <label htmlFor={item.id} className="text-sm font-medium text-foreground dark:text-muted-foreground">
  {item.label}
  </label>
  </div>
@@ -815,8 +815,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  {/* 주문 요약 */}
  <div className="bp-lg:col-span-1">
  <div className="bp-lg:sticky bp-lg:top-20">
- <Card className="backdrop-blur-sm bg-card/90 dark:bg-slate-800/90 border-0 shadow-2xl overflow-hidden">
- <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 p-6 text-white">
+ <Card className="backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
+ <div className="bg-gradient-to-r from-primary via-background to-primary p-6 text-primary-foreground">
  <CardTitle className="flex items-center gap-3 text-xl">
  <div className="p-2 bg-card/20 rounded-full">
  <CreditCard className="h-5 w-5" />
@@ -827,22 +827,22 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <CardContent className="p-6 space-y-6">
  <div className="space-y-4">
  <div className="flex justify-between items-center">
- <span className="text-slate-600 dark:text-slate-400">대여 수수료</span>
+ <span className="text-muted-foreground dark:text-muted-foreground">대여 수수료</span>
  <span className="font-semibold text-lg">{initial.fee.toLocaleString()}원</span>
  </div>
  <div className="flex justify-between items-center">
- <span className="text-slate-600 dark:text-slate-400">보증금</span>
+ <span className="text-muted-foreground dark:text-muted-foreground">보증금</span>
  <span className="font-semibold text-lg">{initial.deposit.toLocaleString()}원</span>
  </div>
  {requestStringing && selectedString && (
  <>
  <div className="flex justify-between items-center">
- <span className="text-slate-600 dark:text-slate-400">스트링 금액</span>
+ <span className="text-muted-foreground dark:text-muted-foreground">스트링 금액</span>
  <span className="font-semibold text-lg">{selectedString.price.toLocaleString()}원</span>
  </div>
 
  <div className="flex justify-between items-center">
- <span className="text-slate-600 dark:text-slate-400">교체 서비스비</span>
+ <span className="text-muted-foreground dark:text-muted-foreground">교체 서비스비</span>
  <span className="font-semibold text-lg">{stringingFee.toLocaleString()}원</span>
  </div>
  </>
@@ -851,20 +851,20 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  {/* 포인트 차감 표시 */}
  {appliedPoints > 0 && (
  <div className="flex justify-between items-center">
- <span className="text-slate-600 dark:text-slate-400">포인트 사용</span>
- <span className="font-semibold text-lg text-rose-600">- {appliedPoints.toLocaleString()}P</span>
+ <span className="text-muted-foreground dark:text-muted-foreground">포인트 사용</span>
+ <span className="font-semibold text-lg text-destructive">- {appliedPoints.toLocaleString()}P</span>
  </div>
  )}
 
  {/* 포인트 입력 UI (보증금 제외) */}
- <div className="rounded-lg border border-slate-200/60 dark:border-slate-600/60 p-4 bg-slate-50/40 dark:bg-slate-700/30 space-y-3">
+ <div className="rounded-lg border border-border dark:border-border p-4 bg-background/40 dark:bg-muted/30 space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">포인트 사용</span>
- <span className="text-xs text-slate-500 dark:text-slate-400">사용 가능 {pointsAvailable.toLocaleString()}P</span>
+ <span className="text-sm font-semibold text-foreground dark:text-foreground">포인트 사용</span>
+ <span className="text-xs text-muted-foreground dark:text-muted-foreground">사용 가능 {pointsAvailable.toLocaleString()}P</span>
  </div>
 
  {!userId ? (
- <div className="text-sm text-slate-500 dark:text-slate-400">로그인 시 포인트 사용이 가능합니다.</div>
+ <div className="text-sm text-muted-foreground dark:text-muted-foreground">로그인 시 포인트 사용이 가능합니다.</div>
  ) : (
  <>
  <div className="flex items-center gap-2">
@@ -880,7 +880,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  }
  }}
  />
- <label htmlFor="use-all-points" className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+ <label htmlFor="use-all-points" className="text-sm text-foreground dark:text-muted-foreground cursor-pointer">
  전액 사용 (보증금 제외)
  </label>
  </div>
@@ -903,7 +903,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  className="border-2"
  />
 
- <div className="text-xs text-slate-500 dark:text-slate-400">
+ <div className="text-xs text-muted-foreground dark:text-muted-foreground">
  보증금({initial.deposit.toLocaleString()}원)에는 포인트가 적용되지 않습니다. (최대 {normalizePoints(maxPointsToUse).toLocaleString()}P)
  </div>
  </>
@@ -917,15 +917,15 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </div>
  </div>
 
- <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
- <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400 mb-2">
+ <div className="bg-gradient-to-r from-yellow-400 to-background dark:from-yellow-400 dark:to-background p-4 rounded-lg border border-yellow-400 dark:border-yellow-400">
+ <div className="flex items-center gap-2 text-yellow-400 dark:text-yellow-400 mb-2">
  <Shield className="h-4 w-4" />
  <span className="font-semibold">보증금 안내</span>
  </div>
- <p className="text-sm text-yellow-600 dark:text-yellow-400">반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.</p>
+ <p className="text-sm text-yellow-400 dark:text-yellow-400">반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.</p>
  </div>
 
- <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+ <div className="bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background p-4 rounded-lg border border-border dark:border-border">
  <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
  <Truck className="h-4 w-4" />
  <span className="font-semibold">대여 안내</span>
@@ -942,7 +942,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  onClick={onPay}
  disabled={loading}
  className={cn(
- 'w-full h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:from-blue-700 hover:via-purple-700 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300',
+ 'w-full h-12 bg-gradient-to-r from-primary via-background to-primary hover:from-background hover:via-background hover:to-primary shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300',
  loading && 'opacity-50 cursor-not-allowed',
  )}
  >
