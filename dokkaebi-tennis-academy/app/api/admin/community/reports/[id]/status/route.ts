@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
+import type { CommunityReportDocument } from '@/lib/types/community-report';
 
 type Action = 'resolve' | 'reject' | 'resolve_hide_target';
 
@@ -22,7 +23,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   }
 
-  const reportsCol = db.collection('community_reports');
+  const reportsCol = db.collection<CommunityReportDocument>('community_reports');
   const postsCol = db.collection('community_posts');
   const commentsCol = db.collection('community_comments');
 

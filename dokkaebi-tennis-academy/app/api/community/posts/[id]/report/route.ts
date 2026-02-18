@@ -5,35 +5,9 @@ import { z } from 'zod';
 
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { resolveReporterSnapshot } from '@/lib/community/reporting';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-
-function toEmailLocalPart(email?: string | null) {
-  if (!email) return null;
-  const [local] = String(email).split('@');
-  return local?.trim() ? local.trim() : null;
-}
-
-async function resolveReporterNickname(db: Awaited<ReturnType<typeof getDb>>, payload: any) {
-  const reporterUserId = String(payload?.sub ?? '');
-
-  if (ObjectId.isValid(reporterUserId)) {
-    const user = (await db.collection('users').findOne(
-      { _id: new ObjectId(reporterUserId) },
-      {
-        projection: {
-          nickname: 1,
-          name: 1,
-          email: 1,
-        },
-      },
-    )) as { nickname?: string; name?: string; email?: string } | null;
-
-    const userLabel = user?.nickname?.trim() || user?.name?.trim() || toEmailLocalPart(user?.email);
-    if (userLabel) return userLabel;
-  }
-
-  return payload?.nickname?.trim() || payload?.name?.trim() || toEmailLocalPart(payload?.email) || '회원';
-}
+import type { CommunityReportDocument } from '@/lib/types/community-report';
 
 // 로그인된 사용자 정보 가져오기 (없으면 null)
 async function getAuthPayload() {
@@ -129,26 +103,24 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   }
 
   // 여기까지 왔으면 인증된 사용자
-  const reporterUserId = String(payload.sub);
-  const reporterEmail = payload.email ? String(payload.email) : undefined;
-  const reporterNickname = await resolveReporterNickname(db, payload);
+  const reporter = await resolveReporterSnapshot(db, payload);
 
-  const reportsCol = db.collection('community_reports');
+  const reportsCol = db.collection<CommunityReportDocument>('community_reports');
 
   // 자기글은 신고불가
-  if (post.userId && String(post.userId) === reporterUserId) {
+  if (post.userId && String(post.userId) === reporter.reporterUserId) {
     return NextResponse.json({ ok: false, error: 'cannot_report_own_post' }, { status: 400 });
   }
 
   // 5)  중복 신고 방지 로직
   //   - 같은 회원이 같은 글을 5분 내에 여러 번 신고하는 것 차단
-  if (reporterUserId) {
+  if (reporter.reporterUserId) {
     const now = new Date();
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
 
     const recent = await reportsCol.findOne({
       postId: _id,
-      reporterUserId,
+      reporterUserId: reporter.reporterUserId,
       createdAt: { $gte: fiveMinutesAgo },
     });
 
@@ -160,20 +132,21 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   // 6) 신고 문서 생성
   const now = new Date();
 
-  const doc = {
+  const doc: CommunityReportDocument = {
+    targetType: 'post',
     postId: _id,
     // 게시판 종류: DB에서는 type 필드 사용 중 (free / brand)
     boardType: post.type ?? 'free',
     reason,
-    reporterUserId: reporterUserId ?? null,
-    reporterEmail: reporterEmail ?? null,
-    reporterNickname,
+    reporterUserId: reporter.reporterUserId,
+    reporterEmail: reporter.reporterEmail,
+    reporterNickname: reporter.reporterNickname,
     status: 'pending' as const,
     createdAt: now,
     resolvedAt: null,
   };
 
-  const result = await reportsCol.insertOne(doc as any);
+  const result = await reportsCol.insertOne(doc);
 
   logInfo({
     msg: 'community:report:create',
@@ -182,7 +155,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     extra: {
       reportId: result.insertedId.toString(),
       postId: id,
-      reporterUserId: reporterUserId ?? null,
+      reporterUserId: reporter.reporterUserId,
     },
     ...meta,
   });
