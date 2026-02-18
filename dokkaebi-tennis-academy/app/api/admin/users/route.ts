@@ -37,11 +37,6 @@ export async function GET(req: Request) {
   const status = url.searchParams.get('status') || 'all'; // 'all' | 'active' | 'deleted' | 'suspended'
   const sortKey = url.searchParams.get('sort') || 'created_desc'; // 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'
   const signup = (url.searchParams.get('signup') || 'all') as UserSignupFilter;
-
-  await db
-    .collection('users')
-    .createIndex({ lastLoginAt: -1 }, { name: 'users_lastLoginAt_idx' })
-    .catch(() => {});
   const col = db.collection('users');
 
   const login = (url.searchParams.get('login') || 'all') as UserLoginFilter;

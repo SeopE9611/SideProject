@@ -97,8 +97,9 @@ export async function ensureReviewIndexes(db: Db) {
   await ensureIndex(db, 'reviews', { status: 1, helpfulCount: -1, _id: -1 }, { name: 'status_helpful_desc' });
   await ensureIndex(db, 'reviews', { status: 1, rating: -1, _id: -1 }, { name: 'status_rating_desc' });
 
-  // 관리자 락 TTL (컬렉션 없을 수 있음 → ensureIndex가 생성까지 처리)
-  await ensureIndex(db, 'admin_locks', { lockedUntil: 1 }, { name: 'ttl_locked_until', expireAfterSeconds: 0 });
+  // 리뷰 도움돼요 토글/집계용 인덱스
+  await ensureIndex(db, 'review_votes', { reviewId: 1, userId: 1 }, { name: 'review_user_unique', unique: true });
+  await ensureIndex(db, 'review_votes', { reviewId: 1 }, { name: 'reviewId_idx' });
 }
 
 export async function dedupActiveReviews(db: Db) {

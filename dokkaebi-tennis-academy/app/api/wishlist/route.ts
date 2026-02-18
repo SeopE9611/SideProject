@@ -30,9 +30,6 @@ export async function GET() {
     const wishlists = db.collection('wishlists');
     const products = db.collection('products');
 
-    // 중복 방지 인덱스
-    await wishlists.createIndex({ userId: 1, productId: 1 }, { unique: true });
-
     const rows = await wishlists
       .aggregate([
         { $match: { userId: new ObjectId(userId) } },
@@ -107,8 +104,6 @@ export async function POST(req: Request) {
 
     const prod = await products.findOne({ _id: new ObjectId(productId), isDeleted: { $ne: true } });
     if (!prod) return NextResponse.json({ message: 'Product not found' }, { status: 404 });
-
-    await wishlists.createIndex({ userId: 1, productId: 1 }, { unique: true });
 
     await wishlists.insertOne({
       userId: new ObjectId(userId),

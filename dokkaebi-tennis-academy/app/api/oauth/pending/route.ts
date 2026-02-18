@@ -13,16 +13,6 @@ type PendingDoc = {
   expiresAt: Date;
 };
 
-async function ensureIndexes() {
-  const db = await getDb();
-
-  const pendings = db.collection('oauth_pending_signups') as Collection<PendingDoc>;
-
-  await pendings.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }).catch((e: any) => {
-    if (e?.code !== 85) throw e;
-  });
-}
-
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const token = url.searchParams.get('token');
@@ -30,8 +20,6 @@ export async function GET(req: NextRequest) {
   if (!token) {
     return NextResponse.json({ error: 'token is required' }, { status: 400 });
   }
-
-  await ensureIndexes();
 
   const db = await getDb();
   const pendings = db.collection('oauth_pending_signups') as Collection<PendingDoc>;

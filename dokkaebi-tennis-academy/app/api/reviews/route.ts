@@ -29,73 +29,6 @@ const isAllowedHttpUrl = (v: unknown): v is string => {
   }
 };
 
-// 인덱스: 이름이 달라도 같은 키면 생성 생략, 과거 user+service 유니크는 삭제
-async function ensureReviewIndexes(db: DbAny) {
-  const col = db.collection('reviews');
-  const idxs = await col
-    .listIndexes()
-    .toArray()
-    .catch(() => []);
-
-  const keyEq = (a: Record<string, number>, b: Record<string, number>) => {
-    const ak = Object.keys(a);
-    const bk = Object.keys(b);
-    if (ak.length !== bk.length) return false;
-    return ak.every((k, i) => k === bk[i] && a[k] === b[k]);
-  };
-  const hasKey = (key: Record<string, number>) => idxs.some((i: any) => keyEq(i.key, key));
-
-  // 기존 user+service (사용자당 1회) 유니크는 제거
-  for (const i of idxs) {
-    if (i.unique && keyEq(i.key, { userId: 1, service: 1 })) {
-      try {
-        await col.dropIndex(i.name);
-      } catch {}
-    }
-  }
-
-  //  기존 user+product 유니크가 있으면 제거 (주문 단위 유니크로 대체)
-  for (const i of idxs) {
-    if (i.unique && keyEq(i.key, { userId: 1, productId: 1 })) {
-      try {
-        await col.dropIndex(i.name);
-      } catch {}
-    }
-  }
-
-  // 상품: user + product + orderId 유니크 (주문 단위)
-  if (!hasKey({ userId: 1, productId: 1, orderId: 1 })) {
-    await col.createIndex(
-      { userId: 1, productId: 1, orderId: 1 },
-      {
-        name: 'user_product_order_unique',
-        unique: true,
-        // 과거 문서(orderId 없음)는 인덱싱에서 제외 → 새 정책과 충돌 안 함
-        partialFilterExpression: { productId: { $exists: true }, orderId: { $exists: true }, isDeleted: { $ne: true } },
-      },
-    );
-  }
-
-  // 서비스: user+service+serviceApplicationId 유니크
-  if (!hasKey({ userId: 1, service: 1, serviceApplicationId: 1 })) {
-    await col.createIndex({ userId: 1, service: 1, serviceApplicationId: 1 }, { name: 'user_service_application_unique', unique: true, partialFilterExpression: { serviceApplicationId: { $exists: true } } });
-  }
-
-  // 조회 최적화
-  if (!hasKey({ productId: 1, status: 1, createdAt: -1 })) {
-    await col.createIndex({ productId: 1, status: 1, createdAt: -1 }, { name: 'product_list_index' });
-  }
-  if (!hasKey({ status: 1, createdAt: -1, _id: -1 })) {
-    await col.createIndex({ status: 1, createdAt: -1, _id: -1 }, { name: 'status_created_desc' });
-  }
-  if (!hasKey({ status: 1, helpfulCount: -1, _id: -1 })) {
-    await col.createIndex({ status: 1, helpfulCount: -1, _id: -1 }, { name: 'status_helpful_desc' });
-  }
-  if (!hasKey({ status: 1, rating: -1, _id: -1 })) {
-    await col.createIndex({ status: 1, rating: -1, _id: -1 }, { name: 'status_rating_desc' });
-  }
-}
-
 // 상품 별점/리뷰수 집계 후 products 업데이트
 async function updateProductRatingSummary(db: DbAny, productIdObj: ObjectId, productIdStr: string) {
   const col = db.collection('reviews');
@@ -136,7 +69,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
   }
   const db = await getDb();
-  await ensureReviewIndexes(db);
 
   // 깨진 JSON이면 throw → 500 방지
   let body: any;
@@ -326,7 +258,6 @@ function toInt(v: string | null, fallback: number, min: number, max: number) {
 
 export async function GET(req: Request) {
   const db = await getDb();
-  await ensureReviewIndexes(db);
 
   // 사용자/권한 추출
   const token = (await cookies()).get('accessToken')?.value;

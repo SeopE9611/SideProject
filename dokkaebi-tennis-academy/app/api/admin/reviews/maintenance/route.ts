@@ -16,9 +16,6 @@ export async function POST(req: Request) {
   const db = await getDb();
   const locks = db.collection('admin_locks');
 
-  // 1) key에 유니크 인덱스 보장(최초 1회 생성, 에러는 무시)
-  await locks.createIndex({ key: 1 }, { unique: true }).catch(() => {});
-
   const now = new Date();
   const until = new Date(now.getTime() + 5 * 60 * 1000);
 

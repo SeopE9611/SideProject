@@ -126,9 +126,6 @@ export async function GET(req: NextRequest) {
     const now = new Date();
     const token = crypto.randomUUID();
 
-    await pendings.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }).catch((e: any) => {
-      if (e?.code !== 85) throw e;
-    });
     const from = req.cookies.get('kakao_oauth_from')?.value ?? null;
 
     await pendings.insertOne({
@@ -216,13 +213,6 @@ export async function GET(req: NextRequest) {
     // 최근 로그인 기록
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || '';
     const ua = req.headers.get('user-agent') || '';
-
-    await db
-      .collection('user_sessions')
-      .createIndex({ userId: 1, at: -1 })
-      .catch((e: any) => {
-        if (e?.code !== 85) throw e;
-      });
 
     await db.collection('user_sessions').insertOne({
       userId: user._id,

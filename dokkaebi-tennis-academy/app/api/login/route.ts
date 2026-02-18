@@ -133,14 +133,6 @@ export async function POST(req: Request) {
 
     // 최근 로그인 장치 기록
     try {
-      // 인덱스는 이미 있으면 code 85 (IndexOptionsConflict)라 조용히 무시
-      await db
-        .collection('user_sessions')
-        .createIndex({ userId: 1, at: -1 })
-        .catch((e: any) => {
-          if (e?.code !== 85) throw e;
-        });
-
       const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || ''; // 배포환경에 맞춰 하나는 잡혀요
       const ua = req.headers.get('user-agent') || '';
 

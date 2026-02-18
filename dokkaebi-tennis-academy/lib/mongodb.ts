@@ -6,6 +6,10 @@ import { ensureRentalIndexes } from '@/lib/rentals.indexes';
 import { ensureMessageIndexes } from '@/lib/messages.indexes';
 import { ensurePointsIndexes } from '@/lib/points.indexes';
 import { ensureUsedRacketsIndexes } from '@/lib/usedRackets.indexes';
+import { ensureAuthIndexes } from '@/lib/auth.indexes';
+import { ensureUserIndexes } from '@/lib/users.indexes';
+import { ensureWishlistIndexes } from '@/lib/wishlist.indexes';
+import { ensureAdminLocksIndexes } from '@/lib/adminLocks.indexes';
 
 const uri = process.env.MONGODB_URI;
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
@@ -23,6 +27,15 @@ declare global {
 
   // users 컬렉션 인덱스 보장 상태
   var _usersIndexesReady: Promise<void> | null | undefined;
+
+  // oauth/login 관련 인덱스 보장 상태
+  var _authIndexesReady: Promise<void> | null | undefined;
+
+  // 위시리스트 인덱스 보장 상태
+  var _wishlistIndexesReady: Promise<void> | null | undefined;
+
+  // admin_locks 인덱스 보장 상태
+  var _adminLocksIndexesReady: Promise<void> | null | undefined;
 
   // boards 컬렉션 인덱스 보장 상태
   var _boardsIndexesReady: Promise<void> | null | undefined;
@@ -117,6 +130,15 @@ export async function getDb() {
   }
   await global._passesIndexesReady; // 실패했어도 다음 요청에서 재시도됨
 
+  // auth(oauth_pending_signups, user_sessions) 인덱스 보장(1회)
+  if (!global._authIndexesReady) {
+    global._authIndexesReady = ensureAuthIndexes(db).catch((e) => {
+      console.error('[auth] ensureAuthIndexes failed', e);
+      global._authIndexesReady = null;
+    });
+  }
+  await global._authIndexesReady;
+
   // boards 인덱스 보장(1회)
   if (!global._boardsIndexesReady) {
     global._boardsIndexesReady = ensureBoardIndexes(db).catch((e) => {
@@ -162,16 +184,28 @@ export async function getDb() {
   }
   await global._usedRacketsIndexesReady;
 
-  // users.email unique 인덱스 보장
+  // wishlists 인덱스 보장(1회)
+  if (!global._wishlistIndexesReady) {
+    global._wishlistIndexesReady = ensureWishlistIndexes(db).catch((e) => {
+      console.error('[wishlists] ensureWishlistIndexes failed', e);
+      global._wishlistIndexesReady = null;
+    });
+  }
+  await global._wishlistIndexesReady;
+
+  // admin_locks 인덱스 보장(1회)
+  if (!global._adminLocksIndexesReady) {
+    global._adminLocksIndexesReady = ensureAdminLocksIndexes(db).catch((e) => {
+      console.error('[admin_locks] ensureAdminLocksIndexes failed', e);
+      global._adminLocksIndexesReady = null;
+    });
+  }
+  await global._adminLocksIndexesReady;
+
+  // users 인덱스 보장(1회)
   if (!global._usersIndexesReady) {
-    global._usersIndexesReady = (async () => {
-      // 이메일은 회원가입 시 toLowerCase() 하므로 { email: 1 } unique로 충분
-      await db.collection('users').createIndex({ email: 1 }, { unique: true, background: true });
-      // role, createdAt 등 보조 인덱스도 여기서 보장 가능
-      // await db.collection('users').createIndex({ role: 1 });
-      // await db.collection('users').createIndex({ createdAt: -1 });
-    })().catch((e) => {
-      console.error('[users] ensureUsersIndexes failed', e);
+    global._usersIndexesReady = ensureUserIndexes(db).catch((e) => {
+      console.error('[users] ensureUserIndexes failed', e);
       global._usersIndexesReady = null; // 실패 시 다음 요청에서 재시도
     });
   }
