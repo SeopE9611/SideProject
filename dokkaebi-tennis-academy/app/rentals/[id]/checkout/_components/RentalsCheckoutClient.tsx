@@ -445,9 +445,9 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  };
 
  return (
- <div className="min-h-full bg-gradient-to-br from-background via-background to-background dark:from-background dark:via-background dark:to-background">
+ <div className="min-h-full bg-background">
  {/* Hero Section */}
- <div className="relative overflow-hidden bg-gradient-to-r from-primary via-background to-primary text-primary-foreground dark:from-background dark:via-background dark:to-teal-700">
+ <div className="relative overflow-hidden bg-card text-foreground border-b border-border">
  <div className="absolute inset-0 bg-foreground/10 dark:bg-foreground/10"></div>
  <SiteContainer variant="wide" className="relative py-16">
  <div className="flex items-center gap-4 mb-4">
@@ -456,7 +456,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </div>
  <div>
  <h1 className="text-4xl font-bold mb-2">라켓 대여 결제</h1>
- <p className="text-accent">배송 정보를 입력하고 대여를 완료하세요</p>
+ <p className="text-muted-foreground">배송 정보를 입력하고 대여를 완료하세요</p>
  </div>
  </div>
  </SiteContainer>
@@ -467,7 +467,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="bp-lg:col-span-2 space-y-6">
  {/* 대여 상품 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-primary/10 via-background to-primary/10 p-6">
+ <div className="bg-primary/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <Package className="h-5 w-5 text-accent" />
  대여 상품
@@ -475,12 +475,12 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <CardDescription className="mt-2">선택하신 라켓 정보입니다.</CardDescription>
  </div>
  <CardContent className="p-6">
- <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-background to-background/30 dark:from-background dark:to-background rounded-lg border border-border dark:border-border">
+ <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border border-border">
  <div className="relative">
  {initial.racket?.image ? (
  <Image src={initial.racket.image || '/placeholder.svg'} alt="racket" width={80} height={80} className="rounded-lg border-2 border-border shadow-lg object-cover" />
  ) : (
- <div className="w-20 h-20 bg-gradient-to-br from-background to-background dark:from-background dark:to-background rounded-lg flex items-center justify-center">
+ <div className="w-20 h-20 bg-background rounded-lg flex items-center justify-center">
  <Package className="h-8 w-8 text-muted-foreground" />
  </div>
  )}
@@ -489,7 +489,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">중고 라켓</div>
  <h3 className="font-semibold text-foreground dark:text-foreground">{initial.racket ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}` : ''}</h3>
  <div className="flex items-center gap-2 mt-1">
- <span className="text-xs px-2 py-0.5 rounded-full bg-muted dark:bg-primary text-accent dark:text-accent">상태 {initial.racket?.condition}</span>
+ <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-foreground">상태 {initial.racket?.condition}</span>
  <span className="text-xs text-muted-foreground dark:text-muted-foreground">대여 기간 {initial.period}일</span>
  </div>
  </div>
@@ -499,7 +499,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
  {/* 라켓 수령 방식 및 스트링 교체 옵션 */}
  <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-primary/10 via-background to-background p-6">
+ <div className="bg-primary/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <Truck className="h-5 w-5 text-accent" />
  라켓 수령 방식
@@ -509,7 +509,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
  <CardContent className="p-6 space-y-4">
  <RadioGroup value={deliveryMethod} onValueChange={(value) => setDeliveryMethod(value as any)} className="space-y-3">
- <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-muted to-background dark:from-background dark:to-background rounded-lg border border-border dark:border-border">
+ <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
  <RadioGroupItem value="택배수령" id="rentals-delivery-courier" />
  <Label htmlFor="rentals-delivery-courier" className="flex-1 cursor-pointer font-medium">
  택배 수령 (자택 또는 지정 장소로 배송)
@@ -518,7 +518,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <Truck className="h-5 w-5 text-accent" />
  </div>
 
- <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-muted to-background dark:from-background dark:to-background rounded-lg border border-border dark:border-border">
+ <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
  <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
  <Label htmlFor="rentals-delivery-visit" className="flex-1 cursor-pointer font-medium">
  오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
@@ -529,7 +529,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </RadioGroup>
 
  {/* 구매 체크아웃과 동일하게: 수령 방식 카드 안에서 "스트링 교체 옵션"을 같이 묶어 표시 */}
- <div className="bg-gradient-to-r from-yellow-400 to-background dark:from-yellow-400 dark:to-background p-4 rounded-lg border border-yellow-400 dark:border-yellow-400">
+ <div className="bg-muted p-4 rounded-lg border border-primary/30">
  <div className="flex items-start justify-between gap-3">
  <div className="space-y-1">
  <p className="font-medium text-foreground dark:text-foreground">스트링 교체 서비스 (선택)</p>
@@ -566,7 +566,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
  {/* 배송 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-background via-background to-primary/10 p-6">
+ <div className="bg-card p-6">
  <CardTitle className="flex items-center gap-3">
  <MapPin className="h-5 w-5 text-foreground" />
  배송 정보
@@ -592,10 +592,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </div>
  <div className="space-y-2 bp-sm:col-span-2">
  <Label htmlFor="phone" className="flex items-center gap-2">
- <Phone className="h-4 w-4 text-teal-600" />
+ <Phone className="h-4 w-4 text-accent" />
  연락처
  </Label>
- <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외)" className="border-2 focus:border-teal-500 transition-colors" />
+ <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외)" className="border-2 focus:border-primary transition-colors" />
  </div>
  </div>
  <div className="space-y-4">
@@ -604,7 +604,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <Home className="h-4 w-4 text-foreground" />
  우편번호
  </Label>
- <Button variant="outline" size="sm" onClick={openPostcode} className="bg-gradient-to-r from-primary to-primary text-primary-foreground border-0 hover:from-primary/90 hover:to-primary/90">
+ <Button variant="outline" size="sm" onClick={openPostcode} className="bg-primary text-primary-foreground border-0 hover:bg-primary/90">
  우편번호 찾기
  </Button>
  </div>
@@ -631,7 +631,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </Card>
  {/* 결제 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-background via-teal-500/10 to-background p-6">
+ <div className="bg-card p-6">
  <CardTitle className="flex items-center gap-3">
  <CreditCard className="h-5 w-5 text-foreground" />
  결제 정보
@@ -643,7 +643,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="space-y-3">
  <Label>결제 방법</Label>
  <RadioGroup defaultValue="bank-transfer" className="space-y-3">
- <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-background to-background dark:from-background dark:to-background rounded-lg border-2 border-border dark:border-border">
+ <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
  <RadioGroupItem value="bank-transfer" id="bank-transfer" />
  <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
  무통장입금
@@ -677,12 +677,12 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <Input id="depositor-name" value={depositor} onChange={(e) => setDepositor(e.target.value)} placeholder="입금자명을 입력하세요" className="border-2 focus:border-border transition-colors" />
  </div>
 
- <div className="bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background p-4 rounded-lg border border-border dark:border-border">
+ <div className="bg-muted p-4 rounded-lg border border-border">
  <div className="flex items-center gap-2 mb-3">
  <Shield className="h-5 w-5 text-accent" />
- <p className="font-semibold text-accent dark:text-accent">무통장입금 안내</p>
+ <p className="font-semibold text-foreground">무통장입금 안내</p>
  </div>
- <ul className="space-y-2 text-sm text-accent dark:text-accent">
+ <ul className="space-y-2 text-sm text-foreground">
  <li className="flex items-center gap-2">
  <CheckCircle className="h-4 w-4" />
  주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
@@ -701,7 +701,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </CardContent>
  </Card>
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-background via-background to-background p-6">
+ <div className="bg-card p-6">
  <CardTitle className="flex items-center gap-3">
  <Undo2 className="h-5 w-5 text-foreground" />
  보증금 환급 계좌
@@ -742,7 +742,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
  {/* 주문자 동의 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-gradient-to-r from-background via-background to-background p-6">
+ <div className="bg-card p-6">
  <CardTitle className="flex items-center gap-3">
  <Shield className="h-5 w-5 text-destructive" />
  주문자 동의
@@ -750,7 +750,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </div>
  <CardContent className="p-6">
  <div className="space-y-4">
- <div className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background p-4 rounded-lg">
+ <div className="bg-background p-4 rounded-lg">
  <div className="flex items-center space-x-2">
  <Checkbox
  id="agree-all"
@@ -785,7 +785,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  setState: setAgreeRefund,
  },
  ].map((item, index) => (
- <div key={item.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-background to-background/30 dark:from-background dark:to-background rounded-lg">
+ <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
  <div className="flex items-center space-x-2">
  <Checkbox
  id={item.id}
@@ -801,7 +801,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  {item.label}
  </label>
  </div>
- <Button variant="link" size="sm" className="h-auto p-0 text-accent hover:text-accent">
+ <Button variant="link" size="sm" className="h-auto p-0 text-foreground hover:text-foreground">
  보기
  </Button>
  </div>
@@ -816,7 +816,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="bp-lg:col-span-1">
  <div className="bp-lg:sticky bp-lg:top-20">
  <Card className="backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
- <div className="bg-gradient-to-r from-primary via-background to-primary p-6 text-primary-foreground">
+ <div className="bg-primary p-6 text-primary-foreground">
  <CardTitle className="flex items-center gap-3 text-xl">
  <div className="p-2 bg-card/20 rounded-full">
  <CreditCard className="h-5 w-5" />
@@ -913,24 +913,24 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <Separator />
  <div className="flex justify-between items-center text-xl font-bold">
  <span>총 결제 금액</span>
- <span className="text-accent">{payableTotal.toLocaleString()}원</span>
+ <span className="text-foreground">{payableTotal.toLocaleString()}원</span>
  </div>
  </div>
 
- <div className="bg-gradient-to-r from-yellow-400 to-background dark:from-yellow-400 dark:to-background p-4 rounded-lg border border-yellow-400 dark:border-yellow-400">
- <div className="flex items-center gap-2 text-yellow-400 dark:text-yellow-400 mb-2">
+ <div className="bg-muted p-4 rounded-lg border border-primary/30">
+ <div className="flex items-center gap-2 text-foreground mb-2">
  <Shield className="h-4 w-4" />
  <span className="font-semibold">보증금 안내</span>
  </div>
- <p className="text-sm text-yellow-400 dark:text-yellow-400">반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.</p>
+ <p className="text-sm text-foreground">반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.</p>
  </div>
 
- <div className="bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background p-4 rounded-lg border border-border dark:border-border">
- <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
+ <div className="bg-muted p-4 rounded-lg border border-border">
+ <div className="flex items-center gap-2 text-foreground mb-2">
  <Truck className="h-4 w-4" />
  <span className="font-semibold">대여 안내</span>
  </div>
- <div className="text-sm text-accent dark:text-accent space-y-1">
+ <div className="text-sm text-foreground space-y-1">
  <p>• 대여 기간: {initial.period}일</p>
  <p>• 결제 완료 후 배송이 시작됩니다.</p>
  <p>• 반납 기한을 꼭 지켜주세요.</p>
@@ -942,7 +942,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  onClick={onPay}
  disabled={loading}
  className={cn(
- 'w-full h-12 bg-gradient-to-r from-primary via-background to-primary hover:from-background hover:via-background hover:to-primary shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300',
+ 'w-full h-12 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300',
  loading && 'opacity-50 cursor-not-allowed',
  )}
  >
