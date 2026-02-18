@@ -23,6 +23,51 @@ export type CommunityListQuery = {
   category: (typeof COMMUNITY_CATEGORIES)[number] | null;
 };
 
+type CommunityMongoFilter = {
+  status: 'public';
+  type?: CommunityBoardType;
+  brand?: string;
+  category?: (typeof COMMUNITY_CATEGORIES)[number];
+  title?: { $regex: string; $options: 'i' };
+  nickname?: { $regex: string; $options: 'i' };
+  userId?: ObjectId;
+  $or?: Array<{ title?: { $regex: string; $options: 'i' }; content?: { $regex: string; $options: 'i' } }>;
+};
+
+export function buildCommunityListMongoFilter(query: Pick<CommunityListQuery, 'typeParam' | 'brand' | 'q' | 'escapedQ' | 'authorObjectId' | 'searchType' | 'category'>): CommunityMongoFilter {
+  const filter: CommunityMongoFilter = { status: 'public' };
+
+  if (query.typeParam) {
+    filter.type = query.typeParam;
+  }
+
+  if (query.brand) {
+    filter.brand = query.brand;
+  }
+
+  if (query.category) {
+    filter.category = query.category;
+  }
+
+  if (query.q) {
+    const regex = { $regex: query.escapedQ, $options: 'i' as const };
+
+    if (query.searchType === 'title') {
+      filter.title = regex;
+    } else if (query.searchType === 'author') {
+      filter.nickname = regex;
+    } else {
+      filter.$or = [{ title: regex }, { content: regex }];
+    }
+  }
+
+  if (query.authorObjectId) {
+    filter.userId = query.authorObjectId;
+  }
+
+  return filter;
+}
+
 function escapeRegex(input: string): string {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
