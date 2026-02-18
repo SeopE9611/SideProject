@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { issuePassesForPaidPackageOrder } from '@/lib/passes.service';
 import type { PackageOrder } from '@/lib/types/package-order';
-import jwt from 'jsonwebtoken';
 import { ServicePass } from '@/lib/types/pass';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
@@ -25,15 +22,6 @@ import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 // PATCH: 상태 변경 (결제완료 -> 패스 멱등 발급 포함)
 
-function safeVerifyAccessToken(token?: string | null) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
-
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자 인증/인가 표준 가드
   const guard = await requireAdmin(request);
@@ -46,29 +34,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
   const { id } = await params;
     if (!ObjectId.isValid(String(id))) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
-
-    // 토큰 읽기 (access 우선, refresh 보조)
-    const jar = await cookies();
-    const at = jar.get('accessToken')?.value;
-    const rt = jar.get('refreshToken')?.value;
-
-    let user: any = safeVerifyAccessToken(at);
-    if (!user && rt) {
-      try {
-        user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);
-      } catch {}
-    }
-    if (!user?.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    // 관리자 체크 (+ 이메일 화이트리스트)
-    const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
-      .split(',')
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean);
-
-    const isAdmin = user?.role === 'admin' || user?.roles?.includes?.('admin') || user?.isAdmin === true || ADMIN_EMAILS.includes((user?.email ?? '').toLowerCase());
-
-    if (!isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const db = (await clientPromise).db();
     const packageOrders = db.collection<PackageOrder>('packageOrders');
@@ -89,7 +54,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!pkgOrder) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
 
     const prevPayment = pkgOrder.paymentStatus ?? '결제대기';
-    const adminLabel = String(user?.name ?? user?.email ?? user?.sub ?? '');
+    const adminLabel = String(guard.admin.email ?? guard.admin._id.toHexString());
     const historyDesc = willSetPayment
       ? `결제 상태 ${prevPayment} → ${paymentToSet}` + (reason ? ` / 사유: ${reason}` : '') + (adminLabel ? ` / 관리자: ${adminLabel}` : '')
       : `상태 변경: ${statusStr}` + (reason ? ` / 사유: ${reason}` : '') + (adminLabel ? ` / 관리자: ${adminLabel}` : '');
@@ -162,31 +127,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
 // GET: 관리자 상세 조회 (고객정보 + 사용 이력 포함)
 export async function GET(request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const guard = await requireAdmin(request);
+  if (!guard.ok) return guard.res;
+
   try {
     const { id } = await ctx.params;
-
-    // 토큰 읽기 (access 우선, refresh 보조)
-    const jar = await cookies();
-    const at = jar.get('accessToken')?.value || null;
-    const rt = jar.get('refreshToken')?.value || null;
-
-    let user: any = safeVerifyAccessToken(at);
-    if (!user && rt) {
-      try {
-        user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);
-      } catch {}
-    }
-    if (!user?.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    // 관리자 체크 (+ 이메일 화이트리스트)
-    const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
-      .split(',')
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean);
-
-    const isAdmin = user?.role === 'admin' || user?.roles?.includes?.('admin') || user?.isAdmin === true || ADMIN_EMAILS.includes((user?.email ?? '').toLowerCase());
-
-    if (!isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const _id = new ObjectId(id);
     const db = (await clientPromise).db();

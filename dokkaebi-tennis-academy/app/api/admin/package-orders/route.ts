@@ -1,45 +1,15 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import jwt from 'jsonwebtoken';
-
-
-function safeVerifyAccessToken(token?: string | null) {
-  if (!token) return null;
-  try {
-    return verifyAccessToken(token);
-  } catch {
-    return null;
-  }
-}
+import { requireAdmin } from '@/lib/admin.guard';
 
 type SortKey = 'customer' | 'purchaseDate' | 'expiryDate' | 'remainingSessions' | 'usedSessions' | 'totalSessions' | 'progress' | 'status' | 'payment' | 'price' | 'service' | 'package';
 
 export async function GET(req: Request) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+
   try {
-    // 인증/권한
-    const jar = await cookies();
-    const at = jar.get('accessToken')?.value || null;
-    const rt = jar.get('refreshToken')?.value || null;
-
-    let user: any = safeVerifyAccessToken(at);
-    if (!user && rt) {
-      try {
-        user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);
-      } catch {}
-    }
-    if (!user?.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
-      .split(',')
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean);
-    const isAdmin = user?.role === 'admin' || user?.roles?.includes?.('admin') || user?.isAdmin === true || ADMIN_EMAILS.includes((user?.email ?? '').toLowerCase());
-
-    if (!isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-
     // 쿼리 파싱
     const url = new URL(req.url);
     const sp = url.searchParams;
