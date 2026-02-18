@@ -19,6 +19,9 @@ env:
   CI: true
   NEXT_TELEMETRY_DISABLED: 1
   WORKDIR: dokkaebi-tennis-academy
+  # E2E/CI 기본값: 클라이언트 번들에서 createClient() 초기화 오류를 방지하기 위한 안전한 더미 값
+  NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ci_dummy_anon_key
 
 jobs:
   # PR 변경 파일 중 관리자 경로(app/admin, app/api/admin, lib/admin) 포함 여부를 계산한다.
@@ -219,6 +222,7 @@ jobs:
   # 7) admin-critical e2e (권한/CSRF 런타임 위반을 분리된 job으로 식별)
   test-e2e-admin-critical:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: test-contract
     defaults:
       run:
@@ -242,7 +246,18 @@ jobs:
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WORKDIR }}/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}-${{ hashFiles('dokkaebi-tennis-academy/**/*.ts', 'dokkaebi-tennis-academy/**/*.tsx', 'dokkaebi-tennis-academy/**/*.js', 'dokkaebi-tennis-academy/**/*.jsx', 'dokkaebi-tennis-academy/**/*.mjs', 'dokkaebi-tennis-academy/**/*.cjs') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-
+
       - name: Build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm build
 
       - name: Start server (prod)
@@ -280,6 +295,7 @@ jobs:
   # 8) notice conflict retry e2e (409 충돌 + 재시도 UX 검증)
   test-e2e-notice-conflict-retry:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: test-e2e-admin-critical
     defaults:
       run:
@@ -303,7 +319,32 @@ jobs:
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Cypress binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}
+          restore-keys: |
+            cypress-${{ runner.os }}-
+
+      - name: Install Cypress binary
+        run: pnpm exec cypress install
+
+      - name: Verify Cypress binary
+        run: pnpm exec cypress verify
+
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WORKDIR }}/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}-${{ hashFiles('dokkaebi-tennis-academy/**/*.ts', 'dokkaebi-tennis-academy/**/*.tsx', 'dokkaebi-tennis-academy/**/*.js', 'dokkaebi-tennis-academy/**/*.jsx', 'dokkaebi-tennis-academy/**/*.mjs', 'dokkaebi-tennis-academy/**/*.cjs') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-
+
       - name: Build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm build
 
       - name: Start server (prod)
@@ -375,8 +416,7 @@ jobs:
             name="${item%%=*}"
             result="${item#*=}"
             if [ "${result}" != "success" ]; then
-              failures="${failures}
-- ${name} => ${result}"
+              failures="${failures}\n- ${name} => ${result}"
             fi
           done
 
