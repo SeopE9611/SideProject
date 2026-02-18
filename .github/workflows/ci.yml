@@ -375,8 +375,7 @@ jobs:
             name="${item%%=*}"
             result="${item#*=}"
             if [ "${result}" != "success" ]; then
-              failures="${failures}
-- ${name} => ${result}"
+              failures="${failures}\n- ${name} => ${result}"
             fi
           done
 
