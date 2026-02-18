@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
+import { verifyCommunityCsrf } from '@/lib/community/security';
 
 // 공통: 인증 페이로드
 async function getAuthPayload() {
@@ -37,6 +38,11 @@ const updateCommentSchema = z.object({
 // --------------------------- PATCH: 댓글 수정 ---------------------------
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
@@ -111,6 +117,11 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 // --------------------------- DELETE: 댓글 삭제 ---------------------------
 
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {

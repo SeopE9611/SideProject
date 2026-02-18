@@ -8,6 +8,7 @@ import type { CommunityBoardType } from '@/lib/types/community';
 import { ObjectId } from 'mongodb';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { verifyCommunityCsrf } from '@/lib/community/security';
 import { getBoardList } from '@/lib/boards.queries';
 import { API_VERSION } from '@/lib/board.repository';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
@@ -358,6 +359,11 @@ export async function GET(req: NextRequest) {
 
 /* ---------------------------------- POST --------------------------------- */
 export async function POST(req: NextRequest) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
   // 인증

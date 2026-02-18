@@ -7,6 +7,7 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { resolveReporterSnapshot } from '@/lib/community/reporting';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { COMMUNITY_RATE_LIMIT_POLICIES, enforceCommunityRateLimit, verifyCommunityCsrf } from '@/lib/community/security';
 import type { CommunityReportDocument } from '@/lib/types/community-report';
 
 // 1) 인증 페이로드 유틸
@@ -44,6 +45,19 @@ type ReportInput = z.infer<typeof reportSchema>;
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    logInfo({
+      msg: 'community:comment_report:csrf_failed',
+      status: 403,
+      durationMs: stop(),
+      extra: { reason: csrf.code },
+      ...meta,
+    });
+    return csrf.response;
+  }
+
   const { id } = await ctx.params;
 
   // 1) ID 유효성 검사
@@ -93,6 +107,22 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   }
 
   const reporter = await resolveReporterSnapshot(db, payload);
+
+  const rateLimit = await enforceCommunityRateLimit({
+    req,
+    policy: COMMUNITY_RATE_LIMIT_POLICIES.community_report,
+    userId: reporter.reporterUserId,
+  });
+  if (!rateLimit.ok) {
+    logInfo({
+      msg: 'community:comment_report:rate_limited',
+      status: 429,
+      durationMs: stop(),
+      extra: { reporterUserId: reporter.reporterUserId, scope: rateLimit.scope },
+      ...meta,
+    });
+    return rateLimit.response;
+  }
 
   // 자기 댓글은 신고 불가
   if (comment.userId && String(comment.userId) === reporter.reporterUserId) {

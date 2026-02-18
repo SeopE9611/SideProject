@@ -7,6 +7,7 @@ import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { baseCookie } from '@/lib/cookieOptions';
+import { COMMUNITY_RATE_LIMIT_POLICIES, enforceCommunityRateLimit, verifyCommunityCsrf } from '@/lib/community/security';
 
 // 비로그인 뷰어를 서버에서 식별하기 위한 익명 쿠키 키
 const COMMUNITY_ANON_VIEWER_COOKIE = 'communityAnonViewerId';
@@ -166,6 +167,19 @@ async function tryAcquireViewSlot(db: any, postId: ObjectId, viewerKey: string, 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    logInfo({
+      msg: 'community:view:csrf_failed',
+      status: 403,
+      durationMs: stop(),
+      extra: { reason: csrf.code },
+      ...meta,
+    });
+    return csrf.response;
+  }
+
   const { id } = await ctx.params;
 
   const db = await getDb();
@@ -201,6 +215,23 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   // 로그인 사용자 여부 확인
   const userId = await getAuthUserId();
+
+  const rateLimit = await enforceCommunityRateLimit({
+    req,
+    policy: COMMUNITY_RATE_LIMIT_POLICIES.community_view,
+    userId,
+  });
+  if (!rateLimit.ok) {
+    logInfo({
+      msg: 'community:view:rate_limited',
+      status: 429,
+      durationMs: stop(),
+      extra: { userId: userId ? String(userId) : null, scope: rateLimit.scope },
+      ...meta,
+    });
+    return rateLimit.response;
+  }
+
   const cookieStore = await cookies();
 
   /**

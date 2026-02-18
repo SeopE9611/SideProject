@@ -7,6 +7,7 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { resolveReporterSnapshot } from '@/lib/community/reporting';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { COMMUNITY_RATE_LIMIT_POLICIES, enforceCommunityRateLimit, verifyCommunityCsrf } from '@/lib/community/security';
 import type { CommunityReportDocument } from '@/lib/types/community-report';
 
 // 로그인된 사용자 정보 가져오기 (없으면 null)
@@ -44,6 +45,18 @@ type ReportInput = z.infer<typeof reportSchema>;
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    logInfo({
+      msg: 'community:report:csrf_failed',
+      status: 403,
+      durationMs: stop(),
+      extra: { reason: csrf.code },
+      ...meta,
+    });
+    return csrf.response;
+  }
 
   const { id } = await ctx.params;
 
@@ -104,6 +117,22 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   // 여기까지 왔으면 인증된 사용자
   const reporter = await resolveReporterSnapshot(db, payload);
+
+  const rateLimit = await enforceCommunityRateLimit({
+    req,
+    policy: COMMUNITY_RATE_LIMIT_POLICIES.community_report,
+    userId: reporter.reporterUserId,
+  });
+  if (!rateLimit.ok) {
+    logInfo({
+      msg: 'community:report:rate_limited',
+      status: 429,
+      durationMs: stop(),
+      extra: { reporterUserId: reporter.reporterUserId, scope: rateLimit.scope },
+      ...meta,
+    });
+    return rateLimit.response;
+  }
 
   const reportsCol = db.collection<CommunityReportDocument>('community_reports');
 

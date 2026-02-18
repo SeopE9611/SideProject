@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { logError, logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { verifyCommunityCsrf } from '@/lib/community/security';
 import { API_VERSION } from '@/lib/board.repository';
 import { baseCookie } from '@/lib/cookieOptions';
 import { createHash } from 'crypto';
@@ -255,6 +256,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
   const token = (await cookies()).get('accessToken')?.value;
@@ -482,6 +488,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 // ===================================================================
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
   const token = (await cookies()).get('accessToken')?.value;

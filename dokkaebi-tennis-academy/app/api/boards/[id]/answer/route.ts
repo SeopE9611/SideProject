@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { z } from 'zod';
+import { verifyCommunityCsrf } from '@/lib/community/security';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { API_VERSION } from '@/lib/board.repository';
 import { requireAdmin } from '@/lib/admin.guard';
@@ -10,6 +11,11 @@ const answerSchema = z.object({ content: z.string().trim().min(1).max(20000) });
 
 // POST
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -47,6 +53,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
 // PATCH
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -74,6 +85,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(_req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const guard = await requireAdmin(_req);
   if (!guard.ok) return guard.res;
   const db = await getDb();
