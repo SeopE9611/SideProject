@@ -12,7 +12,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { formatKRWCard, formatKRWFull } from '@/lib/money';
 import KpiCard from '@/app/admin/settlements/_components/KpiCard';
 import type { SettlementDiff, SettlementLiveResponse, SettlementSnapshot } from '@/types/admin/settlements';
-import { fetchWithCredentials } from './actions/settlementActions';
+import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { useInitialYyyymmFromQuery } from './hooks/useInitialYyyymmFromQuery';
 import { firstDayOfMonth_KST, fmtYMD_KST, monthEdges, prevMonthRange_KST, TZ } from './filters/settlementDateFilters';
 import { sortSettlementRows, type SortDirection, type SortField } from './table/settlementSort';
@@ -34,7 +35,7 @@ export default function SettlementsClient() {
   // 상태
   // ──────────────────────────────────────────────────────────
   const [yyyymm, setYyyymm] = useState<string>(() => fmtYMD_KST().slice(0, 7).replace('-', '')); // KST 기준 초기 yyyymm
-  const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>('/api/admin/settlements', fetchWithCredentials);
+  const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>('/api/admin/settlements', adminFetcher);
 
   // URL 쿼리로 월을 지정하면(예: /admin/settlements?yyyymm=202601) 초기 선택 월을 그 값으로 맞춘다.
   // - 운영함 → 정산 "바로가기"에서 추천 월을 함께 전달할 때 월 착오를 줄이기 위함
@@ -104,18 +105,20 @@ export default function SettlementsClient() {
   // 서버 액션
   // ──────────────────────────────────────────────────────────
   const createSnapshot = async () => {
-    try {
-      await fetch(`/api/admin/settlements/${yyyymm}`, { method: 'POST' });
-      await mutate(); // 최신 데이터 보장
-      showSuccessToast(`${yyyymm} 스냅샷 생성 완료`);
-    } catch (e) {
-      console.error(e);
-      showErrorToast('스냅샷 생성 실패');
-    }
+    const result = await runAdminActionWithToast({
+      action: () => adminMutator(`/api/admin/settlements/${yyyymm}`, { method: 'POST' }),
+      successMessage: `${yyyymm} 스냅샷 생성 완료`,
+      fallbackErrorMessage: '스냅샷 생성 실패',
+    });
+    if (result) await mutate();
   };
 
   async function rebuildSnapshot(yyyymm: string) {
-    await fetch(`/api/admin/settlements/${yyyymm}`, { method: 'POST' });
+    const result = await runAdminActionWithToast({
+      action: () => adminMutator(`/api/admin/settlements/${yyyymm}`, { method: 'POST' }),
+      fallbackErrorMessage: '스냅샷 재생성 실패',
+    });
+    return result;
   }
 
   async function fetchLive() {
@@ -124,8 +127,8 @@ export default function SettlementsClient() {
       return;
     }
     const q = new URLSearchParams({ from, to }).toString();
-    const res = await fetch(`/api/admin/settlements/live?${q}`);
-    setLive((await res.json()) as SettlementLiveResponse);
+    const liveJson = await adminFetcher<SettlementLiveResponse>(`/api/admin/settlements/live?${q}`, { cache: 'no-store' });
+    setLive(liveJson);
   }
 
   // 스냅샷 vs 실시간 비교(한 행)
@@ -134,8 +137,7 @@ export default function SettlementsClient() {
     const { from, to } = monthEdges(key);
 
     // 같은 달의 실시간 집계 호출
-    const res = await fetch(`/api/admin/settlements/live?from=${from}&to=${to}`);
-    const liveJson = await res.json();
+    const liveJson = await adminFetcher<SettlementLiveResponse>(`/api/admin/settlements/live?from=${from}&to=${to}`, { cache: 'no-store' });
 
     return { ok: isSettlementMatched(row, liveJson as SettlementLiveResponse), live: liveJson };
   }
@@ -184,33 +186,24 @@ export default function SettlementsClient() {
 
     try {
       setDeleting(true);
-      const res = await fetch('/api/admin/settlements/bulk-delete', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ yyyymms: Array.from(selectedSnapshots) }),
+      const json = await runAdminActionWithToast<{ success?: boolean; message?: string }>({
+        action: async () => {
+          const payload = await adminMutator<{ success?: boolean; message?: string }>('/api/admin/settlements/bulk-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ yyyymms: Array.from(selectedSnapshots) }),
+          });
+          ensureAdminMutationSucceeded(payload, '삭제 실패');
+          return payload;
+        },
+        successMessage: '삭제가 완료되었습니다.',
+        fallbackErrorMessage: '삭제 중 오류가 발생했습니다.',
       });
-      const json = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string; deleted?: number; message?: string };
 
-      if (res.status === 401) {
-        showErrorToast('로그인이 필요합니다. 관리자 계정으로 다시 로그인해 주세요.');
-        return;
-      }
-      if (res.status === 403) {
-        showErrorToast('권한이 없습니다. 관리자 계정인지 확인해 주세요.');
-        return;
-      }
-
-      if (json.success) {
-        showSuccessToast(json.message ?? '삭제가 완료되었습니다.');
-        setSelectedSnapshots(new Set());
-        await mutate();
-      } else {
-        showErrorToast(json.message || '삭제 실패');
-      }
-    } catch (e) {
-      console.error(e);
-      showErrorToast('삭제 중 오류가 발생했습니다.');
+      if (!json) return;
+      if (json.message) showSuccessToast(json.message);
+      setSelectedSnapshots(new Set());
+      await mutate();
     } finally {
       setDeleting(false);
     }
@@ -220,26 +213,19 @@ export default function SettlementsClient() {
   const deleteSingle = async (yyyymm: string) => {
     try {
       setDeleting(true);
-      const res = await fetch(`/api/admin/settlements/${yyyymm}`, { method: 'DELETE', credentials: 'include' });
-      const json = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string; deleted?: number; message?: string };
+      const json = await runAdminActionWithToast<{ success?: boolean; message?: string }>({
+        action: async () => {
+          const payload = await adminMutator<{ success?: boolean; message?: string }>(`/api/admin/settlements/${yyyymm}`, { method: 'DELETE' });
+          ensureAdminMutationSucceeded(payload, '삭제 실패');
+          return payload;
+        },
+        successMessage: '삭제가 완료되었습니다.',
+        fallbackErrorMessage: '삭제 중 오류가 발생했습니다.',
+      });
 
-      if (res.status === 401) {
-        showErrorToast('로그인이 필요합니다. 관리자 계정으로 다시 로그인해 주세요.');
-        return;
-      }
-      if (res.status === 403) {
-        showErrorToast('권한이 없습니다. 관리자 계정인지 확인해 주세요.');
-        return;
-      }
-      if (json.success) {
-        showSuccessToast(json.message ?? '삭제가 완료되었습니다.');
-        await mutate();
-      } else {
-        showErrorToast(json.message || '삭제 실패');
-      }
-    } catch (e) {
-      console.error(e);
-      showErrorToast('삭제 중 오류가 발생했습니다.');
+      if (!json) return;
+      if (json.message) showSuccessToast(json.message);
+      await mutate();
     } finally {
       setDeleting(false);
     }

@@ -5,15 +5,9 @@ import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Play, RotateCcw, XCircle, Undo2, Clock } from 'lucide-react';
+import { adminFetcher } from '@/lib/admin/adminFetcher';
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: 'include' }).then(async (r) => {
-    try {
-      return await r.json();
-    } catch {
-      return { ok: false, items: [] };
-    }
-  });
+const fetcher = (url: string) => adminFetcher<{ ok: boolean; items: HistoryItem[]; page: number; pageSize: number; total: number; hasPrev: boolean; hasNext: boolean }>(url, { cache: 'no-store' });
 
 type HistoryItem = {
   _id: string;

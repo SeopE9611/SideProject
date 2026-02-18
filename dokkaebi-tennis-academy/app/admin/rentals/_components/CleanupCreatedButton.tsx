@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { adminMutator } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 
 export default function CleanupCreatedButton({ hours = 2 }: { hours?: number }) {
   const [loading, setLoading] = useState(false);
@@ -8,12 +10,13 @@ export default function CleanupCreatedButton({ hours = 2 }: { hours?: number }) 
   const run = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/rentals/cleanup-created?hours=${hours}`, { method: 'POST' });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.message || '데이터 정리 실패');
-      alert(`데이터 정리 완료: ${json.deleted}건 삭제 (기준: ${json.hours}시간 경과)`);
-    } catch (e: any) {
-      alert(e.message || '서버 오류');
+      const result = await runAdminActionWithToast<{ deleted?: number; hours?: number }>({
+        action: () => adminMutator(`/api/admin/rentals/cleanup-created?hours=${hours}`, { method: 'POST' }),
+        fallbackErrorMessage: '데이터 정리 실패',
+      });
+      if (!result) return;
+
+      alert(`데이터 정리 완료: ${result.deleted ?? 0}건 삭제 (기준: ${result.hours ?? hours}시간 경과)`);
     } finally {
       setLoading(false);
     }

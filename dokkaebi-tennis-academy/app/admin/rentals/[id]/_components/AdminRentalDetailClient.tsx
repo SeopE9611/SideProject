@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import Link from 'next/link';
 import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
@@ -17,7 +19,7 @@ import { racketBrandLabel } from '@/lib/constants';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+const fetcher = (url: string) => adminFetcher<any>(url, { cache: 'no-store' });
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
@@ -102,104 +104,90 @@ export default function AdminRentalDetailClient() {
   const [pendingAction, setPendingAction] = useState<null | 'out' | 'return' | 'refundMark' | 'refundClear'>(null);
 
   const isBusy = busyAction !== null;
-  const safeJson = async (r: Response) => {
-    try {
-      return await r.json();
-    } catch {
-      return {};
-    }
-  };
-
   // 무통장 결제확정: created → paid 전이
   const onConfirmPayment = async () => {
     if (confirming) return;
     setConfirming(true);
     try {
-      const res = await fetch(`/api/admin/rentals/${id}/payment/confirm`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+      const result = await runAdminActionWithToast({
+        action: async () => {
+          const json = await adminMutator<{ ok?: boolean; message?: string }>(`/api/admin/rentals/${id}/payment/confirm`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          ensureAdminMutationSucceeded(json, '결제확정 실패');
+          return json;
+        },
+        successMessage: '결제완료로 상태 변경',
+        fallbackErrorMessage: '결제확정 실패',
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json?.ok) {
-        showErrorToast(json?.message || '결제확정 실패');
-        return;
-      }
-      await mutate();
-      showSuccessToast('결제완료로 상태 변경');
-    } catch {
-      showErrorToast('서버 오류');
+      if (result) await mutate();
     } finally {
       setConfirming(false);
     }
   };
 
   const onToggleRefund = async (mark: boolean) => {
-    const res = await fetch(`/api/admin/rentals/${id}/deposit/refund`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ action: mark ? 'mark' : 'clear' }),
+    const result = await runAdminActionWithToast({
+      action: async () => {
+        const json = await adminMutator<{ ok?: boolean; message?: string }>(`/api/admin/rentals/${id}/deposit/refund`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: mark ? 'mark' : 'clear' }),
+        });
+        ensureAdminMutationSucceeded(json, '처리 실패');
+        return json;
+      },
+      successMessage: mark ? '보증금 환불 처리 완료' : '보증금 환불 처리 해제 완료',
+      fallbackErrorMessage: '처리 실패',
     });
-    const json = await safeJson(res);
-    if (!res.ok || !json?.ok) {
-      showErrorToast(json?.message || '처리 실패');
-      return;
-    }
-    await mutate();
-    showSuccessToast(mark ? '보증금 환불 처리 완료' : '보증금 환불 처리 해제 완료');
+    if (result) await mutate();
   };
 
   const onOut = async () => {
-    const res = await fetch(`/api/admin/rentals/${id}/out`, { method: 'POST' });
-    const json = await safeJson(res);
-    if (!res.ok) {
-      showErrorToast(json?.message || '처리 실패');
-      return;
-    }
-    await mutate();
-    showSuccessToast('대여 시작 처리 완료');
+    const result = await runAdminActionWithToast({
+      action: () => adminMutator(`/api/admin/rentals/${id}/out`, { method: 'POST' }),
+      successMessage: '대여 시작 처리 완료',
+      fallbackErrorMessage: '처리 실패',
+    });
+    if (result) await mutate();
   };
 
   const onReturn = async () => {
-    const res = await fetch(`/api/admin/rentals/${id}/return`, { method: 'POST' });
-    const json = await safeJson(res);
-    if (!res.ok) {
-      showErrorToast(json?.message || '처리 실패');
-      return;
-    }
-    await mutate();
-    showSuccessToast('반납 처리 완료');
+    const result = await runAdminActionWithToast({
+      action: () => adminMutator(`/api/admin/rentals/${id}/return`, { method: 'POST' }),
+      successMessage: '반납 처리 완료',
+      fallbackErrorMessage: '처리 실패',
+    });
+    if (result) await mutate();
   };
 
   // 대여 취소 요청 승인
   const onApproveCancel = async () => {
-    const res = await fetch(`/api/admin/rentals/${id}/cancel-approve`, {
-      method: 'POST',
-      credentials: 'include',
+    const result = await runAdminActionWithToast({
+      action: async () => {
+        const json = await adminMutator<{ ok?: boolean; detail?: string; message?: string }>(`/api/admin/rentals/${id}/cancel-approve`, { method: 'POST' });
+        ensureAdminMutationSucceeded(json, '취소 요청 승인에 실패했습니다.');
+        return json;
+      },
+      successMessage: '대여 취소 요청을 승인했습니다.',
+      fallbackErrorMessage: '취소 요청 승인에 실패했습니다.',
     });
-    const json = await safeJson(res);
-    if (!res.ok || !json?.ok) {
-      showErrorToast(json?.detail || json?.message || '취소 요청 승인에 실패했습니다.');
-      return;
-    }
-    await mutate();
-    showSuccessToast('대여 취소 요청을 승인했습니다.');
+    if (result) await mutate();
   };
 
   // 대여 취소 요청 거절
   const onRejectCancel = async () => {
-    const res = await fetch(`/api/admin/rentals/${id}/cancel-reject`, {
-      method: 'POST',
-      credentials: 'include',
+    const result = await runAdminActionWithToast({
+      action: async () => {
+        const json = await adminMutator<{ ok?: boolean; detail?: string; message?: string }>(`/api/admin/rentals/${id}/cancel-reject`, { method: 'POST' });
+        ensureAdminMutationSucceeded(json, '취소 요청 거절에 실패했습니다.');
+        return json;
+      },
+      successMessage: '대여 취소 요청을 거절했습니다.',
+      fallbackErrorMessage: '취소 요청 거절에 실패했습니다.',
     });
-    const json = await safeJson(res);
-    if (!res.ok || !json?.ok) {
-      showErrorToast(json?.detail || json?.message || '취소 요청 거절에 실패했습니다.');
-      return;
-    }
-    await mutate();
-    showSuccessToast('대여 취소 요청을 거절했습니다.');
+    if (result) await mutate();
   };
 
   const formatDate = (dateString: string | null | undefined) => {
@@ -654,9 +642,7 @@ export default function AdminRentalDetailClient() {
                     size="sm"
                     onClick={async () => {
                       try {
-                        const r = await fetch(`/api/admin/rentals/${id}/refund-account`, { credentials: 'include' });
-                        const j = await r.json();
-                        if (!r.ok) return showErrorToast(j?.message || '계좌 조회 실패');
+                        const j = await adminFetcher<{ bank?: string; holder?: string; account?: string }>(`/api/admin/rentals/${id}/refund-account`, { cache: 'no-store' });
                         const text = `[${j.bank}] ${j.holder} / ${j.account}`;
                         await navigator.clipboard.writeText(text);
                         showSuccessToast('계좌 정보를 복사했습니다');

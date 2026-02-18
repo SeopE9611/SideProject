@@ -25,6 +25,8 @@ import { toast } from 'sonner';
 import ProductEditDialogs from './dialogs/ProductEditDialogs';
 import useSWR from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { adminMutator } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import type { HybridSpecUnit, ProductDetailResponse } from '@/types/admin/products';
@@ -442,35 +444,21 @@ export default function ProductEditClient({ productId }: { productId: string }) 
       setSubmitting(true);
 
       try {
-        const res = await fetch(`/api/admin/products/${productId}`, {
-          // API 겨로
-          method: 'PUT', // POST 요청
-          headers: {
-            // 헤더 설정
-            'Content-Type': 'application/json', // JSON 형식
-          },
-          body: JSON.stringify(product), // JSON 문자열로 변환
-          credentials: 'include',
+        const result = await runAdminActionWithToast({
+          action: () =>
+            adminMutator(`/api/admin/products/${productId}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(product),
+            }),
+          successMessage: '상품이 수정되었습니다.',
+          fallbackErrorMessage: '알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요',
         });
 
-        if (!res.ok) {
-          // 에러 발생시
-          const errorData = await res.json(); // 에러 메시지
-
-          showErrorToast(errorData.message || '알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요');
-          return;
-        }
-
-        await res.json(); // 성공적으로 등록된 데이터
-
-        showSuccessToast('상품이 수정되었습니다.');
-
+        if (!result) return;
         router.push('/admin/products'); // 등록된 상품 상세 페이지로 즉시 이동
-      } catch (error) {
-        // 상품 등록 중 에러 발생시
-        // console.log('상품 등록 에러', error);
-
-        showErrorToast('서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.');
       } finally {
         setSubmitting(false);
       }
@@ -491,19 +479,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     deleteRef.current = true;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/products/${productId}`, {
-        method: 'DELETE',
-        credentials: 'include',
+      const result = await runAdminActionWithToast({
+        action: () => adminMutator(`/api/admin/products/${productId}`, { method: 'DELETE' }),
+        successMessage: '상품이 삭제되었습니다.',
+        fallbackErrorMessage: '삭제 중 오류가 발생했습니다.',
       });
-      if (!res.ok) {
-        const err = await res.json();
-        showErrorToast(err.message || '삭제 중 오류가 발생했습니다.');
-        return;
-      }
-      showSuccessToast('상품이 삭제되었습니다.');
-      router.push('/admin/products');
-    } catch (e) {
-      showErrorToast('서버 오류가 발생했습니다.');
+      if (result) router.push('/admin/products');
     } finally {
       setDeleting(false);
       deleteRef.current = false;

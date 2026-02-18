@@ -17,7 +17,8 @@ import BrandFilter from '@/app/admin/products/product-filters/BrandFilter';
 import MaterialFilter from '@/app/admin/products/product-filters/MaterialFilter';
 import StockStatusFilter from '@/app/admin/products/product-filters/StockStatusFilter';
 import { cn } from '@/lib/utils';
-import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { adminFetcher, adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import ProductsTableSkeleton from '@/app/admin/products/ProductsTableSkeleton';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
@@ -157,18 +158,12 @@ export default function ProductsClient() {
 
   // 삭제 핸들러
   const handleDelete = async (id: string) => {
-    try {
-      const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE', credentials: 'include' });
-      if (!res.ok) {
-        const err = await res.json();
-        showErrorToast(err.message || '삭제 중 오류가 발생했습니다.');
-        return;
-      }
-      showSuccessToast('상품이 삭제되었습니다.');
-      await mutate();
-    } catch {
-      showErrorToast('서버 오류가 발생했습니다.');
-    }
+    const result = await runAdminActionWithToast({
+      action: () => adminMutator(`/api/admin/products/${id}`, { method: 'DELETE' }),
+      successMessage: '상품이 삭제되었습니다.',
+      fallbackErrorMessage: '삭제 중 오류가 발생했습니다.',
+    });
+    if (result) await mutate();
   };
 
   // 접근성(aria-sort) + 클릭 가능한 헤더
