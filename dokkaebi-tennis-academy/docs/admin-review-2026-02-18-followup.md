@@ -26,6 +26,14 @@
 - `npm run test:e2e:admin-critical` 실패
   - `localhost:3000` 미기동으로 `ECONNREFUSED`
 
+
+## admin-critical smoke 실행 전제
+- `scripts/admin-critical-smoke.mjs`는 **서버를 자동으로 띄우지 않으므로**, 실행 전에 테스트 대상 서버가 기동되어 있어야 한다.
+- 기본 smoke 대상 포트는 `3000`이며, 반드시 `BASE_URL` 환경변수를 지정해야 한다.
+  - 예: `BASE_URL=http://localhost:3000 node scripts/admin-critical-smoke.mjs`
+- 로컬/수동 점검 시에는 서버 기동 + 헬스체크 + smoke 실행을 한 번에 처리하는 래퍼(`npm run test:e2e:admin-critical`)를 사용한다.
+  - 래퍼는 `next start`(=`pnpm start`)를 실행하고 `http://localhost:3000/` 헬스체크 성공 후 smoke를 수행한다.
+
 ## 권장 진행 순서
 1. `app/api/boards/route.ts` 타입 오류 복구 (typecheck/build 선복구)
 2. `app/admin/boards/[id]/BoardDetailActions.tsx`의 비-admin API 호출 제거
