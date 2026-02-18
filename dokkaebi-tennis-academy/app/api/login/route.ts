@@ -5,6 +5,7 @@ import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, REF
 import { getDb } from '@/lib/mongodb';
 import { autoLinkStringingByEmail } from '@/lib/claims';
 import { baseCookie } from '@/lib/cookieOptions';
+import { ADMIN_CSRF_COOKIE_KEY } from '@/lib/admin/adminCsrf';
 import { z } from 'zod';
 
 // // JWT 비밀 키 불러오기 (환경 변수에서 설정)
@@ -93,6 +94,26 @@ export async function POST(req: Request) {
     ...baseCookie,
     maxAge: REFRESH_TOKEN_EXPIRES_IN,
   });
+
+  /**
+   * 관리자 세션에서만 CSRF 더블서브밋 쿠키를 발급한다.
+   * - admin: 클라이언트 JS가 읽어 헤더로 보낼 수 있어야 하므로 httpOnly=false
+   * - non-admin: 이전 관리자 토큰이 남아있지 않도록 즉시 삭제
+   */
+  if (user.role === 'admin') {
+    const adminCsrfToken = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, '');
+    response.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
+      ...baseCookie,
+      httpOnly: false,
+      maxAge: REFRESH_TOKEN_EXPIRES_IN,
+    });
+  } else {
+    response.cookies.set(ADMIN_CSRF_COOKIE_KEY, '', {
+      ...baseCookie,
+      httpOnly: false,
+      maxAge: 0,
+    });
+  }
 
   // 로그인 대상 유저 문서: 위에서 const user = await getUserByEmail(email) 로 조회됨
   if (user?.passwordMustChange === true) {
