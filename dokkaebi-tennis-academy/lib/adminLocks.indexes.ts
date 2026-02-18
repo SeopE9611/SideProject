@@ -1,16 +1,27 @@
 import type { Db } from 'mongodb';
+import { hasMatchingIndex } from '@/lib/indexes.utils';
 
 export async function ensureAdminLocksIndexes(db: Db) {
   const col = db.collection('admin_locks');
   const existing = await col.listIndexes().toArray().catch(() => [] as any[]);
 
-  const hasKeyUnique = existing.some((idx: any) => idx?.name === 'admin_locks_key_unique');
-  if (!hasKeyUnique) {
-    await col.createIndex({ key: 1 }, { name: 'admin_locks_key_unique', unique: true });
+  const keyUniqueSpec = {
+    name: 'admin_locks_key_unique',
+    keys: { key: 1 },
+    options: { unique: true },
+  } as const;
+
+  if (!hasMatchingIndex(existing as any[], keyUniqueSpec)) {
+    await col.createIndex(keyUniqueSpec.keys, { name: keyUniqueSpec.name, ...(keyUniqueSpec.options ?? {}) });
   }
 
-  const hasTtl = existing.some((idx: any) => idx?.name === 'ttl_locked_until');
-  if (!hasTtl) {
-    await col.createIndex({ lockedUntil: 1 }, { name: 'ttl_locked_until', expireAfterSeconds: 0 });
+  const ttlSpec = {
+    name: 'ttl_locked_until',
+    keys: { lockedUntil: 1 },
+    options: { expireAfterSeconds: 0 },
+  } as const;
+
+  if (!hasMatchingIndex(existing as any[], ttlSpec)) {
+    await col.createIndex(ttlSpec.keys, { name: ttlSpec.name, ...(ttlSpec.options ?? {}) });
   }
 }

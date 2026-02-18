@@ -1,4 +1,5 @@
 import type { Db, IndexDirection } from 'mongodb';
+import { hasMatchingIndex } from '@/lib/indexes.utils';
 
 type Keys = Record<string, IndexDirection>;
 
@@ -25,8 +26,7 @@ export async function ensureUserIndexes(db: Db) {
   const existing = await col.listIndexes().toArray().catch(() => [] as any[]);
 
   for (const spec of USER_INDEX_SPECS) {
-    const existsByName = existing.some((idx: any) => idx?.name === spec.name);
-    if (existsByName) continue;
+    if (hasMatchingIndex(existing as any[], spec)) continue;
 
     await col.createIndex(spec.keys, {
       name: spec.name,
