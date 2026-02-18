@@ -594,10 +594,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const canInc = quantity < stock;
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 pb-20 bp-md:pb-8">
+    <div className="min-h-full bg-gradient-to-br from-muted/50 via-accent/10 to-primary/10 dark:from-background dark:via-background dark:to-muted pb-20 bp-md:pb-8">
       {/* Hero Section with Breadcrumb */}
-      <div className="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-6 sm:py-8">
-        <div className="absolute inset-0 bg-black/20"></div>
+      <div className="relative bg-gradient-to-r from-accent via-primary to-primary text-primary-foreground py-6 sm:py-8">
+        <div className="absolute inset-0 bg-foreground/20"></div>
         {/* Tennis court line pattern */}
         <div className="absolute inset-0 opacity-10">
           <svg className="w-full h-full" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -623,7 +623,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <span>/</span>
             <span className="text-accent truncate max-w-[120px] sm:max-w-none">{product.name}</span>
           </div>
-          <Button variant="ghost" className="text-white hover:bg-card/10 p-0 h-auto text-sm" onClick={() => router.back()}>
+          <Button variant="ghost" className="text-primary-foreground hover:bg-card/10 p-0 h-auto text-sm" onClick={() => router.back()}>
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             이전 페이지로
           </Button>
@@ -633,22 +633,22 @@ export default function ProductDetailClient({ product }: { product: any }) {
       <SiteContainer variant="wide" className="py-4 bp-sm:py-6 bp-md:py-8">
         <div className="grid grid-cols-1 gap-4 sm:gap-6 bp-lg:grid-cols-5">
           <div className="bp-lg:col-span-3 space-y-3 sm:space-y-4">
-            <Card className="overflow-hidden border-0 shadow-xl sm:shadow-2xl bg-card/90 backdrop-blur-sm dark:bg-slate-800/90">
+            <Card className="overflow-hidden border-0 shadow-xl sm:shadow-2xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
               <div className="relative aspect-square">
                 <Image src={images[selectedImageIndex] || '/placeholder.svg'} alt={product.name} fill className="object-cover transition-transform duration-300 hover:scale-105" />
                 {images.length > 1 && (
                   <>
-                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-black/50 text-white hover:bg-black/70" onClick={prevImage}>
+                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-foreground/50 text-primary-foreground hover:bg-foreground/70" onClick={prevImage}>
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-black/50 text-white hover:bg-black/70" onClick={nextImage}>
+                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-foreground/50 text-primary-foreground hover:bg-foreground/70" onClick={nextImage}>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </>
                 )}
                 <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex gap-1.5 sm:gap-2">
-                  <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs">NEW</Badge>
-                  <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs">정품</Badge>
+                  <Badge className="bg-gradient-to-r from-destructive/80 to-destructive/100 text-primary-foreground text-xs">NEW</Badge>
+                  <Badge className="bg-gradient-to-r from-accent to-primary text-primary-foreground text-xs">정품</Badge>
                 </div>
               </div>
             </Card>
@@ -667,19 +667,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </div>
 
           <div className="bp-lg:col-span-2 space-y-3 sm:space-y-4">
-            <Card className="border-0 shadow-lg sm:shadow-xl bg-card/90 backdrop-blur-sm dark:bg-slate-800/90">
+            <Card className="border-0 shadow-lg sm:shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
               <CardContent className="p-4 sm:p-6">
                 <div className="space-y-3 sm:space-y-4">
                   {/* 브랜드와 제품명 */}
                   <div>
-                    <Badge variant="outline" className="mb-2 text-xs text-accent border-blue-200 dark:text-accent dark:border-blue-800">
+                    <Badge variant="outline" className="mb-2 text-xs text-accent border-border dark:text-accent dark:border-border">
                       {BRAND_MAP[(product?.brand ?? '').toLowerCase()] ?? product.brand}
                     </Badge>
-                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent leading-tight">{product.name}</h1>
+                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent leading-tight">{product.name}</h1>
                     <div className="mt-2 flex items-center gap-2 sm:gap-3">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(averageRating) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
+                          <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(averageRating) ? 'fill-yellow-400 text-yellow-400' : 'fill-muted text-muted'}`} />
                         ))}
                       </div>
                       <span className="text-xs sm:text-sm text-muted-foreground">
@@ -690,17 +690,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                   <div className="space-y-2">
                     <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-bold text-accent dark:text-accent">{product.price.toLocaleString()}원</span>
+                      <span className="text-2xl sm:text-3xl font-bold text-accent">{product.price.toLocaleString()}원</span>
                       {product.originalPrice && product.originalPrice > product.price && (
                         <>
                           <span className="text-base sm:text-lg text-muted-foreground line-through">{product.originalPrice.toLocaleString()}원</span>
-                          <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs">{Math.round((1 - product.price / product.originalPrice) * 100)}% 할인</Badge>
+                          <Badge className="bg-gradient-to-r from-destructive/80 to-destructive/100 text-primary-foreground text-xs">{Math.round((1 - product.price / product.originalPrice) * 100)}% 할인</Badge>
                         </>
                       )}
                     </div>
                     {typeof product?.mountingFee === 'number' && (
                       <div className="text-xs sm:text-sm text-muted-foreground">
-                        <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-2 py-1 text-xs">
+                        <span className="inline-flex items-center rounded-md bg-accent/10 dark:bg-accent/10 border border-border dark:border-border px-2 py-1 text-xs">
                           장착 서비스: {product.mountingFee > 0 ? `+${product.mountingFee.toLocaleString()}원` : '무료'}
                         </span>
                       </div>
@@ -711,7 +711,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm sm:text-base">수량</span>
 
-                      <div className="flex items-center rounded-full bg-slate-100 px-1 dark:bg-slate-700">
+                      <div className="flex items-center rounded-full bg-muted px-1 dark:bg-muted">
                         <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-9 sm:w-9 disabled:opacity-40" aria-label="수량 감소" disabled={!canDec} onClick={() => setQuantity((q) => Math.max(1, q - 1))}>
                           <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
@@ -737,22 +737,22 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     </div>
                     {product.inventory?.manageStock && product.inventory.stock <= 5 && product.inventory.stock > 0 && (
-                      <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-orange-50 border border-orange-200 rounded-lg dark:bg-orange-900/20 dark:border-orange-800">
-                        <Clock className="h-4 w-4 text-orange-600 shrink-0" />
-                        <span className="text-xs sm:text-sm text-orange-700 dark:text-orange-300">현재 남은 수량이 {product.inventory.stock}개입니다.</span>
+                      <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-muted/50 border border-border rounded-lg dark:bg-muted/40 dark:border-border">
+                        <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">현재 남은 수량이 {product.inventory.stock}개입니다.</span>
                       </div>
                     )}
 
                     <div id="cta-anchor" className="flex flex-col gap-2 sm:gap-3">
                       {product.inventory?.manageStock && product.inventory.stock <= 0 ? (
-                        <Button disabled className="w-full h-10 sm:h-11 text-sm bg-red-100 text-red-600 border border-red-300 dark:bg-red-900/40 dark:text-red-200">
+                        <Button disabled className="w-full h-10 sm:h-11 text-sm bg-destructive/15 text-destructive border border-border dark:bg-destructive/20 dark:text-destructive">
                           <X className="mr-2 h-4 w-4" />
                           재고가 소진되었습니다
                         </Button>
                       ) : (
                         <>
                           <Button
-                            className="w-full h-10 sm:h-11 text-sm bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600"
+                            className="w-full h-10 sm:h-11 text-sm bg-gradient-to-r from-accent to-primary text-primary-foreground shadow hover:from-accent hover:to-primary"
                             onClick={handleBuyNow}
                             disabled={loading || stock <= 0 || quantity > stock}
                           >
@@ -761,7 +761,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           </Button>
 
                           <Button
-                            className="flex-1 h-12 rounded-lg border border-slate-300 dark:border-slate-600 bg-card dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 text-slate-900 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                            className="flex-1 h-12 rounded-lg border border-border dark:border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                             disabled={loading || quantity > stock}
                             onClick={handleBuyNowWithService}
                           >
@@ -779,9 +779,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         variant="outline"
                         disabled={busy}
                         onClick={handleWishlist}
-                        className={`w-full h-10 sm:h-11 text-sm ${isWishlisted ? 'bg-red-50 border-red-200 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400' : ''}`}
+                        className={`w-full h-10 sm:h-11 text-sm ${isWishlisted ? 'bg-destructive/10 border-border text-destructive dark:bg-destructive/15 dark:border-border dark:text-destructive' : ''}`}
                       >
-                        <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                        <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-destructive' : ''}`} />
                         위시리스트
                       </Button>
                     </div>
@@ -789,20 +789,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                   <div className="pt-3 sm:pt-4 border-t">
                     <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3 flex items-center">
-                      <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-accent dark:text-accent" />
+                      <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-accent" />
                       배송 정보
                     </h3>
                     <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                       <div className="flex items-center gap-2">
-                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 shrink-0" />
+                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
                         <span>3,000원 (30,000원 이상 무료)</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 shrink-0" />
+                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
                         <span>오후 2시 이전 주문 시 당일 출고</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 shrink-0" />
+                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
                         <span>장착 서비스 신청 시 1-2일 추가</span>
                       </div>
                     </div>
@@ -814,28 +814,28 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </div>
 
         <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-4 sm:gap-6 mt-6 sm:mt-8">
-          <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm dark:bg-slate-800/90">
+          <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm dark:bg-muted/90">
             <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
-              <CardTitle className="text-base sm:text-lg font-semibold text-accent dark:text-accent flex items-center gap-2">
+              <CardTitle className="text-base sm:text-lg font-semibold text-accent flex items-center gap-2">
                 <Target className="h-4 w-4 sm:h-5 sm:w-5" />
                 추천 정보 & 특성
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0">
               <div>
-                <h4 className="font-medium text-xs sm:text-sm text-slate-700 dark:text-slate-300 mb-2 sm:mb-3">추천 대상</h4>
+                <h4 className="font-medium text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground mb-2 sm:mb-3">추천 대상</h4>
                 <div className="space-y-1.5 sm:space-y-2">
                   {selectedPlayerTypes.length > 0 && (
                     <div className="flex items-center gap-2 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0"></div>
-                      <span className="text-slate-600 dark:text-slate-400">플레이어:</span>
+                      <div className="w-2 h-2 bg-primary rounded-full shrink-0"></div>
+                      <span className="text-muted-foreground dark:text-muted-foreground">플레이어:</span>
                       <span className="font-medium">{selectedPlayerTypes.join(', ')}</span>
                     </div>
                   )}
                   {selectedPlayStyles.length > 0 && (
                     <div className="flex items-center gap-2 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0"></div>
-                      <span className="text-slate-600 dark:text-slate-400">스타일:</span>
+                      <div className="w-2 h-2 bg-primary rounded-full shrink-0"></div>
+                      <span className="text-muted-foreground dark:text-muted-foreground">스타일:</span>
                       <span className="font-medium">{selectedPlayStyles.join(', ')}</span>
                     </div>
                   )}
@@ -843,19 +843,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </div>
 
               <div>
-                <h4 className="font-medium text-xs sm:text-sm text-slate-700 dark:text-slate-300 mb-2 sm:mb-3">추가 특성</h4>
+                <h4 className="font-medium text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground mb-2 sm:mb-3">추가 특성</h4>
                 {additionalFeaturesText ? (
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{additionalFeaturesText}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">{additionalFeaturesText}</p>
                 ) : (
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-500 italic">추가 특성 정보가 없습니다.</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground italic">추가 특성 정보가 없습니다.</p>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm dark:bg-slate-800/90">
+          <Card className="border-0 shadow-lg bg-card/90 backdrop-blur-sm dark:bg-muted/90">
             <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
-              <CardTitle className="text-base sm:text-lg font-semibold text-accent dark:text-accent flex items-center gap-2">
+              <CardTitle className="text-base sm:text-lg font-semibold text-accent flex items-center gap-2">
                 <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
                 성능 특성
               </CardTitle>
@@ -869,14 +869,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   { name: '내구성', icon: Shield, key: 'durability', koKey: '내구성' },
                   { name: '편안함', icon: Heart, key: 'comfort', koKey: '편안함' },
                 ].map((spec, index) => (
-                  <div key={index} className="p-2.5 sm:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div key={index} className="p-2.5 sm:p-3 bg-accent/10 dark:bg-accent/10 rounded-lg">
                     <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                      <spec.icon className="h-3 w-3 sm:h-4 sm:w-4 text-accent dark:text-accent" />
-                      <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">{spec.name}</span>
+                      <spec.icon className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
+                      <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">{spec.name}</span>
                     </div>
                     <div className="flex gap-1">
                       {[...Array(5)].map((_, i) => (
-                        <div key={i} className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${i < featureValue(spec.key, spec.koKey) ? 'bg-blue-500 dark:bg-blue-400' : 'bg-slate-200 dark:bg-slate-600'}`} />
+                        <div key={i} className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${i < featureValue(spec.key, spec.koKey) ? 'bg-primary dark:bg-accent/70' : 'bg-muted dark:bg-muted'}`} />
                       ))}
                     </div>
                   </div>
@@ -886,13 +886,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </Card>
         </div>
 
-        <Card className="mt-8 sm:mt-12 border-0 shadow-lg sm:shadow-xl bg-card/90 backdrop-blur-sm dark:bg-slate-800/90">
+        <Card className="mt-8 sm:mt-12 border-0 shadow-lg sm:shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
-              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-0.5 sm:gap-1 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-t-lg p-0.5 sm:p-1">
+              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-0.5 sm:gap-1 bg-gradient-to-r from-accent/10 via-accent/10 to-primary/10 dark:from-accent/10 dark:via-accent/10 dark:to-primary/10 rounded-t-lg p-0.5 sm:p-1">
                 <TabsTrigger
                   value="description"
-                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-accent dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-accent"
+                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-accent dark:data-[state=active]:bg-muted dark:data-[state=active]:text-accent"
                 >
                   <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">상품 설명</span>
@@ -900,7 +900,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="specifications"
-                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-accent dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-accent"
+                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-accent dark:data-[state=active]:bg-muted dark:data-[state=active]:text-accent"
                 >
                   <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">상세 스펙</span>
@@ -908,7 +908,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
-                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-accent dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-accent"
+                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-accent dark:data-[state=active]:bg-muted dark:data-[state=active]:text-accent"
                 >
                   <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">리뷰</span>
@@ -917,7 +917,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="qna"
-                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-accent dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-accent"
+                  className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-accent dark:data-[state=active]:bg-muted dark:data-[state=active]:text-accent"
                 >
                   <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">문의</span>
@@ -929,13 +929,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="description" className="p-4 sm:p-8">
                 <div className="prose max-w-none">
                   <div className="flex items-center gap-3 mb-5 sm:mb-6">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                      <FileText className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
+                      <FileText className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200">상품 설명</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground dark:text-foreground">상품 설명</h3>
                   </div>
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 sm:p-6 rounded-lg">
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-base sm:text-lg">
+                  <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-4 sm:p-6 rounded-lg">
+                    <p className="text-muted-foreground dark:text-muted-foreground leading-relaxed text-base sm:text-lg">
                       {product.description || '이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다.'}
                     </p>
                   </div>
@@ -945,20 +945,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="specifications" className="p-4 sm:p-8">
                 <div className="space-y-4 sm:space-y-6">
                   <div className="flex items-center gap-3 mb-5 sm:mb-6">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                      <Settings className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
+                      <Settings className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200">상세 스펙</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground dark:text-foreground">상세 스펙</h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     {Object.entries(toDisplaySpec())
                       .filter(([, value]) => value)
                       .map(([key, value]) => (
-                        <div key={key} className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-3 sm:p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                        <div key={key} className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border dark:border-border">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-accent dark:text-accent text-sm sm:text-base">{key}</span>
-                            <span className="text-slate-700 dark:text-slate-300 font-medium text-sm sm:text-base">{String(value)}</span>
+                            <span className="font-semibold text-accent text-sm sm:text-base">{key}</span>
+                            <span className="text-muted-foreground dark:text-muted-foreground font-medium text-sm sm:text-base">{String(value)}</span>
                           </div>
                         </div>
                       ))}
@@ -969,32 +969,32 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         {/* 상세 스펙 그리드(파란 그라데이션 카드)와 톤 통일 */}
                         <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
                           <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="w-9 sm:w-10 h-9 sm:h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                              <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                            <div className="w-9 sm:w-10 h-9 sm:h-10 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
+                              <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
                             </div>
-                            <h4 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-200">하이브리드 구성</h4>
+                            <h4 className="text-lg sm:text-xl font-bold text-foreground dark:text-foreground">하이브리드 구성</h4>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             {/* 메인 */}
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-3 sm:p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                            <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border dark:border-border">
                               <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">메인(Mains)</div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hMainBrand ?? ''} {hMain?.name ?? ''}
                               </div>
-                              <div className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+                              <div className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">
                                 {hMainGauge ? `게이지: ${hMainGauge}` : null}
                                 {hMainColor ? ` · 색상: ${hMainColor}` : null}
                               </div>
                             </div>
 
                             {/* 크로스 */}
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-3 sm:p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                            <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border dark:border-border">
                               <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">크로스(Crosses)</div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hCrossBrand ?? ''} {hCross?.name ?? ''}
                               </div>
-                              <div className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">
+                              <div className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">
                                 {hCrossGauge ? `게이지: ${hCrossGauge}` : null}
                                 {hCrossColor ? ` · 색상: ${hCrossColor}` : null}
                               </div>
@@ -1011,12 +1011,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="space-y-4 sm:space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                        <Star className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                      <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
+                        <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
                       </div>
-                      <h3 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200">고객 리뷰</h3>
+                      <h3 className="text-xl sm:text-2xl font-bold text-foreground dark:text-foreground">고객 리뷰</h3>
                     </div>
-                    <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg text-xs sm:text-sm h-9 sm:h-10">
+                    <Button asChild className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 text-primary-foreground shadow-lg text-xs sm:text-sm h-9 sm:h-10">
                       <Link href={`/reviews/write?productId=${product._id}`}>
                         <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                         리뷰 작성하기
@@ -1027,10 +1027,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="space-y-4 sm:space-y-6">
                     {mergedReviews.length > 0 ? (
                       mergedReviews.map((review: any, index: number) => (
-                        <Card key={index} className="border-0 shadow-lg bg-gradient-to-r from-white to-blue-50/30 dark:from-slate-800 dark:to-blue-900/10">
+                        <Card key={index} className="border-0 shadow-lg bg-gradient-to-r from-background to-accent/10 dark:from-card dark:to-accent/10">
                           <CardContent className="p-4 sm:p-6 relative">
                             {busyReviewId === String(review._id) && (
-                              <div className="absolute inset-0 bg-card/70 dark:bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+                              <div className="absolute inset-0 bg-card/70 dark:bg-background/40 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
                                 <Loader2 className="h-4 w-4 animate-spin" />
                                 <span className="ml-2 text-sm">변경 중...</span>
                               </div>
@@ -1038,18 +1038,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             <div className="flex items-start justify-between mb-3 sm:mb-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">{review.user?.charAt(0) || 'U'}</div>
+                                <div className="w-10 h-10 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-lg shadow-lg">{review.user?.charAt(0) || 'U'}</div>
                                 <div>
-                                  <div className="font-bold text-slate-800 dark:text-slate-200 text-sm sm:text-base">
+                                  <div className="font-bold text-foreground dark:text-foreground text-sm sm:text-base">
                                     {review.status === 'hidden' ? (review.ownedByMe ? `${review.user ?? '내 리뷰'} (비공개)` : review.adminView ? `${review.user ?? '사용자'} (비공개)` : '비공개 리뷰') : (review.user ?? '익명')}
                                   </div>
                                   <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1">
                                       {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
+                                        <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-yellow-400' : 'fill-muted text-muted'}`} />
                                       ))}
                                     </div>
-                                    <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{review.date || '2099-01-01'}</span>
+                                    <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">{review.date || '2099-01-01'}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1057,7 +1057,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               {(review.ownedByMe || isAdmin) && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors" aria-label="내 리뷰 관리">
+                                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent/10 dark:hover:bg-accent/10 transition-colors" aria-label="내 리뷰 관리">
                                       <MoreHorizontal className="h-4 w-4" />
                                     </button>
                                   </DropdownMenuTrigger>
@@ -1176,7 +1176,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           setBusyReviewId(null);
                                         }
                                       }}
-                                      className="cursor-pointer text-red-600 focus:text-red-600"
+                                      className="cursor-pointer text-destructive focus:text-destructive"
                                     >
                                       <Trash2 className="mr-2 h-4 w-4" />
                                       삭제
@@ -1192,8 +1192,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                               return (
                                 <div className="space-y-3 sm:space-y-4">
-                                  <div className="bg-card dark:bg-slate-700/50 p-3 sm:p-4 rounded-lg border border-blue-100 dark:border-blue-800">
-                                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm sm:text-base">{review.content}</p>
+                                  <div className="bg-card dark:bg-muted/50 p-3 sm:p-4 rounded-lg border border-border dark:border-border">
+                                    <p className="text-muted-foreground dark:text-muted-foreground leading-relaxed text-sm sm:text-base">{review.content}</p>
                                   </div>
 
                                   {Array.isArray(review.photos) && review.photos.length > 0 && (
@@ -1203,11 +1203,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           key={i}
                                           type="button"
                                           onClick={() => openViewer(review.photos, i)}
-                                          className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 transition-colors shadow-md shrink-0"
+                                          className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-border dark:border-border hover:border-border dark:hover:border-border transition-colors shadow-md shrink-0"
                                           aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
                                         >
                                           <Image src={src || '/placeholder.svg'} alt={`리뷰 사진 ${i + 1}`} fill className="object-cover" />
-                                          {i === 3 && review.photos.length > 4 && <div className="absolute inset-0 bg-black/60 text-white text-xs font-bold flex items-center justify-center">+{review.photos.length - 3}</div>}
+                                          {i === 3 && review.photos.length > 4 && <div className="absolute inset-0 bg-foreground/60 text-primary-foreground text-xs font-bold flex items-center justify-center">+{review.photos.length - 3}</div>}
                                         </button>
                                       ))}
                                     </div>
@@ -1220,12 +1220,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       ))
                     ) : (
                       <div className="text-center py-8 sm:py-16">
-                        <div className="w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
-                          <Star className="h-8 w-8 sm:h-10 sm:w-10 text-accent dark:text-accent" />
+                        <div className="w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-r from-accent/20 to-primary/20 dark:from-accent/10 dark:to-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+                          <Star className="h-8 w-8 sm:h-10 sm:w-10 text-accent" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">아직 리뷰가 없습니다</h3>
-                        <p className="text-slate-600 dark:text-slate-400 mb-6 text-base sm:text-lg">첫 번째 리뷰를 작성해보세요!</p>
-                        <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+                        <h3 className="text-lg sm:text-xl font-bold text-foreground dark:text-foreground mb-2">아직 리뷰가 없습니다</h3>
+                        <p className="text-muted-foreground dark:text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 리뷰를 작성해보세요!</p>
+                        <Button className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 text-primary-foreground shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                           <Pencil className="h-4 w-4 mr-2" />
                           리뷰 작성하기
                         </Button>
@@ -1238,29 +1238,29 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="qna" className="p-4 sm:p-8">
                 <div className="flex items-center justify-between mb-5 sm:mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                      <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
+                      <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200">상품 문의</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground dark:text-foreground">상품 문의</h3>
                   </div>
-                  <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg text-xs sm:text-sm h-9 sm:h-10">
+                  <Button asChild className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 text-primary-foreground shadow-lg text-xs sm:text-sm h-9 sm:h-10">
                     <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
                   </Button>
                 </div>
 
                 {qnaLoading && <div className="text-sm text-muted-foreground">불러오는 중…</div>}
-                {qnaError && <div className="text-sm text-red-500">문의 목록을 불러오지 못했습니다.</div>}
+                {qnaError && <div className="text-sm text-destructive">문의 목록을 불러오지 못했습니다.</div>}
 
                 {!qnaLoading && !qnaError && (
                   <>
                     {qnas.length === 0 ? (
                       <div className="text-center py-8 sm:py-16">
-                        <div className="w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
-                          <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-accent dark:text-accent" />
+                        <div className="w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-r from-accent/20 to-primary/20 dark:from-accent/10 dark:to-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+                          <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-accent" />
                         </div>
-                        <h4 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">아직 문의가 없습니다</h4>
-                        <p className="text-slate-600 dark:text-slate-400 mb-6 text-base sm:text-lg">첫 번째 문의를 남겨보세요!</p>
-                        <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+                        <h4 className="text-lg sm:text-xl font-bold text-foreground dark:text-foreground mb-2">아직 문의가 없습니다</h4>
+                        <p className="text-muted-foreground dark:text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 문의를 남겨보세요!</p>
+                        <Button asChild className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 text-primary-foreground shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                           <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
                         </Button>
                       </div>
@@ -1278,7 +1278,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           {q.category ?? '상품문의'}
                                         </Badge>
                                         {q.isSecret && (
-                                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-gray-50 text-gray-700 border-border /40 dark:border-border shrink-0`}>
+                                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-muted/50 text-muted-foreground border-border /40 dark:border-border shrink-0`}>
                                             <Lock className="h-3 w-3 mr-1" />
                                             비밀글
                                           </Badge>
@@ -1310,7 +1310,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
         {/* 리뷰 사진 확대 보기 */}
         <Dialog open={viewerOpen} onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}>
-          <DialogContent className="sm:max-w-4xl p-0 bg-black/90 text-white border-0">
+          <DialogContent className="sm:max-w-4xl p-0 bg-foreground/90 text-primary-foreground border-0">
             {/* 접근성용 제목(시각적으로 숨김) */}
             <DialogHeader className="sr-only">
               <DialogTitle>리뷰 사진 확대 보기</DialogTitle>
@@ -1332,7 +1332,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </div>
             {/* 썸네일 네비게이션 */}
             {viewerImages.length > 1 && (
-              <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
+              <div className="p-3 flex flex-wrap gap-2 justify-center bg-foreground/70">
                 {viewerImages.map((thumb, i) => (
                   <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
                     <Image src={thumb || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
@@ -1344,9 +1344,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </Dialog>
 
         <div className="mt-8 sm:mt-12">
-          <Card className="border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-slate-800/90">
+          <Card className="border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">관련 상품</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">관련 상품</CardTitle>
             </CardHeader>
             <CardContent>
               {/* 4칸 고정: 상품이 부족하면 플레이스홀더로 채움 */}
@@ -1354,10 +1354,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 // 로딩 스켈레톤
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="rounded-xl p-3 sm:p-4 bg-card/80 dark:bg-slate-800/80 shadow-sm animate-pulse">
-                      <div className="aspect-square rounded-lg bg-slate-100 dark:bg-slate-700 mb-2 sm:mb-3"></div>
-                      <div className="h-4 rounded bg-slate-100 dark:bg-slate-700 mb-1.5 sm:mb-2"></div>
-                      <div className="h-4 w-1/2 rounded bg-slate-100 dark:bg-slate-700"></div>
+                    <div key={i} className="rounded-xl p-3 sm:p-4 bg-card/80 dark:bg-muted/80 shadow-sm animate-pulse">
+                      <div className="aspect-square rounded-lg bg-muted dark:bg-muted mb-2 sm:mb-3"></div>
+                      <div className="h-4 rounded bg-muted dark:bg-muted mb-1.5 sm:mb-2"></div>
+                      <div className="h-4 w-1/2 rounded bg-muted dark:bg-muted"></div>
                     </div>
                   ))}
                 </div>
@@ -1366,14 +1366,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {/* 실제 관련 상품 */}
                   {relatedFiltered.map((rp: any) => (
                     <Link key={rp._id} href={`/products/${rp._id}`}>
-                      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group border border-slate-200 dark:border-slate-700">
-                        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600">
+                      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group border border-border dark:border-border">
+                        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted to-muted dark:from-muted dark:to-muted">
                           <img src={rp.images?.[0] || '/placeholder.svg'} alt={rp.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                         </div>
                         <CardContent className="p-3 sm:p-4">
-                          <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5 sm:mb-1">{BRAND_MAP[rp.brand] ?? rp.brand}</div>
+                          <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-0.5 sm:mb-1">{BRAND_MAP[rp.brand] ?? rp.brand}</div>
                           <div className="font-medium line-clamp-2 mb-1.5 sm:mb-2 text-sm sm:text-base group-hover:text-accent dark:group-hover:text-accent transition-colors">{rp.name}</div>
-                          <div className="font-bold text-accent dark:text-accent text-sm sm:text-base">{Number(rp.price).toLocaleString()}원</div>
+                          <div className="font-bold text-accent text-sm sm:text-base">{Number(rp.price).toLocaleString()}원</div>
                         </CardContent>
                       </Card>
                     </Link>
@@ -1383,14 +1383,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {Array.from({ length: Math.max(0, 4 - relatedFiltered.length) }).map((_, i) => (
                     <div
                       key={`rel-ph-${i}`}
-                      className="rounded-xl p-3 sm:p-4 border-2 border-dashed border-slate-300/70 dark:border-slate-600/70
- bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700
+                      className="rounded-xl p-3 sm:p-4 border-2 border-dashed border-border/70 dark:border-border/70
+ bg-gradient-to-br from-muted/50 to-muted dark:from-card dark:to-muted
  text-center flex flex-col"
                     >
-                      <div className="aspect-square rounded-lg bg-slate-100 dark:bg-slate-700 mb-2 sm:mb-3 flex items-center justify-center">
-                        <span className="text-slate-400 dark:text-slate-500 text-sm">준비 중</span>
+                      <div className="aspect-square rounded-lg bg-muted dark:bg-muted mb-2 sm:mb-3 flex items-center justify-center">
+                        <span className="text-muted-foreground dark:text-muted-foreground text-sm">준비 중</span>
                       </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">곧 업데이트됩니다</div>
+                      <div className="text-sm text-muted-foreground dark:text-muted-foreground">곧 업데이트됩니다</div>
                     </div>
                   ))}
                 </div>
@@ -1476,30 +1476,30 @@ export default function ProductDetailClient({ product }: { product: any }) {
       </SiteContainer>
       {/* ===== 모바일 전용 하단 Sticky ===== */}
       {showSticky && (
-        <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-slate-200 dark:border-slate-800">
-          <div className="bg-card dark:bg-slate-900 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
+        <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-border dark:border-border">
+          <div className="bg-card dark:bg-background shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
             <SiteContainer variant="wide" className="py-3">
               {/* 상품 정보 섹션 */}
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3 pb-3 border-b border-border dark:border-border">
                 {/* 썸네일 */}
-                <div className="relative w-14 h-14 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
+                <div className="relative w-14 h-14 rounded-md overflow-hidden bg-muted dark:bg-muted shrink-0 border border-border dark:border-border">
                   <img src={images[0] || '/placeholder.svg'} alt={product.name} className="w-full h-full object-cover" />
                 </div>
 
                 {/* 제품명 & 가격 */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate leading-tight">{product.name}</div>
+                  <div className="text-sm font-semibold text-foreground dark:text-foreground truncate leading-tight">{product.name}</div>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-slate-900 ">{qtyTotal.toLocaleString()}원</span>
-                    {typeof product?.mountingFee === 'number' && product.mountingFee > 0 && <span className="text-xs text-slate-500 dark:text-slate-400">+서비스 {product.mountingFee.toLocaleString()}원</span>}
+                    <span className="text-lg font-bold text-foreground ">{qtyTotal.toLocaleString()}원</span>
+                    {typeof product?.mountingFee === 'number' && product.mountingFee > 0 && <span className="text-xs text-muted-foreground dark:text-muted-foreground">+서비스 {product.mountingFee.toLocaleString()}원</span>}
                   </div>
                 </div>
 
                 {/* 수량 조절 */}
-                <div className="flex items-center gap-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <div className="flex items-center gap-0 rounded-lg border border-border dark:border-border bg-muted/50 dark:bg-muted/50">
                   <button
                     type="button"
-                    className="h-9 w-9 flex items-center justify-center text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed active:bg-slate-100 dark:active:bg-slate-700 transition-colors"
+                    className="h-9 w-9 flex items-center justify-center text-muted-foreground dark:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed active:bg-muted dark:active:bg-muted transition-colors"
                     aria-label="수량 감소"
                     disabled={!canDec}
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -1507,11 +1507,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Minus className="h-4 w-4" />
                   </button>
                   <div className="w-10 text-center">
-                    <span className="text-sm font-semibold text-slate-900 tabular-nums">{quantity}</span>
+                    <span className="text-sm font-semibold text-foreground tabular-nums">{quantity}</span>
                   </div>
                   <button
                     type="button"
-                    className="h-9 w-9 flex items-center justify-center text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed active:bg-slate-100 dark:active:bg-slate-700 transition-colors"
+                    className="h-9 w-9 flex items-center justify-center text-muted-foreground dark:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed active:bg-muted dark:active:bg-muted transition-colors"
                     aria-label="수량 증가"
                     disabled={!canInc}
                     onClick={() => {
@@ -1533,7 +1533,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   type="button"
                   onClick={handleBuyNow}
                   disabled={loading || stock <= 0 || quantity > stock}
-                  className="flex-1 h-12 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-semibold text-sm transition-colors shadow-sm disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 h-12 rounded-lg bg-primary hover:bg-primary/90 active:bg-primary/80 disabled:bg-muted dark:disabled:bg-muted text-primary-foreground font-semibold text-sm transition-colors shadow-sm disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <CreditCard className="h-4 w-4" />
                   즉시 구매하기
@@ -1541,7 +1541,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <button
                   type="button"
                   onClick={handleBuyNowWithService}
-                  className="flex-1 h-12 rounded-lg border border-slate-300 dark:border-slate-600 bg-card dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-600 text-slate-900 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 h-12 rounded-lg border border-border dark:border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                 >
                   <CreditCard className="h-4 w-4" />
                   교체 포함 결제

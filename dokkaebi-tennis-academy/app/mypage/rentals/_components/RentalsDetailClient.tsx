@@ -83,30 +83,30 @@ const getTrackHref = (code?: string, no?: string) => {
 const getStatusIcon = (status: string) => {
  switch (status) {
  case 'returned':
- return <CheckCircle className="h-5 w-5 text-emerald-500" />;
+ return <CheckCircle className="h-5 w-5 text-primary" />;
  case 'out':
  return <Clock className="h-5 w-5 text-accent" />;
  case 'paid':
- return <Package className="h-5 w-5 text-indigo-500" />;
+ return <Package className="h-5 w-5 text-accent" />;
  case 'canceled':
- return <XCircle className="h-5 w-5 text-red-500" />;
+ return <XCircle className="h-5 w-5 text-destructive" />;
  default:
- return <AlertCircle className="h-5 w-5 text-slate-500" />;
+ return <AlertCircle className="h-5 w-5 text-muted-foreground" />;
  }
 };
 
 const getStatusBadgeColor = (status: string) => {
  switch (status) {
  case 'returned':
- return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
+ return 'bg-primary/15 text-primary dark:bg-primary/20 dark:text-primary';
  case 'out':
- return 'bg-blue-100 text-accent dark:bg-blue-900 dark:text-accent';
+ return 'bg-accent/10 text-accent dark:bg-accent/15 dark:text-accent';
  case 'paid':
- return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
+ return 'bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground';
  case 'canceled':
- return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+ return 'bg-destructive/15 text-destructive dark:bg-destructive/20 dark:text-destructive';
  default:
- return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200';
+ return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
  }
 };
 
@@ -241,9 +241,9 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="space-y-6">
  <Card className="animate-pulse">
  <CardContent className="p-8">
- <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-4"></div>
- <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-2/3 mb-2"></div>
- <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+ <div className="h-6 bg-muted dark:bg-muted rounded w-1/3 mb-4"></div>
+ <div className="h-4 bg-muted dark:bg-muted rounded w-2/3 mb-2"></div>
+ <div className="h-4 bg-muted dark:bg-muted rounded w-1/2"></div>
  </CardContent>
  </Card>
  </div>
@@ -252,12 +252,12 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
  if (err) {
  return (
- <Card className="border-0 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950">
+ <Card className="border-0 bg-gradient-to-br from-destructive/10 to-destructive/10 dark:from-destructive/20 dark:to-destructive/20">
  <CardContent className="p-8 text-center">
- <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
- <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+ <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/15 dark:bg-destructive/20">
+ <AlertCircle className="h-8 w-8 text-destructive dark:text-destructive" />
  </div>
- <p className="text-red-600 dark:text-red-400">에러: {err}</p>
+ <p className="text-destructive dark:text-destructive">에러: {err}</p>
  </CardContent>
  </Card>
  );
@@ -265,9 +265,9 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
  if (!data) {
  return (
- <Card className="border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+ <Card className="border-0 bg-gradient-to-br from-muted/50 to-muted dark:from-background dark:to-muted">
  <CardContent className="p-8 text-center">
- <p className="text-slate-600 dark:text-slate-400">존재하지 않는 대여 건입니다.</p>
+ <p className="text-muted-foreground dark:text-muted-foreground">존재하지 않는 대여 건입니다.</p>
  </CardContent>
  </Card>
  );
@@ -308,20 +308,20 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  : null;
  return (
  <main className="space-y-8">
- <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-2xl p-8 border border-indigo-100 dark:border-indigo-800/30 shadow-lg">
+ <div className="bg-gradient-to-r from-accent/10 via-accent/10 to-destructive/10 dark:from-accent/10 dark:via-accent/10 dark:to-destructive/20 rounded-2xl p-8 border border-border dark:border-border/30 shadow-lg">
  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
  <div className="flex items-center space-x-4 mb-4 sm:mb-0">
- <div className="bg-card dark:bg-slate-800 rounded-full p-3 shadow-md">
- <Briefcase className="h-8 w-8 text-indigo-600" />
+ <div className="bg-card dark:bg-muted rounded-full p-3 shadow-md">
+ <Briefcase className="h-8 w-8 text-accent" />
  </div>
  <div>
  <div className="flex flex-wrap items-center gap-2 mt-1">
- <p className="text-slate-600 dark:text-slate-400">대여번호: {data.id}</p>
+ <p className="text-muted-foreground dark:text-muted-foreground">대여번호: {data.id}</p>
 
  {data.stringingApplicationId ? (
- <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200">신청서 연결됨</Badge>
+ <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/15 dark:text-primary">신청서 연결됨</Badge>
  ) : withStringService ? (
- <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200">교체 서비스 포함</Badge>
+ <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/15 dark:text-primary">교체 서비스 포함</Badge>
  ) : null}
  </div>
  </div>
@@ -332,13 +332,13 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <CancelRentalDialog rentalId={data.id} onSuccess={refreshRental} disabled={!canRequestCancel} />
 
  {data?.status === 'out' && (
- <Link href={`/mypage/rentals/${data.id}/return-shipping`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-slate-900 text-white hover:opacity-90 h-8">
+ <Link href={`/mypage/rentals/${data.id}/return-shipping`} className="inline-flex items-center text-sm px-3 py-1.5 rounded bg-background text-primary-foreground hover:opacity-90 h-8">
  <Truck className="h-4 w-4 mr-2" />
  {data?.shipping?.return?.trackingNumber ? '반납 운송장 수정' : '반납 운송장 등록'}
  </Link>
  )}
 
- <Button variant="outline" size="sm" asChild className="bg-card/70 backdrop-blur-sm border-indigo-200 hover:bg-indigo-50">
+ <Button variant="outline" size="sm" asChild className="bg-card/70 backdrop-blur-sm border-border hover:bg-accent/10">
  <Link href="/mypage?tab=rentals">
  <ArrowLeft className="mr-2 h-4 w-4" />
  목록으로 돌아가기
@@ -356,7 +356,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </Link>
  ) : canApplyStringService ? (
  <Link href={applyHref}>
- <Button className="gap-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200">
+ <Button className="gap-2 bg-gradient-to-r from-primary to-primary hover:from-primary/90 hover:to-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200">
  <Wrench className="h-4 w-4" />
  교체 신청하기
  </Button>
@@ -366,28 +366,28 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
- <div className="bg-card/70 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
+ <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
- <Package className="h-4 w-4 text-slate-500" />
- <span className="text-sm font-medium text-slate-700 dark:text-slate-300">라켓 정보</span>
+ <Package className="h-4 w-4 text-muted-foreground" />
+ <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">라켓 정보</span>
  </div>
- <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+ <p className="text-lg font-semibold text-foreground dark:text-foreground">
  {racketBrandLabel(data.brand)} {data.model}
  </p>
  </div>
 
- <div className="bg-card/70 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
+ <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
- <Clock className="h-4 w-4 text-slate-500" />
- <span className="text-sm font-medium text-slate-700 dark:text-slate-300">대여 기간</span>
+ <Clock className="h-4 w-4 text-muted-foreground" />
+ <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">대여 기간</span>
  </div>
- <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{data.days}일</p>
+ <p className="text-lg font-semibold text-foreground dark:text-foreground">{data.days}일</p>
  </div>
 
- <div className="bg-card/70 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
+ <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  {getStatusIcon(data.status)}
- <span className="text-sm font-medium text-slate-700 dark:text-slate-300">대여 상태</span>
+ <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">대여 상태</span>
  </div>
  <Badge className={`px-3 py-1 text-sm font-medium ${getStatusBadgeColor(data.status)}`}>{getStatusLabel(data.status)}</Badge>
  </div>
@@ -398,8 +398,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div
  className={`mb-4 flex items-center justify-between rounded-lg border px-4 py-3 text-sm ${
  cancelBanner.status === 'requested'
- ? 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/60 dark:bg-amber-950/40 dark:text-amber-100'
- : 'border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-100'
+ ? 'border-border bg-muted/50 text-muted-foreground dark:border-border dark:bg-muted/40 dark:text-foreground'
+ : 'border-border bg-muted/50 text-foreground dark:border-border dark:bg-background/40 dark:text-foreground'
  }`}
  >
  <div>
@@ -419,12 +419,12 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div
  className={`rounded-xl border p-6 ${
  banner.tone === 'success'
- ? 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-800/30 dark:text-emerald-200'
- : 'bg-blue-50 border-blue-200 text-accent dark:bg-blue-950/20 dark:border-blue-800/30 dark:text-accent'
+ ? 'bg-primary/10 border-border text-primary dark:bg-primary/15 dark:border-border dark:text-primary'
+ : 'bg-accent/10 border-border text-accent dark:bg-accent/10 dark:border-border/30 dark:text-accent'
  }`}
  >
  <div className="flex items-center gap-3">
- {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-emerald-600 dark:text-emerald-400" /> : <AlertCircle className="h-6 w-6 text-accent dark:text-accent" />}
+ {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-primary dark:text-primary" /> : <AlertCircle className="h-6 w-6 text-accent" />}
  <div>
  <p className="font-semibold text-lg">{banner.title}</p>
  {banner.desc && <p className="text-sm mt-1 opacity-80">{banner.desc}</p>}
@@ -434,10 +434,10 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  )}
 
  <div className="grid gap-8 lg:grid-cols-2">
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
+ <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/50 overflow-hidden">
+ <CardHeader className="bg-gradient-to-r from-muted/50 to-muted dark:from-card dark:to-muted border-b">
  <CardTitle className="flex items-center space-x-2">
- <Package className="h-5 w-5 text-indigo-600" />
+ <Package className="h-5 w-5 text-accent" />
  <span>대여 정보</span>
  </CardTitle>
  </CardHeader>
@@ -445,91 +445,91 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="space-y-4">
  {/* 스트링 상품 금액: 있을 때만 표시(대여만 한 경우 UI가 지저분해지지 않도록) */}
  {stringPrice > 0 && (
- <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <Package className="h-4 w-4 text-slate-500" />
+ <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
+ <Package className="h-4 w-4 text-muted-foreground" />
  <div className="flex-1">
- <p className="text-sm text-slate-600 dark:text-slate-400">스트링 상품</p>
- <p className="font-semibold text-slate-900 dark:text-slate-100">{stringPrice.toLocaleString()}원</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">스트링 상품</p>
+ <p className="font-semibold text-foreground dark:text-foreground">{stringPrice.toLocaleString()}원</p>
  </div>
  </div>
  )}
 
  {/* 교체 서비스비(장착비): 있을 때만 표시 */}
  {stringingFee > 0 && (
- <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <Wrench className="h-4 w-4 text-slate-500" />
+ <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
+ <Wrench className="h-4 w-4 text-muted-foreground" />
  <div className="flex-1">
- <p className="text-sm text-slate-600 dark:text-slate-400">교체 서비스비</p>
- <p className="font-semibold text-slate-900 dark:text-slate-100">{stringingFee.toLocaleString()}원</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">교체 서비스비</p>
+ <p className="font-semibold text-foreground dark:text-foreground">{stringingFee.toLocaleString()}원</p>
  </div>
  </div>
  )}
- <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <Briefcase className="h-4 w-4 text-slate-500" />
+ <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
+ <Briefcase className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-slate-600 dark:text-slate-400">라켓</p>
- <p className="font-semibold text-slate-900 dark:text-slate-100">
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">라켓</p>
+ <p className="font-semibold text-foreground dark:text-foreground">
  {racketBrandLabel(data.brand)} {data.model}
  </p>
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <Clock className="h-4 w-4 text-slate-500" />
+ <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
+ <Clock className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-slate-600 dark:text-slate-400">대여 기간</p>
- <p className="font-semibold text-slate-900 dark:text-slate-100">{data.days}일</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">대여 기간</p>
+ <p className="font-semibold text-foreground dark:text-foreground">{data.days}일</p>
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+ <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
  <div className="flex-1">
- <p className="text-sm text-slate-600 dark:text-slate-400">상태</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">상태</p>
  <Badge className={`mt-1 ${getStatusBadgeColor(data.status)}`}>{getStatusLabel(data.status)}</Badge>
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <Calendar className="h-4 w-4 text-slate-500" />
+ <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
+ <Calendar className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-slate-600 dark:text-slate-400">반납 예정일</p>
- <p className="font-semibold text-slate-900 dark:text-slate-100">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">반납 예정일</p>
+ <p className="font-semibold text-foreground dark:text-foreground">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
  </div>
  </div>
  </div>
  </CardContent>
  </Card>
 
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
+ <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/50 overflow-hidden">
+ <CardHeader className="bg-gradient-to-r from-muted/50 to-muted dark:from-card dark:to-muted border-b">
  <CardTitle className="flex items-center space-x-2">
- <CreditCard className="h-5 w-5 text-purple-600" />
+ <CreditCard className="h-5 w-5 text-accent" />
  <span>결제 정보</span>
  </CardTitle>
  </CardHeader>
  <CardContent className="p-6">
  <div className="space-y-4">
- <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <CreditCard className="h-4 w-4 text-slate-500" />
+ <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
+ <CreditCard className="h-4 w-4 text-muted-foreground" />
  <div className="flex-1">
- <p className="text-sm text-slate-600 dark:text-slate-400">대여 수수료</p>
- <p className="font-semibold text-slate-900 dark:text-slate-100">{fee.toLocaleString()}원</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">대여 수수료</p>
+ <p className="font-semibold text-foreground dark:text-foreground">{fee.toLocaleString()}원</p>
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <Package className="h-4 w-4 text-slate-500" />
+ <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
+ <Package className="h-4 w-4 text-muted-foreground" />
  <div className="flex-1">
- <p className="text-sm text-slate-600 dark:text-slate-400">보증금</p>
- <p className="font-semibold text-slate-900 dark:text-slate-100">{deposit.toLocaleString()}원</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">보증금</p>
+ <p className="font-semibold text-foreground dark:text-foreground">{deposit.toLocaleString()}원</p>
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-lg border border-indigo-100 dark:border-indigo-800/30">
- <TrendingUp className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+ <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-accent/10 rounded-lg border border-border dark:border-border/30">
+ <TrendingUp className="h-4 w-4 text-accent" />
  <div className="flex-1">
- <p className="text-sm text-slate-600 dark:text-slate-400">총 결제 금액</p>
- <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{total.toLocaleString()}원</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">총 결제 금액</p>
+ <p className="text-xl font-bold text-accent">{total.toLocaleString()}원</p>
  </div>
  </div>
  </div>
@@ -537,8 +537,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </Card>
  </div>
 
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
+ <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/50 overflow-hidden">
+ <CardHeader className="bg-gradient-to-r from-muted/50 to-muted dark:from-card dark:to-muted border-b">
  <CardTitle className="flex items-center space-x-2">
  <Calendar className="h-5 w-5 text-accent" />
  <span>대여 타임라인</span>
@@ -546,24 +546,24 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </CardHeader>
  <CardContent className="p-6">
  <div className="space-y-4">
- <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
- <Calendar className="h-5 w-5 text-accent dark:text-accent" />
+ <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 dark:bg-accent/15">
+ <Calendar className="h-5 w-5 text-accent" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-slate-900 dark:text-slate-100">대여 시작</p>
- <p className="text-sm text-slate-600 dark:text-slate-400">{data.outAt ? formatDateTime(data.outAt) : '-'}</p>
+ <p className="text-sm font-medium text-foreground dark:text-foreground">대여 시작</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">{data.outAt ? formatDateTime(data.outAt) : '-'}</p>
  </div>
  </div>
 
  {data?.shipping?.outbound?.trackingNumber && (
- <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
- <Truck className="h-5 w-5 text-accent dark:text-accent" />
+ <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 dark:bg-accent/15">
+ <Truck className="h-5 w-5 text-accent" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-slate-900 dark:text-slate-100">출고 운송장 등록</p>
- <p className="text-xs text-slate-500">{fmtDateOnly(data.shipping.outbound.shippedAt)}</p>
+ <p className="text-sm font-medium text-foreground dark:text-foreground">출고 운송장 등록</p>
+ <p className="text-xs text-muted-foreground">{fmtDateOnly(data.shipping.outbound.shippedAt)}</p>
  <p className="text-sm mt-1">
  {getCourierLabel(data.shipping.outbound.courier)} ·{' '}
  <a className="underline underline-offset-2" href={getTrackHref(data.shipping.outbound.courier, data.shipping.outbound.trackingNumber)} target="_blank" rel="noreferrer">
@@ -574,25 +574,25 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </div>
  )}
 
- <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
- <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+ <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 dark:bg-accent/15">
+ <Clock className="h-5 w-5 text-accent" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-slate-900 dark:text-slate-100">반납 예정</p>
- <p className="text-sm text-slate-600 dark:text-slate-400">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
+ <p className="text-sm font-medium text-foreground dark:text-foreground">반납 예정</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
  </div>
  </div>
 
  {/* 반납 운송장 등록(사용자 발송) */}
  {data?.shipping?.return?.trackingNumber && (
- <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
- <Truck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+ <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/20">
+ <Truck className="h-5 w-5 text-primary dark:text-primary" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-slate-900 dark:text-slate-100">반납 운송장 등록</p>
- <p className="text-xs text-slate-500">{fmtDateOnly(data.shipping.return.shippedAt)}</p>
+ <p className="text-sm font-medium text-foreground dark:text-foreground">반납 운송장 등록</p>
+ <p className="text-xs text-muted-foreground">{fmtDateOnly(data.shipping.return.shippedAt)}</p>
  <p className="text-sm mt-1">
  {getCourierLabel(data.shipping.return.courier)} ·{' '}
  <a className="underline underline-offset-2" href={getTrackHref(data.shipping.return.courier, data.shipping.return.trackingNumber)} target="_blank" rel="noreferrer">
@@ -603,23 +603,23 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </div>
  )}
 
- <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
- <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+ <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/20">
+ <CheckCircle className="h-5 w-5 text-primary dark:text-primary" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-slate-900 dark:text-slate-100">반납 완료</p>
- <p className="text-sm text-slate-600 dark:text-slate-400">{data.returnedAt ? formatDateTime(data.returnedAt) : '-'}</p>
+ <p className="text-sm font-medium text-foreground dark:text-foreground">반납 완료</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">{data.returnedAt ? formatDateTime(data.returnedAt) : '-'}</p>
  </div>
  </div>
 
- <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
- <CreditCard className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+ <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 dark:bg-accent/20">
+ <CreditCard className="h-5 w-5 text-accent dark:text-accent" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-slate-900 dark:text-slate-100">보증금 환불</p>
- <p className="text-sm text-slate-600 dark:text-slate-400">{data.depositRefundedAt ? formatDateTime(data.depositRefundedAt) : '-'}</p>
+ <p className="text-sm font-medium text-foreground dark:text-foreground">보증금 환불</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">{data.depositRefundedAt ? formatDateTime(data.depositRefundedAt) : '-'}</p>
  </div>
  </div>
  </div>
