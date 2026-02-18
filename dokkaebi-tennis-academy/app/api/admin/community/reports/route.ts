@@ -2,21 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import type { Filter } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
-
-type ReportDoc = {
-  _id: any;
-  targetType: 'post' | 'comment';
-  boardType: string;
-  postId: any;
-  commentId?: any;
-  reason: string;
-  status: 'pending' | 'resolved' | 'rejected';
-  reporterUserId?: any;
-  reporterEmail?: string;
-  reporterNickname?: string;
-  createdAt?: Date;
-  resolvedAt?: Date;
-};
+import { COMMUNITY_REPORT_SEARCHABLE_FIELDS, type CommunityReportDocument } from '@/lib/types/community-report';
 
 function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -67,17 +53,17 @@ export async function GET(req: NextRequest) {
   const boardType = (searchParams.get('boardType') ?? 'all').trim(); // all|free|market...
   const q = (searchParams.get('q') ?? '').trim();
 
-  const match: Filter<ReportDoc> = {};
+  const match: Filter<CommunityReportDocument> = {};
   if (status !== 'all') match.status = status as any;
   if (targetType !== 'all') match.targetType = targetType as any;
   if (boardType !== 'all') match.boardType = boardType as any;
 
   if (q) {
     const r = new RegExp(escapeRegExp(q), 'i');
-    match.$or = [{ reason: r }, { reporterNickname: r }, { reporterEmail: r }] as any;
+    match.$or = COMMUNITY_REPORT_SEARCHABLE_FIELDS.map((field) => ({ [field]: r })) as Filter<CommunityReportDocument>[];
   }
 
-  const col = db.collection<ReportDoc>('community_reports');
+  const col = db.collection<CommunityReportDocument>('community_reports');
 
   const [items, total] = await Promise.all([
     col
@@ -128,6 +114,10 @@ export async function GET(req: NextRequest) {
     col.countDocuments(match),
   ]);
 
+  // 누락된 과거 신고 데이터 fallback 규칙:
+  // 1) reporterNickname 비어있으면 users lookup (nickname/name) 시도
+  // 2) 그래도 없으면 reporterEmail 마스킹
+  // 3) 마지막으로 lookup한 users.email 마스킹
   const fallbackUserIds = Array.from(
     new Set(
       items

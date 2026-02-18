@@ -5,35 +5,9 @@ import { z } from 'zod';
 
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { resolveReporterSnapshot } from '@/lib/community/reporting';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-
-function toEmailLocalPart(email?: string | null) {
-  if (!email) return null;
-  const [local] = String(email).split('@');
-  return local?.trim() ? local.trim() : null;
-}
-
-async function resolveReporterNickname(db: Awaited<ReturnType<typeof getDb>>, payload: any) {
-  const reporterUserId = String(payload?.sub ?? '');
-
-  if (ObjectId.isValid(reporterUserId)) {
-    const user = (await db.collection('users').findOne(
-      { _id: new ObjectId(reporterUserId) },
-      {
-        projection: {
-          nickname: 1,
-          name: 1,
-          email: 1,
-        },
-      },
-    )) as { nickname?: string; name?: string; email?: string } | null;
-
-    const userLabel = user?.nickname?.trim() || user?.name?.trim() || toEmailLocalPart(user?.email);
-    if (userLabel) return userLabel;
-  }
-
-  return payload?.nickname?.trim() || payload?.name?.trim() || toEmailLocalPart(payload?.email) || '회원';
-}
+import type { CommunityReportDocument } from '@/lib/types/community-report';
 
 // 1) 인증 페이로드 유틸
 async function getAuthPayload() {
@@ -96,7 +70,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const db = await getDb();
   const commentsCol = db.collection('community_comments');
   const postsCol = db.collection('community_posts');
-  const reportsCol = db.collection('community_reports');
+  const reportsCol = db.collection<CommunityReportDocument>('community_reports');
 
   const commentObjectId = new ObjectId(id);
 
@@ -118,12 +92,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
-  const reporterUserId = String(payload.sub);
-  const reporterEmail = payload.email ? String(payload.email) : undefined;
-  const reporterNickname = await resolveReporterNickname(db, payload);
+  const reporter = await resolveReporterSnapshot(db, payload);
 
   // 자기 댓글은 신고 불가
-  if (comment.userId && String(comment.userId) === reporterUserId) {
+  if (comment.userId && String(comment.userId) === reporter.reporterUserId) {
     return NextResponse.json({ ok: false, error: 'cannot_report_own_comment' }, { status: 400 });
   }
 
@@ -133,7 +105,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   const recent = await reportsCol.findOne({
     commentId: commentObjectId,
-    reporterUserId,
+    reporterUserId: reporter.reporterUserId,
     createdAt: { $gte: fiveMinutesAgo },
   });
 
@@ -142,21 +114,21 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   }
 
   // 6) 신고 문서 생성
-  const doc = {
+  const doc: CommunityReportDocument = {
     postId: comment.postId,
     commentId: commentObjectId,
     boardType: post.type ?? 'free',
     targetType: 'comment' as const,
     reason,
-    reporterUserId: reporterUserId ?? null,
-    reporterEmail: reporterEmail ?? null,
-    reporterNickname,
+    reporterUserId: reporter.reporterUserId,
+    reporterEmail: reporter.reporterEmail,
+    reporterNickname: reporter.reporterNickname,
     status: 'pending' as const,
     createdAt: now,
     resolvedAt: null,
   };
 
-  const result = await reportsCol.insertOne(doc as any);
+  const result = await reportsCol.insertOne(doc);
 
   logInfo({
     msg: 'community:comment_report:create',
@@ -165,7 +137,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     extra: {
       reportId: result.insertedId.toString(),
       commentId: id,
-      reporterUserId: reporterUserId ?? null,
+      reporterUserId: reporter.reporterUserId,
     },
     ...meta,
   });
