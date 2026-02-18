@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
+import { ADMIN_CSRF_COOKIE_KEY, ADMIN_CSRF_HEADER_KEY } from '@/lib/admin/adminCsrf';
 
 type CsrfOk = { ok: true };
 type CsrfFail = { ok: false; res: NextResponse };
 
 const DEFAULT_DEV_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000'];
-const CSRF_COOKIE_CANDIDATES = ['adminCsrfToken', 'csrfToken'];
-const CSRF_HEADER_CANDIDATES = ['x-admin-csrf-token', 'x-csrf-token'];
 
 function forbiddenResponse(): NextResponse {
   return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
@@ -51,19 +50,11 @@ function parseCookies(cookieHeader: string | null): Record<string, string> {
 
 function readCsrfTokenFromCookie(req: Request): string {
   const parsed = parseCookies(req.headers.get('cookie'));
-  for (const key of CSRF_COOKIE_CANDIDATES) {
-    const value = parsed[key];
-    if (value) return value;
-  }
-  return '';
+  return parsed[ADMIN_CSRF_COOKIE_KEY] || '';
 }
 
 function readCsrfTokenFromHeader(req: Request): string {
-  for (const key of CSRF_HEADER_CANDIDATES) {
-    const value = req.headers.get(key);
-    if (value) return value.trim();
-  }
-  return '';
+  return req.headers.get(ADMIN_CSRF_HEADER_KEY)?.trim() ?? '';
 }
 
 export function verifyAdminCsrf(req: Request): CsrfOk | CsrfFail {
@@ -81,13 +72,20 @@ export function verifyAdminCsrf(req: Request): CsrfOk | CsrfFail {
     return { ok: false, res: forbiddenResponse() };
   }
 
-  // 더블 서브밋 쿠키 방식: Header 토큰과 Cookie 토큰이 동일해야 통과
+  // 더블 서브밋 쿠키 방식: Header 토큰과 Cookie 토큰이 모두 존재하고 동일해야 통과
   const headerToken = readCsrfTokenFromHeader(req);
   const cookieToken = readCsrfTokenFromCookie(req);
 
-  if (!headerToken || !cookieToken || headerToken !== cookieToken) {
+  // (1) 토큰 미발급 상태는 즉시 차단
+  if (!headerToken || !cookieToken) {
     return { ok: false, res: forbiddenResponse() };
   }
 
+  // (2) 토큰 불일치 상태도 즉시 차단
+  if (headerToken !== cookieToken) {
+    return { ok: false, res: forbiddenResponse() };
+  }
+
+  // (3) 발급 + 헤더 일치 시에만 통과
   return { ok: true };
 }

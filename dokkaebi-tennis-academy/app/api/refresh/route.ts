@@ -5,6 +5,7 @@ import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, REF
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { baseCookie } from '@/lib/cookieOptions';
+import { ADMIN_CSRF_COOKIE_KEY } from '@/lib/admin/adminCsrf';
 
 export async function POST() {
   const cookieStore = await cookies();
@@ -33,6 +34,7 @@ export async function POST() {
     const res = NextResponse.json({ message: 'unauthorized' }, { status: 401 });
     res.cookies.set('accessToken', '', { ...baseCookie, maxAge: 0 });
     res.cookies.set('refreshToken', '', { ...baseCookie, maxAge: 0 });
+    res.cookies.set(ADMIN_CSRF_COOKIE_KEY, '', { ...baseCookie, httpOnly: false, maxAge: 0 });
     return res;
   }
 
@@ -40,6 +42,7 @@ export async function POST() {
   if (user.isSuspended) {
     const res = NextResponse.json({ message: 'suspended' }, { status: 403 });
     res.cookies.set('accessToken', '', { ...baseCookie, maxAge: 0 });
+    res.cookies.set(ADMIN_CSRF_COOKIE_KEY, '', { ...baseCookie, httpOnly: false, maxAge: 0 });
     return res;
   }
 
@@ -63,6 +66,22 @@ export async function POST() {
     ...baseCookie,
     maxAge: REFRESH_TOKEN_EXPIRES_IN,
   });
+
+  // 관리자 refresh에는 CSRF 쿠키를 함께 재발급하고, 일반 유저는 기존 값을 제거한다.
+  if (user.role === 'admin') {
+    const adminCsrfToken = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, '');
+    res.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
+      ...baseCookie,
+      httpOnly: false,
+      maxAge: REFRESH_TOKEN_EXPIRES_IN,
+    });
+  } else {
+    res.cookies.set(ADMIN_CSRF_COOKIE_KEY, '', {
+      ...baseCookie,
+      httpOnly: false,
+      maxAge: 0,
+    });
+  }
 
   return res;
 }

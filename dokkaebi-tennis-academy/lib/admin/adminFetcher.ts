@@ -1,3 +1,5 @@
+import { ADMIN_CSRF_COOKIE_KEY, ADMIN_CSRF_HEADER_KEY } from '@/lib/admin/adminCsrf';
+
 const ADMIN_HTTP_ERROR_MESSAGES: Record<number, string> = {
   400: '요청 값이 올바르지 않습니다.',
   401: '로그인이 필요합니다. 다시 로그인해 주세요.',
@@ -14,9 +16,6 @@ const ADMIN_HTTP_ERROR_MESSAGES: Record<number, string> = {
 
 const ADMIN_UNKNOWN_ERROR_MESSAGE = '요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
 export type AdminMutationMethod = 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-
-const CSRF_COOKIE_CANDIDATES = ['adminCsrfToken', 'csrfToken'];
-const CSRF_HEADER_KEY = 'x-admin-csrf-token';
 
 export class AdminFetchError extends Error {
   status: number;
@@ -98,18 +97,14 @@ function readCookieToken(cookieName: string): string {
 }
 
 function readAdminCsrfToken(): string {
-  for (const cookieName of CSRF_COOKIE_CANDIDATES) {
-    const token = readCookieToken(cookieName);
-    if (token) return token;
-  }
-  return '';
+  return readCookieToken(ADMIN_CSRF_COOKIE_KEY);
 }
 
 function withAdminCsrfHeader(initHeaders?: HeadersInit): Headers {
   const headers = new Headers(initHeaders);
   const csrfToken = readAdminCsrfToken();
   if (csrfToken) {
-    headers.set(CSRF_HEADER_KEY, csrfToken);
+    headers.set(ADMIN_CSRF_HEADER_KEY, csrfToken);
   }
   return headers;
 }

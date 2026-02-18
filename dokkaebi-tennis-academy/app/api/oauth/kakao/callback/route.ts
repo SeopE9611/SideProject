@@ -5,6 +5,7 @@ import { getDb } from '@/lib/mongodb';
 import { baseCookie } from '@/lib/cookieOptions';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN } from '@/lib/constants';
 import { autoLinkStringingByEmail } from '@/lib/claims';
+import { ADMIN_CSRF_COOKIE_KEY } from '@/lib/admin/adminCsrf';
 import { Collection } from 'mongodb';
 import crypto from 'crypto';
 
@@ -185,6 +186,23 @@ export async function GET(req: NextRequest) {
   // 토큰 쿠키 세팅
   res.cookies.set('accessToken', accessToken, { ...baseCookie, maxAge: ACCESS_TOKEN_EXPIRES_IN });
   res.cookies.set('refreshToken', refreshToken, { ...baseCookie, maxAge: REFRESH_TOKEN_EXPIRES_IN });
+
+  // 관리자 계정으로 OAuth 로그인한 경우 admin CSRF 쿠키를 함께 발급
+  if (user.role === 'admin') {
+    const adminCsrfToken = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, '');
+    res.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
+      ...baseCookie,
+      httpOnly: false,
+      maxAge: REFRESH_TOKEN_EXPIRES_IN,
+    });
+  } else {
+    // 일반 사용자 세션에서는 관리자 CSRF 쿠키를 남기지 않음
+    res.cookies.set(ADMIN_CSRF_COOKIE_KEY, '', {
+      ...baseCookie,
+      httpOnly: false,
+      maxAge: 0,
+    });
+  }
 
   // 혹시 남아있던 강제 비번변경 플래그 제거(일반 로그인과 정합)
   res.cookies.delete('force_pwd_change');
