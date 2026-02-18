@@ -59,6 +59,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
 
   return (
     <div className="flex items-center gap-2">
+      {/* 관리자 전용 수정 플로우는 /admin/boards/[id]/edit 라우트로 고정한다. */}
       <Button variant="outline" asChild className="bg-white/60 backdrop-blur-sm border-blue-200 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/20">
         <Link href={`/admin/boards/${postId}/edit`}>
           <Pencil className="mr-2 h-4 w-4" />
