@@ -10,11 +10,21 @@ export const BOARD_PUBLIC_ROUTE_POLICY = Object.freeze({
   gear: Object.freeze({ routePrefix: '/board/gear', identifier: 'postNo' }),
   market: Object.freeze({ routePrefix: '/board/market', identifier: 'postNo' }),
   hot: Object.freeze({ routePrefix: '/board/hot', identifier: 'postNo' }),
-  brands: Object.freeze({ routePrefix: '/board/brands', identifier: 'postNo' }),
+  // 타입 체계는 brand로 표준화하되, 공개 URL은 기존 /board/brands 경로를 유지한다.
+  brand: Object.freeze({ routePrefix: '/board/brands', identifier: 'postNo' }),
 });
 
 function normalizeBoardType(type) {
-  return typeof type === 'string' ? type.trim().toLowerCase() : '';
+  if (typeof type !== 'string') return '';
+
+  const normalizedType = type.trim().toLowerCase();
+
+  // 과도기 호환: 레거시 brands 입력을 표준 brand로 흡수한다.
+  if (normalizedType === 'brands') {
+    return 'brand';
+  }
+
+  return normalizedType;
 }
 
 function isPositiveInteger(value) {

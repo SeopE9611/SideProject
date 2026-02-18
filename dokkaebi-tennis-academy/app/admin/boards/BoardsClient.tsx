@@ -57,8 +57,27 @@ const boardLabel: Record<string, string> = {
   gear: '장비',
   market: '중고',
   hot: '인기',
-  brands: '브랜드',
+  brand: '브랜드',
 };
+
+/**
+ * 레거시 게시판 타입 별칭 맵.
+ * - 서버/DB에 과거 데이터(brands)가 남아 있어도 관리자 화면 텍스트/배지가 깨지지 않도록 임시 유지한다.
+ * - 신규 타입 표준은 brand이며, 필터 옵션 등 신규 입력은 brand만 노출한다.
+ */
+const legacyBoardTypeAlias: Record<string, string> = {
+  brands: 'brand',
+};
+
+/**
+ * 화면 표기 전용 게시판 타입 정규화.
+ * - 관리자 목록/신고 목록 badge 라벨 조회 시 사용한다.
+ * - API 전송 타입까지 강제 치환하지 않고, 표시 계층에서만 별칭 호환을 보장한다.
+ */
+function resolveBoardLabel(type: string) {
+  const nextType = legacyBoardTypeAlias[type] ?? type;
+  return boardLabel[nextType] ?? type;
+}
 
 function fmt(dt: string) {
   try {
@@ -346,7 +365,7 @@ export default function BoardsClient() {
                                 <div className="flex-1 space-y-2">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="outline" className="font-medium">
-                                  {boardLabel[p.type] ?? p.type}
+                                  {resolveBoardLabel(p.type)}
                                 </Badge>
                                 <span className="text-sm text-muted-foreground">#{p.postNo ?? '-'}</span>
                                 {p.status === 'public' ? (
@@ -534,7 +553,7 @@ export default function BoardsClient() {
                                       <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30">댓글</Badge>
                                     )}
                                     <Badge variant="outline" className="font-medium">
-                                      {boardLabel[r.boardType] ?? r.boardType}
+                                      {resolveBoardLabel(r.boardType)}
                                     </Badge>
                                     {r.status === 'pending' && <Badge className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30">대기</Badge>}
                                     {r.status === 'resolved' && <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">완료</Badge>}

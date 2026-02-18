@@ -31,6 +31,27 @@ test('buildBoardPublicUrl: 타입-라우트 매핑 누락 시 missing_type_route
   });
 });
 
+
+test('buildBoardPublicUrl: brand 타입은 /board/brands 경로로 공개 URL을 생성한다', () => {
+  const result = buildBoardPublicUrl({ type: 'brand', postNo: 77, status: 'public' });
+
+  assert.deepEqual(result, {
+    ok: true,
+    url: '/board/brands/77',
+    policyType: 'brand',
+  });
+});
+
+test('buildBoardPublicUrl: 레거시 brands 입력은 brand로 정규화한다', () => {
+  const result = buildBoardPublicUrl({ type: 'brands', postNo: 78, status: 'public' });
+
+  assert.deepEqual(result, {
+    ok: true,
+    url: '/board/brands/78',
+    policyType: 'brand',
+  });
+});
+
 test('buildBoardPublicUrl: hidden/private 상태는 공개 링크를 차단한다', () => {
   const hiddenResult = buildBoardPublicUrl({ type: 'qna', postNo: 9, status: 'hidden' });
   const privateResult = buildBoardPublicUrl({ type: 'qna', postNo: 9, status: 'private' });
