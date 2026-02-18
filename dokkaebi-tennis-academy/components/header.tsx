@@ -35,12 +35,12 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
           <Button
             key={b.name}
             variant="outline"
-            className="relative z-0 h-9 justify-center rounded-lg border-slate-200 dark:border-slate-700 text-sm
+            className="relative z-0 h-9 justify-center rounded-lg border-border text-sm
               hover:bg-gradient-to-r hover:from-blue-50 hover:to-emerald-50 
               dark:hover:from-blue-950/20 dark:hover:to-emerald-950/20
               transition-all duration-200 bg-transparent
               hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-200/60 hover:z-10 active:scale-[0.99]
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             onClick={() => onPick(b.href)}
           >
             {b.name}
@@ -51,8 +51,8 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-center rounded-lg text-slate-600 dark:text-slate-400 
-            hover:text-blue-600 dark:hover:text-white transition-colors"
+          className="w-full justify-center rounded-lg text-muted-foreground 
+            hover:text-accent transition-colors"
           onClick={() => setExpanded((v) => !v)}
         >
           {expanded ? '접기' : '더보기'}
@@ -342,20 +342,20 @@ const Header = () => {
   return (
     <>
       {/* 스킵 링크 */}
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-md focus:shadow-lg">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg">
         메인 콘텐츠로 건너뛰기
       </a>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="left"
-          className="w-[300px] bp-sm:w-[320px] bg-white dark:bg-slate-900 p-0 flex flex-col border-r border-slate-200 dark:border-slate-800"
+          className="w-[300px] bp-sm:w-[320px] bg-card p-0 flex flex-col border-r border-border"
           onOpenAutoFocus={(e) => {
             if (typeof window !== 'undefined' && window.innerWidth < 768) e.preventDefault();
           }}
         >
           {/* 상단 로고/검색 */}
           <div
-            className="shrink-0 p-6 pb-4 border-b border-slate-200 dark:border-slate-800 
+            className="shrink-0 p-6 pb-4 border-b border-border 
                   bg-gradient-to-br from-white/50 to-slate-50/50 dark:from-slate-900/50 dark:to-slate-950/50"
           >
             <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈" onClick={() => setOpen(false)}>
@@ -365,19 +365,19 @@ const Header = () => {
               >
                 도깨비 테니스
               </div>
-              <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium">DOKKAEBI TENNIS SHOP</div>
+              <div className="text-xs tracking-wider text-muted-foreground font-medium">DOKKAEBI TENNIS SHOP</div>
             </Link>
             <div className="mt-4">
               <SearchPreview
                 placeholder="스트링 / 라켓 검색."
-                className="w-full rounded-lg border-slate-300 dark:border-slate-700
+                className="w-full rounded-lg border-border
         focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-colors"
                 onSelect={() => setOpen(false)}
               />
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto scrollbar-hide p-4 bg-white dark:bg-slate-900">
+          <div className="flex-1 overflow-y-auto scrollbar-hide p-4 bg-card">
             <Accordion type="single">
               {/* 스트링 */}
               <AccordionItem value="strings" className="border-none">
@@ -410,7 +410,7 @@ const Header = () => {
                             relative z-0
                             hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-200/70 hover:z-10
                             active:scale-[0.99]
-                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     onClick={() => {
                       router.push(NAV_LINKS.strings.root);
                     }}
@@ -440,7 +440,7 @@ const Header = () => {
                         <AccordionTrigger
                           value="strings-service"
                           className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                            hover:bg-slate-50 dark:hover:bg-slate-800"
+                            hover:bg-accent/70"
                         >
                           장착 서비스 안내
                         </AccordionTrigger>
@@ -471,7 +471,7 @@ const Header = () => {
                         <AccordionTrigger
                           value="strings-brand"
                           className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                            hover:bg-slate-50 dark:hover:bg-slate-800"
+                            hover:bg-accent/70"
                         >
                           브랜드
                         </AccordionTrigger>
@@ -626,7 +626,7 @@ const Header = () => {
                         variant="ghost"
                         className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] 
                                 text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                                hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                                hover:bg-accent/70 transition-all"
                         onClick={() => {
                           setOpen(false);
                           router.push(b.href);
@@ -686,11 +686,11 @@ const Header = () => {
           </div>
 
           {/* 하단 고정 영역(모바일) */}
-          <div className="shrink-0 border-t border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-900 space-y-3">
+          <div className="shrink-0 border-t border-border p-4 bg-card space-y-3">
             {user ? (
               <>
                 {/* 사용자 정보 카드 */}
-                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50/50 to-emerald-50/50 dark:from-blue-950/20 dark:to-emerald-950/20 border border-slate-200 dark:border-slate-800">
+                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50/50 to-emerald-50/50 dark:from-blue-950/20 dark:to-emerald-950/20 border border-border">
                   <div className="flex items-start justify-between">
                     {/* <Avatar className="h-10 w-10 border-2 border-white dark:border-slate-700 shadow-sm">
                           <AvatarImage src={user.image || '/placeholder.svg'} />
@@ -703,11 +703,11 @@ const Header = () => {
                         </Avatar> */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.name} 님</span>
+                        <span className="text-sm font-bold text-foreground truncate">{user.name} 님</span>
                         <Link
                           href="/mypage?tab=points"
                           onClick={() => setOpen(false)}
-                          className="shrink-0 inline-flex items-center gap-1 rounded-full border border-slate-200 dark:border-slate-700 px-2 py-0.5 text-[11px] font-semibold tabular-nums"
+                          className="shrink-0 inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold tabular-nums"
                           aria-label="포인트 보기"
                         >
                           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">P</span>
@@ -728,8 +728,8 @@ const Header = () => {
 
                       {(hasKakao || hasNaver) && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
-                          {hasKakao && <Badge className="bg-[#FEE500] text-[#191919] hover:bg-[#FDD835] border-0 text-[10px] h-5 px-2">카카오</Badge>}
-                          {hasNaver && <Badge className="bg-[#03C75A] text-white hover:bg-[#02B350] border-0 text-[10px] h-5 px-2">네이버</Badge>}
+                          {hasKakao && <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 border-0 text-[10px] h-5 px-2">카카오</Badge>}
+                          {hasNaver && <Badge className="bg-accent text-accent-foreground hover:bg-accent/90 border-0 text-[10px] h-5 px-2">네이버</Badge>}
                         </div>
                       )}
                     </div>
@@ -741,7 +741,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="relative h-11 w-full rounded-xl border-border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
                     onClick={() => {
                       setOpen(false);
                       router.push('/mypage');
@@ -755,7 +755,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="relative h-11 w-full rounded-xl border-border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
                     onClick={() => {
                       setOpen(false);
                       router.push('/messages');
@@ -763,14 +763,14 @@ const Header = () => {
                     aria-label="쪽지함"
                   >
                     <Mail className="h-5 w-5" />
-                    {unreadCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+                    {unreadCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">{unreadCount > 99 ? '99+' : unreadCount}</span>}
                     <span className="sr-only">쪽지함</span>
                   </Button>
 
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="relative h-11 w-full rounded-xl border-border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
                     onClick={() => {
                       setOpen(false);
                       router.push('/cart');
@@ -778,7 +778,7 @@ const Header = () => {
                     aria-label="장바구니"
                   >
                     <ShoppingCart className="h-5 w-5" />
-                    {cartCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-bold text-white">{cartBadge}</span>}
+                    {cartCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{cartBadge}</span>}
                     <span className="sr-only">장바구니</span>
                   </Button>
                 </div>
@@ -812,7 +812,7 @@ const Header = () => {
               </>
             ) : (
               <Button
-                className="w-full justify-center rounded-xl h-11 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-md transition-all duration-200"
+                className="w-full justify-center rounded-xl h-11 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all duration-200"
                 onClick={() => {
                   setOpen(false);
                   const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
@@ -835,7 +835,7 @@ const Header = () => {
             className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300
             ${isScrolled ? 'h-[56px]' : 'h-[72px]'}
             bg-white/70 dark:bg-slate-900/60 backdrop-blur-md
-            border-b border-slate-200 dark:border-slate-700`}
+            border-b border-border`}
           />
           <SiteContainer
             className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:pl-64 bp-lg:pr-8 2xl:pl-72 2xl:pr-16 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
@@ -847,21 +847,21 @@ const Header = () => {
           >
             <div className="flex items-center justify-between w-full bp-lg:hidden">
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 focus-visible:ring-2 ring-blue-500" aria-label="메뉴 열기">
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-accent/70 p-2 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
 
               <Link href="/" className="flex flex-col items-center group" aria-label="도깨비 테니스 홈" onClick={() => setOpen(false)}>
-                <div className="font-black text-[15px] tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">도깨비 테니스</div>
-                <div className="text-[10px] tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
+                <div className="font-black text-[15px] tracking-tight text-foreground group-hover:text-accent dark:group-hover:text-blue-400 transition-colors">도깨비 테니스</div>
+                <div className="text-[10px] tracking-wider text-muted-foreground font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
               </Link>
 
               <div className="flex items-center gap-1.5">
                 <Link href="/cart">
-                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
+                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-accent/70 p-2 focus-visible:ring-2 ring-ring" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
-                    {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">{cartBadge}</span>}
+                    {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>
                 </Link>
               </div>
@@ -869,8 +869,8 @@ const Header = () => {
 
             <div className="hidden bp-lg:flex items-center w-full min-w-0 gap-3 bp-lg:gap-4">
               <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈">
-                <div className="font-black text-lg bp-lg:text-xl tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">도깨비 테니스</div>
-                <div className="text-xs tracking-wider text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
+                <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-accent dark:group-hover:text-blue-400 transition-colors">도깨비 테니스</div>
+                <div className="text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
               </Link>
 
               <nav ref={navRef} className="hidden bp-lg:flex items-center gap-1.5 ml-2 whitespace-nowrap flex-1 min-w-0 overflow-hidden">
@@ -881,7 +881,7 @@ const Header = () => {
                       key={item.name}
                       href={item.href}
                       className={`inline-flex shrink-0 items-center h-9 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
-                      ${active ? 'text-blue-600 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/30 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50'}`}
+                      ${active ? 'text-accent dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/30 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:text-accent hover:bg-slate-100/60 dark:hover:bg-slate-800/50'}`}
                       aria-current={active ? 'page' : undefined}
                       aria-label={`${item.name} 페이지로 이동`}
                     >
@@ -897,8 +897,8 @@ const Header = () => {
                       <button
                         type="button"
                         className="inline-flex shrink-0 items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
-                      text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800/50
-                        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      text-slate-700 dark:text-slate-300 hover:text-accent hover:bg-slate-100/60 dark:hover:bg-slate-800/50
+                        focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         aria-label="더보기 메뉴"
                       >
                         ⋯
@@ -935,7 +935,7 @@ const Header = () => {
               {/* 검색 (PC 전용) */}
               <div className="ml-auto shrink-0 flex justify-end">
                 <div className="min-w-[180px]" style={{ width: 'clamp(220px, 24vw, 560px)' }}>
-                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-white/80 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 focus-within:ring-2 ring-blue-500 transition-all duration-200" />
+                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-white/80 dark:bg-slate-800/70 border border-border focus-within:ring-2 ring-ring transition-all duration-200" />
                 </div>
               </div>
 
@@ -957,21 +957,21 @@ const Header = () => {
               {/* 아이콘/유저 */}
               <div className="flex items-center gap-3 bp-lg:gap-4 pl-2 shrink-0">
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 transition-all duration-300 focus-visible:ring-2 ring-blue-500" aria-label="메뉴 열기">
+                  <Button variant="ghost" size="icon" className="bp-lg:hidden rounded-full hover:bg-accent/70 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="메뉴 열기">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
                 <Link href="/cart">
-                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-800 p-2 transition-all duration-300 focus-visible:ring-2 ring-blue-500" aria-label="장바구니">
+                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-accent/70 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring" aria-label="장바구니">
                     <ShoppingCart className="h-5 w-5" />
-                    {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">{cartBadge}</span>}
+                    {cartCount > 0 && <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold">{cartBadge}</span>}
                   </Button>
                 </Link>
 
                 {user && (
                   <Button variant="ghost" className="h-9 px-3 rounded-full" asChild>
                     <Link href="/mypage?tab=points" className="flex items-center gap-2">
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">P</span>
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">P</span>
                       <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
                         {pointsBalance === null ? (
                           <>
