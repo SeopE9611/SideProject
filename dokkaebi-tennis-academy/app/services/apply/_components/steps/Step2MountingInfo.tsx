@@ -266,8 +266,8 @@ export default function Step2MountingInfo(props: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-blue-600 mb-4">
-          <ClipboardList className="h-8 w-8 text-white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-background to-background mb-4">
+          <ClipboardList className="h-8 w-8 text-primary-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">장착 정보</h2>
         <p className="text-muted-foreground">라켓과 스트링 정보를 선택해주세요</p>
@@ -276,21 +276,21 @@ export default function Step2MountingInfo(props: Props) {
       <div className="space-y-6">
         {/* <div className="space-y-2">
           <Label htmlFor="racketType" className="text-sm font-medium">
-            라켓 종류 <span className="text-red-500">*</span>
+            라켓 종류 <span className="text-destructive">*</span>
           </Label>
-          <Input id="racketType" name="racketType" value={formData.racketType} onChange={handleInputChange} placeholder="예: 윌슨 프로 스태프 97" className="focus:ring-2 focus:ring-green-500 transition-all duration-200" />
+          <Input id="racketType" name="racketType" value={formData.racketType} onChange={handleInputChange} placeholder="예: 윌슨 프로 스태프 97" className="focus:ring-2 focus:ring-ring transition-all duration-200" />
         </div> */}
 
         <div className="space-y-4">
           <div>
             <Label className="text-sm font-medium">
-              스트링 종류 <span className="text-red-500">*</span>
+              스트링 종류 <span className="text-destructive">*</span>
             </Label>
             <div className="mt-2 space-y-2">
-              <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border border-destructive/30 dark:border-destructive/30 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
-                  <Zap className="h-5 w-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-red-700 dark:text-red-200">
+                  <Zap className="h-5 w-5 text-destructive dark:text-destructive mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-destructive dark:text-destructive">
                     <p className="font-medium mb-1">⚠️ 중요 안내</p>
                     {rentalId ? (
                       <>
@@ -323,14 +323,14 @@ export default function Step2MountingInfo(props: Props) {
           </div>
           {/* PDP에서 이어졌을 때 노출되는 스트링 정보 카드 */}
           {(isLockedNonOrder || isRentalNonOrder) && lockedStringId && lockedStringId !== 'custom' && (
-            <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50/70 p-3">
+            <div className="mb-4 rounded-lg border border-border bg-muted/70 p-3">
               {isLoadingPdpProduct ? (
-                <div className="text-xs text-blue-700">선택한 스트링 정보를 불러오는 중입니다...</div>
+                <div className="text-xs text-accent">선택한 스트링 정보를 불러오는 중입니다...</div>
               ) : (
                 <>
                   <div className="flex items-center gap-3">
                     {pdpProduct?.image && (
-                      <div className="relative h-16 w-16 overflow-hidden rounded-md bg-white shadow-sm">
+                      <div className="relative h-16 w-16 overflow-hidden rounded-md bg-card shadow-sm">
                         <img src={pdpProduct.image} alt={pdpProduct.name} className="h-full w-full object-cover" />
                       </div>
                     )}
@@ -338,7 +338,7 @@ export default function Step2MountingInfo(props: Props) {
                     <div className="flex flex-col">
                       {/* 상단 라벨 + 포함/미포함 배지(대여 비-주문에서만) */}
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-blue-700">{rentalId ? '대여 신청에서 선택한 스트링' : '상품 상세에서 선택한 스트링'}</span>
+                        <span className="text-xs font-semibold text-accent">{rentalId ? '대여 신청에서 선택한 스트링' : '상품 상세에서 선택한 스트링'}</span>
 
                         {isRentalNonOrder && (
                           <Badge variant={isLockedIdSelected ? 'secondary' : 'destructive'} className="h-5 px-2 text-[11px]">
@@ -347,14 +347,14 @@ export default function Step2MountingInfo(props: Props) {
                         )}
                       </div>
 
-                      <span className="text-sm font-medium text-gray-900">{pdpProduct?.name ?? '선택한 스트링으로 신청 중입니다.'}</span>
-                      <span className="mt-1 text-xs text-gray-600">{rentalId ? '대여 신청 시 선택한 스트링 기준으로 진행됩니다.' : '이 신청서는 위 스트링을 기준으로 장착 서비스가 진행됩니다.'}</span>
+                      <span className="text-sm font-medium text-foreground">{pdpProduct?.name ?? '선택한 스트링으로 신청 중입니다.'}</span>
+                      <span className="mt-1 text-xs text-muted-foreground">{rentalId ? '대여 신청 시 선택한 스트링 기준으로 진행됩니다.' : '이 신청서는 위 스트링을 기준으로 장착 서비스가 진행됩니다.'}</span>
                     </div>
                   </div>
 
                   {/* (대여) 체크 해제 상태를 “체감”으로 확실히 보이게: 경고 + 즉시 복구 CTA */}
                   {isRentalNonOrder && !isLockedIdSelected && (
-                    <div className="mt-3 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+                    <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/15 p-3 text-xs text-destructive">
                       <div className="flex items-start justify-between gap-3">
                         <div className="leading-relaxed">
                           <p className="font-medium">현재 이 스트링이 체크 해제되어 신청서에 포함되지 않았습니다.</p>
@@ -374,18 +374,18 @@ export default function Step2MountingInfo(props: Props) {
 
           {/* 주문 기반 진입 시 안내 문구 */}
           {orderId && typeof orderRemainingSlots === 'number' && (
-            <div className="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-200">
+            <div className="mb-3 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground dark:border-border dark:bg-card/40 dark:text-foreground">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="font-medium">이 주문에서 남은 교체 가능 횟수</span>
                 <span className="font-semibold">{orderRemainingSlots}회</span>
                 {typeof orderStringService?.totalSlots === 'number' && typeof orderStringService?.usedSlots === 'number' && (
-                  <span className="text-xs text-slate-600 dark:text-slate-400">
+                  <span className="text-xs text-muted-foreground dark:text-muted-foreground">
                     (총 {orderStringService.totalSlots} / 사용 {orderStringService.usedSlots})
                   </span>
                 )}
               </div>
 
-              {isOrderSlotBlocked && <p className="mt-1 text-xs text-red-600 dark:text-red-400">이 주문은 더 이상 교체 신청을 진행할 수 없습니다. 추가 스트링 구매 후 다시 시도해 주세요.</p>}
+              {isOrderSlotBlocked && <p className="mt-1 text-xs text-destructive dark:text-destructive">이 주문은 더 이상 교체 신청을 진행할 수 없습니다. 추가 스트링 구매 후 다시 시도해 주세요.</p>}
             </div>
           )}
           {orderId && (
@@ -429,22 +429,22 @@ export default function Step2MountingInfo(props: Props) {
             </div>
           )}
 
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
+          <div className="bg-gradient-to-r from-muted to-background dark:from-background dark:to-background border border-border dark:border-border rounded-lg p-4">
+            <h3 className="font-semibold text-accent dark:text-accent mb-4 flex items-center">
               <DollarSign className="h-5 w-5 mr-2" />
               예상 장착 비용
             </h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-blue-200 bg-blue-50/70 dark:border-blue-700">
-                <span className="text-sm text-gray-600 dark:text-gray-300">기본 장착비</span>
-                <span className="font-medium text-gray-900 dark:text-white">
+              <div className="flex items-center justify-between p-3 bg-card dark:bg-card rounded-lg border border-border bg-muted/70 dark:border-border">
+                <span className="text-sm text-muted-foreground dark:text-muted-foreground">기본 장착비</span>
+                <span className="font-medium text-foreground dark:text-primary-foreground">
                   {formData.stringTypes.includes('custom') ? '15,000원' : order && lineCount > 0 ? price.toLocaleString('ko-KR') + '원' : (priceView.base * Math.max(lineCount, 1)).toLocaleString('ko-KR') + '원'}
                 </span>
               </div>
 
               {/* 주문 기반 진입 + 스트링 선택 완료 시 상세 안내 */}
               {orderId && order && lineCount > 0 && (
-                <div className="mt-3 space-y-2 text-xs text-blue-700/90 dark:text-blue-100/90">
+                <div className="mt-3 space-y-2 text-xs text-accent/90 dark:text-accent/90">
                   <p>
                     이번 신청에서 장착할 라켓 수: <span className="font-semibold">{lineCount}자루</span>
                   </p>
@@ -464,7 +464,7 @@ export default function Step2MountingInfo(props: Props) {
                               <Input
                                 id="useQty-custom"
                                 type="number"
-                                className="h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500"
+                                className="h-7 w-16 px-2 py-1 text-right text-xs border-border dark:border-border rounded-md focus:ring-ring"
                                 min={0}
                                 max={99}
                                 value={useQty}
@@ -484,7 +484,7 @@ export default function Step2MountingInfo(props: Props) {
                       return (
                         <div key={id} className="flex items-center justify-between gap-2">
                           <span className="truncate">
-                            • {item.name} <span className="text-[11px] text-blue-800/80 dark:text-blue-100/80">(구매 {orderQty}개 중)</span>
+                            • {item.name} <span className="text-[11px] text-accent/80 dark:text-accent/80">(구매 {orderQty}개 중)</span>
                           </span>
                           <div className="flex items-center gap-1">
                             <Label htmlFor={`useQty-${id}`} className="sr-only">
@@ -493,8 +493,8 @@ export default function Step2MountingInfo(props: Props) {
                             <Input
                               id={`useQty-${id}`}
                               type="number"
-                              className={`h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500 ${
-                                lockOrderUseQty ? 'cursor-not-allowed bg-slate-100 text-slate-500 dark:bg-slate-800/40 dark:text-slate-300' : ''
+                              className={`h-7 w-16 px-2 py-1 text-right text-xs border-border dark:border-border rounded-md focus:ring-ring ${
+                                lockOrderUseQty ? 'cursor-not-allowed bg-muted text-muted-foreground dark:bg-card/40 dark:text-muted-foreground' : ''
                               }`}
                               min={0}
                               max={orderQty}
@@ -522,7 +522,7 @@ export default function Step2MountingInfo(props: Props) {
 
               {/* (대여/PDP) 비-주문 기반 진입 시 스트링 사용 개수 입력(구매 UX와 동일한 리스트 형태) */}
               {canShowQty && lineCount > 0 && (
-                <div className="mt-3 space-y-2 text-xs text-blue-700/90 dark:text-blue-100/90">
+                <div className="mt-3 space-y-2 text-xs text-accent/90 dark:text-accent/90">
                   <p>
                     이번 신청에서 장착할 라켓 수: <span className="font-semibold text-foreground">{lineCount}자루</span>
                   </p>
@@ -538,7 +538,7 @@ export default function Step2MountingInfo(props: Props) {
                         return (
                           <div key={id} className="flex items-center justify-between gap-2">
                             <span className="truncate">
-                              • {name} {typeof maxNonOrderQty === 'number' ? <span className="text-[11px] text-blue-800/80 dark:text-blue-100/80">(가용 {maxNonOrderQty}개 중)</span> : null}
+                              • {name} {typeof maxNonOrderQty === 'number' ? <span className="text-[11px] text-accent/80 dark:text-accent/80">(가용 {maxNonOrderQty}개 중)</span> : null}
                             </span>
                             <div className="flex items-center gap-1">
                               <Label htmlFor={`useQty-${id}`} className="sr-only">
@@ -547,7 +547,7 @@ export default function Step2MountingInfo(props: Props) {
                               <Input
                                 id={`useQty-${id}`}
                                 type="number"
-                                className="h-7 w-16 px-2 py-1 text-right text-xs border-slate-300 dark:border-slate-600 rounded-md focus:ring-blue-500"
+                                className="h-7 w-16 px-2 py-1 text-right text-xs border-border dark:border-border rounded-md focus:ring-ring"
                                 min={0}
                                 max={maxQty}
                                 value={useQty}
@@ -612,53 +612,53 @@ export default function Step2MountingInfo(props: Props) {
               className={
                 packagePreview?.has
                   ? canApplyPackage
-                    ? 'rounded-xl border border-emerald-200 bg-emerald-50/80 dark:border-emerald-800/60 dark:bg-emerald-950/40 px-4 py-3'
-                    : 'rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-800/60 dark:bg-amber-950/40 px-4 py-3'
-                  : 'rounded-xl border border-slate-200 bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-950/40 px-4 py-3'
+                    ? 'rounded-xl border border-border bg-muted dark:border-border dark:bg-muted px-4 py-3'
+                    : 'rounded-xl border border-border bg-muted/80 dark:border-border dark:bg-muted px-4 py-3'
+                  : 'rounded-xl border border-border bg-background/80 dark:border-border dark:bg-muted px-4 py-3'
               }
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5">
-                  <Ticket className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                  <Ticket className="h-4 w-4 text-foreground dark:text-foreground" />
                 </div>
                 <div className="flex-1 text-[12px] leading-relaxed">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
-                    <span className="text-base font-semibold tracking-tight text-slate-800 dark:text-slate-50">패키지 사용 가능 여부</span>
+                    <span className="text-base font-semibold tracking-tight text-foreground dark:text-muted-foreground">패키지 사용 가능 여부</span>
 
                     {packagePreview?.has ? (
                       canApplyPackage ? (
-                        <Badge className="h-5 rounded-full border-emerald-300/60 bg-emerald-100 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100">자동 적용 대상</Badge>
+                        <Badge className="h-5 rounded-full border-border bg-muted text-xs font-medium text-foreground dark:bg-muted dark:text-foreground">자동 적용 대상</Badge>
                       ) : (
-                        <Badge className="h-5 rounded-full border-amber-300/60 bg-amber-100 text-xs font-medium text-amber-800 dark:bg-amber-900/50 dark:text-amber-100">이번 구성에는 적용 불가</Badge>
+                        <Badge className="h-5 rounded-full border-border/60 bg-muted text-xs font-medium text-foreground dark:bg-muted dark:text-foreground">이번 구성에는 적용 불가</Badge>
                       )
                     ) : (
-                      <Badge className="h-5 rounded-full border-slate-300/60 bg-slate-100 text-xs font-medium text-slate-700 dark:bg-slate-900/40 dark:text-slate-100">보유 패키지 없음</Badge>
+                      <Badge className="h-5 rounded-full border-border bg-muted text-xs font-medium text-foreground dark:bg-card/40 dark:text-foreground">보유 패키지 없음</Badge>
                     )}
                   </div>
 
                   {packagePreview?.has ? (
                     packageInsufficient ? (
-                      <p className="text-sm text-amber-800 dark:text-amber-100">
+                      <p className="text-sm text-foreground dark:text-foreground">
                         현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>이고, 이번 신청에는 <span className="font-semibold">{requiredPassCount}회</span>가 필요하여 패키지가 자동 적용되지 않습니다.
                       </p>
                     ) : (
-                      <p className="text-sm text-slate-700 dark:text-slate-100">
+                      <p className="text-sm text-foreground dark:text-foreground">
                         이번 신청에는 패키지로 <span className="font-semibold">{requiredPassCount}회</span>가 필요합니다. 현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
                         이며, 결제 단계에서 사용 여부를 선택할 수 있습니다.
                       </p>
                     )
                   ) : (
-                    <p className="text-sm text-slate-600 dark:text-slate-200">현재 보유 중인 패키지가 없어 이번 신청은 일반 교체비 기준으로 결제됩니다.</p>
+                    <p className="text-sm text-muted-foreground dark:text-foreground">현재 보유 중인 패키지가 없어 이번 신청은 일반 교체비 기준으로 결제됩니다.</p>
                   )}
 
                   {packagePreview?.has && (
-                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-600 dark:text-slate-200">
+                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground dark:text-foreground">
                       <span>필요 {requiredPassCount}회</span>
-                      <span className="h-3 w-px bg-slate-300/60 dark:bg-slate-700/80" />
+                      <span className="h-3 w-px bg-muted dark:bg-muted/80" />
                       <span>잔여 {packageRemaining}회</span>
                       {packagePreview.expiresAt && (
                         <>
-                          <span className="h-3 w-px bg-slate-300/60 dark:bg-slate-700/80" />
+                          <span className="h-3 w-px bg-muted dark:bg-muted/80" />
                           <span>만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}</span>
                         </>
                       )}
@@ -671,19 +671,19 @@ export default function Step2MountingInfo(props: Props) {
         )}
         {/* 라켓/라인 세부 입력 (선택 사항) */}
         {lineCount > 0 && (
-          <Card className="border-none bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-slate-800/30 dark:to-slate-900/40 shadow-sm">
+          <Card className="border-none bg-gradient-to-br from-muted/50 to-muted/30 dark:from-background dark:to-background shadow-sm">
             <CardHeader className="pb-4 space-y-1">
-              <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">라켓별 세부 장착 정보</CardTitle>
-              <CardDescription className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                위에서 선택한 <span className="font-semibold text-blue-600 dark:text-blue-400">"사용 개수"</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
+              <CardTitle className="text-base font-semibold text-foreground dark:text-foreground">라켓별 세부 장착 정보</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">
+                위에서 선택한 <span className="font-semibold text-accent dark:text-accent">"사용 개수"</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-xl border border-slate-200/70 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/30 p-4">
+              <div className="rounded-xl border border-border bg-background/70 dark:border-border dark:bg-card/30 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-[220px]">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">일괄 입력</p>
-                    <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">같은 텐션/요청사항이면 한 번에 적용할 수 있어요.</p>
+                    <p className="text-sm font-semibold text-foreground dark:text-foreground">일괄 입력</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground dark:text-muted-foreground">같은 텐션/요청사항이면 한 번에 적용할 수 있어요.</p>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -698,51 +698,51 @@ export default function Step2MountingInfo(props: Props) {
 
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">공통 메인 텐션(kg)</Label>
+                    <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">공통 메인 텐션(kg)</Label>
                     <Input
                       value={bulkTensionMain}
                       onChange={(e) => setBulkTensionMain(e.target.value)}
                       placeholder="예: 24"
-                      className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                      className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">공통 크로스 텐션(kg)</Label>
+                    <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">공통 크로스 텐션(kg)</Label>
                     <Input
                       value={bulkTensionCross}
                       onChange={(e) => setBulkTensionCross(e.target.value)}
                       placeholder="예: 23"
-                      className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                      className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                     />
                   </div>
 
                   <div className="space-y-1.5 md:col-span-3">
-                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">공통 메모 (선택)</Label>
+                    <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">공통 메모 (선택)</Label>
                     <Textarea
                       value={bulkLineNote}
                       onChange={(e) => setBulkLineNote(e.target.value)}
                       rows={2}
-                      className="text-sm resize-none border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                      className="text-sm resize-none border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                       placeholder="예: 전부 동일 텐션으로 부탁드립니다. / 오버그립 제거하지 말아주세요 등"
                     />
-                    <p className="text-[11px] text-slate-500 dark:text-slate-300">※ 공통 메모를 비워두면 기존 라켓별 메모는 유지됩니다.</p>
+                    <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">※ 공통 메모를 비워두면 기존 라켓별 메모는 유지됩니다.</p>
                   </div>
                 </div>
               </div>
               {linesForSubmit.map((line, index) => (
-                <div key={line.id ?? index} className="group relative rounded-xl bg-white dark:bg-slate-800/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                <div key={line.id ?? index} className="group relative rounded-xl bg-card dark:bg-card/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
                   {/* 헤더 영역: 라켓 N, 스트링 이름 */}
-                  <div className="flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-slate-50 to-slate-100/50 dark:from-slate-700/30 dark:to-slate-800/30 border-b border-slate-200/50 dark:border-slate-700/50">
+                  <div className="flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b border-border dark:border-border/50">
                     <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
-                        <span className="text-sm font-bold text-white">{index + 1}</span>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary shadow-sm">
+                        <span className="text-sm font-bold text-primary-foreground">{index + 1}</span>
                       </div>
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
+                      <span className="text-sm font-medium text-foreground dark:text-muted-foreground">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
-                      <span className="text-xs font-medium text-blue-700 dark:text-blue-300 truncate max-w-[200px]">{line.stringName}</span>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted dark:bg-primary">
+                      <div className="h-1.5 w-1.5 rounded-full bg-muted0 dark:bg-primary" />
+                      <span className="text-xs font-medium text-accent dark:text-accent truncate max-w-[200px]">{line.stringName}</span>
                     </div>
                   </div>
 
@@ -750,42 +750,42 @@ export default function Step2MountingInfo(props: Props) {
                   <div className="p-4 space-y-4">
                     <div className="grid gap-3 md:grid-cols-3">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">라켓 이름/별칭</Label>
+                        <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">라켓 이름/별칭</Label>
                         <Input
                           value={line.racketType ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'racketType', e.target.value)}
                           placeholder="예: 라켓1"
-                          className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                          className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">메인 텐션(kg)</Label>
+                        <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">메인 텐션(kg)</Label>
                         <Input
                           value={line.tensionMain ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'tensionMain', e.target.value)}
                           placeholder="예: 24"
-                          className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                          className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">크로스 텐션(kg)</Label>
+                        <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">크로스 텐션(kg)</Label>
                         <Input
                           value={line.tensionCross ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'tensionCross', e.target.value)}
                           placeholder="예: 23"
-                          className="h-9 text-sm border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                          className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
                     </div>
 
                     {/* 라켓별 메모 */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">라켓별 메모 (선택)</Label>
+                      <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">라켓별 메모 (선택)</Label>
                       <Textarea
                         value={line.note ?? ''}
                         onChange={(e) => handleLineFieldChange(index, 'note', e.target.value)}
                         rows={2}
-                        className="text-sm resize-none border-slate-200 dark:border-slate-700 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                        className="text-sm resize-none border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         placeholder="요청사항을 적어 두셔도 좋습니다."
                       />
                     </div>
@@ -800,7 +800,7 @@ export default function Step2MountingInfo(props: Props) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="preferredDate" className="text-sm font-medium">
-                장착 희망일 <span className="text-red-500">*</span>
+                장착 희망일 <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="preferredDate"
@@ -809,21 +809,21 @@ export default function Step2MountingInfo(props: Props) {
                 value={formData.preferredDate}
                 onChange={handleInputChange}
                 min={new Date().toISOString().split('T')[0]}
-                className="focus:ring-2 focus:ring-green-500 transition-all duration-200"
+                className="focus:ring-2 focus:ring-ring transition-all duration-200"
               />
               {formData.preferredDate && formData.preferredTime && visitSlotCountUi > 0 && visitDurationMinutesUi && (
-                <div className="mt-3 text-xs md:text-[13px] text-slate-700 dark:text-slate-100 bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2">
+                <div className="mt-3 text-xs md:text-[13px] text-foreground dark:text-foreground bg-background/80 dark:bg-card/40 border border-border dark:border-border rounded-lg px-3 py-2">
                   <p className="font-medium">
                     이번 방문 예상 소요 시간: {visitTimeRange ? `${visitTimeRange.start} ~ ${visitTimeRange.end}` : `약 ${visitDurationMinutesUi}분`} ({visitSlotCountUi}슬롯)
                   </p>
-                  <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-300 leading-relaxed">선택하신 시간부터 연속으로 작업이 진행되며,&nbsp; 해당 시간대에는 다른 예약이 불가능합니다.</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground dark:text-muted-foreground leading-relaxed">선택하신 시간부터 연속으로 작업이 진행되며,&nbsp; 해당 시간대에는 다른 예약이 불가능합니다.</p>
                 </div>
               )}
             </div>
 
             <div className="space-y-2">
               <Label className="text-sm font-medium">
-                희망 시간대<span className="text-red-500">*</span>
+                희망 시간대<span className="text-destructive">*</span>
               </Label>
               <TimeSlotSelector
                 selected={formData.preferredTime}

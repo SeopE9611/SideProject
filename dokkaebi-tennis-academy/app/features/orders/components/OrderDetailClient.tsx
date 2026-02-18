@@ -417,17 +417,17 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  return (
  <div
- className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50
- dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-black"
+ className="min-h-screen bg-gradient-to-br from-background via-background to-background
+ dark:bg-gradient-to-br dark:from-background dark:via-background dark:to-background"
  >
  <div className="container py-10 space-y-8">
  <div className="mx-auto max-w-4xl">
  {/* 개선된 관리자 헤더 */}
- <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-950/20 dark:via-blue-950/20 dark:to-indigo-950/20 rounded-2xl p-8 border border-purple-100 dark:border-purple-800/30 shadow-lg mb-8">
+ <div className="bg-gradient-to-r from-muted via-background to-muted dark:from-background dark:via-background dark:to-background rounded-2xl p-8 border border-border dark:border-border shadow-lg mb-8">
  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
  <div className="flex items-center space-x-4">
  <div className="bg-card rounded-full p-3 shadow-md">
- <Settings className="h-8 w-8 text-purple-600" />
+ <Settings className="h-8 w-8 text-accent" />
  </div>
  <div>
  <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-foreground">주문 관리</h1>
@@ -438,8 +438,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Button
  variant="outline"
  size="sm"
- className="mb-3 bg-card/70 backdrop-blur-sm border-purple-200 hover:bg-purple-50
- dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60"
+ className="mb-3 bg-card/70 backdrop-blur-sm border-border hover:bg-muted
+ dark:bg-card/60 dark:border-border dark:hover:bg-muted"
  asChild
  >
  <Link href="/admin/orders">
@@ -454,14 +454,14 @@ export default function OrderDetailClient({ orderId }: Props) {
  className={
  isEditMode
  ? ''
- : 'bg-card/70 backdrop-blur-sm border-purple-200 hover:bg-purple-50 \
- dark:bg-slate-800/60 dark:border-slate-700 dark:hover:bg-slate-700/60'
+ : 'bg-card/70 backdrop-blur-sm border-border hover:bg-muted \
+ dark:bg-card/60 dark:border-border dark:hover:bg-muted'
  }
  >
  <Pencil className="mr-1 h-4 w-4" />
  {isEditMode ? '편집 취소' : '편집 모드'}
  </Button>
- <Button onClick={handleShippingUpdate} className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
+ <Button onClick={handleShippingUpdate} className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary">
  <Truck className="mr-2 h-4 w-4" />
  {isShippingManagedByApplication ? '신청서 배송 정보 관리' : '배송 정보 업데이트'}
  </Button>
@@ -473,7 +473,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Calendar className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-gray-700 ">주문일시</span>
+ <span className="text-sm font-medium text-muted-foreground ">주문일시</span>
  </div>
  <p className="text-lg font-semibold text-foreground dark:text-foreground">{formatDate(orderDetail.date)}</p>
  </div>
@@ -481,7 +481,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <CreditCard className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-gray-700 ">총 결제금액</span>
+ <span className="text-sm font-medium text-muted-foreground ">총 결제금액</span>
  </div>
  <p className="text-lg font-semibold text-foreground dark:text-foreground">{formatCurrency(orderDetail.total)}</p>
  </div>
@@ -489,22 +489,22 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Package className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-gray-700 ">주문 상태</span>
+ <span className="text-sm font-medium text-muted-foreground ">주문 상태</span>
  </div>
- <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-slate-500/10 text-slate-500')}>{localStatus}</Badge>
+ <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground')}>{localStatus}</Badge>
  </div>
 
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <User className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-gray-700 ">결제 상태</span>
+ <span className="text-sm font-medium text-muted-foreground ">결제 상태</span>
  </div>
  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
  </div>
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Truck className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-gray-700 ">수령/배송</span>
+ <span className="text-sm font-medium text-muted-foreground ">수령/배송</span>
  </div>
  <Badge className={cn(badgeBase, badgeSizeSm, shippingMethodBadge.color)}>{shippingMethodBadge.label}</Badge>
  {isShippingManagedByApplication && <p className="mt-1 text-[11px] text-muted-foreground">운송장/배송 등록은 신청서에서 관리</p>}
@@ -512,12 +512,12 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  {/* 취소 요청 상태 안내 (관리자용) */}
  {cancelInfo && (
- <div className="mt-4 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+ <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-foreground">
  <div className="flex items-start justify-between gap-2">
  <div>
- <p className="font-medium text-amber-900">취소 요청 상태: {cancelInfo.badge}</p>
+ <p className="font-medium text-foreground">취소 요청 상태: {cancelInfo.badge}</p>
  <p className="mt-1">{cancelInfo.label}</p>
- {cancelInfo.reason && <p className="mt-1 text-xs text-amber-900/80">사유: {cancelInfo.reason}</p>}
+ {cancelInfo.reason && <p className="mt-1 text-xs text-foreground/80">사유: {cancelInfo.reason}</p>}
  </div>
  </div>
  </div>
@@ -526,14 +526,14 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 주문 상태 및 요약 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60
- bg-gradient-to-br from-white to-gray-50/50
- dark:from-slate-900 dark:to-slate-800/60 overflow-hidden mb-8"
+ className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ bg-gradient-to-br from-background to-background
+ dark:from-background dark:to-background overflow-hidden mb-8"
  >
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
  <div className="flex items-center justify-between">
  <CardTitle>주문 상태 관리</CardTitle>
- <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-slate-500/10 text-slate-500')}>{localStatus}</Badge>
+ <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground')}>{localStatus}</Badge>
  </div>
  <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
  </CardHeader>
@@ -550,7 +550,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Button
  size="sm"
  variant="outline"
- className="border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-700 dark:hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent"
+ className="border-border hover:border-border hover:bg-muted dark:border-border dark:hover:border-border dark:hover:bg-muted bg-transparent"
  disabled={isCanceled || !isDelivered || isConfirmed || isConfirmingPurchase}
  onClick={handleConfirmPurchase}
  >
@@ -612,14 +612,14 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="grid gap-6 md:grid-cols-2">
  {/* 고객 정보 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60
- bg-gradient-to-br from-white to-gray-50/50
- dark:from-slate-900 dark:to-slate-800/60 overflow-hidden"
+ className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ bg-gradient-to-br from-background to-background
+ dark:from-background dark:to-background overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
  <CardTitle className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
- <User className="h-5 w-5 text-green-600" />
+ <User className="h-5 w-5 text-foreground" />
  <span>고객 정보</span>
  </div>
  {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -653,8 +653,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="space-y-4">
  <div
  className="flex items-center space-x-3 p-3
- bg-gray-50 dark:bg-slate-800/70 rounded-lg
- border border-gray-100 dark:border-slate-700/60"
+ bg-muted dark:bg-card/70 rounded-lg
+ border border-border dark:border-border"
  >
  <User className="h-4 w-4 text-muted-foreground" />
  <div>
@@ -665,8 +665,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div
  className="flex items-center space-x-3 p-3
- bg-gray-50 dark:bg-slate-800/70 rounded-lg
- border border-gray-100 dark:border-slate-700/60"
+ bg-muted dark:bg-card/70 rounded-lg
+ border border-border dark:border-border"
  >
  <Mail className="h-4 w-4 text-muted-foreground" />
  <div>
@@ -677,8 +677,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div
  className="flex items-center space-x-3 p-3
- bg-gray-50 dark:bg-slate-800/70 rounded-lg
- border border-gray-100 dark:border-slate-700/60"
+ bg-muted dark:bg-card/70 rounded-lg
+ border border-border dark:border-border"
  >
  <Phone className="h-4 w-4 text-muted-foreground" />
  <div>
@@ -687,7 +687,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </div>
 
- <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-start space-x-3 p-3 bg-muted rounded-lg">
  <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">주소</p>
@@ -699,8 +699,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </CardContent>
  {isEditMode && (
- <CardFooter className="pt-3 flex justify-center bg-gray-50/50 ">
- <Button variant="outline" size="sm" onClick={() => setEditingCustomer(true)} className="hover:bg-green-50 border-green-200">
+ <CardFooter className="pt-3 flex justify-center bg-muted/50 ">
+ <Button variant="outline" size="sm" onClick={() => setEditingCustomer(true)} className="hover:bg-muted border-border">
  수정하기
  </Button>
  </CardFooter>
@@ -711,11 +711,11 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 배송 정보 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60
- bg-gradient-to-br from-white to-gray-50/50
- dark:from-slate-900 dark:to-slate-800/60 overflow-hidden"
+ className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ bg-gradient-to-br from-background to-background
+ dark:from-background dark:to-background overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
  <CardTitle className="flex items-center">
  <Truck className="mr-2 h-5 w-5 text-accent" />
  배송 정보
@@ -723,16 +723,16 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardHeader>
  <CardContent className="p-6">
  {isShippingManagedByApplication && linkedStringingAppId ? (
- <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-accent dark:border-blue-800/60 dark:bg-blue-950/30 dark:text-accent">
+ <div className="rounded-lg border border-border bg-muted p-4 text-sm text-accent dark:border-border dark:bg-primary dark:text-accent">
  <div className="flex items-start gap-2">
  <LinkIcon className="mt-0.5 h-4 w-4 shrink-0" />
  <div className="space-y-2">
  <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.</p>
- <div className="flex items-center space-x-3 p-3 bg-card/70 dark:bg-slate-900/30 rounded-lg border border-blue-200/60 dark:border-blue-800/40">
+ <div className="flex items-center space-x-3 p-3 bg-card/70 dark:bg-card/30 rounded-lg border border-border/60 dark:border-border">
  <Truck className="h-4 w-4 text-accent" />
  <div>
  <p className="text-sm text-accent/80 dark:text-accent/80">주문 시 선택한 수령 방식</p>
- <p className="font-semibold text-blue-950 dark:text-blue-50">
+ <p className="font-semibold text-accent dark:text-accent">
  {{
  delivery: '택배 배송',
  quick: '퀵 배송 (당일)',
@@ -748,7 +748,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <Button
  size="sm"
- className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+ className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-primary-foreground"
  onClick={() => router.push(`/admin/applications/stringing/${linkedStringingAppId}/shipping-update`)}
  >
  <Truck className="mr-2 h-4 w-4" />
@@ -764,8 +764,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="space-y-4">
  <div
  className="flex items-center space-x-3 p-3
- bg-gray-50 dark:bg-slate-800/70 rounded-lg
- border border-gray-100 dark:border-slate-700/60"
+ bg-muted dark:bg-card/70 rounded-lg
+ border border-border dark:border-border"
  >
  <Truck className="h-4 w-4 text-muted-foreground" />
  <div>
@@ -782,8 +782,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div
  className="flex items-center space-x-3 p-3
- bg-gray-50 dark:bg-slate-800/70 rounded-lg
- border border-gray-100 dark:border-slate-700/60"
+ bg-muted dark:bg-card/70 rounded-lg
+ border border-border dark:border-border"
  >
  <Calendar className="h-4 w-4 text-muted-foreground" />
  <div>
@@ -796,8 +796,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  <>
  <div
  className="flex items-center space-x-3 p-3
- bg-gray-50 dark:bg-slate-800/70 rounded-lg
- border border-gray-100 dark:border-slate-700/60"
+ bg-muted dark:bg-card/70 rounded-lg
+ border border-border dark:border-border"
  >
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">택배사</p>
@@ -814,8 +814,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  <div
  className="flex items-center space-x-3 p-3
- bg-gray-50 dark:bg-slate-800/70 rounded-lg
- border border-gray-100 dark:border-slate-700/60"
+ bg-muted dark:bg-card/70 rounded-lg
+ border border-border dark:border-border"
  >
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">운송장 번호</p>
@@ -831,14 +831,14 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 결제 정보 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60
- bg-gradient-to-br from-white to-gray-50/50
- dark:from-slate-900 dark:to-slate-800/60 overflow-hidden"
+ className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ bg-gradient-to-br from-background to-background
+ dark:from-background dark:to-background overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
  <CardTitle className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
- <CreditCard className="h-5 w-5 text-purple-600" />
+ <CreditCard className="h-5 w-5 text-accent" />
  <span>결제 정보</span>
  </div>
  {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -864,8 +864,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="space-y-4">
  <div
  className="flex items-center space-x-3 p-3
- bg-gray-50 dark:bg-slate-800/70 rounded-lg
- border border-gray-100 dark:border-slate-700/60"
+ bg-muted dark:bg-card/70 rounded-lg
+ border border-border dark:border-border"
  >
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">결제 상태</p>
@@ -874,7 +874,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  {/* <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Truck className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-gray-700 ">수령/배송</span>
+ <span className="text-sm font-medium text-muted-foreground ">수령/배송</span>
  </div>
  <Badge className={cn(badgeBase, badgeSizeSm, shippingMethodBadge.color)}>{shippingMethodBadge.label}</Badge>
  {isShippingManagedByApplication && <p className="mt-1 text-[11px] text-muted-foreground">운송장/배송 등록은 신청서에서 관리</p>}
@@ -883,26 +883,26 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div
  className="rounded-md border border-border bg-card/80 p-4 text-sm shadow-sm
- dark:bg-slate-800/60"
+ dark:bg-card/60"
  >
  <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
  </div>
 
  <div
- className="flex items-center space-x-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50
- dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg
- border border-purple-100 dark:border-purple-800/50"
+ className="flex items-center space-x-3 p-3 bg-gradient-to-r from-muted to-background
+ dark:from-background dark:to-background rounded-lg
+ border border-border dark:border-border"
  >
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">결제 금액</p>
- <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{formatCurrency(orderDetail.total)}</p>
+ <p className="text-xl font-bold text-accent dark:text-accent">{formatCurrency(orderDetail.total)}</p>
  </div>
  </div>
  </div>
  </CardContent>
  {isEditMode && (
- <CardFooter className="flex justify-center bg-gray-50/50 ">
- <Button variant="outline" size="sm" onClick={() => setEditingPayment(true)} className="hover:bg-purple-50 border-purple-200">
+ <CardFooter className="flex justify-center bg-muted/50 ">
+ <Button variant="outline" size="sm" onClick={() => setEditingPayment(true)} className="hover:bg-muted border-border">
  수정하기
  </Button>
  </CardFooter>
@@ -913,20 +913,20 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 주문 항목 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60
- bg-gradient-to-br from-white to-gray-50/50
- dark:from-slate-900 dark:to-slate-800/60 overflow-hidden"
+ className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ bg-gradient-to-br from-background to-background
+ dark:from-background dark:to-background overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
  <CardTitle className="flex items-center">
- <ShoppingCart className="mr-2 h-5 w-5 text-orange-600" />
+ <ShoppingCart className="mr-2 h-5 w-5 text-foreground" />
  주문 항목
  </CardTitle>
  </CardHeader>
  <CardContent className="p-6">
  <div className="space-y-4">
  {orderDetail.items.map((item, idx) => (
- <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+ <div key={idx} className="flex items-center justify-between p-4 bg-muted rounded-xl hover:bg-muted dark:hover:bg-muted transition-colors">
  <div className="flex-1">
  <h4 className="font-semibold text-foreground dark:text-foreground">{item.name}</h4>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">수량: {item.quantity}개</p>
@@ -944,11 +944,11 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 배송 요청사항 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60
- bg-gradient-to-br from-white to-gray-50/50
- dark:from-slate-900 dark:to-slate-800/60 overflow-hidden"
+ className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ bg-gradient-to-br from-background to-background
+ dark:from-background dark:to-background overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
  <CardTitle className="flex items-center justify-between">
  <span>배송 요청사항</span>
  {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -972,16 +972,16 @@ export default function OrderDetailClient({ orderId }: Props) {
  <>
  <CardContent className="p-6">
  {orderDetail.shippingInfo.deliveryRequest ? (
- <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/60 rounded-lg p-4">
- <p className="text-gray-700 dark:text-gray-200 whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
+ <div className="bg-muted dark:bg-muted border border-border dark:border-border rounded-lg p-4">
+ <p className="text-muted-foreground dark:text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
  </div>
  ) : (
  <p className="text-muted-foreground dark:text-muted-foreground italic">요청사항이 입력되지 않았습니다.</p>
  )}
  </CardContent>
  {isEditMode && (
- <CardFooter className="flex justify-center bg-gray-50/50 ">
- <Button variant="outline" size="sm" onClick={() => setEditingRequest(true)} className="hover:bg-orange-50 border-orange-200">
+ <CardFooter className="flex justify-center bg-muted/50 ">
+ <Button variant="outline" size="sm" onClick={() => setEditingRequest(true)} className="hover:bg-muted border-border">
  수정하기
  </Button>
  </CardFooter>
@@ -992,13 +992,13 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 처리 이력 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60
- bg-gradient-to-br from-white to-gray-50/50
- dark:from-slate-900 dark:to-slate-800/60 overflow-hidden"
+ className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ bg-gradient-to-br from-background to-background
+ dark:from-background dark:to-background overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+ <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b">
  <CardTitle className="flex items-center space-x-2">
- <Calendar className="h-5 w-5 text-indigo-600" />
+ <Calendar className="h-5 w-5 text-accent" />
  <span>주문 이력</span>
  </CardTitle>
  </CardHeader>

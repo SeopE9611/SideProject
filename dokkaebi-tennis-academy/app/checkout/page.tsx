@@ -670,10 +670,10 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-full bg-card dark:bg-slate-950 bp-lg:bg-gradient-to-br bp-lg:from-slate-50 bp-lg:via-blue-50/30 bp-lg:to-purple-50/20 bp-lg:dark:from-slate-900 bp-lg:dark:via-slate-800 bp-lg:dark:to-slate-900">
+    <div className="min-h-full bg-card dark:bg-muted bp-lg:bg-gradient-to-br bp-lg:from-background bp-lg:via-background bp-lg:to-background bp-lg:dark:from-background bp-lg:dark:via-background bp-lg:dark:to-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 text-white dark:from-blue-700 dark:via-purple-700 dark:to-teal-700">
-        <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
+      <div className="relative overflow-hidden bg-gradient-to-r from-primary via-background to-primary text-primary-foreground dark:from-background dark:via-background dark:to-teal-700">
+        <div className="absolute inset-0 bg-foreground/10 dark:bg-foreground/10"></div>
         <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
         <SiteContainer variant="wide" className="relative py-6 bp-sm:py-10 bp-md:py-14">
           <div className="flex items-center gap-4 mb-4">
@@ -688,7 +688,7 @@ export default function CheckoutPage() {
 
           {/* <div className="flex items-center gap-6 text-sm">
  <div className="flex items-center gap-2 text-sm">
- <Shield className="h-4 w-4 text-green-400" />
+ <Shield className="h-4 w-4 text-foreground" />
  <span>SSL 보안 결제</span>
  </div>
  <div className="flex items-center gap-2 text-sm">
@@ -708,15 +708,15 @@ export default function CheckoutPage() {
           {/* 주문 정보 입력 폼 */}
           <div className="bp-lg:col-span-2 space-y-4 bp-sm:space-y-6">
             {/* 이탈 경고(고정 노출) */}
-            <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+            <div className="flex items-start gap-2 rounded-xl border border-border bg-muted px-3 py-2 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
               <p className="leading-relaxed">
                 <span className="font-semibold">주의:</span> 작성 중에 다른 페이지로 이동하거나 새로고침하면 입력한 내용이 <span className="font-semibold">초기화될 수 있습니다.</span>
               </p>
             </div>
             {/* 주문 상품 */}
-            <Card className="bg-card dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-3 bp-sm:p-4 bp-lg:p-6">
+            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 via-background to-primary/10 p-3 bp-sm:p-4 bp-lg:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <Package className="h-5 w-5 text-accent" />
                   주문 상품
@@ -725,9 +725,9 @@ export default function CheckoutPage() {
               </div>
               <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
                 {isBundleCheckout && bundleQty !== null && (
-                  <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
+                  <div className="mb-4 rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground dark:border-border dark:bg-card/60 dark:text-foreground">
                     <p className="font-semibold">번들 수량: {bundleQty}개</p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
                       라켓/스트링 수량은 동일하게 묶여 있으며, 수량 변경은 <span className="font-medium">스트링 선택 단계</span>에서만 가능합니다.
                     </p>
                     {bundleRacketId && (
@@ -747,8 +747,8 @@ export default function CheckoutPage() {
  flex flex-col bp-sm:flex-row bp-sm:items-center
  gap-3 bp-sm:gap-4
  p-3 bp-sm:p-4
- bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30
- rounded-lg border border-slate-200/50 dark:border-slate-600/50
+ bg-gradient-to-r from-background to-background/30 dark:from-background dark:to-background
+ rounded-lg border border-border dark:border-border
  "
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -759,19 +759,19 @@ export default function CheckoutPage() {
                             width={80}
                             height={80}
                             loading="lazy"
-                            className="h-14 w-14 bp-sm:h-20 bp-sm:w-20 rounded-lg border-2 border-white shadow-lg object-cover"
+                            className="h-14 w-14 bp-sm:h-20 bp-sm:w-20 rounded-lg border-2 border-border shadow-lg object-cover"
                           />
-                          <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">{item.quantity}</div>
+                          <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">{item.quantity}</div>
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2">{item.name}</h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">수량: {item.quantity}개</p>
+                          <h3 className="font-semibold text-foreground dark:text-foreground line-clamp-2">{item.name}</h3>
+                          <p className="text-sm text-muted-foreground dark:text-muted-foreground">수량: {item.quantity}개</p>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between bp-sm:flex-col bp-sm:items-end bp-sm:justify-center bp-sm:text-right">
-                        <div className="text-xs bp-sm:text-sm text-slate-500">단가: {item.price.toLocaleString()}원</div>
+                        <div className="text-xs bp-sm:text-sm text-muted-foreground">단가: {item.price.toLocaleString()}원</div>
                         <div className="font-bold text-base bp-sm:text-lg text-accent">{(item.price * item.quantity).toLocaleString()}원</div>
                       </div>
                     </div>
@@ -781,33 +781,33 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 수령 방식 및 장착 서비스 카드 */}
-            <Card className="bg-card dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-red-500/10 p-4 bp-sm:p-6">
+            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 via-background to-background p-4 bp-sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                  <Truck className="h-5 w-5 text-purple-600" />
+                  <Truck className="h-5 w-5 text-accent" />
                   상품 접수 예약 방식
                 </CardTitle>
                 <CardDescription className="mt-2">상품을 어떻게 예약하실지 선택해주세요.</CardDescription>
               </div>
               <CardContent className="p-4 bp-sm:p-6 space-y-4">
                 <RadioGroup defaultValue="택배수령" onValueChange={(value) => setDeliveryMethod(value as '택배수령' | '방문수령')}>
-                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-muted to-background dark:from-background dark:to-background rounded-lg border border-border dark:border-border">
                     <RadioGroupItem value="택배수령" id="택배수령" />
                     <Label htmlFor="택배수령" className="flex-1 cursor-pointer font-medium">
                       택배 발송/수령 (자택 또는 지정 장소로 배송)
                     </Label>
                     <Truck className="h-5 w-5 text-accent" />
                   </div>
-                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-muted to-background dark:from-background dark:to-background rounded-lg border border-border dark:border-border">
                     <RadioGroupItem value="방문수령" id="방문수령" />
                     <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
                       오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
                     </Label>
-                    <Building2 className="h-5 w-5 text-purple-600" />
+                    <Building2 className="h-5 w-5 text-accent" />
                   </div>
                 </RadioGroup>
 
-                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <div className="bg-gradient-to-r from-yellow-400 to-background dark:from-yellow-400 dark:to-background p-4 rounded-lg border border-yellow-400 dark:border-yellow-400">
                   <div className="flex items-center space-x-2 mb-2">
                     <Checkbox
                       id="withStringService"
@@ -818,13 +818,13 @@ export default function CheckoutPage() {
                         setWithStringService(!!checked);
                       }}
                     />
-                    <Label htmlFor="withStringService" className="font-medium text-orange-700 dark:text-orange-400">
+                    <Label htmlFor="withStringService" className="font-medium text-foreground dark:text-foreground">
                       스트링 장착 서비스도 함께 신청할게요
                     </Label>
                   </div>
-                  <p className="text-sm text-orange-600 dark:text-orange-400 ml-6">{serviceHelpText}</p>
+                  <p className="text-sm text-foreground dark:text-foreground ml-6">{serviceHelpText}</p>
                   {isBundleCheckout && (
-                    <p className="text-sm text-orange-600 dark:text-orange-400 ml-6 mt-1">
+                    <p className="text-sm text-foreground dark:text-foreground ml-6 mt-1">
                       번들 주문은 장착 서비스 포함이 <span className="font-semibold">고정</span>이며, 번들 수량은 <span className="font-semibold">{bundleQty}개</span>로 <span className="font-semibold">고정</span>됩니다. 수량 변경은{' '}
                       <span className="font-semibold">스트링 선택 단계</span>에서만 가능합니다.
                     </p>
@@ -835,7 +835,7 @@ export default function CheckoutPage() {
                       (deliveryMethod === '방문수령' ? (
                         // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
                         <div className="ml-7 mt-2 text-sm">
-                          <span className="px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">매장 방문 접수로 진행됩니다.</span>
+                          <span className="px-2 py-1 rounded bg-primary text-accent dark:bg-primary dark:text-accent">매장 방문 접수로 진행됩니다.</span>
                         </div>
                       ) : (
                         // 택배 수령: **선택지는 자가 발송만** 노출
@@ -858,10 +858,10 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 배송 정보 */}
-            <Card className="bg-card dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 p-3 bp-sm:p-4 bp-lg:p-6">
+            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-background via-background to-primary/10 p-3 bp-sm:p-4 bp-lg:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                  <MapPin className="h-5 w-5 text-green-600" />
+                  <MapPin className="h-5 w-5 text-foreground" />
                   배송 정보
                 </CardTitle>
                 <CardDescription className="mt-2">상품을 받으실 배송지 정보를 입력해주세요.</CardDescription>
@@ -879,13 +879,13 @@ export default function CheckoutPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="수령인 이름을 입력하세요"
-                        className={cn('border-2 focus:border-blue-500 transition-colors', fieldErrors.name && 'border-rose-500 focus:border-rose-500')}
+                        className={cn('border-2 focus:border-border transition-colors', fieldErrors.name && 'border-destructive/30 focus:border-destructive/30')}
                       />
-                      {fieldErrors.name && <p className="text-xs text-rose-600">{fieldErrors.name}</p>}
+                      {fieldErrors.name && <p className="text-xs text-destructive">{fieldErrors.name}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="recipient-email" className="flex items-center gap-2 text-sm">
-                        <Mail className="h-4 w-4 text-purple-600" />
+                        <Mail className="h-4 w-4 text-accent" />
                         이메일
                       </Label>
                       <Input
@@ -894,9 +894,9 @@ export default function CheckoutPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="example@naver.com"
-                        className={cn('border-2 focus:border-purple-500 transition-colors', fieldErrors.email && 'border-rose-500 focus:border-rose-500')}
+                        className={cn('border-2 focus:border-border transition-colors', fieldErrors.email && 'border-destructive/30 focus:border-destructive/30')}
                       />
-                      {fieldErrors.email && <p className="text-xs text-rose-600">{fieldErrors.email}</p>}
+                      {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="recipient-phone" className="flex items-center gap-2 text-sm">
@@ -909,29 +909,29 @@ export default function CheckoutPage() {
                         onChange={(e) => setPhone(formatKoreanPhone010(e.target.value))}
                         placeholder="연락처를 입력하세요 ('-' 제외)"
                         inputMode="numeric"
-                        className={cn('border-2 focus:border-teal-500 transition-colors', fieldErrors.phone && 'border-rose-500 focus:border-rose-500')}
+                        className={cn('border-2 focus:border-teal-500 transition-colors', fieldErrors.phone && 'border-destructive/30 focus:border-destructive/30')}
                       />
-                      {fieldErrors.phone && <p className="text-xs text-rose-600">{fieldErrors.phone}</p>}
+                      {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
-                        <Home className="h-4 w-4 text-orange-600" />
+                        <Home className="h-4 w-4 text-foreground" />
                         우편번호
                       </Label>
-                      <Button variant="outline" size="sm" onClick={handleFindPostcode} className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 hover:from-blue-600 hover:to-purple-600">
+                      <Button variant="outline" size="sm" onClick={handleFindPostcode} className="bg-gradient-to-r from-primary to-primary text-primary-foreground border-0 hover:from-primary/90 hover:to-primary/90">
                         우편번호 찾기
                       </Button>
                     </div>
-                    <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn('bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2', fieldErrors.postalCode && 'border-rose-500')} />
-                    <div className="min-h-[16px]">{fieldErrors.postalCode && <p className="text-xs text-rose-600">{fieldErrors.postalCode}</p>}</div>
+                    <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn('bg-muted dark:bg-muted cursor-not-allowed max-w-[200px] border-2', fieldErrors.postalCode && 'border-destructive/30')} />
+                    <div className="min-h-[16px]">{fieldErrors.postalCode && <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>}</div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="address-main">기본 주소</Label>
-                    <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn('bg-slate-100 dark:bg-slate-700 cursor-not-allowed border-2', fieldErrors.postalCode && 'border-rose-500')} />
+                    <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn('bg-muted dark:bg-muted cursor-not-allowed border-2', fieldErrors.postalCode && 'border-destructive/30')} />
                   </div>
 
                   <div className="space-y-2">
@@ -941,37 +941,37 @@ export default function CheckoutPage() {
                       value={addressDetail}
                       onChange={(e) => setAddressDetail(e.target.value)}
                       placeholder="상세 주소를 입력하세요"
-                      className={cn('border-2 focus:border-blue-500 transition-colors', fieldErrors.addressDetail && 'border-rose-500 focus:border-rose-500')}
+                      className={cn('border-2 focus:border-border transition-colors', fieldErrors.addressDetail && 'border-destructive/30 focus:border-destructive/30')}
                     />
-                    <div className="min-h-[16px]">{fieldErrors.addressDetail && <p className="text-xs text-rose-600">{fieldErrors.addressDetail}</p>}</div>
+                    <div className="min-h-[16px]">{fieldErrors.addressDetail && <p className="text-xs text-destructive">{fieldErrors.addressDetail}</p>}</div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="delivery-request" className="flex items-center gap-2 text-sm">
-                      <MessageSquare className="h-4 w-4 text-green-600" />
+                      <MessageSquare className="h-4 w-4 text-foreground" />
                       배송 요청사항
                     </Label>
-                    <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-green-500 transition-colors" />
+                    <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
                   </div>
 
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="bg-gradient-to-r from-muted to-background dark:from-background dark:to-background p-4 rounded-lg border border-border dark:border-border">
                     <div className="flex items-center space-x-2">
                       <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!user} />
                       <label htmlFor="save-address" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-accent dark:text-accent'}`}>
                         이 배송지 정보를 저장
                       </label>
                     </div>
-                    {!user && <p className="text-xs text-slate-500 dark:text-slate-400 ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
+                    {!user && <p className="text-xs text-muted-foreground dark:text-muted-foreground ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* 결제 정보 */}
-            <Card className="bg-card dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 p-4 bp-sm:p-6">
+            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-background via-teal-500/10 to-background p-4 bp-sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                  <CreditCard className="h-5 w-5 text-foreground" />
                   결제 정보
                 </CardTitle>
                 <CardDescription className="mt-2">결제 방법을 선택하고 필요한 정보를 입력해주세요.</CardDescription>
@@ -981,12 +981,12 @@ export default function CheckoutPage() {
                   <div className="space-y-3">
                     <Label>결제 방법</Label>
                     <RadioGroup defaultValue="bank-transfer" className="space-y-3">
-                      <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+                      <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-background to-background dark:from-background dark:to-background rounded-lg border-2 border-border dark:border-border">
                         <RadioGroupItem value="bank-transfer" id="bank-transfer" />
                         <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
                           무통장입금
                         </Label>
-                        <Building2 className="h-5 w-5 text-green-600" />
+                        <Building2 className="h-5 w-5 text-foreground" />
                       </div>
                     </RadioGroup>
                   </div>
@@ -994,7 +994,7 @@ export default function CheckoutPage() {
                   <div className="space-y-3">
                     <Label htmlFor="bank-account">입금 계좌 선택</Label>
                     <Select value={selectedBank} onValueChange={setSelectedBank}>
-                      <SelectTrigger className="border-2 focus:border-emerald-500">
+                      <SelectTrigger className="border-2 focus:border-border">
                         <SelectValue placeholder="입금 계좌를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1018,12 +1018,12 @@ export default function CheckoutPage() {
                       value={depositor}
                       onChange={(e) => setDepositor(e.target.value)}
                       placeholder="입금자명을 입력하세요"
-                      className={cn('border-2 focus:border-emerald-500 transition-colors', fieldErrors.depositor && 'border-rose-500 focus:border-rose-500')}
+                      className={cn('border-2 focus:border-border transition-colors', fieldErrors.depositor && 'border-destructive/30 focus:border-destructive/30')}
                     />
-                    <div className="min-h-[16px]">{fieldErrors.depositor && <p className="text-xs text-rose-600">{fieldErrors.depositor}</p>}</div>
+                    <div className="min-h-[16px]">{fieldErrors.depositor && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background p-4 rounded-lg border border-border dark:border-border">
                     <div className="flex items-center gap-2 mb-3">
                       <Shield className="h-5 w-5 text-accent" />
                       <p className="font-semibold text-accent dark:text-accent">무통장입금 안내</p>
@@ -1048,16 +1048,16 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 주문자 동의 */}
-            <Card className="bg-card dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-red-500/10 via-pink-500/10 to-rose-500/10 p-4 bp-sm:p-6">
+            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-background via-background to-background p-4 bp-sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                  <Shield className="h-5 w-5 text-red-600" />
+                  <Shield className="h-5 w-5 text-destructive" />
                   주문자 동의
                 </CardTitle>
               </div>
               <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-4 rounded-lg">
+                  <div className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background p-4 rounded-lg">
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="agree-all"
@@ -1070,7 +1070,7 @@ export default function CheckoutPage() {
                           setAgreeRefund(newValue);
                         }}
                       />
-                      <label htmlFor="agree-all" className="font-semibold text-lg text-slate-800 dark:text-slate-200">
+                      <label htmlFor="agree-all" className="font-semibold text-lg text-foreground dark:text-foreground">
                         전체 동의
                       </label>
                     </div>
@@ -1092,7 +1092,7 @@ export default function CheckoutPage() {
                         setState: setAgreeRefund,
                       },
                     ].map((item, index) => (
-                      <div key={item.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg">
+                      <div key={item.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-background to-background/30 dark:from-background dark:to-background rounded-lg">
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id={item.id}
@@ -1104,7 +1104,7 @@ export default function CheckoutPage() {
                               else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
                             }}
                           />
-                          <label htmlFor={item.id} className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          <label htmlFor={item.id} className="text-sm font-medium text-foreground dark:text-muted-foreground">
                             {item.label}
                           </label>
                         </div>
@@ -1122,8 +1122,8 @@ export default function CheckoutPage() {
           {/* 주문 요약 */}
           <div className="bp-lg:col-span-1">
             <div className="bp-lg:sticky bp-lg:top-20">
-              <Card className="backdrop-blur-sm bg-card/90 dark:bg-slate-800/90 border-0 shadow-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 p-4 bp-sm:p-6 text-white">
+              <Card className="backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
+                <div className="bg-gradient-to-r from-primary via-background to-primary p-4 bp-sm:p-6 text-primary-foreground">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <div className="p-2 bg-card/20 rounded-full">
                       <CreditCard className="h-5 w-5" />
@@ -1134,41 +1134,41 @@ export default function CheckoutPage() {
                 <CardContent className="p-4 bp-sm:p-6 space-y-4 bp-sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-600 dark:text-slate-400">상품 금액</span>
+                      <span className="text-muted-foreground dark:text-muted-foreground">상품 금액</span>
                       <span className="font-semibold text-lg">{subtotal.toLocaleString()}원</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-600 dark:text-slate-400">배송비</span>
-                      <span className="font-semibold text-green-500">
-                        <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">(30,000원 이상 구매 시 무료배송) </span>
+                      <span className="text-muted-foreground dark:text-muted-foreground">배송비</span>
+                      <span className="font-semibold text-foreground">
+                        <span className="ml-2 text-xs font-normal text-muted-foreground dark:text-muted-foreground">(30,000원 이상 구매 시 무료배송) </span>
                         {shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}
                       </span>
                     </div>
                     {/* 교체 서비스비 */}
                     {withStringService && (
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-600 dark:text-slate-400">교체 서비스비</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">교체 서비스비</span>
 
                         {!isMountingFeeReady ? (
-                          <div className="h-6 w-24 rounded-md bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
-                            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                          <div className="h-6 w-24 rounded-md bg-muted dark:bg-muted relative overflow-hidden">
+                            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-background/40 to-transparent" />
                           </div>
                         ) : serviceFee > 0 ? (
                           <span className="font-semibold text-lg">{serviceFee.toLocaleString()}원</span>
                         ) : (
-                          <span className="text-sm text-slate-400">해당 없음</span>
+                          <span className="text-sm text-muted-foreground">해당 없음</span>
                         )}
                       </div>
                     )}
 
                     {/* 포인트 사용(로그인 유저만) */}
-                    <div className="mt-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-3 bp-sm:p-4 rounded-lg border border-slate-200 dark:border-slate-600">
+                    <div className="mt-2 bg-gradient-to-r from-background to-background dark:from-background dark:to-background p-3 bp-sm:p-4 rounded-lg border border-border dark:border-border">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-600 dark:text-slate-400">사용 가능 포인트</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">사용 가능 포인트</span>
                         <span className="font-semibold">{user ? `${pointsAvailable.toLocaleString()}P` : '로그인 필요'}</span>
                       </div>
 
-                      {user && pointsDebt > 0 && <p className="mt-1 text-xs text-rose-600">회수 예정 포인트(채무): {pointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
+                      {user && pointsDebt > 0 && <p className="mt-1 text-xs text-destructive">회수 예정 포인트(채무): {pointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
 
                       <div className="mt-3 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-sm">
@@ -1223,16 +1223,16 @@ export default function CheckoutPage() {
                               setPointsToUse(clamped);
                             }}
                           />
-                          <span className="text-sm text-slate-500">P</span>
+                          <span className="text-sm text-muted-foreground">P</span>
                         </div>
                       </div>
 
-                      <p className="mt-2 text-xs text-slate-500">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
+                      <p className="mt-2 text-xs text-muted-foreground">배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능</p>
                     </div>
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-600 dark:text-slate-400">포인트 사용(예정)</span>
-                        <span className="font-semibold text-rose-600">-{appliedPoints.toLocaleString()}원</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">포인트 사용(예정)</span>
+                        <span className="font-semibold text-destructive">-{appliedPoints.toLocaleString()}원</span>
                       </div>
                     )}
                     <Separator />
@@ -1242,13 +1242,13 @@ export default function CheckoutPage() {
                     </div>
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center text-lg font-bold">
-                        <span className="text-slate-600 dark:text-slate-400">포인트 적용 후 결제 예정 금액</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">포인트 적용 후 결제 예정 금액</span>
                         <span className="text-accent">{payableTotal.toLocaleString()}원</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background p-4 rounded-lg border border-border dark:border-border">
                     <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
                       <Shield className="h-4 w-4" />
                       <span className="font-semibold">주문 안내</span>
@@ -1262,7 +1262,7 @@ export default function CheckoutPage() {
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
                   {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition)) && (
-                    <div className="w-full rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                    <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive">
                       <p className="font-semibold mb-1">확인 필요</p>
                       {fieldErrors.items && <p>• {fieldErrors.items}</p>}
                       {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
@@ -1281,7 +1281,7 @@ export default function CheckoutPage() {
  */}
                       {fieldErrors.composition && mode !== 'buynow' && (
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-black px-3 py-2 text-sm font-medium text-white hover:bg-black/90">
+                          <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-foreground/10 px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-foreground/10">
                             장바구니로 가서 정리하기
                           </Link>
                           <span className="text-xs text-muted-foreground">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
@@ -1311,7 +1311,7 @@ export default function CheckoutPage() {
                     serviceFee={serviceFee}
                     pointsToUse={appliedPoints}
                   />
-                  <Button variant="outline" className="w-full border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
+                  <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                     <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
                       장바구니로 돌아가기
                     </Link>
