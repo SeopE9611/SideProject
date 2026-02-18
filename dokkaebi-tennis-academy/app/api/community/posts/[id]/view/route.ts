@@ -16,6 +16,27 @@ const MIN_TTL_SECONDS = 60 * 30;
 const MAX_TTL_SECONDS = 60 * 60 * 24;
 const DEFAULT_TTL_SECONDS = 60 * 30;
 
+// firstView(true/false) 비율 관측 윈도우(운영 이상 트래픽 탐지 기준)
+const MIN_RATIO_WINDOW_SECONDS = 60;
+const MAX_RATIO_WINDOW_SECONDS = 60 * 60;
+const DEFAULT_RATIO_WINDOW_SECONDS = 60 * 5;
+
+const MIN_RATIO_SAMPLE_COUNT = 1;
+const MAX_RATIO_SAMPLE_COUNT = 10_000;
+const DEFAULT_RATIO_SAMPLE_COUNT = 50;
+
+type FirstViewRatioWindowState = {
+  startedAtMs: number;
+  total: number;
+  firstViewTrueCount: number;
+};
+
+const firstViewRatioWindowState: FirstViewRatioWindowState = {
+  startedAtMs: Date.now(),
+  total: 0,
+  firstViewTrueCount: 0,
+};
+
 // 로그인 사용자 ID 추출 (accessToken → userId)
 async function getAuthUserId() {
   const jar = await cookies();
@@ -59,6 +80,59 @@ function resolveViewDedupeTtlSeconds() {
   return Math.max(MIN_TTL_SECONDS, Math.min(MAX_TTL_SECONDS, Math.floor(raw)));
 }
 
+function resolveFirstViewRatioWindowSeconds() {
+  const raw = Number(process.env.COMMUNITY_VIEW_FIRST_VIEW_RATIO_WINDOW_SECONDS ?? DEFAULT_RATIO_WINDOW_SECONDS);
+  if (Number.isNaN(raw) || !Number.isFinite(raw)) return DEFAULT_RATIO_WINDOW_SECONDS;
+  return Math.max(MIN_RATIO_WINDOW_SECONDS, Math.min(MAX_RATIO_WINDOW_SECONDS, Math.floor(raw)));
+}
+
+function resolveFirstViewRatioMinSamples() {
+  const raw = Number(process.env.COMMUNITY_VIEW_FIRST_VIEW_RATIO_MIN_SAMPLES ?? DEFAULT_RATIO_SAMPLE_COUNT);
+  if (Number.isNaN(raw) || !Number.isFinite(raw)) return DEFAULT_RATIO_SAMPLE_COUNT;
+  return Math.max(MIN_RATIO_SAMPLE_COUNT, Math.min(MAX_RATIO_SAMPLE_COUNT, Math.floor(raw)));
+}
+
+/**
+ * 운영 관측 로그: firstView true/false 비율 윈도우 집계
+ * - 비정상 트래픽(예: dedupe 무력화, 봇 반복 호출) 탐지용 보조 지표
+ * - 윈도우 종료 시점에만 요약 로그를 남겨 로그 폭증을 방지
+ */
+function trackFirstViewRatioLog(acquired: boolean, meta: ReturnType<typeof reqMeta>) {
+  const windowSeconds = resolveFirstViewRatioWindowSeconds();
+  const minSamples = resolveFirstViewRatioMinSamples();
+
+  firstViewRatioWindowState.total += 1;
+  if (acquired) firstViewRatioWindowState.firstViewTrueCount += 1;
+
+  const nowMs = Date.now();
+  const elapsedMs = nowMs - firstViewRatioWindowState.startedAtMs;
+  if (elapsedMs < windowSeconds * 1000) return;
+
+  const total = firstViewRatioWindowState.total;
+  const firstViewTrueCount = firstViewRatioWindowState.firstViewTrueCount;
+  const firstViewFalseCount = total - firstViewTrueCount;
+
+  if (total >= minSamples) {
+    logInfo({
+      msg: 'community:view:first_view_ratio_window',
+      status: 200,
+      extra: {
+        sampleCount: total,
+        firstViewTrueCount,
+        firstViewFalseCount,
+        firstViewTrueRatio: Number((firstViewTrueCount / total).toFixed(4)),
+        firstViewFalseRatio: Number((firstViewFalseCount / total).toFixed(4)),
+        windowSeconds,
+      },
+      ...meta,
+    });
+  }
+
+  firstViewRatioWindowState.startedAtMs = nowMs;
+  firstViewRatioWindowState.total = 0;
+  firstViewRatioWindowState.firstViewTrueCount = 0;
+}
+
 /**
  * 조회수 디듀프 슬롯 획득
  * - (postId, viewerKey) 유니크 정책에 따라 최초 1회만 true
@@ -67,11 +141,8 @@ function resolveViewDedupeTtlSeconds() {
 async function tryAcquireViewSlot(db: any, postId: ObjectId, viewerKey: string, ttlSeconds: number) {
   const dedupeCol = db.collection('community_post_view_dedupe');
 
-  // 인덱스 보장(이미 존재하면 no-op). TTL은 운영 중에도 값 변경 가능하도록 환경변수 기반.
-  await Promise.all([
-    dedupeCol.createIndex({ postId: 1, viewerKey: 1 }, { unique: true, name: 'community_post_view_dedupe_unique' }),
-    dedupeCol.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0, name: 'community_post_view_dedupe_expire_at_ttl' }),
-  ]);
+  // 인덱스 보장은 부팅 시점 ensureBoardIndexes에서 처리한다.
+  // 라우트에서는 런타임 createIndex를 수행하지 않고 슬롯 삽입/중복 판정만 담당한다.
 
   const now = new Date();
   const expireAt = new Date(now.getTime() + ttlSeconds * 1000);
@@ -136,6 +207,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
    * viewerKey 생성 정책
    * 1) 로그인: u:{userId}
    * 2) 비로그인: 익명쿠키 우선 + (없으면 ip+ua hash)
+   * 3) 로그인/비로그인 모두 동일한 community_post_view_dedupe 컬렉션에 저장
    *    - 익명쿠키가 없을 때는 서버가 발급하여 다음 요청부터 안정적으로 재사용
    */
   let anonViewerCookieToSet: string | null = null;
@@ -175,6 +247,9 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     },
     ...meta,
   });
+
+  // 운영 관측용 firstView true/false 비율 집계 로그(윈도우 종료 시 요약 출력)
+  trackFirstViewRatioLog(acquired, meta);
 
   const response = NextResponse.json(
     { ok: true, views, firstView: acquired },
