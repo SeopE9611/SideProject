@@ -70,5 +70,5 @@ export function buildBoardPublicUrl(params) {
  */
 export function buildAdminBoardDetailUrl(params) {
   const id = typeof params?.id === 'string' ? params.id.trim() : '';
-  return id ? `/admin/boards/${id}` : null;
+  return id ? `/admin/boards/${encodeURIComponent(id)}` : null;
 }
