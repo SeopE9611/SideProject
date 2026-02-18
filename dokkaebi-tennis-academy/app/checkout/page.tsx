@@ -275,7 +275,10 @@ export default function CheckoutPage() {
     };
   }, [orderItemsKey, withStringService, serviceTargetIds]);
 
-  // Checkout 최종 방어선: “라켓 1종 + 장착 스트링 1종”만 허용
+  // Checkout 최종 방어선: 장착 서비스 구성 규칙
+  // - 라켓이 주문에 포함된 경우(= 라켓 구매/대여 + 장착 서비스): "라켓 1종 + 장착 스트링 1종"만 허용
+  // - 라켓이 주문에 없는 경우(= 보유 라켓 교체 서비스): "장착 스트링 1종"만 허용
+  //   (서버도 동일하게 "라켓이 있을 때만" 라켓-스트링 번들 규칙을 강제함)
   const bundleCompositionGuard = useMemo(() => {
     // 교체/장착 서비스를 선택하지 않았다면 구성 검증은 스킵
     if (!withStringService) return { invalid: false, racketKinds: 0, mountableStringKinds: 0 };
@@ -287,7 +290,14 @@ export default function CheckoutPage() {
     // (serviceTargetIds는 mountingFee>0 인 “장착 가능 스트링” id 목록)
     const mountableStringKinds = serviceTargetIds.length;
 
-    const invalid = racketKinds !== 1 || mountableStringKinds !== 1;
+    /**
+     * - mountableStringKinds는 항상 1이어야 함(장착 대상 스트링이 0개/2개 이상이면 매핑 불가능)
+     * - racketKinds는:
+     *    - 0이면 "보유 라켓 교체 서비스"로 간주 → 허용
+     *    - 1이면 "라켓 포함 번들" → 허용
+     *    - 2 이상이면 매핑 불가 → 차단
+     */
+    const invalid = mountableStringKinds !== 1 || (racketKinds > 0 && racketKinds !== 1);
     return { invalid, racketKinds, mountableStringKinds };
   }, [orderItemsKey, withStringService, serviceTargetIds]);
 
@@ -524,11 +534,16 @@ export default function CheckoutPage() {
     }
 
     if (bundleCompositionGuard.invalid) {
-      errors.composition = `교체/장착 서비스는 “라켓 1종 + 장착 스트링 1종”만 지원합니다. (현재: 라켓 ${bundleCompositionGuard.racketKinds}종, 장착 스트링 ${bundleCompositionGuard.mountableStringKinds}종)\n장바구니에서 구성 정리 후 다시 시도해 주세요.`;
+      const needCartHint = mode !== 'buynow';
+      const isRacketBundle = bundleCompositionGuard.racketKinds > 0;
+      errors.composition =
+        (isRacketBundle
+          ? `교체/장착 서비스는 “라켓 1종 + 장착 스트링 1종”만 지원합니다. (현재: 라켓 ${bundleCompositionGuard.racketKinds}종, 장착 스트링 ${bundleCompositionGuard.mountableStringKinds}종)`
+          : `보유 라켓 교체 서비스는 “장착 스트링 1종”만 지원합니다. (현재: 장착 스트링 ${bundleCompositionGuard.mountableStringKinds}종)`) + (needCartHint ? '\n장바구니에서 구성 정리 후 다시 시도해 주세요.' : '');
     }
 
     return errors;
-  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, bundleCompositionGuard, isLoggedIn, needsShippingAddress]);
+  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, bundleCompositionGuard, isLoggedIn, needsShippingAddress, mode]);
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors;
@@ -1217,13 +1232,17 @@ export default function CheckoutPage() {
                       {fieldErrors.composition && (
                         <p>
                           • {fieldErrors.composition}{' '}
-                          <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="underline underline-offset-2">
-                            (장바구니에서 정리)
-                          </Link>
+                          {mode !== 'buynow' && (
+                            <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="underline underline-offset-2">
+                              (장바구니에서 정리)
+                            </Link>
+                          )}
                         </p>
                       )}
-                      {/* CTA 강화: composition 에러면 "장바구니로 가서 정리하기"를 버튼으로도 제공 */}
-                      {fieldErrors.composition && (
+                      {/* CTA 강화: composition 에러면 "장바구니로 가서 정리하기"를 버튼으로도 제공
+          - 단, 즉시구매(buynow) 흐름에서는 장바구니에 담기지 않을 수 있어 CTA를 숨긴다.
+      */}
+                      {fieldErrors.composition && mode !== 'buynow' && (
                         <div className="mt-3 flex flex-wrap gap-2">
                           <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-black px-3 py-2 text-sm font-medium text-white hover:bg-black/90">
                             장바구니로 가서 정리하기
