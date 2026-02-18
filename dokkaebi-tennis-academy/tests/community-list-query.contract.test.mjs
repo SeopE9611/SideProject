@@ -40,6 +40,11 @@ test('boards/community API는 동일한 공통 쿼리 파서/필터를 사용한
   assert.ok(communityRoute.includes('parseCommunityListQuery(req)'));
   assert.ok(communityRoute.includes('buildCommunityListMongoFilter({'));
 
+  // kind 파싱은 허용 타입만 통과하고 그 외 입력은 null로 정규화
+  assert.ok(boardsRoute.includes("const COMMUNITY_KIND_VALUES = ['free', 'market', 'gear', 'brand'] as const;"));
+  assert.ok(boardsRoute.includes('function parseCommunityKindParam(value: string | null): CommunityKindParam | null'));
+  assert.ok(boardsRoute.includes('return isCommunityKindParam(value) ? value : null;'));
+
   // boards route에는 파싱 항목 vs 반영 항목 표 문서화를 강제
   assert.ok(boardsRoute.includes('communityKind 분기의 쿼리 파싱/반영 계약표'));
   assert.ok(boardsRoute.includes('| sort | sort | find().sort(getCommunitySortOption(sort)) |'));

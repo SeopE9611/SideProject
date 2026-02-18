@@ -4,7 +4,6 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { z } from 'zod';
 import type { BoardType, QnaCategory } from '@/lib/types/board';
-import type { CommunityBoardType } from '@/lib/types/community';
 import { ObjectId } from 'mongodb';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
@@ -23,6 +22,17 @@ import type {
   CommunityPostListItemDto,
   CommunityPostMongoDoc,
 } from '@/lib/types/api/board-community';
+
+const COMMUNITY_KIND_VALUES = ['free', 'market', 'gear', 'brand'] as const;
+type CommunityKindParam = (typeof COMMUNITY_KIND_VALUES)[number];
+
+function isCommunityKindParam(value: string | null): value is CommunityKindParam {
+  return typeof value === 'string' && (COMMUNITY_KIND_VALUES as readonly string[]).includes(value);
+}
+
+function parseCommunityKindParam(value: string | null): CommunityKindParam | null {
+  return isCommunityKindParam(value) ? value : null;
+}
 
 /**
  * 숫자 쿼리 파라미터 파싱(Phase 0 - 500 방지)
@@ -213,7 +223,7 @@ export async function GET(req: NextRequest) {
   // type 유효성 가드: 기본은 notice, 'qna'면 qna로
   const type: BoardType = typeParam === 'qna' ? 'qna' : 'notice';
 
-  const communityKind: CommunityBoardType | null = kindParam && ['free', 'market', 'gear'].includes(kindParam) ? (kindParam as CommunityBoardType) : null;
+  const communityKind = parseCommunityKindParam(kindParam);
 
   if (communityKind) {
     const db = await getDb();
