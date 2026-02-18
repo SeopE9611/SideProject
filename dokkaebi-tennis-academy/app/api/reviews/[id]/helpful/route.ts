@@ -6,24 +6,8 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 
 type DbAny = any;
 
-// 투표 컬렉션 인덱스: (reviewId, userId) 유니크 -> 중복 투표 방지
-async function ensureVotesIndexes(db: DbAny) {
-  const col = db.collection('review_votes');
-  const idxs = await col
-    .listIndexes()
-    .toArray()
-    .catch(() => [] as any[]);
-  const hasKey = (key: Record<string, number>) => idxs.some((i: any) => JSON.stringify(i.key) === JSON.stringify(key));
-  if (!hasKey({ reviewId: 1, userId: 1 })) {
-    await col.createIndex({ reviewId: 1, userId: 1 }, { unique: true, name: 'review_user_unique' });
-  }
-  if (!hasKey({ reviewId: 1 })) {
-    await col.createIndex({ reviewId: 1 }, { name: 'reviewId_idx' });
-  }
-}
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const db = await getDb();
-  await ensureVotesIndexes(db);
 
   // 쿠키에서 액세스 토큰 꺼내 인증
   const token = (await cookies()).get('accessToken')?.value;

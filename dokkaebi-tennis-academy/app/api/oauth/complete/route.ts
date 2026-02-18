@@ -28,21 +28,6 @@ type Body = {
   addressDetail?: string;
 };
 
-async function ensureIndexes(db: any) {
-  const pendings = db.collection('oauth_pending_signups') as Collection<PendingDoc>;
-
-  await pendings.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }).catch((e: any) => {
-    if (e?.code !== 85) throw e;
-  });
-
-  await db
-    .collection('user_sessions')
-    .createIndex({ userId: 1, at: -1 })
-    .catch((e: any) => {
-      if (e?.code !== 85) throw e;
-    });
-}
-
 export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as Body | null;
   if (!body?.token) {
@@ -50,7 +35,6 @@ export async function POST(req: NextRequest) {
   }
 
   const db = await getDb();
-  await ensureIndexes(db);
 
   const pendings = db.collection('oauth_pending_signups') as Collection<PendingDoc>;
   const pending = await pendings.findOne({ _id: body.token });
