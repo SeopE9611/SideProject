@@ -8,7 +8,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES, CommunityPost } from '@/lib/types/community';
 import { API_VERSION } from '@/lib/board.repository';
-import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
+import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 
@@ -149,40 +149,16 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const filter: any = { status: 'public' as const };
-
-  if (typeParam) {
-    filter.type = typeParam;
-  }
-
-  if (brand) {
-    filter.brand = brand;
-  }
-
-  if (category) {
-    filter.category = category;
-  }
-
-  // 검색어 필터 (searchType 에 따라 분기)
-  if (q) {
-    const regex = { $regex: escapedQ, $options: 'i' as const };
-
-    if (searchType === 'title') {
-      // 제목만 검색
-      filter.title = regex;
-    } else if (searchType === 'author') {
-      // 글쓴이(닉네임) 검색
-      filter.nickname = regex;
-    } else {
-      // 기본: 제목 + 내용 검색
-      filter.$or = [{ title: regex }, { content: regex }];
-    }
-  }
+  const filter = buildCommunityListMongoFilter({
+    typeParam,
+    brand,
+    category,
+    q,
+    escapedQ,
+    authorObjectId,
+    searchType,
+  });
   const sortOption = getCommunitySortOption(sort);
-
-  if (authorObjectId) {
-    filter.userId = authorObjectId; // “이 작성자의 글” 필터
-  }
 
   const skip = (page - 1) * limit;
 

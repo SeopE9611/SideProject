@@ -9,7 +9,7 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { getBoardList } from '@/lib/boards.queries';
 import { API_VERSION } from '@/lib/board.repository';
-import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
+import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 import { maskSecretTitle, resolveBoardViewerContext } from '@/lib/board-secret-policy';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 
@@ -222,30 +222,27 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const filter: Record<string, any> = { status: 'public', type: communityKind };
-
-    if (brand) {
-      filter.brand = brand;
-    }
-
-    if (category) {
-      filter.category = category;
-    }
-
-    if (q) {
-      const regex = { $regex: escapedQ, $options: 'i' as const };
-      if (searchType === 'title') {
-        filter.title = regex;
-      } else if (searchType === 'author') {
-        filter.nickname = regex;
-      } else {
-        filter.$or = [{ title: regex }, { content: regex }];
-      }
-    }
-
-    if (authorObjectId) {
-      filter.userId = authorObjectId;
-    }
+    /**
+     * communityKind 분기의 쿼리 파싱/반영 계약표
+     *
+     * | 쿼리 키 | 파싱 소스(parseCommunityListQuery) | 실제 반영 위치 |
+     * | --- | --- | --- |
+     * | sort | sort | find().sort(getCommunitySortOption(sort)) |
+     * | searchType | searchType | buildCommunityListMongoFilter 내부 title/nickname/$or 분기 |
+     * | authorId | authorObjectId (ObjectId 유효성 검사 포함) | buildCommunityListMongoFilter 내부 userId 필터 |
+     * | brand | brand | buildCommunityListMongoFilter 내부 brand 필터 |
+     * | category | category (허용 카테고리만 통과) | buildCommunityListMongoFilter 내부 category 필터 |
+     * | q | q + escapedQ | buildCommunityListMongoFilter 내부 검색 regex 필터 |
+     */
+    const filter = buildCommunityListMongoFilter({
+      typeParam: communityKind,
+      brand,
+      category,
+      q,
+      escapedQ,
+      authorObjectId,
+      searchType,
+    });
 
     const total = await col.countDocuments(filter);
     const docs = await col.find(filter).sort(getCommunitySortOption(sort)).skip((page - 1) * limit).limit(limit).toArray();
