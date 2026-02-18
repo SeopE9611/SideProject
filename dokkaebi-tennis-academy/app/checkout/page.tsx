@@ -696,7 +696,7 @@ export default function CheckoutPage() {
  <span>빠른 배송</span>
  </div>
  <div className="flex items-center gap-2 text-sm">
- <Star className="h-4 w-4 text-yellow-400" />
+ <Star className="h-4 w-4 text-foreground" />
  <span>30,000원 이상 무료배송</span>
  </div>
  </div> */}
@@ -716,7 +716,7 @@ export default function CheckoutPage() {
             </div>
             {/* 주문 상품 */}
             <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-              <div className="bg-primary/10 p-3 bp-sm:p-4 bp-lg:p-6">
+              <div className="bg-muted border-b border-border p-3 bp-sm:p-4 bp-lg:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <Package className="h-5 w-5 text-accent" />
                   주문 상품
@@ -782,7 +782,7 @@ export default function CheckoutPage() {
 
             {/* 수령 방식 및 장착 서비스 카드 */}
             <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-              <div className="bg-primary/10 p-4 bp-sm:p-6">
+              <div className="bg-muted border-b border-border p-4 bp-sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <Truck className="h-5 w-5 text-accent" />
                   상품 접수 예약 방식
@@ -1151,7 +1151,7 @@ export default function CheckoutPage() {
 
                         {!isMountingFeeReady ? (
                           <div className="h-6 w-24 rounded-md bg-muted dark:bg-muted relative overflow-hidden">
-                            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-background/40 to-transparent" />
+                            <div className="absolute inset-0 animate-shimmer bg-foreground/10" />
                           </div>
                         ) : serviceFee > 0 ? (
                           <span className="font-semibold text-lg">{serviceFee.toLocaleString()}원</span>
