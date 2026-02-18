@@ -600,12 +600,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <div className="absolute inset-0 bg-foreground/20"></div>
         {/* Tennis court line pattern */}
         <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-full h-full text-primary-foreground" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="detail-court-lines" patternUnits="userSpaceOnUse" width="100" height="50">
                 <rect width="100" height="50" fill="transparent" />
-                <line x1="0" y1="25" x2="100" y2="25" stroke="white" strokeWidth="1" opacity="0.3" />
-                <line x1="50" y1="0" x2="50" y2="50" stroke="white" strokeWidth="1" opacity="0.3" />
+                <line x1="0" y1="25" x2="100" y2="25" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+                <line x1="50" y1="0" x2="50" y2="50" stroke="currentColor" strokeWidth="1" opacity="0.3" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#detail-court-lines)" />
@@ -781,7 +781,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         onClick={handleWishlist}
                         className={`w-full h-10 sm:h-11 text-sm ${isWishlisted ? 'bg-destructive/10 border-border text-destructive dark:bg-destructive/15 dark:border-border dark:text-destructive' : ''}`}
                       >
-                        <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-red-500 text-destructive' : ''}`} />
+                        <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-destructive text-destructive' : ''}`} />
                         위시리스트
                       </Button>
                     </div>

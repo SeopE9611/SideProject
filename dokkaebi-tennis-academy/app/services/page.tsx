@@ -163,14 +163,14 @@ export default function ServicesPage() {
       <section className="relative min-h-[90vh] bp-md:min-h-[100vh] bp-lg:min-h-[110vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-accent via-primary to-primary">
           <div className="absolute inset-0 opacity-20">
-            <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-full h-full text-primary-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <pattern id="courtLines" x="0" y="0" width="400" height="300" patternUnits="userSpaceOnUse">
-                  <rect width="400" height="300" fill="none" stroke="white" strokeWidth="2" />
-                  <line x1="200" y1="0" x2="200" y2="300" stroke="white" strokeWidth="2" />
-                  <line x1="0" y1="150" x2="400" y2="150" stroke="white" strokeWidth="2" />
-                  <rect x="50" y="75" width="300" height="150" fill="none" stroke="white" strokeWidth="1" />
-                  <rect x="100" y="100" width="200" height="100" fill="none" stroke="white" strokeWidth="1" />
+                  <rect width="400" height="300" fill="none" stroke="currentColor" strokeWidth="2" />
+                  <line x1="200" y1="0" x2="200" y2="300" stroke="currentColor" strokeWidth="2" />
+                  <line x1="0" y1="150" x2="400" y2="150" stroke="currentColor" strokeWidth="2" />
+                  <rect x="50" y="75" width="300" height="150" fill="none" stroke="currentColor" strokeWidth="1" />
+                  <rect x="100" y="100" width="200" height="100" fill="none" stroke="currentColor" strokeWidth="1" />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#courtLines)" />
@@ -428,13 +428,13 @@ export default function ServicesPage() {
       {/* 가격 안내 섹션 */}
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-gradient-to-br from-accent via-primary to-primary relative overflow-hidden" id="pricing">
         <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-full h-full text-primary-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="courtPattern" x="0" y="0" width="400" height="300" patternUnits="userSpaceOnUse">
-                <rect width="400" height="300" fill="none" stroke="white" strokeWidth="2" />
-                <line x1="200" y1="0" x2="200" y2="300" stroke="white" strokeWidth="2" />
-                <line x1="0" y1="150" x2="400" y2="150" stroke="white" strokeWidth="2" />
-                <rect x="50" y="75" width="300" height="150" fill="none" stroke="white" strokeWidth="1" />
+                <rect width="400" height="300" fill="none" stroke="currentColor" strokeWidth="2" />
+                <line x1="200" y1="0" x2="200" y2="300" stroke="currentColor" strokeWidth="2" />
+                <line x1="0" y1="150" x2="400" y2="150" stroke="currentColor" strokeWidth="2" />
+                <rect x="50" y="75" width="300" height="150" fill="none" stroke="currentColor" strokeWidth="1" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#courtPattern)" />
@@ -596,7 +596,7 @@ export default function ServicesPage() {
 
                   <div className="flex mb-4">
                     {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                      <Star key={i} className="h-5 w-5 fill-primary text-primary" />
                     ))}
                   </div>
 

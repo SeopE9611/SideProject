@@ -1241,8 +1241,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <div className="mb-6 space-y-4">
  {item.images.map((url, idx) => (
  <div key={url + idx} className="flex justify-center">
- <button type="button" onClick={() => window.open(url, '_blank', 'noopener,noreferrer')} className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-card dark:bg-neutral-900 hover:bg-card transition">
- <Image src={url || '/placeholder.svg'} alt={`첨부 이미지 ${idx + 1}`} width={1200} height={800} className="w-full h-auto max-h-[560px] object-contain bg-card dark:bg-neutral-900" />
+ <button type="button" onClick={() => window.open(url, '_blank', 'noopener,noreferrer')} className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-card dark:bg-muted hover:bg-card transition">
+ <Image src={url || '/placeholder.svg'} alt={`첨부 이미지 ${idx + 1}`} width={1200} height={800} className="w-full h-auto max-h-[560px] object-contain bg-card dark:bg-muted" />
  </button>
  </div>
  ))}
