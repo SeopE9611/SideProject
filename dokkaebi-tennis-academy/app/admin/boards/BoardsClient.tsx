@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { buildAdminBoardDetailUrl, buildBoardPublicUrl } from '@/lib/board-public-url-policy';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 type PostItem = {
@@ -67,6 +69,22 @@ function fmt(dt: string) {
 }
 
 const LIMIT = 20;
+
+function getBoardLinkBlockedReason(reason: 'missing_type_route' | 'private_post' | 'missing_identifier' | null, hasAdminFallback: boolean) {
+  if (reason === 'private_post') {
+    return hasAdminFallback ? '비공개/숨김 게시글은 공개 페이지로 이동할 수 없어 관리자 상세로 대체됩니다.' : '비공개/숨김 게시글은 공개 페이지로 이동할 수 없습니다.';
+  }
+
+  if (reason === 'missing_type_route') {
+    return hasAdminFallback ? '게시판 타입 라우팅 규칙이 없어 관리자 상세로 대체됩니다.' : '게시판 타입 라우팅 규칙이 없어 링크를 열 수 없습니다.';
+  }
+
+  if (reason === 'missing_identifier') {
+    return hasAdminFallback ? '공개 URL 식별자(postNo)가 없어 관리자 상세로 대체됩니다.' : '공개 URL 식별자(postNo)가 없어 링크를 열 수 없습니다.';
+  }
+
+  return hasAdminFallback ? '공개 URL 생성 실패로 관리자 상세로 대체됩니다.' : '링크를 생성할 수 없습니다.';
+}
 
 export default function BoardsClient() {
   const router = useRouter();
@@ -175,7 +193,8 @@ export default function BoardsClient() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <TooltipProvider>
+      <div className="space-y-6 p-6">
       <div className="grid gap-5 md:grid-cols-4">
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
@@ -309,8 +328,22 @@ export default function BoardsClient() {
                     {posts.map((p) => (
                       <Card key={p.id} className="group border-border/40 bg-background/50 backdrop-blur hover:border-border/60 hover:shadow-md transition-all duration-200">
                         <CardContent className="p-5">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 space-y-2">
+                          {/**
+                           * 게시글 카드 링크 생성 규칙
+                           * 1) 공개 라우트 생성 시 외부 게시판 URL 사용
+                           * 2) 실패 시 관리자 내부 상세(/admin/boards/[id])로 fallback
+                           * 3) fallback도 없으면 링크 비활성화 + 사유 툴팁
+                           */}
+                          {(() => {
+                            const publicLink = buildBoardPublicUrl({ type: p.type, id: p.id, postNo: p.postNo, status: p.status });
+                            const fallbackLink = buildAdminBoardDetailUrl({ id: p.id });
+                            const href = publicLink.ok ? publicLink.url : fallbackLink;
+                            const linkBlockedReason = publicLink.ok ? null : publicLink.reason;
+                            const tooltipMessage = linkBlockedReason ? getBoardLinkBlockedReason(linkBlockedReason, Boolean(fallbackLink)) : null;
+
+                            return (
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 space-y-2">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="outline" className="font-medium">
                                   {boardLabel[p.type] ?? p.type}
@@ -323,12 +356,29 @@ export default function BoardsClient() {
                                 )}
                               </div>
 
-                              <Link href={`/board/${p.type}/${p.postNo ?? ''}`} className="block group/link" target="_blank">
-                                <h3 className="text-base font-semibold group-hover/link:text-primary transition-colors inline-flex items-center gap-2">
-                                  {p.title}
-                                  <ExternalLink className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
-                                </h3>
-                              </Link>
+                                  {href ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Link href={href} className="block group/link" target="_blank" rel="noopener noreferrer">
+                                          <h3 className="text-base font-semibold group-hover/link:text-primary transition-colors inline-flex items-center gap-2">
+                                            {p.title}
+                                            <ExternalLink className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                                          </h3>
+                                        </Link>
+                                      </TooltipTrigger>
+                                      {tooltipMessage && <TooltipContent>{tooltipMessage}</TooltipContent>}
+                                    </Tooltip>
+                                  ) : (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="inline-flex cursor-not-allowed items-center gap-2 text-base font-semibold text-muted-foreground/80" aria-disabled="true">
+                                          {p.title}
+                                          <ExternalLink className="h-4 w-4 opacity-60" />
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>{getBoardLinkBlockedReason(linkBlockedReason, false)}</TooltipContent>
+                                    </Tooltip>
+                                  )}
 
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span className="font-medium">{p.nickname || '-'}</span>
@@ -349,9 +399,9 @@ export default function BoardsClient() {
                                   <span className="font-medium">{p.commentsCount}</span>
                                 </div>
                               </div>
-                            </div>
+                                </div>
 
-                            <Button variant="outline" size="sm" onClick={() => togglePostVisibility(p)} className="gap-2 shrink-0">
+                                <Button variant="outline" size="sm" onClick={() => togglePostVisibility(p)} className="gap-2 shrink-0">
                               {p.status === 'public' ? (
                                 <>
                                   <EyeOff className="h-4 w-4" />
@@ -363,8 +413,10 @@ export default function BoardsClient() {
                                   공개
                                 </>
                               )}
-                            </Button>
-                          </div>
+                                </Button>
+                              </div>
+                            );
+                          })()}
                         </CardContent>
                       </Card>
                     ))}
@@ -453,7 +505,16 @@ export default function BoardsClient() {
                   <div className="space-y-3">
                     {reports.map((r) => {
                       const isPending = r.status === 'pending';
-                      const postHref = r.post?.postNo != null ? `/board/${r.boardType}/${r.post.postNo}` : undefined;
+                      // 신고 대상 링크는 공개 URL 우선, 실패 시 관리자 상세 fallback 규칙을 동일 적용한다.
+                      const publicLink = buildBoardPublicUrl({
+                        type: r.boardType,
+                        id: r.post?.id,
+                        postNo: r.post?.postNo,
+                        status: r.post?.status,
+                      });
+                      const fallbackLink = buildAdminBoardDetailUrl({ id: r.post?.id });
+                      const postHref = publicLink.ok ? publicLink.url : fallbackLink;
+                      const postLinkReason = publicLink.ok ? null : publicLink.reason;
 
                       return (
                         <Card
@@ -488,12 +549,25 @@ export default function BoardsClient() {
                                   <div>
                                     <p className="text-sm text-muted-foreground mb-1">신고 대상</p>
                                     {postHref ? (
-                                      <Link href={postHref} target="_blank" className="inline-flex items-center gap-2 text-base hover:text-primary transition-colors group/link">
-                                        {r.post?.title ?? '(제목 없음)'}
-                                        <ExternalLink className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
-                                      </Link>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Link href={postHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-base hover:text-primary transition-colors group/link">
+                                            {r.post?.title ?? '(제목 없음)'}
+                                            <ExternalLink className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                                          </Link>
+                                        </TooltipTrigger>
+                                        {postLinkReason && <TooltipContent>{getBoardLinkBlockedReason(postLinkReason, Boolean(fallbackLink))}</TooltipContent>}
+                                      </Tooltip>
                                     ) : (
-                                      <span className="text-base text-muted-foreground">(대상 글 정보 없음)</span>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="inline-flex cursor-not-allowed items-center gap-2 text-base text-muted-foreground" aria-disabled="true">
+                                            {r.post?.title ?? '(대상 글 정보 없음)'}
+                                            <ExternalLink className="h-4 w-4 opacity-60" />
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>{getBoardLinkBlockedReason(postLinkReason, false)}</TooltipContent>
+                                      </Tooltip>
                                     )}
                                   </div>
 
@@ -560,6 +634,7 @@ export default function BoardsClient() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
