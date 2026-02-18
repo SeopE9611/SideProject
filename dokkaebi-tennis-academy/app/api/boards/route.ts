@@ -3,7 +3,8 @@ import { cookies } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { z } from 'zod';
-import type { BoardPost, BoardType, QnaCategory } from '@/lib/types/board';
+import type { BoardType, QnaCategory } from '@/lib/types/board';
+import type { CommunityBoardType } from '@/lib/types/community';
 import { ObjectId } from 'mongodb';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
@@ -12,6 +13,15 @@ import { API_VERSION } from '@/lib/board.repository';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 import { maskSecretTitle, resolveBoardViewerContext } from '@/lib/board-secret-policy';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
+import type {
+  AccessTokenPayload,
+  BoardCreateMongoDoc,
+  BoardCreateResponseDto,
+  BoardListResponseDto,
+  CommunityListResponseDto,
+  CommunityPostListItemDto,
+  CommunityPostMongoDoc,
+} from '@/lib/types/api/board-community';
 
 /**
  * 숫자 쿼리 파라미터 파싱(Phase 0 - 500 방지)
@@ -30,9 +40,9 @@ async function mustAdmin() {
   const at = jar.get('accessToken')?.value;
   if (!at) return null;
 
-  let payload: any = null;
+  let payload: AccessTokenPayload | null = null;
   try {
-    payload = verifyAccessToken(at);
+    payload = verifyAccessToken(at) as AccessTokenPayload | null;
   } catch {
     payload = null;
   }
@@ -202,7 +212,7 @@ export async function GET(req: NextRequest) {
   // type 유효성 가드: 기본은 notice, 'qna'면 qna로
   const type: BoardType = typeParam === 'qna' ? 'qna' : 'notice';
 
-  const communityKind = kindParam && ['free', 'market', 'gear'].includes(kindParam) ? kindParam : null;
+  const communityKind: CommunityBoardType | null = kindParam && ['free', 'market', 'gear'].includes(kindParam) ? (kindParam as CommunityBoardType) : null;
 
   if (communityKind) {
     const db = await getDb();
@@ -246,7 +256,7 @@ export async function GET(req: NextRequest) {
 
     const total = await col.countDocuments(filter);
     const docs = await col.find(filter).sort(getCommunitySortOption(sort)).skip((page - 1) * limit).limit(limit).toArray();
-    const items = docs.map((d: any) => ({
+    const items: CommunityPostListItemDto[] = (docs as CommunityPostMongoDoc[]).map((d) => ({
       id: String(d._id),
       type: d.type,
       title: d.title,
@@ -265,7 +275,8 @@ export async function GET(req: NextRequest) {
       brand: d.brand ?? null,
       postNo: d.postNo,
     }));
-    return NextResponse.json({ ok: true, version: API_VERSION, items, total, page, limit });
+    const response: CommunityListResponseDto = { ok: true, version: API_VERSION, items, total, page, limit };
+    return NextResponse.json(response);
   }
 
   // 타입별 카테고리 정규화
@@ -330,8 +341,10 @@ export async function GET(req: NextRequest) {
     ...meta,
   });
 
+  const response: BoardListResponseDto = { ok: true, version: API_VERSION, items: maskedItems, total, page, limit };
+
   return NextResponse.json(
-    { ok: true, version: API_VERSION, items: maskedItems, total, page, limit },
+    response,
     {
       headers: {
         // 브라우저 캐시는 짧게(or 없음), CDN은 30초, 그리고 SWR 60초
@@ -351,10 +364,10 @@ export async function POST(req: NextRequest) {
   const token = (await cookies()).get('accessToken')?.value;
 
   // verifyAccessToken은 throw 가능 → 500 방지를 위해 try/catch로 401 처리
-  let payload: any = null;
+  let payload: AccessTokenPayload | null = null;
   if (token) {
     try {
-      payload = verifyAccessToken(token);
+      payload = verifyAccessToken(token) as AccessTokenPayload | null;
     } catch {
       payload = null;
     }
@@ -381,7 +394,7 @@ export async function POST(req: NextRequest) {
   if (body.type === 'free' || body.type === 'market' || body.type === 'gear') {
     const db = await getDb();
     const now = new Date();
-    const doc = {
+    const doc: Omit<CommunityPostMongoDoc, '_id'> = {
       type: body.type,
       title: body.title,
       content: body.content,
@@ -398,8 +411,9 @@ export async function POST(req: NextRequest) {
       createdAt: now,
       updatedAt: now,
     };
-    const r = await db.collection('community_posts').insertOne(doc as any);
-    return NextResponse.json({ ok: true, version: API_VERSION, id: r.insertedId.toString() }, { status: 201 });
+    const r = await db.collection<Omit<CommunityPostMongoDoc, '_id'>>('community_posts').insertOne(doc);
+    const response: BoardCreateResponseDto = { ok: true, version: API_VERSION, id: r.insertedId.toString() };
+    return NextResponse.json(response, { status: 201 });
   }
 
   // 표시명 결정: users.name -> users.nickname -> payload.name -> payload.nickname -> email local-part
@@ -441,7 +455,7 @@ export async function POST(req: NextRequest) {
   // 본문 content 서버에서 정제
   const safeContent = await sanitizeHtml(String(body.content ?? ''));
 
-  const doc: BoardPost = {
+  const doc: BoardCreateMongoDoc = {
     type: body.type as BoardType,
     title: body.title,
     // content: body.content,
@@ -458,7 +472,8 @@ export async function POST(req: NextRequest) {
     createdAt: now,
   };
 
-  const r = await db.collection('board_posts').insertOne(doc as any);
+  const r = await db.collection<BoardCreateMongoDoc>('board_posts').insertOne(doc);
   logInfo({ msg: 'boards:post:created', status: 200, durationMs: stop(), extra: { id: r.insertedId.toString() }, ...meta });
-  return NextResponse.json({ ok: true, version: API_VERSION, id: r.insertedId.toString() });
+  const response: BoardCreateResponseDto = { ok: true, version: API_VERSION, id: r.insertedId.toString() };
+  return NextResponse.json(response);
 }

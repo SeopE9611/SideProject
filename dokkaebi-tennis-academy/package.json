@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "smoke": "node scripts/smoke.mjs",
-    "lint": "eslint . --cache",
+    "lint": "eslint . --cache && npm run check:no-new-any",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "typecheck": "tsc --noEmit",
@@ -23,7 +23,8 @@
     "test:e2e:smoke": "node scripts/smoke.mjs",
     "test:e2e:admin-critical": "node scripts/admin-critical-smoke.mjs",
     "test:e2e:admin-community-metrics-smoke": "node scripts/smoke-admin-community-posts-metrics.mjs",
-    "db:check-runtime-indexes": "node scripts/db/check-runtime-indexes.mjs"
+    "db:check-runtime-indexes": "node scripts/db/check-runtime-indexes.mjs",
+    "check:no-new-any": "node scripts/check-no-new-any.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
