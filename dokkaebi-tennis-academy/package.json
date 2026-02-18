@@ -26,7 +26,8 @@
     "db:check-runtime-indexes": "node scripts/db/check-runtime-indexes.mjs",
     "check:no-new-any": "node scripts/check-no-new-any.mjs",
     "test:e2e:notice-conflict-retry": "cypress run --spec cypress/e2e/notice.edit-conflict-retry.cy.ts",
-    "test:e2e:admin-critical:smoke": "BASE_URL=http://localhost:3000 node scripts/admin-critical-smoke.mjs"
+    "test:e2e:admin-critical:smoke": "BASE_URL=http://localhost:3000 node scripts/admin-critical-smoke.mjs",
+    "audit:board-admin": "node scripts/audit-board-admin.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
