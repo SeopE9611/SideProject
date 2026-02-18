@@ -67,3 +67,35 @@ test('관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(4
     }
   }
 });
+
+test('패키지 주문 관리자 라우트는 requireAdmin 표준 경로만 사용한다', () => {
+  const repoRoot = new URL('..', import.meta.url).pathname;
+  const targets = [
+    'app/api/admin/package-orders/route.ts',
+    'app/api/admin/package-orders/[id]/route.ts',
+    'app/api/admin/package-orders/[id]/extend/route.ts',
+    'app/api/admin/package-orders/[id]/adjust-sessions/route.ts',
+    'app/api/admin/package-orders/[id]/pass-status/route.ts',
+  ];
+
+  for (const relPath of targets) {
+    const fullPath = join(repoRoot, relPath);
+    const src = read(fullPath);
+
+    assert.ok(src.includes('requireAdmin('), `${relPath}: requireAdmin 표준 가드를 사용해야 합니다.`);
+    assert.ok(
+      src.includes('if (!guard.ok) return guard.res;') || src.includes('if (!g.ok) return g.res;'),
+      `${relPath}: requireAdmin 실패 시 guard.res를 즉시 반환해야 합니다.`,
+    );
+
+    const forbiddenAuthSnippets = [
+      'safeVerifyAccessToken(',
+      'cookies()',
+      'jwt.verify(',
+      'ADMIN_EMAILS',
+    ];
+    for (const snippet of forbiddenAuthSnippets) {
+      assert.ok(!src.includes(snippet), `${relPath}: 레거시 인증 분기(${snippet})를 사용하면 안 됩니다.`);
+    }
+  }
+});
