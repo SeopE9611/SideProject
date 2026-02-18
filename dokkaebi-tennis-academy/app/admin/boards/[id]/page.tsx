@@ -8,20 +8,18 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import BoardDetailActions from './BoardDetailActions';
 
 type BoardPostDetail = {
-  _id?: string;
-  id?: string;
-  title?: string;
-  content?: string;
-  type?: string;
-  category?: string;
-  status?: string;
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  category: string;
+  status: 'public' | 'hidden';
   isPinned?: boolean;
-  viewCount?: number;
-  commentCount?: number;
+  views: number;
+  commentsCount: number;
   createdAt?: string | Date;
-  authorName?: string;
   authorNickname?: string;
-  authorEmail?: string;
+  authorDisplayName?: string;
   authorId?: string;
 };
 
@@ -45,12 +43,10 @@ function normalizeBoardIdentifier(id: string) {
 
 function getStatusColor(status: string) {
   switch (status) {
-    case 'published':
+    case 'public':
       return 'bg-green-500/20 text-green-500 hover:bg-green-500/30';
     case 'hidden':
       return 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30';
-    case 'deleted':
-      return 'bg-red-500/20 text-red-500 hover:bg-red-500/30';
     default:
       return 'bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30';
   }
@@ -58,12 +54,10 @@ function getStatusColor(status: string) {
 
 function getStatusName(status: string) {
   switch (status) {
-    case 'published':
+    case 'public':
       return '게시중';
     case 'hidden':
       return '숨김';
-    case 'deleted':
-      return '삭제됨';
     default:
       return status || '미정';
   }
@@ -126,7 +120,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
   const cookie = headersList.get('cookie') ?? '';
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
 
-  const res = await fetch(`${baseUrl}/api/boards/${encodeURIComponent(boardId)}`, {
+  const res = await fetch(`${baseUrl}/api/admin/community/posts/${encodeURIComponent(boardId)}`, {
     cache: 'no-store',
     headers: { cookie },
   });
@@ -152,7 +146,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
     notFound();
   }
 
-  const postId = String(post._id ?? boardId);
+  const postId = String(post.id ?? boardId);
   const postStatus = String(post.status ?? 'hidden');
 
   /**
@@ -212,8 +206,8 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                 <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <User className="mr-3 h-4 w-4 text-blue-600" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">{post.authorName || post.authorNickname || '작성자 미상'}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{post.authorEmail || post.authorId || '-'}</p>
+                    <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">{post.authorDisplayName || post.authorNickname || '작성자 미상'}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{post.authorNickname || post.authorId || '-'}</p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -227,14 +221,14 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                   <Eye className="mr-3 h-4 w-4 text-blue-600" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">조회수</p>
-                    <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{Number(post.viewCount ?? 0)}</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{Number(post.views ?? 0)}</p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <MessageSquare className="mr-3 h-4 w-4 text-blue-600" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">댓글</p>
-                    <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{Number(post.commentCount ?? 0)}개</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{Number(post.commentsCount ?? 0)}개</p>
                   </div>
                 </div>
               </CardContent>

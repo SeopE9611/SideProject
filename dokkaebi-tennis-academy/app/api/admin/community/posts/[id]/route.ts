@@ -9,8 +9,13 @@ type EditableCommunityPost = {
   title?: string;
   content?: string;
   category?: string;
-  status?: string;
+  status?: 'public' | 'hidden';
   type?: string;
+  nickname?: string;
+  userId?: ObjectId | string;
+  views?: number;
+  commentsCount?: number;
+  createdAt?: Date | string;
   updatedAt?: Date | string;
 };
 
@@ -30,7 +35,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   const col = db.collection<EditableCommunityPost>('community_posts');
   const doc = await col.findOne(
     { _id: new ObjectId(id) },
-    { projection: { _id: 1, title: 1, content: 1, category: 1, status: 1, type: 1, updatedAt: 1 } },
+    { projection: { _id: 1, title: 1, content: 1, category: 1, status: 1, type: 1, nickname: 1, userId: 1, views: 1, commentsCount: 1, createdAt: 1, updatedAt: 1 } },
   );
 
   if (!doc) {
@@ -46,6 +51,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
       category: doc.category ?? '',
       status: doc.status ?? 'hidden',
       type: doc.type ?? 'free',
+      authorNickname: doc.nickname ?? '',
+      authorDisplayName: doc.nickname ?? '',
+      authorId: doc.userId ? String(doc.userId) : '',
+      views: doc.views ?? 0,
+      commentsCount: doc.commentsCount ?? 0,
+      createdAt: doc.createdAt ?? null,
       updatedAt: doc.updatedAt ?? null,
     },
   });
