@@ -19,6 +19,9 @@ env:
   CI: true
   NEXT_TELEMETRY_DISABLED: 1
   WORKDIR: dokkaebi-tennis-academy
+  # E2E/CI 기본값: 클라이언트 번들에서 createClient() 초기화 오류를 방지하기 위한 안전한 더미 값
+  NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ci_dummy_anon_key
 
 jobs:
   # PR 변경 파일 중 관리자 경로(app/admin, app/api/admin, lib/admin) 포함 여부를 계산한다.
