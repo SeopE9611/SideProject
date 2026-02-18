@@ -59,3 +59,17 @@
 클라이언트 UX 기준:
 - `409 conflict` 수신 시: “다른 사용자 수정 발생” 안내 + “다시 불러오기” 액션 제공.
 - `404 not_found` 수신 시: 삭제/이동된 문서로 간주하고 목록 또는 상세 fallback 처리.
+
+## Community `PATCH /api/community/posts/[id]` 충돌 처리 계약
+
+Community 편집 클라이언트도 마지막으로 조회한 `updatedAt`을 `clientSeenDate`(또는 `If-Unmodified-Since`)로 전달해 조건부 업데이트를 수행한다.
+
+| 조건 | 상태 코드 | `error` | 의미 |
+|---|---:|---|---|
+| 대상 문서 미존재(삭제 포함) | `404` | `not_found` | 실제로 수정할 문서가 없음 |
+| `clientSeenDate` 전달 + 문서는 존재하지만 `updatedAt` 불일치 | `409` | `conflict` | 다른 사용자가 먼저 수정함 |
+| `clientSeenDate` 미전달 + 업데이트 매칭 실패 | `404` | `not_found` | 레거시 동작 유지 |
+
+클라이언트 UX 기준:
+- `409 conflict` 수신 시: 충돌 안내 UI를 노출하고 “최신 글 다시 불러오기” 액션으로 재조회 유도.
+- `404 not_found` 수신 시: 삭제/이동된 문서로 간주하고 목록 또는 상세 fallback 처리.

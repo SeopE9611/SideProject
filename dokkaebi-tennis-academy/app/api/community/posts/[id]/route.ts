@@ -10,6 +10,7 @@ import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from '@/lib/types/communi
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
+import { classifyBoardPatchFailure } from '@/lib/boards-patch-conflict';
 
 // ---------------------------------------------------------------------------
 // GET: 게시글 상세
@@ -279,6 +280,20 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   const body = parsed.data;
 
+  // 낙관적 동시성 제어를 위한 클라이언트 기준 시각 추출
+  // - 헤더: If-Unmodified-Since
+  // - 바디: clientSeenDate (권장), ifUnmodifiedSince (하위 호환)
+  const ifUnmodifiedSinceHeader = req.headers.get('if-unmodified-since');
+  const clientSeenDateBody = (json as any)?.clientSeenDate;
+  const ifUnmodifiedSinceBody = (json as any)?.ifUnmodifiedSince;
+  const clientSeenAtRaw = clientSeenDateBody ?? ifUnmodifiedSinceBody ?? ifUnmodifiedSinceHeader ?? null;
+
+  let clientSeenDate: Date | null = null;
+  if (typeof clientSeenAtRaw === 'string') {
+    const d = new Date(clientSeenAtRaw);
+    if (!Number.isNaN(d.getTime())) clientSeenDate = d;
+  }
+
   // 정책 결정: community PATCH 역시 비허용 URL 발견 시 요청을 거부한다.
   // - 부분 저장/자동 필터 제거를 하지 않아 데이터 일관성을 유지
   const invalidAsset = findFirstInvalidAssetUrl(body);
@@ -368,7 +383,21 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   update.updatedAt = new Date();
 
-  await col.updateOne({ _id }, { $set: update });
+  const filter = clientSeenDate ? { _id, updatedAt: clientSeenDate } : { _id };
+  const updatedResult = await col.updateOne(filter, { $set: update });
+
+  if (!updatedResult.matchedCount) {
+    const postStillExists = !!(await col.findOne({ _id }, { projection: { _id: 1 } }));
+    const failure = classifyBoardPatchFailure({
+      hasClientSeenDate: !!clientSeenDate,
+      postStillExists,
+    });
+
+    if (failure === 'conflict') {
+      return NextResponse.json({ ok: false, error: 'conflict' }, { status: 409 });
+    }
+    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
 
   return NextResponse.json({ ok: true });
 }
