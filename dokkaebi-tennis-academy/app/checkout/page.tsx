@@ -71,6 +71,7 @@ export default function CheckoutPage() {
 
   // 상품ID 목록을 기준으로 mountingFee를 mini API로 가져오는 상태
   const [mountingFeeByProductId, setMountingFeeByProductId] = useState<Record<string, number>>({});
+  const [mountingFeeLoading, setMountingFeeLoading] = useState(false);
 
   // 2) 기존 상태
   const [withStringService, setWithStringService] = useState(false);
@@ -160,6 +161,7 @@ export default function CheckoutPage() {
     async function loadMountingFees() {
       // 서비스 OFF면 굳이 mini API 호출하지 않음
       if (!withStringService) {
+        setMountingFeeLoading(false);
         setMountingFeeByProductId({});
         return;
       }
@@ -168,9 +170,13 @@ export default function CheckoutPage() {
       const productIds = Array.from(new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id))));
 
       if (productIds.length === 0) {
+        setMountingFeeLoading(false);
         setMountingFeeByProductId({});
         return;
       }
+
+      //  mini API 로딩 중
+      setMountingFeeLoading(true);
 
       const entries = await Promise.all(
         productIds.map(async (id) => {
@@ -188,6 +194,7 @@ export default function CheckoutPage() {
 
       if (cancelled) return;
       setMountingFeeByProductId(Object.fromEntries(entries));
+      setMountingFeeLoading(false);
     }
 
     loadMountingFees();
@@ -225,6 +232,20 @@ export default function CheckoutPage() {
 
   // kind가 없으면 일단 'product'로 간주 (기존 데이터 호환용)
   const isServiceFeeTarget = (it: CartItem) => SERVICE_FEE_KINDS.has((it.kind ?? 'product') as any);
+
+  // 장착 서비스 ON 시, mini API 로딩이 끝났는지(= mountingFee가 확정됐는지) 확인
+  // - 이 플래그가 false인 동안에는 "구성 에러"를 띄우지 않고, 주문 버튼도 잠깐 막아 깜박임/오판/빠른 클릭 리스크를 제거한다.
+  const mountingFeeIdsToResolve = useMemo(() => {
+    if (!withStringService) return [];
+    return Array.from(new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id))));
+  }, [orderItemsKey, withStringService]);
+
+  const isMountingFeeReady = useMemo(() => {
+    if (!withStringService) return true;
+    if (mountingFeeLoading) return false;
+    // mini 호출이 끝나면 각 id에 대해 0이든 양수든 값이 "세팅"되므로 hasOwnProperty로 판단한다.
+    return mountingFeeIdsToResolve.every((id) => Object.prototype.hasOwnProperty.call(mountingFeeByProductId, id));
+  }, [withStringService, mountingFeeLoading, mountingFeeIdsToResolve, mountingFeeByProductId]);
 
   // serviceFee 계산을 “URL”이 아니라 “mountingFeeByProductId” 기반으로
   const serviceFee = withStringService
@@ -533,7 +554,11 @@ export default function CheckoutPage() {
       errors.bundle = `라켓(${bundleQtyGuard.racketQty}개)과 스트링(${bundleQtyGuard.serviceQty}개) 수량이 일치하지 않습니다. 수량은 스트링 선택 화면에서 수정해주세요.`;
     }
 
-    if (bundleCompositionGuard.invalid) {
+    // mini 로딩 중에는 composition 경고를 띄우지 않는다
+    // - 로딩이 끝나면 정상적으로 검증 결과를 반영한다.
+    if (!isMountingFeeReady) {
+      // do nothing
+    } else if (bundleCompositionGuard.invalid) {
       const needCartHint = mode !== 'buynow';
       const isRacketBundle = bundleCompositionGuard.racketKinds > 0;
       errors.composition =
@@ -543,10 +568,10 @@ export default function CheckoutPage() {
     }
 
     return errors;
-  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, bundleCompositionGuard, isLoggedIn, needsShippingAddress, mode]);
+  }, [name, phone, email, postalCode, address, addressDetail, depositor, deliveryMethod, orderItems, bundleQtyGuard, bundleCompositionGuard, isLoggedIn, needsShippingAddress, mode, isMountingFeeReady]);
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
-  const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors;
+  const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors && (!withStringService || isMountingFeeReady);
 
   // 비회원 체크아웃 허용: quiet 조회 사용 (401이어도 전역 만료 금지)
   useEffect(() => {
@@ -755,6 +780,83 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
+            {/* 수령 방식 및 장착 서비스 카드 */}
+            <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-red-500/10 p-4 bp-sm:p-6">
+                <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
+                  <Truck className="h-5 w-5 text-purple-600" />
+                  상품 접수 예약 방식
+                </CardTitle>
+                <CardDescription className="mt-2">상품을 어떻게 예약하실지 선택해주세요.</CardDescription>
+              </div>
+              <CardContent className="p-4 bp-sm:p-6 space-y-4">
+                <RadioGroup defaultValue="택배수령" onValueChange={(value) => setDeliveryMethod(value as '택배수령' | '방문수령')}>
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <RadioGroupItem value="택배수령" id="택배수령" />
+                    <Label htmlFor="택배수령" className="flex-1 cursor-pointer font-medium">
+                      택배 발송/수령 (자택 또는 지정 장소로 배송)
+                    </Label>
+                    <Truck className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                    <RadioGroupItem value="방문수령" id="방문수령" />
+                    <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
+                      오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
+                    </Label>
+                    <Building2 className="h-5 w-5 text-purple-600" />
+                  </div>
+                </RadioGroup>
+
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox
+                      id="withStringService"
+                      checked={withStringService}
+                      disabled={isBundleCheckout}
+                      onCheckedChange={(checked) => {
+                        if (isBundleCheckout) return;
+                        setWithStringService(!!checked);
+                      }}
+                    />
+                    <Label htmlFor="withStringService" className="font-medium text-orange-700 dark:text-orange-400">
+                      스트링 장착 서비스도 함께 신청할게요
+                    </Label>
+                  </div>
+                  <p className="text-sm text-orange-600 dark:text-orange-400 ml-6">{serviceHelpText}</p>
+                  {isBundleCheckout && (
+                    <p className="text-sm text-orange-600 dark:text-orange-400 ml-6 mt-1">
+                      번들 주문은 장착 서비스 포함이 <span className="font-semibold">고정</span>이며, 번들 수량은 <span className="font-semibold">{bundleQty}개</span>로 <span className="font-semibold">고정</span>됩니다. 수량 변경은{' '}
+                      <span className="font-semibold">스트링 선택 단계</span>에서만 가능합니다.
+                    </p>
+                  )}
+                  {/* 서비스 ON일 때만 세부 방식 표시 */}
+                  <div className={cn('transition-all duration-300 ease-in-out overflow-hidden', withStringService ? 'opacity-100 max-h-[300px] mt-3' : 'opacity-0 max-h-0')}>
+                    {withStringService &&
+                      (deliveryMethod === '방문수령' ? (
+                        // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
+                        <div className="ml-7 mt-2 text-sm">
+                          <span className="px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">매장 방문 접수로 진행됩니다.</span>
+                        </div>
+                      ) : (
+                        // 택배 수령: **선택지는 자가 발송만** 노출
+                        <div className="ml-7 mt-2 grid gap-2 text-sm">
+                          <label className="flex items-center gap-2 text-base bp-sm:text-lg">
+                            <input type="radio" name="pickup" checked={servicePickupMethod === 'SELF_SEND'} onChange={() => setServicePickupMethod('SELF_SEND')} />
+                            <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
+                          </label>
+                          {/* 기사 방문 수거 옵션은 잠정 비노출
+                        <label className="flex items-center gap-2 text-base bp-sm:text-lg">
+                          <input type="radio" name="pickup" checked={servicePickupMethod === 'COURIER_VISIT'} onChange={() => setServicePickupMethod('COURIER_VISIT')} />
+                          <span>택배 기사 방문 수거 (+3,000원 예상)</span>
+                        </label>
+                        */}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* 배송 정보 */}
             <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 p-3 bp-sm:p-4 bp-lg:p-6">
@@ -861,81 +963,6 @@ export default function CheckoutPage() {
                     </div>
                     {!user && <p className="text-xs text-slate-500 dark:text-slate-400 ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 수령 방식 및 장착 서비스 카드 */}
-            <Card className="bg-white dark:bg-slate-900 bp-lg:backdrop-blur-sm bp-lg:bg-white/80 bp-lg:dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800/60 bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-red-500/10 p-4 bp-sm:p-6">
-                <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                  <Truck className="h-5 w-5 text-purple-600" />
-                  상품 접수 예약 방식
-                </CardTitle>
-                <CardDescription className="mt-2">상품을 어떻게 예약하실지 선택해주세요.</CardDescription>
-              </div>
-              <CardContent className="p-4 bp-sm:p-6 space-y-4">
-                <RadioGroup defaultValue="택배수령" onValueChange={(value) => setDeliveryMethod(value as '택배수령' | '방문수령')}>
-                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <RadioGroupItem value="택배수령" id="택배수령" />
-                    <Label htmlFor="택배수령" className="flex-1 cursor-pointer font-medium">
-                      택배 발송/수령 (자택 또는 지정 장소로 배송)
-                    </Label>
-                    <Truck className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                    <RadioGroupItem value="방문수령" id="방문수령" />
-                    <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
-                      오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
-                    </Label>
-                    <Building2 className="h-5 w-5 text-purple-600" />
-                  </div>
-                </RadioGroup>
-
-                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Checkbox
-                      id="withStringService"
-                      checked={withStringService}
-                      disabled={isBundleCheckout}
-                      onCheckedChange={(checked) => {
-                        if (isBundleCheckout) return;
-                        setWithStringService(!!checked);
-                      }}
-                    />
-                    <Label htmlFor="withStringService" className="font-medium text-orange-700 dark:text-orange-400">
-                      스트링 장착 서비스도 함께 신청할게요
-                    </Label>
-                  </div>
-                  <p className="text-sm text-orange-600 dark:text-orange-400 ml-6">{serviceHelpText}</p>
-                  {isBundleCheckout && (
-                    <p className="text-sm text-orange-600 dark:text-orange-400 ml-6 mt-1">
-                      번들 주문은 장착 서비스 포함이 <span className="font-semibold">고정</span>이며, 번들 수량은 <span className="font-semibold">{bundleQty}개</span>로 <span className="font-semibold">고정</span>됩니다. 수량 변경은{' '}
-                      <span className="font-semibold">스트링 선택 단계</span>에서만 가능합니다.
-                    </p>
-                  )}
-                  {/* 서비스 ON일 때만 세부 방식 표시 */}
-                  {withStringService &&
-                    (deliveryMethod === '방문수령' ? (
-                      // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
-                      <div className="ml-7 mt-2 text-sm">
-                        <span className="px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">매장 방문 접수로 진행됩니다.</span>
-                      </div>
-                    ) : (
-                      // 택배 수령: **선택지는 자가 발송만** 노출
-                      <div className="ml-7 mt-2 grid gap-2 text-sm">
-                        <label className="flex items-center gap-2 text-base bp-sm:text-lg">
-                          <input type="radio" name="pickup" checked={servicePickupMethod === 'SELF_SEND'} onChange={() => setServicePickupMethod('SELF_SEND')} />
-                          <span>자가 발송 (편의점/우체국 등 직접 발송)</span>
-                        </label>
-                        {/* 기사 방문 수거 옵션은 잠정 비노출
-                        <label className="flex items-center gap-2 text-base bp-sm:text-lg">
-                          <input type="radio" name="pickup" checked={servicePickupMethod === 'COURIER_VISIT'} onChange={() => setServicePickupMethod('COURIER_VISIT')} />
-                          <span>택배 기사 방문 수거 (+3,000원 예상)</span>
-                        </label>
-                        */}
-                      </div>
-                    ))}
                 </div>
               </CardContent>
             </Card>
@@ -1117,13 +1144,23 @@ export default function CheckoutPage() {
                         {shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}
                       </span>
                     </div>
-                    {/* 교체 서비스비 (있는 경우에만 표시) */}
-                    {serviceFee > 0 && (
+                    {/* 교체 서비스비 */}
+                    {withStringService && (
                       <div className="flex justify-between items-center">
                         <span className="text-slate-600 dark:text-slate-400">교체 서비스비</span>
-                        <span className="font-semibold text-lg">{serviceFee.toLocaleString()}원</span>
+
+                        {!isMountingFeeReady ? (
+                          <div className="h-6 w-24 rounded-md bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
+                            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                          </div>
+                        ) : serviceFee > 0 ? (
+                          <span className="font-semibold text-lg">{serviceFee.toLocaleString()}원</span>
+                        ) : (
+                          <span className="text-sm text-slate-400">해당 없음</span>
+                        )}
                       </div>
                     )}
+
                     {/* 포인트 사용(로그인 유저만) */}
                     <div className="mt-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 p-3 bp-sm:p-4 rounded-lg border border-slate-200 dark:border-slate-600">
                       <div className="flex justify-between items-center">
@@ -1224,7 +1261,7 @@ export default function CheckoutPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
-                  {(fieldErrors.items || fieldErrors.bundle || fieldErrors.composition) && (
+                  {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition)) && (
                     <div className="w-full rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
                       <p className="font-semibold mb-1">확인 필요</p>
                       {fieldErrors.items && <p>• {fieldErrors.items}</p>}
