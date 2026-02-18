@@ -2,9 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ClientSession, Db, ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
-import type { CommunityReportDocument } from '@/lib/types/community-report';
+import type {
+  CommunityReportDocument,
+  CommunityReportModerationTargetOutcome,
+} from '@/lib/types/community-report';
 
 type Action = 'resolve' | 'reject' | 'resolve_hide_target';
+
+const TARGET_OUTCOME_BY_ACTION = {
+  resolve: 'no_target_change',
+  reject: 'no_target_change',
+  resolve_hide_target: 'updated',
+} as const satisfies Record<Action, CommunityReportModerationTargetOutcome>;
 
 type ResolveHideTargetResult =
   | {
@@ -241,10 +250,13 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     }
 
     const now = new Date();
-    const targetOutcome = hideTargetResult?.ok ? 'updated' : 'updated';
-    const targetAfterStatus = hideTargetResult?.ok ? hideTargetResult.targetAfterStatus : undefined;
-    const targetBeforeStatus = hideTargetResult?.ok ? hideTargetResult.targetBeforeStatus : undefined;
-    const commentsCountAdjusted = hideTargetResult?.ok ? hideTargetResult.commentsCountAdjusted : false;
+    const targetOutcome = TARGET_OUTCOME_BY_ACTION[action];
+    const targetAfterStatus =
+      action === 'resolve_hide_target' && hideTargetResult?.ok ? hideTargetResult.targetAfterStatus : undefined;
+    const targetBeforeStatus =
+      action === 'resolve_hide_target' && hideTargetResult?.ok ? hideTargetResult.targetBeforeStatus : undefined;
+    const commentsCountAdjusted =
+      action === 'resolve_hide_target' && hideTargetResult?.ok ? hideTargetResult.commentsCountAdjusted : false;
 
     const reportUpdateResult = await reportsCol.updateOne(
       { _id: reportId },
