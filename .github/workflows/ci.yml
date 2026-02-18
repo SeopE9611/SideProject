@@ -265,8 +265,10 @@ jobs:
             exit 1
           fi
 
-      - name: Test e2e admin critical (권한/CSRF 런타임)
-        run: pnpm test:e2e:admin-critical
+      - name: Test e2e admin critical smoke (권한/CSRF 런타임)
+        env:
+          BASE_URL: http://localhost:3000
+        run: pnpm test:e2e:admin-critical:smoke
 
       - name: Stop server
         if: always()
