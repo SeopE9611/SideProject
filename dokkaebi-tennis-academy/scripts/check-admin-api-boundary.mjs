@@ -47,6 +47,10 @@ const LEGACY_ALLOWED_WRAPPERS = new Map([
   ['app/api/package-orders/[id]/pass-status/route.ts', new Set(['POST'])],
 ]);
 
+const ADMIN_MUTATION_PROXY_ALLOWLIST = new Set([
+  // 예외가 꼭 필요할 때만 추가 (기본 정책: 변경성 admin 라우트의 proxyToLegacyAdminRoute 금지)
+]);
+
 function isDeprecationWrapper(source) {
   return source.includes('NextResponse.redirect(') && (source.includes('307') || source.includes('410'));
 }
@@ -184,6 +188,33 @@ function findLegacyWrapperBoundaryViolations() {
   return violations;
 }
 
+function findAdminMutationProxyViolations() {
+  const adminApiDir = path.join(ROOT, 'app', 'api', 'admin');
+  if (!fs.existsSync(adminApiDir)) return [];
+
+  const files = walk(adminApiDir).filter((fullPath) => fullPath.endsWith('route.ts'));
+  const violations = [];
+
+  for (const fullPath of files) {
+    const relativePath = path.relative(ROOT, fullPath).replace(/\\/g, '/');
+    if (ADMIN_MUTATION_PROXY_ALLOWLIST.has(relativePath)) continue;
+
+    const source = fs.readFileSync(fullPath, 'utf8');
+    const hasProxyCall = source.includes('proxyToLegacyAdminRoute(');
+    if (!hasProxyCall) continue;
+
+    const exportedMutations = [...source.matchAll(/export\s+async\s+function\s+(POST|PATCH|PUT|DELETE)\s*\(/g)].map((m) => m[1]);
+    if (exportedMutations.length === 0) continue;
+
+    violations.push({
+      file: relativePath,
+      reason: `변경성 admin 라우트(${[...new Set(exportedMutations)].join(', ')})에 proxyToLegacyAdminRoute 잔존이 감지되었습니다.`,
+    });
+  }
+
+  return violations;
+}
+
 try {
   if (!fs.existsSync(TARGET_DIR)) {
     console.log('✅ app/admin 디렉터리가 없어 검사할 항목이 없습니다.');
@@ -195,8 +226,9 @@ try {
   const adminDirectFetchViolations = files.flatMap(findAdminDirectFetchViolations);
   const legacyMutationViolations = findLegacyMutationViolations();
   const legacyWrapperBoundaryViolations = findLegacyWrapperBoundaryViolations();
+  const adminMutationProxyViolations = findAdminMutationProxyViolations();
 
-  if (allViolations.length === 0 && adminDirectFetchViolations.length === 0 && legacyMutationViolations.length === 0 && legacyWrapperBoundaryViolations.length === 0) {
+  if (allViolations.length === 0 && adminDirectFetchViolations.length === 0 && legacyMutationViolations.length === 0 && legacyWrapperBoundaryViolations.length === 0 && adminMutationProxyViolations.length === 0) {
     console.log('✅ app/admin 비-admin API 호출이 없고, 관리자 변경성 비-admin 경로 잔존도 없습니다.');
     process.exit(0);
   }
@@ -226,6 +258,13 @@ try {
     console.error('❌ legacy 비-admin API 경계 정책 위반이 감지되었습니다.');
   }
   for (const v of legacyWrapperBoundaryViolations) {
+    console.error(`${v.file}: ${v.reason}`);
+  }
+
+  if (adminMutationProxyViolations.length > 0) {
+    console.error('❌ 변경성 admin 라우트의 proxyToLegacyAdminRoute 잔존이 감지되었습니다.');
+  }
+  for (const v of adminMutationProxyViolations) {
     console.error(`${v.file}: ${v.reason}`);
   }
 
