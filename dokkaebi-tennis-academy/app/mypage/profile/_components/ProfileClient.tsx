@@ -24,707 +24,707 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
 const isValidKoreanPhone = (v: string) => {
-  const d = onlyDigits(v);
-  return d.length === 10 || d.length === 11; // 01012345678 / 0212345678 등
+ const d = onlyDigits(v);
+ return d.length === 10 || d.length === 11; // 01012345678 / 0212345678 등
 };
 // "8자 이상 + 영문/숫자 조합" (특수문자는 허용)
 const PW_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 // ProfileClient에서 “이탈 경고 기준”으로 삼을 필드만 뽑아 시그니처 문자열로 만듦(비교용)
 const profileDirtySignature = (d: { name?: string; email?: string; phone?: string; address?: { postalCode?: string; address1?: string; address2?: string }; marketing?: { email?: boolean; sms?: boolean; push?: boolean } }) =>
-  JSON.stringify({
-    name: String(d.name ?? '').trim(),
-    email: String(d.email ?? '').trim(),
-    phone: String(d.phone ?? '').trim(),
-    address: {
-      postalCode: String(d.address?.postalCode ?? '').trim(),
-      address1: String(d.address?.address1 ?? '').trim(),
-      address2: String(d.address?.address2 ?? '').trim(),
-    },
-    marketing: { email: !!d.marketing?.email, sms: !!d.marketing?.sms, push: !!d.marketing?.push },
-  });
+ JSON.stringify({
+ name: String(d.name ?? '').trim(),
+ email: String(d.email ?? '').trim(),
+ phone: String(d.phone ?? '').trim(),
+ address: {
+ postalCode: String(d.address?.postalCode ?? '').trim(),
+ address1: String(d.address?.address1 ?? '').trim(),
+ address2: String(d.address?.address2 ?? '').trim(),
+ },
+ marketing: { email: !!d.marketing?.email, sms: !!d.marketing?.sms, push: !!d.marketing?.push },
+ });
 
 type Props = {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
+ user: {
+ id: string;
+ name: string;
+ email: string;
+ role: string;
+ };
 };
 
 export default function ProfileClient({ user }: Props) {
-  const router = useRouter();
+ const router = useRouter();
 
-  // 서버에서 불러온 “초기값(baseline)” 시그니처 (로드 완료 후 1회 세팅)
-  const [initialProfileSig, setInitialProfileSig] = useState('');
+ // 서버에서 불러온 “초기값(baseline)” 시그니처 (로드 완료 후 1회 세팅)
+ const [initialProfileSig, setInitialProfileSig] = useState('');
 
-  const [profileData, setProfileData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    birthDate: '',
-    gender: '',
-    address: {
-      postalCode: '',
-      address1: '',
-      address2: '',
-    },
-    marketing: {
-      email: false,
-      sms: false,
-      push: false,
-    },
-  });
+ const [profileData, setProfileData] = useState({
+ name: '',
+ email: '',
+ phone: '',
+ birthDate: '',
+ gender: '',
+ address: {
+ postalCode: '',
+ address1: '',
+ address2: '',
+ },
+ marketing: {
+ email: false,
+ sms: false,
+ push: false,
+ },
+ });
 
-  // 소셜 로그인 제공자(표시용): /api/users/me에서 내려주는 oauthProviders
-  const [socialProviders, setSocialProviders] = useState<Array<'kakao' | 'naver'>>([]);
+ // 소셜 로그인 제공자(표시용): /api/users/me에서 내려주는 oauthProviders
+ const [socialProviders, setSocialProviders] = useState<Array<'kakao' | 'naver'>>([]);
 
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+ const [passwordData, setPasswordData] = useState({
+ currentPassword: '',
+ newPassword: '',
+ confirmPassword: '',
+ });
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
+ const [isLoading, setIsLoading] = useState(false);
+ const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
 
-  // 현재 입력 상태 시그니처(편집 가능한 핵심 필드만 비교)
-  const currentProfileSig = useMemo(() => profileDirtySignature(profileData), [profileData]);
-  const isProfileDirty = Boolean(initialProfileSig) && currentProfileSig !== initialProfileSig;
+ // 현재 입력 상태 시그니처(편집 가능한 핵심 필드만 비교)
+ const currentProfileSig = useMemo(() => profileDirtySignature(profileData), [profileData]);
+ const isProfileDirty = Boolean(initialProfileSig) && currentProfileSig !== initialProfileSig;
 
-  // 비밀번호 탭: 입력 중이면 dirty (서버 baseline 필요 없음)
-  const isPasswordDirty = Boolean(passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword);
+ // 비밀번호 탭: 입력 중이면 dirty (서버 baseline 필요 없음)
+ const isPasswordDirty = Boolean(passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword);
 
-  // 최종 dirty (프로필/주소/마케팅 변경 OR 비밀번호 입력 중)
-  useUnsavedChangesGuard(isProfileDirty || isPasswordDirty);
+ // 최종 dirty (프로필/주소/마케팅 변경 OR 비밀번호 입력 중)
+ useUnsavedChangesGuard(isProfileDirty || isPasswordDirty);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch('/api/users/me', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error('정보를 불러올 수 없습니다');
+ useEffect(() => {
+ const fetchProfile = async () => {
+ try {
+ const res = await fetch('/api/users/me', {
+ method: 'GET',
+ headers: {
+ 'Content-Type': 'application/json',
+ },
+ credentials: 'include',
+ });
+ if (!res.ok) throw new Error('정보를 불러올 수 없습니다');
 
-        const user = await res.json();
-        setSocialProviders(Array.isArray((user as any).oauthProviders) ? (user as any).oauthProviders : []);
+ const user = await res.json();
+ setSocialProviders(Array.isArray((user as any).oauthProviders) ? (user as any).oauthProviders : []);
 
-        const { address, postalCode, addressDetail, ...rest } = user;
+ const { address, postalCode, addressDetail, ...rest } = user;
 
-        // 최신 state 기반으로 안전하게 병합(closure stale 방지)
-        setProfileData((prev) => {
-          const next = {
-            ...prev,
-            ...rest,
-            address: {
-              address1: address ?? '',
-              postalCode: postalCode ?? '',
-              address2: addressDetail ?? '',
-            },
-          };
-          // baseline은 “서버 로드 성공 시점”의 값으로 1회만 세팅
-          setInitialProfileSig((sig) => sig || profileDirtySignature(next));
-          return next;
-        });
-      } catch (err) {
-        console.error(err);
-        showErrorToast('회원 정보를 불러오는 중 오류가 발생했습니다.');
-      }
-    };
+ // 최신 state 기반으로 안전하게 병합(closure stale 방지)
+ setProfileData((prev) => {
+ const next = {
+ ...prev,
+ ...rest,
+ address: {
+ address1: address ?? '',
+ postalCode: postalCode ?? '',
+ address2: addressDetail ?? '',
+ },
+ };
+ // baseline은 “서버 로드 성공 시점”의 값으로 1회만 세팅
+ setInitialProfileSig((sig) => sig || profileDirtySignature(next));
+ return next;
+ });
+ } catch (err) {
+ console.error(err);
+ showErrorToast('회원 정보를 불러오는 중 오류가 발생했습니다.');
+ }
+ };
 
-    fetchProfile();
-  }, []);
+ fetchProfile();
+ }, []);
 
-  // 우편 번호 검색
-  const handleAddressSearch = () => {
-    new window.daum.Postcode({
-      oncomplete: (data: any) => {
-        const fullAddress = data.address;
-        const postalCode = data.zonecode;
+ // 우편 번호 검색
+ const handleAddressSearch = () => {
+ new window.daum.Postcode({
+ oncomplete: (data: any) => {
+ const fullAddress = data.address;
+ const postalCode = data.zonecode;
 
-        setProfileData((prev) => ({
-          ...prev,
-          address: {
-            ...prev.address,
-            address1: fullAddress,
-            postalCode: postalCode,
-          },
-        }));
-      },
-    }).open();
-  };
+ setProfileData((prev) => ({
+ ...prev,
+ address: {
+ ...prev.address,
+ address1: fullAddress,
+ postalCode: postalCode,
+ },
+ }));
+ },
+ }).open();
+ };
 
-  const handleSave = async () => {
-    // 저장 전 최종 유효성 검사
-    const nameTrim = String(profileData.name ?? '').trim();
-    const emailTrim = String(profileData.email ?? '').trim();
-    const phoneDigits = onlyDigits(profileData.phone ?? '');
+ const handleSave = async () => {
+ // 저장 전 최종 유효성 검사
+ const nameTrim = String(profileData.name ?? '').trim();
+ const emailTrim = String(profileData.email ?? '').trim();
+ const phoneDigits = onlyDigits(profileData.phone ?? '');
 
-    // 필수값(화면에도 *로 표시되어 있음)
-    if (!nameTrim || nameTrim.length < 2) {
-      showErrorToast('이름을 확인해주세요. (2자 이상)');
-      return;
-    }
-    if (!emailTrim || !EMAIL_RE.test(emailTrim)) {
-      showErrorToast('이메일 형식을 확인해주세요.');
-      return;
-    }
+ // 필수값(화면에도 *로 표시되어 있음)
+ if (!nameTrim || nameTrim.length < 2) {
+ showErrorToast('이름을 확인해주세요. (2자 이상)');
+ return;
+ }
+ if (!emailTrim || !EMAIL_RE.test(emailTrim)) {
+ showErrorToast('이메일 형식을 확인해주세요.');
+ return;
+ }
 
-    // 전화번호는 UI상 필수 표시는 아니지만, 입력했다면 형식은 맞아야 함
-    if (phoneDigits && !isValidKoreanPhone(phoneDigits)) {
-      showErrorToast('전화번호는 숫자 10~11자리로 입력해주세요.');
-      return;
-    }
+ // 전화번호는 UI상 필수 표시는 아니지만, 입력했다면 형식은 맞아야 함
+ if (phoneDigits && !isValidKoreanPhone(phoneDigits)) {
+ showErrorToast('전화번호는 숫자 10~11자리로 입력해주세요.');
+ return;
+ }
 
-    // 주소를 저장하려는 경우(주소/우편번호 중 하나라도 있으면) 우편번호 5자리 검증
-    const basicAddress = String(profileData.address?.address1 ?? '').trim();
-    const detailedAddress = String(profileData.address?.address2 ?? '').trim();
-    const postalCode = String(profileData.address?.postalCode ?? '').trim();
-    const hasAnyAddress = Boolean(basicAddress || detailedAddress || postalCode);
-    if (hasAnyAddress && (!postalCode || !POSTAL_RE.test(postalCode))) {
-      showErrorToast('우편번호(5자리)를 확인해주세요.');
-      return;
-    }
+ // 주소를 저장하려는 경우(주소/우편번호 중 하나라도 있으면) 우편번호 5자리 검증
+ const basicAddress = String(profileData.address?.address1 ?? '').trim();
+ const detailedAddress = String(profileData.address?.address2 ?? '').trim();
+ const postalCode = String(profileData.address?.postalCode ?? '').trim();
+ const hasAnyAddress = Boolean(basicAddress || detailedAddress || postalCode);
+ if (hasAnyAddress && (!postalCode || !POSTAL_RE.test(postalCode))) {
+ showErrorToast('우편번호(5자리)를 확인해주세요.');
+ return;
+ }
 
-    setIsLoading(true);
-    try {
-      const basicAddress = profileData.address.address1.trim();
-      const detailedAddress = profileData.address.address2.trim();
-      const postalCode = profileData.address.postalCode;
+ setIsLoading(true);
+ try {
+ const basicAddress = profileData.address.address1.trim();
+ const detailedAddress = profileData.address.address2.trim();
+ const postalCode = profileData.address.postalCode;
 
-      const res = await fetch('/api/users/me', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: nameTrim,
-          email: emailTrim,
-          phone: phoneDigits, // 서버에는 정규화된 전화번호(숫자만)를 저장
-          postalCode,
-          address: basicAddress,
-          addressDetail: detailedAddress,
-          marketing: profileData.marketing,
-        }),
-      });
+ const res = await fetch('/api/users/me', {
+ method: 'PATCH',
+ headers: {
+ 'Content-Type': 'application/json',
+ },
+ credentials: 'include',
+ body: JSON.stringify({
+ name: nameTrim,
+ email: emailTrim,
+ phone: phoneDigits, // 서버에는 정규화된 전화번호(숫자만)를 저장
+ postalCode,
+ address: basicAddress,
+ addressDetail: detailedAddress,
+ marketing: profileData.marketing,
+ }),
+ });
 
-      if (!res.ok) throw new Error('저장 실패');
+ if (!res.ok) throw new Error('저장 실패');
 
-      showSuccessToast('회원 정보가 성공적으로 저장되었습니다.');
-      // 저장 성공 → 현재 상태를 baseline으로 갱신(이탈 경고 해제)
-      setInitialProfileSig(profileDirtySignature(profileData));
-    } catch (err) {
-      console.error(err);
-      showErrorToast('오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+ showSuccessToast('회원 정보가 성공적으로 저장되었습니다.');
+ // 저장 성공 → 현재 상태를 baseline으로 갱신(이탈 경고 해제)
+ setInitialProfileSig(profileDirtySignature(profileData));
+ } catch (err) {
+ console.error(err);
+ showErrorToast('오류가 발생했습니다. 다시 시도해주세요.');
+ } finally {
+ setIsLoading(false);
+ }
+ };
 
-  const handlePasswordChange = async () => {
-    // 비밀번호 변경 유효성 검사
-    const cur = passwordData.currentPassword;
-    const next = passwordData.newPassword;
-    const confirm = passwordData.confirmPassword;
+ const handlePasswordChange = async () => {
+ // 비밀번호 변경 유효성 검사
+ const cur = passwordData.currentPassword;
+ const next = passwordData.newPassword;
+ const confirm = passwordData.confirmPassword;
 
-    if (!cur) {
-      showErrorToast('현재 비밀번호를 입력해주세요.');
-      return;
-    }
-    if (!next) {
-      showErrorToast('새 비밀번호를 입력해주세요.');
-      return;
-    }
-    if (!PW_RE.test(next)) {
-      showErrorToast('새 비밀번호는 8자 이상이며 영문/숫자 조합이어야 합니다.');
-      return;
-    }
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showErrorToast('새 비밀번호가 일치하지 않습니다.');
-      return;
-    }
+ if (!cur) {
+ showErrorToast('현재 비밀번호를 입력해주세요.');
+ return;
+ }
+ if (!next) {
+ showErrorToast('새 비밀번호를 입력해주세요.');
+ return;
+ }
+ if (!PW_RE.test(next)) {
+ showErrorToast('새 비밀번호는 8자 이상이며 영문/숫자 조합이어야 합니다.');
+ return;
+ }
+ if (passwordData.newPassword !== passwordData.confirmPassword) {
+ showErrorToast('새 비밀번호가 일치하지 않습니다.');
+ return;
+ }
 
-    setIsLoading(true);
+ setIsLoading(true);
 
-    try {
-      const res = await fetch('/api/users/me/password', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        }),
-      });
+ try {
+ const res = await fetch('/api/users/me/password', {
+ method: 'PATCH',
+ headers: {
+ 'Content-Type': 'application/json',
+ },
+ credentials: 'include',
+ body: JSON.stringify({
+ currentPassword: passwordData.currentPassword,
+ newPassword: passwordData.newPassword,
+ }),
+ });
 
-      if (!res.ok) {
-        const { message } = await res.json();
-        throw new Error(message || '비밀번호 변경 실패');
-      }
+ if (!res.ok) {
+ const { message } = await res.json();
+ throw new Error(message || '비밀번호 변경 실패');
+ }
 
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      showSuccessToast('비밀번호가 성공적으로 변경되었습니다.');
-    } catch (error: any) {
-      showErrorToast(error.message || '오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+ setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+ showSuccessToast('비밀번호가 성공적으로 변경되었습니다.');
+ } catch (error: any) {
+ showErrorToast(error.message || '오류가 발생했습니다.');
+ } finally {
+ setIsLoading(false);
+ }
+ };
 
-  return (
-    <div className="min-h-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
-      <div
-        className="absolute inset-0 opacity-5 dark:opacity-10"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23000000' fillOpacity='0.1'%3E%3Cpath d='M0 30h60v2H0zM28 0v60h2V0z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      />
+ return (
+ <div className="min-h-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+ <div
+ className="absolute inset-0 opacity-5 dark:opacity-10"
+ style={{
+ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23000000' fillOpacity='0.1'%3E%3Cpath d='M0 30h60v2H0zM28 0v60h2V0z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+ }}
+ />
 
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute inset-0">
-          <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full animate-pulse" />
-          <div className="absolute top-32 right-20 w-16 h-16 bg-white/5 rounded-full  " />
-          <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-white/10 rounded-full animate-pulse" />
-        </div>
+ <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
+ <div className="absolute inset-0 bg-black/10"></div>
+ <div className="absolute inset-0">
+ <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse" />
+ <div className="absolute top-32 right-20 w-16 h-16 bg-card/5 rounded-full " />
+ <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse" />
+ </div>
 
-        <div className="relative container mx-auto px-4 py-16">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-6 mb-8">
-              <Link href="/mypage" className="inline-flex items-center text-white/80 hover:text-white transition-colors font-medium">
-                <ArrowLeft className="mr-2 h-5 w-5" />
-                마이페이지로 돌아가기
-              </Link>
-            </div>
+ <div className="relative container mx-auto px-4 py-16">
+ <div className="max-w-4xl mx-auto">
+ <div className="flex items-center gap-6 mb-8">
+ <Link href="/mypage" className="inline-flex items-center text-white/80 hover:text-white transition-colors font-medium">
+ <ArrowLeft className="mr-2 h-5 w-5" />
+ 마이페이지로 돌아가기
+ </Link>
+ </div>
 
-            <div className="flex items-center gap-6">
-              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-                <Settings className="h-12 w-12" />
-              </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">회원정보 수정</h1>
-                <p className="text-xl text-blue-100">개인정보를 안전하게 관리하세요</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+ <div className="flex items-center gap-6">
+ <div className="bg-card/20 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
+ <Settings className="h-12 w-12" />
+ </div>
+ <div>
+ <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">회원정보 수정</h1>
+ <p className="text-xl text-accent">개인정보를 안전하게 관리하세요</p>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <Tabs defaultValue="profile" className="space-y-8">
-            <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-slate-100 dark:bg-slate-700">
-                  <TabsTrigger value="profile" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
-                    <User className="h-5 w-5" />
-                    <span className="text-xs font-medium">기본정보</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="password" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
-                    <Shield className="h-5 w-5" />
-                    <span className="text-xs font-medium">비밀번호</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="address" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
-                    <MapPin className="h-5 w-5" />
-                    <span className="text-xs font-medium">배송지</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="tennis-profile"
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-md"
-                  >
-                    <MdSportsTennis className="h-5 w-5" />
-                    <span className="text-xs font-medium">테니스 프로필</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="preferences" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
-                    <Bell className="h-5 w-5" />
-                    <span className="text-xs font-medium">설정</span>
-                  </TabsTrigger>
-                </TabsList>
-              </CardContent>
-            </Card>
+ <div className="container mx-auto px-4 py-12">
+ <div className="max-w-4xl mx-auto">
+ <Tabs defaultValue="profile" className="space-y-8">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <CardContent className="p-6">
+ <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-slate-100 dark:bg-slate-700">
+ <TabsTrigger value="profile" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+ <User className="h-5 w-5" />
+ <span className="text-xs font-medium">기본정보</span>
+ </TabsTrigger>
+ <TabsTrigger value="password" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+ <Shield className="h-5 w-5" />
+ <span className="text-xs font-medium">비밀번호</span>
+ </TabsTrigger>
+ <TabsTrigger value="address" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+ <MapPin className="h-5 w-5" />
+ <span className="text-xs font-medium">배송지</span>
+ </TabsTrigger>
+ <TabsTrigger
+ value="tennis-profile"
+ className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-200 data-[state=active]:bg-card data-[state=active]:text-accent data-[state=active]:shadow-md"
+ >
+ <MdSportsTennis className="h-5 w-5" />
+ <span className="text-xs font-medium">테니스 프로필</span>
+ </TabsTrigger>
+ <TabsTrigger value="preferences" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+ <Bell className="h-5 w-5" />
+ <span className="text-xs font-medium">설정</span>
+ </TabsTrigger>
+ </TabsList>
+ </CardContent>
+ </Card>
 
-            <TabsContent value="profile">
-              <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-2xl p-3 shadow-lg">
-                      <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">기본정보</CardTitle>
-                      <CardDescription>개인정보를 수정할 수 있습니다.</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8 space-y-8">
-                  <div className="flex items-center gap-6">
-                    <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
-                      <AvatarImage src="/placeholder.svg?height=96&width=96" alt="프로필 이미지" />
-                      <AvatarFallback className="text-2xl bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 text-blue-600 dark:text-blue-400">{profileData.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                        <Camera className="mr-2 h-4 w-4" />
-                        이미지 변경
-                      </Button>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">JPG, PNG 파일만 업로드 가능합니다</p>
-                    </div>
-                  </div>
+ <TabsContent value="profile">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b">
+ <div className="flex items-center gap-3">
+ <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-2xl p-3 shadow-lg">
+ <User className="h-6 w-6 text-accent dark:text-accent" />
+ </div>
+ <div>
+ <CardTitle className="text-xl">기본정보</CardTitle>
+ <CardDescription>개인정보를 수정할 수 있습니다.</CardDescription>
+ </div>
+ </div>
+ </CardHeader>
+ <CardContent className="p-8 space-y-8">
+ <div className="flex items-center gap-6">
+ <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
+ <AvatarImage src="/placeholder.svg?height=96&width=96" alt="프로필 이미지" />
+ <AvatarFallback className="text-2xl bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 text-accent dark:text-accent">{profileData.name.charAt(0)}</AvatarFallback>
+ </Avatar>
+ <div>
+ <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+ <Camera className="mr-2 h-4 w-4" />
+ 이미지 변경
+ </Button>
+ <p className="text-sm text-slate-500 dark:text-slate-400">JPG, PNG 파일만 업로드 가능합니다</p>
+ </div>
+ </div>
 
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                        <User className="h-4 w-4" />
-                        이름 *
-                      </Label>
-                      <Input
-                        id="name"
-                        value={profileData.name ?? ''}
-                        onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                        placeholder="이름을 입력해주세요"
-                      />
-                      {/* 소셜 가입/연동 제공자 표시 (표시용) */}
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                        <span className="font-medium">가입/연동:</span>
-                        {socialProviders.length ? (
-                          <>
-                            {socialProviders.includes('kakao') && (
-                              <Badge variant="outline" className="border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/40 dark:text-yellow-300">
-                                카카오
-                              </Badge>
-                            )}
-                            {socialProviders.includes('naver') && (
-                              <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
-                                네이버
-                              </Badge>
-                            )}
-                          </>
-                        ) : (
-                          <span>이메일</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                        <Mail className="h-4 w-4" />
-                        이메일 *
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profileData.email ?? ''}
-                        onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                        placeholder="example@naver.com"
-                      />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="phone" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                        <Phone className="h-4 w-4" />
-                        전화번호
-                      </Label>
-                      <Input
-                        id="phone"
-                        value={profileData.phone ?? ''}
-                        onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                        className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                        placeholder="01012345678"
-                      />
-                    </div>
-                  </div>
+ <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+ <div className="space-y-2">
+ <Label htmlFor="name" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+ <User className="h-4 w-4" />
+ 이름 *
+ </Label>
+ <Input
+ id="name"
+ value={profileData.name ?? ''}
+ onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+ className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ placeholder="이름을 입력해주세요"
+ />
+ {/* 소셜 가입/연동 제공자 표시 (표시용) */}
+ <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+ <span className="font-medium">가입/연동:</span>
+ {socialProviders.length ? (
+ <>
+ {socialProviders.includes('kakao') && (
+ <Badge variant="outline" className="border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/40 dark:text-yellow-300">
+ 카카오
+ </Badge>
+ )}
+ {socialProviders.includes('naver') && (
+ <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
+ 네이버
+ </Badge>
+ )}
+ </>
+ ) : (
+ <span>이메일</span>
+ )}
+ </div>
+ </div>
+ <div className="space-y-2">
+ <Label htmlFor="email" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+ <Mail className="h-4 w-4" />
+ 이메일 *
+ </Label>
+ <Input
+ id="email"
+ type="email"
+ value={profileData.email ?? ''}
+ onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+ className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ placeholder="example@naver.com"
+ />
+ </div>
+ <div className="space-y-2 md:col-span-2">
+ <Label htmlFor="phone" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+ <Phone className="h-4 w-4" />
+ 전화번호
+ </Label>
+ <Input
+ id="phone"
+ value={profileData.phone ?? ''}
+ onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+ className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ placeholder="01012345678"
+ />
+ </div>
+ </div>
 
-                  <div className="flex justify-end">
-                    <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                      <Save className="mr-2 h-4 w-4" />
-                      {isLoading ? '저장 중...' : '저장'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+ <div className="flex justify-end">
+ <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+ <Save className="mr-2 h-4 w-4" />
+ {isLoading ? '저장 중...' : '저장'}
+ </Button>
+ </div>
+ </CardContent>
+ </Card>
+ </TabsContent>
 
-            <TabsContent value="password">
-              <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-b">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-2xl p-3 shadow-lg">
-                      <Shield className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">비밀번호 변경</CardTitle>
-                      <CardDescription>보안을 위해 정기적으로 비밀번호를 변경해주세요.</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword" className="text-slate-700 dark:text-slate-300">
-                      현재 비밀번호 *
-                    </Label>
-                    <Input
-                      id="currentPassword"
-                      type="password"
-                      value={passwordData.currentPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword" className="text-slate-700 dark:text-slate-300">
-                      새 비밀번호 *
-                    </Label>
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                    />
-                    <p className="text-sm text-slate-500 dark:text-slate-400">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300">
-                      새 비밀번호 확인 *
-                    </Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                    />
-                  </div>
+ <TabsContent value="password">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-b">
+ <div className="flex items-center gap-3">
+ <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-2xl p-3 shadow-lg">
+ <Shield className="h-6 w-6 text-green-600 dark:text-green-400" />
+ </div>
+ <div>
+ <CardTitle className="text-xl">비밀번호 변경</CardTitle>
+ <CardDescription>보안을 위해 정기적으로 비밀번호를 변경해주세요.</CardDescription>
+ </div>
+ </div>
+ </CardHeader>
+ <CardContent className="p-8 space-y-6">
+ <div className="space-y-2">
+ <Label htmlFor="currentPassword" className="text-slate-700 dark:text-slate-300">
+ 현재 비밀번호 *
+ </Label>
+ <Input
+ id="currentPassword"
+ type="password"
+ value={passwordData.currentPassword}
+ onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+ className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ />
+ </div>
+ <div className="space-y-2">
+ <Label htmlFor="newPassword" className="text-slate-700 dark:text-slate-300">
+ 새 비밀번호 *
+ </Label>
+ <Input
+ id="newPassword"
+ type="password"
+ value={passwordData.newPassword}
+ onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+ className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ />
+ <p className="text-sm text-slate-500 dark:text-slate-400">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
+ </div>
+ <div className="space-y-2">
+ <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300">
+ 새 비밀번호 확인 *
+ </Label>
+ <Input
+ id="confirmPassword"
+ type="password"
+ value={passwordData.confirmPassword}
+ onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+ className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ />
+ </div>
 
-                  <div className="flex justify-end">
-                    <Button onClick={handlePasswordChange} disabled={isLoading} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                      <Save className="mr-2 h-4 w-4" />
-                      {isLoading ? '변경 중...' : '비밀번호 변경'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+ <div className="flex justify-end">
+ <Button onClick={handlePasswordChange} disabled={isLoading} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+ <Save className="mr-2 h-4 w-4" />
+ {isLoading ? '변경 중...' : '비밀번호 변경'}
+ </Button>
+ </div>
+ </CardContent>
+ </Card>
+ </TabsContent>
 
-            <TabsContent value="address">
-              <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-b">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-2xl p-3 shadow-lg">
-                      <MapPin className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">배송지 관리</CardTitle>
-                      <CardDescription>기본 배송지 정보를 관리할 수 있습니다.</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="zipCode" className="text-slate-700 dark:text-slate-300">
-                        우편번호
-                      </Label>
-                      <div className="flex gap-2">
-                        <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default" placeholder="12345" />
-                        <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20" variant="outline">
-                          검색
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address1" className="text-slate-700 dark:text-slate-300">
-                      주소
-                    </Label>
-                    <Input id="address1" value={profileData.address.address1} readOnly className="h-12 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default" placeholder="주소 검색 버튼을 클릭해주세요" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address2" className="text-slate-700 dark:text-slate-300">
-                      상세주소
-                    </Label>
-                    <Input
-                      id="address2"
-                      value={profileData.address.address2}
-                      onChange={(e) =>
-                        setProfileData({
-                          ...profileData,
-                          address: { ...profileData.address, address2: e.target.value },
-                        })
-                      }
-                      className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
-                      placeholder="동, 호수 등 상세주소"
-                    />
-                  </div>
+ <TabsContent value="address">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-b">
+ <div className="flex items-center gap-3">
+ <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-2xl p-3 shadow-lg">
+ <MapPin className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+ </div>
+ <div>
+ <CardTitle className="text-xl">배송지 관리</CardTitle>
+ <CardDescription>기본 배송지 정보를 관리할 수 있습니다.</CardDescription>
+ </div>
+ </div>
+ </CardHeader>
+ <CardContent className="p-8 space-y-6">
+ <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+ <div className="space-y-2">
+ <Label htmlFor="zipCode" className="text-slate-700 dark:text-slate-300">
+ 우편번호
+ </Label>
+ <div className="flex gap-2">
+ <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default" placeholder="12345" />
+ <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-blue-200 dark:border-blue-700 text-accent dark:text-accent hover:bg-blue-50 dark:hover:bg-blue-900/20" variant="outline">
+ 검색
+ </Button>
+ </div>
+ </div>
+ </div>
+ <div className="space-y-2">
+ <Label htmlFor="address1" className="text-slate-700 dark:text-slate-300">
+ 주소
+ </Label>
+ <Input id="address1" value={profileData.address.address1} readOnly className="h-12 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default" placeholder="주소 검색 버튼을 클릭해주세요" />
+ </div>
+ <div className="space-y-2">
+ <Label htmlFor="address2" className="text-slate-700 dark:text-slate-300">
+ 상세주소
+ </Label>
+ <Input
+ id="address2"
+ value={profileData.address.address2}
+ onChange={(e) =>
+ setProfileData({
+ ...profileData,
+ address: { ...profileData.address, address2: e.target.value },
+ })
+ }
+ className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ placeholder="동, 호수 등 상세주소"
+ />
+ </div>
 
-                  <div className="flex justify-end">
-                    <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                      <Save className="mr-2 h-4 w-4" />
-                      {isLoading ? '저장 중...' : '저장'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+ <div className="flex justify-end">
+ <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+ <Save className="mr-2 h-4 w-4" />
+ {isLoading ? '저장 중...' : '저장'}
+ </Button>
+ </div>
+ </CardContent>
+ </Card>
+ </TabsContent>
 
-            <TabsContent value="tennis-profile">
-              <TennisProfileForm />
-            </TabsContent>
+ <TabsContent value="tennis-profile">
+ <TennisProfileForm />
+ </TabsContent>
 
-            <TabsContent value="preferences">
-              <div className="space-y-8">
-                <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-b">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-2xl p-3 shadow-lg">
-                        <Bell className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl">마케팅 수신 동의</CardTitle>
-                        <CardDescription>마케팅 정보 수신 방법을 선택할 수 있습니다.</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-8 space-y-6">
-                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                      <div>
-                        <Label htmlFor="email-marketing" className="font-medium text-slate-700 dark:text-slate-300">
-                          이메일 수신
-                        </Label>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">할인 쿠폰, 신상품 소식을 이메일로 받아보세요.</p>
-                      </div>
-                      <Switch
-                        id="email-marketing"
-                        checked={profileData.marketing?.email ?? false}
-                        onCheckedChange={(checked) =>
-                          setProfileData({
-                            ...profileData,
-                            marketing: { ...profileData.marketing, email: checked },
-                          })
-                        }
-                      />
-                    </div>
-                    <Separator />
-                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                      <div>
-                        <Label htmlFor="sms-marketing" className="font-medium text-slate-700 dark:text-slate-300">
-                          SMS 수신
-                        </Label>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">주문 상태, 배송 정보를 SMS로 받아보세요.</p>
-                      </div>
-                      <Switch
-                        id="sms-marketing"
-                        checked={profileData.marketing?.sms ?? false}
-                        onCheckedChange={(checked) =>
-                          setProfileData({
-                            ...profileData,
-                            marketing: { ...profileData.marketing, sms: checked },
-                          })
-                        }
-                      />
-                    </div>
-                    <Separator />
-                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                      <div>
-                        <Label htmlFor="push-marketing" className="font-medium text-slate-700 dark:text-slate-300">
-                          앱 푸시 알림
-                        </Label>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">앱을 통해 실시간 알림을 받아보세요.</p>
-                      </div>
-                      <Switch
-                        id="push-marketing"
-                        checked={profileData.marketing?.push ?? false}
-                        onCheckedChange={(checked) =>
-                          setProfileData({
-                            ...profileData,
-                            marketing: { ...profileData.marketing, push: checked },
-                          })
-                        }
-                      />
-                    </div>
+ <TabsContent value="preferences">
+ <div className="space-y-8">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-b">
+ <div className="flex items-center gap-3">
+ <div className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-2xl p-3 shadow-lg">
+ <Bell className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+ </div>
+ <div>
+ <CardTitle className="text-xl">마케팅 수신 동의</CardTitle>
+ <CardDescription>마케팅 정보 수신 방법을 선택할 수 있습니다.</CardDescription>
+ </div>
+ </div>
+ </CardHeader>
+ <CardContent className="p-8 space-y-6">
+ <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+ <div>
+ <Label htmlFor="email-marketing" className="font-medium text-slate-700 dark:text-slate-300">
+ 이메일 수신
+ </Label>
+ <p className="text-sm text-slate-500 dark:text-slate-400">할인 쿠폰, 신상품 소식을 이메일로 받아보세요.</p>
+ </div>
+ <Switch
+ id="email-marketing"
+ checked={profileData.marketing?.email ?? false}
+ onCheckedChange={(checked) =>
+ setProfileData({
+ ...profileData,
+ marketing: { ...profileData.marketing, email: checked },
+ })
+ }
+ />
+ </div>
+ <Separator />
+ <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+ <div>
+ <Label htmlFor="sms-marketing" className="font-medium text-slate-700 dark:text-slate-300">
+ SMS 수신
+ </Label>
+ <p className="text-sm text-slate-500 dark:text-slate-400">주문 상태, 배송 정보를 SMS로 받아보세요.</p>
+ </div>
+ <Switch
+ id="sms-marketing"
+ checked={profileData.marketing?.sms ?? false}
+ onCheckedChange={(checked) =>
+ setProfileData({
+ ...profileData,
+ marketing: { ...profileData.marketing, sms: checked },
+ })
+ }
+ />
+ </div>
+ <Separator />
+ <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+ <div>
+ <Label htmlFor="push-marketing" className="font-medium text-slate-700 dark:text-slate-300">
+ 앱 푸시 알림
+ </Label>
+ <p className="text-sm text-slate-500 dark:text-slate-400">앱을 통해 실시간 알림을 받아보세요.</p>
+ </div>
+ <Switch
+ id="push-marketing"
+ checked={profileData.marketing?.push ?? false}
+ onCheckedChange={(checked) =>
+ setProfileData({
+ ...profileData,
+ marketing: { ...profileData.marketing, push: checked },
+ })
+ }
+ />
+ </div>
 
-                    <div className="flex justify-end">
-                      <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-                        <Save className="mr-2 h-4 w-4" />
-                        {isLoading ? '저장 중...' : '저장'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+ <div className="flex justify-end">
+ <Button onClick={handleSave} disabled={isLoading} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+ <Save className="mr-2 h-4 w-4" />
+ {isLoading ? '저장 중...' : '저장'}
+ </Button>
+ </div>
+ </CardContent>
+ </Card>
 
-                <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-red-200 dark:border-red-800">
-                  <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 border-b border-red-200 dark:border-red-800">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900 dark:to-pink-900 rounded-2xl p-3 shadow-lg">
-                        <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl text-red-700 dark:text-red-400">회원 탈퇴</CardTitle>
-                        <CardDescription>계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-8">
-                    {showWithdrawalForm ? (
-                      <WithdrawalReasonSelect
-                        onSubmit={async (reason, detail) => {
-                          try {
-                            const res = await fetch('/api/users/me/leave', {
-                              method: 'DELETE',
-                              headers: {
-                                'Content-Type': 'application/json',
-                              },
-                              credentials: 'include',
-                              body: JSON.stringify({
-                                reason,
-                                detail,
-                              }),
-                            });
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm border-red-200 dark:border-red-800">
+ <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 border-b border-red-200 dark:border-red-800">
+ <div className="flex items-center gap-3">
+ <div className="bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900 dark:to-pink-900 rounded-2xl p-3 shadow-lg">
+ <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+ </div>
+ <div>
+ <CardTitle className="text-xl text-red-700 dark:text-red-400">회원 탈퇴</CardTitle>
+ <CardDescription>계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.</CardDescription>
+ </div>
+ </div>
+ </CardHeader>
+ <CardContent className="p-8">
+ {showWithdrawalForm ? (
+ <WithdrawalReasonSelect
+ onSubmit={async (reason, detail) => {
+ try {
+ const res = await fetch('/api/users/me/leave', {
+ method: 'DELETE',
+ headers: {
+ 'Content-Type': 'application/json',
+ },
+ credentials: 'include',
+ body: JSON.stringify({
+ reason,
+ detail,
+ }),
+ });
 
-                            if (!res.ok) {
-                              const errBody = await res.json().catch(() => ({ error: '알 수 없는 오류' }));
-                              throw new Error(errBody.error);
-                            }
+ if (!res.ok) {
+ const errBody = await res.json().catch(() => ({ error: '알 수 없는 오류' }));
+ throw new Error(errBody.error);
+ }
 
-                            // 탈퇴 성공 흐름
-                          } catch (error: any) {
-                            showErrorToast(error.message || '회원 탈퇴 중 오류가 발생했습니다.');
-                          }
-                        }}
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mb-6">
-                          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                          <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">정말로 탈퇴하시겠습니까?</h3>
-                          <p className="text-sm text-red-600 dark:text-red-400">탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.</p>
-                        </div>
-                        <Button
-                          variant="destructive"
-                          type="button"
-                          onClick={() => setShowWithdrawalForm(true)}
-                          className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300"
-                        >
-                          <AlertTriangle className="mr-2 h-4 w-4" />
-                          회원 탈퇴
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </div>
-  );
+ // 탈퇴 성공 흐름
+ } catch (error: any) {
+ showErrorToast(error.message || '회원 탈퇴 중 오류가 발생했습니다.');
+ }
+ }}
+ />
+ ) : (
+ <div className="text-center">
+ <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mb-6">
+ <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+ <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">정말로 탈퇴하시겠습니까?</h3>
+ <p className="text-sm text-red-600 dark:text-red-400">탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.</p>
+ </div>
+ <Button
+ variant="destructive"
+ type="button"
+ onClick={() => setShowWithdrawalForm(true)}
+ className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300"
+ >
+ <AlertTriangle className="mr-2 h-4 w-4" />
+ 회원 탈퇴
+ </Button>
+ </div>
+ )}
+ </CardContent>
+ </Card>
+ </div>
+ </TabsContent>
+ </Tabs>
+ </div>
+ </div>
+ </div>
+ );
 }

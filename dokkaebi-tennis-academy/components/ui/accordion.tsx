@@ -59,7 +59,7 @@ export function Accordion({ type = 'single', defaultValue, className, children }
 type ItemProps = { value: string; className?: string; children: React.ReactNode };
 export function AccordionItem({ value, className, children }: ItemProps) {
   return (
-    <div className={cn('border-b border-slate-200 dark:border-slate-700', className)} data-acc-item={value}>
+    <div className={cn('border-b border-border', className)} data-acc-item={value}>
       {children}
     </div>
   );
@@ -70,7 +70,7 @@ export function AccordionTrigger({ value, className, children }: TriggerProps) {
   const ctx = React.useContext(AccordionCtx)!;
   const open = ctx.openSet.has(value);
   return (
-    <button type="button" onClick={() => ctx.toggle(value)} className={cn('flex w-full items-center justify-between py-3 text-left text-sm font-medium', 'focus-visible:ring-2 ring-blue-500 rounded-lg', className)}>
+    <button type="button" onClick={() => ctx.toggle(value)} className={cn('flex w-full items-center justify-between py-3 text-left text-sm font-medium', 'focus-visible:ring-2 ring-ring rounded-lg', className)}>
       <span>{children}</span>
       <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} />
     </button>

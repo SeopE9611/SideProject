@@ -18,8 +18,8 @@ export default function HomeMarketPreview() {
   return (
     <section className="mt-8 bp-sm:mt-10 bp-md:mt-12">
       <div className="mb-4 bp-sm:mb-5 flex items-center justify-between">
-        <h2 className="text-xl bp-sm:text-2xl font-semibold text-slate-900 dark:text-white">중고 거래 최신글</h2>
-        <Link className="text-sm bp-sm:text-base text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors" href="/board/market">
+        <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">중고 거래 최신글</h2>
+        <Link className="text-sm bp-sm:text-base text-muted-foreground hover:text-accent transition-colors" href="/board/market">
           더보기
         </Link>
       </div>
@@ -27,14 +27,14 @@ export default function HomeMarketPreview() {
         {isLoading ? (
           <>
             {Array.from({ length: 4 }).map((_, i) => (
-              <li key={`skeleton-${i}`} className="rounded-lg bg-white/60 p-4 bp-sm:p-5 dark:bg-black/20">
-                <div className="h-4 bp-sm:h-5 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                <div className="mt-2 bp-sm:mt-2.5 h-3 bp-sm:h-4 w-24 bp-sm:w-28 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+              <li key={`skeleton-${i}`} className="rounded-lg bg-card/70 p-4 bp-sm:p-5">
+                <div className="h-4 bp-sm:h-5 w-3/4 animate-pulse rounded bg-muted" />
+                <div className="mt-2 bp-sm:mt-2.5 h-3 bp-sm:h-4 w-24 bp-sm:w-28 animate-pulse rounded bg-muted" />
               </li>
             ))}
           </>
           ) : hasError ? (
-          <li className="rounded-lg border border-red-200 bg-red-50 p-4 bp-sm:p-5 text-sm bp-sm:text-base text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+          <li className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 bp-sm:p-5 text-sm bp-sm:text-base text-destructive">
             <div className="flex items-start gap-2">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <div className="flex-1">
@@ -45,7 +45,7 @@ export default function HomeMarketPreview() {
                 <button
                   type="button"
                   onClick={() => mutate()}
-                  className="mt-3 inline-flex items-center rounded-md bg-white px-3 py-1.5 text-xs bp-sm:text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-white dark:ring-slate-700 dark:hover:bg-slate-800"
+                  className="mt-3 inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-xs bp-sm:text-sm font-semibold text-primary-foreground shadow-sm ring-1 ring-inset ring-ring/30 hover:bg-primary/90"
                 >
                   다시 시도
                 </button>
@@ -55,14 +55,14 @@ export default function HomeMarketPreview() {
         ) : items.length > 0 ? (
           items.map((p, idx) => (
             <li key={p.id ?? `${p.createdAt}-${idx}`}>
-              <Link className="group flex items-start justify-between gap-3 bp-sm:gap-4 rounded-lg px-4 bp-sm:px-5 py-3 bp-sm:py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900" href={`/board/market/${p.id}`}>
-                <span className="flex-1 line-clamp-2 bp-lg:line-clamp-1 text-sm bp-sm:text-base text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white">{p.title}</span>
-                <span className="shrink-0 text-xs bp-sm:text-sm text-slate-500 dark:text-slate-400">{new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
+              <Link className="group flex items-start justify-between gap-3 bp-sm:gap-4 rounded-lg px-4 bp-sm:px-5 py-3 bp-sm:py-4 transition-colors hover:bg-accent/70" href={`/board/market/${p.id}`}>
+                <span className="flex-1 line-clamp-2 bp-lg:line-clamp-1 text-sm bp-sm:text-base text-foreground/80 group-hover:text-foreground ">{p.title}</span>
+                <span className="shrink-0 text-xs bp-sm:text-sm text-muted-foreground">{new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
               </Link>
             </li>
           ))
         ) : (
-          <li className="py-10 bp-sm:py-12 text-center text-sm bp-sm:text-base text-slate-500 dark:text-slate-400">등록된 게시글이 없습니다</li>
+          <li className="py-10 bp-sm:py-12 text-center text-sm bp-sm:text-base text-muted-foreground">등록된 게시글이 없습니다</li>
         )}
       </ul>
     </section>
