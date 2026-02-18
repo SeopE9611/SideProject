@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { verifyCommunityCsrf } from '@/lib/community/security';
 import type { CommunityComment } from '@/lib/types/community';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 
@@ -183,6 +184,11 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 // ----------------------------- POST: 댓글 작성 ------------------------------
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
   const { id } = await ctx.params;

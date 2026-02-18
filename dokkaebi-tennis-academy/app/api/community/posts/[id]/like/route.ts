@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { COMMUNITY_RATE_LIMIT_POLICIES, enforceCommunityRateLimit, verifyCommunityCsrf } from '@/lib/community/security';
 
 // 로그인 유저 ID 가져오기
 async function getAuthUserId() {
@@ -32,6 +33,18 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const stop = startTimer();
   const meta = reqMeta(req);
 
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    logInfo({
+      msg: 'community:like:csrf_failed',
+      status: 403,
+      durationMs: stop(),
+      extra: { reason: csrf.code },
+      ...meta,
+    });
+    return csrf.response;
+  }
+
   const { id } = await ctx.params;
 
   // 1) ID 형식 검증
@@ -42,6 +55,22 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const userId = await getAuthUserId();
   if (!userId) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  }
+
+  const rateLimit = await enforceCommunityRateLimit({
+    req,
+    policy: COMMUNITY_RATE_LIMIT_POLICIES.community_like,
+    userId,
+  });
+  if (!rateLimit.ok) {
+    logInfo({
+      msg: 'community:like:rate_limited',
+      status: 429,
+      durationMs: stop(),
+      extra: { userId, scope: rateLimit.scope },
+      ...meta,
+    });
+    return rateLimit.response;
   }
 
   const db = await getDb();

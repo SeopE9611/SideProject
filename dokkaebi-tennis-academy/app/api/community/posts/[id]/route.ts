@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { getDb } from '@/lib/mongodb';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { verifyCommunityCsrf } from '@/lib/community/security';
 import type { CommunityBoardType, CommunityPost } from '@/lib/types/community';
 import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from '@/lib/types/community';
 import { verifyAccessToken } from '@/lib/auth.utils';
@@ -231,6 +232,11 @@ function findFirstInvalidAssetUrl(input: { images?: string[]; attachments?: Arra
 }
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
 
@@ -407,6 +413,11 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 // ---------------------------------------------------------------------------
 
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
 

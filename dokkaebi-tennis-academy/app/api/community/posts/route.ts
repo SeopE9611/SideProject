@@ -8,6 +8,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from '@/lib/types/community';
 import { API_VERSION } from '@/lib/board.repository';
+import { verifyCommunityCsrf } from '@/lib/community/security';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
@@ -225,6 +226,11 @@ export async function GET(req: NextRequest) {
  *   (추후 비회원/닉네임 기반 익명 작성 허용도 확장 가능)
  */
 export async function POST(req: NextRequest) {
+
+  const csrf = verifyCommunityCsrf(req);
+  if (!csrf.ok) {
+    return csrf.response;
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
 
