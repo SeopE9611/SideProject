@@ -6,11 +6,17 @@ import { z } from 'zod';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES, CommunityPost } from '@/lib/types/community';
+import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from '@/lib/types/community';
 import { API_VERSION } from '@/lib/board.repository';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
+import type {
+  AccessTokenPayload,
+  CommunityListResponseDto,
+  CommunityPostListItemDto,
+  CommunityPostMongoDoc,
+} from '@/lib/types/api/board-community';
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
@@ -20,9 +26,9 @@ async function getAuthPayload() {
   const token = jar.get('accessToken')?.value;
   if (!token) return null;
   // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 처리
-  let payload: any = null;
+  let payload: AccessTokenPayload | null = null;
   try {
-    payload = verifyAccessToken(token);
+    payload = verifyAccessToken(token) as AccessTokenPayload | null;
   } catch {
     payload = null;
   }
@@ -35,7 +41,7 @@ async function getAuthPayload() {
  * 표시용 작성자 이름 결정 로직
  * - users 컬렉션의 name/nickname → payload.name/nickname → email 앞부분
  */
-async function resolveDisplayName(payload: any | null): Promise<string> {
+async function resolveDisplayName(payload: AccessTokenPayload | null): Promise<string> {
   const db = await getDb();
   let displayName: string | null = null;
 
@@ -165,7 +171,7 @@ export async function GET(req: NextRequest) {
   const total = await col.countDocuments(filter);
   const docs = await col.find(filter).sort(sortOption).skip(skip).limit(limit).toArray();
 
-  const items: CommunityPost[] = docs.map((d: any) => ({
+  const items: CommunityPostListItemDto[] = (docs as CommunityPostMongoDoc[]).map((d) => ({
     id: String(d._id),
     type: d.type,
     title: d.title,
@@ -197,8 +203,9 @@ export async function GET(req: NextRequest) {
   //   ...meta,
   // });
 
+  const response: CommunityListResponseDto = { ok: true, version: API_VERSION, items, total, page, limit };
   return NextResponse.json(
-    { ok: true, version: API_VERSION, items, total, page, limit },
+    response,
     {
       headers: {
         // 목록은 짧게 캐시 (필요 시 조정 가능)
@@ -354,7 +361,7 @@ export async function POST(req: NextRequest) {
   const displayName = await resolveDisplayName(payload);
   const now = new Date();
 
-  const doc = {
+  const doc: Omit<CommunityPostMongoDoc, '_id'> = {
     type: body.type,
     title: body.title,
     content: sanitizedContent,
@@ -386,7 +393,7 @@ export async function POST(req: NextRequest) {
     updatedAt: now,
   };
 
-  const r = await col.insertOne(doc as any);
+  const r = await col.insertOne(doc);
 
   // logInfo({
   //   msg: 'community:create:success',
