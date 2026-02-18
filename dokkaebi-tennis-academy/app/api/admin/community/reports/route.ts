@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import type { Filter } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
-import { COMMUNITY_REPORT_SEARCHABLE_FIELDS, type CommunityReportDocument } from '@/lib/types/community-report';
+import {
+  COMMUNITY_REPORT_SEARCHABLE_FIELDS,
+  type CommunityReportDocument,
+  type CommunityReportStatus,
+  type CommunityReportTargetType,
+} from '@/lib/types/community-report';
 
 function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -13,6 +18,26 @@ function toInt(v: string | null, fallback: number, min: number, max: number) {
   if (!Number.isFinite(n)) return fallback;
   const i = Math.trunc(n);
   return Math.min(max, Math.max(min, i));
+}
+
+function isCommunityReportStatus(value: unknown): value is CommunityReportStatus {
+  return value === 'pending' || value === 'resolved' || value === 'rejected';
+}
+
+function parseCommunityReportStatus(value: unknown) {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return isCommunityReportStatus(normalized) ? normalized : null;
+}
+
+function isCommunityReportTargetType(value: unknown): value is CommunityReportTargetType {
+  return value === 'post' || value === 'comment';
+}
+
+function parseCommunityReportTargetType(value: unknown) {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return isCommunityReportTargetType(normalized) ? normalized : null;
 }
 
 function maskEmail(email?: string | null) {
@@ -48,15 +73,15 @@ export async function GET(req: NextRequest) {
   const limit = toInt(searchParams.get('limit'), 20, 1, 50);
   const skip = (page - 1) * limit;
 
-  const status = (searchParams.get('status') ?? 'all').trim(); // all|pending|resolved|rejected
-  const targetType = (searchParams.get('targetType') ?? 'all').trim(); // all|post|comment
+  const status = parseCommunityReportStatus(searchParams.get('status'));
+  const targetType = parseCommunityReportTargetType(searchParams.get('targetType'));
   const boardType = (searchParams.get('boardType') ?? 'all').trim(); // all|free|market...
   const q = (searchParams.get('q') ?? '').trim();
 
   const match: Filter<CommunityReportDocument> = {};
-  if (status !== 'all') match.status = status as any;
-  if (targetType !== 'all') match.targetType = targetType as any;
-  if (boardType !== 'all') match.boardType = boardType as any;
+  if (status) match.status = status;
+  if (targetType) match.targetType = targetType;
+  if (boardType !== 'all') match.boardType = boardType;
 
   if (q) {
     const r = new RegExp(escapeRegExp(q), 'i');
