@@ -303,6 +303,20 @@ jobs:
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Cypress binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('dokkaebi-tennis-academy/pnpm-lock.yaml') }}
+          restore-keys: |
+            cypress-${{ runner.os }}-
+
+      - name: Install Cypress binary
+        run: pnpm exec cypress install
+
+      - name: Verify Cypress binary
+        run: pnpm exec cypress verify
+
       - name: Build
         run: pnpm build
 
@@ -375,8 +389,7 @@ jobs:
             name="${item%%=*}"
             result="${item#*=}"
             if [ "${result}" != "success" ]; then
-              failures="${failures}
-- ${name} => ${result}"
+              failures="${failures}\n- ${name} => ${result}"
             fi
           done
 
