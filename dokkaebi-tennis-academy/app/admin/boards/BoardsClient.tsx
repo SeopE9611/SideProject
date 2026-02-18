@@ -25,8 +25,6 @@ type PostItem = {
   createdAt: string;
   views: number;
   likes: number;
-  viewCount?: number;
-  likeCount?: number;
   commentsCount: number;
 };
 
@@ -117,13 +115,16 @@ export default function BoardsClient() {
   const { data: reportsData, error: reportsErr, isLoading: reportsLoading, mutate: mutateReports } = useSWR(tab === 'reports' ? reportsUrl : null, fetcher);
 
   const posts: PostItem[] = (postsData?.items ?? []).map((item: any) => {
-    const views = Number(item?.views ?? item?.viewCount ?? 0);
-    const likes = Number(item?.likes ?? item?.likeCount ?? 0);
+    // 서버 스키마 정합성: views/likes/commentsCount 실필드만 사용
+    const views = Number(item?.views ?? 0);
+    const likes = Number(item?.likes ?? 0);
+    const commentsCount = Number(item?.commentsCount ?? 0);
 
     return {
       ...item,
       views: Number.isFinite(views) ? views : 0,
       likes: Number.isFinite(likes) ? likes : 0,
+      commentsCount: Number.isFinite(commentsCount) ? commentsCount : 0,
     } as PostItem;
   });
   const postsTotal: number = postsData?.total ?? 0;

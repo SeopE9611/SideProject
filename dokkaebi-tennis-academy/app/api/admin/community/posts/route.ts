@@ -10,10 +10,9 @@ type PostDoc = {
   nickname?: string;
   status?: string; // 'public' | 'hidden'
   createdAt?: Date;
+  // community_posts 실문서 메트릭 필드
   views?: number;
   likes?: number;
-  viewCount?: number;
-  likeCount?: number;
   commentsCount?: number;
 };
 
@@ -55,10 +54,11 @@ export async function GET(req: NextRequest) {
     filter.$or = [{ title: r }, { nickname: r }, { content: r }];
   }
 
+  // 관리자 정렬키는 실문서 필드(views/likes/commentsCount)만 사용한다.
   const sortMap: Record<string, Record<string, SortDirection>> = {
     createdAt: { createdAt: dir },
-    views: { views: dir, viewCount: dir },
-    likes: { likes: dir, likeCount: dir },
+    views: { views: dir },
+    likes: { likes: dir },
     comments: { commentsCount: dir },
   };
   const sortSpec = sortMap[sortKey] ?? { createdAt: -1 };
@@ -78,8 +78,6 @@ export async function GET(req: NextRequest) {
           createdAt: 1,
           views: 1,
           likes: 1,
-          viewCount: 1,
-          likeCount: 1,
           commentsCount: 1,
         },
       })
@@ -92,8 +90,8 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     items: items.map((d) => {
-      const views = d.views ?? d.viewCount ?? 0;
-      const likes = d.likes ?? d.likeCount ?? 0;
+      const views = d.views ?? 0;
+      const likes = d.likes ?? 0;
 
       return {
         id: String(d._id),
@@ -105,9 +103,6 @@ export async function GET(req: NextRequest) {
         createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
         views,
         likes,
-        // TODO(community-admin-api): 하위 호환 alias. 클라이언트 전환 완료 이후 제거.
-        viewCount: views,
-        likeCount: likes,
         commentsCount: d.commentsCount ?? 0,
       };
     }),

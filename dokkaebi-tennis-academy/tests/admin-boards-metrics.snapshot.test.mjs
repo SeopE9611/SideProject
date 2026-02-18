@@ -22,6 +22,7 @@ test('관리자 게시판 화면 메트릭 표시 스냅샷(views/likes/comments
     .trim();
 
   assert.equal(actual, snapshot);
-  assert.ok(source.includes('const views = Number(item?.views ?? item?.viewCount ?? 0);'));
-  assert.ok(source.includes('const likes = Number(item?.likes ?? item?.likeCount ?? 0);'));
+  assert.ok(source.includes('const views = Number(item?.views ?? 0);'));
+  assert.ok(source.includes('const likes = Number(item?.likes ?? 0);'));
+  assert.ok(source.includes('const commentsCount = Number(item?.commentsCount ?? 0);'));
 });
