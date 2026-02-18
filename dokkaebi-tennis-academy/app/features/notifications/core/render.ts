@@ -3,15 +3,14 @@ import { ApplicationCtx, EventType, UserCtx } from '@/app/features/notifications
 /* ========= Theme ========= */
 const THEME = {
   brand: '도깨비 테니스',
-  accent: '#0EA5E9', // 포인트(파란 계열)
-  text: '#111111',
-  sub: '#555555',
-  line: '#EAEAEA',
-  bgSoft: '#F7FAFC',
-  badgeBg: '#EEF6FF',
-  badgeText: '#075985',
-  btnBg: '#111111',
-  btnText: '#FFFFFF',
+  text: '#1A1C1A',
+  sub: '#4A544A',
+  line: '#D7E3D7',
+  bgSoft: '#F3F8F3',
+  badgeBg: '#E9F6EC',
+  badgeText: '#248232',
+  btnBg: '#2BA84A',
+  btnText: '#1A1C1A',
 } as const;
 
 /* ========= Utils ========= */
@@ -123,7 +122,7 @@ function summaryTable(rows: [string, string][]) {
     )
     .join('');
   return `
-  <table role="presentation" style="border-collapse:collapse;width:100%;background:#fff;border:1px solid ${THEME.line};border-radius:10px;overflow:hidden;">
+  <table role="presentation" style="border-collapse:collapse;width:100%;background:#FCFFFC;border:1px solid ${THEME.line};border-radius:10px;overflow:hidden;">
     ${tr}
   </table>`;
 }
@@ -149,7 +148,7 @@ function wrapEmail({ title, badge, preheader, rows, ctas, note }: { title: strin
   const pre = preheader ? `<span style="display:none;visibility:hidden;opacity:0;color:transparent;height:0;width:0;">${preheader}</span>` : '';
   return `
   ${pre}
-  <div style="max-width:680px;margin:0 auto;background:#fff;border:1px solid ${THEME.line};border-radius:12px;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans KR',sans-serif;">
+  <div style="max-width:680px;margin:0 auto;background:#FCFFFC;border:1px solid ${THEME.line};border-radius:12px;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans KR',sans-serif;">
     ${headerHTML(title, badge)}
     <div style="padding:18px 20px;">
       ${summaryTable(rows)}
