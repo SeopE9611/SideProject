@@ -163,7 +163,7 @@ export default function ServicesPage() {
       <section className="relative min-h-[90vh] bp-md:min-h-[100vh] bp-lg:min-h-[110vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-muted">
           <div className="absolute inset-0 opacity-20">
-            <svg className="w-full h-full text-primary-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <pattern id="courtLines" x="0" y="0" width="400" height="300" patternUnits="userSpaceOnUse">
                   <rect width="400" height="300" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -182,7 +182,7 @@ export default function ServicesPage() {
         {/* 장식 요소 */}
         <div className="absolute top-20 left-10 w-32 h-32 bg-card/10 rounded-full blur-xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-24 h-24 bg-accent/20 rounded-full blur-lg  "></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-primary/20 rounded-full blur-md animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-muted rounded-full blur-md animate-pulse delay-1000"></div>
 
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto">
@@ -227,7 +227,7 @@ export default function ServicesPage() {
 
                 <Separator className="my-8" />
 
-                <div className="bg-primary/10 rounded-xl p-6">
+                <div className="bg-muted rounded-xl border border-border p-6 text-foreground">
                   <h3 className="text-xl font-bold mb-4 text-center">
                     <CheckCircle className="w-5 h-5 inline mr-2 text-accent" />
                     알아두세요
@@ -283,7 +283,7 @@ export default function ServicesPage() {
               전문 스트링 서비스
             </Badge>
 
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-background via-primary/20 to-background bg-clip-text text-transparent">스트링 장착 서비스</h1>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-foreground">스트링 장착 서비스</h1>
 
             <p className="text-xl md:text-2xl mb-8 text-primary-foreground/90 leading-relaxed">
               라켓 성능을 극대화하는 전문 스트링 서비스
@@ -350,7 +350,7 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-8">
             {stringTypes.map((type) => (
               <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card">
-                <div className="h-2 bg-primary/20"></div>
+                <div className="h-2 bg-muted"></div>
 
                 <CardHeader className="text-center pb-4">
                   <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-lg group-hover:scale-110 transition-transform duration-300">{type.icon}</div>
@@ -408,7 +408,7 @@ export default function ServicesPage() {
                   </div>
 
                   {/* 대표 제품 */}
-                  <div className="bg-primary/10 rounded-xl p-4">
+                  <div className="bg-muted rounded-xl border border-border p-4 text-foreground">
                     <h4 className="font-semibold mb-3">대표 제품</h4>
                     <div className="flex flex-wrap gap-2">
                       {type.examples.map((example, idx) => (
@@ -426,9 +426,9 @@ export default function ServicesPage() {
       </section>
 
       {/* 가격 안내 섹션 */}
-      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-primary/10 relative overflow-hidden" id="pricing">
+      <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background relative overflow-hidden" id="pricing">
         <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full text-primary-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="courtPattern" x="0" y="0" width="400" height="300" patternUnits="userSpaceOnUse">
                 <rect width="400" height="300" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -443,12 +443,12 @@ export default function ServicesPage() {
 
         <div className="container relative z-10">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-card/20 text-primary-foreground border-border/30">
+            <Badge className="mb-4 bg-muted text-foreground border-border">
               <Award className="w-4 h-4 mr-2" />
               투명한 가격 정책
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground">가격 안내</h2>
-            <p className="text-xl text-primary-foreground/90 max-w-3xl mx-auto leading-relaxed">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">가격 안내</h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               합리적인 가격으로 최고의 스트링 장착 서비스를 제공합니다.
               <br />
               다양한 옵션 중 필요한 서비스를 선택하세요.
@@ -569,9 +569,9 @@ export default function ServicesPage() {
       </section>
 
       {/* 예약 안내 섹션 */}
-      {/* <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-primary/10 relative overflow-hidden" id="booking">
+      {/* <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background relative overflow-hidden" id="booking">
         <div className="absolute top-10 left-10 w-32 h-32 bg-card/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-10 right-10 w-24 h-24 bg-primary/20 rounded-full blur-lg  "></div>
+        <div className="absolute bottom-10 right-10 w-24 h-24 bg-muted rounded-full blur-lg  "></div>
       </section> */}
 
       {/* 고객 후기 섹션 */}

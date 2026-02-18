@@ -467,7 +467,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="bp-lg:col-span-2 space-y-6">
  {/* 대여 상품 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
- <div className="bg-primary/10 p-6">
+ <div className="bg-muted border-b border-border p-6">
  <CardTitle className="flex items-center gap-3">
  <Package className="h-5 w-5 text-accent" />
  대여 상품
@@ -499,7 +499,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
  {/* 라켓 수령 방식 및 스트링 교체 옵션 */}
  <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
- <div className="bg-primary/10 p-6">
+ <div className="bg-muted border-b border-border p-6">
  <CardTitle className="flex items-center gap-3">
  <Truck className="h-5 w-5 text-accent" />
  라켓 수령 방식
