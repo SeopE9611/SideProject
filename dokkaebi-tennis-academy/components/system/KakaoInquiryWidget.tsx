@@ -258,7 +258,7 @@ export default function KakaoInquiryWidget() {
                     <button
                       type="button"
                       onClick={openBugChat}
-                      className={['w-full rounded-md py-3 text-sm font-semibold', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2'].join(' ')}
+                      className={['w-full rounded-md py-3 text-sm font-semibold', 'bg-primary text-primary-foreground', 'hover:bg-primary/90', 'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'].join(' ')}
                     >
                       개발자에게 제보하기
                     </button>
@@ -277,7 +277,7 @@ export default function KakaoInquiryWidget() {
               ref={bugTriggerRef}
               aria-label="버그 제보"
               onClick={() => setPanel((cur) => (cur === 'bug' ? null : 'bug'))}
-              className={['h-14 w-14 rounded-full shadow-xl', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2', 'flex items-center justify-center'].join(' ')}
+              className={['h-14 w-14 rounded-full shadow-xl', 'bg-primary text-primary-foreground', 'hover:bg-primary/90', 'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2', 'flex items-center justify-center'].join(' ')}
             >
               <Bug className="h-7 w-7" />
             </button>
@@ -305,7 +305,7 @@ export default function KakaoInquiryWidget() {
                     <button
                       type="button"
                       onClick={openKakaoChat}
-                      className={['w-full rounded-md py-3 text-sm font-semibold', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2'].join(' ')}
+                      className={['w-full rounded-md py-3 text-sm font-semibold', 'bg-primary text-primary-foreground', 'hover:bg-primary/90', 'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'].join(' ')}
                     >
                       카카오톡으로 문의하기
                     </button>
@@ -324,7 +324,7 @@ export default function KakaoInquiryWidget() {
               ref={inquiryTriggerRef}
               aria-label="카카오톡 문의"
               onClick={() => setPanel((cur) => (cur === 'inquiry' ? null : 'inquiry'))}
-              className={['h-14 w-14 rounded-full shadow-xl', 'bg-[#FEE500] text-[#191919]', 'hover:bg-[#FDDC00]', 'focus:outline-none focus:ring-2 focus:ring-[#FEE500]/60 focus:ring-offset-2', 'flex items-center justify-center'].join(' ')}
+              className={['h-14 w-14 rounded-full shadow-xl', 'bg-primary text-primary-foreground', 'hover:bg-primary/90', 'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2', 'flex items-center justify-center'].join(' ')}
             >
               <MessageCircle className="h-7 w-7" />
             </button>

@@ -68,9 +68,10 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // popover 색상 매핑
-        popover: 'rgb(var(--popover))',
-        'popover-foreground': 'rgb(var(--popover-foreground))',
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
       },
       borderRadius: {
         lg: '0.5rem',

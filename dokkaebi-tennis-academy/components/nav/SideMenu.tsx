@@ -36,7 +36,7 @@ export default function SideMenu() {
       'hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-emerald-50/50',
       'dark:hover:from-blue-950/30 dark:hover:to-emerald-950/30',
       'hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-300/80 dark:hover:ring-slate-700/60 hover:z-10 active:scale-[0.99]',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
       isActive ? 'bg-gradient-to-r from-blue-50 to-emerald-50 text-blue-700 dark:from-blue-950/50 dark:to-emerald-950/50 dark:text-blue-400 shadow-sm' : 'text-muted-foreground hover:text-foreground',
     );
   };
@@ -48,7 +48,7 @@ export default function SideMenu() {
       'hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100',
       'dark:hover:from-slate-900/50 dark:hover:to-slate-800/50',
       'hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-300/70 dark:hover:ring-slate-700/60 hover:z-10 active:scale-[0.99]',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
       isActive ? 'bg-gradient-to-r from-slate-100 to-slate-50 text-foreground font-medium dark:from-slate-800/50 dark:to-slate-900/30 shadow-sm' : 'text-muted-foreground hover:text-foreground',
     );
   };
@@ -98,7 +98,7 @@ export default function SideMenu() {
                     <AccordionTrigger
                       value="strings-service"
                       className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                        hover:bg-slate-50 dark:hover:bg-slate-800"
+                        hover:bg-accent/70"
                     >
                       장착 서비스 안내
                     </AccordionTrigger>
@@ -121,7 +121,7 @@ export default function SideMenu() {
                       <AccordionTrigger
                         value="strings-brand"
                         className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                          hover:bg-slate-50 dark:hover:bg-slate-800"
+                          hover:bg-accent/70"
                       >
                         브랜드
                       </AccordionTrigger>
