@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, Eye, MessageSquare, Settings, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { AdminFetchError, adminFetcher } from '@/lib/admin/adminFetcher';
 import BoardDetailActions from './BoardDetailActions';
 
 type BoardPostDetail = {
@@ -115,21 +115,15 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
     notFound();
   }
 
-  const headersList = await headers();
-  const host = headersList.get('host');
-  const cookie = headersList.get('cookie') ?? '';
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
-
-  const res = await fetch(`${baseUrl}/api/admin/community/posts/${encodeURIComponent(boardId)}`, {
-    cache: 'no-store',
-    headers: { cookie },
-  });
-
-  if (res.status === 404) {
-    notFound();
-  }
-
-  if (!res.ok) {
+  let data: { item?: BoardPostDetail } | null = null;
+  try {
+    data = await adminFetcher<{ item?: BoardPostDetail }>(`/api/admin/community/posts/${encodeURIComponent(boardId)}`, {
+      cache: 'no-store',
+    });
+  } catch (error) {
+    if (error instanceof AdminFetchError && error.status === 404) {
+      notFound();
+    }
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20">
         <div className="container py-8 px-6">
@@ -139,7 +133,6 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
     );
   }
 
-  const data = await res.json();
   const post = (data?.item ?? null) as BoardPostDetail | null;
 
   if (!post) {
