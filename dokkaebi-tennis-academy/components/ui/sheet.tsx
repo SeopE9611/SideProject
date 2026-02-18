@@ -20,13 +20,13 @@ const SheetOverlay = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Ove
 ));
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
-const sheetVariants = cva('fixed z-50 gap-4 bg-[#ffffff] p-6 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 dark:bg-[#0f172a]', {
+const sheetVariants = cva('fixed z-50 gap-4 bg-card p-6 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 ', {
   variants: {
     side: {
-      top: 'inset-x-0 top-0 border-b border-[#e2e8f0] data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top dark:border-[#1e293b]',
-      bottom: 'inset-x-0 bottom-0 border-t border-[#e2e8f0] data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom dark:border-[#1e293b]',
-      left: 'inset-y-0 left-0 h-full w-3/4 border-r border-[#e2e8f0] data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm dark:border-[#1e293b]',
-      right: 'inset-y-0 right-0 h-full w-3/4 border-l border-[#e2e8f0] data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm dark:border-[#1e293b]',
+      top: 'inset-x-0 top-0 border-b border-border data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top ',
+      bottom: 'inset-x-0 bottom-0 border-t border-border data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom ',
+      left: 'inset-y-0 left-0 h-full w-3/4 border-r border-border data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm ',
+      right: 'inset-y-0 right-0 h-full w-3/4 border-l border-border data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm ',
     },
   },
   defaultVariants: {
@@ -42,7 +42,7 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
     <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
       {children}
       <SheetPrimitive.Title className="sr-only">모바일 메뉴</SheetPrimitive.Title>
-      <SheetPrimitive.Close aria-label="시트 닫기" className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-[#ffffff] transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-[#f1f5f9] dark:ring-offset-[#0f172a] dark:focus:ring-[#3b82f6] dark:data-[state=open]:bg-[#1e293b]">
+      <SheetPrimitive.Close aria-label="시트 닫기" className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-muted">
         <X className="h-4 w-4" />
         <span className="sr-only">닫기</span>
       </SheetPrimitive.Close>
@@ -58,12 +58,12 @@ const SheetFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElemen
 SheetFooter.displayName = 'SheetFooter';
 
 const SheetTitle = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Title>, React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>>(({ className, ...props }, ref) => (
-  <SheetPrimitive.Title ref={ref} className={cn('text-lg font-semibold text-[#0f172a] dark:text-[#f8fafc]', className)} {...props} />
+  <SheetPrimitive.Title ref={ref} className={cn('text-lg font-semibold text-foreground', className)} {...props} />
 ));
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
 const SheetDescription = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Description>, React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>>(({ className, ...props }, ref) => (
-  <SheetPrimitive.Description ref={ref} className={cn('text-sm text-[#64748b] dark:text-[#94a3b8]', className)} {...props} />
+  <SheetPrimitive.Description ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
 ));
 SheetDescription.displayName = SheetPrimitive.Description.displayName;
 
