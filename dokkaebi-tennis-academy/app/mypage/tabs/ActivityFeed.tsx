@@ -653,7 +653,7 @@ export default function ActivityFeed() {
                     setFilter('all');
                     setActionOnly(true);
                   }}
-                  className="w-full bp-sm:w-auto rounded-lg border-border hover:bg-muted hover:bg-muted"
+                  className="w-full bp-sm:w-auto rounded-lg border-border hover:bg-muted"
                 >
                   전체 보기
                 </Button>
@@ -779,7 +779,7 @@ export default function ActivityFeed() {
                     setFilter('active');
                     setActionOnly(false);
                   }}
-                  className="w-full bp-sm:w-auto rounded-lg border-border hover:bg-secondary hover:bg-secondary"
+                  className="w-full bp-sm:w-auto rounded-lg border-border hover:bg-secondary"
                 >
                   전체 보기
                 </Button>
