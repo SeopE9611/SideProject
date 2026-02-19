@@ -45,7 +45,7 @@ export default function ServiceReviewCTA({ applicationId, status, className }: P
   const href = `/reviews/write?service=stringing` + (applicationId ? `&applicationId=${applicationId}` : data?.suggestedApplicationId ? `&applicationId=${data.suggestedApplicationId}` : '');
 
   return (
-    <Button size="sm" className={`bg-gradient-to-r from-blue-600 to-purple-600 text-white ${className ?? ''}`} asChild>
+    <Button size="sm" variant="highlight" className={className} asChild>
       <Link href={href}>
         <MessageSquarePlus className="mr-1 h-4 w-4" />
         서비스 리뷰 작성하기

@@ -81,25 +81,25 @@ export default function LoginGate({ next, variant = 'default' }: { next: string;
   const loginHref = `/login?next=${encodeURIComponent(next)}`;
 
   return (
-    <div className={`${v.minHeight} bg-gradient-to-br from-slate-50 via-blue-50/40 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900`}>
+    <div className={`${v.minHeight} bg-background`}>
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
-          <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] backdrop-blur-sm bg-white/90 dark:bg-slate-800/85">
-            <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500" />
+          <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] backdrop-blur-sm bg-card/90 dark:bg-card/85">
+            <div className="h-1.5 w-full bg-primary" />
 
             <CardContent className="p-8">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white grid place-content-center shadow-lg mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground grid place-content-center shadow-lg mb-6">
                 <LogIn className="h-7 w-7" />
               </div>
 
               <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
-                <span className="text-blue-600">로그인</span>이 필요합니다.
+                <span className="text-primary">로그인</span>이 필요합니다.
               </h1>
-              <p className="text-slate-600 dark:text-slate-300">{v.description}</p>
+              <p className="text-muted-foreground dark:text-muted-foreground">{v.description}</p>
 
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {v.perks.map((p) => (
-                  <div key={p.text} className="flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm ring-1 ring-slate-200/70 dark:ring-slate-700/70">
+                  <div key={p.text} className="flex items-center gap-2 rounded-xl bg-card dark:bg-background p-3 shadow-sm ring-1 ring-border/70">
                     {p.icon}
                     <span className="text-sm">{p.text}</span>
                   </div>
@@ -107,22 +107,22 @@ export default function LoginGate({ next, variant = 'default' }: { next: string;
               </div>
 
               <div className="mt-4">
-                <Badge className="bg-blue-600/10 text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-300/40">로그인 후 원래 페이지로 자동 복귀</Badge>
+                <Badge variant="highlight">로그인 후 원래 페이지로 자동 복귀</Badge>
               </div>
             </CardContent>
 
             <CardFooter className="px-8 pb-8">
               <div className="flex flex-wrap gap-3">
-                <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                <Button asChild variant="highlight">
                   <Link href={loginHref}>로그인·회원가입하기</Link>
                 </Button>
-                <Button asChild variant="outline" className="border-slate-200 dark:border-slate-700">
+                <Button asChild variant="outline">
                   <Link href={v.secondary.href}>{v.secondary.label}</Link>
                 </Button>
               </div>
             </CardFooter>
 
-            <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-blue-400/25 blur-3xl" />
+            <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-primary/25 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-purple-400/25 blur-3xl" />
           </Card>
         </div>

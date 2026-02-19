@@ -147,7 +147,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
           disabled={isUploading}
         />
         {isUploading && (
-          <span className="inline-flex items-center text-xs text-slate-500">
+          <span className="inline-flex items-center text-xs text-muted-foreground">
             <Loader2 className="mr-1 h-3 w-3 animate-spin" />
             업로드 중…
           </span>
@@ -158,7 +158,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
         <div className="grid grid-cols-3 gap-2">
           {/* 업로드 중 썸네일 */}
           {queue.map((q) => (
-            <div key={`q-${q.id}`} className="relative rounded-md overflow-hidden border bg-slate-50">
+            <div key={`q-${q.id}`} className="relative rounded-md overflow-hidden border bg-background">
               <Image src={q.url} alt="uploading" width={160} height={160} className="object-cover w-full h-24" />
               <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
                 <Loader2 className="h-5 w-5 animate-spin text-white" aria-label="업로드 중" />

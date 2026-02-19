@@ -40,7 +40,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
                 {/* 원본 비율 유지 + 잘림 방지(cover → contain)
                     - grid place-items-center: 중앙 정렬
                     - max-w/max-h: 작은 이미지를 억지로 확대하지 않음(원본 크기 느낌 유지) */}
-                <div className="absolute inset-0 grid place-items-center bg-slate-50 dark:bg-slate-900">
+                <div className="absolute inset-0 grid place-items-center bg-background dark:bg-background">
                   <img src={s.img} alt={s.alt ?? `slide-${i + 1}`} className="max-w-full max-h-full object-contain" loading="eager" decoding="async" />
                 </div>
                 {/* 상단 그라데이션/얇은 라인으로 품질감 */}
@@ -70,18 +70,18 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
       {/* 좌우 네비게이션 */}
       <button
         onClick={scrollPrev}
-        className="absolute left-4 bp-md:left-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10 bg-white/80 dark:bg-slate-800/80
-                   border border-slate-200 dark:border-slate-700
-                   hover:bg-white shadow-md"
+        className="absolute left-4 bp-md:left-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10 bg-card/80 dark:bg-card/80
+                   border border-border dark:border-border
+                   hover:bg-card shadow-md"
         aria-label="이전 배너"
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-4 bp-md:right-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10 bg-white/80 dark:bg-slate-800/80
-                   border border-slate-200 dark:border-slate-700
-                   hover:bg-white shadow-md"
+        className="absolute right-4 bp-md:right-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10 bg-card/80 dark:bg-card/80
+                   border border-border dark:border-border
+                   hover:bg-card shadow-md"
         aria-label="다음 배너"
       >
         <ChevronRight className="h-5 w-5" />

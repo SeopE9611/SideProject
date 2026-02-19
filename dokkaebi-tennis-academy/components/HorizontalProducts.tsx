@@ -198,14 +198,14 @@ export default function HorizontalProducts({
       key={p._id}
       href={p.href ?? `/products/${p._id}`}
       className="group block h-full
-        bg-white dark:bg-slate-900 rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
+        bg-card dark:bg-background rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
         transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
     >
-      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg overflow-hidden bg-accent dark:bg-card">
         {p.images?.[0] ? (
           <img src={p.images[0] || '/placeholder.svg'} alt={p.name} className="w-full h-full object-contain p-2 bp-sm:p-3 bp-md:p-4" loading="lazy" />
         ) : (
-          <div className="flex items-center justify-center h-full text-3xl bp-sm:text-4xl bp-md:text-5xl font-bold text-slate-300 dark:text-slate-600">{(p.brand ?? 'D').charAt(0)}</div>
+          <div className="flex items-center justify-center h-full text-3xl bp-sm:text-4xl bp-md:text-5xl font-bold text-muted-foreground dark:text-muted-foreground">{(p.brand ?? 'D').charAt(0)}</div>
         )}
 
         {(typeof p.rentalEnabled === 'boolean' || p.condition) && (
@@ -217,14 +217,14 @@ export default function HorizontalProducts({
       </div>
 
       <div className="space-y-1.5 bp-sm:space-y-2 bp-md:space-y-2.5">
-        <div className="text-xs bp-sm:text-sm bp-md:text-base text-slate-500 dark:text-slate-400 font-medium">{p.brand}</div>
+        <div className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground dark:text-muted-foreground font-medium">{p.brand}</div>
         <h3
-          className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-slate-900 dark:text-white 
+          className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-foreground dark:text-foreground 
           line-clamp-2 min-h-[2.5rem] bp-sm:min-h-[3rem] bp-md:min-h-[3.5rem] leading-snug"
         >
           {p.name}
         </h3>
-        <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-slate-900 dark:text-white pt-1 bp-sm:pt-1.5">{Number(p.price).toLocaleString()}원</div>
+        <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-foreground dark:text-foreground pt-1 bp-sm:pt-1.5">{Number(p.price).toLocaleString()}원</div>
       </div>
     </Link>
   );
@@ -232,18 +232,18 @@ export default function HorizontalProducts({
   const PlaceholderCard = () => (
     <div
       className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      bg-slate-50 dark:bg-slate-800/50 
+      bg-background dark:bg-card/50 
       flex flex-col items-center justify-center"
     >
       <div
-        className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-slate-100 dark:bg-slate-700 
+        className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-accent dark:bg-accent 
         flex items-center justify-center"
       >
-        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-slate-200 dark:bg-slate-600" />
+        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-accent dark:bg-accent" />
       </div>
       <div className="text-center space-y-1.5">
-        <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-slate-400 dark:text-slate-500">준비 중</div>
-        <div className="text-xs bp-sm:text-sm bp-md:text-base text-slate-400 dark:text-slate-600">곧 업데이트</div>
+        <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-muted-foreground">준비 중</div>
+        <div className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground">곧 업데이트</div>
       </div>
     </div>
   );
@@ -251,13 +251,13 @@ export default function HorizontalProducts({
   const SkeletonCard = () => (
     <div
       className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      bg-white dark:bg-slate-900 animate-pulse"
+      bg-card dark:bg-background animate-pulse"
     >
-      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg bg-slate-100 dark:bg-slate-800" />
+      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg bg-accent dark:bg-card" />
       <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
-        <div className="h-3 bp-sm:h-4 bp-md:h-5 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-slate-100 dark:bg-slate-800" />
-        <div className="h-4 bp-sm:h-5 bp-md:h-6 w-32 bp-sm:w-40 bp-md:w-48 rounded bg-slate-100 dark:bg-slate-800" />
-        <div className="h-5 bp-sm:h-6 bp-md:h-7 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-3 bp-sm:h-4 bp-md:h-5 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-accent dark:bg-card" />
+        <div className="h-4 bp-sm:h-5 bp-md:h-6 w-32 bp-sm:w-40 bp-md:w-48 rounded bg-accent dark:bg-card" />
+        <div className="h-5 bp-sm:h-6 bp-md:h-7 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-accent dark:bg-card" />
       </div>
     </div>
   );
@@ -265,20 +265,20 @@ export default function HorizontalProducts({
   const MoreCard = () => (
     <Link
       href={moreHref}
-      className="group h-full bg-slate-50 dark:bg-slate-800 rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-        hover:bg-slate-100 dark:hover:bg-slate-700
+      className="group h-full bg-background dark:bg-card rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
+        hover:bg-accent dark:hover:bg-accent
         transition-all duration-300 flex items-center justify-center hover:scale-[1.02] hover:shadow-lg"
     >
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
         <div
-          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto 
+          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-accent dark:bg-accent rounded-full mx-auto 
           flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
         >
-          <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-slate-600 dark:text-slate-400" />
+          <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-muted-foreground dark:text-muted-foreground" />
         </div>
         <div className="space-y-1 bp-sm:space-y-1.5">
-          <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-bold text-slate-900 dark:text-white">더 많은 상품</h3>
-          <p className="text-xs bp-sm:text-sm bp-md:text-base text-slate-600 dark:text-slate-400">전체 보기</p>
+          <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-bold text-foreground dark:text-foreground">더 많은 상품</h3>
+          <p className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground dark:text-muted-foreground">전체 보기</p>
         </div>
       </div>
     </Link>
@@ -287,14 +287,14 @@ export default function HorizontalProducts({
   const EmptyCard = () => (
     <div
       className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      bg-slate-50 dark:bg-slate-800/50
+      bg-background dark:bg-card/50
       flex flex-col items-center justify-center text-center"
     >
-      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-3">
-        <Inbox className="h-6 w-6 text-slate-600 dark:text-slate-300" />
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-accent dark:bg-accent flex items-center justify-center mb-3">
+        <Inbox className="h-6 w-6 text-muted-foreground dark:text-muted-foreground" />
       </div>
-      <div className="text-sm bp-sm:text-base font-semibold text-slate-700 dark:text-slate-200">{emptyTitle ?? '등록된 상품이 없습니다'}</div>
-      <div className="mt-1 text-xs bp-sm:text-sm text-slate-500 dark:text-slate-400">{emptyDescription ?? '곧 상품이 업데이트됩니다.'}</div>
+      <div className="text-sm bp-sm:text-base font-semibold text-foreground dark:text-foreground">{emptyTitle ?? '등록된 상품이 없습니다'}</div>
+      <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground">{emptyDescription ?? '곧 상품이 업데이트됩니다.'}</div>
     </div>
   );
 
@@ -307,8 +307,8 @@ export default function HorizontalProducts({
       <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center mb-3">
         <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-300" />
       </div>
-      <div className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">{errorTitle ?? '불러오지 못했어요'}</div>
-      <div className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300">{errorDescription ?? '네트워크 상태를 확인 후 다시 시도해 주세요.'}</div>
+      <div className="text-sm bp-sm:text-base font-semibold text-foreground dark:text-foreground">{errorTitle ?? '불러오지 못했어요'}</div>
+      <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground">{errorDescription ?? '네트워크 상태를 확인 후 다시 시도해 주세요.'}</div>
       {onRetry && (
         <Button type="button" variant="outline" size="sm" onClick={onRetry} className="mt-3 rounded-full">
           <RefreshCcw className="mr-2 h-4 w-4" />
@@ -324,8 +324,8 @@ export default function HorizontalProducts({
       <div className="relative z-10">
         {showHeader && (
           <div className="text-center mb-6 bp-sm:mb-8 bp-md:mb-12 bp-lg:mb-16">
-            <h2 className="text-2xl bp-sm:text-3xl bp-md:text-4xl bp-lg:text-5xl font-bold text-slate-900 dark:text-white mb-1.5 bp-sm:mb-2">{title}</h2>
-            {subtitle && <p className="text-xs bp-sm:text-sm bp-md:text-base bp-lg:text-xl text-slate-600 dark:text-slate-400">{subtitle}</p>}
+            <h2 className="text-2xl bp-sm:text-3xl bp-md:text-4xl bp-lg:text-5xl font-bold text-foreground dark:text-foreground mb-1.5 bp-sm:mb-2">{title}</h2>
+            {subtitle && <p className="text-xs bp-sm:text-sm bp-md:text-base bp-lg:text-xl text-muted-foreground dark:text-muted-foreground">{subtitle}</p>}
           </div>
         )}
 
@@ -391,7 +391,7 @@ export default function HorizontalProducts({
                   aria-label="이전 상품 보기"
                   disabled={!canPrev}
                   className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 
-                    bg-white dark:bg-slate-900 
+                    bg-card dark:bg-background 
                     border-0 shadow-md
                     hover:shadow-xl hover:scale-105
                     disabled:opacity-30 disabled:cursor-not-allowed
@@ -407,7 +407,7 @@ export default function HorizontalProducts({
                   aria-label="다음 상품 보기"
                   disabled={!canNext}
                   className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 
-                    bg-white dark:bg-slate-900 
+                    bg-card dark:bg-background 
                     border-0 shadow-md
                     hover:shadow-xl hover:scale-105
                     disabled:opacity-30 disabled:cursor-not-allowed
@@ -418,7 +418,7 @@ export default function HorizontalProducts({
                 </Button>
               </div>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400 hidden bp-sm:block">드래그하거나 터치로 넘겨보세요</p>
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground hidden bp-sm:block">드래그하거나 터치로 넘겨보세요</p>
             </div>
           )}
         </div>

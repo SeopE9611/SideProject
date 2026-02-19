@@ -48,7 +48,7 @@ export default function PhotosReorderGrid({ value, onChange, disabled, className
         >
           <img src={src} alt={`리뷰 사진 ${idx + 1}`} className="h-full w-full object-cover select-none pointer-events-none" draggable={false} />
           <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-black/60 text-white">{idx + 1}</span>
-          {!disabled && <span className="absolute bottom-1 right-1 text-[10px] px-1 py-0.5 rounded bg-white/80 text-slate-700 shadow">드래그</span>}
+          {!disabled && <span className="absolute bottom-1 right-1 text-[10px] px-1 py-0.5 rounded bg-card/80 text-foreground shadow">드래그</span>}
         </li>
       ))}
     </ul>
