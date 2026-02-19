@@ -19,6 +19,12 @@ import { CreditCard, MapPin, Shield, CheckCircle, UserIcon, Mail, Phone, Message
 import PackageCheckoutButton from './PackageCheckoutButton';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { FullPageSpinner } from '@/components/system/PageLoading';
+import {
+  type PackageVariant,
+  PACKAGE_VARIANT_TONE_CLASS,
+  getPackageVariantByIndex,
+  toPackageVariant,
+} from '@/app/services/packages/_lib/packageVariant';
 
 // 클라이언트 유효성(UX용)
 type CheckoutField = 'name' | 'email' | 'phone' | 'depositor' | 'postalCode' | 'address' | 'addressDetail';
@@ -50,7 +56,7 @@ interface PackageInfo {
  popular?: boolean;
  features: string[];
  benefits: string[];
- color: string;
+ variant: PackageVariant;
  description: string;
  validityPeriod: string;
 }
@@ -97,7 +103,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  discount: 17,
  features: ['10회 스트링 교체', '무료 장력 상담', '기본 스트링 포함'],
  benefits: ['회당 10,000원', '2만원 절약', '3개월 유효'],
- color: 'blue',
+ variant: 'primary',
  description: '테니스를 시작하는 분들에게 적합한 기본 패키지',
  validityPeriod: '12개월',
  },
@@ -111,7 +117,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  popular: true,
  features: ['30회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약'],
  benefits: ['회당 10,000원', '6만원 절약', '6개월 유효', '우선 예약 혜택'],
- color: 'indigo',
+ variant: 'accent',
  description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지',
  validityPeriod: '12개월',
  },
@@ -124,7 +130,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  discount: 17,
  features: ['50회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 5회'],
  benefits: ['회당 10,000원', '10만원 절약', '9개월 유효', '그립 교체 혜택'],
- color: 'purple',
+ variant: 'muted',
  description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
  validityPeriod: '12개월',
  },
@@ -137,7 +143,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  discount: 17,
  features: ['100회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 10회', '전용 상담사 배정'],
  benefits: ['회당 10,000원', '20만원 절약', '12개월 유효', '전용 서비스'],
- color: 'emerald',
+ variant: 'success',
  description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
  validityPeriod: '12개월',
  },
@@ -265,7 +271,8 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  const configs: any[] = Array.isArray(data.packages) ? data.packages : [];
 
  // DB에 저장된 패키지 설정 중, 현재 선택된 ID와 같은 것 찾기 (예: 'package-10')
- const config = configs.find((pkg) => pkg.id === packageId);
+ const configIndex = configs.findIndex((pkg) => pkg.id === packageId);
+ const config = configIndex >= 0 ? configs[configIndex] : null;
 
  if (config) {
  const sessions = Number(config.sessions || 0);
@@ -287,6 +294,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  const templateKey = sessions === 10 ? '10-sessions' : sessions === 30 ? '30-sessions' : sessions === 50 ? '50-sessions' : sessions === 100 ? '100-sessions' : undefined;
 
  const base = templateKey ? TEMPLATE_PACKAGES[templateKey] : null;
+ const variant = toPackageVariant(config.variant, base?.variant ?? getPackageVariantByIndex(configIndex));
 
  const merged: PackageInfo = {
  // 색상 / 아이콘 / 레이아웃 등은 템플릿 우선
@@ -299,7 +307,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  discount,
  features: [],
  benefits: [],
- color: 'blue',
+ variant: 'primary',
  description: '',
  validityPeriod,
  }),
@@ -312,6 +320,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  discount,
  description: config.description || base?.description || '',
  validityPeriod,
+ variant,
  // 특징 리스트는 설정에 있으면 그걸 쓰고, 없으면 템플릿 사용
  features: Array.isArray(config.features) && config.features.length > 0 ? config.features : (base?.features ?? []),
  // 혜택은 "회당 가격 / 할인율"을 앞에 붙이고, 템플릿에서 겹치지 않는 문구만 뒤에 추가
@@ -512,42 +521,14 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <CardDescription className="mt-2">구매하실 스트링 교체 패키지 정보입니다.</CardDescription>
  </div>
  <CardContent className="p-6">
- <div
- className={`p-6 bg-primary ${
- selectedPackage.color === 'blue'
- ? ' to-accent dark:from-primary dark:to-accent'
- : selectedPackage.color === 'indigo'
- ? 'from-primary to-accent dark:from-primary dark:to-accent'
- : selectedPackage.color === 'purple'
- ? 'from-primary to-accent dark:from-primary dark:to-accent'
- : 'from-primary  dark:from-primary dark:to-accent'
- } rounded-xl border-2 ${
- selectedPackage.color === 'blue'
- ? 'border-border dark:border-border'
- : selectedPackage.color === 'indigo'
- ? 'border-border dark:border-border'
- : selectedPackage.color === 'purple'
- ? 'border-border dark:border-border'
- : 'border-border dark:border-border'
- }`}
- >
+ <div className={`p-6 rounded-xl border-2 border-border dark:border-border ${PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]}`}>
  <div className="flex items-center gap-4 mb-4">
- <div
- className={`w-16 h-16 rounded-full bg-background ${
- selectedPackage.color === 'blue'
- ? '0 to-accent'
- : selectedPackage.color === 'indigo'
- ? 'from-primary to-accent'
- : selectedPackage.color === 'purple'
- ? 'from-primary to-accent'
- : 'from-primary 0'
- } flex items-center justify-center text-foreground shadow-lg`}
- >
- {selectedPackage.color === 'blue' ? (
+ <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]}`}>
+ {selectedPackage.variant === 'primary' ? (
  <Target className="h-8 w-8" />
- ) : selectedPackage.color === 'indigo' ? (
+ ) : selectedPackage.variant === 'accent' ? (
  <Star className="h-8 w-8" />
- ) : selectedPackage.color === 'purple' ? (
+ ) : selectedPackage.variant === 'muted' ? (
  <Award className="h-8 w-8" />
  ) : (
  <Trophy className="h-8 w-8" />
@@ -588,13 +569,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div key={idx} className="flex items-start text-sm">
  <div
  className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-primary ${
- selectedPackage.color === 'blue'
- ? '0 to-accent'
- : selectedPackage.color === 'indigo'
- ? 'from-primary to-accent'
- : selectedPackage.color === 'purple'
- ? 'from-primary to-accent'
- : 'from-primary 0'
+PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  }`}
  ></div>
  <span>{feature}</span>
