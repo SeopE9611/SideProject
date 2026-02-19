@@ -30,7 +30,7 @@ export function DateFilter({ date, onChange }: DateFilterProps) {
         </PopoverTrigger>
 
         <PopoverContent side="bottom" align="start" sideOffset={4} className="z-50 !w-auto min-w-max p-0 bg-transparent border-0 shadow-none overflow-visible">
-          <div className="bg-white border border-gray-200 rounded-md shadow-md overflow-hidden">
+          <div className="bg-card border border-border rounded-md shadow-md overflow-hidden">
             <Calendar selected={date} onSelect={onChange} />
           </div>
         </PopoverContent>

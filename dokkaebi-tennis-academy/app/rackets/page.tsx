@@ -1,7 +1,7 @@
 import FilterableRacketList from '@/app/rackets/_components/FilterableRacketList';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
@@ -61,7 +61,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
             <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">중고 라켓</h1>
             <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스의 중고 라켓으로 합리적인 가격에 대여하세요.</p>
             <div className="mt-2 flex items-center justify-center">
-              <Button asChild size="lg" className="bg-card text-blue-700 hover:bg-blue-50">
+              <Button asChild size="lg" variant="secondary">
                 <Link href={finderHref} aria-label="라켓 파인더로 이동">
                   <Search className="mr-2 h-5 w-5" />
                   스펙으로 찾기 (라켓 파인더)
@@ -76,7 +76,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
         {from === 'apply' && (
           <div className="sticky top-[72px] z-40 mb-4 bp-sm:mb-6">
-            <div className="rounded-xl border border-blue-200/60 dark:border-blue-800/40 bg-card/90 dark:bg-card/40 backdrop-blur p-4 bp-sm:p-5 shadow-sm">
+            <div className="rounded-xl border border-border bg-card/90 backdrop-blur p-4 bp-sm:p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
                   <p className="text-sm bp-sm:text-base font-semibold text-foreground">교체·장착 신청을 위한 라켓 선택 단계예요</p>
@@ -87,7 +87,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                 </div>
 
                 <div className="flex w-full bp-sm:w-auto items-center gap-2 flex-wrap">
-                  <Button asChild variant="outline" className="flex-1 bp-sm:flex-none border-blue-200 dark:border-blue-700">
+                  <Button asChild variant="outline" className="flex-1 bp-sm:flex-none border-border bg-card text-foreground">
                     <Link href="/services/apply" className="flex items-center gap-2">
                       <span className="text-base">←</span>
                       신청 화면으로
@@ -96,12 +96,12 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
 
                   {/* segmented-control: 전체 / 대여가능만 */}
                   <div className="flex-1 bp-sm:flex-none">
-                    <div className="inline-flex w-full bp-sm:w-[320px] rounded-full border border-blue-200 dark:border-blue-700 bg-card dark:bg-card p-1">
+                    <div className="inline-flex w-full bp-sm:w-[320px] rounded-full border border-border bg-card p-1">
                       <Link
                         href="/rackets?from=apply"
                         aria-current={!rentOnly ? 'page' : undefined}
                         className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                          rentOnly ? 'text-foreground dark:text-foreground hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'bg-blue-600 hover:bg-blue-700 text-white shadow'
+                          rentOnly ? 'text-foreground hover:bg-background/70' : 'bg-primary text-primary-foreground shadow hover:bg-primary/90'
                         }`}
                       >
                         전체보기
@@ -111,7 +111,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                         href="/rackets?from=apply&rentOnly=1"
                         aria-current={rentOnly ? 'page' : undefined}
                         className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                          rentOnly ? 'bg-blue-600 hover:bg-blue-700 text-white shadow' : 'text-foreground dark:text-foreground hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                          rentOnly ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90' : 'text-foreground hover:bg-background/70'
                         }`}
                       >
                         대여가능만

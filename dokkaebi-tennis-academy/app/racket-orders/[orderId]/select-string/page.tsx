@@ -53,10 +53,10 @@ export default async function SelectStringPage({ params }: PageProps) {
     <div className="container mx-auto px-4 md:px-6 py-8 md:py-12 space-y-6">
       <div className="max-w-3xl space-y-2">
         <h1 className="text-2xl font-semibold">스트링을 선택해 주세요</h1>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted-foreground">
           주문 ID: <span className="font-mono">{orderId}</span>
         </p>
-        <div className="rounded-lg border p-4 text-sm bg-white">아래 목록에서 스트링을 고른 뒤, 교체 서비스 신청으로 연결됩니다.</div>
+        <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground">아래 목록에서 스트링을 고른 뒤, 교체 서비스 신청으로 연결됩니다.</div>
       </div>
       <SelectStringClient orderId={orderId} />
     </div>
