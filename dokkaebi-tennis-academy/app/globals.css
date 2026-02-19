@@ -43,12 +43,12 @@ html body[data-scroll-locked] {
   --popover-foreground: 120 4% 11%;
 
   /* Primary action (CTA / main interaction) */
-  --primary: 133 59% 41%;
+  --primary: 129 57% 33%;
   --primary-foreground: 120 100% 99%;
 
   /* Secondary emphasis */
-  --accent: 130 57% 33%;
-  --accent-foreground: 120 100% 99%;
+  --accent: 135 59% 41%;
+  --accent-foreground: 120 4% 11%;
   --accent-hover: 130 57% 29%;
   --accent-active: 130 57% 25%;
 
@@ -57,22 +57,19 @@ html body[data-scroll-locked] {
   --success-foreground: 120 100% 99%;
   --warning: 38 92% 46%;
   --warning-foreground: 32 100% 15%;
-  --danger: 0 78% 52%;
-  --danger-foreground: 210 40% 98%;
-
   --secondary: 120 12% 94%;
   --secondary-foreground: 120 4% 11%;
 
   --muted: 120 10% 95%;
-  --muted-foreground: 120 4% 35%;
+  --muted-foreground: 120 6% 31%;
   --brand-text: 130 57% 33%;
 
-  --border: 120 8% 86%;
+  --border: 120 18% 87%;
   --input: 120 8% 86%;
-  --ring: 133 59% 41%;
+  --ring: 129 57% 33%;
   --overlay: 120 8% 8%;
 
-  --destructive: 0 84.2% 60.2%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
 
   /* 패키지 페이지를 위한 추가 디자인 토큰 */
@@ -99,21 +96,21 @@ html body[data-scroll-locked] {
   --foreground: 120 100% 99%;
 
   /* Surface (card/panel) */
-  --surface: 120 4% 13%;
+  --surface: 120 6% 14%;
   --surface-foreground: 120 100% 99%;
-  --card: 120 4% 13%;
+  --card: 120 6% 14%;
   --card-foreground: 120 100% 99%;
 
-  --popover: 120 4% 13%;
+  --popover: 120 6% 14%;
   --popover-foreground: 120 100% 99%;
 
   /* Primary action (CTA / main interaction) */
-  --primary: 133 59% 41%;
-  --primary-foreground: 120 100% 99%;
+  --primary: 135 59% 41%;
+  --primary-foreground: 120 4% 11%;
 
   /* Secondary emphasis */
-  --accent: 130 57% 33%;
-  --accent-foreground: 120 100% 99%;
+  --accent: 135 59% 41%;
+  --accent-foreground: 120 4% 11%;
   --accent-hover: 130 57% 40%;
   --accent-active: 130 57% 45%;
 
@@ -122,22 +119,19 @@ html body[data-scroll-locked] {
   --success-foreground: 120 100% 99%;
   --warning: 40 94% 54%;
   --warning-foreground: 30 90% 8%;
-  --danger: 0 82% 63%;
-  --danger-foreground: 210 40% 98%;
-
   --secondary: 120 3% 18%;
   --secondary-foreground: 120 100% 99%;
 
   --muted: 120 3% 18%;
-  --muted-foreground: 120 10% 72%;
+  --muted-foreground: 120 8% 75%;
   --brand-text: 130 45% 68%;
 
-  --border: 120 3% 24%;
+  --border: 120 7% 25%;
   --input: 120 3% 24%;
-  --ring: 133 59% 41%;
+  --ring: 129 57% 33%;
   --overlay: 120 10% 4%;
 
-  --destructive: 0 62.8% 30.6%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
 
   --sidebar: 120 4% 13%;

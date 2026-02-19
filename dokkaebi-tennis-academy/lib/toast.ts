@@ -17,10 +17,10 @@ export const showSuccessToast = (message: string) =>
 export const showErrorToast = (message: string | ReactNode) =>
   toast.error(message, {
     icon: React.createElement(XCircle, {
-      className: 'text-danger',
+      className: 'text-destructive',
       size: 20,
     }),
-    className: 'border-danger/35 bg-danger/10 text-danger dark:border-danger/45 dark:bg-danger/20 dark:text-danger',
+    className: 'border-destructive/35 bg-destructive/10 text-destructive dark:border-destructive/45 dark:bg-destructive/20 dark:text-destructive',
     duration: 4000,
   });
 
