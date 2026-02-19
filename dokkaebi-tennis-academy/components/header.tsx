@@ -720,13 +720,13 @@ const Header = () => {
                           </span>
                         </Link>
 
-                        {isAdmin && <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-0 px-2 py-0 text-[10px] h-5">관리자</Badge>}
+                        {isAdmin && <Badge variant="success" className="border-0 px-2 py-0 text-[10px] h-5">관리자</Badge>}
                       </div>
 
                       {(hasKakao || hasNaver) && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
-                          {hasKakao && <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 border-0 text-[10px] h-5 px-2">카카오</Badge>}
-                          {hasNaver && <Badge className="bg-accent text-accent-foreground hover:bg-accent/90 border-0 text-[10px] h-5 px-2">네이버</Badge>}
+                          {hasKakao && <Badge variant="info" className="border-0 text-[10px] h-5 px-2">카카오</Badge>}
+                          {hasNaver && <Badge variant="neutral" className="border-0 text-[10px] h-5 px-2">네이버</Badge>}
                         </div>
                       )}
                     </div>
@@ -784,8 +784,8 @@ const Header = () => {
                 <div className="space-y-2">
                   {isAdmin && (
                     <Button
-                      variant="outline"
-                      className="w-full justify-center rounded-xl h-10 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all duration-200 bg-transparent"
+                      variant="secondary"
+                      className="w-full justify-center rounded-xl h-10 transition-all duration-200"
                       onClick={() => {
                         setOpen(false);
                         router.push('/admin/dashboard');
@@ -796,8 +796,8 @@ const Header = () => {
                   )}
 
                   <Button
-                    variant="ghost"
-                    className="w-full justify-center rounded-xl h-10 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all duration-200"
+                    variant="destructive"
+                    className="w-full justify-center rounded-xl h-10 transition-all duration-200"
                     onClick={async () => {
                       await fetch('/api/logout', { method: 'POST', credentials: 'include' });
                       window.location.href = '/';

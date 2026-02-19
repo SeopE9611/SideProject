@@ -8,6 +8,7 @@ const badgeVariants = cva('inline-flex items-center whitespace-nowrap rounded-fu
     variant: {
       default: 'border-transparent bg-primary text-primary-foreground bg-primary/80',
       highlight: 'border-transparent bg-primary/15 text-primary',
+      info: 'border-transparent bg-info/15 text-info-foreground dark:bg-info/25',
       neutral: 'border-border bg-card text-foreground',
       secondary: 'border-transparent bg-secondary text-brand-text bg-secondary/80',
       destructive: 'border-transparent bg-destructive text-destructive-foreground bg-destructive/80',
