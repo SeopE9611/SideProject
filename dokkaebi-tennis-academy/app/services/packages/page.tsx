@@ -12,6 +12,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { FullPageSpinner } from '@/components/system/PageLoading';
+import {
+  type PackageVariant,
+  PACKAGE_VARIANT_TONE_CLASS,
+  getPackageVariantByIndex,
+  toPackageVariant,
+} from '@/app/services/packages/_lib/packageVariant';
 
 interface PackageOption {
   id: string;
@@ -23,7 +29,7 @@ interface PackageOption {
   popular?: boolean;
   features: string[];
   benefits: string[];
-  color: string;
+  variant: PackageVariant;
   icon: React.ReactNode;
   description: string;
   validityPeriod: string;
@@ -51,7 +57,7 @@ const STATIC_PACKAGES: PackageOption[] = [
     discount: 17,
     features: ['10회 스트링 교체', '무료 장력 상담', '기본 스트링 포함'],
     benefits: ['회당 10,000원', '2만원 절약', '3개월 유효'],
-    color: 'blue',
+    variant: 'primary',
     icon: <Target className="h-8 w-8" />,
     description: '테니스를 시작하는 분들에게 적합한 기본 패키지',
     validityPeriod: '3개월',
@@ -67,7 +73,7 @@ const STATIC_PACKAGES: PackageOption[] = [
     popular: true,
     features: ['30회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약'],
     benefits: ['회당 10,000원', '6만원 절약', '6개월 유효', '우선 예약 혜택'],
-    color: 'indigo',
+    variant: 'accent',
     icon: <Star className="h-8 w-8" />,
     description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지',
     validityPeriod: '6개월',
@@ -81,7 +87,7 @@ const STATIC_PACKAGES: PackageOption[] = [
     discount: 17,
     features: ['50회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 5회'],
     benefits: ['회당 10,000원', '10만원 절약', '9개월 유효', '그립 교체 혜택'],
-    color: 'purple',
+    variant: 'muted',
     icon: <Award className="h-8 w-8" />,
     description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
     validityPeriod: '9개월',
@@ -96,7 +102,7 @@ const STATIC_PACKAGES: PackageOption[] = [
     discount: 17,
     features: ['100회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 10회', '전용 상담사 배정'],
     benefits: ['회당 10,000원', '20만원 절약', '12개월 유효', '전용 서비스'],
-    color: 'emerald',
+    variant: 'success',
     icon: <Trophy className="h-8 w-8" />,
     description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
     validityPeriod: '12개월',
@@ -176,17 +182,14 @@ export default function StringPackagesPage() {
             }
           }
 
-          let color = 'blue';
+          const variant: PackageVariant = toPackageVariant(pkg.variant, getPackageVariantByIndex(index));
           let icon: React.ReactNode = <Target className="h-8 w-8" />;
 
           if (index === 1) {
-            color = 'indigo';
             icon = <Star className="h-8 w-8" />;
           } else if (index === 2) {
-            color = 'purple';
             icon = <Award className="h-8 w-8" />;
           } else if (index === 3) {
-            color = 'emerald';
             icon = <Trophy className="h-8 w-8" />;
           }
           const benefits: string[] = [];
@@ -215,7 +218,7 @@ export default function StringPackagesPage() {
             popular: !!pkg.isPopular,
             features: Array.isArray(pkg.features) ? pkg.features : [],
             benefits,
-            color,
+            variant,
             icon,
             description: pkg.description || '',
             validityPeriod,
@@ -242,30 +245,30 @@ export default function StringPackagesPage() {
     };
   }, []);
 
-  const additionalBenefits = [
+  const additionalBenefits: Array<{ icon: React.ReactNode; title: string; description: string; variant: PackageVariant }> = [
     {
       icon: <Shield className="h-6 w-6" />,
       title: '품질 보장',
       description: '모든 스트링 교체에 대해 완벽한 품질을 보장합니다.',
-      color: 'blue',
+      variant: 'primary',
     },
     {
       icon: <Clock className="h-6 w-6" />,
       title: '빠른 서비스',
       description: '평균 30분 내 스트링 교체 완료',
-      color: 'indigo',
+      variant: 'accent',
     },
     {
       icon: <Users className="h-6 w-6" />,
       title: '전문가 상담',
       description: '전문가가 직접 상담해드립니다.',
-      color: 'purple',
+      variant: 'muted',
     },
     {
       icon: <Gift className="h-6 w-6" />,
       title: '추가 혜택',
       description: '패키지 구매 시 다양한 부가 서비스 제공',
-      color: 'emerald',
+      variant: 'success',
     },
   ];
 
@@ -391,18 +394,10 @@ export default function StringPackagesPage() {
 
                 {pkg.discount && <div className="absolute top-0 left-0 bg-primary from-red-500  text-foreground px-3 py-1 text-xs font-bold rounded-br-lg">{pkg.discount}% 할인</div>}
 
-                <div
-                  className={`h-2 bg-primary ${
-                    pkg.color === 'blue' ? '0 to-cyan-500' : pkg.color === 'indigo' ? 'from-indigo-500 to-purple-500' : pkg.color === 'purple' ? 'from-purple-500 to-pink-500' : 'from-emerald-500 0'
-                  }`}
-                ></div>
+                <div className={`h-2 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}></div>
 
                 <CardHeader className="text-center pb-4">
-                  <div
-                    className={`mx-auto mb-4 w-20 h-20 rounded-full bg-background ${
-                      pkg.color === 'blue' ? '0 to-cyan-500' : pkg.color === 'indigo' ? 'from-indigo-500 to-purple-500' : pkg.color === 'purple' ? 'from-purple-500 to-pink-500' : 'from-emerald-500 0'
-                    } flex items-center justify-center text-foreground shadow-lg group-hover:scale-110 transition-transform duration-300`}
-                  >
+                  <div className={`mx-auto mb-4 w-20 h-20 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}>
                     {pkg.icon}
                   </div>
                   <CardTitle className="text-2xl font-bold mb-2">{pkg.title}</CardTitle>
@@ -431,28 +426,14 @@ export default function StringPackagesPage() {
                     <ul className="space-y-2">
                       {pkg.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start text-sm">
-                          <div
-                            className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-primary ${
-                              pkg.color === 'blue' ? '0 to-cyan-500' : pkg.color === 'indigo' ? 'from-indigo-500 to-purple-500' : pkg.color === 'purple' ? 'from-purple-500 to-pink-500' : 'from-emerald-500 0'
-                            }`}
-                          ></div>
+                          <div className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}></div>
                           <span>{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div
-                    className={`bg-primary ${
-                      pkg.color === 'blue'
-                        ? ' to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20'
-                        : pkg.color === 'indigo'
-                          ? 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20'
-                          : pkg.color === 'purple'
-                            ? 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20'
-                            : 'from-emerald-50  dark:from-emerald-900/20 dark:to-teal-900/20'
-                    } rounded-xl p-4`}
-                  >
+                  <div className={`rounded-xl p-4 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}>
                     <h4 className="font-semibold mb-3 flex items-center">
                       <Gift className="w-4 h-4 mr-2 text-orange-500" />
                       혜택
@@ -466,18 +447,7 @@ export default function StringPackagesPage() {
                     </div>
                   </div>
 
-                  <Button
-                    className={`w-full bg-primary ${
-                      pkg.color === 'blue'
-                        ? '0  hover: hover:to-cyan-700'
-                        : pkg.color === 'indigo'
-                          ? 'from-indigo-500  hover:from-indigo-600 hover:to-purple-700'
-                          : pkg.color === 'purple'
-                            ? 'from-purple-500  hover: hover:to-pink-700'
-                            : 'from-emerald-500  hover: hover:to-teal-700'
-                    } text-foreground border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300`}
-                    asChild
-                  >
+                  <Button className={`w-full border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`} asChild>
                     <Link href={`/services/packages/checkout?package=${pkg.id}`}>
                       <Package className="w-4 h-4 mr-2" />
                       패키지 선택
@@ -509,11 +479,7 @@ export default function StringPackagesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {additionalBenefits.map((benefit, index) => (
               <div key={index} className="group bg-card/10 backdrop-blur-sm rounded-2xl p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                <div
-                  className={`w-16 h-16 bg-background ${
-                    benefit.color === 'blue' ? 'from-blue-400 to-cyan-400' : benefit.color === 'indigo' ? 'from-indigo-400 to-purple-400' : benefit.color === 'purple' ? 'from-purple-400 to-pink-400' : 'from-emerald-400 to-teal-400'
-                  } rounded-full flex items-center justify-center text-foreground mx-auto mb-6 group-hover:scale-110 transition-transform duration-300`}
-                >
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 ${PACKAGE_VARIANT_TONE_CLASS[benefit.variant]}`}>
                   {benefit.icon}
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-4 text-center">{benefit.title}</h3>

@@ -7,6 +7,7 @@ import type { User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
 import { showErrorToast } from '@/lib/toast';
 import { CreditCard, Loader2 } from 'lucide-react';
+import type { PackageVariant } from '@/app/services/packages/_lib/packageVariant';
 
 // 제출 직전 최종 가드(우회 방지)용 유효성
 // - PackageCheckoutClient에서 disabled로 1차 차단을 하지만,
@@ -62,7 +63,7 @@ interface PackageInfo {
   popular?: boolean;
   features: string[];
   benefits: string[];
-  color: string;
+  variant: PackageVariant;
   description: string;
   validityPeriod: string;
 }
